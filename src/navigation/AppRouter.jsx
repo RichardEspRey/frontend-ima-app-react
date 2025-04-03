@@ -17,7 +17,7 @@ import HomeScreen from '../screens/HomeScreen.jsx';
 import AdminConductores from '../screens/DriverAdmin.jsx';
 
 // ❌ Aún no creados, por eso los comentamos
-// import ConductoresScreen from '../screens/ConductoresScreen';
+import ConductoresScreen from '../screens/ConductoresScreen';
 // import CamionesScreen from '../screens/CamionesScreen';
 // import CajasScreen from '../screens/CajasScreen';
 
@@ -46,14 +46,14 @@ const AppRouter = () => {
                   </DashboardLayout>
                 }
               />
-              {/* <Route
+              <Route
                 path="/conductores"
                 element={
                   <DashboardLayout>
                     <ConductoresScreen />
                   </DashboardLayout>
                 }
-              /> */}
+              />
 
               <Route
                 path="/admin-conductores"

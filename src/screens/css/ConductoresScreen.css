@@ -1,0 +1,90 @@
+.conductores-container {
+    padding: 20px;
+    background-color: white;
+    border-radius: 10px;
+    border-style: groove;
+    border-color: rgb(190, 190, 190);
+    border-Width: 1px;
+  }
+  
+  .titulo {
+    font-size: 32px;
+    margin-bottom: 20px;
+  }
+  
+  .btnConteiner {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  
+  .btn {
+    padding: 10px 20px;
+    font-weight: bold;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .guardar {
+    background-color: #1554e3;
+    color: white;
+  }
+  
+  .cancelar {
+    background-color: white;
+    border: 1px solid #000;
+  }
+  
+  .form-columns {
+    display: flex;
+    gap: 30px;
+  }
+  
+  .column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .column label {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 5px;
+  }
+  
+  .column input {
+    padding: 12px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+  }
+  
+  /* Modal */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    width: 400px;
+    text-align: center;
+  }
+  
+  .modal-buttons {
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-around;
+  }
+  

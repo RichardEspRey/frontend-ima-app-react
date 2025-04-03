@@ -10,13 +10,14 @@
   }
   
   .logoContainer {
-    margin-bottom: 40px;
+    margin-left: 20px;
+    margin-right: 20px;
     text-align: center;
   }
   
   .logo {
-    width: 180px;
-    height: 100px;
+    width: 200px;
+    height: 120px;
     object-fit: contain;
   }
   
