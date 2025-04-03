@@ -3,7 +3,7 @@ import './css/ConductoresScreen.css';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 
-const ConductoresScreen = () => {
+const DriverScreen = () => {
   const [formData, setFormData] = useState({
     nombre: '',
     fechaNacimiento: '',
@@ -197,4 +197,4 @@ const ConductoresScreen = () => {
   );
 };
 
-export default ConductoresScreen;
+export default DriverScreen;

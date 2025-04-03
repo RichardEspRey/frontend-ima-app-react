@@ -1,10 +1,10 @@
-// src/components/Sidebar.jsx
 import React, { useCallback, useContext } from 'react';
 import './css/Sidebar.css';
 import { useDispatch, useSelector } from 'react-redux';
 import { setActiveMenu, setExpandedMenu, setSelectedSubMenu } from '../redux/menuSlice';
 import { AuthContext } from '../auth/AuthContext';
 import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom'; 
 
 import logo from '../assets/images/logo_white.png';
 import iconDashboard from '../assets/images/icons/dashboard.png';
@@ -15,37 +15,38 @@ import iconReport from '../assets/images/icons/report.png';
 import iconExit from '../assets/images/icons/exit.png';
 
 const menuItems = [
-  { name: 'Home', icon: iconDashboard },
+  { name: 'Inicio', icon: iconDashboard, route: '/home' },
   {
     name: 'Conductores',
     icon: iconDriver,
     subItems: [
-      { name: 'Alta de conductores', route: 'Conductores' },
-      { name: 'Administrador de conductores', route: 'AdminConductores' }
+      { name: 'Alta de conductores', route: '/drivers' },
+      { name: 'Administrador de conductores', route: '/admin-drivers' }
     ]
   },
   {
     name: 'Camiones',
     icon: iconTrailer,
     subItems: [
-      { name: 'Alta de camiones', route: 'Camiones' },
-      { name: 'Administrador de camiones', route: 'AdmiCamiones' },
-      { name: 'Alta de Cajas', route: 'Cajas' },
-      { name: 'Administrador de cajas', route: 'AdmiCajas' }
+      { name: 'Alta de camiones', route: '/trucks' },
+      { name: 'Administrador de camiones', route:  '/admin-trucks' },
+      { name: 'Alta de Cajas', route: '/trailers' },
+      { name: 'Administrador de cajas', route: '/admin-trailers' }
     ]
   },
   {
     name: 'Viajes',
     icon: iconBox,
     subItems: [
-      { name: 'Activos', route: 'ViajesActivos' },
-      { name: 'Historial', route: 'ViajesHistorial' }
+      { name: 'Nuevo Viaje', route: '/trips' },
+      { name: 'Administrador de viajes', route: '/admin-trips' }
     ]
   },
-  { name: 'Reportes', icon: iconReport }
+  { name: 'Reportes', icon: iconReport, route: '/reportes' }
 ];
 
-const Sidebar = ({ navigate }) => {
+const Sidebar = () => {
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const activeMenu = useSelector((state) => state.menu.activeMenu);
   const expandedMenu = useSelector((state) => state.menu.expandedMenu);
@@ -62,13 +63,12 @@ const Sidebar = ({ navigate }) => {
     dispatch(setExpandedMenu(expandedMenu === menuName ? null : menuName));
     if (expandedMenu === menuName) {
       dispatch(setSelectedSubMenu(null));
-      dispatch(setActiveMenu(null));
     }
   }, [dispatch, expandedMenu]);
 
   const handleSubMenuSelect = useCallback((route) => {
     dispatch(setSelectedSubMenu(route));
-    dispatch(setActiveMenu(null));
+    dispatch(setActiveMenu(route));
     navigate(route);
   }, [dispatch, navigate]);
 
@@ -85,8 +85,8 @@ const Sidebar = ({ navigate }) => {
         {menuItems.map((item) => (
           <div key={item.name}>
             <button
-              className={`menuItem ${activeMenu === item.name && !item.subItems ? 'activeMenuItem' : ''}`}
-              onClick={() => item.subItems ? toggleSubMenu(item.name) : handleNavigate(item.name)}
+              className={`menuItem ${activeMenu === item.route && !item.subItems ? 'activeMenuItem' : ''} ${item.subItems ? 'hasSubMenu' : ''}`}
+              onClick={() => item.subItems ? toggleSubMenu(item.name) : handleNavigate(item.route)}
             >
               <img src={item.icon} alt="icon" className="icon" />
               <span className="menuText">{item.name}</span>
