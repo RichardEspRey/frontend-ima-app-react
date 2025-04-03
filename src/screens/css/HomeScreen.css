@@ -1,0 +1,11 @@
+.home-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+  }
+  
+  .home-text {
+    font-size: 20px;
+  }
+  

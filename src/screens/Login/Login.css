@@ -1,0 +1,74 @@
+.loginBackground {
+    width: 100vw;
+    height: 100vh;
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .loginOverlay {
+    width: 500px;
+    height: 500px;
+    background-color: rgba(251, 251, 251, 0.6);
+    padding: 20px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .logoContainer {
+    margin-top: 40px;
+    margin-bottom: 40px;
+  }
+  
+  .loginLogo {
+    width: 180px;
+    height: 100px;
+    object-fit: contain;
+  }
+  
+  .inputGroup {
+    display: flex;
+    align-items: center;
+    background-color: white;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    padding-left: 10px;
+    width: 300px;
+  }
+  
+  .inputGroup .icon {
+    margin-right: 10px;
+  }
+  
+  .inputGroup input {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    color: #757575;
+    font-size: 14px;
+    font-weight: 600;
+    outline: none;
+  }
+  
+  .loginButton {
+    margin-top: 20px;
+    background-color: rgba(21, 84, 227, 1);
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 8px 25px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  .icon {
+    color: #333; /* o el que tú quieras: #000, #3C48E1, etc. */
+    font-size: 18px;
+    margin-right: 10px;
+  }
+  

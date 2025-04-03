@@ -1,0 +1,57 @@
+.header {
+    width: 100%;
+    height: 60px;
+    background-color: #3C48E1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+  }
+  
+  .headerIcons {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex: 1;
+  }
+  
+  .iconButton {
+    background: none;
+    border: none;
+    cursor: pointer;
+    margin-right: 20px;
+  }
+  
+  .icon {
+    width: 24px;
+    height: 24px;
+    filter: brightness(0) invert(1); /* para efecto tipo tintColor blanco */
+  }
+  
+  .userContainer {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+  }
+  
+  .userIcon {
+    width: 30px;
+    height: 30px;
+    border-radius: 15px;
+    background-color: #D9D9D9;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-right: 8px;
+  }
+  
+  .userInitial {
+    font-weight: bold;
+    color: #000;
+  }
+  
+  .userName {
+    color: #fff;
+    font-size: 14px;
+  }
+  
