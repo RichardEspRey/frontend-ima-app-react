@@ -61,4 +61,10 @@
     padding-top: 20px;
     align-items: center;
   }
+  .icon-btn {
+    cursor: pointer;
+  }
   
+  .icon-img {
+    pointer-events: auto;
+  }

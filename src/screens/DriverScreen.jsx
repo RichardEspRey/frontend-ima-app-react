@@ -2,20 +2,21 @@ import React, { useState } from 'react';
 import './css/ConductoresScreen.css';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import ModalArchivo from '../components/ModalArchivo.jsx'; // ajusta la ruta si es necesario
+import Swal from 'sweetalert2';
+import axios from 'axios';
 
 const DriverScreen = () => {
   const [formData, setFormData] = useState({
     nombre: '',
     fechaNacimiento: '',
-    actaNacimiento: '',
-    actaNacimientoDate: null,
     curp: '',
-    // ... otros campos
+    rfc:'',
+    phone_usa:'',
+    phone_mex:''
   });
 
-  const [isModalVisible, setModalVisible] = useState(false);
   const [selectedFieldName, setSelectedFieldName] = useState(null);
-  const [selectedDate, setSelectedDate] = useState(new Date());
 
   const handleInputChange = (name, value) => {
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -39,15 +40,114 @@ const DriverScreen = () => {
     }));
   };
 
-  const openModal = (field) => {
-    setSelectedFieldName(field);
-    setSelectedDate(new Date());
-    setModalVisible(true);
+
+  {/*utiles*/}
+  const [documentos, setDocumentos] = useState({});
+  const [modalAbierto, setModalAbierto] = useState(false);
+  const [campoActual, setCampoActual] = useState(null);
+
+  const handleGuardarDocumento = (campo, data) => {
+    setDocumentos(prev => ({
+      ...prev,
+      [campo]: data
+    }));
   };
 
-  const handleSubmit = () => {
-    console.log("Guardando...", formData);
+  const abrirModal = (campo) => {
+    setCampoActual(campo);
+    setModalAbierto(true);
   };
+
+  
+  const envioDatosPrincipal = async () => {
+    console.log(formData);
+    try {
+      const formDataToSend = new FormData();
+  
+      // Aquí añadimos solo campos de texto (no archivos)
+      formDataToSend.append('op', 'Alta'); // operación que espera el backend
+      formDataToSend.append('name', formData.nombre);
+      formDataToSend.append('fecha', formData.fechaNacimiento);
+      formDataToSend.append('curp', formData.curp);
+      formDataToSend.append('rfc', formData.rfc);
+      formDataToSend.append('phone_mex', formData.phone_mex);
+      formDataToSend.append('phone_usa', formData.phone_usa);
+  
+      // Enviar al backend
+      const response = await fetch('http://localhost/api/drivers.php', {
+        method: 'POST',
+        body: formDataToSend,
+      });
+  
+      const result = await response.json();
+      console.log('Respuesta del servidor:', result);
+  
+      const idConductor = result.id;
+      console.log("ID recibido del backend:", idConductor);
+
+      if (result.status === "success") {
+  
+        const idConductor = result.id;
+        console.log("ID recibido del backend:", idConductor);
+        return idConductor;
+      } else {
+        throw new Error("Error al guardar datos básicos");
+      }
+    }catch (error) {
+      console.error('Error al enviar los datos:', error);
+      alert('Error al conectar con el servidor');
+    }
+  };
+
+  const enviarDocumentos = async (idConductor) => {
+    const entries = Object.entries(documentos); // clave: nombre campo, valor: { file, vencimiento }
+  
+    for (const [tipo_documento, { file, vencimiento }] of entries) {
+      const formDataFile = new FormData();
+      formDataFile.append('op', 'Alta');
+      formDataFile.append('driver_id', idConductor);
+      formDataFile.append('tipo_documento', tipo_documento);
+      formDataFile.append('fecha_vencimiento', vencimiento);
+      formDataFile.append('documento', file);
+  
+      try {
+        const response = await fetch('http://localhost/api/drivers_docs.php', {
+          method: 'POST',
+          body: formDataFile,
+        });
+  
+        const result = await response.json();
+        console.log(`Documento ${tipo_documento} enviado:`, result);
+        Swal.fire({
+          icon: 'success',
+          title: 'Éxito',
+          text: 'Todos los documentos fueron enviados correctamente',
+        });
+      } catch (error) {
+        console.error(`Error al enviar ${tipo_documento}:`, error);
+      }
+    }
+  };
+  const handleSubmit = async () => {
+    const idConductor = await envioDatosPrincipal();
+  
+    if (idConductor) {
+      await enviarDocumentos(idConductor);
+
+      setFormData({
+        nombre: '',
+        fechaNacimiento: '',
+        curp: '',
+        rfc: '',
+        phone_usa: '',
+        phone_mex: ''
+      });
+  
+      setDocumentos({});
+  
+    }
+  };
+  
 
   return (
     
@@ -79,122 +179,118 @@ const DriverScreen = () => {
           />
 
           <label>Acta de nacimiento (PDF)</label>
-          <input
-            type="file"
-            accept="application/pdf"
-            onChange={(e) => handleFileChange(e, 'actaNacimiento')}
-          />
+          <button type="button" onClick={() => abrirModal('Acta_Nacimiento')}>Subir documento</button>
+          {documentos.Acta_Nacimiento && (
+            <p>{documentos.Acta_Nacimiento.fileName} - {documentos.Acta_Nacimiento.vencimiento}</p>
+          )}
 
           <label>Curp (PDF)</label>
           <input
-            type="file"
-            accept="application/pdf"
-            onChange={(e) => handleFileChange(e, 'actaNacimiento')}
+            type="text"
+            placeholder="Ingrese el curp"
+            value={formData.curp}
+            onChange={(e) => handleInputChange('curp', e.target.value)}
           />
 
           <label>Comprobante de domicilio (PDF)</label>
-          <input
-            type="file"
-            accept="application/pdf"
-            onChange={(e) => handleFileChange(e, 'actaNacimiento')}
-          />
+          <button type="button" onClick={() => abrirModal('Comprobante_domicilio')}>Subir documento</button>
+          {documentos.Comprobante_domicilio && (
+            <p>{documentos.Comprobante_domicilio.fileName} - {documentos.Comprobante_domicilio.vencimiento}</p>
+          )}
 
           <label>Solicitud de empleo (PDF)</label>
-          <input
-            type="file"
-            accept="application/pdf"
-            onChange={(e) => handleFileChange(e, 'actaNacimiento')}
-          />
+          <button type="button" onClick={() => abrirModal('Solicitud_empleo')}>Subir documento</button>
+          {documentos.Solicitud_empleo && (
+            <p>{documentos.Solicitud_empleo.fileName} - {documentos.Solicitud_empleo.vencimiento}</p>
+          )}
         </div>
 
        {/* Puedes continuar con las otras dos columnas como en tu versión original */}
         <div className="column">
           <label>INE</label>
-          <input
-            type="text"
-            placeholder="Nombre y apellidos"
-            value={formData.nombre}
-            onChange={(e) => handleInputChange('nombre', e.target.value)}
-          />
+          <button type="button" onClick={() => abrirModal('INE')}>Subir documento</button>
+          {documentos.INE && (
+            <p>{documentos.INE.fileName} - {documentos.INE.vencimiento}</p>
+          )}
 
           <label>No de visa</label>
-          <input
-            type="file"
-            accept="application/pdf"
-            onChange={(e) => handleFileChange(e, 'actaNacimiento')}
-          />
+          <button type="button" onClick={() => abrirModal('Visa')}>Subir documento</button>
+          {documentos.Visa && (
+            <p>{documentos.Visa.fileName} - {documentos.Visa.vencimiento}</p>
+          )}
 
           <label>RFC (PDF)</label>
           <input
-            type="file"
-            accept="application/pdf"
-            onChange={(e) => handleFileChange(e, 'actaNacimiento')}
+            type="text"
+            placeholder="RFC"
+            value={formData.rfc}
+            onChange={(e) => handleInputChange('rfc', e.target.value)}
           />
-
           <label>No. Licencia (PDF)</label>
-          <input
-            type="file"
-            accept="application/pdf"
-            onChange={(e) => handleFileChange(e, 'actaNacimiento')}
-          />
+          <button type="button" onClick={() => abrirModal('Licencia')}>Subir documento</button>
+          {documentos.Licencia && (
+            <p>{documentos.Licencia.fileName} - {documentos.Licencia.vencimiento}</p>
+          )}
 
-          <label>Vencimiento de 1-94 (PDF)</label>
-          <input
-            type="file"
-            accept="application/pdf"
-            onChange={(e) => handleFileChange(e, 'actaNacimiento')}
-          />
+          <label>Vencimiento de I-94 (PDF)</label>
+          <button type="button" onClick={() => abrirModal('I')}>Subir documento</button>
+          {documentos.I && (
+            <p>{documentos.I.fileName} - {documentos.I.vencimiento}</p>
+          )}
 
           <label>APTO (PDF)</label>
-          <input
-            type="file"
-            accept="application/pdf"
-            onChange={(e) => handleFileChange(e, 'actaNacimiento')}
-          />
+          <button type="button" onClick={() => abrirModal('APTO')}>Subir documento</button>
+          {documentos.APTO && (
+            <p>{documentos.APTO.fileName} - {documentos.APTO.vencimiento}</p>
+          )}
         </div>
 
 
       {/* Puedes continuar con las otras dos columnas como en tu versión original */}
         <div className="column">
           <label>Atidoping</label>
-          <input
-            type="file"
-            accept="application/pdf"
-            onChange={(e) => handleFileChange(e, 'actaNacimiento')}
-          />
+          <button type="button" onClick={() => abrirModal('Atidoping')}>Subir documento</button>
+          {documentos.Atidoping && (
+            <p>{documentos.Atidoping.fileName} - {documentos.Atidoping.vencimiento}</p>
+          )}
 
           <label>Numero celular USA</label>
           <input
-            type="text"
-            placeholder="Nombre y apellidos"
-            value={formData.nombre}
-            onChange={(e) => handleInputChange('nombre', e.target.value)}
+            type="number"
+            placeholder="Ingresar numero Americano"
+            value={formData.phone_usa}
+            onChange={(e) => handleInputChange('phone_usa', e.target.value)}
           />
 
           <label>Numero celular MEX (PDF)</label>
           <input
-            type="text"
-            placeholder="Nombre y apellidos"
-            value={formData.nombre}
-            onChange={(e) => handleInputChange('nombre', e.target.value)}
+            type="number"
+            placeholder="Ingresar numero Mexicano"
+            value={formData.phone_mex}
+            onChange={(e) => handleInputChange('phone_mex', e.target.value)}
           />
 
           <label>Constancia de situacion fiscal (PDF)</label>
-          <input
-            type="file"
-            accept="application/pdf"
-            onChange={(e) => handleFileChange(e, 'actaNacimiento')}
-          />
+          <button type="button" onClick={() => abrirModal('Constancia_fiscal')}>Subir documento</button>
+          {documentos.Constancia_fiscal && (
+            <p>{documentos.Constancia_fiscal.fileName} - {documentos.Constancia_fiscal.vencimiento}</p>
+          )}
 
         </div>
 
       
       </div>
-
-   
+      <ModalArchivo
+        isOpen={modalAbierto}
+        onClose={() => setModalAbierto(false)}
+        onSave={(data) => handleGuardarDocumento(campoActual, data)}
+        nombreCampo={campoActual}
+        valorActual={documentos[campoActual]}
+      />
       </div>
     </div>
   );
+  
 };
 
 export default DriverScreen;

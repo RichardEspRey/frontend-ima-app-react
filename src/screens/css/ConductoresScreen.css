@@ -19,12 +19,15 @@
     margin-bottom: 20px;
   }
   
-  .btn {
+  button {
     padding: 10px 20px;
     font-weight: bold;
     border-radius: 6px;
     border: none;
     cursor: pointer;
+  }
+  button:hover {
+    background-color: #ccc;
   }
   
   .guardar {
