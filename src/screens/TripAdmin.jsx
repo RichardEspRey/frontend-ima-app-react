@@ -3,7 +3,7 @@ import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import dayjs from "dayjs";
-
+import './css/TripAdmin.css';
 const drivers = [
     { id: "08-2025", ccp: "002", truck: "002", trailer: "BIND61794", assigned_to: "MANUEL JIMENEZ", customer: "BIMBO", ci_number: "CBI2SAADBNB", invoice: "844", status: "Active", date: new Date(2025, 0, 31), name: "Roberto Arreola" },
     { id: "07-2025", ccp: "002", truck: "002", trailer: "BIND61794", assigned_to: "ROBERTO LOPEZ", customer: "BIMBO", ci_number: "CBI2SAADBNB", invoice: "844", status: "On Route", date: new Date(2025, 0, 31), name: "Manuel Jimenez" },
@@ -29,33 +29,43 @@ const TripAdmin = () => {
     });
 
     return (
-        <div>
-            <h1>Administrador de Viajes</h1>
+        
+            <div className="trip-admin">
+                <h1 className="title">Administrador de conductores</h1>
+    
+                <div className="filters">
+                <input
+                type="text"
+                    placeholder="Buscar por nombre"
+                    // variant="outlined"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="small-input" 
+                />
+                <div className="date-pickers">
+                    <DatePicker
+                        selected={startDate}
+                        onChange={setStartDate}
+                        selectsStart
+                        startDate={startDate}
+                        endDate={endDate}
+                        placeholderText="Fecha inicio"
+                       
+                    />
+                    <DatePicker
+                        selected={endDate}
+                        onChange={setEndDate}
+                        selectsEnd
+                        startDate={startDate}
+                        endDate={endDate}
+                        placeholderText="Fecha fin"
+                    />
 
-            <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
-                <TextField 
-                    label="Buscar por nombre" 
-                    variant="outlined" 
-                    value={search} 
-                    onChange={(e) => setSearch(e.target.value)} 
-                />
-                <DatePicker 
-                    selected={startDate} 
-                    onChange={setStartDate} 
-                    selectsStart 
-                    startDate={startDate} 
-                    endDate={endDate} 
-                    placeholderText="Fecha inicio"
-                />
-                <DatePicker 
-                    selected={endDate} 
-                    onChange={setEndDate} 
-                    selectsEnd 
-                    startDate={startDate} 
-                    endDate={endDate} 
-                    placeholderText="Fecha fin"
-                />
-                <Button variant="contained" onClick={() => { setStartDate(null); setEndDate(null); }}>Limpiar Filtro</Button>
+                <Button variant="contained" onClick={() => { setStartDate(null); setEndDate(null); }} style={{ marginLeft: '10px' }}>
+                    Limpiar Filtro
+                </Button>
+                </div>
+                
             </div>
 
             <TableContainer component={Paper}>

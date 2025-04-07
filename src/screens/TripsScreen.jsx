@@ -1,70 +1,45 @@
-import React from 'react';
-import { TextField, Card, CardContent, Typography, Grid } from '@mui/material';
-
-const CampoInput = ({ label, placeholder }) => (
-  <div style={{ marginBottom: '15px' }}>
-    <Typography variant="subtitle1" fontWeight={600}>{label}</Typography>
-    <TextField 
-      fullWidth
-      variant="outlined"
-      placeholder={placeholder}
-      size="small"
-    />
-  </div>
-);
+import React, { useState } from "react";
+import './css/TripScreen.css';
+import BorderCrossingForm from '../components/BorderCrossingForm'; 
+import TripForm from '../components/TripForm';
 
 const TripScreen = () => {
+  const [activeForm, setActiveForm] = useState('borderCrossing'); 
+
+  const handleBorderCrossingClick = () => {
+    setActiveForm('borderCrossing');
+  };
+
+  const handleTripClick = () => {
+    setActiveForm('trip');
+  };
+
   return (
-    <div style={{ padding: '20px' }}>
+    <div className="trip-screen-container">
+
+      <div className="trip-screen-wrapper">
+        <div className="trip-card">
+          <div className="trip-container">
+            <span className="trip-label">Trip Number</span>
+            <input className="trip-input" placeholder="Enter trip number" />
+          </div>
+        </div>
+
       
-      <Card style={{ width: '35%', padding: '20px', marginBottom: '20px' }}>
-        <CardContent>
-          <Typography variant="h6" fontWeight="bold" gutterBottom>
-            Trip Number
-          </Typography>
-          <TextField fullWidth variant="outlined" placeholder="Enter trip number" size="small" />
-        </CardContent>
-      </Card>
+        <div className="button-container">
+          <button onClick={handleBorderCrossingClick}>Border Crossing</button>
+          <button onClick={handleTripClick}>Trip</button>
+        </div>
+      </div>
 
-      <Card>
-        <CardContent>
-          <Typography variant="h6" align="center" fontWeight="bold" gutterBottom>
-            Datos del Viaje
-          </Typography>
+      
+      <div className="additional-card">
+        <div className="card-container">
+          {activeForm === 'borderCrossing' && <BorderCrossingForm />}
+          {activeForm === 'trip' && <TripForm />}
+        </div>
+      </div>
 
-          <Grid container spacing={2}>
-            <Grid item xs={6}>
-              <CampoInput label="Driver" placeholder="Conductor" />
-              <CampoInput label="Trailer" placeholder="Trailer" />
-              <CampoInput label="Truck" placeholder="Truck" />
-            </Grid>
-            <Grid item xs={6}>
-              <CampoInput label="Customer" placeholder="Customer" />
-              <CampoInput label="CI Number" placeholder="CI Number" />
-              <CampoInput label="Invoice IMA" placeholder="Invoice IMA" />
-            </Grid>
-          </Grid>
-
-          <Typography variant="h6" align="center" fontWeight="bold" gutterBottom>
-            Origen/Destination
-          </Typography>
-
-          <Grid container spacing={2}>
-            <Grid item xs={6}>
-              <CampoInput label="Warehouse" placeholder="Warehouse" />
-              <CampoInput label="Origin" placeholder="Origin" />
-              <CampoInput label="Zip Code" placeholder="Zip Code" />
-              <CampoInput label="Loading Date" placeholder="Loading Date" />
-            </Grid>
-            <Grid item xs={6}>
-              <CampoInput label="Warehouse" placeholder="Warehouse" />
-              <CampoInput label="Destination" placeholder="Destination" />
-              <CampoInput label="Zip Code" placeholder="Zip Code" />
-              <CampoInput label="Delivery" placeholder="Delivery" />
-            </Grid>
-          </Grid>
-        </CardContent>
-      </Card>
     </div>
   );
 };
