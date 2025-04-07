@@ -1,65 +1,29 @@
-.container {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 20px;
-}
-
-.title {
-    text-align: center;
-    font-size: 40px;
-    font-weight: bold;
-    margin-bottom: 30px;
-}
-
+/* Estilos para el contenedor de filtros */
 .filters {
     display: flex;
-    justify-content: space-between;
+    flex-direction: row;
     align-items: center;
     margin-bottom: 20px;
+    justify-content: space-between;
 }
 
-.searchBar {
+.small-input {
     padding: 10px;
-    font-size: 16px;
     border: 1px solid #ccc;
     border-radius: 5px;
-    width: 250px;
+    width: 300px;;
 }
 
-.datePickers {
+.date-pickers {
     display: flex;
     align-items: center;
-    gap: 10px;
+    margin-right: 20px;  
 }
 
-.datePicker {
-    padding: 8px;
-    font-size: 14px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
+.date-pickers .react-datepicker-wrapper {
+    margin-right: 10px;  
 }
 
-.clearBtn {
-    background-color: red;
-    color: white;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-.table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.table th, .table td {
-    border: 1px solid #ddd;
-    padding: 10px;
-    text-align: left;
-}
-
-.table th {
-    background-color: #f4f4f4;
-    font-weight: bold;
+.filters button {
+    margin-left: 10px;
 }
