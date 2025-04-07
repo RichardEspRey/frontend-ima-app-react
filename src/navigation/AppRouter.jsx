@@ -1,10 +1,9 @@
 import React, { useContext } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
 import { AuthContext } from '../auth/AuthContext';
 import { Provider } from 'react-redux';
 import store from '../redux/store';
-
 
 import LoginScreen from '../screens/Login/Login.jsx';
 import DashboardLayout from '../layouts/DashboardLayout';
@@ -35,93 +34,15 @@ const AppRouter = () => {
           ) : (
             <>
               <Route path="/" element={<Navigate to="/home" replace />} />
-              <Route
-                path="/home"
-                element={
-                  <DashboardLayout>
-                    <HomeScreen />
-                    {/* <TripAdmin/> */}
-                  </DashboardLayout>
-                }
-              />
-              <Route
-                path="/drivers"
-                element={
-                  <DashboardLayout>
-                    <DriverScreen />
-                  </DashboardLayout>
-                }
-              />
-
-              <Route
-                path="/admin-drivers"
-                element={
-                  <DashboardLayout>
-                    <DriverAdmin />
-                  </DashboardLayout>
-                }
-              />
-
-              
-              <Route
-                path="/trucks"
-                element={
-                  <DashboardLayout>
-                    <TruckScreen />
-                  </DashboardLayout>
-                }
-              />
-
-
-              <Route
-                path="/admin-trucks"
-                element={
-                  <DashboardLayout>
-                    <TruckAdmin />
-                  </DashboardLayout>
-                }
-              />
-
-              <Route
-                path="/trailers"
-                element={
-                  <DashboardLayout>
-                    <TrailerScreen />
-                  </DashboardLayout>
-                }
-              />
-
-              
-              <Route
-                path="/admin-trailers"
-                element={
-                  <DashboardLayout>
-                    <TrailerAdmin />
-                  </DashboardLayout>
-                }
-              />
-
-             <Route
-                path="/trips"
-                element={
-                  <DashboardLayout>
-                    <TripScreen />
-                  </DashboardLayout>
-                }
-              />
-
-              <Route
-                path="/admin-trips"
-                element={
-                  <DashboardLayout>
-                    <TripAdmin />
-                  </DashboardLayout>
-                }
-              />
-
-              
-
-
+              <Route path="/home" element={<DashboardLayout><HomeScreen /></DashboardLayout>} />
+              <Route path="/drivers" element={<DashboardLayout><DriverScreen /></DashboardLayout>} />
+              <Route path="/admin-drivers" element={<DashboardLayout><DriverAdmin /></DashboardLayout>} />
+              <Route path="/trucks" element={<DashboardLayout><TruckScreen /></DashboardLayout>} />
+              <Route path="/admin-trucks" element={<DashboardLayout><TruckAdmin /></DashboardLayout>} />
+              <Route path="/trailers" element={<DashboardLayout><TrailerScreen /></DashboardLayout>} />
+              <Route path="/admin-trailers" element={<DashboardLayout><TrailerAdmin /></DashboardLayout>} />
+              <Route path="/trips" element={<DashboardLayout><TripScreen /></DashboardLayout>} />
+              <Route path="/admin-trips" element={<DashboardLayout><TripAdmin /></DashboardLayout>} />
             </>
           )}
         </Routes>

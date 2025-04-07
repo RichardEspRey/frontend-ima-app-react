@@ -70,7 +70,7 @@ const DriverAdmin = () => {
             alt="Documento"
             className="icon-img"
             data-tooltip-id={`tooltip-${id}`}
-            data-tooltip-content="Sin fecha de vencimiento"
+            data-tooltip-content="No se cuenta con el documento"
           />
           <Tooltip id={`tooltip-${id}`} place="top" />
         </>
