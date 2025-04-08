@@ -32,11 +32,20 @@
     margin-bottom: 5px;
   }
   
-  .column input {
-    padding: 15px;
-    margin-bottom: 25px; 
+  .column select {
+    padding: 12px 15px; 
+    margin-bottom: 25px;
     border-radius: 5px;
     border: 1px solid #ccc;
-    width: 100%; 
-    font-size: 16px; 
+    width: 100%;
+    font-size: 16px;
+  }
+  
+  .column input {
+    padding: 15px;
+    margin-bottom: 25px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    width: 100%;
+    font-size: 16px;
   }

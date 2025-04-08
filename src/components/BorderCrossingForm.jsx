@@ -1,7 +1,12 @@
 import React, { useState } from 'react';
 import './css/BorderCrossingForm.css';
+import ModalArchivo from './ModalArchivo';
 
 const BorderCrossingForm = () => {
+  const [documentos, setDocumentos] = useState({});
+  const [modalAbierto, setModalAbierto] = useState(false);
+  const [campoActual, setCampoActual] = useState(null);
+  
   const [formData, setFormData] = useState({
     Driver: '',
     truck: '',
@@ -9,6 +14,7 @@ const BorderCrossingForm = () => {
     company: '',
     ci_number: '',
     ima_invoice: '',
+    travel_direction: '', 
     warehouse_origin: '',
     warehouse_destination: '',
     origin: '',
@@ -28,6 +34,19 @@ const BorderCrossingForm = () => {
     rate_tarifa: '',
     millas_pc_miller: '',
   });
+
+  const handleGuardarDocumento = (campo, data) => {
+    setDocumentos(prev => ({
+      ...prev,
+      [campo]: data
+    }));
+  };
+
+  const abrirModal = (campo) => {
+    setCampoActual(campo);
+    setModalAbierto(true);
+  };
+
 
   const setForm = (name, value) => {
     setFormData(prevData => ({
@@ -54,36 +73,63 @@ const BorderCrossingForm = () => {
       <div className="input-columns">
         <div className="column">
           <label htmlFor="Driver">Driver:</label>
-          <input
+          <select
+            value={formData.Driver}
+            onChange={handleChange}
+            name='Driver'
+            >
+            <option value="">Driver 1</option>
+            <option value="opcion1">Driver 2</option>
+            <option value="opcion2">Driver 3</option>
+          </select>
+          {/* <input
             type="text"
             id="Driver"
             name="Driver"
             value={formData.Driver}
             onChange={handleChange}
             placeholder="Driver"
-          />
+          /> */}
         </div>
         <div className="column">
           <label htmlFor="truck">Truck:</label>
-          <input
+          <select
+            value={formData.Truck}
+            onChange={handleChange}
+            name='Truck'
+            >
+            <option value="">Truck 1</option>
+            <option value="opcion1">Truck 2</option>
+            <option value="opcion2">Truck 3</option>
+          </select>
+          {/* <input
             type="text"
             id="truck"
             name="truck"
             value={formData.truck}
             onChange={handleChange}
             placeholder="Truck"
-          />
+          /> */}
         </div>
         <div className="column">
           <label htmlFor="trailer">Trailer:</label>
-          <input
+          <select
+            value={formData.trailer}
+            onChange={handleChange}
+            name='Trailer'
+            >
+            <option value="">Trailer 1</option>
+            <option value="opcion1">Trailer 2</option>
+            <option value="opcion2">Trailer 3</option>
+          </select>
+          {/* <input
             type="text"
             id="trailer"
             name="trailer"
             value={formData.trailer}
             onChange={handleChange}
             placeholder="Trailer"
-          />
+          /> */}
         </div>
         <div className="column">
           <label htmlFor="company">Company:</label>
@@ -120,6 +166,27 @@ const BorderCrossingForm = () => {
             onChange={handleChange}
             placeholder="IMA Invoice"
           />
+        </div>
+
+        <div className="column">
+          <label htmlFor="Driver">Travel Directiom:</label>
+          <select
+            value={formData.travel_direction}
+            onChange={handleChange}
+            name='travel_direction'
+            >
+            <option value="">Travel Direction</option>
+            <option value="opcion1">Going Up</option>
+            <option value="opcion2">Going Down</option>
+          </select>
+          {/* <input
+            type="text"
+            id="Driver"
+            name="Driver"
+            value={formData.Driver}
+            onChange={handleChange}
+            placeholder="Driver"
+          /> */}
         </div>
       </div>
 
@@ -229,101 +296,126 @@ const BorderCrossingForm = () => {
       <div className="input-columns">
         <div className="column">
           <label htmlFor="carta_porte">Carta Porte:</label>
-          <input
+          <button type="button" onClick={() => abrirModal('carta_porte')}>Subir documento</button>
+            {documentos.carta_porte && (
+              <p>{documentos.carta_porte.fileName} - {documentos.carta_porte.vencimiento}</p>
+            )}
+          {/* <input
             type="text"
             id="carta_porte"
             name="carta_porte"
             value={formData.carta_porte}
             onChange={handleChange}
             placeholder="Carta Porte"
-          />
+          /> */}
         </div>
         <div className="column">
-          <label htmlFor="CI">CI:</label>
-          <input
+          <label htmlFor="ci">CI:</label>
+          <button type="button" onClick={() => abrirModal('ci')}>Subir documento</button>
+            {documentos.ci && (
+              <p>{documentos.ci.fileName} - {documentos.ci.vencimiento}</p>
+            )}
+          {/* <input
             type="text"
             id="ci"
             name="ci"
             value={formData.ci}
             onChange={handleChange}
             placeholder="CI"
-          />
+          /> */}
         </div>
       </div>
 
       <div className="input-columns">
         <div className="column">
           <label htmlFor="entry">Entry:</label>
-          <input
+          <button type="button" onClick={() => abrirModal('entry')}>Subir documento</button>
+            {documentos.entry && (
+              <p>{documentos.entry.fileName} - {documentos.entry.vencimiento}</p>
+            )}
+          {/* <input
             type="text"
             id="entry"
             name="entry"
             value={formData.entry}
             onChange={handleChange}
             placeholder="Entry"
-          />
+          /> */}
         </div>
         <div className="column">
           <label htmlFor="manifiesto">Manifiesto:</label>
-          <input
+          <button type="button" onClick={() => abrirModal('manifiesto')}>Subir documento</button>
+            {documentos.manifiesto && (
+              <p>{documentos.manifiesto.fileName} - {documentos.manifiesto.vencimiento}</p>
+            )}
+          {/* <input
             type="text"
             id="manifiesto"
             name="manifiesto"
             value={formData.manifiesto}
             onChange={handleChange}
             placeholder="Manifiesto"
-          />
+          /> */}
         </div>
       </div>
 
       <div className="input-columns">
         <div className="column">
           <label htmlFor="cita_entrega">Cita Entrega:</label>
-          <input
+          <button type="button" onClick={() => abrirModal('cita_entrega')}>Subir documento</button>
+            {documentos.cita_entrega && (
+              <p>{documentos.cita_entrega.fileName} - {documentos.cita_entrega.vencimiento}</p>
+            )}
+          
+          {/* <input
             type="text"
             id="cita_entrega"
             name="cita_entrega"
             value={formData.cita_entrega}
             onChange={handleChange}
             placeholder="Cita entrega"
-          />
+          /> */}
         </div>
         <div className="column">
           <label htmlFor="bl">BL:</label>
-          <input
+          <button type="button" onClick={() => abrirModal('bl')}>Subir documento</button>
+            {documentos.bl && (
+              <p>{documentos.bl.fileName} - {documentos.bl.vencimiento}</p>
+            )}
+          {/* <input
             type="text"
             id="bl"
             name="bl"
             value={formData.bl}
             onChange={handleChange}
             placeholder="BL"
-          />
+          /> */}
         </div>
         <div className="column">
           <label htmlFor="order_retiro">Orden de Retiro:</label>
-          <input
+          <button type="button" onClick={() => abrirModal('order_retiro')}>Subir documento</button>
+            {documentos.order_retiro && (
+              <p>{documentos.order_retiro.fileName} - {documentos.order_retiro.vencimiento}</p>
+            )}
+          {/* <input
             type="text"
             id="order_retiro"
             name="order_retiro"
             value={formData.order_retiro}
             onChange={handleChange}
             placeholder="Orden de Retiro"
-          />
+          /> */}
         </div>
       </div>
 
       <span className="card-label">Informacion de finalizacion de viaje</span>
       <div className="input-columns">
         <div className="column">
-          <label htmlFor="bl_firmado">BL Firmado:</label>
-          <input
-            type="text"
-            id="bl_firmado"
-            name="bl_firmado"
-            value={formData.bl_firmado}
-            onChange={handleChange}
-            placeholder="BL Firmado"
-          />
+          <label htmlFor="BL_Firmado">BL Firmado:</label>
+          <button type="button" onClick={() => abrirModal('bl_firmado')}>Subir documento</button>
+            {documentos.bl_firmado && (
+              <p>{documentos.bl_firmado.fileName} - {documentos.bl_firmado.vencimiento}</p>
+            )}
         </div>
         <div className="column">
           <label htmlFor="rate_tarifa">Rate Tarifa:</label>
@@ -347,6 +439,13 @@ const BorderCrossingForm = () => {
         </div>
       </div>
       {/* <button type="submit">Guardar Border Crossing</button> */}
+      <ModalArchivo
+          isOpen={modalAbierto}
+          onClose={() => setModalAbierto(false)}
+          onSave={(data) => handleGuardarDocumento(campoActual, data)}
+          nombreCampo={campoActual}
+          valorActual={documentos[campoActual]}
+        />
     </form>
   );
 };

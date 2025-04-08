@@ -1,13 +1,19 @@
 import React, { useState } from 'react';
 import './css/TripForm.css';
+import ModalArchivo from './ModalArchivo';
 
 const TripForm = () => {
+  const [documentos, setDocumentos] = useState({});
+  const [modalAbierto, setModalAbierto] = useState(false);
+  const [campoActual, setCampoActual] = useState(null);
+
   const [formData, setFormData] = useState({
     Driver: '',
     truck: '',
     trailer: '',
     company: '',
     ci_number: '',
+    travel_direction: '', 
     ima_invoice: '',
     warehouse_origin: '',
     warehouse_destination: '',
@@ -28,6 +34,18 @@ const TripForm = () => {
     rate_tarifa: '',
     millas_pc_miller: '',
   });
+
+  const handleGuardarDocumento = (campo, data) => {
+    setDocumentos(prev => ({
+      ...prev,
+      [campo]: data
+    }));
+  };
+
+  const abrirModal = (campo) => {
+    setCampoActual(campo);
+    setModalAbierto(true);
+  };
 
   const setForm = (name, value) => {
     setFormData(prevData => ({
@@ -53,36 +71,63 @@ const TripForm = () => {
       <div className="input-columns">
         <div className="column">
           <label htmlFor="Driver">Driver:</label>
-          <input
+          <select
+          value={formData.Driver}
+          onChange={handleChange}
+          name='Driver'
+          >
+          <option value="">Driver 1</option>
+          <option value="opcion1">Driver 2</option>
+          <option value="opcion2">Driver 3</option>
+        </select>
+          {/* <input
             type="text"
             id="Driver"
             name="Driver"
             value={formData.Driver}
             onChange={handleChange}
             placeholder="Driver"
-          />
+          /> */}
         </div>
         <div className="column">
           <label htmlFor="truck">Truck:</label>
-          <input
+          <select
+          value={formData.truck}
+          onChange={handleChange}
+          name='truck'
+          >
+          <option value="">Truck 1</option>
+          <option value="opcion1">Truck 2</option>
+          <option value="opcion2">Truck 3</option>
+        </select>
+          {/* <input
             type="text"
             id="truck"
             name="truck"
             value={formData.truck}
             onChange={handleChange}
             placeholder="Truck"
-          />
+          /> */}
         </div>
         <div className="column">
           <label htmlFor="trailer">Trailer:</label>
-          <input
+          <select
+          value={formData.trailer}
+          onChange={handleChange}
+          name='trailer'
+          >
+          <option value="">Trailer 1</option>
+          <option value="opcion1">Trailer 2</option>
+          <option value="opcion2">Trailer 3</option>
+        </select>
+          {/* <input
             type="text"
             id="trailer"
             name="trailer"
             value={formData.trailer}
             onChange={handleChange}
             placeholder="Trailer"
-          />
+          /> */}
         </div>
         <div className="column">
           <label htmlFor="company">Company:</label>
@@ -120,6 +165,29 @@ const TripForm = () => {
             placeholder="IMA Invoice"
           />
         </div>
+
+        <div className="column">
+          <label htmlFor="Driver">Travel Directiom:</label>
+          <select
+            value={formData.travel_direction}
+            onChange={handleChange}
+            name='travel_direction'
+            >
+            <option value="">Travel Direction</option>
+            <option value="opcion1">Going Up</option>
+            <option value="opcion2">Going Down</option>
+          </select>
+          {/* <input
+            type="text"
+            id="Driver"
+            name="Driver"
+            value={formData.Driver}
+            onChange={handleChange}
+            placeholder="Driver"
+          /> */}
+        
+      </div>
+        
       </div>
 
       <span className="card-label">Origin / Destination </span>
@@ -238,14 +306,18 @@ const TripForm = () => {
         </div> */}
         <div className="column">
           <label htmlFor="CI">CI:</label>
-          <input
+          <button type="button" onClick={() => abrirModal('ci')}>Subir documento</button>
+            {documentos.ci && (
+              <p>{documentos.ci.fileName} - {documentos.ci.vencimiento}</p>
+            )}
+          {/* <input
             type="text"
             id="ci"
             name="ci"
             value={formData.ci}
             onChange={handleChange}
             placeholder="CI"
-          />
+          /> */}
         </div>
       </div>
 
@@ -277,36 +349,48 @@ const TripForm = () => {
       <div className="input-columns">
         <div className="column">
           <label htmlFor="cita_entrega">Cita Entrega:</label>
-          <input
+          <button type="button" onClick={() => abrirModal('cita_entrega')}>Subir documento</button>
+            {documentos.cita_entrega && (
+              <p>{documentos.cita_entrega.fileName} - {documentos.cita_entrega.vencimiento}</p>
+            )}
+          {/* <input
             type="text"
             id="cita_entrega"
             name="cita_entrega"
             value={formData.cita_entrega}
             onChange={handleChange}
             placeholder="Cita entrega"
-          />
+          /> */}
         </div>
         <div className="column">
           <label htmlFor="bl">BL:</label>
-          <input
+          <button type="button" onClick={() => abrirModal('bl')}>Subir documento</button>
+            {documentos.bl && (
+              <p>{documentos.bl.fileName} - {documentos.bl.vencimiento}</p>
+            )}
+          {/* <input
             type="text"
             id="bl"
             name="bl"
             value={formData.bl}
             onChange={handleChange}
             placeholder="BL"
-          />
+          /> */}
         </div>
         <div className="column">
           <label htmlFor="order_retiro">Orden de Retiro:</label>
-          <input
+          <button type="button" onClick={() => abrirModal('order_retiro')}>Subir documento</button>
+            {documentos.order_retiro && (
+              <p>{documentos.order_retiro.fileName} - {documentos.order_retiro.vencimiento}</p>
+            )}
+          {/* <input
             type="text"
             id="order_retiro"
             name="order_retiro"
             value={formData.order_retiro}
             onChange={handleChange}
             placeholder="Orden de Retiro"
-          />
+          /> */}
         </div>
       </div>
 
@@ -314,14 +398,10 @@ const TripForm = () => {
       <div className="input-columns">
         <div className="column">
           <label htmlFor="bl_firmado">BL Firmado:</label>
-          <input
-            type="text"
-            id="bl_firmado"
-            name="bl_firmado"
-            value={formData.bl_firmado}
-            onChange={handleChange}
-            placeholder="BL Firmado"
-          />
+          <button type="button" onClick={() => abrirModal('bl_firmado')}>Subir documento</button>
+            {documentos.bl_firmado && (
+              <p>{documentos.bl_firmado.fileName} - {documentos.bl_firmado.vencimiento}</p>
+            )}
         </div>
         <div className="column">
           <label htmlFor="rate_tarifa">Rate Tarifa:</label>
@@ -344,6 +424,13 @@ const TripForm = () => {
           />
         </div>
       </div>
+      <ModalArchivo
+          isOpen={modalAbierto}
+          onClose={() => setModalAbierto(false)}
+          onSave={(data) => handleGuardarDocumento(campoActual, data)}
+          nombreCampo={campoActual}
+          valorActual={documentos[campoActual]}
+        />
       {/* <button type="submit">Guardar Viaje</button> */}
     </form>
   );
