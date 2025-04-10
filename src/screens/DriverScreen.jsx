@@ -125,6 +125,7 @@ const DriverScreen = () => {
       } catch (error) {
         console.error(`Error al enviar ${tipo_documento}:`, error);
       }
+      
     }
   };
   const handleSubmit = async () => {
