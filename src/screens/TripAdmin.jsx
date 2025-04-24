@@ -1,19 +1,10 @@
-import React, { useState } from "react";
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TextField, Button, TablePagination } from "@mui/material";
+import React, { useState, useEffect } from "react";
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TablePagination } from "@mui/material";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import dayjs from "dayjs";
 import './css/TripAdmin.css';
-const drivers = [
-    { id: "08-2025", ccp: "002", truck: "002", trailer: "BIND61794", assigned_to: "MANUEL JIMENEZ", customer: "BIMBO", ci_number: "CBI2SAADBNB", invoice: "844", status: "Active", date: new Date(2025, 0, 31), name: "Roberto Arreola" },
-    { id: "07-2025", ccp: "002", truck: "002", trailer: "BIND61794", assigned_to: "ROBERTO LOPEZ", customer: "BIMBO", ci_number: "CBI2SAADBNB", invoice: "844", status: "On Route", date: new Date(2025, 0, 31), name: "Manuel Jimenez" },
-    { id: '06-2025', ccp: '002', truck: '002', trailer: 'BIND61794', assigned_to: 'ANDRES CARILLO', customer: 'BIMBO', ci_number: 'CBI2SAADBNB', invoice: '844', status: 'On Route', date: new Date(2025, 0, 25), name: 'Roberto Lopez' },
-    { id: '05-2025', ccp: '002', truck: '002', trailer: 'BIND61794', assigned_to: 'MANUEL JIMENEZ', customer: 'BIMBO', ci_number: 'CBI2SAADBNB', invoice: '844', status: 'On Route', date: new Date(2025, 0, 1), name: 'Vicente Lara' },
-    { id: '04-2025', ccp: '002', truck: '002', trailer: 'BIND61794', assigned_to: 'MANUEL JIMENEZ', customer: 'BIMBO', ci_number: 'CBI2SAADBNB', invoice: '844', status: 'On Route', date: new Date(2025, 0, 31), name: 'Julian Vela' },
-    { id: '03-2025', ccp: '002', truck: '002', trailer: 'BIND61794', assigned_to: 'ALEJANDRO RODRIGUEZ', customer: 'BIMBO', ci_number: 'CBI2SAADBNB', invoice: '844', status: 'Active', date: new Date(2024, 1, 22), name: 'Andres Gonzalez' },
-    { id: '02-2025', ccp: '002', truck: '002', trailer: 'BIND61794', assigned_to: 'MANUEL JIMENEZ', customer: 'BIMBO', ci_number: 'CBI2SAADBNB', invoice: '844', status: 'Out of Service', date: new Date(2024, 1, 31), name: 'Alejandro Arenas' },
-    { id: '01-2025', ccp: '002', truck: '002', trailer: 'BIND61794', assigned_to: 'MANUEL JIMENEZ', customer: 'BIMBO', ci_number: 'CBI2SAADBNB', invoice: '844', status: 'On Vacation', date: new Date(2024, 0, 31), name: 'Luis Vazquez' }
-];
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 
 const TripAdmin = () => {
     const [search, setSearch] = useState("");
@@ -21,26 +12,78 @@ const TripAdmin = () => {
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [startDate, setStartDate] = useState(null);
     const [endDate, setEndDate] = useState(null);
+    const [trips, setTrips] = useState([]);
+    const navigate = useNavigate(); // Initialize useNavigate
 
-    const filteredDrivers = drivers.filter(driver => {
-        const matchesSearch = driver.assigned_to.toLowerCase().includes(search.toLowerCase());
-        const withinDateRange = startDate && endDate ? driver.date >= startDate && driver.date <= endDate : true;
+    useEffect(() => {
+        const fetchTrips = async () => {
+            try {
+                const response = await fetch('http://localhost/api/trips.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: 'op=getAll',
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success' && data.trips) {
+                    console.log(data.trips)
+                    const formattedTrips = data.trips.map(trip => ({
+                        trip_id: trip.trip_id.toString(),
+                        trip_number: trip.trip_number,
+                        truck_unidad: trip.truck_unidad || '',
+                        caja_no_caja: trip.caja_no_caja || '',
+                        driver_name: trip.driver_name || '',
+                        nombre_compania: trip.nombre_compania || '',
+                        company_name: trip.company_name || '',
+                        ci_number: trip.ci_number || '',
+                        estatus: trip.estatus || '',
+                        creation_date: trip.creation_date ? new Date(trip.creation_date) : null,
+                       
+                    }));
+                    setTrips(formattedTrips);
+                } else {
+                    console.error('Error al obtener los viajes:', data.message || 'Respuesta inesperada del servidor');
+                }
+            } catch (error) {
+                console.error('Error de red al obtener los viajes:', error);
+            }
+        };
+
+        fetchTrips();
+    }, []);
+
+    const filteredTrips = trips.filter(trip => { // Usar 'trips' y renombrar a 'filteredTrips'
+        const matchesSearch =
+            (trip.trip_id || '').toLowerCase().includes(search.toLowerCase()) ||
+            (trip.trip_number || '').toLowerCase().includes(search.toLowerCase()) ||
+            (trip.truck_unidad || '').toLowerCase().includes(search.toLowerCase()) ||
+            (trip.driver_name || '').toLowerCase().includes(search.toLowerCase()) ||
+            (trip.caja_no_caja || '').toLowerCase().includes(search.toLowerCase()) 
+            (trip.nombre_compania || '').toLowerCase().includes(search.toLowerCase()) ||
+            (trip.company_name || '').toLowerCase().includes(search.toLowerCase()) ||
+            (trip.ci_number || '').toLowerCase().includes(search.toLowerCase()) ||
+            (trip.estatus || '').toLowerCase().includes(search.toLowerCase()) ||
+            (trip.creation_date || '').toLowerCase().includes(search.toLowerCase());
+        const withinDateRange = startDate && endDate ? trip.date >= startDate && trip.date <= endDate : true;
         return matchesSearch && withinDateRange;
     });
 
+    const handleEditTrip = (tripId) => {
+        navigate(`/edit-trip/${tripId}`);
+    };
+
     return (
-        
-            <div className="trip-admin">
-                <h1 className="title">Administrador de conductores</h1>
-    
-                <div className="filters">
+        <div className="trip-admin">
+            <h1 className="title">Administrador de Viajes</h1>
+
+            <div className="filters">
                 <input
-                type="text"
-                    placeholder="Buscar por nombre"
-                    // variant="outlined"
+                    type="text"
+                    placeholder="Buscar"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="small-input" 
+                    className="small-input"
                 />
                 <div className="date-pickers">
                     <DatePicker
@@ -50,7 +93,6 @@ const TripAdmin = () => {
                         startDate={startDate}
                         endDate={endDate}
                         placeholderText="Fecha inicio"
-                       
                     />
                     <DatePicker
                         selected={endDate}
@@ -60,49 +102,48 @@ const TripAdmin = () => {
                         endDate={endDate}
                         placeholderText="Fecha fin"
                     />
-
-                <Button variant="contained" onClick={() => { setStartDate(null); setEndDate(null); }} style={{ marginLeft: '10px' }}>
-                    Limpiar Filtro
-                </Button>
+                    <Button variant="contained" onClick={() => { setStartDate(null); setEndDate(null); }} style={{ marginLeft: '10px' }}>
+                        Limpiar Filtro
+                    </Button>
                 </div>
-                
             </div>
 
             <TableContainer component={Paper}>
                 <Table>
                     <TableHead>
                         <TableRow>
-                            {['TRIP NUMBER', 'CCP', 'TRUCK', 'TRAILER', 'ASSIGNED TO', 'CUSTOMER', 'CI NUMBER', 'INVOICE', 'STATUS', 'DATE'].map((title, index) => (
+                            {['TRIP NUMBER', 'TRUCK', 'TRAILER', 'DRIVER ID', 'COMPANY', 'CI NUMBER', 'STATUS', 'DATE', 'ACTIONS'].map((title, index) => (
                                 <TableCell key={index}><strong>{title}</strong></TableCell>
                             ))}
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {filteredDrivers.slice(page * rowsPerPage, (page + 1) * rowsPerPage).map(driver => (
-                            <TableRow key={driver.id}>
-                                <TableCell>{driver.id}</TableCell>
-                                <TableCell>{driver.ccp}</TableCell>
-                                <TableCell>{driver.truck}</TableCell>
-                                <TableCell>{driver.trailer}</TableCell>
-                                <TableCell>{driver.assigned_to}</TableCell>
-                                <TableCell>{driver.customer}</TableCell>
-                                <TableCell>{driver.ci_number}</TableCell>
-                                <TableCell>{driver.invoice}</TableCell>
-                                <TableCell>{driver.status}</TableCell>
-                                <TableCell>{dayjs(driver.date).format("MM/DD/YYYY")}</TableCell>
+                        {filteredTrips.slice(page * rowsPerPage, (page + 1) * rowsPerPage).map(trip => ( // Usar 'filteredTrips' y 'trip'
+                            <TableRow key={trip.trip_id}>
+                                <TableCell>{trip.trip_number}</TableCell>
+                                <TableCell>{trip.truck_unidad}</TableCell>
+                                <TableCell>{trip.caja_no_caja}</TableCell>
+                                <TableCell>{trip.driver_name}</TableCell>
+                                <TableCell>{trip.nombre_compania}</TableCell>
+                                <TableCell>{trip.ci_number}</TableCell>
+                                <TableCell>{trip.estatus}</TableCell> 
+                                <TableCell>{dayjs(trip.creation_date).format("MM/DD/YYYY")}</TableCell>
+                                <TableCell>
+                                    <Button size="small" onClick={() => handleEditTrip(trip.id)}>Editar</Button> 
+                                </TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
                 </Table>
             </TableContainer>
 
-            <TablePagination 
-                component="div" 
-                count={filteredDrivers.length} 
-                page={page} 
-                onPageChange={(_, newPage) => setPage(newPage)} 
-                rowsPerPage={rowsPerPage} 
-                onRowsPerPageChange={(e) => setRowsPerPage(parseInt(e.target.value, 10))} 
+            <TablePagination
+                component="div"
+                count={filteredTrips.length} 
+                page={page}
+                onPageChange={(_, newPage) => setPage(newPage)}
+                rowsPerPage={rowsPerPage}
+                onRowsPerPageChange={(e) => setRowsPerPage(parseInt(e.target.value, 10))}
             />
         </div>
     );
