@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-// import Select from 'react-select';
+import React, { useState, useEffect } from 'react';
+import Select from 'react-select';
 import './css/TripForm.css';
 import ModalArchivo from './ModalArchivo';
 import useFetchActiveDrivers from '../hooks/useFetchActiveDrivers';
@@ -29,8 +29,8 @@ const TripForm = ({ tripNumber }) => {
     ci_number: '',
     travel_direction: '',
     ima_invoice: '',
-    warehouse_origin: '',
-    warehouse_destination: '',
+    warehouse_origin_id: '',
+    warehouse_destination_id: '',
     origin: '',
     Destination: '',
     zip_code_origin: '',
@@ -101,61 +101,101 @@ const TripForm = ({ tripNumber }) => {
       <div className="input-columns">
         <div className="column">
           <label htmlFor="Driver">Driver:</label>
-          <select
-            id="driver_id"
-            name="driver_id"
-            value={formData.driver_id}
-            onChange={handleChange}>
-            <option value="">Seleccionar Conductor</option>
-            {activeDrivers.map(driver => (
-              <option key={driver.driver_id} value={driver.driver_id}>{driver.nombre}</option>
-            ))}
-          </select>
+          <Select
+          id="driver_id"
+          name="driver_id"
+          value={activeDrivers.find(option => option.driver_id === formData.driver_id) ? { value: formData.driver_id, label: activeDrivers.find(option => option.driver_id === formData.driver_id).nombre } : null}
+          onChange={(selectedOption) => {
+            setForm('driver_id', selectedOption ? selectedOption.value : '');
+          }}
+          options={activeDrivers.map(driver => ({ value: driver.driver_id, label: driver.nombre }))}
+          placeholder="Seleccionar Conductor"
+          styles={{
+              control: (provided) => ({
+                ...provided,
+                padding: '4px',
+                // marginBottom: '25px',
+                borderRadius: '5px',
+                border: '1px solid #ccc',
+                fontSize: '16px',
+                
+              })
+            }}
+        />
 
         </div>
         <div className="column">
           <label htmlFor="truck">Truck:</label>
-          <select
-            id="truck_id"
-            name="truck_id"
-            value={formData.truck_id}
-            onChange={handleChange}
-          >
-            <option value="">Seleccionar Truck</option>
-            {activeTrucks.map(truck => (
-              <option key={truck.truck_id} value={truck.truck_id}>{truck.unidad}</option>
-            ))}
-          </select>
-
+          <Select
+          id="truck_id"
+          name="truck_id"
+          value={activeTrucks.find(option => option.truck_id === formData.truck_id) ? { value: formData.truck_id, label: activeTrucks.find(option => option.truck_id === formData.truck_id).unidad } : null}
+          onChange={(selectedOption) => {
+            setForm('truck_id', selectedOption ? selectedOption.value : '');
+          }}
+          options={activeTrucks.map(truck => ({ value: truck.truck_id, label: truck.unidad }))}
+          placeholder="Seleccionar Truck"
+          styles={{
+            control: (provided) => ({
+              ...provided,
+              padding: '4px',
+              // marginBottom: '25px',
+              borderRadius: '5px',
+              border: '1px solid #ccc',
+              fontSize: '16px',
+              
+            })
+          }}
+        />
         </div>
         <div className="column">
           <label htmlFor="trailer">Trailer:</label>
-          <select
-            id="caja_id"
-            name="caja_id"
-            value={formData.caja_id}
-            onChange={handleChange}
-          >
-            <option value="">Seleccionar Trailer</option>
-            {activeTrailers.map(caja => (
-              <option key={caja.caja_id} value={caja.caja_id}>{caja.no_caja}</option>
-            ))}
-          </select>
+          <Select
+          id="caja_id"
+          name="caja_id"
+          value={activeTrailers.find(option => option.caja_id === formData.caja_id) ? { value: formData.caja_id, label: activeTrailers.find(option => option.caja_id === formData.caja_id).no_caja } : null}
+          onChange={(selectedOption) => {
+            setForm('caja_id', selectedOption ? selectedOption.value : '');
+          }}
+          options={activeTrailers.map(caja => ({ value: caja.caja_id, label: caja.no_caja }))}
+          placeholder="Seleccionar Trailer"
+          styles={{
+            control: (provided) => ({
+              ...provided,
+              padding: '4px',
+              // marginBottom: '25px',
+              borderRadius: '5px',
+              border: '1px solid #ccc',
+              fontSize: '16px',
+              
+            })
+          }}
+        />
 
         </div>
         <div className="column">
           <label htmlFor="company">Company:</label>
-          <select
-            id="company"
-            name="company"
-            value={formData.company}
-            onChange={handleChange}
-          >
-            <option value="">Seleccionar Company</option>
-            {activeCompanies.map(company => (
-              <option key={company.company_id} value={company.company_id}>{company.nombre_compania}</option>
-            ))}
-          </select>
+          <Select
+            id="company_id"
+            name="company_id"
+            value={activeCompanies.find(option => option.company_id === formData.company_id) ? { value: formData.company_id, label: activeCompanies.find(option => option.company_id === formData.company_id).nombre_compania } : null}
+            onChange={(selectedOption) => setForm('company_id', selectedOption ? selectedOption.value : '')}
+            options={activeCompanies.map(company => ({ value: company.company_id, label: company.nombre_compania }))}
+            placeholder="Seleccionar Company"
+            isLoading={loadingCompanies}
+            isDisabled={loadingCompanies || errorCompanies}
+            styles={{
+              control: (provided) => ({
+                ...provided,
+                padding: '4px',
+                // marginBottom: '25px',
+                borderRadius: '5px',
+                border: '1px solid #ccc',
+                fontSize: '16px',
+                
+              })
+            }}
+          />
         </div>
       </div>
 
@@ -182,15 +222,27 @@ const TripForm = ({ tripNumber }) => {
 
         <div className="column">
           <label htmlFor="Driver">Travel Directiom:</label>
-          <select
-            value={formData.travel_direction}
-            onChange={handleChange}
-            name='travel_direction'
-          >
-            <option value="">Travel Direction</option>
-            <option value="opcion1">Going Up</option>
-            <option value="opcion2">Going Down</option>
-          </select>
+          <Select
+            value={formData.travel_direction ? { value: formData.travel_direction, label: formData.travel_direction } : null}
+            onChange={(selectedOption) => setForm('travel_direction', selectedOption ? selectedOption.value : '')}
+            options={[
+              { value: 'Going Up', label: 'Going Up' },
+              { value: 'Going Down', label: 'Going Down' },
+            ]}
+            name="travel_direction"
+            placeholder="Travel Direction"
+            styles={{
+              control: (provided) => ({
+                ...provided,
+                padding: '4px',
+                // marginBottom: '25px',
+                borderRadius: '5px',
+                border: '1px solid #ccc',
+                fontSize: '16px',
+                
+              })
+            }}
+          />
 
         </div>
 
@@ -200,31 +252,52 @@ const TripForm = ({ tripNumber }) => {
       <div className="input-columns">
         <div className="column">
           <label htmlFor="warehouse_origin">Warehouse:</label>
-          <select
-            id="warehouse_origin"
-            name="warehouse_origin"
-            value={formData.warehouse_origin}
-            onChange={handleChange}
-          >
-            <option value="">Seleccionar Warehouse</option>
-            {activeWarehouses.map(warehouse => (
-              <option key={warehouse.warehouse_id} value={warehouse.warehouse_id}>{warehouse.nombre_almacen}</option>
-            ))}
-          </select>
+          <Select
+            id="warehouse_origin_id"
+            name="warehouse_origin_id"
+            value={activeWarehouses.find(option => option.warehouse_id === formData.warehouse_origin_id) ? { value: formData.warehouse_origin_id, label: activeWarehouses.find(option => option.warehouse_id === formData.warehouse_origin_id).nombre_almacen } : null}
+            onChange={(selectedOption) => setForm('warehouse_origin_id', selectedOption ? selectedOption.value : '')}
+            options={activeWarehouses.map(warehouse => ({ value: warehouse.warehouse_id, label: warehouse.nombre_almacen }))}
+            placeholder="Seleccionar Warehouse"
+            isLoading={loadingWarehouses}
+            isDisabled={loadingWarehouses || errorWarehouses}
+            styles={{
+              control: (provided) => ({
+                ...provided,
+                padding: '4px',
+                // marginBottom: '25px',
+                borderRadius: '5px',
+                border: '1px solid #ccc',
+                fontSize: '16px',
+                
+              })
+            }}
+
+          />
         </div>
         <div className="column">
           <label htmlFor="warehouse_destination">Warehouse:</label>
-          <select
-            id="warehouse_destination"
-            name="warehouse_destination"
-            value={formData.warehouse_destination}
-            onChange={handleChange}
-          >
-            <option value="">Seleccionar Warehouse</option>
-            {activeWarehouses.map(warehouse => (
-              <option key={warehouse.warehouse_id} value={warehouse.warehouse_id}>{warehouse.nombre_almacen}</option>
-            ))}
-          </select>
+          <Select
+            id="warehouse_destination_id"
+            name="warehouse_destination_id"
+            value={activeWarehouses.find(option => option.warehouse_id === formData.warehouse_destination_id) ? { value: formData.warehouse_destination_id, label: activeWarehouses.find(option => option.warehouse_id === formData.warehouse_destination_id).nombre_almacen } : null}
+            onChange={(selectedOption) => setForm('warehouse_destination_id', selectedOption ? selectedOption.value : '')}
+            options={activeWarehouses.map(warehouse => ({ value: warehouse.warehouse_id, label: warehouse.nombre_almacen }))}
+            placeholder="Seleccionar Warehouse"
+            isLoading={loadingWarehouses}
+            isDisabled={loadingWarehouses || errorWarehouses}
+            styles={{
+              control: (provided) => ({
+                ...provided,
+                padding: '4px',
+                // marginBottom: '25px',
+                borderRadius: '5px',
+                border: '1px solid #ccc',
+                fontSize: '16px',
+                
+              })
+            }}
+          />
         </div>
       </div>
 

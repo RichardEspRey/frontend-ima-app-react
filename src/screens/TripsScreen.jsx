@@ -28,7 +28,7 @@ const TripScreen = () => {
             <span className="trip-label">Trip Number</span>
             <input 
             className="trip-input" 
-            placeholder="Enter trip number" 
+            placeholder="Enter trip number: 2025-01" 
             value={tripNumber}
             id='trip_number'
             onChange={handleTripNumberChange}
