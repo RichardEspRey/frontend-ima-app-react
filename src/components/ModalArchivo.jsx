@@ -1,19 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import './css/ModalArchivo.css';
 
-const ModalArchivo = ({ isOpen, onClose, onSave, nombreCampo, valorActual }) => {
+const ModalArchivo = ({ isOpen, onClose, onSave, nombreCampo, valorActual, mostrarFechaVencimiento = true }) => {
   const [archivo, setArchivo] = useState(null);
   const [fechaVencimiento, setFechaVencimiento] = useState(new Date());
   const [previewUrl, setPreviewUrl] = useState(null);
+  const fileInputRef = useRef(null); 
 
   useEffect(() => {
-    if (valorActual) {
-      setFechaVencimiento(valorActual.vencimiento ? new Date(valorActual.vencimiento) : new Date());
-      setArchivo(valorActual.file || null);
+    
+    if (isOpen) {
+      setArchivo(null);
+      setPreviewUrl(null);
+      setFechaVencimiento(valorActual?.vencimiento ? new Date(valorActual.vencimiento) : new Date());
     }
-  }, [valorActual]);
+    
+  }, [isOpen, valorActual]); 
+
 
   const handleArchivoChange = (e) => {
     const file = e.target.files[0];
@@ -26,16 +31,26 @@ const ModalArchivo = ({ isOpen, onClose, onSave, nombreCampo, valorActual }) => 
   };
 
   const handleGuardar = () => {
-    if (archivo && fechaVencimiento) {
-      onSave({
+    if (archivo) {
+      const dataToSave = {
         file: archivo,
         fileName: archivo.name,
-        vencimiento: fechaVencimiento.toISOString().split('T')[0]
-      });
+      };
+      if (mostrarFechaVencimiento && fechaVencimiento) {
+        dataToSave.vencimiento = fechaVencimiento.toISOString().split('T')[0];
+      } else if (mostrarFechaVencimiento && !fechaVencimiento) {
+        alert('Por favor, selecciona una fecha de vencimiento.');
+        return;
+      }
+      onSave(dataToSave);
       onClose();
     } else {
       alert('Selecciona un archivo y una fecha');
     }
+  };
+
+  const handleBrowseClick = () => {
+    fileInputRef.current.click(); // Activamos el input file al hacer clic en el botón
   };
 
   if (!isOpen) return null;
@@ -44,25 +59,36 @@ const ModalArchivo = ({ isOpen, onClose, onSave, nombreCampo, valorActual }) => 
     <div className="modal-overlay">
       <div className="modal">
         <div className="modal-header">
-          <h3>Fecha de vencimiento</h3>
+          
           <button onClick={onClose} className="close-button">&times;</button>
         </div>
 
-        <DatePicker
-          selected={fechaVencimiento}
-          onChange={(date) => setFechaVencimiento(date)}
-          dateFormat="yyyy-MM-dd"
-          placeholderText="Ejemplo: 2025-12-31"
-          className="custom-datepicker"
-        />
+
+        {mostrarFechaVencimiento && (
+          <div>
+            <h4>Fecha de vencimiento</h4>
+            <DatePicker
+              selected={fechaVencimiento}
+              onChange={(date) => setFechaVencimiento(date)}
+              dateFormat="yyyy-MM-dd"
+              placeholderText="Ejemplo: 2025-12-31"
+              className="custom-datepicker"
+            />
+          </div>
+        )}
 
         <div className="dropzone">
           <label className="drop-text">
-          <div>Deje aquí sus archivos para cargarlos</div>
-          
-            <input type="file" onChange={handleArchivoChange} style={{ display: 'none' }} accept="application/pdf" />
-            <button className="browse-button">Browse file</button>
+            <div>Deje aquí sus archivos para cargarlos</div>
           </label>
+          <button type='button' className="browse-button" onClick={handleBrowseClick}>Browse file</button> 
+          <input
+            type="file"
+            ref={fileInputRef} 
+            onChange={handleArchivoChange}
+            style={{ display: 'none' }}
+            accept="application/pdf"
+          />
 
           {previewUrl && (
             <div className="archivo-preview">

@@ -4,7 +4,8 @@
   display: flex;
   flex-direction: column;
   padding: 20px;
-  align-items: stretch; /* Make additional card take full width */
+  align-items: stretch;
+  /* Make additional card take full width */
 }
 
 .trip-screen-wrapper {
@@ -65,135 +66,31 @@
   border: 1px solid #ddd;
   border-radius: 8px;
   padding: 20px;
-  width: 100%; 
-  max-width: none; 
+  width: 100%;
+  max-width: none;
 }
 
 .card-container {
   display: flex;
   flex-direction: column;
-  align-items: stretch; 
+  align-items: stretch;
 }
 
-/* .card-label {
-  font-weight: bold;
-  margin-bottom: 10px;
-  font-size: 1.2em;
-  text-align: center; 
-} */
-
-/* .card-label-second{
-
-  font-weight: bold;
-  margin-bottom: 10px;
-  font-size: 1.2em;
-  
-} */
-
-/* .card-description {
-  color: #555;
+.additonal-trip-actions {
+  display: flex;
+  justify-content: flex-end;
   margin-bottom: 15px;
-  text-align: center;
-} */
-
-/* .input-columns {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between; 
-  width: 100%;
-  max-width: none; 
-} */
-
-/* .column {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  padding: 0 10px; 
-} */
-
-/* .column label {
-  font-size: 18px;
-  font-weight: 600;
-  margin-bottom: 5px;
-} */
-
-/* .column input {
-  padding: 15px; 
-  margin-bottom: 25px; 
-  border-radius: 5px;
-  border: 1px solid #ccc;
-  width: 100%; 
-  font-size: 16px; 
-} */
-
-
-/* .driver-admin {
-  padding: 20px;
+  padding-right: 10px;
 }
 
-.title {
-  text-align: center;
-  font-size: 48px;
+.additonal-trip-actions button {
+  padding: 10px 20px;
+  margin-left: 10px;
   font-weight: bold;
-  margin-bottom: 40px;
-}
-
-.toolbar {
-  display: flex;
-  gap: 20px;
-  margin-bottom: 20px;
-  align-items: center;
-}
-
-.toolbar input {
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  width: 300px;
-}
-
-.toolbar select {
-  padding: 10px;
-  border-radius: 5px;
-}
-
-.table-container {
-  background-color: #fff;
-  padding: 20px;
-  border-radius: 8px;
-  border: 1px groove rgb(190, 190, 190);
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-thead th {
-  font-size: 20px;
-  color: #333;
-  border-bottom: 2px solid #ccc;
-  padding: 10px;
-  text-align: left;
-}
-
-tbody td {
-  font-size: 16px;
-  color: #555;
-  padding: 10px;
-  border-bottom: 1px solid #eee;
-}
-
-.pagination {
-  display: flex;
-  justify-content: space-between;
-  padding-top: 20px;
-  align-items: center;
-}
-.icon-btn {
+  border-radius: 6px;
   cursor: pointer;
-}
+  color: white;
+  background-color: white;
+  background-color: #1554e3;
 
-.icon-img {
-  pointer-events: auto;
-} */
+}
