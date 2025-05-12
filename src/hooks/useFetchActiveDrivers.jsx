@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 
 function useFetchActiveDrivers() {
+  const apiHost = import.meta.env.VITE_API_HOST;
   const [activeDrivers, setActiveDrivers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -9,7 +10,7 @@ function useFetchActiveDrivers() {
   useEffect(() => {
     const fetchActiveDrivers = async () => {
       try {
-        const response = await fetch('http://localhost/api/drivers.php', {
+        const response = await fetch(`${apiHost}/drivers.php`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
           body: 'op=getDriversActivos',
@@ -34,7 +35,7 @@ function useFetchActiveDrivers() {
     };
 
     fetchActiveDrivers();
-  }, []);
+  }, [apiHost]);
 
   return { activeDrivers, loading, error };
 }

@@ -22,6 +22,7 @@
   border: 1px solid #ddd;
   border-radius: 8px;
   padding: 20px;
+  width: 25%;
 }
 
 .trip-container {
@@ -32,13 +33,14 @@
 .trip-label {
   font-weight: bold;
   margin-bottom: 5px;
+  font-size: 35px;
 }
 
 .trip-input {
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 5px;
-  width: 200px;
+  font-size: 15px;
 }
 
 .button-container {

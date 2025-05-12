@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './css/DriverAdmin.css';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+// import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import redIcon from '../assets/images/Icons_alerts/shield-red.png'; 
 import greenIcon from '../assets/images/Icons_alerts/shield-green.png'; 
 import yellowIcon from '../assets/images/Icons_alerts/shield-yellow.png'; 
@@ -10,6 +10,7 @@ import questionIcon from '../assets/images/Icons_alerts/question.png';
 import { Tooltip } from 'react-tooltip';
 
 const DriverAdmin = () => {
+  const apiHost = import.meta.env.VITE_API_HOST;
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
   const rowsPerPage = 4;
@@ -22,7 +23,7 @@ const DriverAdmin = () => {
   useEffect(() => {
     const fetchDrivers = async () => {
       try {
-        const response = await fetch('http://localhost/api/drivers.php', {
+        const response = await fetch(`${apiHost}/drivers.php`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
           body: 'op=getAll',

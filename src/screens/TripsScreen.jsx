@@ -50,11 +50,7 @@ const TripScreen = () => {
           {activeForm === 'trip' && <TripForm  tripNumber={tripNumber}/>}
         </div>
 
-        <div className="additonal-trip-actions">
-            <button className="btn-border-crossing">Add Border Crossing</button>
-            <button className="btn-trip">Add Trip</button>
-            <button className="btn-finish">Finish Trip</button>
-        </div>
+       
       </div>
 
     </div>

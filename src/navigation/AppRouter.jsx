@@ -17,6 +17,7 @@ import TruckAdmin from '../screens/TruckAdmin.jsx';
 import TruckScreen from '../screens/TruckScreen.jsx';
 import TrailerScreen from '../screens/TrailerScreen.jsx';
 import TrailerAdmin from '../screens/TrailerAdmin.jsx';
+import EditTripForm from '../screens/EditTripForm.jsx';
 
 const AppRouter = () => {
   const { user, loading } = useContext(AuthContext);
@@ -62,7 +63,7 @@ const AppRouter = () => {
                 }
               />
 
-              
+
               <Route
                 path="/trucks"
                 element={
@@ -91,7 +92,7 @@ const AppRouter = () => {
                 }
               />
 
-              
+
               <Route
                 path="/admin-trailers"
                 element={
@@ -101,7 +102,7 @@ const AppRouter = () => {
                 }
               />
 
-             <Route
+              <Route
                 path="/trips"
                 element={
                   <DashboardLayout>
@@ -119,7 +120,15 @@ const AppRouter = () => {
                 }
               />
 
-              
+              <Route
+                path="/edit-trip/:tripId"
+                element={
+                  <DashboardLayout> 
+                    <EditTripForm /> 
+                  </DashboardLayout>
+                }
+              />
+
 
 
             </>

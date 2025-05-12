@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 
 function useFetchActiveTrucks() {
+  const apiHost = import.meta.env.VITE_API_HOST;
   const [activeTrucks, setActiveTrucks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -9,7 +10,7 @@ function useFetchActiveTrucks() {
   useEffect(() => {
     const fetchActiveTrucks = async () => {
       try {
-        const response = await fetch('http://localhost/api/trucks.php', {
+        const response = await fetch(`${apiHost}/trucks.php`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
           body: 'op=getTrucksActivos',
