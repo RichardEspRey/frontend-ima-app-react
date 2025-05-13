@@ -6,6 +6,7 @@ import Swal from 'sweetalert2';
 
 
 const TrailerScreen = () => {
+  const apiHost = import.meta.env.VITE_API_HOST;
   const [formData, setFormData] = useState({
     numero_caja: '',
     numero_placa: '',
@@ -71,7 +72,7 @@ const TrailerScreen = () => {
 
 
       // Enviar al backend
-      const response = await fetch('http://localhost/api/cajas_docs.php', {
+      const response = await fetch(`${apiHost}/drivers.php`, {
         method: 'POST',
         body: formDataToSend,
       });
@@ -108,7 +109,7 @@ const TrailerScreen = () => {
       // formDataFile.append('documento', file);
 
       try {
-        const response = await fetch('http://localhost/api/drivers_docs.php', {
+        const response = await fetch(`${apiHost}/drivers_docs.php`, {
           method: 'POST',
           body: formDataFile,
         });

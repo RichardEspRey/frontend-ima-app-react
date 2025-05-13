@@ -2,6 +2,10 @@
 import { useState, useEffect } from 'react';
 
 function useFetchWarehouses() {
+<<<<<<< HEAD
+=======
+  const apiHost = import.meta.env.VITE_API_HOST;
+>>>>>>> Aldayr
   const [activeWarehouses, setActiveWarehouses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -9,7 +13,11 @@ function useFetchWarehouses() {
   useEffect(() => {
     const fetchActiveWarehouses = async () => {
       try {
+<<<<<<< HEAD
         const response = await fetch('http://localhost/api/warehouses.php', {
+=======
+        const response = await fetch(`${apiHost}/warehouses.php`, {
+>>>>>>> Aldayr
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
           body: 'op=getWarehouses',

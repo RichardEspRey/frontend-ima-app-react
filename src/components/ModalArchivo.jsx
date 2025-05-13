@@ -79,7 +79,7 @@ const ModalArchivo = ({ isOpen, onClose, onSave, nombreCampo, valorActual, mostr
 
         <div className="dropzone">
           <label className="drop-text">
-            <div>Deje aquí sus archivos para cargarlos</div>
+            <div>Deje aquí sus archivos PDF's para cargarlos</div>
           </label>
           <button type='button' className="browse-button" onClick={handleBrowseClick}>Browse file</button> 
           <input

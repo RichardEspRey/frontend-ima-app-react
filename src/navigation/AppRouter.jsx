@@ -16,6 +16,7 @@ import TruckAdmin from '../screens/TruckAdmin.jsx';
 import TruckScreen from '../screens/TruckScreen.jsx';
 import TrailerScreen from '../screens/TrailerScreen.jsx';
 import TrailerAdmin from '../screens/TrailerAdmin.jsx';
+import EditTripForm from '../screens/EditTripForm.jsx';
 
 const AppRouter = () => {
   const { user, loading } = useContext(AuthContext);
@@ -34,15 +35,101 @@ const AppRouter = () => {
           ) : (
             <>
               <Route path="/" element={<Navigate to="/home" replace />} />
-              <Route path="/home" element={<DashboardLayout><HomeScreen /></DashboardLayout>} />
-              <Route path="/drivers" element={<DashboardLayout><DriverScreen /></DashboardLayout>} />
-              <Route path="/admin-drivers" element={<DashboardLayout><DriverAdmin /></DashboardLayout>} />
-              <Route path="/trucks" element={<DashboardLayout><TruckScreen /></DashboardLayout>} />
-              <Route path="/admin-trucks" element={<DashboardLayout><TruckAdmin /></DashboardLayout>} />
-              <Route path="/trailers" element={<DashboardLayout><TrailerScreen /></DashboardLayout>} />
-              <Route path="/admin-trailers" element={<DashboardLayout><TrailerAdmin /></DashboardLayout>} />
-              <Route path="/trips" element={<DashboardLayout><TripScreen /></DashboardLayout>} />
-              <Route path="/admin-trips" element={<DashboardLayout><TripAdmin /></DashboardLayout>} />
+              <Route
+                path="/home"
+                element={
+                  <DashboardLayout>
+                    <HomeScreen />
+                    {/* <TripAdmin/> */}
+                  </DashboardLayout>
+                }
+              />
+              <Route
+                path="/drivers"
+                element={
+                  <DashboardLayout>
+                    <DriverScreen />
+                  </DashboardLayout>
+                }
+              />
+
+              <Route
+                path="/admin-drivers"
+                element={
+                  <DashboardLayout>
+                    <DriverAdmin />
+                  </DashboardLayout>
+                }
+              />
+
+
+              <Route
+                path="/trucks"
+                element={
+                  <DashboardLayout>
+                    <TruckScreen />
+                  </DashboardLayout>
+                }
+              />
+
+
+              <Route
+                path="/admin-trucks"
+                element={
+                  <DashboardLayout>
+                    <TruckAdmin />
+                  </DashboardLayout>
+                }
+              />
+
+              <Route
+                path="/trailers"
+                element={
+                  <DashboardLayout>
+                    <TrailerScreen />
+                  </DashboardLayout>
+                }
+              />
+
+
+              <Route
+                path="/admin-trailers"
+                element={
+                  <DashboardLayout>
+                    <TrailerAdmin />
+                  </DashboardLayout>
+                }
+              />
+
+              <Route
+                path="/trips"
+                element={
+                  <DashboardLayout>
+                    <TripScreen />
+                  </DashboardLayout>
+                }
+              />
+
+              <Route
+                path="/admin-trips"
+                element={
+                  <DashboardLayout>
+                    <TripAdmin />
+                  </DashboardLayout>
+                }
+              />
+
+              <Route
+                path="/edit-trip/:tripId"
+                element={
+                  <DashboardLayout> 
+                    <EditTripForm /> 
+                  </DashboardLayout>
+                }
+              />
+
+
+
             </>
           )}
         </Routes>

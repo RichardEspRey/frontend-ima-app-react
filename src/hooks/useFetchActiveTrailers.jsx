@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 
 function useFetchActiveTrailers() {
+  const apiHost = import.meta.env.VITE_API_HOST;
   const [activeTrailers, setActiveTrailers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -9,7 +10,7 @@ function useFetchActiveTrailers() {
   useEffect(() => {
     const fetchActiveCajas = async () => {
       try {
-        const response = await fetch('http://localhost/api/cajas.php', {
+        const response = await fetch(`${apiHost}/cajas.php`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
           body: 'op=getCajasActivas',

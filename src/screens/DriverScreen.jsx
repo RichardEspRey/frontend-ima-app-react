@@ -6,6 +6,7 @@ import Swal from 'sweetalert2';
 
 
 const DriverScreen = () => {
+  const apiHost = import.meta.env.VITE_API_HOST;
   const [formData, setFormData] = useState({
     nombre: '',
     fechaNacimiento: '',
@@ -73,7 +74,7 @@ const DriverScreen = () => {
       formDataToSend.append('phone_usa', formData.phone_usa);
 
       // Enviar al backend
-      const response = await fetch('http://localhost/api/drivers.php', {
+      const response = await fetch(`${apiHost}/drivers.php`, {
         method: 'POST',
         body: formDataToSend,
       });
@@ -110,7 +111,7 @@ const DriverScreen = () => {
       formDataFile.append('documento', file);
 
       try {
-        const response = await fetch('http://localhost/api/drivers_docs.php', {
+        const response = await fetch(`${apiHost}/drivers_docs.php`, {
           method: 'POST',
           body: formDataFile,
         });
