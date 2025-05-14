@@ -1,12 +1,3 @@
-<<<<<<< HEAD
-import React, { useState, useEffect } from "react";
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TablePagination } from "@mui/material";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
-import dayjs from "dayjs";
-import './css/TripAdmin.css';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
-=======
 import React, { useState, useEffect, useMemo } from 'react';
 import {
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
@@ -23,7 +14,6 @@ import './css/TripAdmin.css';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import * as XLSX from 'xlsx'; // Asegúrate de importar XLSX
->>>>>>> Aldayr
 
 // ... (El componente TripRow permanece igual)
 const TripRow = ({ trip, onEdit, onFinalize, getDocumentUrl }) => {
@@ -149,62 +139,6 @@ const TripAdmin = () => {
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [startDate, setStartDate] = useState(null);
     const [endDate, setEndDate] = useState(null);
-<<<<<<< HEAD
-    const [trips, setTrips] = useState([]);
-    const navigate = useNavigate(); // Initialize useNavigate
-
-    useEffect(() => {
-        const fetchTrips = async () => {
-            try {
-                const response = await fetch('http://localhost/api/trips.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: 'op=getAll',
-                });
-                
-                const data = await response.json();
-                
-                if (data.status === 'success' && data.trips) {
-                    console.log(data.trips)
-                    const formattedTrips = data.trips.map(trip => ({
-                        trip_id: trip.trip_id.toString(),
-                        trip_number: trip.trip_number,
-                        truck_unidad: trip.truck_unidad || '',
-                        caja_no_caja: trip.caja_no_caja || '',
-                        driver_name: trip.driver_name || '',
-                        nombre_compania: trip.nombre_compania || '',
-                        company_name: trip.company_name || '',
-                        ci_number: trip.ci_number || '',
-                        estatus: trip.estatus || '',
-                        creation_date: trip.creation_date ? new Date(trip.creation_date) : null,
-                       
-                    }));
-                    setTrips(formattedTrips);
-                } else {
-                    console.error('Error al obtener los viajes:', data.message || 'Respuesta inesperada del servidor');
-                }
-            } catch (error) {
-                console.error('Error de red al obtener los viajes:', error);
-            }
-        };
-
-        fetchTrips();
-    }, []);
-
-    const filteredTrips = trips.filter(trip => { // Usar 'trips' y renombrar a 'filteredTrips'
-        const matchesSearch =
-            (trip.trip_id || '').toLowerCase().includes(search.toLowerCase()) ||
-            (trip.trip_number || '').toLowerCase().includes(search.toLowerCase()) ||
-            (trip.truck_unidad || '').toLowerCase().includes(search.toLowerCase()) ||
-            (trip.driver_name || '').toLowerCase().includes(search.toLowerCase()) ||
-            (trip.caja_no_caja || '').toLowerCase().includes(search.toLowerCase()) 
-            (trip.nombre_compania || '').toLowerCase().includes(search.toLowerCase()) ||
-            (trip.company_name || '').toLowerCase().includes(search.toLowerCase()) ||
-            (trip.ci_number || '').toLowerCase().includes(search.toLowerCase()) ||
-            (trip.estatus || '').toLowerCase().includes(search.toLowerCase()) ||
-            (trip.creation_date || '').toLowerCase().includes(search.toLowerCase());
-        const withinDateRange = startDate && endDate ? trip.date >= startDate && trip.date <= endDate : true;
-=======
     const navigate = useNavigate();
 
     const API_BASE_URL = `${apiHost}/new_trips.php`;
@@ -308,7 +242,6 @@ const TripAdmin = () => {
                 (etapa.nombre_compania || '').toLowerCase().includes(searchLower)
             ))
         );
->>>>>>> Aldayr
         return matchesSearch && withinDateRange;
     }), [trips, search, startDate, endDate]);
 
@@ -417,43 +350,9 @@ const TripAdmin = () => {
 
     if (loading) { return ( <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}> <CircularProgress /> <Typography ml={2}>Cargando...</Typography> </Box> ); }
 
-    const handleEditTrip = (tripId) => {
-        navigate(`/edit-trip/${tripId}`);
-    };
-
     return (
         <div className="trip-admin">
             <h1 className="title">Administrador de Viajes</h1>
-<<<<<<< HEAD
-
-            <div className="filters">
-                <input
-                    type="text"
-                    placeholder="Buscar"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="small-input"
-                />
-                <div className="date-pickers">
-                    <DatePicker
-                        selected={startDate}
-                        onChange={setStartDate}
-                        selectsStart
-                        startDate={startDate}
-                        endDate={endDate}
-                        placeholderText="Fecha inicio"
-                    />
-                    <DatePicker
-                        selected={endDate}
-                        onChange={setEndDate}
-                        selectsEnd
-                        startDate={startDate}
-                        endDate={endDate}
-                        placeholderText="Fecha fin"
-                    />
-                    <Button variant="contained" onClick={() => { setStartDate(null); setEndDate(null); }} style={{ marginLeft: '10px' }}>
-                        Limpiar Filtro
-=======
             <div className="filters">
                 <input type="text" placeholder="Buscar" value={search} onChange={(e) => setSearch(e.target.value)} className="small-input" />
                 <div className="date-pickers">
@@ -470,7 +369,6 @@ const TripAdmin = () => {
                         startIcon={<DownloadIcon />}
                     >
                         Descargar Excel
->>>>>>> Aldayr
                     </Button>
                 </div>
             </div>
@@ -480,37 +378,16 @@ const TripAdmin = () => {
                 <Table stickyHeader size="small">
                     <TableHead>
                         <TableRow>
-<<<<<<< HEAD
-                            {['TRIP NUMBER', 'TRUCK', 'TRAILER', 'DRIVER ID', 'COMPANY', 'CI NUMBER', 'STATUS', 'DATE', 'ACTIONS'].map((title, index) => (
-                                <TableCell key={index}><strong>{title}</strong></TableCell>
-=======
                             <TableCell />
                             {['Trip #', 'Driver', 'Truck', 'Trailer', 'Creado', 'Status', 'Acciones'].map((title) => (
                                 <TableCell key={title} sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>{title}</TableCell>
->>>>>>> Aldayr
                             ))}
                         </TableRow>
                     </TableHead>
                     <TableBody>
-<<<<<<< HEAD
-                        {filteredTrips.slice(page * rowsPerPage, (page + 1) * rowsPerPage).map(trip => ( // Usar 'filteredTrips' y 'trip'
-                            <TableRow key={trip.trip_id}>
-                                <TableCell>{trip.trip_number}</TableCell>
-                                <TableCell>{trip.truck_unidad}</TableCell>
-                                <TableCell>{trip.caja_no_caja}</TableCell>
-                                <TableCell>{trip.driver_name}</TableCell>
-                                <TableCell>{trip.nombre_compania}</TableCell>
-                                <TableCell>{trip.ci_number}</TableCell>
-                                <TableCell>{trip.estatus}</TableCell> 
-                                <TableCell>{dayjs(trip.creation_date).format("MM/DD/YYYY")}</TableCell>
-                                <TableCell>
-                                    <Button size="small" onClick={() => handleEditTrip(trip.id)}>Editar</Button> 
-                                </TableCell>
-=======
                         {filteredTrips.length === 0 ? (
                             <TableRow>
                                 <TableCell colSpan={8} align="center">No se encontraron viajes con los filtros aplicados.</TableCell>
->>>>>>> Aldayr
                             </TableRow>
                         ) : (
                             filteredTrips
@@ -530,14 +407,6 @@ const TripAdmin = () => {
             </TableContainer>
 
             <TablePagination
-<<<<<<< HEAD
-                component="div"
-                count={filteredTrips.length} 
-                page={page}
-                onPageChange={(_, newPage) => setPage(newPage)}
-                rowsPerPage={rowsPerPage}
-                onRowsPerPageChange={(e) => setRowsPerPage(parseInt(e.target.value, 10))}
-=======
                 rowsPerPageOptions={[10, 25, 50, 100]}
                 component="div"
                 count={filteredTrips.length}
@@ -547,7 +416,6 @@ const TripAdmin = () => {
                 onRowsPerPageChange={(event) => { setRowsPerPage(parseInt(event.target.value, 10)); setPage(0); }}
                 labelRowsPerPage="Filas por página:"
                 labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count !== -1 ? count : `más de ${to}`}`}
->>>>>>> Aldayr
             />
         </div>
     );

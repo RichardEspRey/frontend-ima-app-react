@@ -30,7 +30,7 @@ const Login = () => {
       formData.append('usermail', usermail);
       formData.append('password', password);
 
-      const response = await fetch('http://imaexpressllc.com/API/prueba.php', {
+      const response = await fetch('http://imaexpressllc.com/API/Auth.php', {
         method: 'POST',
         body: formData,
       });
