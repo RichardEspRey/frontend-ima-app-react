@@ -9,6 +9,7 @@ import LoginScreen from '../screens/Login/Login.jsx';
 import DashboardLayout from '../layouts/DashboardLayout';
 import HomeScreen from '../screens/HomeScreen.jsx';
 import DriverAdmin from '../screens/DriverAdmin.jsx';
+import DriverEditor from '../screens/DriverEditor.jsx';
 import TripAdmin from '../screens/TripAdmin.jsx';
 import TripScreen from '../screens/TripsScreen.jsx';
 import DriverScreen from '../screens/DriverScreen.jsx';
@@ -62,6 +63,14 @@ const AppRouter = () => {
                 }
               />
 
+              <Route
+                path="/editor-drivers/:id"
+                element={
+                  <DashboardLayout>
+                    <DriverEditor />
+                  </DashboardLayout>
+                }
+              />
 
               <Route
                 path="/trucks"

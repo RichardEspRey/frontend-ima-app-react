@@ -6,10 +6,15 @@ import greenIcon from '../assets/images/Icons_alerts/shield-green.png';
 import yellowIcon from '../assets/images/Icons_alerts/shield-yellow.png'; 
 import greyIcon from '../assets/images/Icons_alerts/shield-grey.png'; 
 import questionIcon from '../assets/images/Icons_alerts/question.png'; 
-
+import ModalArchivo from '../components/ModalArchivoEditor.jsx'; 
 import { Tooltip } from 'react-tooltip';
+import { useNavigate } from 'react-router-dom';
 
 const DriverAdmin = () => {
+  const navigate = useNavigate();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [valorActual, setValorActual] = useState(null); 
+
   const apiHost = import.meta.env.VITE_API_HOST;
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
@@ -30,15 +35,24 @@ const DriverAdmin = () => {
         });
 
         const data = await response.json();
+        console.log(data);
         if (data.status === 'success' && data.Users) {
           const formatted = data.Users.map(user => ({
             id: user.driver_id.toString(),
             name: user.nombre || 'Sin nombre',
             fecha: user.fecha_ingreso || 'Sin fecha',
+            APTO_tipo: user.APTO_tipo || '',
             APTO_fecha: user.APTO_fecha || '',
+            APTO_URL: user.APTO_URL || '',
+            I94_tipo: user.I94_tipo || '',
             I94_fecha: user.I94_fecha || '',
+            I94_URL: user.I94_URL || '',
+            VISA_tipo: user.VISA_tipo || '',
             VISA_fecha: user.VISA_fecha || '',
+            VISA_URL: user.VISA_URL || '',
+            Licencia_tipo: user.Licencia_tipo || '',
             Licencia_fecha: user.Licencia_fecha || '',
+            Licencia_URL: user.Licencia_URL || '',
           }));
           setDrivers(formatted);
         }
@@ -53,8 +67,9 @@ const DriverAdmin = () => {
   const filteredDrivers = drivers.filter(driver =>
     driver.name.toLowerCase().includes(search.toLowerCase())
   );
-  const renderIconButton = (fecha, id) => {
-    const icon = getIconByFecha(fecha, id);
+
+  const renderIconButton = (fecha, id, url, tipo) => {
+    const icon = getIconByFecha(fecha, id, url, tipo);
   
     return (
       <button className="icon-btn" disabled={!fecha}>
@@ -62,46 +77,61 @@ const DriverAdmin = () => {
       </button>
     );
   };
-  const getIconByFecha = (fechaStr, id) => {
-    if (!fechaStr) {
-      return (
-        <>
-          <img
-            src={questionIcon}
-            alt="Documento"
-            className="icon-img"
-            data-tooltip-id={`tooltip-${id}`}
-            data-tooltip-content="No se cuenta con el documento"
-          />
-          <Tooltip id={`tooltip-${id}`} place="top" />
-        </>
-      );
-    }
-  
-    const fecha = new Date(fechaStr);
-    const hoy = new Date();
-    const diffInDays = Math.floor((fecha - hoy) / (1000 * 60 * 60 * 24));
-  
-    let icon = greyIcon;
-    let mensaje = `Vencimiento: ${fecha.toLocaleDateString('es-MX')}`;
-  
-    if (diffInDays >= 365) icon = greenIcon;
-    else if (diffInDays >= 180) icon = yellowIcon;
-    else if (diffInDays >= 60) icon = redIcon;
-  
+
+  const getIconByFecha = (fechaStr, id, url, tipo) => {
+  if (!fechaStr) {
     return (
       <>
         <img
-          src={icon}
-          alt="Documento"
+          src={questionIcon}
+          alt="Sin documento"
           className="icon-img"
           data-tooltip-id={`tooltip-${id}`}
-          data-tooltip-content={mensaje}
+          data-tooltip-content="No se cuenta con el documento"
         />
         <Tooltip id={`tooltip-${id}`} place="top" />
       </>
     );
-  };
+  }
+
+  const fecha = new Date(fechaStr);
+  const hoy = new Date();
+  const diffInDays = Math.floor((fecha - hoy) / (1000 * 60 * 60 * 24));
+
+  let icon = greyIcon;
+  let mensaje = `Vencimiento: ${fecha.toLocaleDateString('es-MX')}`;
+
+  if (diffInDays >= 365) icon = greenIcon;
+  else if (diffInDays >= 180) icon = yellowIcon;
+  else if (diffInDays >= 60) icon = redIcon;
+
+  return (
+    <>
+      <img
+        src={icon}
+        alt= {`${tipo}`}
+        className="icon-img"
+        onClick={() => abrirModalConDocumento(url, fechaStr, id, tipo)}
+        data-tooltip-id={`${id}`}
+        data-tooltip-content={mensaje}
+        style={{ cursor: 'pointer' }}
+      />
+      <Tooltip id={`tooltip-${id}`} place="top" />
+    </>
+  );
+};
+
+
+  const abrirModalConDocumento = (url, fecha, id, tipo) => {
+  setValorActual({
+    url: `${apiHost}/${url}`, //"http://imaexpressllc.com/API/Uploads/Drivers/Acta_Nacimiento_1_v1_1.pdf"
+    vencimiento: fecha,
+    id: id,
+    tipo: tipo
+
+  });
+  setIsModalOpen(true);
+}
   
   return (
     <div className="driver-admin">
@@ -148,12 +178,17 @@ const DriverAdmin = () => {
                 <td>{driver.id}</td>
                 <td>{driver.name}</td>
                 <td>{driver.fecha}</td>
-                <td>{renderIconButton(driver.APTO_fecha, `apto-${driver.id}`)}</td>
-                <td>{renderIconButton(driver.I94_fecha, `i94-${driver.id}`)}</td>
-                <td>{renderIconButton(driver.VISA_fecha, `visa-${driver.id}`)}</td>
-                <td>{renderIconButton(driver.Licencia_fecha, `lic-${driver.id}`)}</td>
+                <td>{renderIconButton(driver.APTO_fecha, `${driver.id}`, driver.APTO_URL, driver.APTO_tipo)}</td>
+                <td>{renderIconButton(driver.I94_fecha, `${driver.id}`, driver.I94_URL, driver.I94_tipo)}</td>
+                <td>{renderIconButton(driver.VISA_fecha, `${driver.id}`, driver.VISA_URL, driver.VISA_tipo)}</td>
+                <td>{renderIconButton(driver.Licencia_fecha, `${driver.id}`, driver.Licencia_URL, driver.Licencia_tipo)}</td>
                 <td>
-                  <button className="ver-btn">Ver</button>
+                  <button
+                    className="ver-btn"
+                    onClick={() => navigate(`/editor-drivers/${driver.id}`)}
+                    >
+                    Ver
+                  </button>
                 </td>
               </tr>
             ))}
@@ -173,8 +208,20 @@ const DriverAdmin = () => {
           </button>
         </div>
       </div>
+        <ModalArchivo
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSave={(data) => {
+            // Aquí puedes manejar la lógica de guardado si decides permitir reemplazar documentos
+            console.log("Guardado:", data);
+          }}
+          nombreCampo="Documento"
+          valorActual={valorActual}
+        />
     </div>
   );
+
 };
+
 
 export default DriverAdmin;

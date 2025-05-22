@@ -9,6 +9,7 @@ import fondo from '../../assets/images/hero.jpg';
 import logo from '../../assets/images/logo.png';
 
 const Login = () => {
+    const apiHost = import.meta.env.VITE_API_HOST;
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
 
@@ -29,8 +30,8 @@ const Login = () => {
       formData.append('op', 'login');
       formData.append('usermail', usermail);
       formData.append('password', password);
-
-      const response = await fetch('http://imaexpressllc.com/API/Auth.php', {
+console.log(apiHost);
+      const response = await fetch(`${apiHost}/Auth.php`, {
         method: 'POST',
         body: formData,
       });
