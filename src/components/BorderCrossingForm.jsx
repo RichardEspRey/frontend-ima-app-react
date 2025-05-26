@@ -147,7 +147,7 @@ const BorderCrossingForm = ({ tripNumber }) => {
     setModalAbierto(true);
 
 
-    if (['bl', 'entry', 'manifiesto'].includes(docType)) {
+    if (['ima_invoice', 'carta_porte' ,'ci', 'entry',  'manifiesto', 'cita_entrega', 'bl', 'orden_retiro', 'bl_firmado'].includes(docType)) {
       setMostrarFechaVencimientoModal(false);
     } else {
       setMostrarFechaVencimientoModal(true);

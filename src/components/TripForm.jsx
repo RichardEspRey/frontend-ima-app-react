@@ -131,7 +131,7 @@ const TripForm = ({ tripNumber }) => {
         setModalTarget({ stageIndex, docType });
         setModalAbierto(true);
         
-        if (['bl', 'entry', 'manifiesto'].includes(docType)) {
+        if ([ 'ima_invoice', 'carta_porte' ,'ci', 'entry',  'manifiesto', 'cita_entrega', 'bl', 'orden_retiro', 'bl_firmado'].includes(docType)) {
             setMostrarFechaVencimientoModal(false);
         } else {
             setMostrarFechaVencimientoModal(true);
@@ -636,9 +636,9 @@ const TripForm = ({ tripNumber }) => {
                              
                                 <div className="column">
                                     <div className="column">
-                                        <label>Manifiesto:</label>
-                                        <button type="button" className="upload-button" onClick={() => abrirModal('manifiesto', index)}>Subir</button>
-                                        {etapa.documentos?.manifiesto && (<p className="doc-info"><i>{etapa.documentos.manifiesto.fileName}</i></p>)}
+                                        <label>Entry:</label>
+                                        <button type="button" className="upload-button" onClick={() => abrirModal('entry', index)}>Subir</button>
+                                        {etapa.documentos?.entry && (<p className="doc-info"><i>{etapa.documentos.entry.fileName}</i></p>)}
                                     </div>
                                     <div className="column">
                                         <label>Manifiesto:</label>
