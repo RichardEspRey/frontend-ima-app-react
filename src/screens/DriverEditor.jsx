@@ -1,12 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './css/ConductoresScreen.css';
 import 'react-datepicker/dist/react-datepicker.css';
 import ModalArchivo from '../components/ModalArchivo.jsx'; // ajusta la ruta si es necesario
 import Swal from 'sweetalert2';
-
-
-const DriverScreen = () => {
+import { useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
+const DriverEditor = () => {
+  const { id } = useParams();
+  
   const apiHost = import.meta.env.VITE_API_HOST;
+
   const [formData, setFormData] = useState({
     nombre: '',
     fechaNacimiento: '',
@@ -22,29 +25,13 @@ const DriverScreen = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // const handleDateChange = (date) => {
-  //   setSelectedDate(date);
-  //   setFormData(prev => ({
-  //     ...prev,
-  //     [`${selectedFieldName}Date`]: date.toISOString().split("T")[0],
-  //   }));
-  // };
-
-  // const handleFileChange = (e, name) => {
-  //   const file = e.target.files[0];
-  //   if (!file) return;
-  //   setFormData(prev => ({
-  //     ...prev,
-  //     [name]: file.name,
-  //     [`${name}File`]: file
-  //   }));
-  // };
-
-
   {/*utiles*/ }
   const [documentos, setDocumentos] = useState({});
   const [modalAbierto, setModalAbierto] = useState(false);
   const [campoActual, setCampoActual] = useState(null);
+
+
+
 
   const handleGuardarDocumento = (campo, data) => {
     setDocumentos(prev => ({
@@ -121,7 +108,7 @@ const DriverScreen = () => {
         Swal.fire({
           icon: 'success',
           title: 'Éxito',
-          text: 'Todos los documentos fueron enviados correctamente',
+          text: 'Driver editado con exito!',
         });
       } catch (error) {
         console.error(`Error al enviar ${tipo_documento}:`, error);
@@ -149,12 +136,80 @@ const DriverScreen = () => {
     }
   };
 
+  useEffect(() => {
+      const fetchDrivers = async () => {
+
+          const formDataToSend = new FormData();
+
+       
+        formDataToSend.append('op', 'getDriverEdit'); // operación que espera el backend
+        formDataToSend.append('driver_id', id);
+   
+        try {
+          const response = await fetch(`${apiHost}/drivers.php`, {
+            method: 'POST',
+            body: formDataToSend,
+          });
+  
+          const data = await response.json();
+          
+          if (data.status === 'success' && data.Users && data.Users.length > 0) {
+              const user = data.Users[0];
+
+              // Llenar los inputs
+              setFormData({
+                nombre: user.nombre || '',
+                fechaNacimiento: user.fecha_ingreso || '',
+                curp: user.curp || '',
+                rfc: user.rfc || '',
+                phone_usa: user.phone_usa || '',
+                phone_mex: user.phone_mex || ''
+              });
+              console.log(data.Users);
+
+              // Llenar los documentos (PDFs)
+              const nuevosDocumentos = {};
+              const campos = [
+                'Acta_Nacimiento',
+                'Comprobante_domicilio',
+                'Solicitud_empleo',
+                'INE',
+                'VISA',
+                'Licencia',
+                'I94',
+                'APTO',
+                'Atidoping',
+                'Constancia_fiscal'
+              ];
+
+              campos.forEach((campo) => {
+                if (user[`${campo}_URL`]) {
+                  nuevosDocumentos[campo] = {
+                    file: null, // No tienes el archivo como File, pero puedes dejarlo nulo
+                    fileName: user[`${campo}_URL`].split('/').pop(),
+                    vencimiento: user[`${campo}_fecha`] || '',
+                    url: `${apiHost}/${user[`${campo}_URL`]}`
+                  };
+                }
+              });
+
+              setDocumentos(nuevosDocumentos);
+            }
+
+        } catch (error) {
+          console.error('Error al obtener los conductores:', error);
+        }
+      };
+  
+      fetchDrivers();
+    }, []);
+
 
   return (
 
     <div >
 
-      <h1 className="titulo">Alta de Conductor</h1>
+      <h1 className="titulo">Editor de Conductor</h1>
       <div className="conductores-container">
         <div className="btnConteiner">
           <button className="btn cancelar">Cancelar</button>
@@ -181,11 +236,14 @@ const DriverScreen = () => {
 
             <label>Acta de nacimiento (PDF)</label>
             <button type="button" onClick={() => abrirModal('Acta_Nacimiento')}>Subir documento</button>
-            {documentos.Acta_Nacimiento && (
-              <p>{documentos.Acta_Nacimiento.fileName} - {documentos.Acta_Nacimiento.vencimiento}</p>
+           {documentos.Acta_Nacimiento && (
+              <p>
+                {documentos.Acta_Nacimiento.fileName} - {documentos.Acta_Nacimiento.vencimiento}
+                <button onClick={() => window.open(documentos.Acta_Nacimiento.url, '_blank')}>Ver</button>
+              </p>
             )}
 
-            <label>Curp (PDF)</label>
+            <label>Curp </label>
             <input
               type="text"
               placeholder="Ingrese el curp"
@@ -196,14 +254,20 @@ const DriverScreen = () => {
             <label>Comprobante de domicilio (PDF)</label>
             <button type="button" onClick={() => abrirModal('Comprobante_domicilio')}>Subir documento</button>
             {documentos.Comprobante_domicilio && (
-              <p>{documentos.Comprobante_domicilio.fileName} - {documentos.Comprobante_domicilio.vencimiento}</p>
-            )}
+                <p>
+                  {documentos.Comprobante_domicilio.fileName} - {documentos.Comprobante_domicilio.vencimiento}
+                  <button onClick={() => window.open(documentos.Comprobante_domicilio.url, '_blank')}>Ver</button>
+                </p>
+              )}
 
             <label>Solicitud de empleo (PDF)</label>
             <button type="button" onClick={() => abrirModal('Solicitud_empleo')}>Subir documento</button>
             {documentos.Solicitud_empleo && (
-              <p>{documentos.Solicitud_empleo.fileName} - {documentos.Solicitud_empleo.vencimiento}</p>
-            )}
+                <p>
+                  {documentos.Solicitud_empleo.fileName} - {documentos.Solicitud_empleo.vencimiento}
+                  <button onClick={() => window.open(documentos.Solicitud_empleo.url, '_blank')}>Ver</button>
+                </p>
+              )}
           </div>
 
           {/* Puedes continuar con las otras dos columnas como en tu versión original */}
@@ -211,16 +275,22 @@ const DriverScreen = () => {
             <label>INE</label>
             <button type="button" onClick={() => abrirModal('INE')}>Subir documento</button>
             {documentos.INE && (
-              <p>{documentos.INE.fileName} - {documentos.INE.vencimiento}</p>
+              <p>
+                {documentos.INE.fileName} - {documentos.INE.vencimiento}
+                <button onClick={() => window.open(documentos.INE.url, '_blank')}>Ver</button>
+              </p>
             )}
 
             <label>No de visa</label>
             <button type="button" onClick={() => abrirModal('Visa')}>Subir documento</button>
-            {documentos.Visa && (
-              <p>{documentos.Visa.fileName} - {documentos.Visa.vencimiento}</p>
+            {documentos.VISA && (
+              <p>
+                {documentos.VISA.fileName} - {documentos.VISA.vencimiento}
+                <button onClick={() => window.open(documentos.VISA.url, '_blank')}>Ver</button>
+              </p>
             )}
 
-            <label>RFC (PDF)</label>
+            <label>RFC </label>
             <input
               type="text"
               placeholder="RFC"
@@ -230,19 +300,28 @@ const DriverScreen = () => {
             <label>No. Licencia (PDF)</label>
             <button type="button" onClick={() => abrirModal('Licencia')}>Subir documento</button>
             {documentos.Licencia && (
-              <p>{documentos.Licencia.fileName} - {documentos.Licencia.vencimiento}</p>
-            )}
+                <p>
+                  {documentos.Licencia.fileName} - {documentos.Licencia.vencimiento}
+                  <button onClick={() => window.open(documentos.Licencia.url, '_blank')}>Ver</button>
+                </p>
+              )}
 
             <label>Vencimiento de I-94 (PDF)</label>
             <button type="button" onClick={() => abrirModal('I')}>Subir documento</button>
             {documentos.I && (
-              <p>{documentos.I.fileName} - {documentos.I.vencimiento}</p>
+              <p>
+                {documentos.I.fileName} - {documentos.I.vencimiento}
+                <button onClick={() => window.open(documentos.I.url, '_blank')}>Ver</button>
+              </p>
             )}
 
             <label>APTO (PDF)</label>
             <button type="button" onClick={() => abrirModal('APTO')}>Subir documento</button>
             {documentos.APTO && (
-              <p>{documentos.APTO.fileName} - {documentos.APTO.vencimiento}</p>
+              <p>
+                {documentos.APTO.fileName} - {documentos.APTO.vencimiento}
+                <button onClick={() => window.open(documentos.APTO.url, '_blank')}>Ver</button>
+              </p>
             )}
           </div>
 
@@ -294,4 +373,4 @@ const DriverScreen = () => {
 
 };
 
-export default DriverScreen;
+export default DriverEditor;

@@ -199,10 +199,10 @@ const TrailerScreen = () => {
               <p>{documentos.seguro.fileName} - {documentos.seguro.vencimiento}</p>
             )}
 
-            <label>Acta de nacimiento (PDF)</label>
-            <button type="button" onClick={() => abrirModal('fianza')}>Subir documento</button>
-            {documentos.fianza && (
-              <p>{documentos.fianza.fileName} - {documentos.fianza.vencimiento}</p>
+            <label>Fianza(PDF)</label>
+            <button type="button" onClick={() => abrirModal('Fianza')}>Subir documento</button>
+            {documentos.Fianza && (
+              <p>{documentos.Fianza.fileName} - {documentos.Fianza.vencimiento}</p>
             )}
 
             {/* 

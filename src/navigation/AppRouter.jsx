@@ -1,15 +1,15 @@
 import React, { useContext } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
 import { AuthContext } from '../auth/AuthContext';
 import { Provider } from 'react-redux';
 import store from '../redux/store';
 
-
 import LoginScreen from '../screens/Login/Login.jsx';
 import DashboardLayout from '../layouts/DashboardLayout';
 import HomeScreen from '../screens/HomeScreen.jsx';
 import DriverAdmin from '../screens/DriverAdmin.jsx';
+import DriverEditor from '../screens/DriverEditor.jsx';
 import TripAdmin from '../screens/TripAdmin.jsx';
 import TripScreen from '../screens/TripsScreen.jsx';
 import DriverScreen from '../screens/DriverScreen.jsx';
@@ -63,6 +63,14 @@ const AppRouter = () => {
                 }
               />
 
+              <Route
+                path="/editor-drivers/:id"
+                element={
+                  <DashboardLayout>
+                    <DriverEditor />
+                  </DashboardLayout>
+                }
+              />
 
               <Route
                 path="/trucks"
