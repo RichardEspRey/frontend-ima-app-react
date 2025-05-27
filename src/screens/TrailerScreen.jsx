@@ -21,25 +21,6 @@ const TrailerScreen = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // const handleDateChange = (date) => {
-  //   setSelectedDate(date);
-  //   setFormData(prev => ({
-  //     ...prev,
-  //     [`${selectedFieldName}Date`]: date.toISOString().split("T")[0],
-  //   }));
-  // };
-
-  // const handleFileChange = (e, name) => {
-  //   const file = e.target.files[0];
-  //   if (!file) return;
-  //   setFormData(prev => ({
-  //     ...prev,
-  //     [name]: file.name,
-  //     [`${name}File`]: file
-  //   }));
-  // };
-
-
   {/*utiles*/ }
   const [documentos, setDocumentos] = useState({});
   const [modalAbierto, setModalAbierto] = useState(false);
@@ -72,7 +53,7 @@ const TrailerScreen = () => {
 
 
       // Enviar al backend
-      const response = await fetch(`${apiHost}/drivers.php`, {
+      const response = await fetch(`${apiHost}/cajas.php`, {
         method: 'POST',
         body: formDataToSend,
       });
@@ -97,19 +78,19 @@ const TrailerScreen = () => {
     }
   };
 
-  const enviarDocumentos = async (idConductor) => {
+  const enviarDocumentos = async (caja_id) => {
     const entries = Object.entries(documentos); // clave: nombre campo, valor: { file, vencimiento }
 
     for (const [tipo_documento, { file, vencimiento }] of entries) {
       const formDataFile = new FormData();
-      // formDataFile.append('op', 'Alta');
-      // formDataFile.append('driver_id', idConductor);
-      // formDataFile.append('tipo_documento', tipo_documento);
-      // formDataFile.append('fecha_vencimiento', vencimiento);
-      // formDataFile.append('documento', file);
+      formDataFile.append('op', 'Alta');
+      formDataFile.append('caja_id', caja_id);
+      formDataFile.append('tipo_documento', tipo_documento);
+      formDataFile.append('fecha_vencimiento', vencimiento);
+      formDataFile.append('documento', file);
 
       try {
-        const response = await fetch(`${apiHost}/drivers_docs.php`, {
+        const response = await fetch(`${apiHost}/cajas_docs.php`, {
           method: 'POST',
           body: formDataFile,
         });
