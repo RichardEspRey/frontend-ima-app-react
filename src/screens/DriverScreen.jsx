@@ -13,7 +13,9 @@ const DriverScreen = () => {
     curp: '',
     rfc: '',
     phone_usa: '',
-    phone_mex: ''
+    phone_mex: '',
+    visa: '',
+    licencia: ''
   });
 
   const [selectedFieldName, setSelectedFieldName] = useState(null);
@@ -72,6 +74,8 @@ const DriverScreen = () => {
       formDataToSend.append('rfc', formData.rfc);
       formDataToSend.append('phone_mex', formData.phone_mex);
       formDataToSend.append('phone_usa', formData.phone_usa);
+      formDataToSend.append('visa', formData.visa);
+      formDataToSend.append('licencia', formData.licencia);
 
       // Enviar al backend
       const response = await fetch(`${apiHost}/drivers.php`, {
@@ -141,7 +145,9 @@ const DriverScreen = () => {
         curp: '',
         rfc: '',
         phone_usa: '',
-        phone_mex: ''
+        phone_mex: '',
+        visa: '',
+        licencia: ''
       });
 
       setDocumentos({});
@@ -185,13 +191,18 @@ const DriverScreen = () => {
               <p>{documentos.Acta_Nacimiento.fileName} - {documentos.Acta_Nacimiento.vencimiento}</p>
             )}
 
-            <label>Curp (PDF)</label>
+            <label>Curp </label>
             <input
               type="text"
               placeholder="Ingrese el curp"
               value={formData.curp}
               onChange={(e) => handleInputChange('curp', e.target.value)}
             />
+             <label>CURP (PDF)</label>
+            <button type="button" onClick={() => abrirModal('CURP')}>Subir documento</button>
+            {documentos.CURP && (
+              <p>{documentos.CURP.fileName} - {documentos.CURP.vencimiento}</p>
+            )}
 
             <label>Comprobante de domicilio (PDF)</label>
             <button type="button" onClick={() => abrirModal('Comprobante_domicilio')}>Subir documento</button>
@@ -214,20 +225,41 @@ const DriverScreen = () => {
               <p>{documentos.INE.fileName} - {documentos.INE.vencimiento}</p>
             )}
 
+            <label>No. de VISA</label>
+            <input
+              type="text"
+              placeholder="Ingrese el numero"
+              value={formData.visa}
+              onChange={(e) => handleInputChange('visa', e.target.value)}
+            />
+
             <label>No de visa</label>
             <button type="button" onClick={() => abrirModal('Visa')}>Subir documento</button>
             {documentos.Visa && (
               <p>{documentos.Visa.fileName} - {documentos.Visa.vencimiento}</p>
             )}
 
-            <label>RFC (PDF)</label>
+            <label>RFC </label>
             <input
               type="text"
               placeholder="RFC"
               value={formData.rfc}
               onChange={(e) => handleInputChange('rfc', e.target.value)}
             />
-            <label>No. Licencia (PDF)</label>
+             <label>RFC (PDF) </label>
+            <button type="button" onClick={() => abrirModal('RFC')}>Subir documento</button>
+            {documentos.RFC && (
+              <p>{documentos.RFC.fileName} - {documentos.RFC.vencimiento}</p>
+            )}
+
+            <label>No. de licencia</label>
+            <input
+              type="text"
+              placeholder="Nombre y apellidos"
+              value={formData.licencia}
+              onChange={(e) => handleInputChange('licencia', e.target.value)}
+            />
+            <label>Licencia (PDF)</label>
             <button type="button" onClick={() => abrirModal('Licencia')}>Subir documento</button>
             {documentos.Licencia && (
               <p>{documentos.Licencia.fileName} - {documentos.Licencia.vencimiento}</p>

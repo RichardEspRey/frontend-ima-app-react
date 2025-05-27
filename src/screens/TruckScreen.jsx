@@ -213,6 +213,30 @@ const TruckScreen = () => {
 
           {/* Columna 2 */}
           <div className="column">
+            <label>Placa MEX</label>
+            <button type="button" onClick={() => abrirModal('Placamx')}>Subir documento</button>
+            {documentos.Placamx && (
+              <p>{documentos.Placamx.fileName} - {documentos.Placamx.vencimiento}</p>
+            )}
+
+            <label>Placa USA</label>
+            <button type="button" onClick={() => abrirModal('Placausa')}>Subir documento</button>
+            {documentos.Placausa && (
+              <p>{documentos.Placausa.fileName} - {documentos.Placausa.vencimiento}</p>
+            )}
+
+            <label>Permiso kentucky</label>
+            <button type="button" onClick={() => abrirModal('Kentucky')}>Subir documento</button>
+            {documentos.Kentucky && (
+              <p>{documentos.Kentucky.fileName} - {documentos.Kentucky.vencimiento}</p>
+            )}
+
+            <label>Numero de vin</label>
+            <button type="button" onClick={() => abrirModal('Vin')}>Subir documento</button>
+            {documentos.Vin && (
+              <p>{documentos.Vin.fileName} - {documentos.Vin.vencimiento}</p>
+            )}
+
             <label>Registracion</label>
             <button type="button" onClick={() => abrirModal('Registracion')}>Subir documento</button>
             {documentos.Registracion && (
@@ -248,6 +272,40 @@ const TruckScreen = () => {
             {documentos.PERMISO_NM && (
               <p>{documentos.PERMISO_NM.fileName} - {documentos.PERMISO_NM.vencimiento}</p>
             )}
+          </div>
+
+          {/* Columna 3  */}
+          <div className="column">
+            <label>Inspecccion mecanica (PDF)</label>
+            <button type="button" onClick={() => abrirModal('Mecanica')}>Subir documento</button>
+            {documentos.Mecanica && (
+              <p>{documentos.Mecanica.fileName} - {documentos.Mecanica.vencimiento}</p>
+            )}
+
+            <label>Tarjeta de circulacion (PDF)</label>
+            <button type="button" onClick={() => abrirModal('Circulacion')}>Subir documento</button>
+            {documentos.Circulacion && (
+              <p>{documentos.Circulacion.fileName} - {documentos.Circulacion.vencimiento}</p>
+            )}
+
+            <label>VERIFICACIONES MX (PDF)</label>
+            <button type="button" onClick={() => abrirModal('VERIFICACIONES')}>Subir documento</button>
+            {documentos.VERIFICACIONES && (
+              <p>{documentos.VERIFICACIONES.fileName} - {documentos.VERIFICACIONES.vencimiento}</p>
+            )}
+
+             <label>UCR (PDF)</label>
+            <button type="button" onClick={() => abrirModal('UCR')}>Subir documento</button>
+            {documentos.UCR && (
+              <p>{documentos.UCR.fileName} - {documentos.UCR.vencimiento}</p>
+            )}
+
+             <label>Permiso kentucky (PDF)</label>
+            <button type="button" onClick={() => abrirModal('kentucky')}>Subir documento</button>
+            {documentos.kentucky && (
+              <p>{documentos.kentucky.fileName} - {documentos.kentucky.vencimiento}</p>
+            )}
+
           </div>
 
         </div>

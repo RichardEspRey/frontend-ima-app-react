@@ -96,7 +96,7 @@ const TruckAdmin = () => {
           alt={tipo}
           className="icon-img"
           onClick={() => abrirModalConDocumento(url, fechaStr, id, tipo)}
-          data-tooltip-id={`tooltip-${id}-${tipo}`}
+          data-tooltip-id={`${id}`}
           data-tooltip-content={mensaje}
           style={{ cursor: 'pointer' }}
         />
@@ -175,6 +175,8 @@ const TruckAdmin = () => {
         onSave={(data) => console.log('Guardado:', data)}
         nombreCampo="Documento"
         valorActual={valorActual}
+        endpoint="trucks_docs.php" 
+        tipo="truck_id"
       />
     </div>
   );

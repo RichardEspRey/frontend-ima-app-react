@@ -212,16 +212,17 @@ const DriverAdmin = () => {
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           onSave={(data) => {
-            // Aquí puedes manejar la lógica de guardado si decides permitir reemplazar documentos
             console.log("Guardado:", data);
           }}
           nombreCampo="Documento"
           valorActual={valorActual}
+          endpoint="drivers_docs.php" 
         />
     </div>
   );
 
 };
+
 
 
 export default DriverAdmin;

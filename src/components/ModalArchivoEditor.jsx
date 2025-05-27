@@ -4,7 +4,8 @@ import 'react-datepicker/dist/react-datepicker.css';
 import './css/ModalArchivo.css';
 import Swal from 'sweetalert2';
 
-const ModalArchivoEditor = ({ isOpen, onClose, onSave, nombreCampo, valorActual, mostrarFechaVencimiento = true }) => {
+const ModalArchivoEditor = ({ isOpen, onClose, onSave, nombreCampo, valorActual, endpoint,tipo, mostrarFechaVencimiento = true }) => {
+
   const [archivo, setArchivo] = useState(null);
   const [fechaVencimiento, setFechaVencimiento] = useState(new Date());
   const [previewUrl, setPreviewUrl] = useState(null);
@@ -39,7 +40,6 @@ useEffect(() => {
   };
 
  const apiHost = import.meta.env.VITE_API_HOST;
-
 const handleGuardar = () => {
   if (!archivo) {
     Swal.fire({
@@ -60,12 +60,12 @@ const handleGuardar = () => {
       try {
         const formData = new FormData();
         formData.append('op', 'Alta');
-        formData.append('driver_id', valorActual?.id); // asegúrate que 'id' viene en valorActual
-        formData.append('tipo_documento', valorActual?.tipo); // nombreCampo = 'APTO', 'VISA', etc.
+        formData.append(tipo, valorActual?.id);
+        formData.append('tipo_documento', valorActual?.tipo);
         formData.append('fecha_vencimiento', fechaVencimiento.toISOString().split('T')[0]);
         formData.append('documento', archivo);
 
-        const response = await fetch(`${apiHost}/drivers_docs.php`, {
+        const response = await fetch(`${apiHost}/${endpoint}`, { 
           method: 'POST',
           body: formData,
         });
@@ -99,6 +99,7 @@ const handleGuardar = () => {
     }
   });
 };
+
 
 
 
