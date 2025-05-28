@@ -8,6 +8,7 @@ import useFetchCompanies from '../hooks/useFetchCompanies';
 import useFetchWarehouses from '../hooks/useFetchWarehouses';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import CreatableSelect from 'react-select/creatable';
 import Select from 'react-select';
 import Swal from 'sweetalert2';
 import { format } from 'date-fns';
@@ -44,6 +45,11 @@ const BorderCrossingForm = ({ tripNumber }) => {
   const { activeCompanies, loading: loadingCompanies, error: errorCompanies } = useFetchCompanies();
   const { activeWarehouses, loading: loadingWarehouses, error: errorWarehouses } = useFetchWarehouses();
 
+  const [isCreatingCompany, setIsCreatingCompany] = useState(false);
+  const [isCreatingWarehouse, setIsCreatingWarehouse] = useState(false)
+
+  const [companyOptions, setCompanyOptions] = useState([]);
+  const [warehouseOptions, setWarehouseOptions] = useState([]);
 
   const [modalAbierto, setModalAbierto] = useState(false);
 
@@ -56,11 +62,6 @@ const BorderCrossingForm = ({ tripNumber }) => {
     driver_id: '',
     truck_id: '',
     caja_id: '',
-
-
-    // ima_invoice: null,
-    // bl_firmado: null,
-
   });
 
   const [etapas, setEtapas] = useState([{
@@ -82,6 +83,94 @@ const BorderCrossingForm = ({ tripNumber }) => {
     documentos: { ...initialBorderCrossingDocs } // Documentos para cruce
 
   }]);
+
+  useEffect(() => {
+    if (activeCompanies) {
+      setCompanyOptions(activeCompanies.map(c => ({ value: c.company_id, label: c.nombre_compania })));
+    }
+  }, [activeCompanies]);
+
+  useEffect(() => {
+    if (activeWarehouses) {
+      setWarehouseOptions(activeWarehouses.map(w => ({ value: w.warehouse_id, label: w.nombre_almacen })));
+    }
+  }, [activeWarehouses]);
+
+  const handleCreateCompany = async (inputValue, stageIndex) => {
+
+    setIsCreatingCompany(true);
+
+
+    const newCompanyFormData = new FormData();
+    newCompanyFormData.append('op', 'CreateCompany');
+    newCompanyFormData.append('nombre_compania', inputValue);
+
+
+    try {
+      const response = await fetch(`${apiHost}/companies.php`, {
+        method: 'POST',
+        body: newCompanyFormData,
+      });
+      
+
+     
+      const result = await response.json();
+      console.log("Respuesta del backend (result):", result);
+
+      if (result.status === "success" && result.company && result.company.company_id) {
+        const newOption = { value: result.company.company_id, label: result.company.nombre_compania };
+
+        setCompanyOptions(prevOptions => [...prevOptions, newOption]);
+
+
+        handleEtapaChange(stageIndex, 'company_id', newOption.value);
+
+        Swal.fire('¡Éxito!', `Compañía "${inputValue}" creada y seleccionada.`, 'success');
+      } else {
+        Swal.fire('Error', `No se pudo crear la compañía: ${result.message || 'Error desconocido del servidor.'}`, 'error');
+      }
+    } catch (error) {
+      console.error("Error creando compañía:", error);
+      Swal.fire('Error', 'Error de conexión al crear la compañía.', 'error');
+    } finally {
+      setIsCreatingCompany(false);
+    }
+  };
+
+  const handleCreateWarehouse = async (inputValue, stageIndex, warehouseFieldKey) => {
+
+    setIsCreatingWarehouse(true);
+
+
+    const newWarehouseFormData = new FormData();
+    newWarehouseFormData.append('op', 'CreateWarehouse');
+    newWarehouseFormData.append('nombre_almacen', inputValue);
+
+
+    try {
+      const response = await fetch(`${apiHost}/warehouses.php`, {
+        method: 'POST',
+        body: newWarehouseFormData,
+      });
+      const result = await response.json();
+
+      if (result.status === "success" && result.warehouse && result.warehouse.warehouse_id) {
+        const newOption = { value: result.warehouse.warehouse_id, label: result.warehouse.nombre_almacen };
+
+        setWarehouseOptions(prevOptions => [...prevOptions, newOption]);
+        handleEtapaChange(stageIndex, warehouseFieldKey, newOption.value);
+
+        Swal.fire('¡Éxito!', `Bodega "${inputValue}" creada y seleccionada.`, 'success');
+      } else {
+        Swal.fire('Error', `No se pudo crear la bodega: ${result.message || 'Error desconocido del servidor.'}`, 'error');
+      }
+    } catch (error) {
+      console.error("Error creando bodega:", error);
+      Swal.fire('Error', 'Error de conexión al crear la bodega.', 'error');
+    } finally {
+      setIsCreatingWarehouse(false);
+    }
+  };
 
 
   useEffect(() => {
@@ -147,7 +236,7 @@ const BorderCrossingForm = ({ tripNumber }) => {
     setModalAbierto(true);
 
 
-    if (['ima_invoice', 'carta_porte' ,'ci', 'entry',  'manifiesto', 'cita_entrega', 'bl', 'orden_retiro', 'bl_firmado'].includes(docType)) {
+    if (['ima_invoice', 'carta_porte', 'ci', 'entry', 'manifiesto', 'cita_entrega', 'bl', 'orden_retiro', 'bl_firmado'].includes(docType)) {
       setMostrarFechaVencimientoModal(false);
     } else {
       setMostrarFechaVencimientoModal(true);
@@ -186,12 +275,12 @@ const BorderCrossingForm = ({ tripNumber }) => {
       ...prevEtapas,
       {
         stage_number: prevEtapas.length + 1,
-        stageType: tipoEtapa, 
+        stageType: tipoEtapa,
         origin: '', destination: '', zip_code_origin: '', zip_code_destination: '',
         loading_date: null, delivery_date: null, company_id: null, travel_direction: '',
         warehouse_origin_id: null, warehouse_destination_id: null, ci_number: '',
         rate_tarifa: '', millas_pc_miller: '', estatus: 'Pending',
-        documentos: initialDocs 
+        documentos: initialDocs
       }
     ]);
   };
@@ -201,17 +290,17 @@ const BorderCrossingForm = ({ tripNumber }) => {
   const eliminarEtapa = (index) => {
     if (etapas.length <= 1) { Swal.fire('Info', 'Debe haber al menos una etapa.', 'info'); return; }
     Swal.fire({
-        title: `¿Eliminar Etapa ${etapas[index].stage_number}?`, icon: 'warning',
-        showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Sí, eliminar'
+      title: `¿Eliminar Etapa ${etapas[index].stage_number}?`, icon: 'warning',
+      showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Sí, eliminar'
     }).then((result) => {
-        if (result.isConfirmed) {
-            setEtapas(prev => prev.filter((_, i) => i !== index).map((e, i) => ({ ...e, stage_number: i + 1 })));
-        }
+      if (result.isConfirmed) {
+        setEtapas(prev => prev.filter((_, i) => i !== index).map((e, i) => ({ ...e, stage_number: i + 1 })));
+      }
     });
-};
+  };
 
 
- 
+
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -239,7 +328,7 @@ const BorderCrossingForm = ({ tripNumber }) => {
     dataToSend.append('driver_id', formData.driver_id);
     dataToSend.append('truck_id', formData.truck_id);
     dataToSend.append('caja_id', formData.caja_id || '');
-   
+
 
 
     // Procesar y añadir etapas (como JSON) y sus archivos
@@ -303,17 +392,17 @@ const BorderCrossingForm = ({ tripNumber }) => {
           icon: 'success',
           title: '¡Éxito!',
           text: result.message || 'Viaje y etapas guardados correctamente.',
-          timer: 2500, 
+          timer: 2500,
           showConfirmButton: false
         });
 
-       
+
         setFormData({
           trip_number: '',
           driver_id: '', truck_id: '', caja_id: '',
           // ima_invoice: null, bl_firmado: null
         });
-        setEtapas([{ 
+        setEtapas([{
           stage_number: 1, origin: '', destination: '', zip_code_origin: '', zip_code_destination: '',
           loading_date: null, delivery_date: null, company_id: '', travel_direction: '',
           warehouse_origin_id: '', warehouse_destination_id: '', ci_number: '',
@@ -322,7 +411,7 @@ const BorderCrossingForm = ({ tripNumber }) => {
         }]);
 
       } else {
-      
+
         Swal.fire({
           icon: 'error',
           title: 'Error al Guardar',
@@ -421,16 +510,21 @@ const BorderCrossingForm = ({ tripNumber }) => {
           <div className="input-columns">
             <div className="column">
               <label htmlFor={`company_id-${index}`}>Company:</label>
-              <Select
-                id={`company_id-${index}`} name={`company_id-${index}`}
-                value={activeCompanies.find(c => c.company_id === etapa.company_id) ? { value: etapa.company_id, label: activeCompanies.find(c => c.company_id === etapa.company_id).nombre_compania } : null}
+              <CreatableSelect
+                id={`company_id-${index}`}
+                name={`company_id-${index}`}
+                isClearable
+                value={companyOptions.find(c => c.value === etapa.company_id) || null}
                 onChange={(selected) => handleEtapaChange(index, 'company_id', selected ? selected.value : '')}
-                options={activeCompanies.map(c => ({ value: c.company_id, label: c.nombre_compania }))}
-                placeholder="Seleccionar Company"
-                isLoading={loadingCompanies} isDisabled={loadingCompanies || !!errorCompanies}
-                styles={selectStyles} isClearable
+                onCreateOption={(inputValue) => handleCreateCompany(inputValue, index)}
+                options={companyOptions}
+                placeholder="Seleccionar o Crear Compañía"
+                isLoading={loadingCompanies || isCreatingCompany}
+
+                styles={selectStyles}
+                formatCreateLabel={(inputValue) => `Crear nueva compañía: "${inputValue}"`}
               />
-              {errorCompanies && <p className="error-text">Error cargando companies</p>}
+              {/* {errorCompanies && <p className="error-text">Error cargando companies</p>} */}
 
             </div>
 
@@ -461,28 +555,38 @@ const BorderCrossingForm = ({ tripNumber }) => {
           <div className="input-columns">
             <div className="column">
               <label htmlFor={`warehouse_origin_id-${index}`} style={{ marginTop: '10px' }}>Origin Warehouse:</label>
-              <Select
-                id={`warehouse_origin_id-${index}`} name={`warehouse_origin_id-${index}`}
-                value={activeWarehouses.find(w => w.warehouse_id === etapa.warehouse_origin_id) ? { value: etapa.warehouse_origin_id, label: activeWarehouses.find(w => w.warehouse_id === etapa.warehouse_origin_id).nombre_almacen } : null}
+              <CreatableSelect // << --- CAMBIO AQUÍ
+                id={`warehouse_origin_id-${index}`}
+                name={`warehouse_origin_id-${index}`}
+                isClearable
+                value={warehouseOptions.find(w => w.value === etapa.warehouse_origin_id) || null}
                 onChange={(selected) => handleEtapaChange(index, 'warehouse_origin_id', selected ? selected.value : '')}
-                options={activeWarehouses.map(w => ({ value: w.warehouse_id, label: w.nombre_almacen }))}
-                placeholder="Seleccionar Bodega Origen"
-                isLoading={loadingWarehouses} isDisabled={loadingWarehouses || !!errorWarehouses}
-                styles={selectStyles} isClearable
+                onCreateOption={(inputValue) => handleCreateWarehouse(inputValue, index, 'warehouse_origin_id')} 
+                options={warehouseOptions} 
+                placeholder="Seleccionar o Crear Bodega Origen"
+                isLoading={loadingWarehouses || isCreatingWarehouse} 
+
+                styles={selectStyles}
+                formatCreateLabel={(inputValue) => `Crear nueva bodega: "${inputValue}"`}
               />
-              {errorWarehouses && <p className="error-text">Error cargando warehouses</p>}
+              {/* {errorWarehouses && <p className="error-text">Error cargando warehouses</p>} */}
             </div>
 
             <div className="column">
               <label htmlFor={`warehouse_destination_id-${index}`} style={{ marginTop: '10px' }}>Destination Warehouse:</label>
-              <Select
-                id={`warehouse_destination_id-${index}`} name={`warehouse_destination_id-${index}`}
-                value={activeWarehouses.find(w => w.warehouse_id === etapa.warehouse_destination_id) ? { value: etapa.warehouse_destination_id, label: activeWarehouses.find(w => w.warehouse_id === etapa.warehouse_destination_id).nombre_almacen } : null}
+              <CreatableSelect 
+                id={`warehouse_destination_id-${index}`}
+                name={`warehouse_destination_id-${index}`}
+                isClearable
+                value={warehouseOptions.find(w => w.value === etapa.warehouse_destination_id) || null}
                 onChange={(selected) => handleEtapaChange(index, 'warehouse_destination_id', selected ? selected.value : '')}
-                options={activeWarehouses.map(w => ({ value: w.warehouse_id, label: w.nombre_almacen }))}
-                placeholder="Seleccionar Bodega Destino"
-                isLoading={loadingWarehouses} isDisabled={loadingWarehouses || !!errorWarehouses}
-                styles={selectStyles} isClearable
+                onCreateOption={(inputValue) => handleCreateWarehouse(inputValue, index, 'warehouse_destination_id')} 
+                options={warehouseOptions} 
+                placeholder="Seleccionar o Crear Bodega Destino"
+                isLoading={loadingWarehouses || isCreatingWarehouse} 
+
+                styles={selectStyles}
+                formatCreateLabel={(inputValue) => `Crear nueva bodega: "${inputValue}"`} 
               />
 
             </div>
@@ -604,7 +708,7 @@ const BorderCrossingForm = ({ tripNumber }) => {
             <div className="subsection">
               <legend className="card-label">Documentos de Etapa {etapa.stage_number}</legend>
               <div className="input-columns">
-               
+
                 <div className="column">
                   <div className="column">
                     <label htmlFor={`ima_invoice-${index}`}>IMA Invoice:</label>
@@ -622,7 +726,7 @@ const BorderCrossingForm = ({ tripNumber }) => {
                     {etapa.documentos?.ci && (<p className="doc-info"><i>{etapa.documentos.ci.fileName}{etapa.documentos.ci.vencimiento ? ` - V: ${etapa.documentos.ci.vencimiento}` : ''}</i></p>)}
                   </div>
                 </div>
-              
+
                 <div className="column">
                   <div className="column">
                     <label htmlFor={`entry-${index}`}>Entry:</label>
@@ -640,7 +744,7 @@ const BorderCrossingForm = ({ tripNumber }) => {
                     {etapa.documentos?.cita_entrega && (<p className="doc-info"><i>{etapa.documentos.cita_entrega.fileName}{etapa.documentos.cita_entrega.vencimiento ? ` - V: ${etapa.documentos.cita_entrega.vencimiento}` : ''}</i></p>)}
                   </div>
                 </div>
-       
+
                 <div className="column">
                   <div className="column">
                     <label htmlFor={`bl-${index}`}>BL:</label>
@@ -664,9 +768,9 @@ const BorderCrossingForm = ({ tripNumber }) => {
 
           {etapa.stageType === 'normalTrip' && (
             <div className="subsection">
-            <legend className="card-label">Documentos de Etapa {etapa.stage_number}</legend>
-            <div className="input-columns">
-             
+              <legend className="card-label">Documentos de Etapa {etapa.stage_number}</legend>
+              <div className="input-columns">
+
                 <div className="column">
                   <div className="column">
                     <label htmlFor={`ima_invoice-${index}`}>IMA Invoice:</label>
@@ -684,7 +788,7 @@ const BorderCrossingForm = ({ tripNumber }) => {
                     {etapa.documentos?.ci && (<p className="doc-info"><i>{etapa.documentos.ci.fileName}{etapa.documentos.ci.vencimiento ? ` - V: ${etapa.documentos.ci.vencimiento}` : ''}</i></p>)}
                   </div>
                 </div>
-           
+
                 <div className="column">
                   <div className="column">
                     <label htmlFor={`entry-${index}`}>Entry:</label>
@@ -702,7 +806,7 @@ const BorderCrossingForm = ({ tripNumber }) => {
                     {etapa.documentos?.cita_entrega && (<p className="doc-info"><i>{etapa.documentos.cita_entrega.fileName}{etapa.documentos.cita_entrega.vencimiento ? ` - V: ${etapa.documentos.cita_entrega.vencimiento}` : ''}</i></p>)}
                   </div>
                 </div>
-               
+
                 <div className="column">
                   <div className="column">
                     <label htmlFor={`bl-${index}`}>BL:</label>
@@ -721,7 +825,7 @@ const BorderCrossingForm = ({ tripNumber }) => {
                   </div>
                 </div>
               </div>
-          </div>
+            </div>
           )}
         </div>
       ))}
@@ -734,7 +838,7 @@ const BorderCrossingForm = ({ tripNumber }) => {
         <button type="button" onClick={() => agregarNuevaEtapa('normalTrip')} className="add-stage-button">
           + Añadir Etapa Normal
         </button>
-       
+
       </div>
 
       {modalAbierto && (
@@ -744,10 +848,10 @@ const BorderCrossingForm = ({ tripNumber }) => {
             setModalAbierto(false);
             setModalTarget({ stageIndex: null, docType: null });
           }}
-          
+
           onSave={modalTarget.stageIndex !== null ? handleGuardarDocumentoEtapa : handleGuardarDocumentoGlobal}
           nombreCampo={modalTarget.docType}
-          valorActual={getCurrentDocValueForModal()} 
+          valorActual={getCurrentDocValueForModal()}
           mostrarFechaVencimiento={mostrarFechaVencimientoModal}
         />
       )}
