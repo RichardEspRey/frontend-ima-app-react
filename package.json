@@ -11,7 +11,8 @@
     "preview": "vite preview",
     "start": "electron .",
     "pack": "electron-builder --dir",
-    "dist": "electron-builder"
+    "dist": "electron-builder",
+    "electron:build": "npm run dist"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -42,7 +43,7 @@
     "@vitejs/plugin-react": "^4.3.4",
     "@vitejs/plugin-react-swc": "^3.8.0",
     "electron": "^35.1.4",
-    "electron-builder": "^26.0.1",
+    "electron-builder": "^26.0.12",
     "eslint": "^9.21.0",
     "eslint-plugin-react-hooks": "^5.1.0",
     "eslint-plugin-react-refresh": "^0.4.19",

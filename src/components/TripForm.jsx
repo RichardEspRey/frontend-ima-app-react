@@ -37,7 +37,7 @@ const selectStyles = {
 
 
 const TripForm = ({ tripNumber }) => {
-
+    const apiHost = import.meta.env.VITE_API_HOST;
     
     const { activeDrivers, loading: loadingDrivers, error: errorDrivers } = useFetchActiveDrivers();
     const { activeTrucks, loading: loadingTrucks, error: errorTrucks } = useFetchActiveTrucks();
@@ -271,7 +271,7 @@ const TripForm = ({ tripNumber }) => {
 
         // Enviar a la API
         try {
-            const apiUrl = 'http://localhost/api/new_trips.php'; // URL de tu API
+            const apiUrl = 'http://imaexpressllc.com/API/new_trips.php'; // URL de tu API
             const response = await fetch(apiUrl, {
                 method: 'POST',
                 body: dataToSend,
