@@ -63,14 +63,8 @@ const EditTripForm = () => {
     const getDocumentUrl = (serverPath) => {
         if (!serverPath) return '#'; // Retorna un enlace no funcional si no hay ruta
 
-        // Asumiendo que UPLOAD_DIR en PHP es 'API/Uploads/' relativo a htdocs
-        // y que los archivos son servidos directamente desde esa ruta web.
-        // serverPath podría ser 'C:/xampp/htdocs/API/Uploads/nombre_archivo.pdf'
-        // o directamente '/API/Uploads/nombre_archivo.pdf' si el SP lo devuelve así.
-
-        // Si serverPath ya es una ruta web relativa (ej: /API/Uploads/...), no necesita más procesamiento.
-        // Si es una ruta absoluta del sistema de archivos, necesitamos extraer la parte relevante.
-        const uploadsWebPath = '/API/Uploads/'; // *** AJUSTA ESTO SI TU RUTA WEB ES DIFERENTE ***
+   
+        const uploadsWebPath = `${apiHost}/Uploads/Trips/`;// *** AJUSTA ESTO SI TU RUTA WEB ES DIFERENTE ***
 
         // Extraer solo el nombre del archivo de la ruta del servidor
         const fileName = serverPath.split(/[\\/]/).pop();
@@ -142,7 +136,8 @@ const EditTripForm = () => {
                                     documentosBase[doc.tipo_documento] = {
                                         fileName: doc.nombre_archivo?.split(/[\\/]/).pop() || 'Archivo existente',
                                         vencimiento: doc.fecha_vencimiento || null, file: null,
-                                        document_id: doc.document_id, serverPath: doc.nombre_archivo
+                                        document_id: doc.document_id, 
+                                        serverPath: doc.path_servidor_real 
                                     };
                                 }
                             });
@@ -217,7 +212,7 @@ const EditTripForm = () => {
         if (stageIndex === null) { return; }
         setModalTarget({ stageIndex, docType });
         setModalAbierto(true);
-        if (['bl', 'entry', 'manifiesto'].includes(docType)) {
+        if (['ima_invoice', 'carta_porte' ,'ci', 'entry',  'manifiesto', 'cita_entrega', 'bl', 'orden_retiro', 'bl_firmado'].includes(docType)) {
             setMostrarFechaVencimientoModal(false);
         } else {
             setMostrarFechaVencimientoModal(true);

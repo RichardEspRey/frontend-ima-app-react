@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import './css/DriverAdmin.css';
-import redIcon from '../assets/images/Icons_alerts/shield-red.png'; 
-import greenIcon from '../assets/images/Icons_alerts/shield-green.png'; 
-import yellowIcon from '../assets/images/Icons_alerts/shield-yellow.png'; 
-import greyIcon from '../assets/images/Icons_alerts/shield-grey.png'; 
-import questionIcon from '../assets/images/Icons_alerts/question.png'; 
-import ModalArchivo from '../components/ModalArchivoEditor.jsx'; 
+import redIcon from '../assets/images/Icons_alerts/shield-red.png';
+import greenIcon from '../assets/images/Icons_alerts/shield-green.png';
+import yellowIcon from '../assets/images/Icons_alerts/shield-yellow.png';
+import greyIcon from '../assets/images/Icons_alerts/shield-grey.png';
+import questionIcon from '../assets/images/Icons_alerts/question.png';
+import ModalArchivo from '../components/ModalArchivoEditor.jsx';
+import { useNavigate } from 'react-router-dom';
 import { Tooltip } from 'react-tooltip';
 
 const TrailerAdmin = () => {
@@ -16,6 +17,7 @@ const TrailerAdmin = () => {
   const [page, setPage] = useState(0);
   const rowsPerPage = 4;
   const [cajas, setCajas] = useState([]);
+  const navigate = useNavigate();
 
   const from = page * rowsPerPage;
   const to = Math.min((page + 1) * rowsPerPage, cajas.length);
@@ -110,6 +112,12 @@ const TrailerAdmin = () => {
     setIsModalOpen(true);
   };
 
+
+   const handleEditTrip = (tripId) => {
+        if (!tripId) { console.error("ID inválido"); return; }
+        navigate(`/edit-trip/${tripId}`);
+    };
+
   return (
     <div className="driver-admin">
       <h1 className="title">Administrador de cajas</h1>
@@ -133,6 +141,7 @@ const TrailerAdmin = () => {
               <th>Registración</th>
               <th>Seguro</th>
               <th>Fianza</th>
+              <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -142,6 +151,14 @@ const TrailerAdmin = () => {
                 <td>{getIconByFecha(caja.Registracion_fecha, caja.id, caja.Registracion_url, 'Registracion')}</td>
                 <td>{getIconByFecha(caja.Seguro_fecha, caja.id, caja.Seguro_url, 'Seguro')}</td>
                 <td>{getIconByFecha(caja.Fianza_fecha, caja.id, caja.Fianza_url, 'Fianza')}</td>
+                <td>
+                  <button
+                    className="ver-btn"
+                    onClick={() => navigate(`/edit-trailer/${caja.id}`)}
+                  >
+                    Ver
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>

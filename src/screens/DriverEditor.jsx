@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import './css/ConductoresScreen.css';
 import 'react-datepicker/dist/react-datepicker.css';
-import ModalArchivo from '../components/ModalArchivo.jsx'; // ajusta la ruta si es necesario
+import ModalArchivo from '../components/ModalArchivo.jsx'; 
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
 import { useParams } from 'react-router-dom';
-const DriverEditor = () => {
+const TrailerEdit = () => {
   const { id } = useParams();
   
   const apiHost = import.meta.env.VITE_API_HOST;
@@ -142,8 +142,8 @@ const DriverEditor = () => {
           const formDataToSend = new FormData();
 
        
-        formDataToSend.append('op', 'getDriverEdit'); // operación que espera el backend
-        formDataToSend.append('driver_id', id);
+          formDataToSend.append('op', 'getDriverEdit'); // operación que espera el backend
+          formDataToSend.append('driver_id', id);
    
         try {
           const response = await fetch(`${apiHost}/drivers.php`, {
@@ -373,4 +373,4 @@ const DriverEditor = () => {
 
 };
 
-export default DriverEditor;
+export default TrailerEdit;

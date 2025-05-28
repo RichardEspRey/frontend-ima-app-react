@@ -22,24 +22,6 @@ const TruckScreen = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // const handleDateChange = (date) => {
-  //   setSelectedDate(date);
-  //   setFormData(prev => ({
-  //     ...prev,
-  //     [`${selectedFieldName}Date`]: date.toISOString().split("T")[0],
-  //   }));
-  // };
-
-  // const handleFileChange = (e, name) => {
-  //   const file = e.target.files[0];
-  //   if (!file) return;
-  //   setFormData(prev => ({
-  //     ...prev,
-  //     [name]: file.name,
-  //     [`${name}File`]: file
-  //   }));
-  // };
-
 
   {/*utiles*/ }
   const [documentos, setDocumentos] = useState({});

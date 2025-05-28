@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import ModalArchivo from './ModalArchivo'; 
-import './css/TripForm.css'; 
-import useFetchActiveDrivers from '../hooks/useFetchActiveDrivers'; 
-import useFetchActiveTrucks from '../hooks/useFetchActiveTrucks'; 
-import useFetchActiveTrailers from '../hooks/useFetchActiveTrailers'; 
-import useFetchCompanies from '../hooks/useFetchCompanies'; 
-import useFetchWarehouses from '../hooks/useFetchWarehouses'; 
+import ModalArchivo from './ModalArchivo';
+import './css/TripForm.css';
+import useFetchActiveDrivers from '../hooks/useFetchActiveDrivers';
+import useFetchActiveTrucks from '../hooks/useFetchActiveTrucks';
+import useFetchActiveTrailers from '../hooks/useFetchActiveTrailers';
+import useFetchCompanies from '../hooks/useFetchCompanies';
+import useFetchWarehouses from '../hooks/useFetchWarehouses';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import CreatableSelect from 'react-select/creatable';
 import Select from 'react-select';
 import Swal from 'sweetalert2';
 import { format } from 'date-fns';
@@ -38,19 +39,25 @@ const selectStyles = {
 
 const TripForm = ({ tripNumber }) => {
     const apiHost = import.meta.env.VITE_API_HOST;
-    
+
     const { activeDrivers, loading: loadingDrivers, error: errorDrivers } = useFetchActiveDrivers();
     const { activeTrucks, loading: loadingTrucks, error: errorTrucks } = useFetchActiveTrucks();
     const { activeTrailers, loading: loadingCajas, error: errorCajas } = useFetchActiveTrailers();
     const { activeCompanies, loading: loadingCompanies, error: errorCompanies } = useFetchCompanies();
     const { activeWarehouses, loading: loadingWarehouses, error: errorWarehouses } = useFetchWarehouses();
 
-  
+
+    const [isCreatingCompany, setIsCreatingCompany] = useState(false);
+    const [isCreatingWarehouse, setIsCreatingWarehouse] = useState(false)
+
+    const [companyOptions, setCompanyOptions] = useState([]);
+    const [warehouseOptions, setWarehouseOptions] = useState([]);
+
     const [modalAbierto, setModalAbierto] = useState(false);
     const [modalTarget, setModalTarget] = useState({ stageIndex: null, docType: null });
     const [mostrarFechaVencimientoModal, setMostrarFechaVencimientoModal] = useState(true);
 
-    
+
     const [formData, setFormData] = useState({
         trip_number: tripNumber || '',
         driver_id: '',
@@ -58,10 +65,10 @@ const TripForm = ({ tripNumber }) => {
         caja_id: '',
     });
 
- 
+
     const [etapas, setEtapas] = useState([{
         stage_number: 1,
-        stageType: 'normalTrip', 
+        stageType: 'normalTrip',
         origin: '',
         destination: '',
         zip_code_origin: '',
@@ -75,10 +82,98 @@ const TripForm = ({ tripNumber }) => {
         ci_number: '',
         rate_tarifa: '',
         millas_pc_miller: '',
-        documentos: { ...initialNormalTripDocs } 
+        documentos: { ...initialNormalTripDocs }
     }]);
 
-  
+
+    useEffect(() => {
+        if (activeCompanies) {
+            setCompanyOptions(activeCompanies.map(c => ({ value: c.company_id, label: c.nombre_compania })));
+        }
+    }, [activeCompanies]);
+
+    useEffect(() => {
+        if (activeWarehouses) {
+            setWarehouseOptions(activeWarehouses.map(w => ({ value: w.warehouse_id, label: w.nombre_almacen })));
+        }
+    }, [activeWarehouses]);
+
+    const handleCreateCompany = async (inputValue, stageIndex) => {
+
+        setIsCreatingCompany(true);
+
+
+        const newCompanyFormData = new FormData();
+        newCompanyFormData.append('op', 'CreateCompany');
+        newCompanyFormData.append('nombre_compania', inputValue);
+
+
+        try {
+            const response = await fetch(`${apiHost}/companies.php`, {
+                method: 'POST',
+                body: newCompanyFormData,
+            });
+
+
+
+            const result = await response.json();
+            console.log("Respuesta del backend (result):", result);
+
+            if (result.status === "success" && result.company && result.company.company_id) {
+                const newOption = { value: result.company.company_id, label: result.company.nombre_compania };
+
+                setCompanyOptions(prevOptions => [...prevOptions, newOption]);
+
+
+                handleEtapaChange(stageIndex, 'company_id', newOption.value);
+
+                Swal.fire('¡Éxito!', `Compañía "${inputValue}" creada y seleccionada.`, 'success');
+            } else {
+                Swal.fire('Error', `No se pudo crear la compañía: ${result.message || 'Error desconocido del servidor.'}`, 'error');
+            }
+        } catch (error) {
+            console.error("Error creando compañía:", error);
+            Swal.fire('Error', 'Error de conexión al crear la compañía.', 'error');
+        } finally {
+            setIsCreatingCompany(false);
+        }
+    };
+
+    const handleCreateWarehouse = async (inputValue, stageIndex, warehouseFieldKey) => {
+
+        setIsCreatingWarehouse(true);
+
+
+        const newWarehouseFormData = new FormData();
+        newWarehouseFormData.append('op', 'CreateWarehouse');
+        newWarehouseFormData.append('nombre_almacen', inputValue);
+
+
+        try {
+            const response = await fetch(`${apiHost}/warehouses.php`, {
+                method: 'POST',
+                body: newWarehouseFormData,
+            });
+            const result = await response.json();
+
+            if (result.status === "success" && result.warehouse && result.warehouse.warehouse_id) {
+                const newOption = { value: result.warehouse.warehouse_id, label: result.warehouse.nombre_almacen };
+
+                setWarehouseOptions(prevOptions => [...prevOptions, newOption]);
+                handleEtapaChange(stageIndex, warehouseFieldKey, newOption.value);
+
+                Swal.fire('¡Éxito!', `Bodega "${inputValue}" creada y seleccionada.`, 'success');
+            } else {
+                Swal.fire('Error', `No se pudo crear la bodega: ${result.message || 'Error desconocido del servidor.'}`, 'error');
+            }
+        } catch (error) {
+            console.error("Error creando bodega:", error);
+            Swal.fire('Error', 'Error de conexión al crear la bodega.', 'error');
+        } finally {
+            setIsCreatingWarehouse(false);
+        }
+    };
+
     useEffect(() => {
         setFormData(prevFormData => ({
             ...prevFormData,
@@ -86,7 +181,7 @@ const TripForm = ({ tripNumber }) => {
         }));
     }, [tripNumber]);
 
-    
+
     const setForm = (name, value) => {
         setFormData(prevData => ({
             ...prevData,
@@ -94,7 +189,7 @@ const TripForm = ({ tripNumber }) => {
         }));
     };
 
-    
+
     const handleEtapaChange = (index, field, value) => {
         setEtapas(prevEtapas => {
             const updatedEtapas = [...prevEtapas];
@@ -105,7 +200,7 @@ const TripForm = ({ tripNumber }) => {
         });
     };
 
-   
+
     const handleGuardarDocumentoEtapa = (data) => {
         const { stageIndex, docType } = modalTarget;
         if (stageIndex === null || !docType) return;
@@ -115,7 +210,7 @@ const TripForm = ({ tripNumber }) => {
                 ...updatedEtapas[stageIndex],
                 documentos: {
                     ...updatedEtapas[stageIndex].documentos,
-                    [docType]: data 
+                    [docType]: data
                 }
             };
             updatedEtapas[stageIndex] = updatedEtapa;
@@ -125,13 +220,13 @@ const TripForm = ({ tripNumber }) => {
         setModalTarget({ stageIndex: null, docType: null });
     };
 
- 
+
 
     const abrirModal = (docType, stageIndex = null) => {
         setModalTarget({ stageIndex, docType });
         setModalAbierto(true);
-        
-        if (['bl', 'entry', 'manifiesto'].includes(docType)) {
+
+        if (['ima_invoice', 'carta_porte', 'ci', 'entry', 'manifiesto', 'cita_entrega', 'bl', 'orden_retiro', 'bl_firmado'].includes(docType)) {
             setMostrarFechaVencimientoModal(false);
         } else {
             setMostrarFechaVencimientoModal(true);
@@ -145,14 +240,14 @@ const TripForm = ({ tripNumber }) => {
         if (stageIndex !== null && etapas[stageIndex]) {
             return etapas[stageIndex].documentos[docType] || null;
         }
-  
+
         return null;
     };
 
-   
+
     const agregarNuevaEtapa = (tipoEtapa) => {
         let initialDocs;
-      
+
         if (tipoEtapa === 'normalTrip') {
             initialDocs = { ...initialNormalTripDocs };
         } else if (tipoEtapa === 'borderCrossing') {
@@ -165,14 +260,14 @@ const TripForm = ({ tripNumber }) => {
         setEtapas(prevEtapas => [
             ...prevEtapas,
             {
-               
+
                 stage_number: prevEtapas.length + 1,
                 stageType: tipoEtapa,
                 origin: '', destination: '', zip_code_origin: '', zip_code_destination: '',
                 loading_date: null, delivery_date: null, company_id: null, travel_direction: '',
                 warehouse_origin_id: null, warehouse_destination_id: null, ci_number: '',
                 rate_tarifa: '', millas_pc_miller: '', estatus: 'Pending',
-                documentos: initialDocs 
+                documentos: initialDocs
             }
         ]);
     };
@@ -185,13 +280,13 @@ const TripForm = ({ tripNumber }) => {
             showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Sí, eliminar'
         }).then((result) => {
             if (result.isConfirmed) {
-                
+
                 setEtapas(prev => prev.filter((_, i) => i !== index).map((e, i) => ({ ...e, stage_number: i + 1 })));
             }
         });
     };
 
-  
+
     const handleSubmit = async (event) => {
         event.preventDefault();
 
@@ -209,15 +304,15 @@ const TripForm = ({ tripNumber }) => {
         }
 
         const dataToSend = new FormData();
-        dataToSend.append('op', 'Alta'); 
+        dataToSend.append('op', 'Alta');
 
-        
+
         dataToSend.append('trip_number', formData.trip_number);
         dataToSend.append('driver_id', formData.driver_id);
         dataToSend.append('truck_id', formData.truck_id);
-        dataToSend.append('caja_id', formData.caja_id || ''); 
+        dataToSend.append('caja_id', formData.caja_id || '');
 
-     
+
         const etapasParaJson = etapas.map(etapa => ({
             stage_number: etapa.stage_number,
             stageType: etapa.stageType,
@@ -225,7 +320,7 @@ const TripForm = ({ tripNumber }) => {
             destination: etapa.destination,
             zip_code_origin: etapa.zip_code_origin,
             zip_code_destination: etapa.zip_code_destination,
-            
+
             loading_date: etapa.loading_date ? format(etapa.loading_date, 'yyyy-MM-dd') : null,
             delivery_date: etapa.delivery_date ? format(etapa.delivery_date, 'yyyy-MM-dd') : null,
             company_id: etapa.company_id,
@@ -271,11 +366,11 @@ const TripForm = ({ tripNumber }) => {
 
         // Enviar a la API
         try {
-            const apiUrl = 'http://imaexpressllc.com/API/new_trips.php'; // URL de tu API
+            const apiUrl = `${apiHost}/new_trips.php`; // URL de tu API
             const response = await fetch(apiUrl, {
                 method: 'POST',
                 body: dataToSend,
-      
+
             });
 
             const result = await response.json();
@@ -296,10 +391,10 @@ const TripForm = ({ tripNumber }) => {
                     ci_number: '', rate_tarifa: '', millas_pc_miller: '',
                     documentos: { ...initialNormalTripDocs }
                 }]);
-             
+
                 // navigate('/admin-trips');
             } else {
-                
+
                 Swal.fire({
                     icon: 'error', title: 'Error al Guardar',
                     text: result.error || result.message || 'No se pudo guardar la información. Verifica los datos e intenta de nuevo.',
@@ -317,17 +412,17 @@ const TripForm = ({ tripNumber }) => {
 
     return (
         <form onSubmit={handleSubmit} className="card-container">
-          
+
             <div className="form-actions">
                 <button type="button" className="cancel-button" onClick={() => console.log('Cancelar presionado')}>Cancelar</button>
                 <button type="submit" className="accept-button">Guardar Viaje</button>
             </div>
 
-          
+
             <div className="form-section">
                 <legend className="card-label">Información General del Viaje</legend>
                 <div className="input-columns">
-             
+
                     <div className="column">
                         <label htmlFor="driver_id">Driver:</label>
                         <Select
@@ -342,7 +437,7 @@ const TripForm = ({ tripNumber }) => {
                         />
                         {errorDrivers && <p className="error-text">Error cargando drivers</p>}
                     </div>
-                   
+
                     <div className="column">
                         <label htmlFor="truck_id">Truck:</label>
                         <Select
@@ -357,7 +452,7 @@ const TripForm = ({ tripNumber }) => {
                         />
                         {errorTrucks && <p className="error-text">Error cargando trucks</p>}
                     </div>
-                   
+
                     <div className="column">
                         <label htmlFor="caja_id">Trailer (Caja):</label>
                         <Select
@@ -387,22 +482,27 @@ const TripForm = ({ tripNumber }) => {
                         )}
                     </div>
 
-                    
+
                     <legend className="card-label">Origen / Destino / Detalles</legend>
                     <div className="input-columns">
                         {/* Company, Travel Direction, CI Number */}
                         <div className="column">
                             <label htmlFor={`company_id-${index}`}>Company:</label>
-                            <Select
-                                id={`company_id-${index}`} name={`company_id-${index}`}
-                                value={activeCompanies.find(c => c.company_id === etapa.company_id) ? { value: etapa.company_id, label: activeCompanies.find(c => c.company_id === etapa.company_id).nombre_compania } : null}
+                            <CreatableSelect
+                                id={`company_id-${index}`}
+                                name={`company_id-${index}`}
+                                isClearable
+                                value={companyOptions.find(c => c.value === etapa.company_id) || null}
                                 onChange={(selected) => handleEtapaChange(index, 'company_id', selected ? selected.value : '')}
-                                options={activeCompanies.map(c => ({ value: c.company_id, label: c.nombre_compania }))}
-                                placeholder="Seleccionar Company"
-                                isLoading={loadingCompanies} isDisabled={loadingCompanies || !!errorCompanies}
-                                styles={selectStyles} isClearable
+                                onCreateOption={(inputValue) => handleCreateCompany(inputValue, index)}
+                                options={companyOptions}
+                                placeholder="Seleccionar o Crear Compañía"
+                                isLoading={loadingCompanies || isCreatingCompany}
+
+                                styles={selectStyles}
+                                formatCreateLabel={(inputValue) => `Crear nueva compañía: "${inputValue}"`}
                             />
-                            {errorCompanies && <p className="error-text">Error cargando companies</p>}
+                            {/* {errorCompanies && <p className="error-text">Error cargando companies</p>} */}
                         </div>
                         <div className="column">
                             <label htmlFor={`travel_direction-${index}`}>Travel Direction:</label>
@@ -427,36 +527,46 @@ const TripForm = ({ tripNumber }) => {
                         </div>
                     </div>
                     <div className="input-columns">
-                        
-                         <div className="column">
+
+                        <div className="column">
                             <label htmlFor={`warehouse_origin_id-${index}`} style={{ marginTop: '10px' }}>Origin Warehouse:</label>
-                            <Select
-                                id={`warehouse_origin_id-${index}`} name={`warehouse_origin_id-${index}`}
-                                value={activeWarehouses.find(w => w.warehouse_id === etapa.warehouse_origin_id) ? { value: etapa.warehouse_origin_id, label: activeWarehouses.find(w => w.warehouse_id === etapa.warehouse_origin_id).nombre_almacen } : null}
+                            <CreatableSelect
+                                id={`warehouse_origin_id-${index}`}
+                                name={`warehouse_origin_id-${index}`}
+                                isClearable
+                                value={warehouseOptions.find(w => w.value === etapa.warehouse_origin_id) || null}
                                 onChange={(selected) => handleEtapaChange(index, 'warehouse_origin_id', selected ? selected.value : '')}
-                                options={activeWarehouses.map(w => ({ value: w.warehouse_id, label: w.nombre_almacen }))}
-                                placeholder="Seleccionar Bodega Origen"
-                                isLoading={loadingWarehouses} isDisabled={loadingWarehouses || !!errorWarehouses}
-                                styles={selectStyles} isClearable
+                                onCreateOption={(inputValue) => handleCreateWarehouse(inputValue, index, 'warehouse_origin_id')}
+                                options={warehouseOptions}
+                                placeholder="Seleccionar o Crear Bodega Origen"
+                                isLoading={loadingWarehouses || isCreatingWarehouse}
+
+                                styles={selectStyles}
+                                formatCreateLabel={(inputValue) => `Crear nueva bodega: "${inputValue}"`}
                             />
-                            {errorWarehouses && <p className="error-text">Error cargando warehouses</p>}
+                            {/* {errorWarehouses && <p className="error-text">Error cargando warehouses</p>} */}
                         </div>
                         <div className="column">
                             <label htmlFor={`warehouse_destination_id-${index}`} style={{ marginTop: '10px' }}>Destination Warehouse:</label>
-                            <Select
-                                id={`warehouse_destination_id-${index}`} name={`warehouse_destination_id-${index}`}
-                                value={activeWarehouses.find(w => w.warehouse_id === etapa.warehouse_destination_id) ? { value: etapa.warehouse_destination_id, label: activeWarehouses.find(w => w.warehouse_id === etapa.warehouse_destination_id).nombre_almacen } : null}
+                            <CreatableSelect
+                                id={`warehouse_destination_id-${index}`}
+                                name={`warehouse_destination_id-${index}`}
+                                isClearable
+                                value={warehouseOptions.find(w => w.value === etapa.warehouse_destination_id) || null}
                                 onChange={(selected) => handleEtapaChange(index, 'warehouse_destination_id', selected ? selected.value : '')}
-                                options={activeWarehouses.map(w => ({ value: w.warehouse_id, label: w.nombre_almacen }))}
-                                placeholder="Seleccionar Bodega Destino"
-                                isLoading={loadingWarehouses} isDisabled={loadingWarehouses || !!errorWarehouses}
-                                styles={selectStyles} isClearable
+                                onCreateOption={(inputValue) => handleCreateWarehouse(inputValue, index, 'warehouse_destination_id')}
+                                options={warehouseOptions}
+                                placeholder="Seleccionar o Crear Bodega Destino"
+                                isLoading={loadingWarehouses || isCreatingWarehouse}
+
+                                styles={selectStyles}
+                                formatCreateLabel={(inputValue) => `Crear nueva bodega: "${inputValue}"`}
                             />
                         </div>
                     </div>
                     <div className="input-columns">
-                       
-                         <div className="column">
+
+                        <div className="column">
                             <label htmlFor={`origin-${index}`} style={{ marginTop: '10px' }}>Origin City/State:</label>
                             <input
                                 type="text" id={`origin-${index}`} name={`origin-${index}`}
@@ -478,8 +588,8 @@ const TripForm = ({ tripNumber }) => {
                         </div>
                     </div>
                     <div className="input-columns">
-                       
-                         <div className="column">
+
+                        <div className="column">
                             <label htmlFor={`zip_code_origin-${index}`}>Zip Code Origin:</label>
                             <input
                                 type="text" id={`zip_code_origin-${index}`} name={`zip_code_origin-${index}`}
@@ -499,8 +609,8 @@ const TripForm = ({ tripNumber }) => {
                         </div>
                     </div>
                     <div className="input-columns">
-                       
-                         <div className="column">
+
+                        <div className="column">
                             <label htmlFor={`loading_date-${index}`} style={{ marginTop: '10px' }}>Loading Date:</label>
                             <DatePicker
                                 selected={etapa.loading_date}
@@ -523,9 +633,9 @@ const TripForm = ({ tripNumber }) => {
                             />
                         </div>
                     </div>
-                     <div className="input-columns">
+                    <div className="input-columns">
                         {/* Rate/Miles */}
-                         <div className="column">
+                        <div className="column">
                             <label htmlFor={`rate_tarifa-${index}`} >Rate Tarifa:</label>
                             <input
                                 type="number" id={`rate_tarifa-${index}`} name={`rate_tarifa-${index}`}
@@ -547,12 +657,12 @@ const TripForm = ({ tripNumber }) => {
                         </div>
                     </div>
 
-                
+
                     {etapa.stageType === 'normalTrip' && (
                         <div className="subsection">
                             <legend className="card-label">Documentos (Viaje Normal)</legend>
                             <div className="input-columns">
-                             
+
                                 <div className="column">
                                     <div className="column">
                                         <label>IMA Invoice:</label>
@@ -570,9 +680,9 @@ const TripForm = ({ tripNumber }) => {
                                         {etapa.documentos?.ci && (<p className="doc-info"><i>{etapa.documentos.ci.fileName}{etapa.documentos.ci.vencimiento ? ` - V: ${etapa.documentos.ci.vencimiento}` : ''}</i></p>)}
                                     </div>
                                 </div>
-                               
+
                                 <div className="column">
-                                     <div className="column">
+                                    <div className="column">
                                         <label>Entry:</label>
                                         <button type="button" className="upload-button" onClick={() => abrirModal('entry', index)}>Subir</button>
                                         {etapa.documentos?.entry && (<p className="doc-info"><i>{etapa.documentos.entry.fileName}</i></p>)}
@@ -588,9 +698,9 @@ const TripForm = ({ tripNumber }) => {
                                         {etapa.documentos?.cita_entrega && (<p className="doc-info"><i>{etapa.documentos.cita_entrega.fileName}{etapa.documentos.cita_entrega.vencimiento ? ` - V: ${etapa.documentos.cita_entrega.vencimiento}` : ''}</i></p>)}
                                     </div>
                                 </div>
-                                
+
                                 <div className="column">
-                                     <div className="column">
+                                    <div className="column">
                                         <label>BL:</label>
                                         <button type="button" className="upload-button" onClick={() => abrirModal('bl', index)}>Subir</button>
                                         {etapa.documentos?.bl && (<p className="doc-info"><i>{etapa.documentos.bl.fileName}</i></p>)}
@@ -611,11 +721,11 @@ const TripForm = ({ tripNumber }) => {
                     )}
 
                     {etapa.stageType === 'borderCrossing' && (
-                         <div className="subsection">
-                           
+                        <div className="subsection">
+
                             <legend className="card-label">Documentos (Cruce Fronterizo)</legend>
-                             <div className="input-columns">
-                              
+                            <div className="input-columns">
+
                                 <div className="column">
                                     <div className="column">
                                         <label>IMA Invoice:</label>
@@ -627,18 +737,18 @@ const TripForm = ({ tripNumber }) => {
                                         <button type="button" className="upload-button" onClick={() => abrirModal('carta_porte', index)}>Subir</button>
                                         {etapa.documentos?.carta_porte && (<p className="doc-info"><i>{etapa.documentos.carta_porte.fileName}{etapa.documentos.carta_porte.vencimiento ? ` - V: ${etapa.documentos.carta_porte.vencimiento}` : ''}</i></p>)}
                                     </div>
-                                     <div className="column">
+                                    <div className="column">
                                         <label>CI:</label>
                                         <button type="button" className="upload-button" onClick={() => abrirModal('ci', index)}>Subir</button>
                                         {etapa.documentos?.ci && (<p className="doc-info"><i>{etapa.documentos.ci.fileName}{etapa.documentos.ci.vencimiento ? ` - V: ${etapa.documentos.ci.vencimiento}` : ''}</i></p>)}
                                     </div>
                                 </div>
-                             
+
                                 <div className="column">
                                     <div className="column">
-                                        <label>Manifiesto:</label>
-                                        <button type="button" className="upload-button" onClick={() => abrirModal('manifiesto', index)}>Subir</button>
-                                        {etapa.documentos?.manifiesto && (<p className="doc-info"><i>{etapa.documentos.manifiesto.fileName}</i></p>)}
+                                        <label>Entry:</label>
+                                        <button type="button" className="upload-button" onClick={() => abrirModal('entry', index)}>Subir</button>
+                                        {etapa.documentos?.entry && (<p className="doc-info"><i>{etapa.documentos.entry.fileName}</i></p>)}
                                     </div>
                                     <div className="column">
                                         <label>Manifiesto:</label>
@@ -651,9 +761,9 @@ const TripForm = ({ tripNumber }) => {
                                         {etapa.documentos?.cita_entrega && (<p className="doc-info"><i>{etapa.documentos.cita_entrega.fileName}{etapa.documentos.cita_entrega.vencimiento ? ` - V: ${etapa.documentos.cita_entrega.vencimiento}` : ''}</i></p>)}
                                     </div>
                                 </div>
-                              
+
                                 <div className="column">
-                                     <div className="column">
+                                    <div className="column">
                                         <label>BL:</label>
                                         <button type="button" className="upload-button" onClick={() => abrirModal('bl', index)}>Subir</button>
                                         {etapa.documentos?.bl && (<p className="doc-info"><i>{etapa.documentos.bl.fileName}</i></p>)}
@@ -677,7 +787,7 @@ const TripForm = ({ tripNumber }) => {
 
             <br />
 
-         
+
             <div className="add-stage-buttons-container">
                 <button type="button" onClick={() => agregarNuevaEtapa('borderCrossing')} className="add-stage-button">
                     + Añadir Etapa Cruce
@@ -687,7 +797,7 @@ const TripForm = ({ tripNumber }) => {
                 </button>
             </div>
 
-          
+
             {modalAbierto && (
                 <ModalArchivo
                     isOpen={modalAbierto}

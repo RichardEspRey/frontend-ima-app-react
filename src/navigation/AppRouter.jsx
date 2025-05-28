@@ -17,6 +17,7 @@ import TruckAdmin from '../screens/TruckAdmin.jsx';
 import TruckScreen from '../screens/TruckScreen.jsx';
 import TrailerScreen from '../screens/TrailerScreen.jsx';
 import TrailerAdmin from '../screens/TrailerAdmin.jsx';
+import TrailerEdit from '../screens/TrailerEdit.jsx';
 import EditTripForm from '../screens/EditTripForm.jsx';
 
 const AppRouter = () => {
@@ -137,6 +138,14 @@ const AppRouter = () => {
                 }
               />
 
+                  <Route
+                path="/edit-trailer/:trailerId"
+                element={
+                  <DashboardLayout> 
+                    <TrailerEdit /> 
+                  </DashboardLayout>
+                }
+              />
 
 
             </>
