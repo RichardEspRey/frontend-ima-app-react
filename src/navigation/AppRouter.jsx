@@ -15,6 +15,7 @@ import TripScreen from '../screens/TripsScreen.jsx';
 import DriverScreen from '../screens/DriverScreen.jsx';
 import TruckAdmin from '../screens/TruckAdmin.jsx';
 import TruckScreen from '../screens/TruckScreen.jsx';
+import TrucksEditor from '../screens/TrucksEditor.jsx';
 import TrailerScreen from '../screens/TrailerScreen.jsx';
 import TrailerAdmin from '../screens/TrailerAdmin.jsx';
 import TrailerEdit from '../screens/TrailerEdit.jsx';
@@ -92,6 +93,16 @@ const AppRouter = () => {
                 }
               />
 
+
+              <Route
+                path="/editor-trucks/:id"
+                element={
+                  <DashboardLayout>
+                    <TrucksEditor />
+                  </DashboardLayout>
+                }
+              /> 
+
               <Route
                 path="/trailers"
                 element={
@@ -101,7 +112,6 @@ const AppRouter = () => {
                 }
               />
 
-
               <Route
                 path="/admin-trailers"
                 element={
@@ -110,6 +120,15 @@ const AppRouter = () => {
                   </DashboardLayout>
                 }
               />
+
+              <Route
+                path="/editor-trailers/:id"
+                element={
+                  <DashboardLayout>
+                    <TrailerEdit />
+                  </DashboardLayout>
+                }
+              /> 
 
               <Route
                 path="/trips"

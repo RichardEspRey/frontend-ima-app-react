@@ -5,19 +5,23 @@ import ModalArchivo from '../components/ModalArchivo.jsx';
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
 import { useParams } from 'react-router-dom';
-const TrailerEdit = () => {
+const DriverEdit = () => {
   const { id } = useParams();
   
   const apiHost = import.meta.env.VITE_API_HOST;
 
-  const [formData, setFormData] = useState({
-    nombre: '',
-    fechaNacimiento: '',
-    curp: '',
-    rfc: '',
-    phone_usa: '',
-    phone_mex: ''
-  });
+ const [formData, setFormData] = useState({
+  nombre: '',
+  fechaNacimiento: '',
+  fechaEntrada: '',
+  curp: '',
+  rfc: '',
+  phone_usa: '',
+  phone_mex: '',
+  visa: '',
+  licencia: ''
+});
+
 
   const [selectedFieldName, setSelectedFieldName] = useState(null);
 
@@ -29,7 +33,10 @@ const TrailerEdit = () => {
   const [documentos, setDocumentos] = useState({});
   const [modalAbierto, setModalAbierto] = useState(false);
   const [campoActual, setCampoActual] = useState(null);
+  const [originalFormData, setOriginalFormData] = useState(null);
+   const [originalDocumentos, setOriginalDocumentos] = useState({});
 
+  
 
 
 
@@ -45,164 +52,275 @@ const TrailerEdit = () => {
     setModalAbierto(true);
   };
 
+const envioDatosPrincipal = async () => {
+  try {
+    const formDataToSend = new FormData();
+    formDataToSend.append('op', 'editDriver'); // o 'Editar' como lo uses tú
+    formDataToSend.append('driver_id', id); // importante incluirlo
 
-  const envioDatosPrincipal = async () => {
-    console.log(formData);
-    try {
-      const formDataToSend = new FormData();
+    // Compara campo por campo
+    if (formData.nombre !== originalFormData.nombre) {
+      formDataToSend.append('nombre', formData.nombre);
+    }
 
-      // Aquí añadimos solo campos de texto (no archivos)
-      formDataToSend.append('op', 'Alta'); // operación que espera el backend
-      formDataToSend.append('name', formData.nombre);
+    if (formData.fechaNacimiento !== originalFormData.fechaNacimiento) {
       formDataToSend.append('fecha', formData.fechaNacimiento);
-      formDataToSend.append('curp', formData.curp);
-      formDataToSend.append('rfc', formData.rfc);
-      formDataToSend.append('phone_mex', formData.phone_mex);
-      formDataToSend.append('phone_usa', formData.phone_usa);
+    }
 
-      // Enviar al backend
-      const response = await fetch(`${apiHost}/drivers.php`, {
+    if (formData.curp !== originalFormData.curp) {
+      formDataToSend.append('curp', formData.curp);
+    }
+
+    if (formData.rfc !== originalFormData.rfc) {
+      formDataToSend.append('rfc', formData.rfc);
+    }
+
+    if (formData.phone_mex !== originalFormData.phone_mex) {
+      formDataToSend.append('phone_mex', formData.phone_mex);
+    }
+
+    if (formData.phone_usa !== originalFormData.phone_usa) {
+      formDataToSend.append('phone_usa', formData.phone_usa);
+    }
+
+    if (formData.fechaEntrada !== originalFormData.fechaEntrada) {
+      formDataToSend.append('fecha_ingreso', formData.fechaEntrada);
+    }
+
+    if (formData.visa !== originalFormData.visa) {
+      formDataToSend.append('visa', formData.visa);
+    }
+
+    if (formData.licencia !== originalFormData.licencia) {
+      formDataToSend.append('licencia', formData.licencia);
+    }
+
+
+    // Si no hay cambios, evita enviar la solicitud
+    if (formDataToSend.entries().next().done) {
+      Swal.fire({
+        icon: 'info',
+        title: 'Sin cambios',
+        text: 'No se detectaron cambios en los campos',
+      });
+      return null;
+    }
+
+    const response = await fetch(`${apiHost}/drivers.php`, {
+      method: 'POST',
+      body: formDataToSend,
+    });
+
+    const result = await response.json();
+
+
+    if (result.status === "success") {
+      return id; // usamos el id actual
+    } else {
+      throw new Error("Error al guardar datos básicos");
+    }
+  } catch (error) {
+    console.error('Error al enviar los datos:', error);
+    alert('Error al conectar con el servidor');
+  }
+};
+
+const enviarDocumentos = async (idConductor) => {
+  const entries = Object.entries(documentos);
+
+  for (const [tipo_documento, { file, vencimiento }] of entries) {
+    const original = originalDocumentos[tipo_documento];
+
+    const hayNuevoArchivo = !!file;
+    const vencimientoCambio = original?.vencimiento !== vencimiento;
+
+    if (!hayNuevoArchivo && !vencimientoCambio) continue; 
+
+    const formDataFile = new FormData();
+    formDataFile.append('op', 'Alta'); // o 'Actualizar'
+    formDataFile.append('driver_id', idConductor);
+    formDataFile.append('tipo_documento', tipo_documento);
+    formDataFile.append('fecha_vencimiento', vencimiento);
+    if (hayNuevoArchivo) formDataFile.append('documento', file);
+
+    try {
+      const response = await fetch(`${apiHost}/drivers_docs.php`, {
         method: 'POST',
-        body: formDataToSend,
+        body: formDataFile,
       });
 
       const result = await response.json();
-      console.log('Respuesta del servidor:', result);
 
-      const idConductor = result.id;
-      console.log("ID recibido del backend:", idConductor);
 
-      if (result.status === "success") {
+       const { isConfirmed } = await Swal.fire({
+        icon: 'success',
+        title: 'Éxito',
+        text: `Documento ${tipo_documento} actualizado`,
+      showCancelButton: false,
+      confirmButtonText: 'Aceptar'
+    });
 
-        const idConductor = result.id;
-        console.log("ID recibido del backend:", idConductor);
-        return idConductor;
-      } else {
-        throw new Error("Error al guardar datos básicos");
-      }
+      if (!isConfirmed){
+          window.location.reload();
+      }return;
+
     } catch (error) {
-      console.error('Error al enviar los datos:', error);
-      alert('Error al conectar con el servidor');
+      console.error(`Error al enviar ${tipo_documento}:`, error);
     }
-  };
+  }
+};
 
-  const enviarDocumentos = async (idConductor) => {
-    const entries = Object.entries(documentos); // clave: nombre campo, valor: { file, vencimiento }
+const handleSubmit = async () => {
+  const cambios = [];
 
-    for (const [tipo_documento, { file, vencimiento }] of entries) {
-      const formDataFile = new FormData();
-      formDataFile.append('op', 'Alta');
-      formDataFile.append('driver_id', idConductor);
-      formDataFile.append('tipo_documento', tipo_documento);
-      formDataFile.append('fecha_vencimiento', vencimiento);
-      formDataFile.append('documento', file);
+  if (formData.nombre !== originalFormData.nombre) cambios.push('Nombre');
+  if (formData.fechaNacimiento !== originalFormData.fechaNacimiento) cambios.push('Fecha de nacimiento');
+  if (formData.curp !== originalFormData.curp) cambios.push('CURP');
+  if (formData.rfc !== originalFormData.rfc) cambios.push('RFC');
+  if (formData.phone_usa !== originalFormData.phone_usa) cambios.push('Teléfono USA');
+  if (formData.phone_mex !== originalFormData.phone_mex) cambios.push('Teléfono MEX');
+  if (formData.fechaEntrada !== originalFormData.fechaEntrada) cambios.push('Fecha de entrada');
+  if (formData.visa !== originalFormData.visa) cambios.push('Visa');
+  if (formData.licencia !== originalFormData.licencia) cambios.push('Licencia');
 
-      try {
-        const response = await fetch(`${apiHost}/drivers_docs.php`, {
-          method: 'POST',
-          body: formDataFile,
-        });
 
-        const result = await response.json();
-        console.log(`Documento ${tipo_documento} enviado:`, result);
-        Swal.fire({
-          icon: 'success',
-          title: 'Éxito',
-          text: 'Driver editado con exito!',
-        });
-      } catch (error) {
-        console.error(`Error al enviar ${tipo_documento}:`, error);
-      }
-      
+  // Detectar cambios en los documentos
+  let hayCambiosEnDocumentos = false;
+  for (const [tipo, doc] of Object.entries(documentos)) {
+    const original = originalDocumentos[tipo];
+    const nuevoArchivo = !!doc?.file;
+    const cambioVencimiento = original?.vencimiento !== doc?.vencimiento;
+
+    if (nuevoArchivo || cambioVencimiento) {
+      hayCambiosEnDocumentos = true;
+      cambios.push(`Documento: ${tipo}`);
     }
-  };
-  const handleSubmit = async () => {
-    const idConductor = await envioDatosPrincipal();
+  }
 
-    if (idConductor) {
-      await enviarDocumentos(idConductor);
+  if (cambios.length === 0 && !hayCambiosEnDocumentos) {
+    Swal.fire({
+      icon: 'info',
+      title: 'Sin cambios',
+      text: 'No se detectaron cambios en campos ni documentos',
+    });
+    return;
+  }
 
-      setFormData({
-        nombre: '',
-        fechaNacimiento: '',
-        curp: '',
-        rfc: '',
-        phone_usa: '',
-        phone_mex: ''
+  const { isConfirmed } = await Swal.fire({
+    title: '¿Confirmar cambios?',
+    html: `<b>Modificaciones detectadas:</b><br>${cambios.join('<br>')}`,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: 'Sí, guardar',
+    cancelButtonText: 'Cancelar'
+  });
+
+  if (!isConfirmed) return;
+
+  let idConductor = id;
+
+  // Solo hacemos el envío de datos si hay cambios en los campos
+  if (cambios.some(c => !c.startsWith('Documento'))) {
+    const resultado = await envioDatosPrincipal();
+
+ 
+    const { isConfirmed } = await Swal.fire({
+        icon: 'success',
+        title: 'Éxito',
+        text: `Datos actualizados`,
+      showCancelButton: false,
+      confirmButtonText: 'Aceptar'
+    });
+
+      if (!isConfirmed){
+          window.location.reload();
+      }return;
+    if (!resultado) return; // si falló el guardado de datos básicos, detenemos todo
+    idConductor = resultado;
+  }
+
+  // Enviar documentos aunque no haya cambios de texto
+  if (hayCambiosEnDocumentos) {
+    await enviarDocumentos(idConductor);
+  }
+
+  // Limpiar
+  setFormData({
+  nombre: '',
+  fechaNacimiento: '',
+  fechaEntrada: '',
+  curp: '',
+  rfc: '',
+  phone_usa: '',
+  phone_mex: '',
+  visa: '',
+  licencia: ''
+});
+
+  setDocumentos({});
+};
+
+
+
+  const fetchDrivers = async () => {
+  const formDataToSend = new FormData();
+  formDataToSend.append('op', 'getDriverEdit');
+  formDataToSend.append('driver_id', id);
+
+  try {
+    const response = await fetch(`${apiHost}/drivers.php`, {
+      method: 'POST',
+      body: formDataToSend,
+    });
+
+    const data = await response.json();
+    
+    if (data.status === 'success' && data.Users && data.Users.length > 0) {
+      const user = data.Users[0];
+      const formValues = {
+        nombre: user.nombre || '',
+        fechaNacimiento: user.fecha_nacimiento || '',
+        fechaEntrada: user.fecha_ingreso || '',
+        curp: user.curp || '',
+        rfc: user.rfc || '',
+        phone_usa: user.phone_usa || '',
+        phone_mex: user.phone_mex || '',
+        visa: user.visa || '',
+        licencia: user.licencia || ''
+      };
+
+      setOriginalFormData(formValues);
+      setFormData(formValues);
+
+      const nuevosDocumentos = {};
+      const campos = [
+        'Acta_Nacimiento', 'CURP', 'RFC', 'Comprobante_domicilio', 'Solicitud_empleo', 'INE', 'Visa', 'Licencia',
+        'I', 'APTO', 'Atidoping', 'Constancia_fiscal'
+      ];
+
+      campos.forEach((campo) => {
+        if (user[`${campo}_URL`]) {
+          nuevosDocumentos[campo] = {
+            file: null,
+            fileName: user[`${campo}_URL`].split('/').pop(),
+            vencimiento: user[`${campo}_fecha`] || '',
+            url: `${apiHost}/${user[`${campo}_URL`]}`,
+          };
+        }
       });
 
-      setDocumentos({});
-
+      setDocumentos(nuevosDocumentos);
+      setOriginalDocumentos(nuevosDocumentos);
     }
-  };
 
-  useEffect(() => {
-      const fetchDrivers = async () => {
+  } catch (error) {
+    console.error('Error al obtener los conductores:', error);
+  }
+};
 
-          const formDataToSend = new FormData();
-
-       
-          formDataToSend.append('op', 'getDriverEdit'); // operación que espera el backend
-          formDataToSend.append('driver_id', id);
-   
-        try {
-          const response = await fetch(`${apiHost}/drivers.php`, {
-            method: 'POST',
-            body: formDataToSend,
-          });
-  
-          const data = await response.json();
-          
-          if (data.status === 'success' && data.Users && data.Users.length > 0) {
-              const user = data.Users[0];
-
-              // Llenar los inputs
-              setFormData({
-                nombre: user.nombre || '',
-                fechaNacimiento: user.fecha_ingreso || '',
-                curp: user.curp || '',
-                rfc: user.rfc || '',
-                phone_usa: user.phone_usa || '',
-                phone_mex: user.phone_mex || ''
-              });
-              console.log(data.Users);
-
-              // Llenar los documentos (PDFs)
-              const nuevosDocumentos = {};
-              const campos = [
-                'Acta_Nacimiento',
-                'Comprobante_domicilio',
-                'Solicitud_empleo',
-                'INE',
-                'VISA',
-                'Licencia',
-                'I94',
-                'APTO',
-                'Atidoping',
-                'Constancia_fiscal'
-              ];
-
-              campos.forEach((campo) => {
-                if (user[`${campo}_URL`]) {
-                  nuevosDocumentos[campo] = {
-                    file: null, // No tienes el archivo como File, pero puedes dejarlo nulo
-                    fileName: user[`${campo}_URL`].split('/').pop(),
-                    vencimiento: user[`${campo}_fecha`] || '',
-                    url: `${apiHost}/${user[`${campo}_URL`]}`
-                  };
-                }
-              });
-
-              setDocumentos(nuevosDocumentos);
-            }
-
-        } catch (error) {
-          console.error('Error al obtener los conductores:', error);
-        }
-      };
-  
-      fetchDrivers();
-    }, []);
+useEffect(() => {
+  fetchDrivers();
+}, []);
 
 
   return (
@@ -234,6 +352,14 @@ const TrailerEdit = () => {
               onChange={(e) => handleInputChange('fechaNacimiento', e.target.value)}
             />
 
+            <label>Fecha de entrada</label>
+            <input
+              type="date"
+              value={formData.fechaEntrada}
+              onChange={(e) => handleInputChange('fechaEntrada', e.target.value)}
+            />
+
+
             <label>Acta de nacimiento (PDF)</label>
             <button type="button" onClick={() => abrirModal('Acta_Nacimiento')}>Subir documento</button>
            {documentos.Acta_Nacimiento && (
@@ -250,6 +376,13 @@ const TrailerEdit = () => {
               value={formData.curp}
               onChange={(e) => handleInputChange('curp', e.target.value)}
             />
+
+            <label>CURP (PDF)</label>
+            <button type="button" onClick={() => abrirModal('CURP')}>Subir documento</button>
+            {documentos.CURP && (
+              <p>{documentos.CURP.fileName} - {documentos.CURP.vencimiento}</p>
+            )}
+
 
             <label>Comprobante de domicilio (PDF)</label>
             <button type="button" onClick={() => abrirModal('Comprobante_domicilio')}>Subir documento</button>
@@ -281,13 +414,18 @@ const TrailerEdit = () => {
               </p>
             )}
 
-            <label>No de visa</label>
+            <label>No. de VISA</label>
+            <input
+              type="text"
+              placeholder="Ingrese el numero de visa"
+              value={formData.visa}
+              onChange={(e) => handleInputChange('visa', e.target.value)}
+            />
+
+             <label>No de visa</label>
             <button type="button" onClick={() => abrirModal('Visa')}>Subir documento</button>
-            {documentos.VISA && (
-              <p>
-                {documentos.VISA.fileName} - {documentos.VISA.vencimiento}
-                <button onClick={() => window.open(documentos.VISA.url, '_blank')}>Ver</button>
-              </p>
+            {documentos.Visa && (
+              <p>{documentos.Visa.fileName} - {documentos.Visa.vencimiento}</p>
             )}
 
             <label>RFC </label>
@@ -297,7 +435,16 @@ const TrailerEdit = () => {
               value={formData.rfc}
               onChange={(e) => handleInputChange('rfc', e.target.value)}
             />
-            <label>No. Licencia (PDF)</label>
+
+             <label>No. de licencia</label>
+            <input
+              type="text"
+              placeholder="Nombre y apellidos"
+              value={formData.licencia}
+              onChange={(e) => handleInputChange('licencia', e.target.value)}
+            />
+
+            <label>Licencia (PDF)</label>
             <button type="button" onClick={() => abrirModal('Licencia')}>Subir documento</button>
             {documentos.Licencia && (
                 <p>
@@ -342,19 +489,13 @@ const TrailerEdit = () => {
               onChange={(e) => handleInputChange('phone_usa', e.target.value)}
             />
 
-            <label>Numero celular MEX (PDF)</label>
+            <label>Numero celular MEX</label>
             <input
               type="number"
               placeholder="Ingresar numero Mexicano"
               value={formData.phone_mex}
               onChange={(e) => handleInputChange('phone_mex', e.target.value)}
             />
-
-            <label>Constancia de situacion fiscal (PDF)</label>
-            <button type="button" onClick={() => abrirModal('Constancia_fiscal')}>Subir documento</button>
-            {documentos.Constancia_fiscal && (
-              <p>{documentos.Constancia_fiscal.fileName} - {documentos.Constancia_fiscal.vencimiento}</p>
-            )}
 
           </div>
 
@@ -373,4 +514,4 @@ const TrailerEdit = () => {
 
 };
 
-export default TrailerEdit;
+export default DriverEdit;

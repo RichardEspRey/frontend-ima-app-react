@@ -7,8 +7,10 @@ import greyIcon from '../assets/images/Icons_alerts/shield-grey.png';
 import questionIcon from '../assets/images/Icons_alerts/question.png'; 
 import ModalArchivo from '../components/ModalArchivoEditor.jsx'; 
 import { Tooltip } from 'react-tooltip';
+import { useNavigate } from 'react-router-dom'; // Asegúrate de tener react-router-dom instalado
 
 const TruckAdmin = () => {
+  const navigate = useNavigate();
   const apiHost = import.meta.env.VITE_API_HOST;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [valorActual, setValorActual] = useState(null);
@@ -31,8 +33,9 @@ const TruckAdmin = () => {
         const data = await response.json();
 
         if (data.status === 'success' && data.Users) {
-          const formatted = data.Users.map(t => ({
-            id: t.unidad,
+         const formatted = data.Users.map(t => ({
+            truck_id: t.truck_id,
+            unidad: t.unidad,
             placa_mex: t.Placa_MEX,
             placa_eua: t.Placa_EUA,
             Registracion_fecha: t.Registracion_Fecha,
@@ -48,6 +51,7 @@ const TruckAdmin = () => {
             NM_fecha: t.PERMISO_NM_Fecha,
             NM_url: t.PERMISO_NM_URL,
           }));
+
           setTrailers(formatted);
         }
       } catch (error) {
@@ -59,8 +63,8 @@ const TruckAdmin = () => {
   }, []);
 
   const filteredTrailers = trailers.filter(t =>
-    t.id.toString().includes(search)
-  );
+  t.unidad.toString().includes(search)
+);
 
   const getIconByFecha = (fechaStr, id, url, tipo) => {
     if (!fechaStr) {
@@ -134,6 +138,7 @@ const TruckAdmin = () => {
         <table>
           <thead>
             <tr>
+              <th>ID</th>
               <th>Unidad</th>
               <th>Placa MEX</th>
               <th>Placa EUA</th>
@@ -143,21 +148,32 @@ const TruckAdmin = () => {
               <th>DTOP</th>
               <th>Permiso NY</th>
               <th>Permiso NM</th>
+              <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
             {filteredTrailers.slice(from, to).map(t => (
-              <tr key={t.id}>
-                <td>{t.id}</td>
+              <tr key={t.truck_id}>
+                <td>{t.truck_id}</td>
+                <td>{t.unidad}</td>
                 <td>{t.placa_mex}</td>
                 <td>{t.placa_eua}</td>
-                <td>{getIconByFecha(t.Registracion_fecha, t.id, t.Registracion_url, 'Registracion')}</td>
-                <td>{getIconByFecha(t.Carta_fecha, t.id, t.Carta_url, 'Carta')}</td>
-                <td>{getIconByFecha(t.CAB_fecha, t.id, t.CAB_url, 'CAB')}</td>
-                <td>{getIconByFecha(t.DTOP_fecha, t.id, t.DTOP_url, 'DTOP')}</td>
-                <td>{getIconByFecha(t.NY_fecha, t.id, t.NY_url, 'PERMISO_NY')}</td>
-                <td>{getIconByFecha(t.NM_fecha, t.id, t.NM_url, 'PERMISO_NM')}</td>
+                <td>{getIconByFecha(t.Registracion_fecha, t.truck_id, t.Registracion_url, 'Registracion')}</td>
+                <td>{getIconByFecha(t.Carta_fecha, t.truck_id, t.Carta_url, 'Carta')}</td>
+                <td>{getIconByFecha(t.CAB_fecha, t.truck_id, t.CAB_url, 'CAB')}</td>
+                <td>{getIconByFecha(t.DTOP_fecha, t.truck_id, t.DTOP_url, 'DTOP')}</td>
+                <td>{getIconByFecha(t.NY_fecha, t.truck_id, t.NY_url, 'PERMISO_NY')}</td>
+                <td>{getIconByFecha(t.NM_fecha, t.truck_id, t.NM_url, 'PERMISO_NM')}</td>
+                <td>
+                  <button
+                    className="ver-btn"
+                    onClick={() => navigate(`/editor-trucks/${t.truck_id}`)}
+                  >
+                    Ver
+                  </button>
+                </td>
               </tr>
+
             ))}
           </tbody>
         </table>

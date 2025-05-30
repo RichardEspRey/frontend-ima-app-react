@@ -68,3 +68,18 @@
   .icon-img {
     pointer-events: auto;
   }
+
+  .ver-boton {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  cursor: pointer;
+  margin-top: 3px;
+}
+
+.ver-boton:hover {
+  background-color: #0056b3;
+}

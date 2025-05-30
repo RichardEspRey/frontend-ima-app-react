@@ -172,7 +172,11 @@ const TrailerScreen = () => {
               onChange={(e) => handleInputChange('numero_vin', e.target.value)}
             />
 
-
+            <label>Registracion </label>
+            <button type="button" onClick={() => abrirModal('Registracion')}>Subir documento</button>
+            {documentos.Registracion && (
+              <p>{documentos.Registracion.fileName} - {documentos.Registracion.vencimiento}</p>
+            )}
 
             <label>Seguro </label>
             <button type="button" onClick={() => abrirModal('seguro')}>Subir documento</button>

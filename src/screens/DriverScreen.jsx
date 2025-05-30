@@ -10,6 +10,7 @@ const DriverScreen = () => {
   const [formData, setFormData] = useState({
     nombre: '',
     fechaNacimiento: '',
+    fechaEntrada: '',
     curp: '',
     rfc: '',
     phone_usa: '',
@@ -23,25 +24,6 @@ const DriverScreen = () => {
   const handleInputChange = (name, value) => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
-
-  // const handleDateChange = (date) => {
-  //   setSelectedDate(date);
-  //   setFormData(prev => ({
-  //     ...prev,
-  //     [`${selectedFieldName}Date`]: date.toISOString().split("T")[0],
-  //   }));
-  // };
-
-  // const handleFileChange = (e, name) => {
-  //   const file = e.target.files[0];
-  //   if (!file) return;
-  //   setFormData(prev => ({
-  //     ...prev,
-  //     [name]: file.name,
-  //     [`${name}File`]: file
-  //   }));
-  // };
-
 
   {/*utiles*/ }
   const [documentos, setDocumentos] = useState({});
@@ -70,6 +52,7 @@ const DriverScreen = () => {
       formDataToSend.append('op', 'Alta'); // operación que espera el backend
       formDataToSend.append('name', formData.nombre);
       formDataToSend.append('fecha', formData.fechaNacimiento);
+      formDataToSend.append('fechaEntrada', formData.fechaEntrada); 
       formDataToSend.append('curp', formData.curp);
       formDataToSend.append('rfc', formData.rfc);
       formDataToSend.append('phone_mex', formData.phone_mex);
@@ -139,16 +122,18 @@ const DriverScreen = () => {
     if (idConductor) {
       await enviarDocumentos(idConductor);
 
-      setFormData({
-        nombre: '',
-        fechaNacimiento: '',
-        curp: '',
-        rfc: '',
-        phone_usa: '',
-        phone_mex: '',
-        visa: '',
-        licencia: ''
-      });
+     setFormData({
+      nombre: '',
+      fechaNacimiento: '',
+      fechaEntrada: '',
+      curp: '',
+      rfc: '',
+      phone_usa: '',
+      phone_mex: '',
+      visa: '',
+      licencia: ''
+    });
+
 
       setDocumentos({});
 
@@ -183,6 +168,13 @@ const DriverScreen = () => {
               type="date"
               value={formData.fechaNacimiento}
               onChange={(e) => handleInputChange('fechaNacimiento', e.target.value)}
+            />
+
+            <label>Fecha de entrada</label>
+            <input
+              type="date"
+              value={formData.fechaEntrada}
+              onChange={(e) => handleInputChange('fechaEntrada', e.target.value)}
             />
 
             <label>Acta de nacimiento (PDF)</label>
@@ -228,7 +220,7 @@ const DriverScreen = () => {
             <label>No. de VISA</label>
             <input
               type="text"
-              placeholder="Ingrese el numero"
+              placeholder="Ingrese el numero de visa"
               value={formData.visa}
               onChange={(e) => handleInputChange('visa', e.target.value)}
             />
@@ -246,19 +238,15 @@ const DriverScreen = () => {
               value={formData.rfc}
               onChange={(e) => handleInputChange('rfc', e.target.value)}
             />
-             <label>RFC (PDF) </label>
-            <button type="button" onClick={() => abrirModal('RFC')}>Subir documento</button>
-            {documentos.RFC && (
-              <p>{documentos.RFC.fileName} - {documentos.RFC.vencimiento}</p>
-            )}
 
             <label>No. de licencia</label>
             <input
               type="text"
-              placeholder="Nombre y apellidos"
+              placeholder="No de licencia"
               value={formData.licencia}
               onChange={(e) => handleInputChange('licencia', e.target.value)}
             />
+            
             <label>Licencia (PDF)</label>
             <button type="button" onClick={() => abrirModal('Licencia')}>Subir documento</button>
             {documentos.Licencia && (
@@ -295,19 +283,13 @@ const DriverScreen = () => {
               onChange={(e) => handleInputChange('phone_usa', e.target.value)}
             />
 
-            <label>Numero celular MEX (PDF)</label>
+            <label>Numero celular MEX </label>
             <input
               type="number"
               placeholder="Ingresar numero Mexicano"
               value={formData.phone_mex}
               onChange={(e) => handleInputChange('phone_mex', e.target.value)}
             />
-
-            <label>Constancia de situacion fiscal (PDF)</label>
-            <button type="button" onClick={() => abrirModal('Constancia_fiscal')}>Subir documento</button>
-            {documentos.Constancia_fiscal && (
-              <p>{documentos.Constancia_fiscal.fileName} - {documentos.Constancia_fiscal.vencimiento}</p>
-            )}
 
           </div>
 

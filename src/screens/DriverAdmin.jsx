@@ -217,6 +217,7 @@ const DriverAdmin = () => {
           nombreCampo="Documento"
           valorActual={valorActual}
           endpoint="drivers_docs.php" 
+          tipo="driver_id"
         />
     </div>
   );

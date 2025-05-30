@@ -33,18 +33,21 @@ const TrailerAdmin = () => {
         const data = await response.json();
 
         if (data.status === 'success' && data.Users) {
-          const formatted = data.Users.map(caja => ({
-            id: caja.no_caja,
-            Registracion: caja.Registracion,
-            Registracion_fecha: caja.Registracion_Fecha,
-            Registracion_url: caja.Registracion_url_pdf,
-            Seguro: caja.Seguro,
-            Seguro_fecha: caja.Seguro_Fecha,
-            Seguro_url: caja.Seguro_url_pdf,
-            Fianza: caja.Fianza,
-            Fianza_fecha: caja.Fianza_Fecha,
-            Fianza_url: caja.Fianza_url_pdf,
-          }));
+       const formatted = data.Users.map(caja => ({
+        id: caja.caja_id, // ✅ ID real desde el backend
+        no_caja: caja.no_caja,
+        Registracion: caja.Registracion,
+        Registracion_fecha: caja.Registracion_Fecha,
+        Registracion_url: caja.Registracion_url_pdf,
+        Seguro: caja.Seguro,
+        Seguro_fecha: caja.Seguro_Fecha,
+        Seguro_url: caja.Seguro_url_pdf,
+        Fianza: caja.Fianza,
+        Fianza_fecha: caja.Fianza_Fecha,
+        Fianza_url: caja.Fianza_url_pdf,
+      }));
+
+
           setCajas(formatted);
         }
       } catch (error) {
@@ -137,6 +140,7 @@ const TrailerAdmin = () => {
         <table>
           <thead>
             <tr>
+              <th>ID</th>
               <th>No. Caja</th>
               <th>Registración</th>
               <th>Seguro</th>
@@ -147,14 +151,15 @@ const TrailerAdmin = () => {
           <tbody>
             {filteredCajas.slice(from, to).map(caja => (
               <tr key={caja.id}>
-                <td>{caja.id}</td>
+                <td>{caja.id}</td>  
+                <td>{caja.no_caja}</td> 
                 <td>{getIconByFecha(caja.Registracion_fecha, caja.id, caja.Registracion_url, 'Registracion')}</td>
                 <td>{getIconByFecha(caja.Seguro_fecha, caja.id, caja.Seguro_url, 'Seguro')}</td>
                 <td>{getIconByFecha(caja.Fianza_fecha, caja.id, caja.Fianza_url, 'Fianza')}</td>
                 <td>
                   <button
                     className="ver-btn"
-                    onClick={() => navigate(`/edit-trailer/${caja.id}`)}
+                    onClick={() => navigate(`/editor-trailers/${caja.id}`)}
                   >
                     Ver
                   </button>
