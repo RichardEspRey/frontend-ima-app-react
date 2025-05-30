@@ -20,7 +20,7 @@ const initialBorderCrossingDocs = {
 
 const initialNormalTripDocs = {
     ima_invoice: null, ci: null,
-    manifiesto: null, cita_entrega: null, bl: null, orden_retiro: null, bl_firmado: null,
+    cita_entrega: null, bl: null,  bl_firmado: null,
 
 };
 
@@ -234,15 +234,18 @@ const TripForm = ({ tripNumber }) => {
     };
 
 
-    const getCurrentDocValueForModal = () => {
-        const { stageIndex, docType } = modalTarget;
-        if (docType === null) return null;
-        if (stageIndex !== null && etapas[stageIndex]) {
-            return etapas[stageIndex].documentos[docType] || null;
-        }
+     const getCurrentDocValueForModal = () => {
+    const { stageIndex, docType } = modalTarget;
+    if (docType === null) return null;
 
-        return null;
-    };
+    if (stageIndex !== null && etapas[stageIndex]) {
+
+      return etapas[stageIndex].documentos[docType] || null;
+    } else {
+
+      return formData[docType] || null;
+    }
+  };
 
 
     const agregarNuevaEtapa = (tipoEtapa) => {
@@ -678,20 +681,8 @@ const TripForm = ({ tripNumber }) => {
                                         <label>CI:</label>
                                         <button type="button" className="upload-button" onClick={() => abrirModal('ci', index)}>Subir</button>
                                         {etapa.documentos?.ci && (<p className="doc-info"><i>{etapa.documentos.ci.fileName}{etapa.documentos.ci.vencimiento ? ` - V: ${etapa.documentos.ci.vencimiento}` : ''}</i></p>)}
-                                    </div>
-                                </div>
 
-                                <div className="column">
-                                    <div className="column">
-                                        <label>Entry:</label>
-                                        <button type="button" className="upload-button" onClick={() => abrirModal('entry', index)}>Subir</button>
-                                        {etapa.documentos?.entry && (<p className="doc-info"><i>{etapa.documentos.entry.fileName}</i></p>)}
                                     </div>
-                                    {/* <div className="column">
-                                        <label>Manifiesto:</label>
-                                        <button type="button" className="upload-button" onClick={() => abrirModal('manifiesto', index)}>Subir</button>
-                                        {etapa.documentos?.manifiesto && (<p className="doc-info"><i>{etapa.documentos.manifiesto.fileName}</i></p>)}
-                                    </div> */}
                                     <div className="column">
                                         <label>Cita Entrega:</label>
                                         <button type="button" className="upload-button" onClick={() => abrirModal('cita_entrega', index)}>Subir</button>
@@ -699,17 +690,19 @@ const TripForm = ({ tripNumber }) => {
                                     </div>
                                 </div>
 
+                            
+
                                 <div className="column">
                                     <div className="column">
                                         <label>BL:</label>
                                         <button type="button" className="upload-button" onClick={() => abrirModal('bl', index)}>Subir</button>
                                         {etapa.documentos?.bl && (<p className="doc-info"><i>{etapa.documentos.bl.fileName}</i></p>)}
                                     </div>
-                                    <div className="column">
+                                    {/* <div className="column">
                                         <label>Orden Retiro:</label>
                                         <button type="button" className="upload-button" onClick={() => abrirModal('orden_retiro', index)}>Subir</button>
                                         {etapa.documentos?.orden_retiro && (<p className="doc-info"><i>{etapa.documentos.orden_retiro.fileName}{etapa.documentos.orden_retiro.vencimiento ? ` - V: ${etapa.documentos.orden_retiro.vencimiento}` : ''}</i></p>)}
-                                    </div>
+                                    </div> */}
                                     <div className="column">
                                         <label>BL Firmado:</label>
                                         <button type="button" className="upload-button" onClick={() => abrirModal('bl_firmado', index)}>Subir</button>
