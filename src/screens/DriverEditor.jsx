@@ -483,7 +483,7 @@ useEffect(() => {
 
             <label>Numero celular USA</label>
             <input
-              type="number"
+              type="Text"
               placeholder="Ingresar numero Americano"
               value={formData.phone_usa}
               onChange={(e) => handleInputChange('phone_usa', e.target.value)}
@@ -491,7 +491,7 @@ useEffect(() => {
 
             <label>Numero celular MEX</label>
             <input
-              type="number"
+              type="Text"
               placeholder="Ingresar numero Mexicano"
               value={formData.phone_mex}
               onChange={(e) => handleInputChange('phone_mex', e.target.value)}
