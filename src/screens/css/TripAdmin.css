@@ -27,3 +27,9 @@
 .filters button {
     margin-left: 10px;
 }
+
+.my-custom-datepicker-popper {
+  z-index: 10 !important; /* O un valor mayor que el z-index del sticky header (que es 2).
+                             El !important es para asegurar que sobreescriba otros estilos si es necesario,
+                             pero úsalo con precaución. Prueba primero sin !important. */
+}

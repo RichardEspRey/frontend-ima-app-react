@@ -21,7 +21,7 @@ const initialBorderCrossingDocs = {
 
 const initialNormalTripDocs = {
   ima_invoice: null, ci: null,
-  manifiesto: null, cita_entrega: null, bl: null, orden_retiro: null, bl_firmado: null,
+   cita_entrega: null, bl: null,  bl_firmado: null,
 
 };
 
@@ -787,19 +787,7 @@ const BorderCrossingForm = ({ tripNumber }) => {
                     <button type="button" className="upload-button" onClick={() => abrirModal('ci', index)}>Subir</button>
                     {etapa.documentos?.ci && (<p className="doc-info"><i>{etapa.documentos.ci.fileName}{etapa.documentos.ci.vencimiento ? ` - V: ${etapa.documentos.ci.vencimiento}` : ''}</i></p>)}
                   </div>
-                </div>
 
-                <div className="column">
-                  <div className="column">
-                    <label htmlFor={`entry-${index}`}>Entry:</label>
-                    <button type="button" className="upload-button" onClick={() => abrirModal('entry', index)}>Subir</button>
-                    {etapa.documentos?.entry && (<p className="doc-info"><i>{etapa.documentos.entry.fileName}</i></p>)}
-                  </div>
-                  <div className="column">
-                    <label htmlFor={`manifiesto-${index}`}>Manifiesto:</label>
-                    <button type="button" className="upload-button" onClick={() => abrirModal('manifiesto', index)}>Subir</button>
-                    {etapa.documentos?.manifiesto && (<p className="doc-info"><i>{etapa.documentos.manifiesto.fileName}</i></p>)}
-                  </div>
                   <div className="column">
                     <label htmlFor={`cita_entrega-${index}`}>Cita Entrega:</label>
                     <button type="button" className="upload-button" onClick={() => abrirModal('cita_entrega', index)}>Subir</button>
@@ -807,17 +795,19 @@ const BorderCrossingForm = ({ tripNumber }) => {
                   </div>
                 </div>
 
+            
+
                 <div className="column">
                   <div className="column">
                     <label htmlFor={`bl-${index}`}>BL:</label>
                     <button type="button" className="upload-button" onClick={() => abrirModal('bl', index)}>Subir</button>
                     {etapa.documentos?.bl && (<p className="doc-info"><i>{etapa.documentos.bl.fileName}</i></p>)}
                   </div>
-                  <div className="column">
+                  {/* <div className="column">
                     <label htmlFor={`orden_retiro-${index}`}>Orden Retiro:</label>
                     <button type="button" className="upload-button" onClick={() => abrirModal('orden_retiro', index)}>Subir</button>
                     {etapa.documentos?.orden_retiro && (<p className="doc-info"><i>{etapa.documentos.orden_retiro.fileName}{etapa.documentos.orden_retiro.vencimiento ? ` - V: ${etapa.documentos.orden_retiro.vencimiento}` : ''}</i></p>)}
-                  </div>
+                  </div> */}
                   <div className="column">
                     <label htmlFor={`bl_firmado-${index}`}>BL Firmado:</label>
                     <button type="button" className="upload-button" onClick={() => abrirModal('bl_firmado', index)}>Subir</button>

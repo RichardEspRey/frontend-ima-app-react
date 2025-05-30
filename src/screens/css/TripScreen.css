@@ -48,18 +48,28 @@
   gap: 10px;
 }
 
+
 .button-container button {
-  padding: 10px 15px;
-  border: 1px solid #007bff;
-  border-radius: 5px;
-  background-color: #007bff;
-  color: white;
+  background-color: #f0f0f0; 
+  border: 1px solid #ccc;    
+  padding: 10px 20px;       
+  margin: 0 8px;           
   cursor: pointer;
+  font-size: 1rem;
+  border-radius: 4px;       /
 }
 
 .button-container button:hover {
-  background-color: #0056b3;
-  border-color: #0056b3;
+  background-color: #1554e3; 
+  border-color: #9aa9b9;    
+  color: white;
+}
+
+/* Estilo para el botón que está activo/seleccionado */
+.button-container button.selected {
+  background-color: #1554e3; 
+  border-color: #9aa9b9;    
+  color: white; 
 }
 
 /* Estilos para la nueva card */

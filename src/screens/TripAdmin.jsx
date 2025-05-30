@@ -6,16 +6,14 @@ import {
 } from '@mui/material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-// import DownloadIcon from '@mui/icons-material/Download'; // Eliminado para quitar Excel
+
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import dayjs from 'dayjs';
-import './css/TripAdmin.css'; // Mantener la referencia a tu CSS
+import './css/TripAdmin.css';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
-// import * as XLSX from 'xlsx'; // Eliminado para quitar Excel
 
-// Componente de Fila de Viaje con contenido colapsable
 const TripRow = ({ trip, onEdit, onFinalize, getDocumentUrl }) => {
     const [open, setOpen] = useState(false); // Estado para controlar si la fila está expandida
 
@@ -83,23 +81,23 @@ const TripRow = ({ trip, onEdit, onFinalize, getDocumentUrl }) => {
                                                     <strong>E{etapa.stage_number} ({etapa.stageType?.replace('borderCrossing', 'Cruce').replace('normalTrip', 'Normal') || 'N/A'}):</strong> {etapa.origin} &rarr; {etapa.destination} ({etapa.travel_direction})
                                                 </span>
                                             </Tooltip>
-                                            {etapa.ci_number && <><br/><span style={{fontSize: '0.9em', color: '#555'}}>CI: {etapa.ci_number}</span></>}
-                                            <br/>
-                                            <span style={{fontSize: '0.9em', color: '#555'}}>
-                                                Carga: {etapa.loading_date ? dayjs(etapa.loading_date).format("DD/MM/YY") : '-'} | 
+                                            {etapa.ci_number && <><br /><span style={{ fontSize: '0.9em', color: '#555' }}>CI: {etapa.ci_number}</span></>}
+                                            <br />
+                                            <span style={{ fontSize: '0.9em', color: '#555' }}>
+                                                Carga: {etapa.loading_date ? dayjs(etapa.loading_date).format("DD/MM/YY") : '-'} |
                                                 Entrega: {etapa.delivery_date ? dayjs(etapa.delivery_date).format("DD/MM/YY") : '-'}
                                             </span>
                                             {Array.isArray(etapa.documentos_adjuntos) && etapa.documentos_adjuntos.length > 0 && (
                                                 <ul style={{ margin: '2px 0 0 15px', paddingLeft: '15px', listStyleType: 'disc' }}>
                                                     {etapa.documentos_adjuntos.map(doc => (
                                                         <li key={doc.document_id}>
-                                                            <MuiLink 
-                                                                href={getDocumentUrl(doc.path_servidor_real || doc.nombre_archivo)} 
-                                                                target="_blank" 
-                                                                rel="noopener noreferrer" 
-                                                                title={`Ver ${doc.tipo_documento} (${doc.nombre_archivo})`} 
-                                                                underline="hover" 
-                                                                sx={{fontSize: 'inherit'}}
+                                                            <MuiLink
+                                                                href={getDocumentUrl(doc.path_servidor_real || doc.nombre_archivo)}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                title={`Ver ${doc.tipo_documento} (${doc.nombre_archivo})`}
+                                                                underline="hover"
+                                                                sx={{ fontSize: 'inherit' }}
                                                             >
                                                                 {doc.tipo_documento.replace(/_/g, ' ')}
                                                             </MuiLink>
@@ -136,7 +134,7 @@ const TripAdmin = () => {
     const navigate = useNavigate();
 
     const apiHost = import.meta.env.VITE_API_HOST; // Eliminado para usar URL directa
-    // const API_BASE_URL = 'http://localhost/api/new_trips.php'; // URL directa
+
 
     const fetchTrips = async () => {
         setLoading(true);
@@ -149,12 +147,12 @@ const TripAdmin = () => {
             const responseText = await response.text();
             console.log("Respuesta cruda de getAll:", responseText);
             let result;
-            try { 
-                result = JSON.parse(responseText); 
+            try {
+                result = JSON.parse(responseText);
             }
-            catch (e) { 
+            catch (e) {
                 console.error("Error parseando JSON:", e, "Respuesta recibida:", responseText);
-                throw new Error(`Respuesta inválida del servidor. Verifica la consola y el log PHP.`); 
+                throw new Error(`Respuesta inválida del servidor. Verifica la consola y el log PHP.`);
             }
 
             if (response.ok && result.status === "success") {
@@ -177,16 +175,16 @@ const TripAdmin = () => {
                 } else {
                     setTrips([]);
                 }
-            } else { 
-                throw new Error(result.message || result.error || 'Error al obtener los viajes.'); 
+            } else {
+                throw new Error(result.message || result.error || 'Error al obtener los viajes.');
             }
         } catch (err) {
             console.error("Error fetching trips:", err);
             setError(err.message);
             Swal.fire('Error', `No se pudieron cargar los viajes: ${err.message}`, 'error');
             setTrips([]);
-        } finally { 
-            setLoading(false); 
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -194,20 +192,20 @@ const TripAdmin = () => {
 
     // Función para obtener la URL del documento
     const getDocumentUrl = (serverPath) => {
-        console.log("getDocumentUrl - serverPath recibido:", serverPath); 
+        console.log("getDocumentUrl - serverPath recibido:", serverPath);
         if (!serverPath || typeof serverPath !== 'string') {
-             console.warn("getDocumentUrl - Ruta inválida o vacía recibida.");
-             return '#';
+            console.warn("getDocumentUrl - Ruta inválida o vacía recibida.");
+            return '#';
         }
-        
-        const webRootPath = '/API/Uploads/trips/'; 
-        const fileName = serverPath.split(/[\\/]/).pop(); 
-        
+
+        const webRootPath = `${apiHost}/Uploads/Trips/`;
+        const fileName = serverPath.split(/[\\/]/).pop();
+
         if (!fileName) {
             console.warn("getDocumentUrl - No se pudo extraer el nombre del archivo de:", serverPath);
             return '#';
         }
-        
+
         const finalUrl = `${webRootPath}${encodeURIComponent(fileName)}`;
         console.log("getDocumentUrl - URL generada:", finalUrl);
         return finalUrl;
@@ -216,7 +214,7 @@ const TripAdmin = () => {
     // Filtrado de viajes
     const filteredTrips = useMemo(() => trips.filter(trip => {
         let tripCreationDate = null;
-        if (trip.creation_date) { try { tripCreationDate = new Date(trip.creation_date); if (isNaN(tripCreationDate.getTime())) { tripCreationDate = null; } } catch(e){} }
+        if (trip.creation_date) { try { tripCreationDate = new Date(trip.creation_date); if (isNaN(tripCreationDate.getTime())) { tripCreationDate = null; } } catch (e) { } }
         const start = startDate ? new Date(startDate.setHours(0, 0, 0, 0)) : null;
         const end = endDate ? new Date(endDate.setHours(23, 59, 59, 999)) : null;
         const withinDateRange = ((!start || (tripCreationDate && tripCreationDate >= start)) && (!end || (tripCreationDate && tripCreationDate <= end)));
@@ -228,7 +226,7 @@ const TripAdmin = () => {
             (trip.truck_unidad || '').toLowerCase().includes(searchLower) ||
             (trip.caja_no_caja || '').toLowerCase().includes(searchLower) ||
             (trip.status || '').toLowerCase().includes(searchLower) ||
-            (trip.etapas && trip.etapas.some(etapa => 
+            (trip.etapas && trip.etapas.some(etapa =>
                 (etapa.ci_number || '').toLowerCase().includes(searchLower) ||
                 (etapa.origin || '').toLowerCase().includes(searchLower) ||
                 (etapa.destination || '').toLowerCase().includes(searchLower) ||
@@ -244,45 +242,61 @@ const TripAdmin = () => {
     };
 
     const handleFinalizeTrip = async (tripId, tripNumber) => {
-       if (!tripId) return;
-       const confirmation = await Swal.fire({
-           title: '¿Finalizar Viaje?', text: `Viaje #${tripNumber} será completado.`,
-           icon: 'warning', showCancelButton: true, confirmButtonText: 'Sí, finalizar'
-       });
-       if (confirmation.isConfirmed) {
-           try {
-               const apiUrl = API_BASE_URL;
-               const finalizeFormData = new FormData();
-               finalizeFormData.append('op', 'FinalizeTrip');
-               finalizeFormData.append('trip_id', tripId);
-               const response = await fetch(apiUrl, { method: 'POST', body: finalizeFormData });
-               const result = await response.json();
-               if (response.ok && result.status === 'success') {
-                   Swal.fire('¡Finalizado!', result.message || 'Viaje completado.', 'success');
-                   fetchTrips();
-               } else { throw new Error(result.error || result.message || 'No se pudo finalizar.'); }
-           } catch (err) { Swal.fire('Error', `Error al finalizar: ${err.message}`, 'error'); }
-       }
+        if (!tripId) return;
+        const confirmation = await Swal.fire({
+            title: '¿Finalizar Viaje?', text: `Viaje #${tripNumber} será completado.`,
+            icon: 'warning', showCancelButton: true, confirmButtonText: 'Sí, finalizar'
+        });
+        if (confirmation.isConfirmed) {
+            try {
+                const apiUrl = `${apiHost}/new_trips.php`;
+                const finalizeFormData = new FormData();
+                finalizeFormData.append('op', 'FinalizeTrip');
+                finalizeFormData.append('trip_id', tripId);
+                const response = await fetch(apiUrl, { method: 'POST', body: finalizeFormData });
+                const result = await response.json();
+                if (response.ok && result.status === 'success') {
+                    Swal.fire('¡Finalizado!', result.message || 'Viaje completado.', 'success');
+                    fetchTrips();
+                } else { throw new Error(result.error || result.message || 'No se pudo finalizar.'); }
+            } catch (err) { Swal.fire('Error', `Error al finalizar: ${err.message}`, 'error'); }
+        }
     };
 
     // Eliminada la función handleDownloadExcel
 
-    if (loading) { return ( <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}> <CircularProgress /> <Typography ml={2}>Cargando...</Typography> </Box> ); }
+    if (loading) { return (<Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}> <CircularProgress /> <Typography ml={2}>Cargando...</Typography> </Box>); }
 
     return (
         <div className="trip-admin">
             <h1 className="title">Administrador de Viajes</h1>
             <div className="filters">
-                 <input type="text" placeholder="Buscar" value={search} onChange={(e) => setSearch(e.target.value)} className="small-input" />
-                 <div className="date-pickers">
-                     <DatePicker selected={startDate} onChange={setStartDate} selectsStart startDate={startDate} endDate={endDate} placeholderText="Fecha inicio" dateFormat="dd/MM/yyyy" wrapperClassName="date-picker-wrapper" isClearable />
-                     <DatePicker selected={endDate} onChange={setEndDate} selectsEnd startDate={startDate} endDate={endDate} minDate={startDate} placeholderText="Fecha fin" dateFormat="dd/MM/yyyy" wrapperClassName="date-picker-wrapper" isClearable />
-                     <Button variant="contained" onClick={() => { setStartDate(null); setEndDate(null); }} style={{ marginLeft: '10px' }} size="small"> Limpiar Filtro </Button>
-                     <Button variant="contained" onClick={fetchTrips} disabled={loading} style={{ marginLeft: '10px' }} size="small"> Refrescar </Button>
-                     {/* Botón de Descargar Excel Eliminado */}
-                 </div>
+                <input type="text" placeholder="Buscar" value={search} onChange={(e) => setSearch(e.target.value)} className="small-input" />
+                <div className="date-pickers">
+                    <DatePicker
+                        selected={startDate}
+                        onChange={setStartDate}
+                        selectsStart startDate={startDate}
+                        endDate={endDate} placeholderText="Fecha inicio"
+                        dateFormat="dd/MM/yyyy"
+                        popperClassName="my-custom-datepicker-popper"
+                        isClearable />
+                    <DatePicker
+                        selected={endDate}
+                        onChange={setEndDate}
+                        selectsEnd startDate={startDate}
+                        endDate={endDate}
+                        minDate={startDate}
+                        placeholderText="Fecha fin"
+                        dateFormat="dd/MM/yyyy"
+                        popperClassName="my-custom-datepicker-popper"
+                        isClearable />
+                    <Button variant="contained" onClick={() => { setStartDate(null); setEndDate(null); }} style={{ marginLeft: '10px' }} size="small"> Limpiar Filtro </Button>
+                    <Button variant="contained" onClick={fetchTrips} disabled={loading} style={{ marginLeft: '10px' }} size="small"> Refrescar </Button>
+                    {/* Botón de Descargar Excel Eliminado */}
+                </div>
             </div>
-              {error && <Alert severity="error" sx={{ my: 2 }}>Error al cargar: {error}</Alert>}
+            {error && <Alert severity="error" sx={{ my: 2 }}>Error al cargar: {error}</Alert>}
 
             <TableContainer component={Paper} sx={{ marginTop: 2 }}>
                 <Table stickyHeader size="small">
