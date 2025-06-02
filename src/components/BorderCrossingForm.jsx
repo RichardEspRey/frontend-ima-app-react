@@ -21,7 +21,7 @@ const initialBorderCrossingDocs = {
 
 const initialNormalTripDocs = {
   ima_invoice: null, ci: null,
-   cita_entrega: null, bl: null,  bl_firmado: null,
+  cita_entrega: null, bl: null, bl_firmado: null,
 
 };
 
@@ -57,6 +57,8 @@ const BorderCrossingForm = ({ tripNumber }) => {
   const [mostrarFechaVencimientoModal, setMostrarFechaVencimientoModal] = useState(true);
 
 
+
+
   const [formData, setFormData] = useState({
     trip_number: tripNumber || '',
     driver_id: '',
@@ -79,10 +81,12 @@ const BorderCrossingForm = ({ tripNumber }) => {
     warehouse_destination_id: '',
     ci_number: '',
     rate_tarifa: '',
-    millas_pc_miller: '',
+   millas_pcmiller: '',
     documentos: { ...initialBorderCrossingDocs } // Documentos para cruce
 
   }]);
+
+
 
   useEffect(() => {
     if (activeCompanies) {
@@ -111,9 +115,9 @@ const BorderCrossingForm = ({ tripNumber }) => {
         method: 'POST',
         body: newCompanyFormData,
       });
-      
 
-     
+
+
       const result = await response.json();
       console.log("Respuesta del backend (result):", result);
 
@@ -279,7 +283,7 @@ const BorderCrossingForm = ({ tripNumber }) => {
         origin: '', destination: '', zip_code_origin: '', zip_code_destination: '',
         loading_date: null, delivery_date: null, company_id: null, travel_direction: '',
         warehouse_origin_id: null, warehouse_destination_id: null, ci_number: '',
-        rate_tarifa: '', millas_pc_miller: '', estatus: 'Pending',
+        rate_tarifa: '',millas_pcmiller: '', estatus: 'In Transit',
         documentos: initialDocs
       }
     ]);
@@ -406,7 +410,7 @@ const BorderCrossingForm = ({ tripNumber }) => {
           stage_number: 1, origin: '', destination: '', zip_code_origin: '', zip_code_destination: '',
           loading_date: null, delivery_date: null, company_id: '', travel_direction: '',
           warehouse_origin_id: '', warehouse_destination_id: '', ci_number: '',
-          rate_tarifa: '', millas_pc_miller: '',
+          rate_tarifa: '',millas_pcmiller: '',
           documentos: { ...initialBorderCrossingDocs }
         }]);
 
@@ -561,10 +565,10 @@ const BorderCrossingForm = ({ tripNumber }) => {
                 isClearable
                 value={warehouseOptions.find(w => w.value === etapa.warehouse_origin_id) || null}
                 onChange={(selected) => handleEtapaChange(index, 'warehouse_origin_id', selected ? selected.value : '')}
-                onCreateOption={(inputValue) => handleCreateWarehouse(inputValue, index, 'warehouse_origin_id')} 
-                options={warehouseOptions} 
+                onCreateOption={(inputValue) => handleCreateWarehouse(inputValue, index, 'warehouse_origin_id')}
+                options={warehouseOptions}
                 placeholder="Seleccionar o Crear Bodega Origen"
-                isLoading={loadingWarehouses || isCreatingWarehouse} 
+                isLoading={loadingWarehouses || isCreatingWarehouse}
 
                 styles={selectStyles}
                 formatCreateLabel={(inputValue) => `Crear nueva bodega: "${inputValue}"`}
@@ -574,19 +578,19 @@ const BorderCrossingForm = ({ tripNumber }) => {
 
             <div className="column">
               <label htmlFor={`warehouse_destination_id-${index}`} style={{ marginTop: '10px' }}>Destination Warehouse:</label>
-              <CreatableSelect 
+              <CreatableSelect
                 id={`warehouse_destination_id-${index}`}
                 name={`warehouse_destination_id-${index}`}
                 isClearable
                 value={warehouseOptions.find(w => w.value === etapa.warehouse_destination_id) || null}
                 onChange={(selected) => handleEtapaChange(index, 'warehouse_destination_id', selected ? selected.value : '')}
-                onCreateOption={(inputValue) => handleCreateWarehouse(inputValue, index, 'warehouse_destination_id')} 
-                options={warehouseOptions} 
+                onCreateOption={(inputValue) => handleCreateWarehouse(inputValue, index, 'warehouse_destination_id')}
+                options={warehouseOptions}
                 placeholder="Seleccionar o Crear Bodega Destino"
-                isLoading={loadingWarehouses || isCreatingWarehouse} 
+                isLoading={loadingWarehouses || isCreatingWarehouse}
 
                 styles={selectStyles}
-                formatCreateLabel={(inputValue) => `Crear nueva bodega: "${inputValue}"`} 
+                formatCreateLabel={(inputValue) => `Crear nueva bodega: "${inputValue}"`}
               />
 
             </div>
@@ -687,11 +691,11 @@ const BorderCrossingForm = ({ tripNumber }) => {
 
             </div>
             <div className="column">
-              <label htmlFor={`millas_pc_miller-${index}`} >Millas PC Miller:</label>
+              <label htmlFor={`millas_pcmiller-${index}`} >Millas PC Miller:</label>
               <input
-                type="number" id={`millas_pc_miller-${index}`} name={`millas_pc_miller-${index}`}
-                value={etapas.millas_pc_miller}
-                onChange={(e) => handleEtapaChange(index, 'millas_pc_miller', e.target.value)}
+                type="number" id={`millas_pcmiller-${index}`} name={`millas_pcmiller-${index}`}
+                value={etapas.millas_pcmiller}
+                onChange={(e) => handleEtapaChange(index, 'millas_pcmiller', e.target.value)}
                 placeholder="Ej: 850"
                 className="form-input"
               />
@@ -795,7 +799,7 @@ const BorderCrossingForm = ({ tripNumber }) => {
                   </div>
                 </div>
 
-            
+
 
                 <div className="column">
                   <div className="column">

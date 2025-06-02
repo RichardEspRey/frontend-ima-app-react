@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import {
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
     Button, TablePagination, TextField, Box, Typography, CircularProgress, Alert,
-    Link as MuiLink, Tooltip, IconButton, Collapse
+    Link as MuiLink, Tooltip, IconButton, Collapse, Grid, Chip
 } from '@mui/material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
@@ -16,7 +16,17 @@ import Swal from 'sweetalert2';
 
 const TripRow = ({ trip, onEdit, onFinalize, getDocumentUrl }) => {
     const [open, setOpen] = useState(false); // Estado para controlar si la fila está expandida
+    // Determinar la fecha de carga de la primera etapa
+    let loadingDateToShow = '-';
+    let loadingDateTitle = 'Fecha de carga no disponible'; // Tooltip por defecto
 
+    if (Array.isArray(trip.etapas) && trip.etapas.length > 0 && trip.etapas[0].loading_date) {
+        // Usamos el formato "DD/MM/YY" como lo tienes en los detalles de la etapa
+        loadingDateToShow = dayjs(trip.etapas[0].loading_date).format("DD/MM/YY");
+        loadingDateTitle = `Fecha de Carga (1ª Etapa): ${loadingDateToShow}`;
+    } else if (trip.etapas && trip.etapas.length > 0) {
+        loadingDateTitle = 'Fecha de carga (1ª Etapa) no especificada';
+    }
     return (
         <React.Fragment>
             {/* Fila principal con datos básicos */}
@@ -36,13 +46,31 @@ const TripRow = ({ trip, onEdit, onFinalize, getDocumentUrl }) => {
                 <TableCell>{trip.driver_nombre || trip.driver_id || '-'}</TableCell>
                 <TableCell>{trip.truck_unidad || trip.truck_id || '-'}</TableCell>
                 <TableCell>{trip.caja_no_caja || trip.caja_id || 'N/A'}</TableCell>
-                <TableCell sx={{ whiteSpace: 'nowrap' }}>
-                    {trip.creation_date ? dayjs(trip.creation_date).format("DD/MM/YYYY HH:mm") : '-'}
-                </TableCell>
-                <TableCell>
-                    <span className={`status-${(trip.status || 'pending').toLowerCase().replace(' ', '-')}`}>
-                        {trip.status || 'Pending'}
-                    </span>
+                <TableCell sx={{ whiteSpace: 'nowrap' }} title={loadingDateTitle}>
+                {loadingDateToShow}
+            </TableCell>
+               <TableCell>
+                    {(() => {
+                        const currentStatus = trip.status || 'In Transit';
+                        let chipColor = 'default'; // Color por defecto
+                        
+                        if (currentStatus === 'Completed') {
+                            chipColor = 'success'; // Verde para "Completed"
+                        } else if (currentStatus === 'In Transit') {
+                            chipColor = 'warning'; // Anaranjado para "In Transit"
+                        } else if (currentStatus === 'Cancelled') { // Ejemplo para otro estado
+                            chipColor = 'error';   // Rojo para "Cancelled"
+                        }
+                        // Puedes añadir más 'else if' para otros estados si los tienes
+
+                        return (
+                            <Chip 
+                                label={currentStatus} 
+                                color={chipColor} 
+                                size="small" // Para que tenga un tamaño similar a los botones
+                            />
+                        );
+                    })()}
                 </TableCell>
                 <TableCell>
                     <Box sx={{ display: 'flex', gap: 0.5 }}> {/* Usar flex y gap reducido */}
@@ -71,44 +99,55 @@ const TripRow = ({ trip, onEdit, onFinalize, getDocumentUrl }) => {
                             <Typography variant="h6" gutterBottom component="div" sx={{ fontSize: '1rem' }}>
                                 Detalles de Etapas y Documentos
                             </Typography>
-                            {/* Renderizar etapas y documentos aquí */}
+
                             {Array.isArray(trip.etapas) && trip.etapas.length > 0 ? (
-                                <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '0.85rem' }}>
+                                // Usamos Grid container en lugar del ul principal
+                                <Grid container spacing={2} sx={{ fontSize: '0.85rem' }}>
                                     {trip.etapas.map((etapa) => (
-                                        <li key={etapa.trip_stage_id} style={{ marginBottom: '10px' }}>
-                                            <Tooltip title={`Compañía: ${etapa.nombre_compania || '-'}\nBodega Origen: ${etapa.warehouse_origin_name || '-'}\nBodega Destino: ${etapa.warehouse_destination_name || '-'}\nTarifa: ${etapa.rate_tarifa || '-'}\nMillas: ${etapa.millas_pcmiller || '-'}`} arrow>
-                                                <span>
-                                                    <strong>E{etapa.stage_number} ({etapa.stageType?.replace('borderCrossing', 'Cruce').replace('normalTrip', 'Normal') || 'N/A'}):</strong> {etapa.origin} &rarr; {etapa.destination} ({etapa.travel_direction})
+                                        // Cada etapa es un Grid item. md={4} significa que en pantallas medianas y mayores, ocupará 4 de 12 columnas (12/4 = 3 columnas)
+                                        // xs={12} hace que ocupe todo el ancho en pantallas pequeñas (una columna)
+                                        // sm={6} hace que ocupe la mitad del ancho en pantallas pequeñas/tablets (dos columnas) - puedes ajustar esto
+                                        <Grid item key={etapa.trip_stage_id} xs={12} sm={6} md={4}>
+                                            {/* Opcional: Envuelve el contenido de cada etapa en un Box o Paper para mejor estructura visual y bordes si es necesario */}
+                                            <Box sx={{ border: '1px solid #eee', padding: '8px', borderRadius: '4px', height: '100%' /* Para que todas las cards en una fila tengan la misma altura */ }}>
+                                                <Tooltip
+                                                    title={`Compañía: ${etapa.nombre_compania || '-'}\nBodega Origen: ${etapa.warehouse_origin_name || '-'}\nBodega Destino: ${etapa.warehouse_destination_name || '-'}\nTarifa: ${etapa.rate_tarifa || '-'}\nMillas: ${etapa.millas_pcmiller || '-'}`}
+                                                    arrow
+                                                >
+                                                    <span>
+                                                        <strong>E{etapa.stage_number} ({etapa.stageType?.replace('borderCrossing', 'Cruce').replace('normalTrip', 'Normal') || 'N/A'}):</strong> {etapa.origin} &rarr; {etapa.destination} ({etapa.travel_direction})
+                                                    </span>
+                                                </Tooltip>
+                                                {etapa.ci_number && <><br /><span style={{ fontSize: '0.9em', color: '#555' }}>CI: {etapa.ci_number}</span></>}
+                                                <br />
+                                                <span style={{ fontSize: '0.9em', color: '#555' }}>
+                                                    Carga: {etapa.loading_date ? dayjs(etapa.loading_date).format("DD/MM/YY") : '-'} |
+                                                    Entrega: {etapa.delivery_date ? dayjs(etapa.delivery_date).format("DD/MM/YY") : '-'}
                                                 </span>
-                                            </Tooltip>
-                                            {etapa.ci_number && <><br /><span style={{ fontSize: '0.9em', color: '#555' }}>CI: {etapa.ci_number}</span></>}
-                                            <br />
-                                            <span style={{ fontSize: '0.9em', color: '#555' }}>
-                                                Carga: {etapa.loading_date ? dayjs(etapa.loading_date).format("DD/MM/YY") : '-'} |
-                                                Entrega: {etapa.delivery_date ? dayjs(etapa.delivery_date).format("DD/MM/YY") : '-'}
-                                            </span>
-                                            {Array.isArray(etapa.documentos_adjuntos) && etapa.documentos_adjuntos.length > 0 && (
-                                                <ul style={{ margin: '2px 0 0 15px', paddingLeft: '15px', listStyleType: 'disc' }}>
-                                                    {etapa.documentos_adjuntos.map(doc => (
-                                                        <li key={doc.document_id}>
-                                                            <MuiLink
-                                                                href={getDocumentUrl(doc.path_servidor_real || doc.nombre_archivo)}
-                                                                target="_blank"
-                                                                rel="noopener noreferrer"
-                                                                title={`Ver ${doc.tipo_documento} (${doc.nombre_archivo})`}
-                                                                underline="hover"
-                                                                sx={{ fontSize: 'inherit' }}
-                                                            >
-                                                                {doc.tipo_documento.replace(/_/g, ' ')}
-                                                            </MuiLink>
-                                                            {doc.fecha_vencimiento ? ` (V: ${dayjs(doc.fecha_vencimiento).format("DD/MM/YY")})` : ''}
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            )}
-                                        </li>
+
+                                                {Array.isArray(etapa.documentos_adjuntos) && etapa.documentos_adjuntos.length > 0 && (
+                                                    <ul style={{ margin: '5px 0 0 0', paddingLeft: '20px', listStyleType: 'disc', fontSize: 'inherit' }}> {/* Ajusta el padding/margin según sea necesario */}
+                                                        {etapa.documentos_adjuntos.map(doc => (
+                                                            <li key={doc.document_id} style={{ marginBottom: '2px' }}>
+                                                                <MuiLink
+                                                                    href={getDocumentUrl(doc.path_servidor_real || doc.nombre_archivo)}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    title={`Ver ${doc.tipo_documento} (${doc.nombre_archivo})`}
+                                                                    underline="hover"
+                                                                    sx={{ fontSize: 'inherit' }}
+                                                                >
+                                                                    {doc.tipo_documento.replace(/_/g, ' ')}
+                                                                </MuiLink>
+                                                                {doc.fecha_vencimiento ? ` (V: ${dayjs(doc.fecha_vencimiento).format("DD/MM/YY")})` : ''}
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                )}
+                                            </Box>
+                                        </Grid>
                                     ))}
-                                </ul>
+                                </Grid>
                             ) : (
                                 <Typography variant="body2" sx={{ fontStyle: 'italic' }}>Sin etapas registradas</Typography>
                             )}
@@ -303,7 +342,7 @@ const TripAdmin = () => {
                     <TableHead>
                         <TableRow>
                             <TableCell />
-                            {['Trip #', 'Driver', 'Truck', 'Trailer', 'Creado', 'Status', 'Acciones'].map((title) => (
+                            {['Trip #', 'Driver', 'Truck', 'Trailer', 'Initial Date', 'Status', 'Actions'].map((title) => (
                                 <TableCell key={title} sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>{title}</TableCell>
                             ))}
                         </TableRow>

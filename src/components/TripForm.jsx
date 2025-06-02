@@ -81,7 +81,7 @@ const TripForm = ({ tripNumber }) => {
         warehouse_destination_id: '',
         ci_number: '',
         rate_tarifa: '',
-        millas_pc_miller: '',
+       millas_pcmiller: '',
         documentos: { ...initialNormalTripDocs }
     }]);
 
@@ -269,7 +269,7 @@ const TripForm = ({ tripNumber }) => {
                 origin: '', destination: '', zip_code_origin: '', zip_code_destination: '',
                 loading_date: null, delivery_date: null, company_id: null, travel_direction: '',
                 warehouse_origin_id: null, warehouse_destination_id: null, ci_number: '',
-                rate_tarifa: '', millas_pc_miller: '', estatus: 'Pending',
+                rate_tarifa: '',millas_pcmiller: '', estatus: 'In Transit',
                 documentos: initialDocs
             }
         ]);
@@ -332,7 +332,7 @@ const TripForm = ({ tripNumber }) => {
             warehouse_destination_id: etapa.warehouse_destination_id,
             ci_number: etapa.ci_number,
             rate_tarifa: etapa.rate_tarifa,
-            millas_pc_miller: etapa.millas_pc_miller,
+           millas_pcmiller: etapa.millas_pcmiller,
             estatus: etapa.estatus,
             // Enviar solo metadatos de documentos en el JSON
             documentos: Object.entries(etapa.documentos).reduce((acc, [key, value]) => {
@@ -391,7 +391,7 @@ const TripForm = ({ tripNumber }) => {
                     stage_number: 1, stageType: 'normalTrip', origin: '', destination: '',
                     zip_code_origin: '', zip_code_destination: '', loading_date: null, delivery_date: null,
                     company_id: '', travel_direction: '', warehouse_origin_id: '', warehouse_destination_id: '',
-                    ci_number: '', rate_tarifa: '', millas_pc_miller: '',
+                    ci_number: '', rate_tarifa: '',millas_pcmiller: '',
                     documentos: { ...initialNormalTripDocs }
                 }]);
 
@@ -649,11 +649,11 @@ const TripForm = ({ tripNumber }) => {
                             />
                         </div>
                         <div className="column">
-                            <label htmlFor={`millas_pc_miller-${index}`} >Millas PC Miller:</label>
+                            <label htmlFor={`millas_pcmiller-${index}`} >Millas PC Miller:</label>
                             <input
-                                type="number" id={`millas_pc_miller-${index}`} name={`millas_pc_miller-${index}`}
-                                value={etapa.millas_pc_miller} // Corregido: usar etapa.millas_pc_miller
-                                onChange={(e) => handleEtapaChange(index, 'millas_pc_miller', e.target.value)}
+                                type="number" id={`millas_pcmiller-${index}`} name={`millas_pcmiller-${index}`}
+                                value={etapa.millas_pcmiller} // Corregido: usar etapa.millas_pcmiller
+                                onChange={(e) => handleEtapaChange(index, 'millas_pcmiller', e.target.value)}
                                 placeholder="Ej: 850"
                                 className="form-input"
                             />

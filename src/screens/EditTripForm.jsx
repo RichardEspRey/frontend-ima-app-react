@@ -11,6 +11,7 @@ import useFetchCompanies from '../hooks/useFetchCompanies';
 import useFetchWarehouses from '../hooks/useFetchWarehouses';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import CreatableSelect from 'react-select/creatable';
 import Select from 'react-select';
 import { format, parseISO } from 'date-fns';
 import './css/EditTripForm.css';
@@ -21,7 +22,7 @@ const initialBorderCrossingDocs = {
 };
 const initialNormalTripDocs = {
     ima_invoice: null, ci: null,
-   cita_entrega: null, bl: null, bl_firmado: null,
+    cita_entrega: null, bl: null, bl_firmado: null,
 };
 
 const selectStyles = {
@@ -41,6 +42,10 @@ const EditTripForm = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
+    // Estados para la creación dinámica de compañías/bodegas
+    const [isCreatingCompany, setIsCreatingCompany] = useState(false);
+    const [isCreatingWarehouse, setIsCreatingWarehouse] = useState(false);
+
 
     const [formData, setFormData] = useState({
         trip_number: '', driver_id: '', truck_id: '', caja_id: '',
@@ -56,14 +61,14 @@ const EditTripForm = () => {
     const { activeDrivers, loading: loadingDrivers } = useFetchActiveDrivers();
     const { activeTrucks, loading: loadingTrucks } = useFetchActiveTrucks();
     const { activeTrailers, loading: loadingCajas } = useFetchActiveTrailers();
-    const { activeCompanies, loading: loadingCompanies } = useFetchCompanies();
-    const { activeWarehouses, loading: loadingWarehouses } = useFetchWarehouses();
+    const { activeCompanies, loading: loadingCompanies, refetchCompanies } = useFetchCompanies();
+    const { activeWarehouses, loading: loadingWarehouses, refetchWarehouses } = useFetchWarehouses();
 
     // *** FUNCIÓN getDocumentUrl AÑADIDA AQUÍ ***
     const getDocumentUrl = (serverPath) => {
         if (!serverPath) return '#'; // Retorna un enlace no funcional si no hay ruta
 
-   
+
         const uploadsWebPath = `${apiHost}/Uploads/Trips/`;// *** AJUSTA ESTO SI TU RUTA WEB ES DIFERENTE ***
 
         // Extraer solo el nombre del archivo de la ruta del servidor
@@ -103,7 +108,7 @@ const EditTripForm = () => {
                         driver_id: trip.driver_id || '',
                         truck_id: trip.truck_id || '',
                         caja_id: trip.caja_id || '',
-                        status: trip.status || 'Pending',
+                        status: trip.status || 'In Transit',
                         driver_nombre: trip.driver_nombre || '',
                         truck_unidad: trip.truck_unidad || '',
                         caja_no_caja: trip.caja_no_caja || '',
@@ -113,14 +118,14 @@ const EditTripForm = () => {
                     // *** INICIALIZAR ETAPAS CON stageType y DOCUMENTOS CORRECTOS ***
                     const processedEtapas = result.etapas.map(etapa => {
                         let loadingDateObj = null;
-                        if (etapa.loading_date && typeof etapa.loading_date === 'string') { try { loadingDateObj = parseISO(etapa.loading_date + 'T00:00:00Z'); } catch (e) { } }
+                        if (etapa.loading_date && typeof etapa.loading_date === 'string') { try { loadingDateObj = parseISO(etapa.loading_date ); } catch (e) { } }
                         let deliveryDateObj = null;
-                        if (etapa.delivery_date && typeof etapa.delivery_date === 'string') { try { deliveryDateObj = parseISO(etapa.delivery_date + 'T00:00:00Z'); } catch (e) { } }
+                        if (etapa.delivery_date && typeof etapa.delivery_date === 'string') { try { deliveryDateObj = parseISO(etapa.delivery_date ); } catch (e) { } }
 
                         // Determinar qué estructura de documentos usar para esta etapa
                         // Asume que el backend devuelve 'stageType'. Si no, usa un default.
-                        console.log( etapa.stageType)
-                        const tipoEtapaActual = etapa.stageType || 'borderCrossing'; 
+                        console.log(etapa.stageType)
+                        const tipoEtapaActual = etapa.stageType || 'borderCrossing';
                         console.log(tipoEtapaActual)// Default a borderCrossing si no viene
                         let documentosBase;
                         if (tipoEtapaActual === 'normalTrip') {
@@ -129,7 +134,7 @@ const EditTripForm = () => {
                             documentosBase = { ...initialBorderCrossingDocs };
                         }
                         // Puedes añadir más 'else if' para otros tipos como 'localTrip'
-                        console.log( tipoEtapaActual)
+                        console.log(tipoEtapaActual)
                         // Poblar con los documentos existentes
                         if (Array.isArray(etapa.documentos_adjuntos)) {
                             etapa.documentos_adjuntos.forEach(doc => {
@@ -138,8 +143,8 @@ const EditTripForm = () => {
                                     documentosBase[doc.tipo_documento] = {
                                         fileName: doc.nombre_archivo?.split(/[\\/]/).pop() || 'Archivo existente',
                                         vencimiento: doc.fecha_vencimiento || null, file: null,
-                                        document_id: doc.document_id, 
-                                        serverPath: doc.path_servidor_real 
+                                        document_id: doc.document_id,
+                                        serverPath: doc.path_servidor_real
                                     };
                                 }
                             });
@@ -149,7 +154,7 @@ const EditTripForm = () => {
                             stageType: tipoEtapaActual, // Asegurar que el tipo esté
                             loading_date: loadingDateObj, delivery_date: deliveryDateObj,
                             documentos: documentosBase,
-                             // Usar la estructura correcta poblada
+                            // Usar la estructura correcta poblada
                         };
                     });
                     setEtapas(processedEtapas);
@@ -215,7 +220,7 @@ const EditTripForm = () => {
         if (stageIndex === null) { return; }
         setModalTarget({ stageIndex, docType });
         setModalAbierto(true);
-        if (['ima_invoice', 'carta_porte' ,'ci', 'entry',  'manifiesto', 'cita_entrega', 'bl', 'orden_retiro', 'bl_firmado'].includes(docType)) {
+        if (['ima_invoice', 'carta_porte', 'ci', 'entry', 'manifiesto', 'cita_entrega', 'bl', 'orden_retiro', 'bl_firmado'].includes(docType)) {
             setMostrarFechaVencimientoModal(false);
         } else {
             setMostrarFechaVencimientoModal(true);
@@ -228,19 +233,7 @@ const EditTripForm = () => {
         return etapas[stageIndex].documentos[docType] || null;
     };
 
-    // const agregarEtapa = () => {
-    //     setEtapas(prevEtapas => [
-    //         ...prevEtapas,
-    //         {
-    //             trip_stage_id: null, stage_number: prevEtapas.length + 1,
-    //             origin: '', destination: '', zip_code_origin: '', zip_code_destination: '',
-    //             loading_date: null, delivery_date: null, company_id: '', travel_direction: '',
-    //             warehouse_origin_id: '', warehouse_destination_id: '', ci_number: '',
-    //             rate_tarifa: '', millas_pc_miller: '', estatus: 'Pending',
-    //             documentos: { ...initialEtapaDocumentos }
-    //         }
-    //     ]);
-    // };
+
 
     const agregarNuevaEtapa = (tipoEtapa) => {
         let initialDocs;
@@ -257,7 +250,7 @@ const EditTripForm = () => {
                 origin: '', destination: '', zip_code_origin: '', zip_code_destination: '',
                 loading_date: null, delivery_date: null, company_id: null, travel_direction: '',
                 warehouse_origin_id: null, warehouse_destination_id: null, ci_number: '',
-                rate_tarifa: '', millas_pc_miller: '', estatus: 'Pending',
+                rate_tarifa: '',millas_pcmiller: '', estatus: 'In Transit',
                 documentos: initialDocs // Usar docs correctos
             }
         ]);
@@ -316,7 +309,7 @@ const EditTripForm = () => {
             warehouse_origin_id: etapa.warehouse_origin_id, warehouse_destination_id: etapa.warehouse_destination_id,
             ci_number: etapa.ci_number,
             rate_tarifa: etapa.rate_tarifa,
-            millas_pc_miller: etapa.millas_pc_miller,
+            millas_pcmiller: etapa.millas_pcmiller,
             estatus: etapa.estatus,
             // El array 'documentos' aquí probablemente no es necesario para el backend en 'Update',
             // ya que solo procesa archivos nuevos de $_FILES. Puedes simplificarlo o quitarlo si quieres.
@@ -329,19 +322,19 @@ const EditTripForm = () => {
             })).filter(doc => doc.fileName !== null) // Solo enviar info de docs que existen en el estado
         }));
         dataToSend.append('etapas', JSON.stringify(etapasParaJson));
-        
+
 
         // Añadir SOLO los archivos NUEVOS
         etapas.forEach((etapa, index) => {
             Object.entries(etapa.documentos).forEach(([docType, docData]) => {
-                if (docData && docData.file instanceof File) { 
+                if (docData && docData.file instanceof File) {
                     console.log(`Archivo NUEVO encontrado para Etapa ${index}, Tipo ${docType}:`, docData.file); // <--- Añade esto
                     const fieldName = `etapa_${index}_${docType}_file`;
-                    dataToSend.append(fieldName, docData.file, docData.fileName); 
+                    dataToSend.append(fieldName, docData.file, docData.fileName);
                     // ... (código para replace_id si aplica) ...
                 } else {
-                     // Opcional: Loguear si no hay archivo nuevo
-                     // console.log(`No hay archivo nuevo para Etapa ${index}, Tipo ${docType}`);
+                    // Opcional: Loguear si no hay archivo nuevo
+                    // console.log(`No hay archivo nuevo para Etapa ${index}, Tipo ${docType}`);
                 }
                 if (docData && docData.file instanceof File) {
                     const fieldName = `etapa_${index}_${docType}_file`;
@@ -385,55 +378,56 @@ const EditTripForm = () => {
     };
 
 
-    const handleFinalizeTrip = async () => {
-        if (!tripId) return;
+    // const handleFinalizeTrip = async () => {
+    //     if (!tripId) return;
 
-        const confirmation = await Swal.fire({
-            title: '¿Finalizar Viaje?',
-            text: `Esto marcará el viaje #${formData.trip_number} como completado y reactivará los recursos.`,
-            icon: 'warning', showCancelButton: true, confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33', confirmButtonText: 'Sí, finalizar', cancelButtonText: 'Cancelar'
-        });
+    //     const confirmation = await Swal.fire({
+    //         title: '¿Finalizar Viaje?',
+    //         text: `Esto marcará el viaje #${formData.trip_number} como completado y reactivará los recursos.`,
+    //         icon: 'warning', showCancelButton: true, confirmButtonColor: '#3085d6',
+    //         cancelButtonColor: '#d33', confirmButtonText: 'Sí, finalizar', cancelButtonText: 'Cancelar'
+    //     });
 
-        if (confirmation.isConfirmed) {
-            // Podrías añadir un estado de carga específico para esta acción
-            // setLoadingFinalize(true);
-            try {
-                const apiUrl = `${apiHost}/new_trips.php`;
-                const finalizeFormData = new FormData();
-                finalizeFormData.append('op', 'FinalizeTrip');
-                finalizeFormData.append('trip_id', tripId);
-                // Aquí podrías añadir el BL Firmado si se sube desde este form
-                // if (formData.bl_firmado && formData.bl_firmado.file instanceof File) {
-                //    finalizeFormData.append('bl_firmado_file', formData.bl_firmado.file, formData.bl_firmado.fileName);
-                // }
-                //##MISMA DUDA ##
-                const response = await fetch(apiUrl, { method: 'POST', body: finalizeFormData });
-                const result = await response.json();
+    //     if (confirmation.isConfirmed) {
+    //         // Podrías añadir un estado de carga específico para esta acción
+    //         // setLoadingFinalize(true);
+    //         try {
+    //             const apiUrl = `${apiHost}/new_trips.php`;
+    //             const finalizeFormData = new FormData();
+    //             finalizeFormData.append('op', 'FinalizeTrip');
+    //             finalizeFormData.append('trip_id', tripId);
+    //             // Aquí podrías añadir el BL Firmado si se sube desde este form
+    //             // if (formData.bl_firmado && formData.bl_firmado.file instanceof File) {
+    //             //    finalizeFormData.append('bl_firmado_file', formData.bl_firmado.file, formData.bl_firmado.fileName);
+    //             // }
+    //             //##MISMA DUDA ##
+    //             const response = await fetch(apiUrl, { method: 'POST', body: finalizeFormData });
+    //             const result = await response.json();
 
-                if (response.ok && result.status === 'success') {
-                    Swal.fire('¡Finalizado!', result.message || 'El viaje ha sido marcado como completado.', 'success');
+    //             if (response.ok && result.status === 'success') {
+    //                 Swal.fire('¡Finalizado!', result.message || 'El viaje ha sido marcado como completado.', 'success');
 
-                    setFormData(prev => ({ ...prev, status: 'Completed' }));
-                    // 1- ver esta opcion O navegar de vuelta a la tabla
-                    // 2- ver esta otra opcion navigate('/admin-trips');
-                } else {
-                    throw new Error(result.error || result.message || 'No se pudo finalizar el viaje.');
-                }
-            } catch (err) {
-                console.error("Error finalizing trip:", err);
-                Swal.fire('Error', `No se pudo finalizar el viaje: ${err.message}`, 'error');
-            } finally {
-                // setLoadingFinalize(false);
-            }
-        }
-    };
+    //                 setFormData(prev => ({ ...prev, status: 'Completed' }));
+    //                 // 1- ver esta opcion O navegar de vuelta a la tabla
+    //                 // 2- ver esta otra opcion navigate('/admin-trips');
+    //             } else {
+    //                 throw new Error(result.error || result.message || 'No se pudo finalizar el viaje.');
+    //             }
+    //         } catch (err) {
+    //             console.error("Error finalizing trip:", err);
+    //             Swal.fire('Error', `No se pudo finalizar el viaje: ${err.message}`, 'error');
+    //         } finally {
+    //             // setLoadingFinalize(false);
+    //         }
+    //     }
+    // };
 
+    // Opciones memoizadas para React-Select
     const driverOptions = useMemo(() => {
         const options = activeDrivers.map(d => ({ value: d.driver_id, label: d.nombre }));
-
+        // Si el driver actual del formData no está en la lista de activos, añadirlo
         if (formData.driver_id && !activeDrivers.some(d => d.driver_id === formData.driver_id)) {
-            options.unshift({ value: formData.driver_id, label: formData.driver_nombre || `ID: ${formData.driver_id} (Inactivo)` });
+            options.unshift({ value: formData.driver_id, label: formData.driver_nombre || `ID: ${formData.driver_id} (Inactivo/No encontrado)` });
         }
         return options;
     }, [activeDrivers, formData.driver_id, formData.driver_nombre]);
@@ -441,7 +435,7 @@ const EditTripForm = () => {
     const truckOptions = useMemo(() => {
         const options = activeTrucks.map(t => ({ value: t.truck_id, label: t.unidad }));
         if (formData.truck_id && !activeTrucks.some(t => t.truck_id === formData.truck_id)) {
-            options.unshift({ value: formData.truck_id, label: formData.truck_unidad || `ID: ${formData.truck_id} (Inactivo)` });
+            options.unshift({ value: formData.truck_id, label: formData.truck_unidad || `ID: ${formData.truck_id} (Inactivo/No encontrado)` });
         }
         return options;
     }, [activeTrucks, formData.truck_id, formData.truck_unidad]);
@@ -449,10 +443,94 @@ const EditTripForm = () => {
     const trailerOptions = useMemo(() => {
         const options = activeTrailers.map(c => ({ value: c.caja_id, label: c.no_caja }));
         if (formData.caja_id && !activeTrailers.some(c => c.caja_id === formData.caja_id)) {
-            options.unshift({ value: formData.caja_id, label: formData.caja_no_caja || `ID: ${formData.caja_id} (Inactivo)` });
+            options.unshift({ value: formData.caja_id, label: formData.caja_no_caja || `ID: ${formData.caja_id} (Inactivo/No encontrado)` });
         }
         return options;
     }, [activeTrailers, formData.caja_id, formData.caja_no_caja]);
+
+    const companyOptions = useMemo(() => {
+        const options = activeCompanies.map(c => ({ value: c.company_id, label: c.nombre_compania }));
+        // ###CORRECCIÓN: Manejo de compañía inactiva/no encontrada para el Select principal
+        if (formData.company_id && !activeCompanies.some(c => c.company_id === formData.company_id)) {
+            options.unshift({ value: formData.company_id, label: formData.nombre_compania || `ID: ${formData.company_id} (Inactiva/No encontrada)` });
+        }
+        return options;
+    }, [activeCompanies, formData.company_id, formData.nombre_compania]);
+
+    const warehouseOptions = useMemo(() => {
+        const options = activeWarehouses.map(w => ({ value: w.warehouse_id, label: w.nombre_almacen }));
+        return options;
+    }, [activeWarehouses]);
+
+
+    const handleCreateCompany = async (inputValue, stageIndex, companyFieldKey) => {
+        setIsCreatingCompany(true);
+        const newCompanyFormData = new FormData();
+        newCompanyFormData.append('op', 'CreateCompany');
+        newCompanyFormData.append('nombre_compania', inputValue);
+        try {
+            const response = await fetch(`${apiHost}/companies.php`, { method: 'POST', body: newCompanyFormData });
+            const result = await response.json();
+            if (result.status === "success" && result.company && result.company.company_id) {
+                const newOption = { value: result.company.company_id, label: result.company.nombre_compania };
+                refetchCompanies(); // Refrescar la lista de compañías
+
+                // ### CORRECCIÓN: Actualizar el estado del formulario principal o de la etapa
+                if (stageIndex === null && companyFieldKey) { // Es el select del formulario principal
+                    handleFormChange(companyFieldKey, newOption.value);
+                    // handleFormChange('nombre_compania', newOption.label); // Ya no es necesario si el select lo maneja
+                } else if (stageIndex !== null && companyFieldKey) { // Es un select de una etapa
+                    handleStageChange(stageIndex, companyFieldKey, newOption.value);
+                }
+
+                Swal.fire('¡Éxito!', `Compañía "${inputValue}" creada y seleccionada.`, 'success');
+                return newOption; // Devolver la nueva opción para que CreatableSelect la seleccione
+            } else {
+                Swal.fire('Error', `No se pudo crear la compañía: ${result.message || 'Error desconocido.'}`, 'error');
+                return null;
+            }
+        } catch (error) {
+            console.error("Error creando compañía:", error);
+            Swal.fire('Error', 'Error de conexión al crear la compañía.', 'error');
+            return null;
+        } finally {
+            setIsCreatingCompany(false);
+        }
+    };
+
+    const handleCreateWarehouse = async (inputValue, stageIndex, warehouseFieldKey) => {
+        setIsCreatingWarehouse(true);
+        const newWarehouseFormData = new FormData();
+        newWarehouseFormData.append('op', 'CreateWarehouse');
+        newWarehouseFormData.append('nombre_almacen', inputValue);
+        try {
+            const response = await fetch(`${apiHost}/warehouses.php`, { method: 'POST', body: newWarehouseFormData });
+            const result = await response.json();
+            if (result.status === "success" && result.warehouse && result.warehouse.warehouse_id) {
+                const newOption = { value: result.warehouse.warehouse_id, label: result.warehouse.nombre_almacen };
+                refetchWarehouses(); // ###CORRECCIÓN: Refrescar la lista de bodegas
+                // ###CORRECCIÓN: Actualizar el estado del formulario principal o de la etapa
+                if (stageIndex === null && warehouseFieldKey) { // Es el select del formulario principal
+                    // Asumiendo que hay campos en formData para el almacén principal
+                    handleFormChange(warehouseFieldKey, newOption.value);
+                    // handleFormChange('nombre_almacen_principal', newOption.label); // Si tienes un campo para el nombre
+                } else if (stageIndex !== null && warehouseFieldKey) { // Es un select de una etapa
+                    handleStageChange(stageIndex, warehouseFieldKey, newOption.value);
+                }
+                Swal.fire('¡Éxito!', `Bodega "${inputValue}" creada y seleccionada.`, 'success');
+                return newOption;
+            } else {
+                Swal.fire('Error', `No se pudo crear la bodega: ${result.message || 'Error desconocido.'}`, 'error');
+                return null;
+            }
+        } catch (error) {
+            console.error("Error creando bodega:", error);
+            Swal.fire('Error', 'Error de conexión al crear la bodega.', 'error');
+            return null;
+        } finally {
+            setIsCreatingWarehouse(false);
+        }
+    };
 
     // --- Renderizado ---
     if (loading) { return (<Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}> <CircularProgress /> <Typography ml={2}>Cargando datos...</Typography> </Box>); }
@@ -480,7 +558,7 @@ const EditTripForm = () => {
                         <div className="form-actions">
                             <Button type="button" variant="outlined" onClick={() => navigate(-1)}>Cancelar / Volver</Button>
 
-                            <Button
+                            {/* <Button
                                 variant="contained"
                                 color="success"
                                 type="button"
@@ -489,7 +567,7 @@ const EditTripForm = () => {
                                 sx={{ ml: 1 }}
                             >
                                 Finalizar Viaje
-                            </Button>
+                            </Button> */}
                             <Button type="submit" variant="contained" color="primary" sx={{ ml: 1 }}>Guardar Cambios</Button>
                         </div>
 
@@ -569,14 +647,17 @@ const EditTripForm = () => {
                                 <div className="input-columns">
                                     <div className="column">
                                         <label>Company:</label>
-                                        <Select
-                                            value={activeCompanies.find(c => c.company_id === etapa.company_id) ? { value: etapa.company_id, label: activeCompanies.find(c => c.company_id === etapa.company_id).nombre_compania } : null}
-                                            onChange={(selected) => handleStageChange(index, 'company_id', selected ? selected.value : '')}
-                                            options={activeCompanies.map(c => ({ value: c.company_id, label: c.nombre_compania }))}
-                                            placeholder="Seleccionar Company"
-                                            isLoading={loadingCompanies}
-                                            styles={selectStyles}
-                                            isClearable />
+                                        <CreatableSelect // ###CORRECCIÓN: CreatableSelect para Company en Etapa
+                                                value={companyOptions.find(opt => opt.value === etapa.company_id) || null}
+                                                onChange={(selected) => handleStageChange(index, 'company_id', selected ? selected.value : '')}
+                                                onCreateOption={(inputValue) => handleCreateCompany(inputValue, index, 'company_id')} // ###CORRECCIÓN: Pasar index y 'company_id'
+                                                options={companyOptions}
+                                                placeholder="Seleccionar o Crear Company"
+                                                isLoading={loadingCompanies || isCreatingCompany}
+                                                styles={selectStyles}
+                                                isClearable
+                                                formatCreateLabel={(inputValue) => `Crear nueva compañía: "${inputValue}"`}
+                                            />
                                     </div>
 
                                     <div className="column">
@@ -605,26 +686,32 @@ const EditTripForm = () => {
                                 <div className="input-columns">
                                     <div className="column">
                                         <label style={{ marginTop: '10px' }}>Origin Warehouse:</label>
-                                        <Select
-                                            value={activeWarehouses.find(w => w.warehouse_id === etapa.warehouse_origin_id) ? { value: etapa.warehouse_origin_id, label: activeWarehouses.find(w => w.warehouse_id === etapa.warehouse_origin_id).nombre_almacen } : null}
+                                        <CreatableSelect // ###Agregar: CreatableSelect para Origin Warehouse en Etapa
+                                            value={warehouseOptions.find(opt => opt.value === etapa.warehouse_origin_id) || null}
                                             onChange={(selected) => handleStageChange(index, 'warehouse_origin_id', selected ? selected.value : '')}
-                                            options={activeWarehouses.map(w => ({ value: w.warehouse_id, label: w.nombre_almacen }))}
-                                            placeholder="Bodega Origen"
-                                            isLoading={loadingWarehouses}
+                                            onCreateOption={(inputValue) => handleCreateWarehouse(inputValue, index, 'warehouse_origin_id')}
+                                            options={warehouseOptions}
+                                            placeholder="Seleccionar o Crear Bodega Origen"
+                                            isLoading={loadingWarehouses || isCreatingWarehouse}
                                             styles={selectStyles}
-                                            isClearable />
+                                            isClearable
+                                            formatCreateLabel={(inputValue) => `Crear nueva bodega: "${inputValue}"`}
+                                        />
                                     </div>
 
                                     <div className="column">
                                         <label style={{ marginTop: '10px' }}>Destination Warehouse:</label>
-                                        <Select
-                                            value={activeWarehouses.find(w => w.warehouse_id === etapa.warehouse_destination_id) ? { value: etapa.warehouse_destination_id, label: activeWarehouses.find(w => w.warehouse_id === etapa.warehouse_destination_id).nombre_almacen } : null}
+                                        <CreatableSelect // ###Agregar: CreatableSelect para Destination Warehouse en Etapa
+                                            value={warehouseOptions.find(opt => opt.value === etapa.warehouse_destination_id) || null}
                                             onChange={(selected) => handleStageChange(index, 'warehouse_destination_id', selected ? selected.value : '')}
-                                            options={activeWarehouses.map(w => ({ value: w.warehouse_id, label: w.nombre_almacen }))}
-                                            placeholder="Bodega Destino"
-                                            isLoading={loadingWarehouses}
+                                            onCreateOption={(inputValue) => handleCreateWarehouse(inputValue, index, 'warehouse_destination_id')}
+                                            options={warehouseOptions}
+                                            placeholder="Seleccionar o Crear Bodega Destino"
+                                            isLoading={loadingWarehouses || isCreatingWarehouse}
                                             styles={selectStyles}
-                                            isClearable />
+                                            isClearable
+                                            formatCreateLabel={(inputValue) => `Crear nueva bodega: "${inputValue}"`}
+                                        />
                                     </div>
 
                                 </div>
@@ -717,8 +804,8 @@ const EditTripForm = () => {
                                         <input
                                             type="number"
                                             step="1"
-                                            value={etapa.millas_pc_miller}
-                                            onChange={(e) => handleStageChange(index, 'millas_pc_miller', e.target.value)}
+                                            value={etapa.millas_pcmiller}
+                                            onChange={(e) => handleStageChange(index, 'millas_pcmiller', e.target.value)}
                                             placeholder="Millas Etapa"
                                             className="form-input" />
                                     </div>
@@ -781,9 +868,9 @@ const EditTripForm = () => {
                                                 </div>
 
                                                 <div className="column">
-                                                    <label htmlFor={`orde_retiro-${index}`}>Orden Retiro:</label>
-                                                    <button type="button" className="upload-button" onClick={() => abrirModal('order_retiro', index)}>Subir/Cambiar</button>
-                                                    {etapa.documentos?.order_retiro && (<p className="doc-info"><i> <a href={getDocumentUrl(etapa.documentos.order_retiro.serverPath)} target="_blank" rel="noopener noreferrer">{etapa.documentos.order_retiro.fileName}</a> {etapa.documentos.order_retiro.vencimiento ? ` - V: ${etapa.documentos.order_retiro.vencimiento}` : ''}</i></p>)}
+                                                    <label htmlFor={`orden_retiro-${index}`}>Orden Retiro:</label>
+                                                    <button type="button" className="upload-button" onClick={() => abrirModal('orden_retiro', index)}>Subir/Cambiar</button>
+                                                    {etapa.documentos?.orden_retiro && (<p className="doc-info"><i> <a href={getDocumentUrl(etapa.documentos.orden_retiro.serverPath)} target="_blank" rel="noopener noreferrer">{etapa.documentos.orden_retiro.fileName}</a> {etapa.documentos.orden_retiro.vencimiento ? ` - V: ${etapa.documentos.orden_retiro.vencimiento}` : ''}</i></p>)}
                                                 </div>
 
                                                 <div className="column">
@@ -807,7 +894,7 @@ const EditTripForm = () => {
                                                     <button type="button" className="upload-button" onClick={() => abrirModal('ima_invoice', index)}>Subir/Cambiar</button>
                                                     {etapa.documentos?.ima_invoice && (<p className="doc-info"><i> <a href={getDocumentUrl(etapa.documentos.ima_invoice.serverPath)} target="_blank" rel="noopener noreferrer">{etapa.documentos.ima_invoice.fileName}</a> {etapa.documentos.ima_invoice.vencimiento ? ` - V: ${etapa.documentos.ima_invoice.vencimiento}` : ''}</i></p>)}
                                                 </div>
-{/* 
+                                                {/* 
                                                 <div className="column">
                                                     <label htmlFor={`carta_porte-${index}`}>Carta Porte:</label>
                                                     <button type="button" className="upload-button" onClick={() => abrirModal('carta_porte', index)}>Subir/Cambiar</button>
@@ -820,12 +907,12 @@ const EditTripForm = () => {
                                                     {etapa.documentos?.ci && (<p className="doc-info"><i> <a href={getDocumentUrl(etapa.documentos.ci.serverPath)} target="_blank" rel="noopener noreferrer">{etapa.documentos.ci.fileName}</a> {etapa.documentos.ci.vencimiento ? ` - V: ${etapa.documentos.ci.vencimiento}` : ''}</i></p>)}
                                                 </div>
 
-                                                  <div className="column">
+                                                <div className="column">
                                                     <label htmlFor={`cita_entrega-${index}`}>Cita Entrega:</label>
                                                     <button type="button" className="upload-button" onClick={() => abrirModal('cita_entrega', index)}>Subir/Cambiar</button>
                                                     {etapa.documentos?.cita_entrega && (<p className="doc-info"><i> <a href={getDocumentUrl(etapa.documentos.cita_entrega.serverPath)} target="_blank" rel="noopener noreferrer">{etapa.documentos.cita_entrega.fileName}</a> {etapa.documentos.cita_entrega.vencimiento ? ` - V: ${etapa.documentos.cita_entrega.vencimiento}` : ''}</i></p>)}
                                                 </div>
-                                                
+
                                             </div>
 
 
@@ -838,9 +925,9 @@ const EditTripForm = () => {
                                                 </div>
 
                                                 {/* <div className="column">
-                                                    <label htmlFor={`orde_retiro-${index}`}>Orden Retiro:</label>
-                                                    <button type="button" className="upload-button" onClick={() => abrirModal('order_retiro', index)}>Subir/Cambiar</button>
-                                                    {etapa.documentos?.order_retiro && (<p className="doc-info"><i> <a href={getDocumentUrl(etapa.documentos.order_retiro.serverPath)} target="_blank" rel="noopener noreferrer">{etapa.documentos.order_retiro.fileName}</a> {etapa.documentos.order_retiro.vencimiento ? ` - V: ${etapa.documentos.order_retiro.vencimiento}` : ''}</i></p>)}
+                                                    <label htmlFor={`orden_retiro-${index}`}>Orden Retiro:</label>
+                                                    <button type="button" className="upload-button" onClick={() => abrirModal('orden_retiro', index)}>Subir/Cambiar</button>
+                                                    {etapa.documentos?.orden_retiro && (<p className="doc-info"><i> <a href={getDocumentUrl(etapa.documentos.orden_retiro.serverPath)} target="_blank" rel="noopener noreferrer">{etapa.documentos.orden_retiro.fileName}</a> {etapa.documentos.orden_retiro.vencimiento ? ` - V: ${etapa.documentos.orden_retiro.vencimiento}` : ''}</i></p>)}
                                                 </div> */}
 
                                                 <div className="column">
@@ -884,7 +971,7 @@ const EditTripForm = () => {
                         <Box sx={{ mt: 3, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
                             <Button variant="outlined" onClick={() => navigate(-1)}>Cancelar / Volver</Button>
 
-                            <Button
+                            {/* <Button
                                 variant="contained"
                                 color="success"
                                 type="button"
@@ -892,7 +979,7 @@ const EditTripForm = () => {
                                 disabled={formData.status === 'Completed' || formData.status === 'Cancelled'}
                             >
                                 Finalizar Viaje
-                            </Button>
+                            </Button> */}
                             <Button variant="contained" color="primary" type="submit">Guardar Cambios</Button>
                         </Box>
 
