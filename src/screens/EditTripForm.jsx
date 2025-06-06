@@ -118,9 +118,9 @@ const EditTripForm = () => {
                     // *** INICIALIZAR ETAPAS CON stageType y DOCUMENTOS CORRECTOS ***
                     const processedEtapas = result.etapas.map(etapa => {
                         let loadingDateObj = null;
-                        if (etapa.loading_date && typeof etapa.loading_date === 'string') { try { loadingDateObj = parseISO(etapa.loading_date ); } catch (e) { } }
+                        if (etapa.loading_date && typeof etapa.loading_date === 'string') { try { loadingDateObj = parseISO(etapa.loading_date); } catch (e) { } }
                         let deliveryDateObj = null;
-                        if (etapa.delivery_date && typeof etapa.delivery_date === 'string') { try { deliveryDateObj = parseISO(etapa.delivery_date ); } catch (e) { } }
+                        if (etapa.delivery_date && typeof etapa.delivery_date === 'string') { try { deliveryDateObj = parseISO(etapa.delivery_date); } catch (e) { } }
 
                         // Determinar qué estructura de documentos usar para esta etapa
                         // Asume que el backend devuelve 'stageType'. Si no, usa un default.
@@ -250,7 +250,7 @@ const EditTripForm = () => {
                 origin: '', destination: '', zip_code_origin: '', zip_code_destination: '',
                 loading_date: null, delivery_date: null, company_id: null, travel_direction: '',
                 warehouse_origin_id: null, warehouse_destination_id: null, ci_number: '',
-                rate_tarifa: '',millas_pcmiller: '', estatus: 'In Transit',
+                rate_tarifa: '', millas_pcmiller: '', estatus: 'In Transit',
                 documentos: initialDocs // Usar docs correctos
             }
         ]);
@@ -378,50 +378,6 @@ const EditTripForm = () => {
     };
 
 
-    // const handleFinalizeTrip = async () => {
-    //     if (!tripId) return;
-
-    //     const confirmation = await Swal.fire({
-    //         title: '¿Finalizar Viaje?',
-    //         text: `Esto marcará el viaje #${formData.trip_number} como completado y reactivará los recursos.`,
-    //         icon: 'warning', showCancelButton: true, confirmButtonColor: '#3085d6',
-    //         cancelButtonColor: '#d33', confirmButtonText: 'Sí, finalizar', cancelButtonText: 'Cancelar'
-    //     });
-
-    //     if (confirmation.isConfirmed) {
-    //         // Podrías añadir un estado de carga específico para esta acción
-    //         // setLoadingFinalize(true);
-    //         try {
-    //             const apiUrl = `${apiHost}/new_trips.php`;
-    //             const finalizeFormData = new FormData();
-    //             finalizeFormData.append('op', 'FinalizeTrip');
-    //             finalizeFormData.append('trip_id', tripId);
-    //             // Aquí podrías añadir el BL Firmado si se sube desde este form
-    //             // if (formData.bl_firmado && formData.bl_firmado.file instanceof File) {
-    //             //    finalizeFormData.append('bl_firmado_file', formData.bl_firmado.file, formData.bl_firmado.fileName);
-    //             // }
-    //             //##MISMA DUDA ##
-    //             const response = await fetch(apiUrl, { method: 'POST', body: finalizeFormData });
-    //             const result = await response.json();
-
-    //             if (response.ok && result.status === 'success') {
-    //                 Swal.fire('¡Finalizado!', result.message || 'El viaje ha sido marcado como completado.', 'success');
-
-    //                 setFormData(prev => ({ ...prev, status: 'Completed' }));
-    //                 // 1- ver esta opcion O navegar de vuelta a la tabla
-    //                 // 2- ver esta otra opcion navigate('/admin-trips');
-    //             } else {
-    //                 throw new Error(result.error || result.message || 'No se pudo finalizar el viaje.');
-    //             }
-    //         } catch (err) {
-    //             console.error("Error finalizing trip:", err);
-    //             Swal.fire('Error', `No se pudo finalizar el viaje: ${err.message}`, 'error');
-    //         } finally {
-    //             // setLoadingFinalize(false);
-    //         }
-    //     }
-    // };
-
     // Opciones memoizadas para React-Select
     const driverOptions = useMemo(() => {
         const options = activeDrivers.map(d => ({ value: d.driver_id, label: d.nombre }));
@@ -461,6 +417,7 @@ const EditTripForm = () => {
         const options = activeWarehouses.map(w => ({ value: w.warehouse_id, label: w.nombre_almacen }));
         return options;
     }, [activeWarehouses]);
+
 
 
     const handleCreateCompany = async (inputValue, stageIndex, companyFieldKey) => {
@@ -532,6 +489,8 @@ const EditTripForm = () => {
         }
     };
 
+    const isFormDisabled = formData.status === 'Completed' || formData.status === 'Cancelled';
+
     // --- Renderizado ---
     if (loading) { return (<Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}> <CircularProgress /> <Typography ml={2}>Cargando datos...</Typography> </Box>); }
     if (error) { return (<Box sx={{ padding: 2 }}> <Alert severity="error">Error: {error}</Alert> <Button variant="outlined" onClick={() => navigate(-1)} sx={{ mt: 2 }}>Volver</Button> </Box>); }
@@ -557,17 +516,6 @@ const EditTripForm = () => {
 
                         <div className="form-actions">
                             <Button type="button" variant="outlined" onClick={() => navigate(-1)}>Cancelar / Volver</Button>
-
-                            {/* <Button
-                                variant="contained"
-                                color="success"
-                                type="button"
-                                onClick={handleFinalizeTrip}
-                                disabled={formData.status === 'Completed' || formData.status === 'Cancelled'}
-                                sx={{ ml: 1 }}
-                            >
-                                Finalizar Viaje
-                            </Button> */}
                             <Button type="submit" variant="contained" color="primary" sx={{ ml: 1 }}>Guardar Cambios</Button>
                         </div>
 
@@ -592,6 +540,7 @@ const EditTripForm = () => {
                                         isLoading={loadingDrivers}
                                         styles={selectStyles}
                                         isClearable
+                                        isDisabled={isFormDisabled}
                                     />
                                 </div>
                                 <div className="column">
@@ -609,6 +558,7 @@ const EditTripForm = () => {
                                         isLoading={loadingTrucks}
                                         styles={selectStyles}
                                         isClearable
+                                        isDisabled={isFormDisabled}
                                     />
                                 </div>
                                 <div className="column">
@@ -627,6 +577,7 @@ const EditTripForm = () => {
                                         isLoading={loadingCajas}
                                         styles={selectStyles}
                                         isClearable
+                                        isDisabled={isFormDisabled}
                                     />
                                 </div>
                             </div>
@@ -640,7 +591,7 @@ const EditTripForm = () => {
                                 <div className="card-label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginTop: '10px', marginBottom: '10px' }}>
                                     {/* Mostrar tipo de etapa */}
                                     <span>{`Etapa ${etapa.stage_number} (${etapa.stageType === 'borderCrossing' ? 'Cruce Fronterizo' : 'Viaje Normal'})`}</span>
-                                    {etapas.length > 0 && (<button type="button" className="delete-button" onClick={() => eliminarEtapa(index)} title="Eliminar Etapa">&#x2716;</button>)}
+                                    {etapas.length > 0 && (<button type="button" className="delete-button" onClick={() => eliminarEtapa(index)} title="Eliminar Etapa" disabled={isFormDisabled}>&#x2716;</button>)}
                                 </div>
 
                                 <legend className="card-label">Origen / Destino / Detalles</legend>
@@ -648,16 +599,17 @@ const EditTripForm = () => {
                                     <div className="column">
                                         <label>Company:</label>
                                         <CreatableSelect // ###CORRECCIÓN: CreatableSelect para Company en Etapa
-                                                value={companyOptions.find(opt => opt.value === etapa.company_id) || null}
-                                                onChange={(selected) => handleStageChange(index, 'company_id', selected ? selected.value : '')}
-                                                onCreateOption={(inputValue) => handleCreateCompany(inputValue, index, 'company_id')} // ###CORRECCIÓN: Pasar index y 'company_id'
-                                                options={companyOptions}
-                                                placeholder="Seleccionar o Crear Company"
-                                                isLoading={loadingCompanies || isCreatingCompany}
-                                                styles={selectStyles}
-                                                isClearable
-                                                formatCreateLabel={(inputValue) => `Crear nueva compañía: "${inputValue}"`}
-                                            />
+                                            value={companyOptions.find(opt => opt.value === etapa.company_id) || null}
+                                            onChange={(selected) => handleStageChange(index, 'company_id', selected ? selected.value : '')}
+                                            onCreateOption={(inputValue) => handleCreateCompany(inputValue, index, 'company_id')} // ###CORRECCIÓN: Pasar index y 'company_id'
+                                            options={companyOptions}
+                                            placeholder="Seleccionar o Crear Company"
+                                            isLoading={loadingCompanies || isCreatingCompany}
+                                            styles={selectStyles}
+                                            isClearable
+                                            formatCreateLabel={(inputValue) => `Crear nueva compañía: "${inputValue}"`}
+                                            isDisabled={isFormDisabled}
+                                        />
                                     </div>
 
                                     <div className="column">
@@ -668,7 +620,9 @@ const EditTripForm = () => {
                                             options={[{ value: 'Going Up', label: 'Going Up' }, { value: 'Going Down', label: 'Going Down' }]}
                                             placeholder="Seleccionar Dirección"
                                             styles={selectStyles}
-                                            isClearable />
+                                            isClearable 
+                                            isDisabled={isFormDisabled}
+                                            />
                                     </div>
 
                                     <div className="column">
@@ -678,7 +632,9 @@ const EditTripForm = () => {
                                             value={etapa.ci_number}
                                             onChange={(e) => handleStageChange(index, 'ci_number', e.target.value)}
                                             placeholder="Número CI Etapa"
-                                            className="form-input" />
+                                            className="form-input"
+                                            readOnly={isFormDisabled}
+                                             />
                                     </div>
 
                                 </div>
@@ -696,6 +652,7 @@ const EditTripForm = () => {
                                             styles={selectStyles}
                                             isClearable
                                             formatCreateLabel={(inputValue) => `Crear nueva bodega: "${inputValue}"`}
+                                            isDisabled={isFormDisabled}
                                         />
                                     </div>
 
@@ -711,6 +668,7 @@ const EditTripForm = () => {
                                             styles={selectStyles}
                                             isClearable
                                             formatCreateLabel={(inputValue) => `Crear nueva bodega: "${inputValue}"`}
+                                            isDisabled={isFormDisabled}
                                         />
                                     </div>
 
@@ -724,7 +682,9 @@ const EditTripForm = () => {
                                             value={etapa.origin}
                                             onChange={(e) => handleStageChange(index, 'origin', e.target.value)}
                                             placeholder="Ciudad/Estado Origen"
-                                            className="form-input" />
+                                            className="form-input"
+                                            readOnly={isFormDisabled}
+                                            />
                                     </div>
 
                                     <div className="column">
@@ -734,7 +694,9 @@ const EditTripForm = () => {
                                             value={etapa.destination}
                                             onChange={(e) => handleStageChange(index, 'destination', e.target.value)}
                                             placeholder="Ciudad/Estado Destino"
-                                            className="form-input" />
+                                            className="form-input" 
+                                            readOnly={isFormDisabled}
+                                            />
                                     </div>
 
                                 </div>
@@ -747,7 +709,9 @@ const EditTripForm = () => {
                                             value={etapa.zip_code_origin}
                                             onChange={(e) => handleStageChange(index, 'zip_code_origin', e.target.value)}
                                             placeholder="Zip Origen"
-                                            className="form-input" />
+                                            className="form-input" 
+                                            readOnly={isFormDisabled}
+                                            />
                                     </div>
 
                                     <div className="column">
@@ -757,7 +721,9 @@ const EditTripForm = () => {
                                             value={etapa.zip_code_destination}
                                             onChange={(e) => handleStageChange(index, 'zip_code_destination', e.target.value)}
                                             placeholder="Zip Destino"
-                                            className="form-input" />
+                                            className="form-input" 
+                                            readOnly={isFormDisabled}
+                                            />
                                     </div>
 
                                 </div>
@@ -771,7 +737,9 @@ const EditTripForm = () => {
                                             dateFormat="dd/MM/yyyy"
                                             placeholderText="Fecha Carga"
                                             className="form-input date-picker-full-width"
-                                            isClearable />
+                                            isClearable 
+                                            disabled={isFormDisabled}
+                                            />
                                     </div>
 
                                     <div className="column">
@@ -782,7 +750,9 @@ const EditTripForm = () => {
                                             dateFormat="dd/MM/yyyy"
                                             placeholderText="Fecha Entrega"
                                             className="form-input date-picker-full-width"
-                                            isClearable />
+                                            isClearable 
+                                            disabled={isFormDisabled}
+                                            />
                                     </div>
 
                                 </div>
@@ -796,7 +766,9 @@ const EditTripForm = () => {
                                             value={etapa.rate_tarifa}
                                             onChange={(e) => handleStageChange(index, 'rate_tarifa', e.target.value)}
                                             placeholder="Tarifa Etapa"
-                                            className="form-input" />
+                                            className="form-input" 
+                                            readOnly={isFormDisabled}
+                                            />
                                     </div>
 
                                     <div className="column">
@@ -807,7 +779,9 @@ const EditTripForm = () => {
                                             value={etapa.millas_pcmiller}
                                             onChange={(e) => handleStageChange(index, 'millas_pcmiller', e.target.value)}
                                             placeholder="Millas Etapa"
-                                            className="form-input" />
+                                            className="form-input" 
+                                            readOnly={isFormDisabled}
+                                            />
                                     </div>
 
                                 </div>
@@ -821,19 +795,19 @@ const EditTripForm = () => {
 
                                                 <div className="column">
                                                     <label htmlFor={`ima_invoice-${index}`}>IMA Invoice:</label>
-                                                    <button type="button" className="upload-button" onClick={() => abrirModal('ima_invoice', index)}>Subir/Cambiar</button>
+                                                    <button type="button" className="upload-button" onClick={() => abrirModal('ima_invoice', index)} disabled={isFormDisabled}> Subir/Cambiar </button>
                                                     {etapa.documentos?.ima_invoice && (<p className="doc-info"><i> <a href={getDocumentUrl(etapa.documentos.ima_invoice.serverPath)} target="_blank" rel="noopener noreferrer">{etapa.documentos.ima_invoice.fileName}</a> {etapa.documentos.ima_invoice.vencimiento ? ` - V: ${etapa.documentos.ima_invoice.vencimiento}` : ''}</i></p>)}
                                                 </div>
 
                                                 <div className="column">
                                                     <label htmlFor={`carta_porte-${index}`}>Carta Porte:</label>
-                                                    <button type="button" className="upload-button" onClick={() => abrirModal('carta_porte', index)}>Subir/Cambiar</button>
+                                                    <button type="button" className="upload-button" onClick={() => abrirModal('carta_porte', index)} disabled={isFormDisabled}>Subir/Cambiar</button>
                                                     {etapa.documentos?.carta_porte && (<p className="doc-info"><i> <a href={getDocumentUrl(etapa.documentos.carta_porte.serverPath)} target="_blank" rel="noopener noreferrer">{etapa.documentos.carta_porte.fileName}</a> {etapa.documentos.carta_porte.vencimiento ? ` - V: ${etapa.documentos.carta_porte.vencimiento}` : ''}</i></p>)}
                                                 </div>
 
                                                 <div className="column">
                                                     <label htmlFor={`ci-${index}`}>CI:</label>
-                                                    <button type="button" className="upload-button" onClick={() => abrirModal('ci', index)}>Subir/Cambiar</button>
+                                                    <button type="button" className="upload-button" onClick={() => abrirModal('ci', index)} disabled={isFormDisabled}>Subir/Cambiar</button>
                                                     {etapa.documentos?.ci && (<p className="doc-info"><i> <a href={getDocumentUrl(etapa.documentos.ci.serverPath)} target="_blank" rel="noopener noreferrer">{etapa.documentos.ci.fileName}</a> {etapa.documentos.ci.vencimiento ? ` - V: ${etapa.documentos.ci.vencimiento}` : ''}</i></p>)}
                                                 </div>
                                             </div>
@@ -842,19 +816,19 @@ const EditTripForm = () => {
 
                                                 <div className="column">
                                                     <label htmlFor={`entry-${index}`}>Entry:</label>
-                                                    <button type="button" className="upload-button" onClick={() => abrirModal('entry', index)}>Subir/Cambiar</button>
+                                                    <button type="button" className="upload-button" onClick={() => abrirModal('entry', index)} disabled={isFormDisabled}>Subir/Cambiar</button>
                                                     {etapa.documentos?.entry && (<p className="doc-info"><i> <a href={getDocumentUrl(etapa.documentos.entry.serverPath)} target="_blank" rel="noopener noreferrer">{etapa.documentos.entry.fileName}</a></i></p>)}
                                                 </div>
 
                                                 <div className="column">
                                                     <label htmlFor={`manifiesto-${index}`}>Manifiesto:</label>
-                                                    <button type="button" className="upload-button" onClick={() => abrirModal('manifiesto', index)}>Subir/Cambiar</button>
+                                                    <button type="button" className="upload-button" onClick={() => abrirModal('manifiesto', index)} disabled={isFormDisabled}>Subir/Cambiar</button>
                                                     {etapa.documentos?.manifiesto && (<p className="doc-info"><i> <a href={getDocumentUrl(etapa.documentos.manifiesto.serverPath)} target="_blank" rel="noopener noreferrer">{etapa.documentos.manifiesto.fileName}</a></i></p>)}
                                                 </div>
 
                                                 <div className="column">
                                                     <label htmlFor={`cita_entrega-${index}`}>Cita Entrega:</label>
-                                                    <button type="button" className="upload-button" onClick={() => abrirModal('cita_entrega', index)}>Subir/Cambiar</button>
+                                                    <button type="button" className="upload-button" onClick={() => abrirModal('cita_entrega', index)} disabled={isFormDisabled}>Subir/Cambiar</button>
                                                     {etapa.documentos?.cita_entrega && (<p className="doc-info"><i> <a href={getDocumentUrl(etapa.documentos.cita_entrega.serverPath)} target="_blank" rel="noopener noreferrer">{etapa.documentos.cita_entrega.fileName}</a> {etapa.documentos.cita_entrega.vencimiento ? ` - V: ${etapa.documentos.cita_entrega.vencimiento}` : ''}</i></p>)}
                                                 </div>
                                             </div>
@@ -863,19 +837,19 @@ const EditTripForm = () => {
                                                 {/* BL */}
                                                 <div className="column">
                                                     <label htmlFor={`bl-${index}`}>BL:</label>
-                                                    <button type="button" className="upload-button" onClick={() => abrirModal('bl', index)}>Subir/Cambiar</button>
+                                                    <button type="button" className="upload-button" onClick={() => abrirModal('bl', index)} disabled={isFormDisabled}>Subir/Cambiar</button>
                                                     {etapa.documentos?.bl && (<p className="doc-info"><i> <a href={getDocumentUrl(etapa.documentos.bl.serverPath)} target="_blank" rel="noopener noreferrer">{etapa.documentos.bl.fileName}</a></i></p>)}
                                                 </div>
 
                                                 <div className="column">
                                                     <label htmlFor={`orden_retiro-${index}`}>Orden Retiro:</label>
-                                                    <button type="button" className="upload-button" onClick={() => abrirModal('orden_retiro', index)}>Subir/Cambiar</button>
+                                                    <button type="button" className="upload-button" onClick={() => abrirModal('orden_retiro', index)} disabled={isFormDisabled}>Subir/Cambiar</button>
                                                     {etapa.documentos?.orden_retiro && (<p className="doc-info"><i> <a href={getDocumentUrl(etapa.documentos.orden_retiro.serverPath)} target="_blank" rel="noopener noreferrer">{etapa.documentos.orden_retiro.fileName}</a> {etapa.documentos.orden_retiro.vencimiento ? ` - V: ${etapa.documentos.orden_retiro.vencimiento}` : ''}</i></p>)}
                                                 </div>
 
                                                 <div className="column">
                                                     <label htmlFor={`bl_firmado-${index}`}>BL Firmado:</label>
-                                                    <button type="button" className="upload-button" onClick={() => abrirModal('bl_firmado', index)}>Subir/Cambiar</button>
+                                                    <button type="button" className="upload-button" onClick={() => abrirModal('bl_firmado', index)} disabled={isFormDisabled}>Subir/Cambiar</button>
                                                     {etapa.documentos?.bl_firmado && (<p className="doc-info"><i> <a href={getDocumentUrl(etapa.documentos.bl_firmado.serverPath)} target="_blank" rel="noopener noreferrer">{etapa.documentos.bl_firmado.fileName}</a> {etapa.documentos.bl_firmado.vencimiento ? ` - V: ${etapa.documentos.bl_firmado.vencimiento}` : ''}</i></p>)}
                                                 </div>
                                             </div>
@@ -891,25 +865,20 @@ const EditTripForm = () => {
 
                                                 <div className="column">
                                                     <label htmlFor={`ima_invoice-${index}`}>IMA Invoice:</label>
-                                                    <button type="button" className="upload-button" onClick={() => abrirModal('ima_invoice', index)}>Subir/Cambiar</button>
+                                                    <button type="button" className="upload-button" onClick={() => abrirModal('ima_invoice', index)} disabled={isFormDisabled}>Subir/Cambiar</button>
                                                     {etapa.documentos?.ima_invoice && (<p className="doc-info"><i> <a href={getDocumentUrl(etapa.documentos.ima_invoice.serverPath)} target="_blank" rel="noopener noreferrer">{etapa.documentos.ima_invoice.fileName}</a> {etapa.documentos.ima_invoice.vencimiento ? ` - V: ${etapa.documentos.ima_invoice.vencimiento}` : ''}</i></p>)}
                                                 </div>
-                                                {/* 
-                                                <div className="column">
-                                                    <label htmlFor={`carta_porte-${index}`}>Carta Porte:</label>
-                                                    <button type="button" className="upload-button" onClick={() => abrirModal('carta_porte', index)}>Subir/Cambiar</button>
-                                                    {etapa.documentos?.carta_porte && (<p className="doc-info"><i> <a href={getDocumentUrl(etapa.documentos.carta_porte.serverPath)} target="_blank" rel="noopener noreferrer">{etapa.documentos.carta_porte.fileName}</a> {etapa.documentos.carta_porte.vencimiento ? ` - V: ${etapa.documentos.carta_porte.vencimiento}` : ''}</i></p>)}
-                                                </div> */}
+
 
                                                 <div className="column">
                                                     <label htmlFor={`ci-${index}`}>CI:</label>
-                                                    <button type="button" className="upload-button" onClick={() => abrirModal('ci', index)}>Subir/Cambiar</button>
+                                                    <button type="button" className="upload-button" onClick={() => abrirModal('ci', index)} disabled={isFormDisabled}>Subir/Cambiar</button>
                                                     {etapa.documentos?.ci && (<p className="doc-info"><i> <a href={getDocumentUrl(etapa.documentos.ci.serverPath)} target="_blank" rel="noopener noreferrer">{etapa.documentos.ci.fileName}</a> {etapa.documentos.ci.vencimiento ? ` - V: ${etapa.documentos.ci.vencimiento}` : ''}</i></p>)}
                                                 </div>
 
                                                 <div className="column">
                                                     <label htmlFor={`cita_entrega-${index}`}>Cita Entrega:</label>
-                                                    <button type="button" className="upload-button" onClick={() => abrirModal('cita_entrega', index)}>Subir/Cambiar</button>
+                                                    <button type="button" className="upload-button" onClick={() => abrirModal('cita_entrega', index)} disabled={isFormDisabled}>Subir/Cambiar</button>
                                                     {etapa.documentos?.cita_entrega && (<p className="doc-info"><i> <a href={getDocumentUrl(etapa.documentos.cita_entrega.serverPath)} target="_blank" rel="noopener noreferrer">{etapa.documentos.cita_entrega.fileName}</a> {etapa.documentos.cita_entrega.vencimiento ? ` - V: ${etapa.documentos.cita_entrega.vencimiento}` : ''}</i></p>)}
                                                 </div>
 
@@ -920,19 +889,15 @@ const EditTripForm = () => {
                                                 {/* BL */}
                                                 <div className="column">
                                                     <label htmlFor={`bl-${index}`}>BL:</label>
-                                                    <button type="button" className="upload-button" onClick={() => abrirModal('bl', index)}>Subir/Cambiar</button>
+                                                    <button type="button" className="upload-button" onClick={() => abrirModal('bl', index)} disabled={isFormDisabled}>Subir/Cambiar</button>
                                                     {etapa.documentos?.bl && (<p className="doc-info"><i> <a href={getDocumentUrl(etapa.documentos.bl.serverPath)} target="_blank" rel="noopener noreferrer">{etapa.documentos.bl.fileName}</a></i></p>)}
                                                 </div>
 
-                                                {/* <div className="column">
-                                                    <label htmlFor={`orden_retiro-${index}`}>Orden Retiro:</label>
-                                                    <button type="button" className="upload-button" onClick={() => abrirModal('orden_retiro', index)}>Subir/Cambiar</button>
-                                                    {etapa.documentos?.orden_retiro && (<p className="doc-info"><i> <a href={getDocumentUrl(etapa.documentos.orden_retiro.serverPath)} target="_blank" rel="noopener noreferrer">{etapa.documentos.orden_retiro.fileName}</a> {etapa.documentos.orden_retiro.vencimiento ? ` - V: ${etapa.documentos.orden_retiro.vencimiento}` : ''}</i></p>)}
-                                                </div> */}
+
 
                                                 <div className="column">
                                                     <label htmlFor={`bl_firmado-${index}`}>BL Firmado:</label>
-                                                    <button type="button" className="upload-button" onClick={() => abrirModal('bl_firmado', index)}>Subir/Cambiar</button>
+                                                    <button type="button" className="upload-button" onClick={() => abrirModal('bl_firmado', index)} disabled={isFormDisabled}>Subir/Cambiar</button>
                                                     {etapa.documentos?.bl_firmado && (<p className="doc-info"><i> <a href={getDocumentUrl(etapa.documentos.bl_firmado.serverPath)} target="_blank" rel="noopener noreferrer">{etapa.documentos.bl_firmado.fileName}</a> {etapa.documentos.bl_firmado.vencimiento ? ` - V: ${etapa.documentos.bl_firmado.vencimiento}` : ''}</i></p>)}
                                                 </div>
                                             </div>
@@ -945,10 +910,10 @@ const EditTripForm = () => {
                         <br />
                         {/* Botones para Añadir Etapas */}
                         <div className="add-stage-buttons-container" style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-                            <button type="button" onClick={() => agregarNuevaEtapa('borderCrossing')} className="add-stage-button">
+                            <button type="button" onClick={() => agregarNuevaEtapa('borderCrossing')} className="add-stage-button" disabled={isFormDisabled}>
                                 + Añadir Etapa Cruce
                             </button>
-                            <button type="button" onClick={() => agregarNuevaEtapa('normalTrip')} className="add-stage-button">
+                            <button type="button" onClick={() => agregarNuevaEtapa('normalTrip')} className="add-stage-button" disabled={isFormDisabled}>
                                 + Añadir Etapa Normal
                             </button>
                             {/* Añadir más botones si tienes más tipos */}
@@ -971,16 +936,14 @@ const EditTripForm = () => {
                         <Box sx={{ mt: 3, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
                             <Button variant="outlined" onClick={() => navigate(-1)}>Cancelar / Volver</Button>
 
-                            {/* <Button
+
+                            <Button
                                 variant="contained"
-                                color="success"
-                                type="button"
-                                onClick={handleFinalizeTrip}
-                                disabled={formData.status === 'Completed' || formData.status === 'Cancelled'}
-                            >
-                                Finalizar Viaje
-                            </Button> */}
-                            <Button variant="contained" color="primary" type="submit">Guardar Cambios</Button>
+                                color="primary"
+                                type="submit"
+                                disabled={isFormDisabled}
+                                >Guardar Cambios
+                            </Button>
                         </Box>
 
                     </form>

@@ -74,9 +74,25 @@ const TripRow = ({ trip, onEdit, onFinalize, getDocumentUrl }) => {
                 </TableCell>
                 <TableCell>
                     <Box sx={{ display: 'flex', gap: 0.5 }}> {/* Usar flex y gap reducido */}
-                        <Button size="small" variant="outlined" onClick={() => onEdit(trip.trip_id)}>
-                            Editar
+                        {(() => {
+                        const currentStatus = trip.status || 'In Transit';
+                        let label = 'Editar'; // Color por defecto
+                        
+                        if (currentStatus === 'Completed') {
+                            label = 'Ver'; // Verde para "Completed"
+                        } else {
+                            label = "Editar"
+                        }
+            
+                        return (
+                           <Button size="small" variant="outlined" onClick={() => onEdit(trip.trip_id)}>
+                            {label}
                         </Button>
+                        );
+                    })()}
+                        {/* <Button size="small" variant="outlined" onClick={() => onEdit(trip.trip_id)}>
+                            Editar
+                        </Button> */}
                         <Button
                             size="small"
                             variant="contained"

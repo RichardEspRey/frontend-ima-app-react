@@ -81,7 +81,7 @@ const BorderCrossingForm = ({ tripNumber }) => {
     warehouse_destination_id: '',
     ci_number: '',
     rate_tarifa: '',
-   millas_pcmiller: '',
+    millas_pcmiller: '',
     documentos: { ...initialBorderCrossingDocs } // Documentos para cruce
 
   }]);
@@ -283,7 +283,7 @@ const BorderCrossingForm = ({ tripNumber }) => {
         origin: '', destination: '', zip_code_origin: '', zip_code_destination: '',
         loading_date: null, delivery_date: null, company_id: null, travel_direction: '',
         warehouse_origin_id: null, warehouse_destination_id: null, ci_number: '',
-        rate_tarifa: '',millas_pcmiller: '', estatus: 'In Transit',
+        rate_tarifa: '', millas_pcmiller: '', estatus: 'In Transit',
         documentos: initialDocs
       }
     ]);
@@ -410,7 +410,7 @@ const BorderCrossingForm = ({ tripNumber }) => {
           stage_number: 1, origin: '', destination: '', zip_code_origin: '', zip_code_destination: '',
           loading_date: null, delivery_date: null, company_id: '', travel_direction: '',
           warehouse_origin_id: '', warehouse_destination_id: '', ci_number: '',
-          rate_tarifa: '',millas_pcmiller: '',
+          rate_tarifa: '', millas_pcmiller: '',
           documentos: { ...initialBorderCrossingDocs }
         }]);
 
@@ -492,6 +492,12 @@ const BorderCrossingForm = ({ tripNumber }) => {
             />
             {errorCajas && <p className="error-text">Error cargando trailers</p>}
           </div>
+
+
+        
+
+
+
         </div>
 
 
@@ -694,7 +700,7 @@ const BorderCrossingForm = ({ tripNumber }) => {
               <label htmlFor={`millas_pcmiller-${index}`} >Millas PC Miller:</label>
               <input
                 type="number" id={`millas_pcmiller-${index}`} name={`millas_pcmiller-${index}`}
-                value={etapas.millas_pcmiller}
+                value={etapa.millas_pcmiller}
                 onChange={(e) => handleEtapaChange(index, 'millas_pcmiller', e.target.value)}
                 placeholder="Ej: 850"
                 className="form-input"
