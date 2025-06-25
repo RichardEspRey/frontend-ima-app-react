@@ -4,6 +4,7 @@ import './css/TripForm.css';
 import useFetchActiveDrivers from '../hooks/useFetchActiveDrivers';
 import useFetchActiveTrucks from '../hooks/useFetchActiveTrucks';
 import useFetchActiveTrailers from '../hooks/useFetchActiveTrailers';
+import useFetchActiveExternalTrailers from '../hooks/useFetchActiveExternalTrailers';
 import useFetchCompanies from '../hooks/useFetchCompanies';
 import useFetchWarehouses from '../hooks/useFetchWarehouses';
 import DatePicker from 'react-datepicker';
@@ -20,7 +21,7 @@ const initialBorderCrossingDocs = {
 
 const initialNormalTripDocs = {
     ima_invoice: null, ci: null,
-    cita_entrega: null, bl: null,  bl_firmado: null,
+    cita_entrega: null, bl: null, bl_firmado: null,
 
 };
 
@@ -37,15 +38,17 @@ const selectStyles = {
 };
 
 
-const TripForm = ({ tripNumber }) => {
+const TripForm = ({ tripNumber, onSuccess}) => {
     const apiHost = import.meta.env.VITE_API_HOST;
 
     const { activeDrivers, loading: loadingDrivers, error: errorDrivers } = useFetchActiveDrivers();
     const { activeTrucks, loading: loadingTrucks, error: errorTrucks } = useFetchActiveTrucks();
     const { activeTrailers, loading: loadingCajas, error: errorCajas } = useFetchActiveTrailers();
+    const { activeExternalTrailers, loading: loadingCajasExternas, error: errorCajasExternas, refetch: refetchExternalTrailers } = useFetchActiveExternalTrailers();
     const { activeCompanies, loading: loadingCompanies, error: errorCompanies } = useFetchCompanies();
     const { activeWarehouses, loading: loadingWarehouses, error: errorWarehouses } = useFetchWarehouses();
 
+    const [trailerType, setTrailerType] = useState('interna'); // 'interna' o 'externa' 
 
     const [isCreatingCompany, setIsCreatingCompany] = useState(false);
     const [isCreatingWarehouse, setIsCreatingWarehouse] = useState(false)
@@ -54,6 +57,7 @@ const TripForm = ({ tripNumber }) => {
     const [warehouseOptions, setWarehouseOptions] = useState([]);
 
     const [modalAbierto, setModalAbierto] = useState(false);
+    const [IsModalCajaExternaOpen, setIsModalCajaExternaOpen] = useState(false);
     const [modalTarget, setModalTarget] = useState({ stageIndex: null, docType: null });
     const [mostrarFechaVencimientoModal, setMostrarFechaVencimientoModal] = useState(true);
 
@@ -63,6 +67,7 @@ const TripForm = ({ tripNumber }) => {
         driver_id: '',
         truck_id: '',
         caja_id: '',
+        caja_externa_id: ''
     });
 
 
@@ -81,10 +86,20 @@ const TripForm = ({ tripNumber }) => {
         warehouse_destination_id: '',
         ci_number: '',
         rate_tarifa: '',
-       millas_pcmiller: '',
+        millas_pcmiller: '',
         documentos: { ...initialNormalTripDocs }
     }]);
 
+    const handleTrailerTypeChange = (type) => {
+        setTrailerType(type);
+        // Limpia el ID del tipo de caja que no se está usando
+        // para evitar enviar datos incorrectos al guardar.
+        if (type === 'interna') {
+            setFormData(prev => ({ ...prev, caja_externa_id: '' }));
+        } else {
+            setFormData(prev => ({ ...prev, caja_id: '' }));
+        }
+    };
 
     useEffect(() => {
         if (activeCompanies) {
@@ -234,18 +249,18 @@ const TripForm = ({ tripNumber }) => {
     };
 
 
-     const getCurrentDocValueForModal = () => {
-    const { stageIndex, docType } = modalTarget;
-    if (docType === null) return null;
+    const getCurrentDocValueForModal = () => {
+        const { stageIndex, docType } = modalTarget;
+        if (docType === null) return null;
 
-    if (stageIndex !== null && etapas[stageIndex]) {
+        if (stageIndex !== null && etapas[stageIndex]) {
 
-      return etapas[stageIndex].documentos[docType] || null;
-    } else {
+            return etapas[stageIndex].documentos[docType] || null;
+        } else {
 
-      return formData[docType] || null;
-    }
-  };
+            return formData[docType] || null;
+        }
+    };
 
 
     const agregarNuevaEtapa = (tipoEtapa) => {
@@ -269,7 +284,7 @@ const TripForm = ({ tripNumber }) => {
                 origin: '', destination: '', zip_code_origin: '', zip_code_destination: '',
                 loading_date: null, delivery_date: null, company_id: null, travel_direction: '',
                 warehouse_origin_id: null, warehouse_destination_id: null, ci_number: '',
-                rate_tarifa: '',millas_pcmiller: '', estatus: 'In Transit',
+                rate_tarifa: '', millas_pcmiller: '', estatus: 'In Transit',
                 documentos: initialDocs
             }
         ]);
@@ -314,6 +329,7 @@ const TripForm = ({ tripNumber }) => {
         dataToSend.append('driver_id', formData.driver_id);
         dataToSend.append('truck_id', formData.truck_id);
         dataToSend.append('caja_id', formData.caja_id || '');
+        dataToSend.append('caja_externa_id', formData.caja_externa_id || '');
 
 
         const etapasParaJson = etapas.map(etapa => ({
@@ -332,7 +348,7 @@ const TripForm = ({ tripNumber }) => {
             warehouse_destination_id: etapa.warehouse_destination_id,
             ci_number: etapa.ci_number,
             rate_tarifa: etapa.rate_tarifa,
-           millas_pcmiller: etapa.millas_pcmiller,
+            millas_pcmiller: etapa.millas_pcmiller,
             estatus: etapa.estatus,
             // Enviar solo metadatos de documentos en el JSON
             documentos: Object.entries(etapa.documentos).reduce((acc, [key, value]) => {
@@ -385,13 +401,18 @@ const TripForm = ({ tripNumber }) => {
                     text: result.message || 'Viaje y etapas guardados correctamente.',
                     timer: 2500, showConfirmButton: false
                 });
+
+                // Simplemente notifica al padre que el guardado fue exitoso.
+                if (onSuccess) {
+                    onSuccess();
+                }
                 // Resetear el formulario después de éxito
                 setFormData({ trip_number: '', driver_id: '', truck_id: '', caja_id: '' });
                 setEtapas([{
                     stage_number: 1, stageType: 'normalTrip', origin: '', destination: '',
                     zip_code_origin: '', zip_code_destination: '', loading_date: null, delivery_date: null,
                     company_id: '', travel_direction: '', warehouse_origin_id: '', warehouse_destination_id: '',
-                    ci_number: '', rate_tarifa: '',millas_pcmiller: '',
+                    ci_number: '', rate_tarifa: '', millas_pcmiller: '',
                     documentos: { ...initialNormalTripDocs }
                 }]);
 
@@ -411,6 +432,48 @@ const TripForm = ({ tripNumber }) => {
             });
         }
     };
+
+    const handleSaveExternalCaja = async (cajaData) => {
+
+
+        const dataToSend = new FormData();
+        dataToSend.append('op', 'Alta');
+
+        Object.entries(cajaData).forEach(([key, value]) => {
+            dataToSend.append(key, value);
+        });
+
+        try {
+            const endpoint = `${apiHost}/caja_externa.php`;
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                body: dataToSend,
+            });
+
+            const result = await response.json();
+
+            if (result.status === 'success' && result.caja) {
+                Swal.fire('¡Éxito!', 'Caja externa registrada y asignada al viaje.', 'success');
+
+                setForm('caja_externa_id', result.caja.caja_externa_id);
+                setForm('caja_id', '');
+
+                // ¡AQUÍ ESTÁ EL CAMBIO!
+                // Llamamos a la función para recargar la lista de cajas desde la base de datos.
+                refetchExternalTrailers();
+
+                setIsModalCajaExternaOpen(false);
+
+            } else {
+                Swal.fire('Error', `No se pudo registrar la caja: ${result.message || 'Error desconocido del servidor.'}`, 'error');
+            }
+
+        } catch (error) {
+            console.error('Error en la llamada fetch:', error);
+            Swal.fire('Error de Conexión', `No se pudo comunicar con el servidor: ${error.message}`, 'error');
+        }
+    };
+
 
 
     return (
@@ -457,20 +520,53 @@ const TripForm = ({ tripNumber }) => {
                     </div>
 
                     <div className="column">
-                        <label htmlFor="caja_id">Trailer (Caja):</label>
-                        <Select
-                            id="caja_id" name="caja_id"
-                            value={activeTrailers.find(c => c.caja_id === formData.caja_id) ? { value: formData.caja_id, label: activeTrailers.find(c => c.caja_id === formData.caja_id).no_caja } : null}
-                            onChange={(selected) => setForm('caja_id', selected ? selected.value : '')}
-                            options={activeTrailers.map(caja => ({ value: caja.caja_id, label: caja.no_caja }))}
-                            placeholder="Seleccionar Trailer"
-                            isLoading={loadingCajas}
-                            isDisabled={loadingCajas || !!errorCajas}
-                            styles={selectStyles} isClearable
-                        />
-                        {errorCajas && <p className="error-text">Error cargando trailers</p>}
+                        <label>Tipo de Trailer:</label>
+                        <div className="trailer-type-selector">
+                            <button type="button" className={trailerType === 'interna' ? 'active' : ''} onClick={() => handleTrailerTypeChange('interna')}>Caja Interna</button>
+                            <button type="button" className={trailerType === 'externa' ? 'active' : ''} onClick={() => handleTrailerTypeChange('externa')}>Caja Externa</button>
+                        </div>
                     </div>
                 </div>
+                {trailerType === 'interna' && (
+                    <div className="input-columns" style={{ marginTop: '1rem' }}>
+                        <div className="column">
+                            <label>Trailer (Caja Interna):</label>
+                            <Select
+                                id="caja_id" name="caja_id"
+                                value={activeTrailers.find(c => c.caja_id === formData.caja_id) ? { value: formData.caja_id, label: activeTrailers.find(c => c.caja_id === formData.caja_id).no_caja } : null}
+                                onChange={(selected) => setForm('caja_id', selected ? selected.value : '')}
+                                options={activeTrailers.map(caja => ({ value: caja.caja_id, label: caja.no_caja }))}
+                                placeholder="Seleccionar Trailer"
+                                isLoading={loadingCajas}
+                                isDisabled={loadingCajas || !!errorCajas}
+                                styles={selectStyles} isClearable
+                            />
+                        </div>
+                    </div>
+                )}
+                {trailerType === 'externa' && (
+                    <div className="input-columns" style={{ marginTop: '1rem' }}>
+                        <div className="column">
+                            <label>Trailer (Caja Externa):</label>
+
+                            <Select
+                                id='caja_externa_id' name='caja_externa_id'
+                                value={activeExternalTrailers.find(c => c.caja_externa_id === formData.caja_externa_id) ? { value: formData.caja_externa_id, label: activeExternalTrailers.find(c => c.caja_externa_id === formData.caja_externa_id).no_caja } : null}
+                                onChange={(selected) => setForm('caja_externa_id', selected ? selected.value : '')}
+                                options={activeExternalTrailers.map(caja => ({ value: caja.caja_externa_id, label: caja.no_caja }))}
+                                placeholder="Seleccionar Trailer"
+                                isLoading={loadingCajasExternas}
+                                isDisabled={loadingCajasExternas || !!errorCajasExternas}
+                                styles={selectStyles} isClearable
+                            />
+
+                        </div>
+                        <div className="column" style={{ marginTop: '28px', padding: '0 10px', height: '48px', flexShrink: 0 }} >
+                            <button type='button' onClick={() => setIsModalCajaExternaOpen(true)} className="accept-button" style={{ padding: '0 10px', height: '48px', width: '5%', flexShrink: 0 }} title="Registrar Nueva Caja Externa">+</button>
+                        </div>
+
+                    </div>
+                )}
             </div>
 
             <br />
@@ -690,7 +786,7 @@ const TripForm = ({ tripNumber }) => {
                                     </div>
                                 </div>
 
-                            
+
 
                                 <div className="column">
                                     <div className="column">
@@ -800,6 +896,15 @@ const TripForm = ({ tripNumber }) => {
                     valorActual={getCurrentDocValueForModal()}
                     mostrarFechaVencimiento={mostrarFechaVencimientoModal}
                 />
+            )}
+
+            {IsModalCajaExternaOpen && (
+                <ModalCajaExterna
+                    isOpen={IsModalCajaExternaOpen}
+                    onClose={() => setIsModalCajaExternaOpen(false)}
+                    onSave={handleSaveExternalCaja}
+                />
+
             )}
         </form>
     );
