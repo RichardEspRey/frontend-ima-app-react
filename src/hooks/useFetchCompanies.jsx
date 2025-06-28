@@ -1,4 +1,4 @@
-// hooks/useFetchActiveCompanies.js
+// hooks/useFetchCompanies.js
 import { useState, useEffect } from 'react';
 
 function useFetchCompanies() {
@@ -7,37 +7,33 @@ function useFetchCompanies() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchActiveCompanies = async () => {
-      try {
-        const response = await fetch(`${apiHost}/companies.php`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: 'op=getCompanies',
-        });
-        const data = await response.json();
-
-        if (data.status === 'success' && data.companies) {
-          const formattedActiveCompanies = data.companies.map(company => ({
-            company_id: company.company_id,
-            nombre_compania: company.nombre_compania, 
-          }));
-          setActiveCompanies(formattedActiveCompanies);
-          setLoading(false);
-        } else {
-          setError(data.message || 'Error al obtener los Companies');
-          setLoading(false);
-        }
-      } catch (err) {
-        setError('Error de red al obtener los Companies');
-        setLoading(false);
+  const fetchCompanies = async () => { // <-- Esta función ahora puede ser llamada externamente
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(`${apiHost}/companies.php`, { // Ajusta la URL si es diferente
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'op=getCompanies', // Asumiendo que esta es tu operación para obtener todas las compañías
+      });
+      const data = await response.json();
+      if (data.status === 'success' && data.companies) { // Asegúrate que la respuesta tenga 'companies'
+        setActiveCompanies(data.companies);
+      } else {
+        setError(data.message || 'Error al obtener compañías.');
       }
-    };
+    } catch (err) {
+      setError(err.message || 'Error de red al cargar compañías.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchActiveCompanies();
+  useEffect(() => {
+    fetchCompanies(); // Se ejecuta al montar el componente
   }, []);
 
-  return { activeCompanies, loading, error };
+  return { activeCompanies, loading, error, refetchCompanies: fetchCompanies }; // ###Agregar: Devuelve la función de refetch
 }
 
 export default useFetchCompanies;
