@@ -38,7 +38,7 @@ const selectStyles = {
 };
 
 
-const TripForm = ({ tripNumber, onSuccess}) => {
+const TripForm = ({ tripNumber, onSuccess }) => {
     const apiHost = import.meta.env.VITE_API_HOST;
 
     const { activeDrivers, loading: loadingDrivers, error: errorDrivers } = useFetchActiveDrivers();
@@ -474,13 +474,27 @@ const TripForm = ({ tripNumber, onSuccess}) => {
         }
     };
 
-
+    const resetform = () => {
+        // Simplemente notifica al padre que el guardado fue exitoso.
+        if (onSuccess) {
+            onSuccess();
+        }
+        // Resetear el formulario después de éxito
+        setFormData({ trip_number: '', driver_id: '', truck_id: '', caja_id: '' });
+        setEtapas([{
+            stage_number: 1, stageType: 'normalTrip', origin: '', destination: '',
+            zip_code_origin: '', zip_code_destination: '', loading_date: null, delivery_date: null,
+            company_id: '', travel_direction: '', warehouse_origin_id: '', warehouse_destination_id: '',
+            ci_number: '', rate_tarifa: '', millas_pcmiller: '',
+            documentos: { ...initialNormalTripDocs }
+        }]);
+    }
 
     return (
         <form onSubmit={handleSubmit} className="card-container">
 
             <div className="form-actions">
-                <button type="button" className="cancel-button" onClick={() => console.log('Cancelar presionado')}>Cancelar</button>
+                <button type="button" className="cancel-button" onClick={resetform}>Cancelar</button>
                 <button type="submit" className="accept-button">Guardar Viaje</button>
             </div>
 

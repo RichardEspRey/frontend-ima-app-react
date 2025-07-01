@@ -48,7 +48,6 @@ const selectStyles = {
 };
 
 
-
 const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
 
     const apiHost = import.meta.env.VITE_API_HOST;
@@ -71,9 +70,6 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
     const [modalTarget, setModalTarget] = useState({ stageIndex: null, docType: null });
     const [mostrarFechaVencimientoModal, setMostrarFechaVencimientoModal] = useState(true);
 
-
-
-
     const [formData, setFormData] = useState({
         trip_number: tripNumber || '',
         driver_id: '',
@@ -81,8 +77,6 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
         caja_id: '',
         caja_externa_id: ''
     });
-
-
 
     const [etapas, setEtapas] = useState([{
         stage_number: 1,
@@ -103,8 +97,6 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
         documentos: { ...initialBorderCrossingDocs } // Documentos para cruce
     }]);
 
-
-
     const handleTrailerTypeChange = (type) => {
         setTrailerType(type);
         if (type === 'interna') {
@@ -114,25 +106,17 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
         }
     };
 
-
-
-
-
     useEffect(() => {
         if (activeCompanies) {
             setCompanyOptions(activeCompanies.map(c => ({ value: c.company_id, label: c.nombre_compania })));
         }
     }, [activeCompanies]);
 
-
-
     useEffect(() => {
         if (activeWarehouses) {
             setWarehouseOptions(activeWarehouses.map(w => ({ value: w.warehouse_id, label: w.nombre_almacen })));
         }
     }, [activeWarehouses]);
-
-
 
     const handleCreateCompany = async (inputValue, stageIndex) => {
         setIsCreatingCompany(true);
@@ -166,8 +150,6 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
         }
 
     };
-
-
 
     const handleCreateWarehouse = async (inputValue, stageIndex, warehouseFieldKey) => {
 
@@ -208,10 +190,6 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
         }));
     }, [tripNumber]);
 
-
-
-
-
     const setForm = (name, value) => {
         setFormData(prevData => ({
             ...prevData,
@@ -219,8 +197,6 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
         }));
 
     };
-
-
 
     const handleEtapaChange = (index, field, value) => {
         setEtapas(prevEtapas => {
@@ -232,10 +208,6 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
         });
 
     };
-
-
-
-
 
     const handleGuardarDocumentoEtapa = (data) => {
         const { stageIndex, docType } = modalTarget;
@@ -263,11 +235,8 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
 
     const handleGuardarDocumentoGlobal = (docType, data) => {
         setFormData(prev => ({
-
             ...prev,
-
             [docType]: data
-
         }));
         setModalAbierto(false);
         setModalTarget({ stageIndex: null, docType: null });
@@ -280,14 +249,12 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
     const abrirModal = (docType, stageIndex = null) => {
         setModalTarget({ stageIndex, docType });
         setModalAbierto(true);
-
         if (['ima_invoice', 'carta_porte', 'ci', 'entry', 'manifiesto', 'cita_entrega', 'bl', 'orden_retiro', 'bl_firmado'].includes(docType)) {
             setMostrarFechaVencimientoModal(false);
         } else {
             setMostrarFechaVencimientoModal(true);
 
         }
-
     };
 
 
@@ -299,15 +266,9 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
         if (docType === null) return null;
         if (stageIndex !== null && etapas[stageIndex]) {
             return etapas[stageIndex].documentos[docType] || null;
-
         } else {
-
-
-
             return formData[docType] || null;
-
         }
-
     };
 
 
@@ -321,49 +282,30 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
         let initialDocs;
 
         // Determinar qué estructura de documentos usar
-
         if (tipoEtapa === 'borderCrossing') {
-
             initialDocs = { ...initialBorderCrossingDocs };
-
         } else if (tipoEtapa === 'normalTrip') {
-
             initialDocs = { ...initialNormalTripDocs };
-
         } else {
-
             console.warn("Tipo de etapa desconocido:", tipoEtapa, ". Usando documentos vacíos.");
-
             initialDocs = {};
-
         }
 
 
 
         setEtapas(prevEtapas => [
-
             ...prevEtapas,
-
             {
-
                 stage_number: prevEtapas.length + 1,
-
                 stageType: tipoEtapa,
-
                 origin: '', destination: '', zip_code_origin: '', zip_code_destination: '',
-
                 loading_date: null, delivery_date: null, company_id: null, travel_direction: '',
-
                 warehouse_origin_id: null, warehouse_destination_id: null, ci_number: '',
-
                 rate_tarifa: '', millas_pcmiller: '', estatus: 'In Transit',
-
                 documentos: initialDocs
 
             }
-
         ]);
-
     };
 
 
@@ -375,23 +317,14 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
     const eliminarEtapa = (index) => {
 
         if (etapas.length <= 1) { Swal.fire('Info', 'Debe haber al menos una etapa.', 'info'); return; }
-
         Swal.fire({
-
             title: `¿Eliminar Etapa ${etapas[index].stage_number}?`, icon: 'warning',
-
             showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Sí, eliminar'
-
         }).then((result) => {
-
             if (result.isConfirmed) {
-
                 setEtapas(prev => prev.filter((_, i) => i !== index).map((e, i) => ({ ...e, stage_number: i + 1 })));
-
             }
-
         });
-
     };
 
 
@@ -401,37 +334,18 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
 
 
     const handleSubmit = async (event) => {
-
         event.preventDefault();
-
-
-
-
-
         if (!formData.driver_id || !formData.truck_id) {
-
             Swal.fire('Campos incompletos', 'Por favor, seleccione Driver y Truck.', 'warning');
-
             return;
-
         }
-
         // Validar campos obligatorios de cada etapa
-
         for (let i = 0; i < etapas.length; i++) {
-
             const etapa = etapas[i];
-
             if (!etapa.company_id || !etapa.travel_direction || !etapa.warehouse_origin_id || !etapa.warehouse_destination_id || !etapa.origin || !etapa.destination) {
-
                 Swal.fire('Campos incompletos', `Por favor, complete los campos obligatorios (Company, Direction, Warehouses, Origin, Destination) de la Etapa ${etapa.stage_number}.`, 'warning');
-
                 return;
-
             }
-
-
-
         }
 
 
@@ -439,65 +353,31 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
 
 
         const dataToSend = new FormData();
-
         dataToSend.append('op', 'Alta');
-
-
-
-
-
         dataToSend.append('trip_number', formData.trip_number);
-
         dataToSend.append('driver_id', formData.driver_id);
-
         dataToSend.append('truck_id', formData.truck_id);
-
         dataToSend.append('caja_id', formData.caja_id || '');
-
         dataToSend.append('caja_externa_id', formData.caja_externa_id || '');
-
-
-
-
 
         // Procesar y añadir etapas (como JSON) y sus archivos
 
         const etapasParaJson = etapas.map(etapa => ({
-
             ...etapa,
-
             // Formatear fechas a yyyy-MM-dd ANTES de stringify
-
             loading_date: etapa.loading_date ? format(etapa.loading_date, 'yyyy-MM-dd') : null,
-
             delivery_date: etapa.delivery_date ? format(etapa.delivery_date, 'yyyy-MM-dd') : null,
-
-
-
             documentos: Object.entries(etapa.documentos).reduce((acc, [key, value]) => {
-
                 if (value) { // Si hay datos para este tipo de documento
-
                     acc[key] = {
-
                         fileName: value.fileName || '',
-
                         vencimiento: value.vencimiento || null
-
-
-
                     };
-
                 } else {
-
                     acc[key] = null;
-
                 }
-
                 return acc;
-
             }, {})
-
         }));
 
 
@@ -505,47 +385,22 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
 
 
         dataToSend.append('etapas', JSON.stringify(etapasParaJson));
-
-
-
         //  documentos de CADA etapa a FormData
-
         etapas.forEach((etapa, index) => {
-
             Object.entries(etapa.documentos).forEach(([docType, docData]) => {
-
-
-
                 if (docData && docData.file instanceof File) {
-
-
-
                     const fieldName = `etapa_${index}_${docType}_file`;
-
                     dataToSend.append(fieldName, docData.file, docData.fileName);
-
                 }
-
             });
-
         });
 
 
-
-
-
         console.log("--- FormData a enviar ---");
-
         for (let [key, value] of dataToSend.entries()) {
-
             console.log(`${key}:`, value);
-
         }
-
         console.log("--- Fin FormData ---");
-
-
-
         try {
             const apiUrl = `${apiHost}/new_trips.php`;
             const response = await fetch(apiUrl, {
@@ -562,13 +417,9 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
                     timer: 2500,
                     showConfirmButton: false
                 });
-
-
                 if (onSuccess) {
                     onSuccess();
                 }
-
-
                 setFormData({
                     trip_number: '',
                     driver_id: '',
@@ -577,7 +428,6 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
                     caja_externa_id: ''
 
                 });
-
                 setEtapas([{
                     stage_number: 1,
                     origin: '',
@@ -595,11 +445,7 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
                     rate_tarifa: '',
                     millas_pcmiller: '',
                     documentos: { ...initialBorderCrossingDocs }
-
                 }]);
-
-
-
             } else {
                 Swal.fire({
                     icon: 'error',
@@ -608,9 +454,6 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
                 });
 
             }
-
-
-
         } catch (error) {
             console.error('Error en fetch o procesando respuesta:', error);
             Swal.fire({
@@ -639,52 +482,72 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
 
         // });
 
-
-
         const dataToSend = new FormData();
         dataToSend.append('op', 'Alta');
         Object.entries(cajaData).forEach(([key, value]) => {
             dataToSend.append(key, value);
         });
-
-
-
         try {
             const endpoint = `${apiHost}/caja_externa.php`;
             const response = await fetch(endpoint, {
                 method: 'POST',
                 body: dataToSend,
             });
-
-
-
             const result = await response.json();
             if (result.status === 'success' && result.caja) {
                 Swal.fire('¡Éxito!', 'Caja externa registrada y asignada al viaje.', 'success');
                 setForm('caja_externa_id', result.caja.caja_externa_id);
                 setForm('caja_id', '');
-
                 refetchExternalTrailers();
                 setIsModalCajaExternaOpen(false);
             } else {
                 Swal.fire('Error', `No se pudo registrar la caja: ${result.message || 'Error desconocido del servidor.'}`, 'error');
             }
-
         } catch (error) {
             console.error('Error en la llamada fetch:', error);
             Swal.fire('Error de Conexión', `No se pudo comunicar con el servidor: ${error.message}`, 'error');
         }
     };
 
+    
+    const resetForm = () =>{
+
+        if (onSuccess) {
+            onSuccess();
+        }
+        setFormData({
+                    trip_number: '',
+                    driver_id: '',
+                    truck_id: '',
+                    caja_id: '',
+                    caja_externa_id: ''
+
+                });
+                setEtapas([{
+                    stage_number: 1,
+                    origin: '',
+                    destination: '',
+                    stageType: 'borderCrossing',
+                    zip_code_origin: '',
+                    zip_code_destination: '',
+                    loading_date: null,
+                    delivery_date: null,
+                    company_id: '',
+                    travel_direction: '',
+                    warehouse_origin_id: '',
+                    warehouse_destination_id: '',
+                    ci_number: '',
+                    rate_tarifa: '',
+                    millas_pcmiller: '',
+                    documentos: { ...initialBorderCrossingDocs }
+                }])
+    }
 
 
     return (
-
-
-
         <form onSubmit={handleSubmit} className="card-container">
             <div className="form-actions">
-                <button type="button" className="cancel-button" onClick={() => console.log('Cancelar presionado')}>Cancelar</button>
+                <button type="button" className="cancel-button" onClick={resetForm}>Cancelar</button>
                 <button type="submit" className="accept-button">Guardar Viaje</button>
             </div>
             <div className="form-section">
@@ -719,7 +582,6 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
                         />
                         {errorTrucks && <p className="error-text">Error cargando trucks</p>}
                     </div>
-
                     <div className="column">
                         <label>Tipo de Trailer:</label>
                         <div className="trailer-type-selector">
@@ -727,9 +589,6 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
                             <button type="button" className={trailerType === 'externa' ? 'active' : ''} onClick={() => handleTrailerTypeChange('externa')}>Caja Externa</button>
                         </div>
                     </div>
-
-
-
                 </div>
                 {trailerType === 'interna' && (
                     <div className="input-columns" style={{ marginTop: '1rem' }}>
@@ -748,7 +607,6 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
                         </div>
                     </div>
                 )}
-
                 {trailerType === 'externa' && (
                     <div className="input-columns" style={{ marginTop: '1rem' }}>
                         <div className="column">
@@ -764,9 +622,6 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
                                 isDisabled={loadingCajasExternas || !!errorCajasExternas}
                                 styles={selectStyles} isClearable
                             />
-
-
-
                         </div>
                         <div className="column" style={{ marginTop: '28px', padding: '0 10px', height: '48px', flexShrink: 0 }} >
                             <button type='button' onClick={() => setIsModalCajaExternaOpen(true)} className="accept-button" style={{ padding: '0 10px', height: '48px', width: '5%', flexShrink: 0 }} title="Registrar Nueva Caja Externa">+</button>
@@ -786,9 +641,6 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
                             <button type="button" className="delete-button" onClick={() => eliminarEtapa(index)} title="Eliminar Etapa">&#x2716;</button>
                         )}
                     </div>
-
-
-
                     <legend className="card-label">Origen / Destino</legend>
                     <div className="input-columns">
                         <div className="column">
@@ -806,17 +658,9 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
                                 styles={selectStyles}
                                 formatCreateLabel={(inputValue) => `Crear nueva compañía: "${inputValue}"`}
                             />
-
                             {/* {errorCompanies && <p className="error-text">Error cargando companies</p>} */}
-
-
-
                         </div>
-
-
-
                         <div className="column">
-
                             <label htmlFor={`travel_direction-${index}`}>Travel Direction:</label>
                             <Select
                                 id={`travel_direction-${index}`} name={`travel_direction-${index}`}
@@ -828,9 +672,6 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
                             />
 
                         </div>
-
-
-
                         <div className="column">
                             <label htmlFor="ci_number">CI Number:</label>
                             <input
@@ -841,13 +682,9 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
                                 className="form-input"
                             />
                         </div>
-
                     </div>
 
-
-
                     <div className="input-columns">
-
                         <div className="column">
                             <label htmlFor={`warehouse_origin_id-${index}`} style={{ marginTop: '10px' }}>Origin Warehouse:</label>
                             <CreatableSelect 
@@ -865,11 +702,7 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
                             />
 
                             {/* {errorWarehouses && <p className="error-text">Error cargando warehouses</p>} */}
-
                         </div>
-
-
-
                         <div className="column">
                             <label htmlFor={`warehouse_destination_id-${index}`} style={{ marginTop: '10px' }}>Destination Warehouse:</label>
                             <CreatableSelect
@@ -888,8 +721,6 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
                         </div>
                     </div>
 
-
-
                     <div className="input-columns">
                         <div className="column">
                             <label htmlFor={`origin-${index}`} style={{ marginTop: '10px' }}>Origin City/State:</label>
@@ -900,9 +731,6 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
                                 placeholder="Ciudad/Estado Origen"
                                 className="form-input"
                             />
-
-
-
                         </div>
                         <div className="column">
                             <label htmlFor={`destination-${index}`} style={{ marginTop: '10px' }}>Destination City/State:</label>
@@ -927,8 +755,6 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
                                 placeholder="Zip Origen" className="form-input"
                             />
 
-
-
                         </div>
                         <div className="column">
                             <label htmlFor={`zip_code_destination-${index}`} >Zip Code Destination:</label>
@@ -938,13 +764,8 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
                                 onChange={(e) => handleEtapaChange(index, 'zip_code_destination', e.target.value)}
                                 placeholder="Zip Destino" className="form-input"
                             />
-
                         </div>
-
                     </div>
-
-
-
                     <div className="input-columns">
                         <div className="column">
                             <label htmlFor={`loading_date-${index}`} style={{ marginTop: '10px' }}>Loading Date:</label>
@@ -956,13 +777,7 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
                                 className="form-input date-picker-full-width" // Clase para ancho completo
                                 isClearable
                             />
-
-
-
                         </div>
-
-
-
                         <div className="column">
                             <label htmlFor={`delivery_date-${index}`} style={{ marginTop: '10px' }}>Delivery Date:</label>
                             <DatePicker
@@ -976,10 +791,6 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
 
                         </div>
 
-
-
-
-
                     </div>
                     <div className="input-columns">
                         <div className="column">
@@ -991,9 +802,6 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
                                 placeholder="Ej: 1500.50"
                                 className="form-input"
                             />
-
-
-
                         </div>
                         <div className="column">
                             <label htmlFor={`millas_pcmiller-${index}`} >Millas PC Miller:</label>
@@ -1088,7 +896,6 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
 
 
                     {etapa.stageType === 'normalTrip' && (
-
                         <div className="subsection">
                             <legend className="card-label">Documentos de Etapa {etapa.stage_number}</legend>
                             <div className="input-columns">
@@ -1099,43 +906,22 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
                                         {etapa.documentos?.ima_invoice && (<p className="doc-info"><i>{etapa.documentos.ima_invoice.fileName}{etapa.documentos.ima_invoice.vencimiento ? ` - V: ${etapa.documentos.ima_invoice.vencimiento}` : ''}</i></p>)}
                                     </div>
                                     <div className="column">
-
                                         <label htmlFor={`ci-${index}`}>CI:</label>
-
                                         <button type="button" className="upload-button" onClick={() => abrirModal('ci', index)}>Subir</button>
-
                                         {etapa.documentos?.ci && (<p className="doc-info"><i>{etapa.documentos.ci.fileName}{etapa.documentos.ci.vencimiento ? ` - V: ${etapa.documentos.ci.vencimiento}` : ''}</i></p>)}
-
                                     </div>
 
                                     <div className="column">
-
                                         <label htmlFor={`cita_entrega-${index}`}>Cita Entrega:</label>
-
                                         <button type="button" className="upload-button" onClick={() => abrirModal('cita_entrega', index)}>Subir</button>
-
                                         {etapa.documentos?.cita_entrega && (<p className="doc-info"><i>{etapa.documentos.cita_entrega.fileName}{etapa.documentos.cita_entrega.vencimiento ? ` - V: ${etapa.documentos.cita_entrega.vencimiento}` : ''}</i></p>)}
-
                                     </div>
-
                                 </div>
-
-
-
-
-
-
-
                                 <div className="column">
-
                                     <div className="column">
-
                                         <label htmlFor={`bl-${index}`}>BL:</label>
-
                                         <button type="button" className="upload-button" onClick={() => abrirModal('bl', index)}>Subir</button>
-
                                         {etapa.documentos?.bl && (<p className="doc-info"><i>{etapa.documentos.bl.fileName}</i></p>)}
-
                                     </div>
                                     <div className="column">
                                         <label htmlFor={`bl_firmado-${index}`}>BL Firmado:</label>
@@ -1146,13 +932,9 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
                             </div>
                         </div>
                     )}
-
                 </div>
-
             ))}
-
             <br />
-
             <div className="add-stage-buttons-container">
                 <button type="button" onClick={() => agregarNuevaEtapa('borderCrossing')} className="add-stage-button">
                     + Añadir Etapa Cruce
@@ -1161,12 +943,8 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
                     + Añadir Etapa Normal
                 </button>
             </div>
-
-
             {modalAbierto && (
-
                 <ModalArchivo
-
                     isOpen={modalAbierto}
                     onClose={() => {
                         setModalAbierto(false);
@@ -1177,12 +955,8 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
                     nombreCampo={modalTarget.docType}
                     valorActual={getCurrentDocValueForModal()}
                     mostrarFechaVencimiento={mostrarFechaVencimientoModal}
-
                 />
-
             )}
-
-
 
             {IsModalCajaExternaOpen && (
                 <ModalCajaExterna
@@ -1191,14 +965,10 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
                     onSave={handleSaveExternalCaja}
 
                 />
-
             )
             }
-
         </form>
-
     );
-
 };
 
 
