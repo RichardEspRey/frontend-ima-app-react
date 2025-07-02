@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 
 import logo from '../assets/images/logo_white.png';
 import iconDashboard from '../assets/images/icons/dashboard.png';
+import iconIMA from '../assets/images/icons/administrar.png';
 import iconDriver from '../assets/images/icons/Driver.png';
 import iconTrailer from '../assets/images/icons/trailer.png';
 import iconBox from '../assets/images/icons/caja.png';
@@ -18,7 +19,7 @@ const menuItems = [
   { name: 'Inicio', icon: iconDashboard, route: '/home' },
   {
     name: 'IMA',
-    icon: iconDriver,
+    icon: iconIMA,
     subItems: [
       { name: 'Alta de documentos', route: '/ImaScreen' },
       { name: 'Administrador de documentos', route: '/ImaAdmin' }

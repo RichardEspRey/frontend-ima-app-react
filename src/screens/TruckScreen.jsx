@@ -199,6 +199,7 @@ const TruckScreen = () => {
               onChange={(e) => handleInputChange('Numero', e.target.value)}
             />
           </div>
+              {/* Columna 2 */}
           <div className="column">
                <h2>Registros USA</h2>
 
@@ -263,7 +264,7 @@ const TruckScreen = () => {
             />
 
           </div>
-          {/* Columna 2 */}
+          {/* Columna 3 */}
           <div className="column">
             <h2>Registros MEX</h2>
            
@@ -299,9 +300,6 @@ const TruckScreen = () => {
         
         
           </div>
-
-          {/* Columna 3  */}
-          
 
         </div>
         <ModalArchivo

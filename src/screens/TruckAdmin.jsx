@@ -8,6 +8,7 @@ import questionIcon from '../assets/images/Icons_alerts/question.png';
 import ModalArchivo from '../components/ModalArchivoEditor.jsx'; 
 import { Tooltip } from 'react-tooltip';
 import { useNavigate } from 'react-router-dom'; // Asegúrate de tener react-router-dom instalado
+import Swal from 'sweetalert2';
 
 const TruckAdmin = () => {
   const navigate = useNavigate();
@@ -22,7 +23,7 @@ const TruckAdmin = () => {
   const from = page * rowsPerPage;
   const to = Math.min((page + 1) * rowsPerPage, trailers.length);
 
-  useEffect(() => {
+
     const fetchTrailers = async () => {
       try {
         const response = await fetch(`${apiHost}/trucks.php`, {
@@ -70,6 +71,7 @@ const TruckAdmin = () => {
       }
     };
 
+  useEffect(() => {
     fetchTrailers();
   }, []);
 
@@ -100,9 +102,9 @@ const TruckAdmin = () => {
     let icon = greyIcon;
     let mensaje = `Vencimiento: ${fecha.toLocaleDateString('es-MX')}`;
 
-    if (diffInDays >= 365) icon = greenIcon;
-    else if (diffInDays >= 180) icon = yellowIcon;
-    else if (diffInDays >= 60) icon = redIcon;
+    if (diffInDays >= 90) icon = greenIcon;
+    else if (diffInDays >= 60) icon = yellowIcon;
+    else if (diffInDays >= 30) icon = redIcon;
 
     return (
       <>
@@ -129,6 +131,46 @@ const TruckAdmin = () => {
     });
     setIsModalOpen(true);
   };
+
+  
+ 
+  const eliminar = async (id) =>  {
+ 
+   const { isConfirmed } = await Swal.fire({
+     title: '¿Desea eliminar a este driver?',
+     icon: 'question',
+         showCancelButton: true,
+         confirmButtonText: 'Aceptar'
+       });
+   
+   if (!isConfirmed)return;
+        
+    try {
+       const formDataToSend = new FormData();
+         formDataToSend.append('op', 'Baja'); // operación que espera el backend
+         formDataToSend.append('id', id);
+ 
+         const response = await fetch(`${apiHost}/trucks.php`, {
+           method: 'POST',
+           body: formDataToSend,
+         });
+ 
+         const data = await response.json();
+         if (data.status === 'success' ) {
+          Swal.fire({
+           icon: 'success',
+           title: 'Éxito',
+           text: 'Truck dado de baja!',
+         });
+         
+         }
+       } catch (error) {
+         console.error('Error al obtener los Trucks:', error);
+       }
+       fetchTrailers();
+        window.location.reload();
+     
+     };
 
   return (
     <div className="driver-admin">
@@ -161,7 +203,7 @@ const TruckAdmin = () => {
               <th>Permiso NM</th>
               <th>Inspeccion fisio mecanica</th>
               <th>Inspeccion humos</th>
-              <th>Seguro</th>
+              <th>Carta Seguro</th>
               <th>Acciones</th>
             </tr>
           </thead>
@@ -190,6 +232,14 @@ const TruckAdmin = () => {
                     onClick={() => navigate(`/editor-trucks/${t.truck_id}`)}
                   >
                     Ver
+                  </button>
+                </td>
+                  <td>
+                  <button
+                    className="ver-btn"
+                    onClick={() => eliminar(t.truck_id)}
+                    >
+                    Eliminar
                   </button>
                 </td>
               </tr>

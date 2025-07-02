@@ -8,6 +8,7 @@ import questionIcon from '../assets/images/Icons_alerts/question.png';
 import ModalArchivo from '../components/ModalArchivoEditor.jsx';
 import { useNavigate } from 'react-router-dom';
 import { Tooltip } from 'react-tooltip';
+import Swal from 'sweetalert2';
 
 const TrailerAdmin = () => {
   const apiHost = import.meta.env.VITE_API_HOST;
@@ -22,7 +23,7 @@ const TrailerAdmin = () => {
   const from = page * rowsPerPage;
   const to = Math.min((page + 1) * rowsPerPage, cajas.length);
 
-  useEffect(() => {
+
     const fetchCajas = async () => {
       try {
         const response = await fetch(`${apiHost}/cajas.php`, {
@@ -37,8 +38,8 @@ const TrailerAdmin = () => {
             id: caja.caja_id, 
             no_caja: caja.no_caja,
 
-            Seguro_Fecha: caja.Seguro_Fecha,
-            Seguro_url_pdf: caja.Seguro_url_pdf,
+            seguro_Fecha: caja.seguro_Fecha,
+            seguro_url_pdf: caja.seguro_url_pdf,
 
             CAB_CARD_Fecha: caja.CAB_CARD_Fecha,
             CAB_CARD_url_pdf: caja.CAB_CARD_url_pdf,
@@ -57,6 +58,7 @@ const TrailerAdmin = () => {
       }
     };
 
+  useEffect(() => {
     fetchCajas();
   }, []);
 
@@ -118,10 +120,46 @@ const TrailerAdmin = () => {
   };
 
 
-   const handleEditTrip = (tripId) => {
-        if (!tripId) { console.error("ID inválido"); return; }
-        navigate(`/edit-trip/${tripId}`);
-    };
+ 
+  const eliminar = async (id) =>  {
+ 
+   const { isConfirmed } = await Swal.fire({
+     title: '¿Desea eliminar a este caja?',
+     icon: 'question',
+         showCancelButton: true,
+         confirmButtonText: 'Aceptar'
+       });
+   
+   if (!isConfirmed)return;
+        
+    try {
+       const formDataToSend = new FormData();
+         formDataToSend.append('op', 'Baja'); // operación que espera el backend
+         formDataToSend.append('id', id);
+ 
+         const response = await fetch(`${apiHost}/cajas.php`, {
+           method: 'POST',
+           body: formDataToSend,
+         });
+ 
+         const data = await response.json();
+         if (data.status === 'success' ) {
+          Swal.fire({
+           icon: 'success',
+           title: 'Éxito',
+           text: 'Caja dada de baja!',
+         });
+         
+         }
+       } catch (error) {
+         console.error('Error al obtener los Caja:', error);
+       }
+       fetchCajas();
+      window.location.reload();
+       
+     
+     };
+ 
 
   return (
     <div className="driver-admin">
@@ -148,13 +186,14 @@ const TrailerAdmin = () => {
               <th>Fianza</th>
               <th>Certificado</th>
               <th>Acciones</th>
+              <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
             {filteredCajas.slice(from, to).map(caja => (
               <tr key={caja.id}>
                 <td>{caja.no_caja}</td> 
-                <td>{getIconByFecha(caja.Seguro_Fecha, caja.id, caja.Seguro_url_pdf, 'Seguro')}</td>
+                <td>{getIconByFecha(caja.seguro_Fecha, caja.id, caja.seguro_url_pdf, 'seguro')}</td>
                 <td>{getIconByFecha(caja.CAB_CARD_Fecha, caja.id, caja.CAB_CARD_url_pdf, 'CAB CARD')}</td>
                 <td>{getIconByFecha(caja.FIANZA_fecha, caja.id, caja.Fianza_url_pdf, 'FIANZA')}</td>
                 <td>{getIconByFecha(caja.CERTIFICADO_Fecha, caja.id, caja.CERTIFICADO_url_pdf, 'CERTIFICADO')}</td>
@@ -166,6 +205,15 @@ const TrailerAdmin = () => {
                     Ver
                   </button>
                 </td>
+                 <td>
+                  <button
+                    className="ver-btn"
+                    onClick={() => eliminar(caja.id)}
+                    >
+                    Eliminar
+                  </button>
+                </td>
+                
               </tr>
             ))}
           </tbody>

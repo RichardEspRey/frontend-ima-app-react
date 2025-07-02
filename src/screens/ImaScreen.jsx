@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import './css/ConductoresScreen.css';
 import 'react-datepicker/dist/react-datepicker.css';
 import ModalArchivo from '../components/ModalArchivo.jsx'; // ajusta la ruta si es necesario
@@ -15,7 +15,7 @@ const ImaScreen = () => {
 
   });
 
-  const [selectedFieldName, setSelectedFieldName] = useState(null);
+const [originalDocumentos, setOriginalDocumentos] = useState({});
 
   const handleInputChange = (name, value) => {
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -39,92 +39,135 @@ const ImaScreen = () => {
   };
 
 
-  const envioDatosPrincipal = async () => {
+
+
+  const enviarDocumentos = async () => {
+  for (const [tipo_documento, { file, vencimiento }] of Object.entries(documentos)) {
+    const original = originalDocumentos[tipo_documento];
+    const hayNuevoArchivo = !!file;
+    const vencimientoCambio = original?.vencimiento !== vencimiento;
+
+    if (!hayNuevoArchivo && !vencimientoCambio) continue;
+
+    const formDataFile = new FormData();
+    formDataFile.append('op', 'Alta');
+    formDataFile.append('tipo_documento', tipo_documento);
+    formDataFile.append('fecha_vencimiento', vencimiento);
+    if (hayNuevoArchivo) formDataFile.append('documento', file);
 
     try {
-      const formDataToSend = new FormData();
-
-      // Aquí añadimos solo campos de texto (no archivos)
-      formDataToSend.append('op', 'Alta'); // operación que espera el backend
-      formDataToSend.append('numero_caja', formData.numero_caja);
-      formDataToSend.append('numero_placa', formData.numero_placa);
-      formDataToSend.append('estado_placa', formData.estado_placa);
-      formDataToSend.append('numero_vin', formData.numero_vin);
-
-
-      // Enviar al backend
-      const response = await fetch(`${apiHost}/cajas.php`, {
+      const response = await fetch(`${apiHost}/IMA_Docs.php`, {
         method: 'POST',
-        body: formDataToSend,
+        body: formDataFile,
       });
 
       const result = await response.json();
-      console.log('Respuesta del servidor:', result);
+      console.log(`Documento ${tipo_documento} actualizado:`, result);
 
-      const idConductor = result.id;
-      console.log("ID recibido del backend:", idConductor);
-
-      if (result.status === "success") {
-
-        const idConductor = result.id;
-        console.log("ID recibido del backend:", idConductor);
-        return idConductor;
-      } else {
-        throw new Error("Error al guardar datos básicos");
-      }
-    } catch (error) {
-      console.error('Error al enviar los datos:', error);
-      alert('Error al conectar con el servidor');
-    }
-  };
-
-  const enviarDocumentos = async (caja_id) => {
-    const entries = Object.entries(documentos); // clave: nombre campo, valor: { file, vencimiento }
-
-    for (const [tipo_documento, { file, vencimiento }] of entries) {
-      const formDataFile = new FormData();
-      formDataFile.append('op', 'Alta');
-      formDataFile.append('caja_id', caja_id);
-      formDataFile.append('tipo_documento', tipo_documento);
-      formDataFile.append('fecha_vencimiento', vencimiento);
-      formDataFile.append('documento', file);
-
-      try {
-        const response = await fetch(`${apiHost}/cajas_docs.php`, {
-          method: 'POST',
-          body: formDataFile,
-        });
-
-        const result = await response.json();
-        console.log(`Documento ${tipo_documento} enviado:`, result);
-        
-      } catch (error) {
-        console.error(`Error al enviar ${tipo_documento}:`, error);
-      }
-    }
-  };
-  const handleSubmit = async () => {
-    const idConductor = await envioDatosPrincipal();
-
-    if (idConductor) {
-      await enviarDocumentos(idConductor);
-        Swal.fire({
-          icon: 'success',
-          title: 'Éxito',
-          text: 'Todos los documentos fueron enviados correctamente',
-        });
-      setFormData({
-        numero_caja: '',
-        numero_placa: '',
-        estado_placa: '',
-        numero_vin: '',
+      await Swal.fire({
+        icon: 'success',
+        title: 'Éxito',
+        text: `Documento ${tipo_documento} actualizado`,
+        confirmButtonText: 'Aceptar'
       });
 
-      setDocumentos({});
+    } catch (error) {
+      console.error(`Error al enviar ${tipo_documento}:`, error);
+    }
+  }
+};
+const handleSubmit = async () => {
+  let cambios = [];
+
+  for (const [tipo, doc] of Object.entries(documentos)) {
+    const original = originalDocumentos[tipo];
+    const nuevoArchivo = !!doc?.file;
+    const cambioVencimiento = original?.vencimiento !== doc?.vencimiento;
+    if (nuevoArchivo || cambioVencimiento) {
+      cambios.push(`Documento: ${tipo}`);
+    }
+  }
+
+  if (cambios.length === 0) {
+    Swal.fire({
+      icon: 'info',
+      title: 'Sin cambios',
+      text: 'No se detectaron cambios en los documentos.'
+    });
+    return;
+  }
+
+  const { isConfirmed } = await Swal.fire({
+    title: '¿Confirmar cambios?',
+    html: `<b>Modificaciones detectadas:</b><br>${cambios.join('<br>')}`,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: 'Sí, guardar',
+    cancelButtonText: 'Cancelar'
+  });
+
+  if (!isConfirmed) return;
+
+  await enviarDocumentos();
+};
+
+
+  const fetchDocs = async () => {
+  const formDataToSend = new FormData();
+  formDataToSend.append('op', 'getAll');
+
+  try {
+    const response = await fetch(`${apiHost}/IMA_Docs.php`, {
+      method: 'POST',
+      body: formDataToSend
+    });
+
+    const data = await response.json();
+
+    if (data.status === 'success' && data.Users.length > 0) {
+      const documentos = data.Users[0];
+
+      // Documentos esperados en la respuesta
+      const camposDoc = {
+        MC: { url: 'MC_URL', fecha: 'MC_fecha' },
+        W9: { url: 'W9_URL', fecha: 'W9_fecha' },
+        IFTA: { url: 'IFTA_URL', fecha: 'IFTA_fecha' },
+        '2290': { url: '_2290_URL', fecha: '_2290_fecha' },
+        Permiso_KYU: { url: 'Permiso_KYU_URL', fecha: 'Permiso_KYU_fecha' },
+        UCR: { url: 'UCR_URL', fecha: 'UCR_fecha' },
+        SCAC: { url: 'SCAC_URL', fecha: 'SCAC_fecha' },
+        CAAT: { url: 'CAAT_URL', fecha: 'CAAT_fecha' }
+      };
+
+      const nuevosDocumentos = {};
+
+      Object.entries(camposDoc).forEach(([campo, claves]) => {
+        const url = documentos[claves.url];
+        const fecha = documentos[claves.fecha];
+
+        if (url) {
+          nuevosDocumentos[campo] = {
+            file: null,
+            fileName: url.split('/').pop(),
+            vencimiento: fecha || '',
+            url: `${apiHost}/${url}`
+          };
+        }
+      });
+
+    setDocumentos(nuevosDocumentos);
+    setOriginalDocumentos(nuevosDocumentos);
 
     }
-  };
+  } catch (error) {
+    console.error('Error al obtener los documentos:', error);
+  }
+};
 
+
+  useEffect(() => {
+    fetchDocs();
+  }, []);
 
   return (
 
@@ -142,54 +185,54 @@ const ImaScreen = () => {
           <div className="column">
             <h2>Documentos USA</h2>
             <label>MC(PDF)</label>
-            <button type="button" onClick={() => abrirModal('Fianza')}>Subir documento</button>
-            {documentos.Fianza && (
-              <p>{documentos.Fianza.fileName} - {documentos.Fianza.vencimiento}</p>
+            <button type="button" onClick={() => abrirModal('MC')}>Subir documento</button>
+            {documentos.MC && (
+              <p>{documentos.MC.fileName} - {documentos.MC.vencimiento}</p>
             )}
             
 
             <label>W9(PDF)</label>
-            <button type="button" onClick={() => abrirModal('Fianza')}>Subir documento</button>
-            {documentos.Fianza && (
-              <p>{documentos.Fianza.fileName} - {documentos.Fianza.vencimiento}</p>
+            <button type="button" onClick={() => abrirModal('W9')}>Subir documento</button>
+            {documentos.W9 && (
+              <p>{documentos.W9.fileName} - {documentos.W9.vencimiento}</p>
             )}
 
             <label>IFTA(PDF)</label>
-            <button type="button" onClick={() => abrirModal('Fianza')}>Subir documento</button>
-            {documentos.Fianza && (
-              <p>{documentos.Fianza.fileName} - {documentos.Fianza.vencimiento}</p>
+            <button type="button" onClick={() => abrirModal('IFTA')}>Subir documento</button>
+            {documentos.IFTA && (
+              <p>{documentos.IFTA.fileName} - {documentos.IFTA.vencimiento}</p>
             )}
 
             <label>2290(PDF)</label>
-            <button type="button" onClick={() => abrirModal('Fianza')}>Subir documento</button>
-            {documentos.Fianza && (
-              <p>{documentos.Fianza.fileName} - {documentos.Fianza.vencimiento}</p>
+            <button type="button" onClick={() => abrirModal('2290')}>Subir documento</button>
+            {documentos['2290'] && (
+              <p>{documentos['2290'].fileName} - {documentos['2290'].vencimiento}</p>
             )}
 
             <label>Permiso KYU(PDF)</label>
-            <button type="button" onClick={() => abrirModal('Fianza')}>Subir documento</button>
-            {documentos.Fianza && (
-              <p>{documentos.Fianza.fileName} - {documentos.Fianza.vencimiento}</p>
+            <button type="button" onClick={() => abrirModal('Permiso_KYU')}>Subir documento</button>
+            {documentos.Permiso_KYU && (
+              <p>{documentos.Permiso_KYU.fileName} - {documentos.Permiso_KYU.vencimiento}</p>
             )}
 
             <label>UCR(PDF)</label>
-            <button type="button" onClick={() => abrirModal('Fianza')}>Subir documento</button>
-            {documentos.Fianza && (
-              <p>{documentos.Fianza.fileName} - {documentos.Fianza.vencimiento}</p>
+            <button type="button" onClick={() => abrirModal('UCR')}>Subir documento</button>
+            {documentos.UCR && (
+              <p>{documentos.UCR.fileName} - {documentos.UCR.vencimiento}</p>
             )}
 
             <label>SCAC(PDF)</label>
-            <button type="button" onClick={() => abrirModal('Fianza')}>Subir documento</button>
-            {documentos.Fianza && (
-              <p>{documentos.Fianza.fileName} - {documentos.Fianza.vencimiento}</p>
+            <button type="button" onClick={() => abrirModal('SCAC')}>Subir documento</button>
+            {documentos.SCAC && (
+              <p>{documentos.SCAC.fileName} - {documentos.SCAC.vencimiento}</p>
             )}
           </div>
           <div className="column">
             <h2>Documentos MEX</h2>
             <label>CAAT(PDF)</label>
-            <button type="button" onClick={() => abrirModal('Fianza')}>Subir documento</button>
-            {documentos.Fianza && (
-              <p>{documentos.Fianza.fileName} - {documentos.Fianza.vencimiento}</p>
+            <button type="button" onClick={() => abrirModal('CAAT')}>Subir documento</button>
+            {documentos.CAAT && (
+              <p>{documentos.CAAT.fileName} - {documentos.CAAT.vencimiento}</p>
             )}
            </div>
         </div>

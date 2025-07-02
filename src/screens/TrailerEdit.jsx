@@ -13,7 +13,7 @@ const TrailerEdit = () => {
 
  const [formData, setFormData] = useState({
   numero_caja: '',
-  no_placa: '',       
+  numero_placa: '',       
   estado_placa: '',
   numero_vin: ''
 });
@@ -45,8 +45,7 @@ const TrailerEdit = () => {
       formDataToSend.append('trailer_id', id);
 
       if (formData.numero_caja !== originalFormData.numero_caja) formDataToSend.append('no_caja', formData.numero_caja);
-      
-      if (formData.no_placa !== originalFormData.no_placa) formDataToSend.append('no_placa', formData.no_placa);
+      if (formData.numero_placa !== originalFormData.numero_placa) formDataToSend.append('no_placa', formData.no_placa);
       if (formData.estado_placa !== originalFormData.estado_placa) formDataToSend.append('estado_placa', formData.estado_placa);
       if (formData.numero_vin !== originalFormData.numero_vin) formDataToSend.append('no_vin', formData.numero_vin);
 
@@ -94,7 +93,7 @@ const TrailerEdit = () => {
   const handleSubmit = async () => {
     const cambios = [];
     if (formData.numero_caja !== originalFormData.numero_caja) cambios.push('Número de caja');
-    if (formData.no_placa !== originalFormData.no_placa) cambios.push('Número de placa');
+    if (formData.numero_placa !== originalFormData.numero_placa) cambios.push('Número de placa');
     if (formData.estado_placa !== originalFormData.estado_placa) cambios.push('Estado de placa');
     if (formData.numero_vin !== originalFormData.numero_vin) cambios.push('Número VIN');
 
@@ -153,7 +152,7 @@ const TrailerEdit = () => {
         const caja = data.Users[0];
         const formValues = {
           numero_caja: caja.no_caja || '',
-          no_placa: caja.no_placa || '',            // <- Aquí lo agregas
+          numero_placa: caja.no_placa || '',            // <- Aquí lo agregas
           estado_placa: caja.estado_placa || '',
           numero_vin: caja.no_vin || ''
         };
@@ -161,7 +160,7 @@ const TrailerEdit = () => {
         setFormData(formValues);
         setOriginalFormData(formValues);
 
-        const camposDoc = ['Registracion', 'Seguro', 'Fianza'];
+        const camposDoc = ['Registracion', 'seguro', 'CAB_CARD', 'Fianza', 'CERTIFICADO'];
         const nuevosDocumentos = {};
 
         camposDoc.forEach((campo) => {

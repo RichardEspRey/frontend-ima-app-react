@@ -13,6 +13,7 @@ const ImaAdmin = () => {
   const apiHost = import.meta.env.VITE_API_HOST;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [valorActual, setValorActual] = useState(null);
+  const [documentos, setDocumentos] = useState({});
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
   const rowsPerPage = 4;
@@ -21,105 +22,130 @@ const ImaAdmin = () => {
 
   const from = page * rowsPerPage;
   const to = Math.min((page + 1) * rowsPerPage, cajas.length);
-
-  useEffect(() => {
-    const fetchCajas = async () => {
-      try {
-        const response = await fetch(`${apiHost}/cajas.php`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: 'op=getAll'
-        });
-        const data = await response.json();
-
-        if (data.status === 'success' && data.Users) {
-       const formatted = data.Users.map(caja => ({
-        id: caja.caja_id, // ✅ ID real desde el backend
-        no_caja: caja.no_caja,
-        Registracion: caja.Registracion,
-        Registracion_fecha: caja.Registracion_Fecha,
-        Registracion_url: caja.Registracion_url_pdf,
-        Seguro: caja.Seguro,
-        Seguro_fecha: caja.Seguro_Fecha,
-        Seguro_url: caja.Seguro_url_pdf,
-        Fianza: caja.Fianza,
-        Fianza_fecha: caja.Fianza_Fecha,
-        Fianza_url: caja.Fianza_url_pdf,
-      }));
+ 
 
 
-          setCajas(formatted);
+   const fetchDocs = async () => {
+  const formDataToSend = new FormData();
+  formDataToSend.append('op', 'getAll');
+
+  try {
+    const response = await fetch(`${apiHost}/IMA_Docs.php`, {
+      method: 'POST',
+      body: formDataToSend
+    });
+
+    const data = await response.json();
+
+    if (data.status === 'success' && data.Users.length > 0) {
+      const caja = data.Users[0];
+
+      const camposDoc = {
+        MC: { url: 'MC_URL', fecha: 'MC_fecha' },
+        W9: { url: 'W9_URL', fecha: 'W9_fecha' },
+        IFTA: { url: 'IFTA_URL', fecha: 'IFTA_fecha' },
+        '2290': { url: '_2290_URL', fecha: '_2290_fecha' },
+        Permiso_KYU: { url: 'Permiso_KYU_URL', fecha: 'Permiso_KYU_fecha' },
+        UCR: { url: 'UCR_URL', fecha: 'UCR_fecha' },
+        SCAC: { url: 'SCAC_URL', fecha: 'SCAC_fecha' },
+        CAAT: { url: 'CAAT_URL', fecha: 'CAAT_fecha' }
+      };
+
+      const nuevosDocumentos = {};
+
+      Object.entries(camposDoc).forEach(([campo, claves]) => {
+        const url = caja[claves.url];
+        const fecha = caja[claves.fecha];
+
+        if (url || fecha) {
+          nuevosDocumentos[campo] = {
+            file: null,
+            fileName: url?.split('/').pop() || '',
+            vencimiento: fecha || '',
+            url: url ? `${apiHost}/${url}` : ''
+          };
         }
-      } catch (error) {
-        console.error('Error al obtener las cajas:', error);
-      }
-    };
+      });
 
-    fetchCajas();
-  }, []);
+      setDocumentos(nuevosDocumentos);
+
+    }
+  } catch (error) {
+    console.error('Error al obtener los documentos:', error);
+  }
+};
+
+ 
+ 
+   useEffect(() => {
+     fetchDocs();
+   }, []);
+
 
   const filteredCajas = cajas.filter(caja =>
     caja.id.toString().includes(search)
   );
 
-  const getIconByFecha = (fechaStr, id, url, tipo) => {
-    if (!fechaStr) {
-      return (
-        <>
-          <img
-            src={questionIcon}
-            alt="Sin documento"
-            className="icon-img"
-            data-tooltip-id={`tooltip-${id}-${tipo}`}
-            data-tooltip-content="No se cuenta con el documento"
-          />
-          <Tooltip id={`tooltip-${id}-${tipo}`} place="top" />
-        </>
-      );
-    }
+  const getIconByFecha = (campo) => {
+  const doc = documentos[campo];
+  const fechaStr = doc?.vencimiento;
+  const url = doc?.url;
 
-    const fecha = new Date(fechaStr);
-    const hoy = new Date();
-    const diffInDays = Math.floor((fecha - hoy) / (1000 * 60 * 60 * 24));
-
-    let icon = greyIcon;
-    let mensaje = `Vencimiento: ${fecha.toLocaleDateString('es-MX')}`;
-
-    if (diffInDays >= 365) icon = greenIcon;
-    else if (diffInDays >= 180) icon = yellowIcon;
-    else if (diffInDays >= 60) icon = redIcon;
-
+  if (!fechaStr) {
     return (
       <>
         <img
-          src={icon}
-          alt={tipo}
+          src={questionIcon}
+          alt="Sin documento"
           className="icon-img"
-          onClick={() => abrirModalConDocumento(url, fechaStr, id, tipo)}
-          data-tooltip-id={`${id}`}
-          data-tooltip-content={mensaje}
-          style={{ cursor: 'pointer' }}
+          onClick={() => abrirModalConDocumento(campo)}
+          data-tooltip-id={`tooltip-${campo}`}
+          data-tooltip-content="No se cuenta con el documento"
         />
-        <Tooltip id={`tooltip-${id}-${tipo}`} place="top" />
+        <Tooltip id={`tooltip-${campo}`} place="top" />
       </>
     );
-  };
+  }
 
-  const abrirModalConDocumento = (url, fecha, id, tipo) => {
-    setValorActual({
-      url: `${apiHost}/${url}`,
-      vencimiento: fecha,
-      id,
-      tipo
-    });
-    setIsModalOpen(true);
-  };
+  const fecha = new Date(fechaStr);
+  const hoy = new Date();
+  const diffInDays = Math.floor((fecha - hoy) / (1000 * 60 * 60 * 24));
+
+  let icon = greyIcon;
+  let mensaje = `Vencimiento: ${fecha.toLocaleDateString('es-MX')}`;
+
+  if (diffInDays >= 365) icon = greenIcon;
+  else if (diffInDays >= 180) icon = yellowIcon;
+  else if (diffInDays >= 60) icon = redIcon;
+
+  return (
+    <>
+      <img
+        src={icon}
+        alt={campo}
+        className="icon-img"
+        onClick={() => abrirModalConDocumento(campo)}
+        data-tooltip-id={`tooltip-${campo}`}
+        data-tooltip-content={mensaje}
+        style={{ cursor: 'pointer' }}
+      />
+      <Tooltip id={`tooltip-${campo}`} place="top" />
+    </>
+  );
+};
 
 
-   const handleEditTrip = (tripId) => {
-        if (!tripId) { console.error("ID inválido"); return; }
-        navigate(`/edit-trip/${tripId}`);
-    };
+const abrirModalConDocumento = (campo) => {
+  const doc = documentos[campo];
+
+  setValorActual({
+    url: doc?.url || '',
+    vencimiento: doc?.vencimiento || '',
+    tipo: campo
+  });
+  setIsModalOpen(true);
+};
+
 
   return (
     <div className="driver-admin">
@@ -148,16 +174,13 @@ const ImaAdmin = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredCajas.slice(from, to).map(caja => (
-              <tr key={caja.id}>
-                <td>{caja.id}</td>  
-                <td>{caja.no_caja}</td> 
-                <td>{getIconByFecha(caja.Registracion_fecha, caja.id, caja.Registracion_url, 'Registracion')}</td>
-                <td>{getIconByFecha(caja.Seguro_fecha, caja.id, caja.Seguro_url, 'Seguro')}</td>
-                <td>{getIconByFecha(caja.Fianza_fecha, caja.id, caja.Fianza_url, 'Fianza')}</td>
-             
-              </tr>
-            ))}
+            <tr>
+              <td>{getIconByFecha('IFTA')}</td>
+              <td>{getIconByFecha('2290')}</td>
+              <td>{getIconByFecha('UCR')}</td>
+              <td>{getIconByFecha('SCAC')}</td>
+              <td>{getIconByFecha('CAAT')}</td>
+            </tr>
           </tbody>
         </table>
 
@@ -174,7 +197,7 @@ const ImaAdmin = () => {
         onSave={(data) => console.log('Guardado:', data)}
         nombreCampo="Documento"
         valorActual={valorActual}
-        endpoint="cajas_docs.php" 
+        endpoint="IMA_Docs.php" 
         tipo="caja_id"
       />
     </div>

@@ -17,7 +17,8 @@ const TruckScreen = () => {
     PlacaEUA: '',
     Modelo: '',
     Marca: '',
-    Numero: ''
+    Numero: '',
+    Tag:''
   });
 
   const [originalFormData, setOriginalFormData] = useState(null);
@@ -51,6 +52,7 @@ const TruckScreen = () => {
       if (formData.Modelo !== originalFormData.Modelo) formDataToSend.append('Modelo', formData.Modelo);
       if (formData.Marca !== originalFormData.Marca) formDataToSend.append('Marca_camion', formData.Marca);
       if (formData.Numero !== originalFormData.Numero) formDataToSend.append('Numero_VIN', formData.Numero);
+      if (formData.Tag !== originalFormData.Tag) formDataToSend.append('Tag', formData.Tag);
 
       if (formDataToSend.entries().next().done) {
         Swal.fire({ icon: 'info', title: 'Sin cambios', text: 'No se detectaron cambios' });
@@ -107,6 +109,7 @@ const TruckScreen = () => {
     if (formData.Modelo !== originalFormData.Modelo) cambios.push('Modelo');
     if (formData.Marca !== originalFormData.Marca) cambios.push('Marca');
     if (formData.Numero !== originalFormData.Numero) cambios.push('Número VIN');
+    if (formData.Tag !== originalFormData.Tag) cambios.push('Laredo Tag');
 
     let hayCambiosEnDocumentos = false;
     for (const [tipo, doc] of Object.entries(documentos)) {
@@ -172,23 +175,43 @@ const TruckScreen = () => {
           PlacaEUA: truck.Placa_EUA || '',
           Modelo: truck.Modelo || '',
           Marca: truck.Marca_camion || '',
-          Numero: truck.Numero_VIN || ''
+          Numero: truck.Numero_VIN || '',
+          Tag: truck.Tag || ''
         };
         setFormData(formValues);
         setOriginalFormData(formValues);
-        const camposDoc = ['Placamx', 'Placausa', 'Vin', 'Registracion', 'Carta', 'CAB', 'DTOP', 'PERMISO_NY', 'PERMISO_NM', 'Mecanica', 'Circulacion', 'VERIFICACIONES', 'UCR', 'kentucky'];
+        const camposDoc = [
+          'Registracion',
+          'CAB',
+          'COI',
+          'mecanica',
+          'TX_DMV',
+          'PERMISO_NY',
+          'PERMISO_NM',
+          'dtops',
+          'Tarjeta_circulacion',
+          'fisio_Mecanica',
+          'Inspecion_humos',
+          'fideicomiso',
+          'seguro'
+        ];
+
         const nuevosDocumentos = {};
 
         camposDoc.forEach((campo) => {
-          if (truck[`${campo}_URL`]) {
+          const url = truck[`${campo}_URL`];
+          const fecha = truck[`${campo}_Fecha`] || truck[`${campo}_fecha`] || truck[`AS${campo}_Fecha`] || '';
+
+          if (url) {
             nuevosDocumentos[campo] = {
               file: null,
-              fileName: truck[`${campo}_URL`].split('/').pop(),
-              vencimiento: truck[`${campo}_fecha`] || '',
-              url: `${apiHost}/${truck[`${campo}_URL`]}`,
+              fileName: url.split('/').pop(),
+              vencimiento: fecha,
+              url: `${apiHost}/${url}`
             };
           }
         });
+
 
         setDocumentos(nuevosDocumentos);
         setOriginalDocumentos(nuevosDocumentos);
@@ -219,14 +242,15 @@ const TruckScreen = () => {
         </div>
 
         <div className="form-columns">
-             {/* Columna 1 */}
+          {/* Columna 1 */}
           <div className="column">
+            <h2>Registros generales</h2>
             <label>Unidad</label>
             <input
               type="text"
               placeholder="Unidad"
               value={formData.unidad}
-              onChange={(e) => handleInputChange('unidad', e.target.value)}
+              onChange={(e) => handleInputChange('Unidad', e.target.value)}
             />
 
             <label>Placa MEX</label>
@@ -237,7 +261,7 @@ const TruckScreen = () => {
               onChange={(e) => handleInputChange('PlacaMX', e.target.value)}
             />
 
-            <label>Placa EUA</label>
+            <label>Placa USA</label>
             <input
               type="text"
               placeholder="Placa EUA"
@@ -269,37 +293,14 @@ const TruckScreen = () => {
               onChange={(e) => handleInputChange('Numero', e.target.value)}
             />
           </div>
-
-          {/* Columna 2 */}
+              {/* Columna 2 */}
           <div className="column">
-            <label>Placa MEX</label>
-            <button type="button" onClick={() => abrirModal('Placamx')}>Subir documento</button>
-            {documentos.Placamx && (
-              <p>{documentos.Placamx.fileName} - {documentos.Placamx.vencimiento}</p>
-            )}
+               <h2>Registros USA</h2>
 
-            <label>Placa USA</label>
-            <button type="button" onClick={() => abrirModal('Placausa')}>Subir documento</button>
-            {documentos.Placausa && (
-              <p>{documentos.Placausa.fileName} - {documentos.Placausa.vencimiento}</p>
-            )}
-
-            <label>Numero de vin</label>
-            <button type="button" onClick={() => abrirModal('Vin')}>Subir documento</button>
-            {documentos.Vin && (
-              <p>{documentos.Vin.fileName} - {documentos.Vin.vencimiento}</p>
-            )}
-
-            <label>Registracion</label>
-            <button type="button" onClick={() => abrirModal('Registracion')}>Subir documento</button>
-            {documentos.Registracion && (
-              <p>{documentos.Registracion.fileName} - {documentos.Registracion.vencimiento}</p>
-            )}
-
-            <label>Carta seguro (PDF)</label>
-            <button type="button" onClick={() => abrirModal('seguro')}>Subir documento</button>
-            {documentos.seguro && (
-              <p>{documentos.seguro.fileName} - {documentos.seguro.vencimiento}</p>
+             <label>Registracion</label>
+            <button type="button" onClick={() => abrirModal('registracion')}>Subir documento</button>
+            {documentos.registracion && (
+              <p>{documentos.registracion.fileName} - {documentos.registracion.vencimiento}</p>
             )}
 
             <label>Cab Card (PDF)</label>
@@ -308,14 +309,28 @@ const TruckScreen = () => {
               <p>{documentos.CAB.fileName} - {documentos.CAB.vencimiento}</p>
             )}
 
-            <label>DTOP (PDF)</label>
-            <button type="button" onClick={() => abrirModal('DTOP')}>Subir documento</button>
-            {documentos.DTOP && (
-              <p>{documentos.DTOP.fileName} - {documentos.DTOP.vencimiento}</p>
+              <label>COI (PDF)</label>
+            <button type="button" onClick={() => abrirModal('COI')}>Subir documento</button>
+            {documentos.COI && (
+              <p>{documentos.COI.fileName} - {documentos.COI.vencimiento}</p>
+            )}
+
+
+           <label>Inspecccion mecanica (PDF)</label>
+            <button type="button" onClick={() => abrirModal('mecanica')}>Subir documento</button>
+            {documentos.mecanica && (
+              <p>{documentos.mecanica.fileName} - {documentos.mecanica.vencimiento}</p>
+            )}
+            
+
+             <label>TX DMV (PDF)</label>
+            <button type="button" onClick={() => abrirModal('TX_DMV')}>Subir documento</button>
+            {documentos.TX_DMV && (
+              <p>{documentos.TX_DMV.fileName} - {documentos.TX_DMV.vencimiento}</p>
             )}
 
             <label>PERMISO NY (PDF)</label>
-            <button type="button" onClick={() => abrirModal('PERMISO_NY ')}>Subir documento</button>
+            <button type="button" onClick={() => abrirModal('PERMISO_NY')}>Subir documento</button>
             {documentos.PERMISO_NY && (
               <p>{documentos.PERMISO_NY.fileName} - {documentos.PERMISO_NY.vencimiento}</p>
             )}
@@ -325,40 +340,59 @@ const TruckScreen = () => {
             {documentos.PERMISO_NM && (
               <p>{documentos.PERMISO_NM.fileName} - {documentos.PERMISO_NM.vencimiento}</p>
             )}
+
+         
+             
+            <label>DTOPS (PDF)</label>
+            <button type="button" onClick={() => abrirModal('dtops')}>Subir documento</button>
+            {documentos.dtops && (
+              <p>{documentos.dtops.fileName} - {documentos.dtops.vencimiento}</p>
+            )}
+
+            <label>Laredo TAG</label>
+            <input
+              type="text"
+              placeholder="Numero"
+              value={formData.Tag}
+              onChange={(e) => handleInputChange('Tag', e.target.value)}
+            />
+
           </div>
-
-          {/* Columna 3  */}
+          {/* Columna 3 */}
           <div className="column">
-            <label>Inspecccion mecanica (PDF)</label>
-            <button type="button" onClick={() => abrirModal('Mecanica')}>Subir documento</button>
-            {documentos.Mecanica && (
-              <p>{documentos.Mecanica.fileName} - {documentos.Mecanica.vencimiento}</p>
-            )}
-
+            <h2>Registros MEX</h2>
+           
+            
             <label>Tarjeta de circulacion (PDF)</label>
-            <button type="button" onClick={() => abrirModal('Circulacion')}>Subir documento</button>
-            {documentos.Circulacion && (
-              <p>{documentos.Circulacion.fileName} - {documentos.Circulacion.vencimiento}</p>
+            <button type="button" onClick={() => abrirModal('Tarjeta_circulacion')}>Subir documento</button>
+            {documentos.Tarjeta_circulacion && (
+              <p>{documentos.Tarjeta_circulacion.fileName} - {documentos.Tarjeta_circulacion.vencimiento}</p>
+            )}
+            <label>Inspecccion fisio-mecanica(PDF)</label>
+            <button type="button" onClick={() => abrirModal('Inspecccion_fisio_Mecanica')}>Subir documento</button>
+            {documentos.Inspecccion_fisio_Mecanica && (
+              <p>{documentos.Inspecccion_fisio_Mecanica.fileName} - {documentos.Inspecccion_fisio_Mecanica.vencimiento}</p>
             )}
 
-            <label>VERIFICACIONES MX (PDF)</label>
-            <button type="button" onClick={() => abrirModal('VERIFICACIONES')}>Subir documento</button>
-            {documentos.VERIFICACIONES && (
-              <p>{documentos.VERIFICACIONES.fileName} - {documentos.VERIFICACIONES.vencimiento}</p>
+            <label>Inspecion humos  (PDF)</label>
+            <button type="button" onClick={() => abrirModal('Inspecion_humos')}>Subir documento</button>
+            {documentos.Inspecion_humos && (
+              <p>{documentos.Inspecion_humos.fileName} - {documentos.Inspecion_humos.vencimiento}</p>
             )}
-
-             <label>UCR (PDF)</label>
-            <button type="button" onClick={() => abrirModal('UCR')}>Subir documento</button>
-            {documentos.UCR && (
-              <p>{documentos.UCR.fileName} - {documentos.UCR.vencimiento}</p>
+        
+            <label>Puente fideicomiso  (PDF)</label>
+            <button type="button" onClick={() => abrirModal('fideicomiso')}>Subir documento</button>
+            {documentos.fideicomiso && (
+              <p>{documentos.fideicomiso.fileName} - {documentos.fideicomiso.vencimiento}</p>
             )}
-
-             <label>Permiso kentucky (PDF)</label>
-            <button type="button" onClick={() => abrirModal('kentucky')}>Subir documento</button>
-            {documentos.kentucky && (
-              <p>{documentos.kentucky.fileName} - {documentos.kentucky.vencimiento}</p>
+        
+            <label>Seguro (PDF)</label>
+            <button type="button" onClick={() => abrirModal('seguro')}>Subir documento</button>
+            {documentos.seguro && (
+              <p>{documentos.seguro.fileName} - {documentos.seguro.vencimiento}</p>
             )}
-
+        
+        
           </div>
 
         </div>

@@ -9,6 +9,7 @@ import questionIcon from '../assets/images/Icons_alerts/question.png';
 import ModalArchivo from '../components/ModalArchivoEditor.jsx'; 
 import { Tooltip } from 'react-tooltip';
 import { useNavigate } from 'react-router-dom';
+import Swal from 'sweetalert2';
 
 const DriverAdmin = () => {
   const navigate = useNavigate();
@@ -25,7 +26,7 @@ const DriverAdmin = () => {
   const from = page * rowsPerPage;
   const to = Math.min((page + 1) * rowsPerPage, drivers.length);
 
-  useEffect(() => {
+
     const fetchDrivers = async () => {
       try {
         const response = await fetch(`${apiHost}/drivers.php`, {
@@ -61,6 +62,8 @@ const DriverAdmin = () => {
       }
     };
 
+
+  useEffect(() => {
     fetchDrivers();
   }, []);
 
@@ -132,6 +135,47 @@ const DriverAdmin = () => {
   });
   setIsModalOpen(true);
 }
+
+
+ const eliminar = async (id) =>  {
+
+  const { isConfirmed } = await Swal.fire({
+    title: '¿Desea eliminar a este driver?',
+    icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Aceptar'
+      });
+  
+  if (!isConfirmed)return;
+       
+   try {
+      const formDataToSend = new FormData();
+        formDataToSend.append('op', 'Baja'); // operación que espera el backend
+        formDataToSend.append('id', id);
+
+        const response = await fetch(`${apiHost}/drivers.php`, {
+          method: 'POST',
+          body: formDataToSend,
+        });
+
+        const data = await response.json();
+        if (data.status === 'success' ) {
+         Swal.fire({
+          icon: 'success',
+          title: 'Éxito',
+          text: 'Driver dado de baja!',
+        });
+        
+        }
+      } catch (error) {
+        console.error('Error al obtener los conductores:', error);
+      }
+      fetchDrivers();
+       window.location.reload();
+    
+    };
+
+
   
   return (
     <div className="driver-admin">
@@ -170,6 +214,7 @@ const DriverAdmin = () => {
               <th>VISA</th>
               <th>Licencia</th>
               <th>Acciones</th>
+              <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -188,6 +233,14 @@ const DriverAdmin = () => {
                     onClick={() => navigate(`/editor-drivers/${driver.id}`)}
                     >
                     Ver
+                  </button>
+                </td>
+                 <td>
+                  <button
+                    className="ver-btn"
+                    onClick={() => eliminar(driver.id)}
+                    >
+                    Eliminar
                   </button>
                 </td>
               </tr>

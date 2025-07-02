@@ -244,8 +244,7 @@ const handleSubmit = async () => {
       if (!isConfirmed){
           window.location.reload();
       }return;
-    if (!resultado) return; // si falló el guardado de datos básicos, detenemos todo
-    idConductor = resultado;
+  
   }
 
   // Enviar documentos aunque no haya cambios de texto
@@ -253,20 +252,6 @@ const handleSubmit = async () => {
     await enviarDocumentos(idConductor);
   }
 
-  // Limpiar
-  setFormData({
-  nombre: '',
-  fechaNacimiento: '',
-  fechaEntrada: '',
-  curp: '',
-  rfc: '',
-  phone_usa: '',
-  phone_mex: '',
-  visa: '',
-  licencia: ''
-});
-
-  setDocumentos({});
 };
 
 
@@ -349,7 +334,7 @@ useEffect(() => {
 
    <div >
 
-      <h1 className="titulo">Alta de Conductor</h1>
+      <h1 className="titulo">Editor de Conductor</h1>
       <div className="conductores-container">
         <div className="btnConteiner">
           <button className="btn cancelar"onClick={cancelar}> Cancelar</button>
