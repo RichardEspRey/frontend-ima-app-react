@@ -137,3 +137,23 @@
   width: 100%;
   font-size: 16px;
 }
+
+/* For Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0; /* Important to remove any residual margin the arrows might leave */
+}
+
+
+/* Optional: If you want to target only specific number inputs,
+   add a class to your input and use that in the CSS selectors. */
+.no-spinners::-webkit-outer-spin-button,
+.no-spinners::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.no-spinners[type="number"] {
+  -moz-appearance: textfield;
+}

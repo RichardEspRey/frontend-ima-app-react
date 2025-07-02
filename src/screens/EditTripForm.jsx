@@ -24,7 +24,6 @@ const initialBorderCrossingDocs = {
 const initialNormalTripDocs = {
     ima_invoice: null, ci: null, cita_entrega: null, bl: null, bl_firmado: null,
 };
-// REMOVIDO: initialStopStageDocs ya no es necesario, las paradas son in-transit
 
 const selectStyles = {
     control: (provided) => ({
@@ -52,7 +51,6 @@ const EditTripForm = () => {
     const [etapas, setEtapas] = useState([]);
 
     const [modalAbierto, setModalAbierto] = useState(false);
-    // CAMBIO: modalTarget ahora también puede contener stopIndex para diferenciar documentos de parada
     const [modalTarget, setModalTarget] = useState({ stageIndex: null, docType: null, stopIndex: null });
     const [mostrarFechaVencimientoModal, setMostrarFechaVencimientoModal] = useState(true);
 
@@ -112,12 +110,11 @@ const EditTripForm = () => {
                         let deliveryDateObj = null;
                         if (etapa.delivery_date && typeof etapa.delivery_date === 'string') { try { deliveryDateObj = parseISO(etapa.delivery_date); } catch (e) { } }
 
-                        // Mantener la lógica de documentos existente para etapas principales
-                        const tipoEtapaActual = etapa.stageType || 'normalTrip'; // Default a normalTrip
+                        const tipoEtapaActual = etapa.stageType || 'normalTrip';
                         let documentosBase;
                         if (tipoEtapaActual === 'normalTrip') { documentosBase = { ...initialNormalTripDocs }; }
                         else if (tipoEtapaActual === 'borderCrossing') { documentosBase = { ...initialBorderCrossingDocs }; }
-                        else { documentosBase = {}; } // Para emptyMileage
+                        else { documentosBase = {}; }
 
                         if (Array.isArray(etapa.documentos_adjuntos)) {
                             etapa.documentos_adjuntos.forEach(doc => {
@@ -131,16 +128,15 @@ const EditTripForm = () => {
                             });
                         }
 
-                        // CAMBIO: Asegúrate de que stops_in_transit sea un array y formatea los documentos de parada
                         const stopsInTransit = Array.isArray(etapa.stops_in_transit) ?
                             etapa.stops_in_transit.map(stop => ({
                                 stop_id: stop.stop_id,
                                 location: stop.location || '',
                                 stop_order: stop.stop_order,
-                                cita_entrega_doc: stop.cita_entrega_doc ? { // Formatea el documento de cita de entrega
+                                cita_entrega_doc: stop.cita_entrega_doc ? {
                                     fileName: stop.cita_entrega_doc.nombre_archivo?.split(/[\\/]/).pop() || 'Archivo existente',
-                                    vencimiento: stop.cita_entrega_doc.fecha_vencimiento || null, // Aunque no lo uses, mantenlo
-                                    file: null, // No hay archivo nuevo al cargar
+                                    vencimiento: stop.cita_entrega_doc.fecha_vencimiento || null,
+                                    file: null,
                                     document_id: stop.cita_entrega_doc.document_id,
                                     serverPath: stop.cita_entrega_doc.path_servidor_real
                                 } : null
@@ -151,8 +147,8 @@ const EditTripForm = () => {
                             ...etapa,
                             stageType: tipoEtapaActual,
                             loading_date: loadingDateObj, delivery_date: deliveryDateObj,
-                            documentos: documentosBase, // Documentos de la etapa principal
-                            stops_in_transit: stopsInTransit // NUEVO: Paradas en tránsito
+                            documentos: documentosBase,
+                            stops_in_transit: stopsInTransit
                         };
                     });
                     setEtapas(processedEtapas);
@@ -185,14 +181,13 @@ const EditTripForm = () => {
         });
     };
 
-    // NUEVO: Manejar cambios en los campos de las paradas en tránsito
     const handleStopChange = (stageIndex, stopIndex, field, value) => {
         setEtapas(prevEtapas => {
             const updatedEtapas = [...prevEtapas];
             const updatedStage = { ...updatedEtapas[stageIndex] };
             const updatedStops = [...(updatedStage.stops_in_transit || [])];
             const updatedStop = { ...updatedStops[stopIndex] };
-            updatedStop[field] = value; // Actualiza el campo específico de la parada
+            updatedStop[field] = value;
             updatedStops[stopIndex] = updatedStop;
             updatedStage.stops_in_transit = updatedStops;
             updatedEtapas[stageIndex] = updatedStage;
@@ -200,31 +195,30 @@ const EditTripForm = () => {
         });
     };
 
-    // CAMBIO: handleGuardarDocumento ahora es para DOCUMENTOS DE ETAPA O DE PARADA
     const handleGuardarDocumento = (data) => {
         const { stageIndex, docType, stopIndex } = modalTarget;
-        if (stageIndex === null || !docType) return; // Si no hay stageIndex o docType, no hacer nada
+        if (stageIndex === null || !docType) return;
 
         setEtapas(prevEtapas => {
             const updatedEtapas = [...prevEtapas];
-            const etapaActual = { ...updatedEtapas[stageIndex] }; // Copia la etapa actual
+            const etapaActual = { ...updatedEtapas[stageIndex] };
 
-            if (stopIndex !== null) { // Es un documento de PARADA (cita_entrega_doc)
+            if (stopIndex !== null) {
                 const updatedStops = [...(etapaActual.stops_in_transit || [])];
                 const updatedStop = { ...updatedStops[stopIndex] };
 
-                updatedStop[docType] = { // Aquí docType es 'cita_entrega_doc'
+                updatedStop[docType] = {
                     fileName: data.fileName,
-                    vencimiento: data.vencimiento, // Puede ser null
+                    vencimiento: data.vencimiento,
                     file: data.file,
                     document_id: (updatedStop[docType] && updatedStop[docType].document_id) ? updatedStop[docType].document_id : null,
-                    serverPath: null, // Se rellenará al cargar desde backend, no al guardar
-                    hasNewFile: !!data.file // <-- ¡CAMBIO CRÍTICO AQUÍ!
+                    serverPath: null,
+                    hasNewFile: !!data.file
                 };
                 updatedStops[stopIndex] = updatedStop;
                 etapaActual.stops_in_transit = updatedStops;
 
-            } else { // Es un documento de ETAPA PRINCIPAL
+            } else {
                 etapaActual.documentos = {
                     ...etapaActual.documentos,
                     [docType]: {
@@ -232,49 +226,45 @@ const EditTripForm = () => {
                         vencimiento: data.vencimiento,
                         file: data.file,
                         document_id: (etapaActual.documentos[docType] && etapaActual.documentos[docType].document_id) ? etapaActual.documentos[docType].document_id : null,
-                        serverPath: null, // Se rellenará al cargar, no al guardar
-                        hasNewFile: !!data.file // <-- ¡CAMBIO CRÍTICO AQUÍ!
+                        serverPath: null,
+                        hasNewFile: !!data.file
                     }
                 };
             }
-            updatedEtapas[stageIndex] = etapaActual; // Asigna la etapa actualizada
+            updatedEtapas[stageIndex] = etapaActual;
             return updatedEtapas;
         });
         setModalAbierto(false);
         setModalTarget({ stageIndex: null, docType: null, stopIndex: null });
     };
 
-    // CAMBIO: abrirModal ahora recibe stopIndex si es un documento de parada
     const abrirModal = (docType, stageIndex, stopIndex = null) => {
         if (stageIndex === null) return;
 
         setModalTarget({ stageIndex, docType, stopIndex });
         setModalAbierto(true);
 
-        // Lógica de fecha de vencimiento: cita_entrega de parada NO tiene vencimiento
-        if (docType === 'cita_entrega_doc' && stopIndex !== null) { // Para el documento de parada
+        if (docType === 'cita_entrega_doc' && stopIndex !== null) {
             setMostrarFechaVencimientoModal(false);
         } else if (['ima_invoice', 'carta_porte', 'ci', 'entry', 'manifiesto', 'cita_entrega', 'bl', 'orden_retiro', 'bl_firmado'].includes(docType)) {
-            setMostrarFechaVencimientoModal(false); // Otros documentos de etapa sin vencimiento
+            setMostrarFechaVencimientoModal(false);
         } else {
-            setMostrarFechaVencimientoModal(true); // Para documentos de etapa que sí necesiten vencimiento
+            setMostrarFechaVencimientoModal(true);
         }
     };
 
-    // CAMBIO: getCurrentDocValueForModal ahora obtiene el documento de la etapa o de la parada
     const getCurrentDocValueForModal = () => {
         const { stageIndex, docType, stopIndex } = modalTarget;
         if (stageIndex === null || !etapas[stageIndex]) return null;
 
-        if (stopIndex !== null) { // Es un documento de parada
+        if (stopIndex !== null) {
             const stop = etapas[stageIndex].stops_in_transit?.[stopIndex];
-            return stop ? stop[docType] : null; // Aquí docType será 'cita_entrega_doc'
-        } else { // Es un documento de etapa principal
+            return stop ? stop[docType] : null;
+        } else {
             return etapas[stageIndex].documentos[docType] || null;
         }
     };
 
-    // NUEVO: Función para agregar una nueva parada a una etapa específica
     const agregarParadaEnRuta = (stageIndex) => {
         setEtapas(prevEtapas => {
             const updatedEtapas = [...prevEtapas];
@@ -282,10 +272,10 @@ const EditTripForm = () => {
             const currentStops = [...(stageToUpdate.stops_in_transit || [])];
 
             const newStop = {
-                stop_id: `new-stop-${Date.now()}-${Math.random()}`, // ID temporal para React key y seguimiento en el frontend
+                stop_id: `new-stop-${Date.now()}-${Math.random()}`,
                 location: '',
-                stop_order: currentStops.length + 1, // Asigna un orden simple
-                cita_entrega_doc: null // Inicializa el documento de cita de entrega para esta parada
+                stop_order: currentStops.length + 1,
+                cita_entrega_doc: null
             };
             stageToUpdate.stops_in_transit = [...currentStops, newStop];
             updatedEtapas[stageIndex] = stageToUpdate;
@@ -293,7 +283,6 @@ const EditTripForm = () => {
         });
     };
 
-    // NUEVO: Función para eliminar una parada de una etapa
     const eliminarParadaEnRuta = (stageIndex, stopIndex) => {
         Swal.fire({
             title: `¿Eliminar Parada?`,
@@ -308,7 +297,6 @@ const EditTripForm = () => {
                     const currentStops = [...(stageToUpdate.stops_in_transit || [])];
 
                     const newStops = currentStops.filter((_, i) => i !== stopIndex);
-                    // Opcional: Renumerar stop_order si es importante
                     stageToUpdate.stops_in_transit = newStops.map((stop, i) => ({ ...stop, stop_order: i + 1 }));
 
                     updatedEtapas[stageIndex] = stageToUpdate;
@@ -318,25 +306,23 @@ const EditTripForm = () => {
         });
     };
 
-    // `agregarNuevaEtapa` se mantiene para etapas principales (no para stops)
     const agregarNuevaEtapa = (tipoEtapa, insertAtIndex = etapas.length) => {
         let initialDocs;
         if (tipoEtapa === 'borderCrossing') { initialDocs = { ...initialBorderCrossingDocs }; }
         else if (tipoEtapa === 'normalTrip') { initialDocs = { ...initialNormalTripDocs }; }
         else if (tipoEtapa === 'emptyMileage') { initialDocs = {}; }
-        // REMOVIDO: Ya no hay 'stopStage' como tipo de etapa principal
         else { initialDocs = {}; }
 
         setEtapas(prevEtapas => {
             const newEtapa = {
-                trip_stage_id: `new-stage-${Date.now()}-${Math.random()}`, // ID temporal para React key
+                trip_stage_id: `new-stage-${Date.now()}-${Math.random()}`,
                 stageType: tipoEtapa,
                 origin: '', destination: '', zip_code_origin: '', zip_code_destination: '',
                 loading_date: null, delivery_date: null, company_id: null, travel_direction: '',
                 warehouse_origin_id: null, warehouse_destination_id: null, ci_number: '',
                 rate_tarifa: '', millas_pcmiller: '', estatus: 'In Transit',
-                documentos: initialDocs, // Documentos de la etapa principal
-                stops_in_transit: [] // NUEVO: Todas las etapas principales empiezan con stops_in_transit vacío
+                documentos: initialDocs,
+                stops_in_transit: []
             };
 
             const updatedEtapas = [...prevEtapas];
@@ -371,14 +357,18 @@ const EditTripForm = () => {
 
         const dataToSend = new FormData();
         dataToSend.append('op', 'Update');
-        dataToSend.append('trip_id', tripId);
+        dataToSend.append('trip_id', tripId); // Keep this to identify the trip for update
+
+        // Append the potentially changed trip_number
+        dataToSend.append('trip_number', formData.trip_number || ''); // Add this line
 
         Object.entries(formData).forEach(([key, value]) => {
-            if (key !== 'status') { dataToSend.append(key, value || ''); }
+            if (key !== 'status' && key !== 'trip_number') { // Exclude status and now trip_number, as it's added explicitly
+                dataToSend.append(key, value || '');
+            }
         });
 
         const etapasParaJson = etapas.map((etapa, indexEtapa) => {
-            // Documentos de la etapa principal
             const etapaDocs = Object.entries(etapa.documentos).map(([tipo, docData]) => ({
                 tipo_documento: tipo,
                 document_id: docData?.document_id || null,
@@ -387,18 +377,17 @@ const EditTripForm = () => {
                 hasNewFile: !!(docData && docData.file instanceof File)
             })).filter(doc => doc.fileName !== null);
 
-            // NUEVO: Paradas en tránsito de esta etapa
             const stopsJson = (etapa.stops_in_transit || []).map((stop, indexStop) => {
-                const stopDocData = stop.cita_entrega_doc; // Esto es el objeto de documento de la parada
+                const stopDocData = stop.cita_entrega_doc;
                 return {
-                    stop_id: typeof stop.stop_id === 'string' && stop.stop_id.startsWith('new-stop-') ? null : stop.stop_id, // Si es un ID temporal, envíalo como null
+                    stop_id: typeof stop.stop_id === 'string' && stop.stop_id.startsWith('new-stop-') ? null : stop.stop_id,
                     location: stop.location || null,
-                    stop_order: stop.stop_order || (indexStop + 1), // Asegura un orden de envío
-                    cita_entrega_doc: stopDocData ? { // Detalles del documento de cita_entrega de la parada
+                    stop_order: stop.stop_order || (indexStop + 1),
+                    cita_entrega_doc: stopDocData ? {
                         document_id: stopDocData.document_id || null,
                         fileName: stopDocData.fileName || null,
-                        hasNewFile: !!(stopDocData && stopDocData.file instanceof File) // Indica si hay un archivo nuevo para esta cita
-                    } : null // Si no hay documento o se eliminó, enviar null
+                        hasNewFile: !!(stopDocData && stopDocData.file instanceof File)
+                    } : null
                 };
             });
 
@@ -415,15 +404,13 @@ const EditTripForm = () => {
                 ci_number: etapa.ci_number || null,
                 rate_tarifa: etapa.rate_tarifa || null, millas_pcmiller: etapa.millas_pcmiller || null,
                 estatus: etapa.estatus || 'In Transit',
-                documentos: etapaDocs, // Documentos de la etapa principal
-                stops_in_transit: stopsJson // NUEVO: Paradas en tránsito adjuntas a la etapa
+                documentos: etapaDocs,
+                stops_in_transit: stopsJson
             };
         });
         dataToSend.append('etapas', JSON.stringify(etapasParaJson));
 
-        // Añadir SOLO los archivos NUEVOS (ahora también de paradas)
         etapas.forEach((etapa, indexEtapa) => {
-            // Archivos de documentos de la etapa principal
             Object.entries(etapa.documentos).forEach(([docType, docData]) => {
                 if (docData && docData.file instanceof File) {
                     const fieldName = `etapa_${indexEtapa}_doc_type_${docType}_file`;
@@ -432,18 +419,16 @@ const EditTripForm = () => {
                 }
             });
 
-            // NUEVO: Archivos de documentos de paradas en tránsito
             (etapa.stops_in_transit || []).forEach((stop, indexStop) => {
-                const citaDoc = stop.cita_entrega_doc; // Esto es el objeto de documento de la parada
+                const citaDoc = stop.cita_entrega_doc;
                 if (citaDoc && citaDoc.file instanceof File) {
                     const fieldName = `etapa_${indexEtapa}_stop_${indexStop}_cita_entrega_file`;
-                    dataToSend.append(fieldName, citaDoc.file, citaDoc.fileName); // Uso DocuementId del objeto docData
+                    dataToSend.append(fieldName, citaDoc.file, citaDoc.fileName);
                     if (citaDoc.document_id) { dataToSend.append(`etapa_${indexEtapa}_stop_${indexStop}_cita_entrega_replace_id`, citaDoc.document_id); }
                 }
             });
         });
 
-        // Lógica de deleted_stage_ids (mantenida)
         const initialStageIds = initialTripData?.etapas.map(e => e.trip_stage_id).filter(id => id) || [];
         const currentStageIds = etapas.map(e => e.trip_stage_id).filter(id => id);
         const deletedStageIds = initialStageIds.filter(id => !currentStageIds.includes(id));
@@ -465,10 +450,6 @@ const EditTripForm = () => {
             } else { throw new Error(result.error || result.message || 'Error al guardar.'); }
         } catch (err) { Swal.fire('Error', `No se guardaron los cambios: ${err.message}`, 'error'); }
     };
-
-    // ... (rest of your component, like selectOptions, handleCreateCompany, etc. - no mostrados por brevedad) ...
-    // Asegúrate de que las funciones de cambio de tipo de trailer y creación de cajas externas
-    // estén en el código completo.
 
     const handleTrailerTypeChange = (type) => {
         setTrailerType(type);
@@ -616,6 +597,19 @@ const EditTripForm = () => {
                         <div className="form-section">
                             <div className="input-columns">
                                 <div className="column">
+                                    <label htmlFor="trip_number">Trip Number:</label> {/* Added Label */}
+                                    <input
+                                        type="text"
+                                        id="trip_number"
+                                        name="trip_number"
+                                        value={formData.trip_number}
+                                        onChange={(e) => handleFormChange('trip_number', e.target.value)}
+                                        placeholder="Número de Viaje"
+                                        className="form-input"
+                                        readOnly={isFormDisabled} // Keep this based on the overall form status
+                                    />
+                                </div>
+                                <div className="column">
                                     <label htmlFor="driver_id">Driver:</label>
                                     <Select id="driver_id"
                                         name="driver_id"
@@ -731,11 +725,10 @@ const EditTripForm = () => {
                                         {`Etapa ${etapa.stage_number} (${etapa.stageType === 'borderCrossing' ? 'Cruce Fronterizo' :
                                             etapa.stageType === 'normalTrip' ? 'Viaje Normal' :
                                                 etapa.stageType === 'emptyMileage' ? 'Etapa de Millaje' :
-                                                    'Etapa' // Ya no debería haber 'Parada' aquí como tipo principal
-                                            })`}
+                                                    'Etapa'
+                                        })`}
                                     </span>
                                     <Box sx={{ display: 'flex', gap: '5px' }}>
-                                        {/* NUEVO: Botón para AGREGAR PARADA EN RUTA A ESTA ETAPA */}
                                         {(etapa.stageType === 'normalTrip' || etapa.stageType === 'borderCrossing') && (
                                             <Button
                                                 variant="outlined"
@@ -753,7 +746,6 @@ const EditTripForm = () => {
                                     </Box>
                                 </div>
 
-                                {/* Contenido de la etapa (normal, cruce, millaje vacío) */}
                                 {etapa.stageType === 'emptyMileage' ? (
                                     <div className="subsection">
                                         <legend className="card-label">Detalles de la Etapa</legend>
@@ -774,8 +766,6 @@ const EditTripForm = () => {
                                     </div>
                                 ) : (
                                     <>
-                                        {/* TU CÓDIGO EXISTENTE PARA normalTrip Y borderCrossing VA AQUÍ */}
-                                        {/* ... (campos de Company, Travel Direction, CI Number) ... */}
                                         <legend className="card-label">Origen / Destino / Detalles</legend>
                                         <div className="input-columns">
                                             <div className="column">
@@ -1056,9 +1046,7 @@ const EditTripForm = () => {
                                                 </div>
                                             </div>
                                         )}
-                                        {/* FIN DE TU CÓDIGO EXISTENTE PARA normalTrip Y borderCrossing */}
 
-                                        {/* NUEVO: Sección para PARADAS EN RUTA dentro de esta etapa */}
                                         {Array.isArray(etapa.stops_in_transit) && etapa.stops_in_transit.length > 0 && (
                                             <div className="subsection" style={{ border: '1px dashed #bbb', padding: '10px', marginTop: '15px' }}>
                                                 <legend className="card-label" style={{ marginBottom: '10px' }}>Paradas en Ruta ({etapa.stops_in_transit.length})</legend>
@@ -1087,7 +1075,6 @@ const EditTripForm = () => {
                                                             </div>
                                                             <div className="column">
                                                                 <label htmlFor={`cita_entrega_stop-${index}-${stopIndex}`} style={{ marginTop: '15px' }}>Cita Entrega (Parada):</label>
-                                                                {/* CAMBIO: Pasar stopIndex a abrirModal */}
                                                                 <button type="button" className="upload-button" onClick={() => abrirModal('cita_entrega_doc', index, stopIndex)} disabled={isFormDisabled}>Subir/Cambiar</button>
                                                                 {stop.cita_entrega_doc && (
                                                                     <p className="doc-info">
@@ -1098,13 +1085,12 @@ const EditTripForm = () => {
                                                                         </i>
                                                                     </p>
                                                                 )}
-                                                                {/* NUEVO: Botón para eliminar el documento de cita de entrega de la parada */}
                                                                 {stop.cita_entrega_doc && !isFormDisabled && (
                                                                     <Button
                                                                         variant="text"
                                                                         color="error"
                                                                         size="small"
-                                                                        onClick={() => handleStopChange(index, stopIndex, 'cita_entrega_doc', null)} // Pone el documento a null
+                                                                        onClick={() => handleStopChange(index, stopIndex, 'cita_entrega_doc', null)}
                                                                         sx={{ fontSize: '0.7em', mt: 0.5, ml: 1, textTransform: 'none' }}
                                                                     >
                                                                         Eliminar Doc
@@ -1122,7 +1108,6 @@ const EditTripForm = () => {
                         ))}
 
                         <br />
-                        {/* Botones para añadir etapas principales (mantener al final) */}
                         <div className="add-stage-buttons-container" style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
                             <button type="button" onClick={() => agregarNuevaEtapa('borderCrossing')} className="add-stage-button" disabled={isFormDisabled}>
                                 + Añadir Etapa Cruce
@@ -1133,14 +1118,13 @@ const EditTripForm = () => {
                             <button type="button" onClick={() => agregarNuevaEtapa('emptyMileage')} className="add-stage-button" disabled={isFormDisabled}>
                                 + Añadir Etapa Vacía
                             </button>
-                            {/* ELIMINADO: El botón para añadir 'Parada (Stop)' como etapa principal */}
                         </div>
 
                         {modalAbierto && (
                             <ModalArchivo
                                 isOpen={modalAbierto}
                                 onClose={() => { setModalAbierto(false); setModalTarget({ stageIndex: null, docType: null, stopIndex: null }); }}
-                                onSave={handleGuardarDocumento} // Ahora una función más genérica
+                                onSave={handleGuardarDocumento}
                                 nombreCampo={modalTarget.docType}
                                 valorActual={getCurrentDocValueForModal()}
                                 mostrarFechaVencimiento={mostrarFechaVencimientoModal}
