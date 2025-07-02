@@ -16,22 +16,15 @@ import { format } from 'date-fns';
 import ModalCajaExterna from './ModalCajaExterna';
 
 
-
-
-
 const initialBorderCrossingDocs = {
     ima_invoice: null, carta_porte: null, ci: null, entry: null,
     manifiesto: null, cita_entrega: null, bl: null, orden_retiro: null, bl_firmado: null,
 };
 
-
-
 const initialNormalTripDocs = {
     ima_invoice: null, ci: null,
     cita_entrega: null, bl: null, bl_firmado: null,
 };
-
-
 
 const selectStyles = {
     control: (provided) => ({
@@ -796,7 +789,9 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
                         <div className="column">
                             <label htmlFor={`rate_tarifa-${index}`} >Rate Tarifa:</label>
                             <input
-                                type="number" id={`rate_tarifa-${index}`} name={`rate_tarifa-${index}`}
+                                type="number" 
+                                id={`rate_tarifa-${index}`} 
+                                name={`rate_tarifa-${index}`}
                                 value={etapa.rate_tarifa}
                                 onChange={(e) => handleEtapaChange(index, 'rate_tarifa', e.target.value)}
                                 placeholder="Ej: 1500.50"
