@@ -181,7 +181,7 @@ const TruckScreen = () => {
         setFormData(formValues);
         setOriginalFormData(formValues);
         const camposDoc = [
-          'Registracion',
+          'registracion',
           'CAB',
           'COI',
           'mecanica',
@@ -190,7 +190,7 @@ const TruckScreen = () => {
           'PERMISO_NM',
           'dtops',
           'Tarjeta_circulacion',
-          'fisio_Mecanica',
+          'Inspecccion_fisio_Mecanica',
           'Inspecion_humos',
           'fideicomiso',
           'seguro'

@@ -137,7 +137,7 @@ const TruckAdmin = () => {
   const eliminar = async (id) =>  {
  
    const { isConfirmed } = await Swal.fire({
-     title: '¿Desea eliminar a este driver?',
+     title: '¿Deseas eliminar este camion?',
      icon: 'question',
          showCancelButton: true,
          confirmButtonText: 'Aceptar'

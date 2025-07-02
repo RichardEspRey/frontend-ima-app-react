@@ -45,7 +45,7 @@ const TrailerEdit = () => {
       formDataToSend.append('trailer_id', id);
 
       if (formData.numero_caja !== originalFormData.numero_caja) formDataToSend.append('no_caja', formData.numero_caja);
-      if (formData.numero_placa !== originalFormData.numero_placa) formDataToSend.append('no_placa', formData.no_placa);
+      if (formData.no_placa !== originalFormData.no_placa) formDataToSend.append('no_placa', formData.no_placa);
       if (formData.estado_placa !== originalFormData.estado_placa) formDataToSend.append('estado_placa', formData.estado_placa);
       if (formData.numero_vin !== originalFormData.numero_vin) formDataToSend.append('no_vin', formData.numero_vin);
 
@@ -93,7 +93,7 @@ const TrailerEdit = () => {
   const handleSubmit = async () => {
     const cambios = [];
     if (formData.numero_caja !== originalFormData.numero_caja) cambios.push('Número de caja');
-    if (formData.numero_placa !== originalFormData.numero_placa) cambios.push('Número de placa');
+    if (formData.no_placa !== originalFormData.no_placa) cambios.push('placa');
     if (formData.estado_placa !== originalFormData.estado_placa) cambios.push('Estado de placa');
     if (formData.numero_vin !== originalFormData.numero_vin) cambios.push('Número VIN');
 
@@ -152,7 +152,7 @@ const TrailerEdit = () => {
         const caja = data.Users[0];
         const formValues = {
           numero_caja: caja.no_caja || '',
-          numero_placa: caja.no_placa || '',            // <- Aquí lo agregas
+          no_placa: caja.no_placa || '',            // <- Aquí lo agregas
           estado_placa: caja.estado_placa || '',
           numero_vin: caja.no_vin || ''
         };
@@ -191,7 +191,7 @@ const TrailerEdit = () => {
  const cancelar = () => {
     setFormData({
         numero_caja: '',
-        numero_placa: '',
+        no_placa: '',
         estado_placa: '',
         numero_vin: '',
       });
@@ -221,12 +221,12 @@ const TrailerEdit = () => {
               onChange={(e) => handleInputChange('numero_caja', e.target.value)}
             />
 
-            <label>Número de Placa</label>
+            <label>Placa</label>
             <input
               type="text"
               placeholder="Número de placa"
-              value={formData.numero_placa}
-              onChange={(e) => handleInputChange('numero_placa', e.target.value)}
+              value={formData.no_placa}
+              onChange={(e) => handleInputChange('no_placa', e.target.value)}
             />
 
             <label>Estado de Placa</label>

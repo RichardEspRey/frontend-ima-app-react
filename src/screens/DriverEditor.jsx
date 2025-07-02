@@ -289,7 +289,7 @@ const handleSubmit = async () => {
       const nuevosDocumentos = {};
       const campos = [
         'Acta_Nacimiento', 'CURP', 'RFC', 'Comprobante_domicilio', 'Solicitud_empleo', 'INE', 'Visa', 'Licencia',
-        'I', 'APTO', 'Atidoping', 'Constancia_fiscal'
+        'I', 'APTO', 'Atidoping', 'Constancia'
       ];
 
       campos.forEach((campo) => {

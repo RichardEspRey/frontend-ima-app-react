@@ -89,9 +89,9 @@ const TrailerAdmin = () => {
     let icon = greyIcon;
     let mensaje = `Vencimiento: ${fecha.toLocaleDateString('es-MX')}`;
 
-    if (diffInDays >= 365) icon = greenIcon;
-    else if (diffInDays >= 180) icon = yellowIcon;
-    else if (diffInDays >= 60) icon = redIcon;
+    if (diffInDays >= 90) icon = greenIcon;
+    else if (diffInDays >= 60) icon = yellowIcon;
+    else if (diffInDays >= 30) icon = redIcon;
 
     return (
       <>
@@ -124,7 +124,7 @@ const TrailerAdmin = () => {
   const eliminar = async (id) =>  {
  
    const { isConfirmed } = await Swal.fire({
-     title: '¿Desea eliminar a este caja?',
+     title: '¿Deseas eliminar esta caja?',
      icon: 'question',
          showCancelButton: true,
          confirmButtonText: 'Aceptar'
@@ -186,7 +186,7 @@ const TrailerAdmin = () => {
               <th>Fianza</th>
               <th>Certificado</th>
               <th>Acciones</th>
-              <th>Acciones</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>

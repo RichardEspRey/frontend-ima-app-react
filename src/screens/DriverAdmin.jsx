@@ -104,9 +104,9 @@ const DriverAdmin = () => {
   let icon = greyIcon;
   let mensaje = `Vencimiento: ${fecha.toLocaleDateString('es-MX')}`;
 
-  if (diffInDays >= 365) icon = greenIcon;
-  else if (diffInDays >= 180) icon = yellowIcon;
-  else if (diffInDays >= 60) icon = redIcon;
+  if (diffInDays >= 90) icon = greenIcon;
+  else if (diffInDays >= 60) icon = yellowIcon;
+  else if (diffInDays >= 30) icon = redIcon;
 
   return (
     <>
@@ -140,7 +140,7 @@ const DriverAdmin = () => {
  const eliminar = async (id) =>  {
 
   const { isConfirmed } = await Swal.fire({
-    title: '¿Desea eliminar a este driver?',
+    title: '¿Deseas eliminar a este driver?',
     icon: 'question',
         showCancelButton: true,
         confirmButtonText: 'Aceptar'
@@ -214,7 +214,7 @@ const DriverAdmin = () => {
               <th>VISA</th>
               <th>Licencia</th>
               <th>Acciones</th>
-              <th>Acciones</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>

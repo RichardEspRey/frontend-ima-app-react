@@ -9,7 +9,7 @@ const TrailerScreen = () => {
   const apiHost = import.meta.env.VITE_API_HOST;
   const [formData, setFormData] = useState({
     numero_caja: '',
-    numero_placa: '',
+    no_placa: '',
     estado_placa: '',
     numero_vin: '',
 
@@ -47,7 +47,7 @@ const TrailerScreen = () => {
       // Aquí añadimos solo campos de texto (no archivos)
       formDataToSend.append('op', 'Alta'); // operación que espera el backend
       formDataToSend.append('numero_caja', formData.numero_caja);
-      formDataToSend.append('numero_placa', formData.numero_placa);
+      formDataToSend.append('no_placa', formData.no_placa);
       formDataToSend.append('estado_placa', formData.estado_placa);
       formDataToSend.append('numero_vin', formData.numero_vin);
 
@@ -115,7 +115,7 @@ const TrailerScreen = () => {
         });
       setFormData({
         numero_caja: '',
-        numero_placa: '',
+        no_placa: '',
         estado_placa: '',
         numero_vin: '',
       });
@@ -127,7 +127,7 @@ const TrailerScreen = () => {
   const cancelar = () => {
     setFormData({
         numero_caja: '',
-        numero_placa: '',
+        no_placa: '',
         estado_placa: '',
         numero_vin: '',
       });
@@ -157,12 +157,12 @@ const TrailerScreen = () => {
               onChange={(e) => handleInputChange('numero_caja', e.target.value)}
             />
 
-            <label>Número de Placa</label>
+            <label>Placa</label>
             <input
               type="text"
-              placeholder="Número de placa"
-              value={formData.numero_placa}
-              onChange={(e) => handleInputChange('numero_placa', e.target.value)}
+              placeholder="Placa"
+              value={formData.no_placa}
+              onChange={(e) => handleInputChange('no_placa', e.target.value)}
             />
 
             <label>Estado de Placa</label>
