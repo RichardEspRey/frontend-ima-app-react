@@ -20,6 +20,8 @@ import TrailerScreen from '../screens/TrailerScreen.jsx';
 import TrailerAdmin from '../screens/TrailerAdmin.jsx';
 import TrailerEdit from '../screens/TrailerEdit.jsx';
 import EditTripForm from '../screens/EditTripForm.jsx';
+import ImaScreen from '../screens/ImaScreen.jsx';
+import ImaAdmin from '../screens/ImaAdmin.jsx';
 
 const AppRouter = () => {
   const { user, loading } = useContext(AuthContext);
@@ -157,11 +159,29 @@ const AppRouter = () => {
                 }
               />
 
-                  <Route
+              <Route
                 path="/edit-trailer/:trailerId"
                 element={
                   <DashboardLayout> 
                     <TrailerEdit /> 
+                  </DashboardLayout>
+                }
+              />
+
+              <Route
+                path="/ImaAdmin"
+                element={
+                  <DashboardLayout> 
+                    <ImaAdmin /> 
+                  </DashboardLayout>
+                }
+              />
+
+              <Route
+                path="/ImaScreen"
+                element={
+                  <DashboardLayout> 
+                    <ImaScreen/> 
                   </DashboardLayout>
                 }
               />

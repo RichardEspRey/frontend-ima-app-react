@@ -33,25 +33,36 @@ const TruckAdmin = () => {
         const data = await response.json();
 
         if (data.status === 'success' && data.Users) {
-         const formatted = data.Users.map(t => ({
+          const formatted = data.Users.map(t => ({
             truck_id: t.truck_id,
             unidad: t.unidad,
             placa_mex: t.Placa_MEX,
             placa_eua: t.Placa_EUA,
-            Registracion_fecha: t.Registracion_Fecha,
-            Registracion_url: t.Registracion_URL,
-            Carta_fecha: t.Carta_Fecha,
-            Carta_url: t.Carta_URL,
-            CAB_fecha: t.CAB_Fecha,
-            CAB_url: t.CAB_URL,
-            DTOP_fecha: t.DTOP_Fecha,
-            DTOP_url: t.DTOP_URL,
-            NY_fecha: t.PERMISO_NY_Fecha,
-            NY_url: t.PERMISO_NY_URL,
-            NM_fecha: t.PERMISO_NM_Fecha,
-            NM_url: t.PERMISO_NM_URL,
+
+            CAB_Fecha: t.CAB_Fecha,
+            CAB_URL: t.CAB_URL,
+            COI_Fecha: t.COI_Fecha,
+            COI_URL: t.COI_URL,
+            mecanica_Fecha: t.mecanica_Fecha,
+            mecanica_URL: t.mecanica_URL, 
+            TX_DMV_Fecha: t.TX_DMV_Fecha,
+            TX_DMV_URL: t.TX_DMV_URL, 
+            PERMISO_NY_Fecha: t.PERMISO_NY_Fecha,
+            PERMISO_NY_URL: t.PERMISO_NY_URL, 
+            PERMISO_NM_Fecha: t.PERMISO_NM_Fecha, 
+            PERMISO_NM_URL: t.PERMISO_NM_URL, 
+            dtops_Fecha: t.dtops_Fecha, 
+            dtops_URL: t.dtops_URL, 
+            fisio_Mecanica_Fecha: t.fisio_Mecanica_Fecha,
+            fisio_Mecanica_URL: t.fisio_Mecanica_URL,
+            Inspecion_humos_Fecha: t.Inspecion_humos_Fecha,
+            Inspecion_humos_URL: t.Inspecion_humos_URL,
+            seguro_Fecha: t.seguro_Fecha,
+            seguro_URL: t.seguro_URL
           }));
 
+
+         
           setTrailers(formatted);
         }
       } catch (error) {
@@ -138,33 +149,42 @@ const TruckAdmin = () => {
         <table>
           <thead>
             <tr>
-              <th>ID</th>
               <th>Unidad</th>
               <th>Placa MEX</th>
               <th>Placa EUA</th>
-              <th>Registración</th>
-              <th>Carta</th>
-              <th>CAB</th>
-              <th>DTOP</th>
+              <th>CAB CARD</th>
+              <th>COI</th>
+              <th>Inspeccion mecanica</th>
+              <th>TX DMV</th>            
+              <th>DTOPS</th>
               <th>Permiso NY</th>
               <th>Permiso NM</th>
+              <th>Inspeccion fisio mecanica</th>
+              <th>Inspeccion humos</th>
+              <th>Seguro</th>
               <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
             {filteredTrailers.slice(from, to).map(t => (
               <tr key={t.truck_id}>
-                <td>{t.truck_id}</td>
+
                 <td>{t.unidad}</td>
                 <td>{t.placa_mex}</td>
                 <td>{t.placa_eua}</td>
-                <td>{getIconByFecha(t.Registracion_fecha, t.truck_id, t.Registracion_url, 'Registracion')}</td>
-                <td>{getIconByFecha(t.Carta_fecha, t.truck_id, t.Carta_url, 'Carta')}</td>
-                <td>{getIconByFecha(t.CAB_fecha, t.truck_id, t.CAB_url, 'CAB')}</td>
-                <td>{getIconByFecha(t.DTOP_fecha, t.truck_id, t.DTOP_url, 'DTOP')}</td>
-                <td>{getIconByFecha(t.NY_fecha, t.truck_id, t.NY_url, 'PERMISO_NY')}</td>
-                <td>{getIconByFecha(t.NM_fecha, t.truck_id, t.NM_url, 'PERMISO_NM')}</td>
+
+                <td>{getIconByFecha(t.CAB_Fecha, t.truck_id, t.CAB_URL, 'CAB')}</td>
+                <td>{getIconByFecha(t.COI_Fecha, t.truck_id, t.COI_URL, 'COI')}</td>
+                <td>{getIconByFecha(t.mecanica_Fecha, t.truck_id, t.mecanica_URL, 'Mecanica')}</td>
+                <td>{getIconByFecha(t.TX_DMV_Fecha, t.truck_id, t.TX_DMV_URL, 'TX')}</td>
+                <td>{getIconByFecha(t.dtops_Fecha, t.truck_id, t.dtops_URL, 'DTOPS')}</td>
+                <td>{getIconByFecha(t.PERMISO_NY_Fecha, t.truck_id, t.PERMISO_NY_URL, 'PERMISO_NY')}</td>
+                <td>{getIconByFecha(t.PERMISO_NM_Fecha, t.truck_id, t.PERMISO_NM_URL, 'PERMISO_NM')}</td>
+                <td>{getIconByFecha(t.fisio_Mecanica_Fecha, t.truck_id, t.fisio_Mecanica_URL, 'Inspeccion fisio mecanica')}</td>
+                <td>{getIconByFecha(t.Inspecion_humos_Fecha, t.truck_id, t.Inspecion_humos_URL, 'DTOPS')}</td>
+                <td>{getIconByFecha(t.seguro_Fecha, t.truck_id, t.seguro_URL, 'Seguro')}</td>
                 <td>
+
                   <button
                     className="ver-btn"
                     onClick={() => navigate(`/editor-trucks/${t.truck_id}`)}

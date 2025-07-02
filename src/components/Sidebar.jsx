@@ -17,6 +17,14 @@ import iconExit from '../assets/images/icons/exit.png';
 const menuItems = [
   { name: 'Inicio', icon: iconDashboard, route: '/home' },
   {
+    name: 'IMA',
+    icon: iconDriver,
+    subItems: [
+      { name: 'Alta de documentos', route: '/ImaScreen' },
+      { name: 'Administrador de documentos', route: '/ImaAdmin' }
+    ]
+  },
+  {
     name: 'Conductores',
     icon: iconDriver,
     subItems: [
@@ -43,6 +51,7 @@ const menuItems = [
     ]
   },
   { name: 'Reportes', icon: iconReport, route: '/reportes' }
+  
 ];
 
 const Sidebar = () => {

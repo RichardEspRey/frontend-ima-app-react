@@ -4,8 +4,10 @@ import 'react-datepicker/dist/react-datepicker.css';
 import ModalArchivo from '../components/ModalArchivo.jsx';
 import Swal from 'sweetalert2';
 import { useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 const TrailerEdit = () => {
+  const navigate = useNavigate();
   const { id } = useParams();
   const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -187,6 +189,17 @@ const TrailerEdit = () => {
     fetchTrailer();
   }, []);
 
+ const cancelar = () => {
+    setFormData({
+        numero_caja: '',
+        numero_placa: '',
+        estado_placa: '',
+        numero_vin: '',
+      });
+
+      setDocumentos({});
+      navigate(`/admin-trailers`)
+  }
   return (
 
     <div >
@@ -194,14 +207,14 @@ const TrailerEdit = () => {
       <h1 className="titulo">Editor de Caja</h1>
       <div className="conductores-container">
         <div className="btnConteiner">
-          <button className="btn cancelar">Cancelar</button>
+          <button className="btn cancelar"onClick={cancelar}>Cancelar</button>
           <button className="btn guardar" onClick={handleSubmit}>Guardar</button>
         </div>
 
         <div className="form-columns">
           {/* Puedes continuar con las otras dos columnas como en tu versión original */}
           <div className="column">
-            <label>Número de caja</label>
+             <label>Número de caja</label>
             <input
               type="text"
               placeholder="Número de caja"
@@ -213,8 +226,8 @@ const TrailerEdit = () => {
             <input
               type="text"
               placeholder="Número de placa"
-              value={formData.no_placa}
-              onChange={(e) => handleInputChange('no_placa', e.target.value)}
+              value={formData.numero_placa}
+              onChange={(e) => handleInputChange('numero_placa', e.target.value)}
             />
 
             <label>Estado de Placa</label>
@@ -233,16 +246,22 @@ const TrailerEdit = () => {
               onChange={(e) => handleInputChange('numero_vin', e.target.value)}
             />
 
-            <label>Registracion </label>
+            <label>Registracion (PDF)</label>
             <button type="button" onClick={() => abrirModal('Registracion')}>Subir documento</button>
             {documentos.Registracion && (
               <p>{documentos.Registracion.fileName} - {documentos.Registracion.vencimiento}</p>
             )}
 
-            <label>Seguro </label>
+            <label>Seguro (PDF)</label>
             <button type="button" onClick={() => abrirModal('seguro')}>Subir documento</button>
             {documentos.seguro && (
               <p>{documentos.seguro.fileName} - {documentos.seguro.vencimiento}</p>
+            )}
+
+            <label>Cab Card(PDF)</label>
+            <button type="button" onClick={() => abrirModal('CAB_CARD')}>Subir documento</button>
+            {documentos.CAB_CARD && (
+              <p>{documentos.CAB_CARD.fileName} - {documentos.CAB_CARD.vencimiento}</p>
             )}
 
             <label>Fianza(PDF)</label>
@@ -251,7 +270,15 @@ const TrailerEdit = () => {
               <p>{documentos.Fianza.fileName} - {documentos.Fianza.vencimiento}</p>
             )}
 
-         
+            <label>Certificado de fumigacion(PDF)</label>
+            <button type="button" onClick={() => abrirModal('CERTIFICADO')}>Subir documento</button>
+            {documentos.CERTIFICADO && (
+              <p>{documentos.CERTIFICADO.fileName} - {documentos.CERTIFICADO.vencimiento}</p>
+            )}
+            
+
+
+
           </div>
 
         </div>

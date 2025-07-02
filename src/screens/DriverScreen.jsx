@@ -8,15 +8,12 @@ import Swal from 'sweetalert2';
 const DriverScreen = () => {
   const apiHost = import.meta.env.VITE_API_HOST;
   const [formData, setFormData] = useState({
-    nombre: '',
-    fechaNacimiento: '',
-    fechaEntrada: '',
-    curp: '',
-    rfc: '',
-    phone_usa: '',
-    phone_mex: '',
-    visa: '',
-    licencia: ''
+      nombre: '',
+      fechaEntrada: '',
+      rfc: '',
+      phone_usa: '',
+      phone_mex: '',
+      visa: ''
   });
 
   const [selectedFieldName, setSelectedFieldName] = useState(null);
@@ -27,6 +24,7 @@ const DriverScreen = () => {
 
   {/*utiles*/ }
   const [documentos, setDocumentos] = useState({});
+  const [mostrarFechaVencimientoModal, setMostrarFechaVencimientoModal] = useState(true);
   const [modalAbierto, setModalAbierto] = useState(false);
   const [campoActual, setCampoActual] = useState(null);
 
@@ -40,6 +38,12 @@ const DriverScreen = () => {
   const abrirModal = (campo) => {
     setCampoActual(campo);
     setModalAbierto(true);
+    if (['INE', 'Acta_Nacimiento', 'CURP', 'Comprobante_domicilio', 'Constancia', 'Solicitud_empleo', 'Atidoping'].includes(campo)) {
+            setMostrarFechaVencimientoModal(false);
+        } else {
+            setMostrarFechaVencimientoModal(true);
+
+        }
   };
 
 
@@ -51,14 +55,11 @@ const DriverScreen = () => {
       // Aquí añadimos solo campos de texto (no archivos)
       formDataToSend.append('op', 'Alta'); // operación que espera el backend
       formDataToSend.append('name', formData.nombre);
-      formDataToSend.append('fecha', formData.fechaNacimiento);
       formDataToSend.append('fechaEntrada', formData.fechaEntrada); 
-      formDataToSend.append('curp', formData.curp);
       formDataToSend.append('rfc', formData.rfc);
+      formDataToSend.append('visa', formData.visa);
       formDataToSend.append('phone_mex', formData.phone_mex);
       formDataToSend.append('phone_usa', formData.phone_usa);
-      formDataToSend.append('visa', formData.visa);
-      formDataToSend.append('licencia', formData.licencia);
 
       // Enviar al backend
       const response = await fetch(`${apiHost}/drivers.php`, {
@@ -105,11 +106,7 @@ const DriverScreen = () => {
 
         const result = await response.json();
         console.log(`Documento ${tipo_documento} enviado:`, result);
-        Swal.fire({
-          icon: 'success',
-          title: 'Éxito',
-          text: 'Todos los documentos fueron enviados correctamente',
-        });
+    
       } catch (error) {
         console.error(`Error al enviar ${tipo_documento}:`, error);
       }
@@ -121,17 +118,18 @@ const DriverScreen = () => {
 
     if (idConductor) {
       await enviarDocumentos(idConductor);
-
+      Swal.fire({
+          icon: 'success',
+          title: 'Éxito',
+          text: 'Driver dado de alta!',
+        });
      setFormData({
       nombre: '',
-      fechaNacimiento: '',
       fechaEntrada: '',
-      curp: '',
       rfc: '',
       phone_usa: '',
       phone_mex: '',
-      visa: '',
-      licencia: ''
+      visa: ''
     });
 
 
@@ -140,7 +138,21 @@ const DriverScreen = () => {
     }
   };
 
+  
+  const cancelar = () =>{
+    setFormData({
+      nombre: '',
+      fechaEntrada: '',
+      rfc: '',
+      phone_usa: '',
+      phone_mex: '',
+      visa: ''
+    });
 
+    setDocumentos({});
+
+    }
+  
   return (
 
     <div >
@@ -148,7 +160,7 @@ const DriverScreen = () => {
       <h1 className="titulo">Alta de Conductor</h1>
       <div className="conductores-container">
         <div className="btnConteiner">
-          <button className="btn cancelar">Cancelar</button>
+          <button className="btn cancelar"onClick={cancelar}> Cancelar</button>
           <button className="btn guardar" onClick={handleSubmit}>Guardar</button>
         </div>
 
@@ -163,33 +175,24 @@ const DriverScreen = () => {
               onChange={(e) => handleInputChange('nombre', e.target.value)}
             />
 
-            <label>Fecha de nacimiento</label>
-            <input
-              type="date"
-              value={formData.fechaNacimiento}
-              onChange={(e) => handleInputChange('fechaNacimiento', e.target.value)}
-            />
-
             <label>Fecha de entrada</label>
             <input
               type="date"
               value={formData.fechaEntrada}
               onChange={(e) => handleInputChange('fechaEntrada', e.target.value)}
             />
-
+            <label>INE</label>
+            <button type="button" onClick={() => abrirModal('INE')}>Subir documento</button>
+            {documentos.INE && (
+              <p>{documentos.INE.fileName} - {documentos.INE.vencimiento}</p>
+            )}
             <label>Acta de nacimiento (PDF)</label>
             <button type="button" onClick={() => abrirModal('Acta_Nacimiento')}>Subir documento</button>
             {documentos.Acta_Nacimiento && (
               <p>{documentos.Acta_Nacimiento.fileName} - {documentos.Acta_Nacimiento.vencimiento}</p>
             )}
 
-            <label>Curp </label>
-            <input
-              type="text"
-              placeholder="Ingrese el curp"
-              value={formData.curp}
-              onChange={(e) => handleInputChange('curp', e.target.value)}
-            />
+           
              <label>CURP (PDF)</label>
             <button type="button" onClick={() => abrirModal('CURP')}>Subir documento</button>
             {documentos.CURP && (
@@ -202,33 +205,10 @@ const DriverScreen = () => {
               <p>{documentos.Comprobante_domicilio.fileName} - {documentos.Comprobante_domicilio.vencimiento}</p>
             )}
 
-            <label>Solicitud de empleo (PDF)</label>
-            <button type="button" onClick={() => abrirModal('Solicitud_empleo')}>Subir documento</button>
-            {documentos.Solicitud_empleo && (
-              <p>{documentos.Solicitud_empleo.fileName} - {documentos.Solicitud_empleo.vencimiento}</p>
-            )}
-          </div>
-
-          {/* Puedes continuar con las otras dos columnas como en tu versión original */}
-          <div className="column">
-            <label>INE</label>
-            <button type="button" onClick={() => abrirModal('INE')}>Subir documento</button>
-            {documentos.INE && (
-              <p>{documentos.INE.fileName} - {documentos.INE.vencimiento}</p>
-            )}
-
-            <label>No. de VISA</label>
-            <input
-              type="text"
-              placeholder="Ingrese el numero de visa"
-              value={formData.visa}
-              onChange={(e) => handleInputChange('visa', e.target.value)}
-            />
-
-            <label>No de visa</label>
-            <button type="button" onClick={() => abrirModal('Visa')}>Subir documento</button>
-            {documentos.Visa && (
-              <p>{documentos.Visa.fileName} - {documentos.Visa.vencimiento}</p>
+                <label>Constancia de situacio fiscal (PDF)</label>
+            <button type="button" onClick={() => abrirModal('Constancia')}>Subir documento</button>
+            {documentos.Constancia && (
+              <p>{documentos.Constancia.fileName} - {documentos.Constancia.vencimiento}</p>
             )}
 
             <label>RFC </label>
@@ -238,37 +218,58 @@ const DriverScreen = () => {
               value={formData.rfc}
               onChange={(e) => handleInputChange('rfc', e.target.value)}
             />
-
-            <label>No. de licencia</label>
-            <input
-              type="text"
-              placeholder="No de licencia"
-              value={formData.licencia}
-              onChange={(e) => handleInputChange('licencia', e.target.value)}
-            />
+          
             
-            <label>Licencia (PDF)</label>
-            <button type="button" onClick={() => abrirModal('Licencia')}>Subir documento</button>
-            {documentos.Licencia && (
-              <p>{documentos.Licencia.fileName} - {documentos.Licencia.vencimiento}</p>
+          </div>
+
+          {/* Puedes continuar con las otras dos columnas como en tu versión original */}
+          <div className="column">
+           
+            <label>Visa</label>
+            <button type="button" onClick={() => abrirModal('Visa')}>Subir documento</button>
+            {documentos.Visa && (
+              <p>{documentos.Visa.fileName} - {documentos.Visa.vencimiento}</p>
             )}
 
-            <label>Vencimiento de I-94 (PDF)</label>
+            <label>No. Visa</label>
+            <input
+              type="text"
+              placeholder="Ingrese el numero de visa"
+              value={formData.visa}
+              onChange={(e) => handleInputChange('visa', e.target.value)}
+            />
+
+            
+            <label>I-94 (PDF)</label>
             <button type="button" onClick={() => abrirModal('I')}>Subir documento</button>
             {documentos.I && (
               <p>{documentos.I.fileName} - {documentos.I.vencimiento}</p>
             )}
 
-            <label>APTO (PDF)</label>
-            <button type="button" onClick={() => abrirModal('APTO')}>Subir documento</button>
-            {documentos.APTO && (
-              <p>{documentos.APTO.fileName} - {documentos.APTO.vencimiento}</p>
-            )}
+          
           </div>
 
 
           {/* Puedes continuar con las otras dos columnas como en tu versión original */}
           <div className="column">
+            <label>Solicitud de empleo (PDF)</label>
+            <button type="button" onClick={() => abrirModal('Solicitud_empleo')}>Subir documento</button>
+            {documentos.Solicitud_empleo && (
+              <p>{documentos.Solicitud_empleo.fileName} - {documentos.Solicitud_empleo.vencimiento}</p>
+            )}
+
+              <label>Licencia (PDF)</label>
+            <button type="button" onClick={() => abrirModal('Licencia')}>Subir documento</button>
+            {documentos.Licencia && (
+              <p>{documentos.Licencia.fileName} - {documentos.Licencia.vencimiento}</p>
+            )}
+            
+              <label>APTO Medico(PDF)</label>
+            <button type="button" onClick={() => abrirModal('APTO')}>Subir documento</button>
+            {documentos.APTO && (
+              <p>{documentos.APTO.fileName} - {documentos.APTO.vencimiento}</p>
+            )}
+            
             <label>Atidoping</label>
             <button type="button" onClick={() => abrirModal('Atidoping')}>Subir documento</button>
             {documentos.Atidoping && (
@@ -301,6 +302,7 @@ const DriverScreen = () => {
           onSave={(data) => handleGuardarDocumento(campoActual, data)}
           nombreCampo={campoActual}
           valorActual={documentos[campoActual]}
+          mostrarFechaVencimiento={mostrarFechaVencimientoModal}
         />
       </div>
     </div>

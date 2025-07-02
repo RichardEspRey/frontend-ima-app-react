@@ -5,7 +5,7 @@ import ModalArchivo from '../components/ModalArchivo.jsx'; // ajusta la ruta si 
 import Swal from 'sweetalert2';
 
 
-const TrailerScreen = () => {
+const ImaScreen = () => {
   const apiHost = import.meta.env.VITE_API_HOST;
   const [formData, setFormData] = useState({
     numero_caja: '',
@@ -124,97 +124,74 @@ const TrailerScreen = () => {
 
     }
   };
-  const cancelar = () => {
-    setFormData({
-        numero_caja: '',
-        numero_placa: '',
-        estado_placa: '',
-        numero_vin: '',
-      });
 
-      setDocumentos({});
-  }
 
   return (
 
     <div >
 
-      <h1 className="titulo">Alta de Caja</h1>
+      <h1 className="titulo">Alta de Documentos IMA EXPRESS LCC</h1>
       <div className="conductores-container">
         <div className="btnConteiner">
-          <button className="btn cancelar" onClick={cancelar}>Cancelar</button>
+          <button className="btn cancelar">Cancelar</button>
           <button className="btn guardar" onClick={handleSubmit}>Guardar</button>
         </div>
 
         <div className="form-columns">
           {/* Puedes continuar con las otras dos columnas como en tu versión original */}
           <div className="column">
-            <label>Número de caja</label>
-            <input
-              type="text"
-              placeholder="Número de caja"
-              value={formData.numero_caja}
-              onChange={(e) => handleInputChange('numero_caja', e.target.value)}
-            />
-
-            <label>Número de Placa</label>
-            <input
-              type="text"
-              placeholder="Número de placa"
-              value={formData.numero_placa}
-              onChange={(e) => handleInputChange('numero_placa', e.target.value)}
-            />
-
-            <label>Estado de Placa</label>
-            <input
-              type="text"
-              placeholder="Estado de placa"
-              value={formData.estado_placa}
-              onChange={(e) => handleInputChange('estado_placa', e.target.value)}
-            />
-
-            <label>Número de VIN</label>
-            <input
-              type="text"
-              placeholder="Número de VIN"
-              value={formData.numero_vin}
-              onChange={(e) => handleInputChange('numero_vin', e.target.value)}
-            />
-
-            <label>Registracion (PDF)</label>
-            <button type="button" onClick={() => abrirModal('Registracion')}>Subir documento</button>
-            {documentos.Registracion && (
-              <p>{documentos.Registracion.fileName} - {documentos.Registracion.vencimiento}</p>
+            <h2>Documentos USA</h2>
+            <label>MC(PDF)</label>
+            <button type="button" onClick={() => abrirModal('Fianza')}>Subir documento</button>
+            {documentos.Fianza && (
+              <p>{documentos.Fianza.fileName} - {documentos.Fianza.vencimiento}</p>
             )}
+            
 
-            <label>Seguro (PDF)</label>
-            <button type="button" onClick={() => abrirModal('seguro')}>Subir documento</button>
-            {documentos.seguro && (
-              <p>{documentos.seguro.fileName} - {documentos.seguro.vencimiento}</p>
-            )}
-
-            <label>Cab Card(PDF)</label>
-            <button type="button" onClick={() => abrirModal('CAB_CARD')}>Subir documento</button>
-            {documentos.CAB_CARD && (
-              <p>{documentos.CAB_CARD.fileName} - {documentos.CAB_CARD.vencimiento}</p>
-            )}
-
-            <label>Fianza(PDF)</label>
+            <label>W9(PDF)</label>
             <button type="button" onClick={() => abrirModal('Fianza')}>Subir documento</button>
             {documentos.Fianza && (
               <p>{documentos.Fianza.fileName} - {documentos.Fianza.vencimiento}</p>
             )}
 
-            <label>Certificado de fumigacion(PDF)</label>
-            <button type="button" onClick={() => abrirModal('CERTIFICADO')}>Subir documento</button>
-            {documentos.CERTIFICADO && (
-              <p>{documentos.CERTIFICADO.fileName} - {documentos.CERTIFICADO.vencimiento}</p>
+            <label>IFTA(PDF)</label>
+            <button type="button" onClick={() => abrirModal('Fianza')}>Subir documento</button>
+            {documentos.Fianza && (
+              <p>{documentos.Fianza.fileName} - {documentos.Fianza.vencimiento}</p>
             )}
-            
 
+            <label>2290(PDF)</label>
+            <button type="button" onClick={() => abrirModal('Fianza')}>Subir documento</button>
+            {documentos.Fianza && (
+              <p>{documentos.Fianza.fileName} - {documentos.Fianza.vencimiento}</p>
+            )}
 
+            <label>Permiso KYU(PDF)</label>
+            <button type="button" onClick={() => abrirModal('Fianza')}>Subir documento</button>
+            {documentos.Fianza && (
+              <p>{documentos.Fianza.fileName} - {documentos.Fianza.vencimiento}</p>
+            )}
 
+            <label>UCR(PDF)</label>
+            <button type="button" onClick={() => abrirModal('Fianza')}>Subir documento</button>
+            {documentos.Fianza && (
+              <p>{documentos.Fianza.fileName} - {documentos.Fianza.vencimiento}</p>
+            )}
+
+            <label>SCAC(PDF)</label>
+            <button type="button" onClick={() => abrirModal('Fianza')}>Subir documento</button>
+            {documentos.Fianza && (
+              <p>{documentos.Fianza.fileName} - {documentos.Fianza.vencimiento}</p>
+            )}
           </div>
+          <div className="column">
+            <h2>Documentos MEX</h2>
+            <label>CAAT(PDF)</label>
+            <button type="button" onClick={() => abrirModal('Fianza')}>Subir documento</button>
+            {documentos.Fianza && (
+              <p>{documentos.Fianza.fileName} - {documentos.Fianza.vencimiento}</p>
+            )}
+           </div>
         </div>
         <ModalArchivo
           isOpen={modalAbierto}
@@ -229,4 +206,4 @@ const TrailerScreen = () => {
 
 };
 
-export default TrailerScreen;
+export default ImaScreen;

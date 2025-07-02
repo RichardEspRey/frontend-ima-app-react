@@ -4,8 +4,10 @@ import 'react-datepicker/dist/react-datepicker.css';
 import ModalArchivo from '../components/ModalArchivo.jsx';
 import Swal from 'sweetalert2';
 import { useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 const TruckScreen = () => {
+  const navigate = useNavigate();
   const { id } = useParams();
   const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -200,6 +202,11 @@ const TruckScreen = () => {
     fetchtrucks();
   }, []);
 
+  const cancelar = () =>{
+   
+    navigate(`/admin-trucks`)
+  }
+
   return (
 
     <div >
@@ -207,7 +214,7 @@ const TruckScreen = () => {
       <h1 className="titulo">Editor de Camion</h1>
       <div className="conductores-container">
         <div className="btnConteiner">
-          <button className="btn cancelar">Cancelar</button>
+          <button className="btn cancelar" onClick={cancelar}>Cancelar</button>
           <button className="btn guardar" onClick={handleSubmit}>Guardar</button>
         </div>
 
@@ -290,12 +297,12 @@ const TruckScreen = () => {
             )}
 
             <label>Carta seguro (PDF)</label>
-            <button type="button" onClick={() => abrirModal('Carta')}>Subir documento</button>
-            {documentos.Carta && (
-              <p>{documentos.Carta.fileName} - {documentos.Carta.vencimiento}</p>
+            <button type="button" onClick={() => abrirModal('seguro')}>Subir documento</button>
+            {documentos.seguro && (
+              <p>{documentos.seguro.fileName} - {documentos.seguro.vencimiento}</p>
             )}
 
-            <label>CAB CARD (PDF)</label>
+            <label>Cab Card (PDF)</label>
             <button type="button" onClick={() => abrirModal('CAB')}>Subir documento</button>
             {documentos.CAB && (
               <p>{documentos.CAB.fileName} - {documentos.CAB.vencimiento}</p>

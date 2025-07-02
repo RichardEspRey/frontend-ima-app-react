@@ -5,7 +5,9 @@ import ModalArchivo from '../components/ModalArchivo.jsx';
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
 import { useParams } from 'react-router-dom';
+
 const DriverEdit = () => {
+  const navigate = useNavigate();
   const { id } = useParams();
   
   const apiHost = import.meta.env.VITE_API_HOST;
@@ -31,6 +33,7 @@ const DriverEdit = () => {
 
   {/*utiles*/ }
   const [documentos, setDocumentos] = useState({});
+  const [mostrarFechaVencimientoModal, setMostrarFechaVencimientoModal] = useState(true);
   const [modalAbierto, setModalAbierto] = useState(false);
   const [campoActual, setCampoActual] = useState(null);
   const [originalFormData, setOriginalFormData] = useState(null);
@@ -50,6 +53,12 @@ const DriverEdit = () => {
   const abrirModal = (campo) => {
     setCampoActual(campo);
     setModalAbierto(true);
+    if (['INE', 'Acta_Nacimiento', 'CURP', 'Comprobante_domicilio', 'Constancia', 'Solicitud_empleo', 'Atidoping'].includes(campo)) {
+            setMostrarFechaVencimientoModal(false);
+        } else {
+            setMostrarFechaVencimientoModal(true);
+
+        }
   };
 
 const envioDatosPrincipal = async () => {
@@ -322,15 +331,28 @@ useEffect(() => {
   fetchDrivers();
 }, []);
 
+  const cancelar = () =>{
+    setFormData({
+      nombre: '',
+      fechaEntrada: '',
+      rfc: '',
+      phone_usa: '',
+      phone_mex: '',
+      visa: ''
+    });
+
+    setDocumentos({});
+    navigate(`/admin-drivers`)
+  }
 
   return (
 
-    <div >
+   <div >
 
-      <h1 className="titulo">Editor de Conductor</h1>
+      <h1 className="titulo">Alta de Conductor</h1>
       <div className="conductores-container">
         <div className="btnConteiner">
-          <button className="btn cancelar">Cancelar</button>
+          <button className="btn cancelar"onClick={cancelar}> Cancelar</button>
           <button className="btn guardar" onClick={handleSubmit}>Guardar</button>
         </div>
 
@@ -345,87 +367,40 @@ useEffect(() => {
               onChange={(e) => handleInputChange('nombre', e.target.value)}
             />
 
-            <label>Fecha de nacimiento</label>
-            <input
-              type="date"
-              value={formData.fechaNacimiento}
-              onChange={(e) => handleInputChange('fechaNacimiento', e.target.value)}
-            />
-
             <label>Fecha de entrada</label>
             <input
               type="date"
               value={formData.fechaEntrada}
               onChange={(e) => handleInputChange('fechaEntrada', e.target.value)}
             />
-
-
+            <label>INE</label>
+            <button type="button" onClick={() => abrirModal('INE')}>Subir documento</button>
+            {documentos.INE && (
+              <p>{documentos.INE.fileName} - {documentos.INE.vencimiento}</p>
+            )}
             <label>Acta de nacimiento (PDF)</label>
             <button type="button" onClick={() => abrirModal('Acta_Nacimiento')}>Subir documento</button>
-           {documentos.Acta_Nacimiento && (
-              <p>
-                {documentos.Acta_Nacimiento.fileName} - {documentos.Acta_Nacimiento.vencimiento}
-                <button onClick={() => window.open(documentos.Acta_Nacimiento.url, '_blank')}>Ver</button>
-              </p>
+            {documentos.Acta_Nacimiento && (
+              <p>{documentos.Acta_Nacimiento.fileName} - {documentos.Acta_Nacimiento.vencimiento}</p>
             )}
 
-            <label>Curp </label>
-            <input
-              type="text"
-              placeholder="Ingrese el curp"
-              value={formData.curp}
-              onChange={(e) => handleInputChange('curp', e.target.value)}
-            />
-
-            <label>CURP (PDF)</label>
+           
+             <label>CURP (PDF)</label>
             <button type="button" onClick={() => abrirModal('CURP')}>Subir documento</button>
             {documentos.CURP && (
               <p>{documentos.CURP.fileName} - {documentos.CURP.vencimiento}</p>
             )}
 
-
             <label>Comprobante de domicilio (PDF)</label>
             <button type="button" onClick={() => abrirModal('Comprobante_domicilio')}>Subir documento</button>
             {documentos.Comprobante_domicilio && (
-                <p>
-                  {documentos.Comprobante_domicilio.fileName} - {documentos.Comprobante_domicilio.vencimiento}
-                  <button onClick={() => window.open(documentos.Comprobante_domicilio.url, '_blank')}>Ver</button>
-                </p>
-              )}
-
-            <label>Solicitud de empleo (PDF)</label>
-            <button type="button" onClick={() => abrirModal('Solicitud_empleo')}>Subir documento</button>
-            {documentos.Solicitud_empleo && (
-                <p>
-                  {documentos.Solicitud_empleo.fileName} - {documentos.Solicitud_empleo.vencimiento}
-                  <button onClick={() => window.open(documentos.Solicitud_empleo.url, '_blank')}>Ver</button>
-                </p>
-              )}
-          </div>
-
-          {/* Puedes continuar con las otras dos columnas como en tu versión original */}
-          <div className="column">
-            <label>INE</label>
-            <button type="button" onClick={() => abrirModal('INE')}>Subir documento</button>
-            {documentos.INE && (
-              <p>
-                {documentos.INE.fileName} - {documentos.INE.vencimiento}
-                <button onClick={() => window.open(documentos.INE.url, '_blank')}>Ver</button>
-              </p>
+              <p>{documentos.Comprobante_domicilio.fileName} - {documentos.Comprobante_domicilio.vencimiento}</p>
             )}
 
-            <label>No. de VISA</label>
-            <input
-              type="text"
-              placeholder="Ingrese el numero de visa"
-              value={formData.visa}
-              onChange={(e) => handleInputChange('visa', e.target.value)}
-            />
-
-             <label>No de visa</label>
-            <button type="button" onClick={() => abrirModal('Visa')}>Subir documento</button>
-            {documentos.Visa && (
-              <p>{documentos.Visa.fileName} - {documentos.Visa.vencimiento}</p>
+                <label>Constancia de situacio fiscal (PDF)</label>
+            <button type="button" onClick={() => abrirModal('Constancia')}>Subir documento</button>
+            {documentos.Constancia && (
+              <p>{documentos.Constancia.fileName} - {documentos.Constancia.vencimiento}</p>
             )}
 
             <label>RFC </label>
@@ -435,46 +410,58 @@ useEffect(() => {
               value={formData.rfc}
               onChange={(e) => handleInputChange('rfc', e.target.value)}
             />
+          
+            
+          </div>
 
-             <label>No. de licencia</label>
+          {/* Puedes continuar con las otras dos columnas como en tu versión original */}
+          <div className="column">
+           
+            <label>Visa</label>
+            <button type="button" onClick={() => abrirModal('Visa')}>Subir documento</button>
+            {documentos.Visa && (
+              <p>{documentos.Visa.fileName} - {documentos.Visa.vencimiento}</p>
+            )}
+
+            <label>No. Visa</label>
             <input
               type="text"
-              placeholder="Nombre y apellidos"
-              value={formData.licencia}
-              onChange={(e) => handleInputChange('licencia', e.target.value)}
+              placeholder="Ingrese el numero de visa"
+              value={formData.visa}
+              onChange={(e) => handleInputChange('visa', e.target.value)}
             />
 
-            <label>Licencia (PDF)</label>
-            <button type="button" onClick={() => abrirModal('Licencia')}>Subir documento</button>
-            {documentos.Licencia && (
-                <p>
-                  {documentos.Licencia.fileName} - {documentos.Licencia.vencimiento}
-                  <button onClick={() => window.open(documentos.Licencia.url, '_blank')}>Ver</button>
-                </p>
-              )}
-
-            <label>Vencimiento de I-94 (PDF)</label>
+            
+            <label>I-94 (PDF)</label>
             <button type="button" onClick={() => abrirModal('I')}>Subir documento</button>
             {documentos.I && (
-              <p>
-                {documentos.I.fileName} - {documentos.I.vencimiento}
-                <button onClick={() => window.open(documentos.I.url, '_blank')}>Ver</button>
-              </p>
+              <p>{documentos.I.fileName} - {documentos.I.vencimiento}</p>
             )}
 
-            <label>APTO (PDF)</label>
-            <button type="button" onClick={() => abrirModal('APTO')}>Subir documento</button>
-            {documentos.APTO && (
-              <p>
-                {documentos.APTO.fileName} - {documentos.APTO.vencimiento}
-                <button onClick={() => window.open(documentos.APTO.url, '_blank')}>Ver</button>
-              </p>
-            )}
+          
           </div>
 
 
           {/* Puedes continuar con las otras dos columnas como en tu versión original */}
           <div className="column">
+            <label>Solicitud de empleo (PDF)</label>
+            <button type="button" onClick={() => abrirModal('Solicitud_empleo')}>Subir documento</button>
+            {documentos.Solicitud_empleo && (
+              <p>{documentos.Solicitud_empleo.fileName} - {documentos.Solicitud_empleo.vencimiento}</p>
+            )}
+
+              <label>Licencia (PDF)</label>
+            <button type="button" onClick={() => abrirModal('Licencia')}>Subir documento</button>
+            {documentos.Licencia && (
+              <p>{documentos.Licencia.fileName} - {documentos.Licencia.vencimiento}</p>
+            )}
+            
+              <label>APTO Medico(PDF)</label>
+            <button type="button" onClick={() => abrirModal('APTO')}>Subir documento</button>
+            {documentos.APTO && (
+              <p>{documentos.APTO.fileName} - {documentos.APTO.vencimiento}</p>
+            )}
+            
             <label>Atidoping</label>
             <button type="button" onClick={() => abrirModal('Atidoping')}>Subir documento</button>
             {documentos.Atidoping && (
@@ -489,7 +476,7 @@ useEffect(() => {
               onChange={(e) => handleInputChange('phone_usa', e.target.value)}
             />
 
-            <label>Numero celular MEX</label>
+            <label>Numero celular MEX </label>
             <input
               type="Text"
               placeholder="Ingresar numero Mexicano"
@@ -507,6 +494,7 @@ useEffect(() => {
           onSave={(data) => handleGuardarDocumento(campoActual, data)}
           nombreCampo={campoActual}
           valorActual={documentos[campoActual]}
+          mostrarFechaVencimiento={mostrarFechaVencimientoModal}
         />
       </div>
     </div>

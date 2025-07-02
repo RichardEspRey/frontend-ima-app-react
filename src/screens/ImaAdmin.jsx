@@ -9,7 +9,7 @@ import ModalArchivo from '../components/ModalArchivoEditor.jsx';
 import { useNavigate } from 'react-router-dom';
 import { Tooltip } from 'react-tooltip';
 
-const TrailerAdmin = () => {
+const ImaAdmin = () => {
   const apiHost = import.meta.env.VITE_API_HOST;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [valorActual, setValorActual] = useState(null);
@@ -33,22 +33,20 @@ const TrailerAdmin = () => {
         const data = await response.json();
 
         if (data.status === 'success' && data.Users) {
-          const formatted = data.Users.map(caja => ({
-            id: caja.caja_id, 
-            no_caja: caja.no_caja,
+       const formatted = data.Users.map(caja => ({
+        id: caja.caja_id, // ✅ ID real desde el backend
+        no_caja: caja.no_caja,
+        Registracion: caja.Registracion,
+        Registracion_fecha: caja.Registracion_Fecha,
+        Registracion_url: caja.Registracion_url_pdf,
+        Seguro: caja.Seguro,
+        Seguro_fecha: caja.Seguro_Fecha,
+        Seguro_url: caja.Seguro_url_pdf,
+        Fianza: caja.Fianza,
+        Fianza_fecha: caja.Fianza_Fecha,
+        Fianza_url: caja.Fianza_url_pdf,
+      }));
 
-            Seguro_Fecha: caja.Seguro_Fecha,
-            Seguro_url_pdf: caja.Seguro_url_pdf,
-
-            CAB_CARD_Fecha: caja.CAB_CARD_Fecha,
-            CAB_CARD_url_pdf: caja.CAB_CARD_url_pdf,
-
-            FIANZA_fecha: caja.Fianza_Fecha,
-            Fianza_url_pdf: caja.Fianza_url_pdf,
-
-            CERTIFICADO_Fecha: caja.CERTIFICADO_Fecha,
-            CERTIFICADO_url_pdf: caja.CERTIFICADO_url_pdf
-          }));
 
           setCajas(formatted);
         }
@@ -125,7 +123,7 @@ const TrailerAdmin = () => {
 
   return (
     <div className="driver-admin">
-      <h1 className="title">Administrador de cajas</h1>
+      <h1 className="title">Administrador de documentos IMA EXPRESS LCC</h1>
       <div className="toolbar">
         <input
           type="text"
@@ -142,30 +140,22 @@ const TrailerAdmin = () => {
         <table>
           <thead>
             <tr>
-              <th>No. Caja</th>
-              <th>Seguro</th>
-              <th>CAB CARD</th>
-              <th>Fianza</th>
-              <th>Certificado</th>
-              <th>Acciones</th>
+              <th>IFTA</th>
+              <th>2290</th>
+              <th>UCR</th>
+              <th>SCAC</th>
+              <th>CAAT</th>
             </tr>
           </thead>
           <tbody>
             {filteredCajas.slice(from, to).map(caja => (
               <tr key={caja.id}>
+                <td>{caja.id}</td>  
                 <td>{caja.no_caja}</td> 
-                <td>{getIconByFecha(caja.Seguro_Fecha, caja.id, caja.Seguro_url_pdf, 'Seguro')}</td>
-                <td>{getIconByFecha(caja.CAB_CARD_Fecha, caja.id, caja.CAB_CARD_url_pdf, 'CAB CARD')}</td>
-                <td>{getIconByFecha(caja.FIANZA_fecha, caja.id, caja.Fianza_url_pdf, 'FIANZA')}</td>
-                <td>{getIconByFecha(caja.CERTIFICADO_Fecha, caja.id, caja.CERTIFICADO_url_pdf, 'CERTIFICADO')}</td>
-                <td>
-                  <button
-                    className="ver-btn"
-                    onClick={() => navigate(`/editor-trailers/${caja.id}`)}
-                  >
-                    Ver
-                  </button>
-                </td>
+                <td>{getIconByFecha(caja.Registracion_fecha, caja.id, caja.Registracion_url, 'Registracion')}</td>
+                <td>{getIconByFecha(caja.Seguro_fecha, caja.id, caja.Seguro_url, 'Seguro')}</td>
+                <td>{getIconByFecha(caja.Fianza_fecha, caja.id, caja.Fianza_url, 'Fianza')}</td>
+             
               </tr>
             ))}
           </tbody>
@@ -191,4 +181,4 @@ const TrailerAdmin = () => {
   );
 };
 
-export default TrailerAdmin;
+export default ImaAdmin;
