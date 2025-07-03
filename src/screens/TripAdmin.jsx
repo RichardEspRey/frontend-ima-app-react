@@ -27,7 +27,7 @@ const TripRow = ({ trip, onEdit, onFinalize, getDocumentUrl }) => {
     } else if (trip.etapas && trip.etapas.length > 0) {
         loadingDateTitle = 'Fecha de carga (1ª Etapa) no especificada';
     }
-
+    console.log('Trip Details',trip)
     return (
         <React.Fragment>
             <TableRow sx={{ '& > *': { borderBottom: 'unset' } }} hover>
@@ -39,7 +39,7 @@ const TripRow = ({ trip, onEdit, onFinalize, getDocumentUrl }) => {
                 <TableCell component="th" scope="row">{trip.trip_number}</TableCell>
                 <TableCell>{trip.driver_nombre || trip.driver_id || '-'}</TableCell>
                 <TableCell>{trip.truck_unidad || trip.truck_id || '-'}</TableCell>
-                <TableCell>{trip.caja_no_caja || trip.caja_id || 'N/A'}</TableCell>
+                <TableCell>{trip.caja_no_caja || trip.caja_id || trip.caja_externa_no_caja || trip.caja_externa_id||'N/A'}</TableCell>
                 <TableCell sx={{ whiteSpace: 'nowrap' }} title={loadingDateTitle}>
                     {loadingDateToShow}
                 </TableCell>

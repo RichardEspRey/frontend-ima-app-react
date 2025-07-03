@@ -87,6 +87,7 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
         ci_number: '',
         rate_tarifa: '',
         millas_pcmiller: '',
+        millas_pcmiller_practicas: '',
         documentos: { ...initialBorderCrossingDocs } // Documentos para cruce
     }]);
 
@@ -294,7 +295,7 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
                 origin: '', destination: '', zip_code_origin: '', zip_code_destination: '',
                 loading_date: null, delivery_date: null, company_id: null, travel_direction: '',
                 warehouse_origin_id: null, warehouse_destination_id: null, ci_number: '',
-                rate_tarifa: '', millas_pcmiller: '', estatus: 'In Transit',
+                rate_tarifa: '', millas_pcmiller: '', millas_pcmiller_practicas: '', estatus: 'In Transit',
                 documentos: initialDocs
 
             }
@@ -437,6 +438,7 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
                     ci_number: '',
                     rate_tarifa: '',
                     millas_pcmiller: '',
+                    millas_pcmiller_practicas: '',
                     documentos: { ...initialBorderCrossingDocs }
                 }]);
             } else {
@@ -502,38 +504,39 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
         }
     };
 
-    
-    const resetForm = () =>{
+
+    const resetForm = () => {
 
         if (onSuccess) {
             onSuccess();
         }
         setFormData({
-                    trip_number: '',
-                    driver_id: '',
-                    truck_id: '',
-                    caja_id: '',
-                    caja_externa_id: ''
+            trip_number: '',
+            driver_id: '',
+            truck_id: '',
+            caja_id: '',
+            caja_externa_id: ''
 
-                });
-                setEtapas([{
-                    stage_number: 1,
-                    origin: '',
-                    destination: '',
-                    stageType: 'borderCrossing',
-                    zip_code_origin: '',
-                    zip_code_destination: '',
-                    loading_date: null,
-                    delivery_date: null,
-                    company_id: '',
-                    travel_direction: '',
-                    warehouse_origin_id: '',
-                    warehouse_destination_id: '',
-                    ci_number: '',
-                    rate_tarifa: '',
-                    millas_pcmiller: '',
-                    documentos: { ...initialBorderCrossingDocs }
-                }])
+        });
+        setEtapas([{
+            stage_number: 1,
+            origin: '',
+            destination: '',
+            stageType: 'borderCrossing',
+            zip_code_origin: '',
+            zip_code_destination: '',
+            loading_date: null,
+            delivery_date: null,
+            company_id: '',
+            travel_direction: '',
+            warehouse_origin_id: '',
+            warehouse_destination_id: '',
+            ci_number: '',
+            rate_tarifa: '',
+            millas_pcmiller: '',
+            millas_pcmiller_practicas: '',
+            documentos: { ...initialBorderCrossingDocs }
+        }])
     }
 
 
@@ -680,7 +683,7 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
                     <div className="input-columns">
                         <div className="column">
                             <label htmlFor={`warehouse_origin_id-${index}`} style={{ marginTop: '10px' }}>Origin Warehouse:</label>
-                            <CreatableSelect 
+                            <CreatableSelect
                                 id={`warehouse_origin_id-${index}`}
                                 name={`warehouse_origin_id-${index}`}
                                 isClearable
@@ -789,8 +792,8 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
                         <div className="column">
                             <label htmlFor={`rate_tarifa-${index}`} >Rate Tarifa:</label>
                             <input
-                                type="number" 
-                                id={`rate_tarifa-${index}`} 
+                                type="number"
+                                id={`rate_tarifa-${index}`}
                                 name={`rate_tarifa-${index}`}
                                 value={etapa.rate_tarifa}
                                 onChange={(e) => handleEtapaChange(index, 'rate_tarifa', e.target.value)}
@@ -799,11 +802,25 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
                             />
                         </div>
                         <div className="column">
-                            <label htmlFor={`millas_pcmiller-${index}`} >Millas PC Miller:</label>
+                            <label htmlFor={`millas_pcmiller-${index}`} >Millas PC Miller Cortas:</label>
                             <input
                                 type="number" id={`millas_pcmiller-${index}`} name={`millas_pcmiller-${index}`}
                                 value={etapa.millas_pcmiller}
                                 onChange={(e) => handleEtapaChange(index, 'millas_pcmiller', e.target.value)}
+                                placeholder="Ej: 850"
+                                className="form-input"
+                            />
+                        </div>
+
+                    </div>
+                    <div className="input-columns">
+                        <div className="column"></div>
+                        <div className="column">
+                            <label htmlFor={`millas_pcmiller_practicas-${index}`} >Millas PC Miller Practicas:</label>
+                            <input
+                                type="number" id={`millas_pcmiller_practicas-${index}`} name={`millas_pcmiller_practicas-${index}`}
+                                value={etapa.millas_pcmiller_practicas}
+                                onChange={(e) => handleEtapaChange(index, 'millas_pcmiller_practicas', e.target.value)}
                                 placeholder="Ej: 850"
                                 className="form-input"
                             />
