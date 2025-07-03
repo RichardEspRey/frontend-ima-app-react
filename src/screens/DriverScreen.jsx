@@ -55,7 +55,7 @@ const DriverScreen = () => {
       // Aquí añadimos solo campos de texto (no archivos)
       formDataToSend.append('op', 'Alta'); // operación que espera el backend
       formDataToSend.append('name', formData.nombre);
-      formDataToSend.append('fechaEntrada', formData.fechaEntrada); 
+      formDataToSend.append('fecha_ingreso', formData.fechaEntrada); 
       formDataToSend.append('rfc', formData.rfc);
       formDataToSend.append('visa', formData.visa);
       formDataToSend.append('phone_mex', formData.phone_mex);

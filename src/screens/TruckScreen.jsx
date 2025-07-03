@@ -55,7 +55,7 @@ const TruckScreen = () => {
       formDataToSend.append('Modelo', formData.Modelo);
       formDataToSend.append('Marca', formData.Marca);
       formDataToSend.append('Numero', formData.Numero);
-      formDataToSend.append('Tag', formData.Numero);
+      formDataToSend.append('Tag', formData.Tag);
 
       // Enviar al backend
 
@@ -155,7 +155,7 @@ const TruckScreen = () => {
             <input
               type="text"
               placeholder="Unidad"
-              value={formData.nombre}
+              value={formData.Unidad}
               onChange={(e) => handleInputChange('Unidad', e.target.value)}
             />
 
@@ -163,15 +163,15 @@ const TruckScreen = () => {
             <input
               type="text"
               placeholder="Placa MEX"
-              value={formData.nombre}
+              value={formData.PlacaMX}
               onChange={(e) => handleInputChange('PlacaMX', e.target.value)}
             />
 
             <label>Placa USA</label>
             <input
               type="text"
-              placeholder="Placa EUA"
-              value={formData.nombre}
+              placeholder="Placa USA"
+              value={formData.PlacaEUA}
               onChange={(e) => handleInputChange('PlacaEUA', e.target.value)}
             />
 
@@ -179,7 +179,7 @@ const TruckScreen = () => {
             <input
               type="text"
               placeholder="Modelo"
-              value={formData.nombre}
+              value={formData.Modelo}
               onChange={(e) => handleInputChange('Modelo', e.target.value)}
             />
 
@@ -187,7 +187,7 @@ const TruckScreen = () => {
             <input
               type="text"
               placeholder="Marca de camion"
-              value={formData.nombre}
+              value={formData.Marca}
               onChange={(e) => handleInputChange('Marca', e.target.value)}
             />
 
@@ -195,7 +195,7 @@ const TruckScreen = () => {
             <input
               type="text"
               placeholder="Numero"
-              value={formData.nombre}
+              value={formData.Numero}
               onChange={(e) => handleInputChange('Numero', e.target.value)}
             />
           </div>
@@ -259,7 +259,7 @@ const TruckScreen = () => {
             <input
               type="text"
               placeholder="Numero"
-              value={formData.nombre}
+              value={formData.Tag}
               onChange={(e) => handleInputChange('Tag', e.target.value)}
             />
 

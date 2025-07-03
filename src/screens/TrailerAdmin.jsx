@@ -86,7 +86,7 @@ const TrailerAdmin = () => {
     const hoy = new Date();
     const diffInDays = Math.floor((fecha - hoy) / (1000 * 60 * 60 * 24));
 
-    let icon = greyIcon;
+    let icon = redIcon;
     let mensaje = `Vencimiento: ${fecha.toLocaleDateString('es-MX')}`;
 
     if (diffInDays >= 90) icon = greenIcon;
@@ -100,7 +100,7 @@ const TrailerAdmin = () => {
           alt={tipo}
           className="icon-img"
           onClick={() => abrirModalConDocumento(url, fechaStr, id, tipo)}
-          data-tooltip-id={`${id}`}
+          data-tooltip-id={`tooltip-${id}-${tipo}`}
           data-tooltip-content={mensaje}
           style={{ cursor: 'pointer' }}
         />

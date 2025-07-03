@@ -101,7 +101,7 @@ const DriverAdmin = () => {
   const hoy = new Date();
   const diffInDays = Math.floor((fecha - hoy) / (1000 * 60 * 60 * 24));
 
-  let icon = greyIcon;
+  let icon = redIcon;
   let mensaje = `Vencimiento: ${fecha.toLocaleDateString('es-MX')}`;
 
   if (diffInDays >= 90) icon = greenIcon;
@@ -110,16 +110,16 @@ const DriverAdmin = () => {
 
   return (
     <>
-      <img
-        src={icon}
-        alt= {`${tipo}`}
-        className="icon-img"
-        onClick={() => abrirModalConDocumento(url, fechaStr, id, tipo)}
-        data-tooltip-id={`${id}`}
-        data-tooltip-content={mensaje}
-        style={{ cursor: 'pointer' }}
-      />
-      <Tooltip id={`tooltip-${id}`} place="top" />
+   <img
+      src={icon}
+      alt={tipo}
+      className="icon-img"
+      onClick={() => abrirModalConDocumento(url, fechaStr, id, tipo)}
+      data-tooltip-id={`tooltip-${id}-${tipo}`} // <- ID unificado
+      data-tooltip-content={mensaje}
+      style={{ cursor: 'pointer' }}
+    />
+    <Tooltip id={`tooltip-${id}-${tipo}`} place="top" />
     </>
   );
 };

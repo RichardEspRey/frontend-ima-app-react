@@ -54,8 +54,8 @@ const TruckAdmin = () => {
             PERMISO_NM_URL: t.PERMISO_NM_URL, 
             dtops_Fecha: t.dtops_Fecha, 
             dtops_URL: t.dtops_URL, 
-            fisio_Mecanica_Fecha: t.fisio_Mecanica_Fecha,
-            fisio_Mecanica_URL: t.fisio_Mecanica_URL,
+            Inspecccion_fisio_Mecanica_Fecha: t.Inspecccion_fisio_Mecanica_Fecha,
+            Inspecccion_fisio_Mecanica_URL: t.Inspecccion_fisio_Mecanica_URL,
             Inspecion_humos_Fecha: t.Inspecion_humos_Fecha,
             Inspecion_humos_URL: t.Inspecion_humos_URL,
             seguro_Fecha: t.seguro_Fecha,
@@ -99,7 +99,7 @@ const TruckAdmin = () => {
     const hoy = new Date();
     const diffInDays = Math.floor((fecha - hoy) / (1000 * 60 * 60 * 24));
 
-    let icon = greyIcon;
+    let icon = redIcon;
     let mensaje = `Vencimiento: ${fecha.toLocaleDateString('es-MX')}`;
 
     if (diffInDays >= 90) icon = greenIcon;
@@ -113,7 +113,7 @@ const TruckAdmin = () => {
           alt={tipo}
           className="icon-img"
           onClick={() => abrirModalConDocumento(url, fechaStr, id, tipo)}
-          data-tooltip-id={`${id}`}
+          data-tooltip-id={`tooltip-${id}-${tipo}`}
           data-tooltip-content={mensaje}
           style={{ cursor: 'pointer' }}
         />
@@ -222,7 +222,7 @@ const TruckAdmin = () => {
                 <td>{getIconByFecha(t.dtops_Fecha, t.truck_id, t.dtops_URL, 'DTOPS')}</td>
                 <td>{getIconByFecha(t.PERMISO_NY_Fecha, t.truck_id, t.PERMISO_NY_URL, 'PERMISO_NY')}</td>
                 <td>{getIconByFecha(t.PERMISO_NM_Fecha, t.truck_id, t.PERMISO_NM_URL, 'PERMISO_NM')}</td>
-                <td>{getIconByFecha(t.fisio_Mecanica_Fecha, t.truck_id, t.fisio_Mecanica_URL, 'Inspeccion fisio mecanica')}</td>
+                <td>{getIconByFecha(t.Inspecccion_fisio_Mecanica_Fecha, t.truck_id, t.Inspecccion_fisio_Mecanica_URL, 'Inspeccion fisio mecanica')}</td>
                 <td>{getIconByFecha(t.Inspecion_humos_Fecha, t.truck_id, t.Inspecion_humos_URL, 'DTOPS')}</td>
                 <td>{getIconByFecha(t.seguro_Fecha, t.truck_id, t.seguro_URL, 'Seguro')}</td>
                 <td>

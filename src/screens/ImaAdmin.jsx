@@ -111,7 +111,7 @@ const ImaAdmin = () => {
   const hoy = new Date();
   const diffInDays = Math.floor((fecha - hoy) / (1000 * 60 * 60 * 24));
 
-  let icon = greyIcon;
+  let icon = redIcon;
   let mensaje = `Vencimiento: ${fecha.toLocaleDateString('es-MX')}`;
 
   if (diffInDays >= 90) icon = greenIcon;

@@ -49,7 +49,7 @@ const TrailerScreen = () => {
       formDataToSend.append('numero_caja', formData.numero_caja);
       formDataToSend.append('no_placa', formData.no_placa);
       formDataToSend.append('estado_placa', formData.estado_placa);
-      formDataToSend.append('numero_vin', formData.numero_vin);
+      formDataToSend.append('no_vin', formData.numero_vin);
 
 
       // Enviar al backend
