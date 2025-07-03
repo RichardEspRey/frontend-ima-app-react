@@ -87,6 +87,7 @@ const TripForm = ({ tripNumber, onSuccess }) => {
         ci_number: '',
         rate_tarifa: '',
         millas_pcmiller: '',
+        millas_pcmiller_practicas: '',
         documentos: { ...initialNormalTripDocs }
     }]);
 
@@ -284,7 +285,7 @@ const TripForm = ({ tripNumber, onSuccess }) => {
                 origin: '', destination: '', zip_code_origin: '', zip_code_destination: '',
                 loading_date: null, delivery_date: null, company_id: null, travel_direction: '',
                 warehouse_origin_id: null, warehouse_destination_id: null, ci_number: '',
-                rate_tarifa: '', millas_pcmiller: '', estatus: 'In Transit',
+                rate_tarifa: '', millas_pcmiller: '', millas_pcmiller_practicas: '', estatus: 'In Transit',
                 documentos: initialDocs
             }
         ]);
@@ -349,6 +350,7 @@ const TripForm = ({ tripNumber, onSuccess }) => {
             ci_number: etapa.ci_number,
             rate_tarifa: etapa.rate_tarifa,
             millas_pcmiller: etapa.millas_pcmiller,
+            millas_pcmiller_practicas: etapa.millas_pcmiller_practicas,
             estatus: etapa.estatus,
             // Enviar solo metadatos de documentos en el JSON
             documentos: Object.entries(etapa.documentos).reduce((acc, [key, value]) => {
@@ -412,7 +414,7 @@ const TripForm = ({ tripNumber, onSuccess }) => {
                     stage_number: 1, stageType: 'normalTrip', origin: '', destination: '',
                     zip_code_origin: '', zip_code_destination: '', loading_date: null, delivery_date: null,
                     company_id: '', travel_direction: '', warehouse_origin_id: '', warehouse_destination_id: '',
-                    ci_number: '', rate_tarifa: '', millas_pcmiller: '',
+                    ci_number: '', rate_tarifa: '', millas_pcmiller: '', millas_pcmiller_practicas: '',
                     documentos: { ...initialNormalTripDocs }
                 }]);
 
@@ -485,7 +487,7 @@ const TripForm = ({ tripNumber, onSuccess }) => {
             stage_number: 1, stageType: 'normalTrip', origin: '', destination: '',
             zip_code_origin: '', zip_code_destination: '', loading_date: null, delivery_date: null,
             company_id: '', travel_direction: '', warehouse_origin_id: '', warehouse_destination_id: '',
-            ci_number: '', rate_tarifa: '', millas_pcmiller: '',
+            ci_number: '', rate_tarifa: '', millas_pcmiller: '', millas_pcmiller_practicas: '',
             documentos: { ...initialNormalTripDocs }
         }]);
     }
@@ -759,11 +761,24 @@ const TripForm = ({ tripNumber, onSuccess }) => {
                             />
                         </div>
                         <div className="column">
-                            <label htmlFor={`millas_pcmiller-${index}`} >Millas PC Miller:</label>
+                            <label htmlFor={`millas_pcmiller-${index}`} >Millas PC Miller Cortas:</label>
                             <input
                                 type="number" id={`millas_pcmiller-${index}`} name={`millas_pcmiller-${index}`}
                                 value={etapa.millas_pcmiller} // Corregido: usar etapa.millas_pcmiller
                                 onChange={(e) => handleEtapaChange(index, 'millas_pcmiller', e.target.value)}
+                                placeholder="Ej: 850"
+                                className="form-input"
+                            />
+                        </div>
+                    </div>
+                    <div className="input-columns">
+                        <div className="column"></div>
+                        <div className="column">
+                            <label htmlFor={`millas_pcmiller_practicas-${index}`} >Millas PC Miller Practicas:</label>
+                            <input
+                                type="number" id={`millas_pcmiller_practicas-${index}`} name={`millas_pcmiller_practicas-${index}`}
+                                value={etapa.millas_pcmiller_practicas}
+                                onChange={(e) => handleEtapaChange(index, 'millas_pcmiller_practicas', e.target.value)}
                                 placeholder="Ej: 850"
                                 className="form-input"
                             />

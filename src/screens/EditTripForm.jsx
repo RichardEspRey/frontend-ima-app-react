@@ -320,7 +320,7 @@ const EditTripForm = () => {
                 origin: '', destination: '', zip_code_origin: '', zip_code_destination: '',
                 loading_date: null, delivery_date: null, company_id: null, travel_direction: '',
                 warehouse_origin_id: null, warehouse_destination_id: null, ci_number: '',
-                rate_tarifa: '', millas_pcmiller: '', estatus: 'In Transit',
+                rate_tarifa: '', millas_pcmiller: '',millas_pcmiller_practicas: '', estatus: 'In Transit',
                 documentos: initialDocs,
                 stops_in_transit: []
             };
@@ -403,6 +403,8 @@ const EditTripForm = () => {
                 warehouse_origin_id: etapa.warehouse_origin_id || null, warehouse_destination_id: etapa.warehouse_destination_id || null,
                 ci_number: etapa.ci_number || null,
                 rate_tarifa: etapa.rate_tarifa || null, millas_pcmiller: etapa.millas_pcmiller || null,
+                millas_pcmiller_practicas: etapa.millas_pcmiller_practicas || null,
+
                 estatus: etapa.estatus || 'In Transit',
                 documentos: etapaDocs,
                 stops_in_transit: stopsJson
@@ -611,7 +613,7 @@ const EditTripForm = () => {
                                 </div>
                                 <div className="column">
                                     <label htmlFor="driver_id">Driver:</label>
-                                    <Select id="driver_id"
+                                    <Select id="driver_id" 
                                         name="driver_id"
                                         value={formData.driver_id ? { value: formData.driver_id, label: formData.driver_nombre || `ID: ${formData.driver_id}` } : null}
                                         onChange={(selected) => {
@@ -726,7 +728,7 @@ const EditTripForm = () => {
                                             etapa.stageType === 'normalTrip' ? 'Viaje Normal' :
                                                 etapa.stageType === 'emptyMileage' ? 'Etapa de Millaje' :
                                                     'Etapa'
-                                        })`}
+                                            })`}
                                     </span>
                                     <Box sx={{ display: 'flex', gap: '5px' }}>
                                         {(etapa.stageType === 'normalTrip' || etapa.stageType === 'borderCrossing') && (
@@ -751,17 +753,34 @@ const EditTripForm = () => {
                                         <legend className="card-label">Detalles de la Etapa</legend>
                                         <div className="input-columns">
                                             <div className="column">
-                                                <label style={{ marginTop: '10px' }}>Millas PC*Miler (Etapa):</label>
+                                                <label style={{ marginTop: '10px' }}>Millas PC*Miler Cortas (Etapa):</label>
                                                 <input
                                                     type="number"
+                                                    step="1"
                                                     value={etapa.millas_pcmiller}
                                                     onChange={(e) => handleStageChange(index, 'millas_pcmiller', e.target.value)}
-                                                    placeholder="Millas Etapa"
+                                                    placeholder="Millas Cortas Etapa"
+                                                    className="form-input"
+                                                    readOnly={isFormDisabled}
+                                                />
+
+                                                
+                                            </div>
+
+                                            
+
+                                            <div className="column">
+                                                   <label style={{ marginTop: '10px' }}>Millas PC*Miler Practicas (Etapa):</label>
+                                                <input
+                                                    type="number"
+                                                    step="1"
+                                                    value={etapa.millas_pcmiller_practicas}
+                                                    onChange={(e) => handleStageChange(index, 'millas_pcmiller_practicas', e.target.value)}
+                                                    placeholder="Millas Practicas Etapa"
                                                     className="form-input"
                                                     readOnly={isFormDisabled}
                                                 />
                                             </div>
-                                            <div className="column"></div>
                                         </div>
                                     </div>
                                 ) : (
@@ -939,18 +958,37 @@ const EditTripForm = () => {
                                             </div>
 
                                             <div className="column">
-                                                <label style={{ marginTop: '10px' }}>Millas PC*Miler (Etapa):</label>
+                                                <label style={{ marginTop: '10px' }}>Millas PC*Miler Cortas (Etapa):</label>
                                                 <input
                                                     type="number"
                                                     step="1"
                                                     value={etapa.millas_pcmiller}
                                                     onChange={(e) => handleStageChange(index, 'millas_pcmiller', e.target.value)}
-                                                    placeholder="Millas Etapa"
+                                                    placeholder="Millas Cortas Etapa"
+                                                    className="form-input"
+                                                    readOnly={isFormDisabled}
+                                                />
+                                            </div>
+
+
+
+                                        </div>
+                                        <div className="input-columns">
+                                            <div className="column"></div>
+                                            <div className="column">
+                                                <label style={{ marginTop: '10px' }}>Millas PC*Miler Practicas (Etapa):</label>
+                                                <input
+                                                    type="number"
+                                                    step="1"
+                                                    value={etapa.millas_pcmiller_practicas}
+                                                    onChange={(e) => handleStageChange(index, 'millas_pcmiller_practicas', e.target.value)}
+                                                    placeholder="Millas Practicas Etapa"
                                                     className="form-input"
                                                     readOnly={isFormDisabled}
                                                 />
                                             </div>
                                         </div>
+
 
                                         {etapa.stageType === 'borderCrossing' && (
                                             <div className="subsection">
@@ -1063,16 +1101,18 @@ const EditTripForm = () => {
                                                         >&#x2716;</button>
                                                         <div className="input-columns">
                                                             <div className="column">
-                                                                <label style={{ marginTop: '10px' }}>Destino / Ubicación de Parada:</label>
+                                                                <label style={{ marginTop: '10px' }}>Destino / Ubicación de Parada / Zip Code:</label>
                                                                 <input
                                                                     type="text"
                                                                     value={stop.location}
                                                                     onChange={(e) => handleStopChange(index, stopIndex, 'location', e.target.value)}
-                                                                    placeholder="Ej. Gasolinera Ciudad"
+                                                                    placeholder="Ciudad, Estado, Zip Code"
                                                                     className="form-input"
                                                                     readOnly={isFormDisabled}
                                                                 />
+
                                                             </div>
+
                                                             <div className="column">
                                                                 <label htmlFor={`cita_entrega_stop-${index}-${stopIndex}`} style={{ marginTop: '15px' }}>Cita Entrega (Parada):</label>
                                                                 <button type="button" className="upload-button" onClick={() => abrirModal('cita_entrega_doc', index, stopIndex)} disabled={isFormDisabled}>Subir/Cambiar</button>
