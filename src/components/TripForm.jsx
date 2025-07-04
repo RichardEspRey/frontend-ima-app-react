@@ -49,7 +49,7 @@ const TripForm = ({ tripNumber, onSuccess }) => {
     const { activeWarehouses, loading: loadingWarehouses, error: errorWarehouses } = useFetchWarehouses();
 
     const [trailerType, setTrailerType] = useState('interna'); // 'interna' o 'externa' 
-
+    const [tripMode, setTripMode] = useState('individual'); // Estado para el modo de viaje
     const [isCreatingCompany, setIsCreatingCompany] = useState(false);
     const [isCreatingWarehouse, setIsCreatingWarehouse] = useState(false)
 
@@ -65,6 +65,7 @@ const TripForm = ({ tripNumber, onSuccess }) => {
     const [formData, setFormData] = useState({
         trip_number: tripNumber || '',
         driver_id: '',
+        driver_id_second: '',
         truck_id: '',
         caja_id: '',
         caja_externa_id: ''
@@ -99,6 +100,13 @@ const TripForm = ({ tripNumber, onSuccess }) => {
             setFormData(prev => ({ ...prev, caja_externa_id: '' }));
         } else {
             setFormData(prev => ({ ...prev, caja_id: '' }));
+        }
+    };
+
+    const handleTripModeChange = (mode) => {
+        setTripMode(mode);
+        if (mode === 'individual') {
+            setFormData(prev => ({ ...prev, driver_id_second: '' }));
         }
     };
 
@@ -328,6 +336,7 @@ const TripForm = ({ tripNumber, onSuccess }) => {
 
         dataToSend.append('trip_number', formData.trip_number);
         dataToSend.append('driver_id', formData.driver_id);
+        dataToSend.append('driver_id_second', formData.driver_id_second || '');
         dataToSend.append('truck_id', formData.truck_id);
         dataToSend.append('caja_id', formData.caja_id || '');
         dataToSend.append('caja_externa_id', formData.caja_externa_id || '');
@@ -482,7 +491,8 @@ const TripForm = ({ tripNumber, onSuccess }) => {
             onSuccess();
         }
         // Resetear el formulario después de éxito
-        setFormData({ trip_number: '', driver_id: '', truck_id: '', caja_id: '' });
+        setFormData({ trip_number: '', driver_id: '', driver_id_second: '',truck_id: '', caja_id: '' });
+        setTripMode('individual');
         setEtapas([{
             stage_number: 1, stageType: 'normalTrip', origin: '', destination: '',
             zip_code_origin: '', zip_code_destination: '', loading_date: null, delivery_date: null,
@@ -503,10 +513,22 @@ const TripForm = ({ tripNumber, onSuccess }) => {
 
             <div className="form-section">
                 <legend className="card-label">Información General del Viaje</legend>
-                <div className="input-columns">
 
+
+                <div className="input-columns">
                     <div className="column">
-                        <label htmlFor="driver_id">Driver:</label>
+                        <label>Tipo de Viaje:</label>
+                        <div className="trip-mode-selector">
+                            <button type="button" className={tripMode === 'individual' ? 'active' : ''} onClick={() => handleTripModeChange('individual')}>Viaje Individual</button>
+                            <button type="button" className={tripMode === 'team' ? 'active' : ''} onClick={() => handleTripModeChange('team')}>Viaje en Equipo</button>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div className="input-columns" style={{ marginTop: '1rem' }}>
+                    <div className="column">
+                        <label htmlFor="driver_id">Driver Principal:</label>
                         <Select
                             id="driver_id" name="driver_id"
                             value={activeDrivers.find(d => d.driver_id === formData.driver_id) ? { value: formData.driver_id, label: activeDrivers.find(d => d.driver_id === formData.driver_id).nombre } : null}
@@ -519,7 +541,20 @@ const TripForm = ({ tripNumber, onSuccess }) => {
                         />
                         {errorDrivers && <p className="error-text">Error cargando drivers</p>}
                     </div>
-
+                    {tripMode === 'team' && (
+                        <div className="column">
+                            <label htmlFor="driver_id_second">Segundo Driver:</label>
+                            <Select
+                                id="driver_id_second" name="driver_id_second"
+                                value={activeDrivers.find(d => d.driver_id === formData.driver_id_second) ? { value: formData.driver_id_second, label: activeDrivers.find(d => d.driver_id === formData.driver_id_second).nombre } : null}
+                                onChange={(selected) => setForm('driver_id_second', selected ? selected.value : '')}
+                                options={activeDrivers.filter(d => d.driver_id !== formData.driver_id).map(driver => ({ value: driver.driver_id, label: driver.nombre }))}
+                                placeholder="Seleccionar 2do Driver"
+                                isLoading={loadingDrivers} isDisabled={loadingDrivers || !!errorDrivers}
+                                styles={selectStyles} isClearable
+                            />
+                        </div>
+                    )}
                     <div className="column">
                         <label htmlFor="truck_id">Truck:</label>
                         <Select
@@ -534,7 +569,9 @@ const TripForm = ({ tripNumber, onSuccess }) => {
                         />
                         {errorTrucks && <p className="error-text">Error cargando trucks</p>}
                     </div>
+                </div>
 
+                <div className="input-columns" style={{ marginTop: '1rem' }}>
                     <div className="column">
                         <label>Tipo de Trailer:</label>
                         <div className="trailer-type-selector">
@@ -542,47 +579,41 @@ const TripForm = ({ tripNumber, onSuccess }) => {
                             <button type="button" className={trailerType === 'externa' ? 'active' : ''} onClick={() => handleTrailerTypeChange('externa')}>Caja Externa</button>
                         </div>
                     </div>
+
+                    <div className="column">
+                        {trailerType === 'interna' && (
+                            <>
+                                <label>Trailer (Caja Interna):</label>
+                                <Select
+                                    id="caja_id" name="caja_id"
+                                    value={activeTrailers.find(c => c.caja_id === formData.caja_id) ? { value: formData.caja_id, label: activeTrailers.find(c => c.caja_id === formData.caja_id).no_caja } : null}
+                                    onChange={(selected) => setForm('caja_id', selected ? selected.value : '')}
+                                    options={activeTrailers.map(caja => ({ value: caja.caja_id, label: caja.no_caja }))}
+                                    placeholder="Seleccionar Trailer"
+                                    isLoading={loadingCajas} isDisabled={loadingCajas || !!errorCajas}
+                                    styles={selectStyles} isClearable
+                                />
+                            </>
+                        )}
+                        {trailerType === 'externa' && (
+                            <div style={{ display: 'flex', alignItems: 'flex-end', gap: '10px' }}>
+                                <div style={{ flexGrow: 1 }}>
+                                    <label>Trailer (Caja Externa):</label>
+                                    <Select
+                                        id='caja_externa_id' name='caja_externa_id'
+                                        value={activeExternalTrailers.find(c => c.caja_externa_id === formData.caja_externa_id) ? { value: formData.caja_externa_id, label: activeExternalTrailers.find(c => c.caja_externa_id === formData.caja_externa_id).no_caja } : null}
+                                        onChange={(selected) => setForm('caja_externa_id', selected ? selected.value : '')}
+                                        options={activeExternalTrailers.map(caja => ({ value: caja.caja_externa_id, label: caja.no_caja }))}
+                                        placeholder="Seleccionar Trailer"
+                                        isLoading={loadingCajasExternas} isDisabled={loadingCajasExternas || !!errorCajasExternas}
+                                        styles={selectStyles} isClearable
+                                    />
+                                </div>
+                                <button type='button' onClick={() => setIsModalCajaExternaOpen(true)} className="accept-button" style={{ height: '48px', flexShrink: 0, padding: '0 15px' }} title="Registrar Nueva Caja Externa">+</button>
+                            </div>
+                        )}
+                    </div>
                 </div>
-                {trailerType === 'interna' && (
-                    <div className="input-columns" style={{ marginTop: '1rem' }}>
-                        <div className="column">
-                            <label>Trailer (Caja Interna):</label>
-                            <Select
-                                id="caja_id" name="caja_id"
-                                value={activeTrailers.find(c => c.caja_id === formData.caja_id) ? { value: formData.caja_id, label: activeTrailers.find(c => c.caja_id === formData.caja_id).no_caja } : null}
-                                onChange={(selected) => setForm('caja_id', selected ? selected.value : '')}
-                                options={activeTrailers.map(caja => ({ value: caja.caja_id, label: caja.no_caja }))}
-                                placeholder="Seleccionar Trailer"
-                                isLoading={loadingCajas}
-                                isDisabled={loadingCajas || !!errorCajas}
-                                styles={selectStyles} isClearable
-                            />
-                        </div>
-                    </div>
-                )}
-                {trailerType === 'externa' && (
-                    <div className="input-columns" style={{ marginTop: '1rem' }}>
-                        <div className="column">
-                            <label>Trailer (Caja Externa):</label>
-
-                            <Select
-                                id='caja_externa_id' name='caja_externa_id'
-                                value={activeExternalTrailers.find(c => c.caja_externa_id === formData.caja_externa_id) ? { value: formData.caja_externa_id, label: activeExternalTrailers.find(c => c.caja_externa_id === formData.caja_externa_id).no_caja } : null}
-                                onChange={(selected) => setForm('caja_externa_id', selected ? selected.value : '')}
-                                options={activeExternalTrailers.map(caja => ({ value: caja.caja_externa_id, label: caja.no_caja }))}
-                                placeholder="Seleccionar Trailer"
-                                isLoading={loadingCajasExternas}
-                                isDisabled={loadingCajasExternas || !!errorCajasExternas}
-                                styles={selectStyles} isClearable
-                            />
-
-                        </div>
-                        <div className="column" style={{ marginTop: '28px', padding: '0 10px', height: '48px', flexShrink: 0 }} >
-                            <button type='button' onClick={() => setIsModalCajaExternaOpen(true)} className="accept-button" style={{ padding: '0 10px', height: '48px', width: '5%', flexShrink: 0 }} title="Registrar Nueva Caja Externa">+</button>
-                        </div>
-
-                    </div>
-                )}
             </div>
 
             <br />
