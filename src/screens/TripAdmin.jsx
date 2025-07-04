@@ -4,8 +4,8 @@ import {
     Button, TablePagination, TextField, Box, Typography, CircularProgress, Alert,
     Link as MuiLink, Tooltip, IconButton, Collapse, Grid, Chip
 } from '@mui/material';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'; // Nota: En tu código original estos estaban invertidos. Asumo que quieres flecha abajo para cerrar y flecha arriba para abrir.
-import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';   // Si no, invierte los íconos de nuevo.
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -27,7 +27,7 @@ const TripRow = ({ trip, onEdit, onFinalize, getDocumentUrl }) => {
     } else if (trip.etapas && trip.etapas.length > 0) {
         loadingDateTitle = 'Fecha de carga (1ª Etapa) no especificada';
     }
-    console.log('Trip Details',trip)
+    
     return (
         <React.Fragment>
             <TableRow sx={{ '& > *': { borderBottom: 'unset' } }} hover>
@@ -37,7 +37,28 @@ const TripRow = ({ trip, onEdit, onFinalize, getDocumentUrl }) => {
                     </IconButton>
                 </TableCell>
                 <TableCell component="th" scope="row">{trip.trip_number}</TableCell>
-                <TableCell>{trip.driver_nombre || trip.driver_id || '-'}</TableCell>
+                {/* --- INICIO DE LA MODIFICACIÓN --- */}
+                <TableCell>
+                    {trip.driver_second_nombre ? (
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                <Typography variant="body2" component="span" noWrap title={trip.driver_nombre || 'Principal'}>
+                                    {trip.driver_nombre || 'N/A'}
+                                </Typography>
+                                {/* <Chip label="P" size="small" sx={{ height: '18px', fontSize: '0.7rem' }} title="Principal" color="primary" /> */}
+                            </Box>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                <Typography variant="body2" component="span" noWrap title={trip.driver_second_nombre}>
+                                    {trip.driver_second_nombre}
+                                </Typography>
+                                {/* <Chip label="S" size="small" sx={{ height: '18px', fontSize: '0.7rem' }} title="Secundario" color="secondary" /> */}
+                            </Box>
+                        </Box>
+                    ) : (
+                        trip.driver_nombre || trip.driver_id || '-'
+                    )}
+                </TableCell>
+                {/* --- FIN DE LA MODIFICACIÓN --- */}
                 <TableCell>{trip.truck_unidad || trip.truck_id || '-'}</TableCell>
                 <TableCell>{trip.caja_no_caja || trip.caja_id || trip.caja_externa_no_caja || trip.caja_externa_id||'N/A'}</TableCell>
                 <TableCell sx={{ whiteSpace: 'nowrap' }} title={loadingDateTitle}>
@@ -84,8 +105,7 @@ const TripRow = ({ trip, onEdit, onFinalize, getDocumentUrl }) => {
                             {Array.isArray(trip.etapas) && trip.etapas.length > 0 ? (
                                 <Grid container spacing={2} sx={{ fontSize: '0.85rem' }}>
                                     {trip.etapas.map((etapa) => {
-                                        // Construir el título del Tooltip (sin cambios significativos aquí)
-                                        let tooltipTitle = `Compañía: ${etapa.nombre_compania || '-'}\nBodega Origen: ${etapa.warehouse_origin_name || '-'}\nBodega Destino: ${etapa.warehouse_destination_name || '-'}\nTarifa: ${etapa.rate_tarifa || '-'}\nMillas: ${etapa.millas_pcmiller || '-'}`;
+                                        let tooltipTitle = `Compañía: ${etapa.nombre_compania || '-'}\nBodega Origen: ${etapa.warehouse_origin_name || '-'}\nBodega Destino: ${etapa.warehouse_destination_name || '-'}\nMillas: ${etapa.millas_pcmiller || '-'}`;
 
                                         if (Array.isArray(etapa.stops_in_transit) && etapa.stops_in_transit.length > 0) {
                                             tooltipTitle += '\n\nParadas en Ruta:';
@@ -112,7 +132,6 @@ const TripRow = ({ trip, onEdit, onFinalize, getDocumentUrl }) => {
                                                         Entrega: {etapa.delivery_date ? dayjs(etapa.delivery_date).format("DD/MM/YY") : '-'}
                                                     </span>
 
-                                                    {/* CAMBIO: Sección de Paradas en Ruta - Ubicación con su documento al lado */}
                                                     {Array.isArray(etapa.stops_in_transit) && etapa.stops_in_transit.length > 0 && (
                                                         <Box sx={{ mt: 1, borderTop: '1px dashed #ccc', pt: 1, fontSize: '0.9em' }}>
                                                             <Typography variant="body2" sx={{ fontWeight: 'bold', fontSize: '0.9em', mb: 0.5 }}>Paradas en Ruta:</Typography>
@@ -137,7 +156,6 @@ const TripRow = ({ trip, onEdit, onFinalize, getDocumentUrl }) => {
                                                         </Box>
                                                     )}
 
-                                                    {/* CAMBIO CLAVE: Sección de Documentos Generales de la Etapa */}
                                                     {Array.isArray(etapa.documentos_adjuntos) && etapa.documentos_adjuntos.length > 0 && (
                                                         <Box sx={{ mt: 1, borderTop: '1px dashed #ccc', pt: 1 }}>
                                                             <Typography variant="body2" sx={{ fontWeight: 'bold', fontSize: '0.9em', mb: 0.5 }}>Documentos Generales de la Etapa:</Typography>
@@ -200,7 +218,6 @@ const TripAdmin = () => {
             formData.append('op', 'getAll');
             const response = await fetch(apiUrl, { method: 'POST', body: formData });
             const responseText = await response.text();
-            console.log("Respuesta cruda de getAll:", responseText);
             let result;
             try {
                 result = JSON.parse(responseText);
@@ -214,12 +231,10 @@ const TripAdmin = () => {
                 if (Array.isArray(result.trips)) {
                     result.trips.forEach(trip => {
                         if (!Array.isArray(trip.etapas)) {
-                            console.warn(`Trip ID ${trip.trip_id} no tiene un array de etapas. Recibido:`, trip.etapas);
                             trip.etapas = [];
                         }
                         trip.etapas.forEach(etapa => {
                             if (!Array.isArray(etapa.documentos_adjuntos)) {
-                                console.warn(`Etapa ID ${etapa.trip_stage_id} no tiene un array de documentos_adjuntos. Recibido:`, etapa.documentos_adjuntos);
                                 etapa.documentos_adjuntos = [];
                             }
                         });
@@ -244,23 +259,15 @@ const TripAdmin = () => {
     useEffect(() => { fetchTrips(); }, []);
 
     const getDocumentUrl = (serverPath) => {
-        console.log("getDocumentUrl - serverPath recibido:", serverPath);
         if (!serverPath || typeof serverPath !== 'string') {
-            console.warn("getDocumentUrl - Ruta inválida o vacía recibida.");
             return '#';
         }
-
         const webRootPath = `${apiHost}/Uploads/Trips/`;
         const fileName = serverPath.split(/[\\/]/).pop();
-
         if (!fileName) {
-            console.warn("getDocumentUrl - No se pudo extraer el nombre del archivo de:", serverPath);
             return '#';
         }
-
-        const finalUrl = `${webRootPath}${encodeURIComponent(fileName)}`;
-        console.log("getDocumentUrl - URL generada:", finalUrl);
-        return finalUrl;
+        return `${webRootPath}${encodeURIComponent(fileName)}`;
     };
 
     const filteredTrips = useMemo(() => trips.filter(trip => {
@@ -274,6 +281,7 @@ const TripAdmin = () => {
             (trip.trip_id?.toString() || '').toLowerCase().includes(searchLower) ||
             (trip.trip_number || '').toLowerCase().includes(searchLower) ||
             (trip.driver_nombre || '').toLowerCase().includes(searchLower) ||
+            (trip.driver_second_nombre || '').toLowerCase().includes(searchLower) || // <-- Añadido a la búsqueda
             (trip.truck_unidad || '').toLowerCase().includes(searchLower) ||
             (trip.caja_no_caja || '').toLowerCase().includes(searchLower) ||
             (trip.status || '').toLowerCase().includes(searchLower) ||
@@ -282,9 +290,8 @@ const TripAdmin = () => {
                 (etapa.origin || '').toLowerCase().includes(searchLower) ||
                 (etapa.destination || '').toLowerCase().includes(searchLower) ||
                 (etapa.nombre_compania || '').toLowerCase().includes(searchLower) ||
-                // NUEVO: Añadir campos de stopStage a la búsqueda si es relevante
-                (etapa.stageType === 'stopStage' && (etapa.origin || '').toLowerCase().includes(searchLower)) || // Si 'origin' es la ubicación de la parada
-                (etapa.stageType === 'stopStage' && (etapa.reason || '').toLowerCase().includes(searchLower)) // Si 'reason' es la razón de la parada
+                (etapa.stageType === 'stopStage' && (etapa.origin || '').toLowerCase().includes(searchLower)) ||
+                (etapa.stageType === 'stopStage' && (etapa.reason || '').toLowerCase().includes(searchLower))
             ))
         );
         return matchesSearch && withinDateRange;
@@ -323,7 +330,7 @@ const TripAdmin = () => {
         <div className="trip-admin">
             <h1 className="title">Administrador de Viajes</h1>
             <div className="filters">
-                <input type="text" placeholder="Buscar" value={search} onChange={(e) => setSearch(e.target.value)} className="small-input" />
+                <input type="text" placeholder="Buscar por Trip#, Driver, Truck, etc..." value={search} onChange={(e) => setSearch(e.target.value)} className="small-input" />
                 <div className="date-pickers">
                     <DatePicker
                         selected={startDate}
@@ -354,9 +361,11 @@ const TripAdmin = () => {
                     <TableHead>
                         <TableRow>
                             <TableCell />
-                            {['Trip #', 'Driver', 'Truck', 'Trailer', 'Initial Date', 'Status', 'Actions'].map((title) => (
+                            {/* --- INICIO DE MODIFICACIÓN --- */}
+                            {['Trip #', 'Driver(s)', 'Truck', 'Trailer', 'Initial Date', 'Status', 'Actions'].map((title) => (
                                 <TableCell key={title} sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>{title}</TableCell>
                             ))}
+                            {/* --- FIN DE MODIFICACIÓN --- */}
                         </TableRow>
                     </TableHead>
                     <TableBody>

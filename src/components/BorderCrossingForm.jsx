@@ -35,9 +35,6 @@ const selectStyles = {
         fontSize: '16px',
         minHeight: '40px',
     }),
-
-
-
 };
 
 
@@ -50,8 +47,8 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
     const { activeExternalTrailers, loading: loadingCajasExternas, error: errorCajasExternas, refetch: refetchExternalTrailers } = useFetchActiveExternalTrailers();
     const { activeCompanies, loading: loadingCompanies, error: errorCompanies } = useFetchCompanies();
     const { activeWarehouses, loading: loadingWarehouses, error: errorWarehouses } = useFetchWarehouses();
-    const [trailerType, setTrailerType] = useState('interna'); // 'interna' o 'externa'
-
+    const [trailerType, setTrailerType] = useState('interna');
+    const [tripMode, setTripMode] = useState('individual');
 
 
     const [isCreatingCompany, setIsCreatingCompany] = useState(false);
@@ -66,6 +63,7 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
     const [formData, setFormData] = useState({
         trip_number: tripNumber || '',
         driver_id: '',
+        driver_id_second: '', // Campo para el segundo conductor
         truck_id: '',
         caja_id: '',
         caja_externa_id: ''
@@ -99,6 +97,15 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
             setFormData(prev => ({ ...prev, caja_id: '' }));
         }
     };
+
+    const handleTripModeChange = (mode) => {
+        setTripMode(mode);
+        if (mode === 'individual') {
+            // Limpia el segundo conductor si se cambia a modo individual
+            setFormData(prev => ({ ...prev, driver_id_second: '' }));
+        }
+    };
+
 
     useEffect(() => {
         if (activeCompanies) {
@@ -350,6 +357,7 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
         dataToSend.append('op', 'Alta');
         dataToSend.append('trip_number', formData.trip_number);
         dataToSend.append('driver_id', formData.driver_id);
+        dataToSend.append('driver_id_second', formData.driver_id_second || ''); // Enviar segundo driver
         dataToSend.append('truck_id', formData.truck_id);
         dataToSend.append('caja_id', formData.caja_id || '');
         dataToSend.append('caja_externa_id', formData.caja_externa_id || '');
@@ -379,7 +387,7 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
 
 
         dataToSend.append('etapas', JSON.stringify(etapasParaJson));
-        //  documentos de CADA etapa a FormData
+        // documentos de CADA etapa a FormData
         etapas.forEach((etapa, index) => {
             Object.entries(etapa.documentos).forEach(([docType, docData]) => {
                 if (docData && docData.file instanceof File) {
@@ -414,33 +422,7 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
                 if (onSuccess) {
                     onSuccess();
                 }
-                setFormData({
-                    trip_number: '',
-                    driver_id: '',
-                    truck_id: '',
-                    caja_id: '',
-                    caja_externa_id: ''
-
-                });
-                setEtapas([{
-                    stage_number: 1,
-                    origin: '',
-                    destination: '',
-                    stageType: 'borderCrossing',
-                    zip_code_origin: '',
-                    zip_code_destination: '',
-                    loading_date: null,
-                    delivery_date: null,
-                    company_id: '',
-                    travel_direction: '',
-                    warehouse_origin_id: '',
-                    warehouse_destination_id: '',
-                    ci_number: '',
-                    rate_tarifa: '',
-                    millas_pcmiller: '',
-                    millas_pcmiller_practicas: '',
-                    documentos: { ...initialBorderCrossingDocs }
-                }]);
+                resetForm(); // Llamar a resetForm para limpiar todo
             } else {
                 Swal.fire({
                     icon: 'error',
@@ -461,22 +443,7 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
 
     };
 
-
-
-
-
     const handleSaveExternalCaja = async (cajaData) => {
-
-        // Swal.fire({
-
-        //   title: 'Registrando Caja Externa...',
-
-        //   allowOutsideClick: false,
-
-        //   didOpen: () => Swal.showLoading()
-
-        // });
-
         const dataToSend = new FormData();
         dataToSend.append('op', 'Alta');
         Object.entries(cajaData).forEach(([key, value]) => {
@@ -506,18 +473,18 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
 
 
     const resetForm = () => {
-
         if (onSuccess) {
             onSuccess();
         }
         setFormData({
             trip_number: '',
             driver_id: '',
+            driver_id_second: '', // Limpiar segundo conductor
             truck_id: '',
             caja_id: '',
             caja_externa_id: ''
-
         });
+        setTripMode('individual'); // Resetear modo de viaje
         setEtapas([{
             stage_number: 1,
             origin: '',
@@ -542,28 +509,78 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
 
     return (
         <form onSubmit={handleSubmit} className="card-container">
+            {/* <style>{`
+                .trip-mode-selector, .trailer-type-selector {
+                    display: flex;
+                    border: 1px solid #ccc;
+                    border-radius: 5px;
+                    overflow: hidden;
+                    width: 100%;
+                }
+                .trip-mode-selector button, .trailer-type-selector button {
+                    flex-grow: 1;
+                    padding: 10px;
+                    border: none;
+                    background-color: #f0f0f0;
+                    cursor: pointer;
+                    transition: background-color 0.2s;
+                    font-size: 16px;
+                }
+                .trip-mode-selector button:not(:last-child), .trailer-type-selector button:not(:last-child) {
+                    border-right: 1px solid #ccc;
+                }
+                .trip-mode-selector button.active, .trailer-type-selector button.active {
+                    background-color: #007bff;
+                    color: white;
+                }
+            `}</style> */}
             <div className="form-actions">
                 <button type="button" className="cancel-button" onClick={resetForm}>Cancelar</button>
                 <button type="submit" className="accept-button">Guardar Viaje</button>
             </div>
             <div className="form-section">
                 <legend className="card-label">Información General del Viaje</legend>
+
+                {/* Fila 1: Selector de Modo de Viaje */}
                 <div className="input-columns">
                     <div className="column">
-                        <label htmlFor="driver_id">Driver:</label>
+                        <label>Tipo de Viaje:</label>
+                        <div className="trip-mode-selector">
+                            <button type="button" className={tripMode === 'individual' ? 'active' : ''} onClick={() => handleTripModeChange('individual')}>Viaje Individual</button>
+                            <button type="button" className={tripMode === 'team' ? 'active' : ''} onClick={() => handleTripModeChange('team')}>Viaje en Equipo</button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Fila 2: Recursos Principales (Drivers y Truck) */}
+                <div className="input-columns" style={{ marginTop: '1rem' }}>
+                    <div className="column">
+                        <label htmlFor="driver_id">Driver Principal:</label>
                         <Select
                             id="driver_id" name="driver_id"
                             value={activeDrivers.find(d => d.driver_id === formData.driver_id) ? { value: formData.driver_id, label: activeDrivers.find(d => d.driver_id === formData.driver_id).nombre } : null}
                             onChange={(selected) => setForm('driver_id', selected ? selected.value : '')}
-                            options={activeDrivers.map(driver => ({ value: driver.driver_id, label: driver.nombre }))}
+                            options={activeDrivers.filter(d => d.driver_id !== formData.driver_id_second).map(driver => ({ value: driver.driver_id, label: driver.nombre }))}
                             placeholder="Seleccionar Driver"
-                            isLoading={loadingDrivers}
-                            isDisabled={loadingDrivers || !!errorDrivers}
+                            isLoading={loadingDrivers} isDisabled={loadingDrivers || !!errorDrivers}
                             styles={selectStyles} isClearable
                         />
-
                         {errorDrivers && <p className="error-text">Error cargando drivers</p>}
                     </div>
+                    {tripMode === 'team' && (
+                        <div className="column">
+                            <label htmlFor="driver_id_second">Segundo Driver:</label>
+                            <Select
+                                id="driver_id_second" name="driver_id_second"
+                                value={activeDrivers.find(d => d.driver_id === formData.driver_id_second) ? { value: formData.driver_id_second, label: activeDrivers.find(d => d.driver_id === formData.driver_id_second).nombre } : null}
+                                onChange={(selected) => setForm('driver_id_second', selected ? selected.value : '')}
+                                options={activeDrivers.filter(d => d.driver_id !== formData.driver_id).map(driver => ({ value: driver.driver_id, label: driver.nombre }))}
+                                placeholder="Seleccionar 2do Driver"
+                                isLoading={loadingDrivers} isDisabled={loadingDrivers || !!errorDrivers}
+                                styles={selectStyles} isClearable
+                            />
+                        </div>
+                    )}
                     <div className="column">
                         <label htmlFor="truck_id" >Truck:</label>
                         <Select
@@ -572,12 +589,15 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
                             onChange={(selected) => setForm('truck_id', selected ? selected.value : '')}
                             options={activeTrucks.map(truck => ({ value: truck.truck_id, label: truck.unidad }))}
                             placeholder="Seleccionar Truck"
-                            isLoading={loadingTrucks}
-                            isDisabled={loadingTrucks || !!errorTrucks}
+                            isLoading={loadingTrucks} isDisabled={loadingTrucks || !!errorTrucks}
                             styles={selectStyles} isClearable
                         />
                         {errorTrucks && <p className="error-text">Error cargando trucks</p>}
                     </div>
+                </div>
+
+                {/* Fila 3: Trailer */}
+                <div className="input-columns" style={{ marginTop: '1rem' }}>
                     <div className="column">
                         <label>Tipo de Trailer:</label>
                         <div className="trailer-type-selector">
@@ -585,55 +605,51 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
                             <button type="button" className={trailerType === 'externa' ? 'active' : ''} onClick={() => handleTrailerTypeChange('externa')}>Caja Externa</button>
                         </div>
                     </div>
+                    <div className="column">
+                        {trailerType === 'interna' && (
+                            <>
+                                <label>Trailer (Caja Interna):</label>
+                                <Select
+                                    id="caja_id" name="caja_id"
+                                    value={activeTrailers.find(c => c.caja_id === formData.caja_id) ? { value: formData.caja_id, label: activeTrailers.find(c => c.caja_id === formData.caja_id).no_caja } : null}
+                                    onChange={(selected) => setForm('caja_id', selected ? selected.value : '')}
+                                    options={activeTrailers.map(caja => ({ value: caja.caja_id, label: caja.no_caja }))}
+                                    placeholder="Seleccionar Trailer"
+                                    isLoading={loadingCajas} isDisabled={loadingCajas || !!errorCajas}
+                                    styles={selectStyles} isClearable
+                                />
+                            </>
+                        )}
+                        {trailerType === 'externa' && (
+                            <div style={{ display: 'flex', alignItems: 'flex-end', gap: '10px' }}>
+                                <div style={{ flexGrow: 1 }}>
+                                    <label>Trailer (Caja Externa):</label>
+                                    <Select
+                                        id='caja_externa_id' name='caja_externa_id'
+                                        value={activeExternalTrailers.find(c => c.caja_externa_id === formData.caja_externa_id) ? { value: formData.caja_externa_id, label: activeExternalTrailers.find(c => c.caja_externa_id === formData.caja_externa_id).no_caja } : null}
+                                        onChange={(selected) => setForm('caja_externa_id', selected ? selected.value : '')}
+                                        options={activeExternalTrailers.map(caja => ({ value: caja.caja_externa_id, label: caja.no_caja }))}
+                                        placeholder="Seleccionar Trailer"
+                                        isLoading={loadingCajasExternas} isDisabled={loadingCajasExternas || !!errorCajasExternas}
+                                        styles={selectStyles} isClearable
+                                    />
+                                </div>
+                                <button type='button' onClick={() => setIsModalCajaExternaOpen(true)} className="accept-button" style={{ height: '48px', flexShrink: 0, padding: '0 15px' }} title="Registrar Nueva Caja Externa">+</button>
+                            </div>
+                        )}
+                    </div>
+                   
+                    {/* Columna vacía para mantener la alineación si no hay segundo conductor */}
+                    {/* {tripMode === 'individual' && <div className="column"></div>} */}
                 </div>
-                {trailerType === 'interna' && (
-                    <div className="input-columns" style={{ marginTop: '1rem' }}>
-                        <div className="column">
-                            <label>Trailer (Caja Interna):</label>
-                            <Select
-                                id="caja_id" name="caja_id"
-                                value={activeTrailers.find(c => c.caja_id === formData.caja_id) ? { value: formData.caja_id, label: activeTrailers.find(c => c.caja_id === formData.caja_id).no_caja } : null}
-                                onChange={(selected) => setForm('caja_id', selected ? selected.value : '')}
-                                options={activeTrailers.map(caja => ({ value: caja.caja_id, label: caja.no_caja }))}
-                                placeholder="Seleccionar Trailer"
-                                isLoading={loadingCajas}
-                                isDisabled={loadingCajas || !!errorCajas}
-                                styles={selectStyles} isClearable
-                            />
-                        </div>
-                    </div>
-                )}
-                {trailerType === 'externa' && (
-                    <div className="input-columns" style={{ marginTop: '1rem' }}>
-                        <div className="column">
-                            <label>Trailer (Caja Externa):</label>
-                            <Select
-                                id='caja_externa_id' name='caja_externa_id'
-                                value={activeExternalTrailers.find(c => c.caja_externa_id === formData.caja_externa_id) ? { value: formData.caja_externa_id, label: activeExternalTrailers.find(c => c.caja_externa_id === formData.caja_externa_id).no_caja } : null}
-
-                                onChange={(selected) => setForm('caja_externa_id', selected ? selected.value : '')}
-                                options={activeExternalTrailers.map(caja => ({ value: caja.caja_externa_id, label: caja.no_caja }))}
-                                placeholder="Seleccionar Trailer"
-                                isLoading={loadingCajasExternas}
-                                isDisabled={loadingCajasExternas || !!errorCajasExternas}
-                                styles={selectStyles} isClearable
-                            />
-                        </div>
-                        <div className="column" style={{ marginTop: '28px', padding: '0 10px', height: '48px', flexShrink: 0 }} >
-                            <button type='button' onClick={() => setIsModalCajaExternaOpen(true)} className="accept-button" style={{ padding: '0 10px', height: '48px', width: '5%', flexShrink: 0 }} title="Registrar Nueva Caja Externa">+</button>
-                        </div>
-                    </div>
-
-                )}
             </div>
             <br />
 
             {etapas.map((etapa, index) => (
                 <div key={index} className="etapa-container form-section">
                     <div className="card-label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginTop: '10px', marginBottom: '10px' }}>
-                        {/* Mostrar tipo de etapa */}
                         <span>{`Etapa ${etapa.stage_number} (${etapa.stageType === 'borderCrossing' ? 'Cruce Fronterizo' : 'Viaje Normal'})`}</span>
-                        {etapas.length > 0 && ( // Permitir borrar incluso si solo queda una (se validará al guardar)
+                        {etapas.length > 0 && (
                             <button type="button" className="delete-button" onClick={() => eliminarEtapa(index)} title="Eliminar Etapa">&#x2716;</button>
                         )}
                     </div>
@@ -642,19 +658,14 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
                         <div className="column">
                             <label htmlFor={`company_id-${index}`}>Company:</label>
                             <CreatableSelect
-                                id={`company_id-${index}`}
-                                name={`company_id-${index}`}
-                                isClearable
+                                id={`company_id-${index}`} name={`company_id-${index}`} isClearable
                                 value={companyOptions.find(c => c.value === etapa.company_id) || null}
                                 onChange={(selected) => handleEtapaChange(index, 'company_id', selected ? selected.value : '')}
                                 onCreateOption={(inputValue) => handleCreateCompany(inputValue, index)}
-                                options={companyOptions}
-                                placeholder="Seleccionar o Crear Compañía"
-                                isLoading={loadingCompanies || isCreatingCompany}
-                                styles={selectStyles}
+                                options={companyOptions} placeholder="Seleccionar o Crear Compañía"
+                                isLoading={loadingCompanies || isCreatingCompany} styles={selectStyles}
                                 formatCreateLabel={(inputValue) => `Crear nueva compañía: "${inputValue}"`}
                             />
-                            {/* {errorCompanies && <p className="error-text">Error cargando companies</p>} */}
                         </div>
                         <div className="column">
                             <label htmlFor={`travel_direction-${index}`}>Travel Direction:</label>
@@ -663,10 +674,8 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
                                 value={etapa.travel_direction ? { value: etapa.travel_direction, label: etapa.travel_direction } : null}
                                 onChange={(selected) => handleEtapaChange(index, 'travel_direction', selected ? selected.value : '')}
                                 options={[{ value: 'Going Up', label: 'Going Up' }, { value: 'Going Down', label: 'Going Down' }]}
-                                placeholder="Seleccionar Dirección"
-                                styles={selectStyles} isClearable
+                                placeholder="Seleccionar Dirección" styles={selectStyles} isClearable
                             />
-
                         </div>
                         <div className="column">
                             <label htmlFor="ci_number">CI Number:</label>
@@ -674,49 +683,36 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
                                 type="text" id={`ci_number-${index}`} name={`ci_number-${index}`}
                                 value={etapa.ci_number}
                                 onChange={(e) => handleEtapaChange(index, 'ci_number', e.target.value)}
-                                placeholder="Número CI"
-                                className="form-input"
+                                placeholder="Número CI" className="form-input"
                             />
                         </div>
                     </div>
-
                     <div className="input-columns">
                         <div className="column">
                             <label htmlFor={`warehouse_origin_id-${index}`} style={{ marginTop: '10px' }}>Origin Warehouse:</label>
                             <CreatableSelect
-                                id={`warehouse_origin_id-${index}`}
-                                name={`warehouse_origin_id-${index}`}
-                                isClearable
+                                id={`warehouse_origin_id-${index}`} name={`warehouse_origin_id-${index}`} isClearable
                                 value={warehouseOptions.find(w => w.value === etapa.warehouse_origin_id) || null}
                                 onChange={(selected) => handleEtapaChange(index, 'warehouse_origin_id', selected ? selected.value : '')}
                                 onCreateOption={(inputValue) => handleCreateWarehouse(inputValue, index, 'warehouse_origin_id')}
-                                options={warehouseOptions}
-                                placeholder="Seleccionar o Crear Bodega Origen"
-                                isLoading={loadingWarehouses || isCreatingWarehouse}
-                                styles={selectStyles}
+                                options={warehouseOptions} placeholder="Seleccionar o Crear Bodega Origen"
+                                isLoading={loadingWarehouses || isCreatingWarehouse} styles={selectStyles}
                                 formatCreateLabel={(inputValue) => `Crear nueva bodega: "${inputValue}"`}
                             />
-
-                            {/* {errorWarehouses && <p className="error-text">Error cargando warehouses</p>} */}
                         </div>
                         <div className="column">
                             <label htmlFor={`warehouse_destination_id-${index}`} style={{ marginTop: '10px' }}>Destination Warehouse:</label>
                             <CreatableSelect
-                                id={`warehouse_destination_id-${index}`}
-                                name={`warehouse_destination_id-${index}`}
-                                isClearable
+                                id={`warehouse_destination_id-${index}`} name={`warehouse_destination_id-${index}`} isClearable
                                 value={warehouseOptions.find(w => w.value === etapa.warehouse_destination_id) || null}
                                 onChange={(selected) => handleEtapaChange(index, 'warehouse_destination_id', selected ? selected.value : '')}
                                 onCreateOption={(inputValue) => handleCreateWarehouse(inputValue, index, 'warehouse_destination_id')}
-                                options={warehouseOptions}
-                                placeholder="Seleccionar o Crear Bodega Destino"
-                                isLoading={loadingWarehouses || isCreatingWarehouse}
-                                styles={selectStyles}
+                                options={warehouseOptions} placeholder="Seleccionar o Crear Bodega Destino"
+                                isLoading={loadingWarehouses || isCreatingWarehouse} styles={selectStyles}
                                 formatCreateLabel={(inputValue) => `Crear nueva bodega: "${inputValue}"`}
                             />
                         </div>
                     </div>
-
                     <div className="input-columns">
                         <div className="column">
                             <label htmlFor={`origin-${index}`} style={{ marginTop: '10px' }}>Origin City/State:</label>
@@ -724,8 +720,7 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
                                 type="text" id={`origin-${index}`} name={`origin-${index}`}
                                 value={etapa.origin}
                                 onChange={(e) => handleEtapaChange(index, 'origin', e.target.value)}
-                                placeholder="Ciudad/Estado Origen"
-                                className="form-input"
+                                placeholder="Ciudad/Estado Origen" className="form-input"
                             />
                         </div>
                         <div className="column">
@@ -734,13 +729,10 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
                                 type="text" id={`destination-${index}`} name={`destination-${index}`}
                                 value={etapa.destination}
                                 onChange={(e) => handleEtapaChange(index, 'destination', e.target.value)}
-                                placeholder="Ciudad/Estado Destino"
-                                className="form-input"
+                                placeholder="Ciudad/Estado Destino" className="form-input"
                             />
                         </div>
                     </div>
-
-
                     <div className="input-columns">
                         <div className="column">
                             <label htmlFor={`zip_code_origin-${index}`}>Zip Code Origin:</label>
@@ -750,7 +742,6 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
                                 onChange={(e) => handleEtapaChange(index, 'zip_code_origin', e.target.value)}
                                 placeholder="Zip Origen" className="form-input"
                             />
-
                         </div>
                         <div className="column">
                             <label htmlFor={`zip_code_destination-${index}`} >Zip Code Destination:</label>
@@ -768,10 +759,8 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
                             <DatePicker
                                 selected={etapa.loading_date}
                                 onChange={(date) => handleEtapaChange(index, 'loading_date', date)}
-                                dateFormat="dd/MM/yyyy" // Formato visual
-                                placeholderText="Fecha Carga"
-                                className="form-input date-picker-full-width" // Clase para ancho completo
-                                isClearable
+                                dateFormat="dd/MM/yyyy" placeholderText="Fecha Carga"
+                                className="form-input date-picker-full-width" isClearable
                             />
                         </div>
                         <div className="column">
@@ -779,26 +768,19 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
                             <DatePicker
                                 selected={etapa.delivery_date}
                                 onChange={(date) => handleEtapaChange(index, 'delivery_date', date)}
-                                dateFormat="dd/MM/yyyy"
-                                placeholderText="Fecha Entrega"
-                                className="form-input date-picker-full-width"
-                                isClearable
+                                dateFormat="dd/MM/yyyy" placeholderText="Fecha Entrega"
+                                className="form-input date-picker-full-width" isClearable
                             />
-
                         </div>
-
                     </div>
                     <div className="input-columns">
                         <div className="column">
                             <label htmlFor={`rate_tarifa-${index}`} >Rate Tarifa:</label>
                             <input
-                                type="number"
-                                id={`rate_tarifa-${index}`}
-                                name={`rate_tarifa-${index}`}
+                                type="number" id={`rate_tarifa-${index}`} name={`rate_tarifa-${index}`}
                                 value={etapa.rate_tarifa}
                                 onChange={(e) => handleEtapaChange(index, 'rate_tarifa', e.target.value)}
-                                placeholder="Ej: 1500.50"
-                                className="form-input"
+                                placeholder="Ej: 1500.50" className="form-input"
                             />
                         </div>
                         <div className="column">
@@ -807,11 +789,9 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
                                 type="number" id={`millas_pcmiller-${index}`} name={`millas_pcmiller-${index}`}
                                 value={etapa.millas_pcmiller}
                                 onChange={(e) => handleEtapaChange(index, 'millas_pcmiller', e.target.value)}
-                                placeholder="Ej: 850"
-                                className="form-input"
+                                placeholder="Ej: 850" className="form-input"
                             />
                         </div>
-
                     </div>
                     <div className="input-columns">
                         <div className="column"></div>
@@ -821,14 +801,11 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
                                 type="number" id={`millas_pcmiller_practicas-${index}`} name={`millas_pcmiller_practicas-${index}`}
                                 value={etapa.millas_pcmiller_practicas}
                                 onChange={(e) => handleEtapaChange(index, 'millas_pcmiller_practicas', e.target.value)}
-                                placeholder="Ej: 850"
-                                className="form-input"
+                                placeholder="Ej: 850" className="form-input"
                             />
                         </div>
                     </div>
-
                     {etapa.stageType === 'borderCrossing' && (
-
                         <div className="subsection">
                             <legend className="card-label">Documentos de Etapa {etapa.stage_number}</legend>
                             <div className="input-columns">
@@ -836,77 +813,56 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
                                     <div className="column">
                                         <label htmlFor={`ima_invoice-${index}`}>IMA Invoice:</label>
                                         <button type="button" className="upload-button" onClick={() => abrirModal('ima_invoice', index)}>Subir</button>
-                                        {etapa.documentos?.ima_invoice && (<p className="doc-info"><i>{etapa.documentos.ima_invoice.fileName}{etapa.documentos.ima_invoice.vencimiento ? ` - V: ${etapa.documentos.ima_invoice.vencimiento}` : ''}</i></p>)}
+                                        {etapa.documentos?.ima_invoice && (<p className="doc-info"><i>{etapa.documentos.ima_invoice.fileName}</i></p>)}
                                     </div>
-
                                     <div className="column">
                                         <label htmlFor={`carta_porte-${index}`}>Carta Porte:</label>
                                         <button type="button" className="upload-button" onClick={() => abrirModal('carta_porte', index)}>Subir</button>
-                                        {etapa.documentos?.carta_porte && (<p className="doc-info"><i>{etapa.documentos.carta_porte.fileName}{etapa.documentos.carta_porte.vencimiento ? ` - V: ${etapa.documentos.carta_porte.vencimiento}` : ''}</i></p>)}
+                                        {etapa.documentos?.carta_porte && (<p className="doc-info"><i>{etapa.documentos.carta_porte.fileName}</i></p>)}
                                     </div>
-
                                     <div className="column">
                                         <label htmlFor={`ci-${index}`}>CI:</label>
                                         <button type="button" className="upload-button" onClick={() => abrirModal('ci', index)}>Subir</button>
-                                        {etapa.documentos?.ci && (<p className="doc-info"><i>{etapa.documentos.ci.fileName}{etapa.documentos.ci.vencimiento ? ` - V: ${etapa.documentos.ci.vencimiento}` : ''}</i></p>)}
+                                        {etapa.documentos?.ci && (<p className="doc-info"><i>{etapa.documentos.ci.fileName}</i></p>)}
                                     </div>
-
                                 </div>
-
-
-
                                 <div className="column">
                                     <div className="column">
                                         <label htmlFor={`entry-${index}`}>Entry:</label>
                                         <button type="button" className="upload-button" onClick={() => abrirModal('entry', index)}>Subir</button>
                                         {etapa.documentos?.entry && (<p className="doc-info"><i>{etapa.documentos.entry.fileName}</i></p>)}
                                     </div>
-
                                     <div className="column">
                                         <label htmlFor={`manifiesto-${index}`}>Manifiesto:</label>
                                         <button type="button" className="upload-button" onClick={() => abrirModal('manifiesto', index)}>Subir</button>
                                         {etapa.documentos?.manifiesto && (<p className="doc-info"><i>{etapa.documentos.manifiesto.fileName}</i></p>)}
                                     </div>
-
                                     <div className="column">
                                         <label htmlFor={`cita_entrega-${index}`}>Cita Entrega:</label>
                                         <button type="button" className="upload-button" onClick={() => abrirModal('cita_entrega', index)}>Subir</button>
-                                        {etapa.documentos?.cita_entrega && (<p className="doc-info"><i>{etapa.documentos.cita_entrega.fileName}{etapa.documentos.cita_entrega.vencimiento ? ` - V: ${etapa.documentos.cita_entrega.vencimiento}` : ''}</i></p>)}
+                                        {etapa.documentos?.cita_entrega && (<p className="doc-info"><i>{etapa.documentos.cita_entrega.fileName}</i></p>)}
                                     </div>
-
                                 </div>
-
-
-
                                 <div className="column">
                                     <div className="column">
                                         <label htmlFor={`bl-${index}`}>BL:</label>
                                         <button type="button" className="upload-button" onClick={() => abrirModal('bl', index)}>Subir</button>
                                         {etapa.documentos?.bl && (<p className="doc-info"><i>{etapa.documentos.bl.fileName}</i></p>)}
                                     </div>
-
                                     <div className="column">
                                         <label htmlFor={`orden_retiro-${index}`}>Orden Retiro:</label>
                                         <button type="button" className="upload-button" onClick={() => abrirModal('orden_retiro', index)}>Subir</button>
-                                        {etapa.documentos?.orden_retiro && (<p className="doc-info"><i>{etapa.documentos.orden_retiro.fileName}{etapa.documentos.orden_retiro.vencimiento ? ` - V: ${etapa.documentos.orden_retiro.vencimiento}` : ''}</i></p>)}
+                                        {etapa.documentos?.orden_retiro && (<p className="doc-info"><i>{etapa.documentos.orden_retiro.fileName}</i></p>)}
                                     </div>
-
                                     <div className="column">
                                         <label htmlFor={`bl_firmado-${index}`}>BL Firmado:</label>
                                         <button type="button" className="upload-button" onClick={() => abrirModal('bl_firmado', index)}>Subir</button>
-                                        {etapa.documentos?.bl_firmado && (<p className="doc-info"><i>{etapa.documentos.bl_firmado.fileName}{etapa.documentos.bl_firmado.vencimiento ? ` - V: ${etapa.documentos.bl_firmado.vencimiento}` : ''}</i></p>)}
+                                        {etapa.documentos?.bl_firmado && (<p className="doc-info"><i>{etapa.documentos.bl_firmado.fileName}</i></p>)}
                                     </div>
-
                                 </div>
-
                             </div>
-
                         </div>
-
                     )}
-
-
-
                     {etapa.stageType === 'normalTrip' && (
                         <div className="subsection">
                             <legend className="card-label">Documentos de Etapa {etapa.stage_number}</legend>
@@ -915,18 +871,17 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
                                     <div className="column">
                                         <label htmlFor={`ima_invoice-${index}`}>IMA Invoice:</label>
                                         <button type="button" className="upload-button" onClick={() => abrirModal('ima_invoice', index)}>Subir</button>
-                                        {etapa.documentos?.ima_invoice && (<p className="doc-info"><i>{etapa.documentos.ima_invoice.fileName}{etapa.documentos.ima_invoice.vencimiento ? ` - V: ${etapa.documentos.ima_invoice.vencimiento}` : ''}</i></p>)}
+                                        {etapa.documentos?.ima_invoice && (<p className="doc-info"><i>{etapa.documentos.ima_invoice.fileName}</i></p>)}
                                     </div>
                                     <div className="column">
                                         <label htmlFor={`ci-${index}`}>CI:</label>
                                         <button type="button" className="upload-button" onClick={() => abrirModal('ci', index)}>Subir</button>
-                                        {etapa.documentos?.ci && (<p className="doc-info"><i>{etapa.documentos.ci.fileName}{etapa.documentos.ci.vencimiento ? ` - V: ${etapa.documentos.ci.vencimiento}` : ''}</i></p>)}
+                                        {etapa.documentos?.ci && (<p className="doc-info"><i>{etapa.documentos.ci.fileName}</i></p>)}
                                     </div>
-
                                     <div className="column">
                                         <label htmlFor={`cita_entrega-${index}`}>Cita Entrega:</label>
                                         <button type="button" className="upload-button" onClick={() => abrirModal('cita_entrega', index)}>Subir</button>
-                                        {etapa.documentos?.cita_entrega && (<p className="doc-info"><i>{etapa.documentos.cita_entrega.fileName}{etapa.documentos.cita_entrega.vencimiento ? ` - V: ${etapa.documentos.cita_entrega.vencimiento}` : ''}</i></p>)}
+                                        {etapa.documentos?.cita_entrega && (<p className="doc-info"><i>{etapa.documentos.cita_entrega.fileName}</i></p>)}
                                     </div>
                                 </div>
                                 <div className="column">
@@ -938,7 +893,7 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
                                     <div className="column">
                                         <label htmlFor={`bl_firmado-${index}`}>BL Firmado:</label>
                                         <button type="button" className="upload-button" onClick={() => abrirModal('bl_firmado', index)}>Subir</button>
-                                        {etapa.documentos?.bl_firmado && (<p className="doc-info"><i>{etapa.documentos.bl_firmado.fileName}{etapa.documentos.bl_firmado.vencimiento ? ` - V: ${etapa.documentos.bl_firmado.vencimiento}` : ''}</i></p>)}
+                                        {etapa.documentos?.bl_firmado && (<p className="doc-info"><i>{etapa.documentos.bl_firmado.fileName}</i></p>)}
                                     </div>
                                 </div>
                             </div>
@@ -961,7 +916,6 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
                     onClose={() => {
                         setModalAbierto(false);
                         setModalTarget({ stageIndex: null, docType: null });
-
                     }}
                     onSave={modalTarget.stageIndex !== null ? handleGuardarDocumentoEtapa : handleGuardarDocumentoGlobal}
                     nombreCampo={modalTarget.docType}
@@ -969,20 +923,15 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
                     mostrarFechaVencimiento={mostrarFechaVencimientoModal}
                 />
             )}
-
             {IsModalCajaExternaOpen && (
                 <ModalCajaExterna
                     isOpen={IsModalCajaExternaOpen}
                     onClose={() => setIsModalCajaExternaOpen(false)}
                     onSave={handleSaveExternalCaja}
-
                 />
-            )
-            }
+            )}
         </form>
     );
 };
-
-
 
 export default BorderCrossingForm;

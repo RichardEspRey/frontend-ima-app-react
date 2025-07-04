@@ -43,9 +43,10 @@ const EditTripForm = () => {
 
     const [isCreatingCompany, setIsCreatingCompany] = useState(false);
     const [isCreatingWarehouse, setIsCreatingWarehouse] = useState(false);
+    const [tripMode, setTripMode] = useState('individual');
 
     const [formData, setFormData] = useState({
-        trip_number: '', driver_id: '', truck_id: '', caja_id: '',
+        trip_number: '', driver_id: '', driver_id_second: '', driver_nombre: '', driver_second_nombre: '', truck_id: '', caja_id: '',
         caja_externa_id: '', caja_no_caja: '', caja_externa_no_caja: ''
     });
     const [etapas, setEtapas] = useState([]);
@@ -94,6 +95,8 @@ const EditTripForm = () => {
                     setFormData({
                         trip_number: trip.trip_number || '',
                         driver_id: trip.driver_id || '',
+                        driver_id_second: trip.driver_id_second || '',
+                        driver_second_nombre: trip.driver_second_nombre || '',
                         truck_id: trip.truck_id || '',
                         caja_id: trip.caja_id || '',
                         caja_externa_id: trip.caja_externa_id || '',
@@ -103,7 +106,11 @@ const EditTripForm = () => {
                         caja_no_caja: trip.caja_no_caja || '',
                         caja_externa_no_caja: trip.caja_externa_no_caja
                     });
-
+                    if (trip.driver_id_second) {
+                        setTripMode('team');
+                    } else {
+                        setTripMode('individual');
+                    }
                     const processedEtapas = result.etapas.map(etapa => {
                         let loadingDateObj = null;
                         if (etapa.loading_date && typeof etapa.loading_date === 'string') { try { loadingDateObj = parseISO(etapa.loading_date); } catch (e) { } }
@@ -169,6 +176,14 @@ const EditTripForm = () => {
 
     const handleFormChange = (name, value) => {
         setFormData(prevData => ({ ...prevData, [name]: value }));
+    };
+
+    const handleTripModeChange = (mode) => {
+        setTripMode(mode);
+        if (mode === 'individual') {
+            handleFormChange('driver_id_second', '');
+            handleFormChange('driver_second_nombre', '');
+        }
     };
 
     const handleStageChange = (index, field, value) => {
@@ -320,7 +335,7 @@ const EditTripForm = () => {
                 origin: '', destination: '', zip_code_origin: '', zip_code_destination: '',
                 loading_date: null, delivery_date: null, company_id: null, travel_direction: '',
                 warehouse_origin_id: null, warehouse_destination_id: null, ci_number: '',
-                rate_tarifa: '', millas_pcmiller: '',millas_pcmiller_practicas: '', estatus: 'In Transit',
+                rate_tarifa: '', millas_pcmiller: '', millas_pcmiller_practicas: '', estatus: 'In Transit',
                 documentos: initialDocs,
                 stops_in_transit: []
             };
@@ -558,6 +573,14 @@ const EditTripForm = () => {
         }
         return options;
     }, [activeDrivers, formData.driver_id, formData.driver_nombre]);
+    const driverSecondOptions = useMemo(() => {
+        const options = activeDrivers.map(d => ({ value: d.driver_id, label: d.nombre }));
+        if (formData.driver_id_second && !activeDrivers.some(d => d.driver_id === formData.driver_id_second)) {
+            options.unshift({ value: formData.driver_id_second, label: formData.driver_second_nombre || `ID: ${formData.driver_id_second} (Inactivo)` });
+        }
+        return options;
+    }, [activeDrivers, formData.driver_id_second, formData.driver_second_nombre]);
+
 
     const truckOptions = useMemo(() => {
         const options = activeTrucks.map(t => ({ value: t.truck_id, label: t.unidad }));
@@ -599,6 +622,21 @@ const EditTripForm = () => {
                         <div className="form-section">
                             <div className="input-columns">
                                 <div className="column">
+                                    <label>Tipo de Viaje:</label>
+                                    <div className="trip-mode-selector">
+                                        <button type="button" className={tripMode === 'individual' ? 'active' : ''} onClick={() => handleTripModeChange('individual')} disabled={isFormDisabled}>
+                                            Viaje Individual
+                                        </button>
+                                        <button type="button" className={tripMode === 'team' ? 'active' : ''} onClick={() => handleTripModeChange('team')} disabled={isFormDisabled}>
+                                            Viaje en Equipo
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="input-columns">
+
+                                <div className="column">
                                     <label htmlFor="trip_number">Trip Number:</label> {/* Added Label */}
                                     <input
                                         type="text"
@@ -612,8 +650,8 @@ const EditTripForm = () => {
                                     />
                                 </div>
                                 <div className="column">
-                                    <label htmlFor="driver_id">Driver:</label>
-                                    <Select id="driver_id" 
+                                    <label htmlFor="driver_id">Driver Principal:</label>
+                                    <Select id="driver_id"
                                         name="driver_id"
                                         value={formData.driver_id ? { value: formData.driver_id, label: formData.driver_nombre || `ID: ${formData.driver_id}` } : null}
                                         onChange={(selected) => {
@@ -629,6 +667,25 @@ const EditTripForm = () => {
                                         isDisabled={isFormDisabled}
                                     />
                                 </div>
+                                {/* --- AÑADIR ESTE BLOQUE CONDICIONAL --- */}
+                                {tripMode === 'team' && (
+                                    <div className="column">
+                                        <label htmlFor="driver_id_second">Segundo Driver:</label>
+                                        <Select
+                                            options={driverSecondOptions.filter(opt => opt.value !== formData.driver_id)}
+                                            value={formData.driver_id_second ? { value: formData.driver_id_second, label: formData.driver_second_nombre || `ID: ${formData.driver_id_second}` } : null}
+                                            onChange={(selected) => {
+                                                handleFormChange('driver_id_second', selected ? selected.value : '');
+                                                handleFormChange('driver_second_nombre', selected ? selected.label : '');
+                                            }}
+                                            placeholder="Seleccionar 2do Driver"
+                                            isLoading={loadingDrivers}
+                                            styles={selectStyles}
+                                            isClearable
+                                            isDisabled={isFormDisabled}
+                                        />
+                                    </div>
+                                )}
                                 <div className="column">
                                     <label htmlFor="truck_id">Truck:</label>
                                     <Select id="truck_id"
@@ -647,6 +704,10 @@ const EditTripForm = () => {
                                         isDisabled={isFormDisabled}
                                     />
                                 </div>
+
+
+                            </div>
+                            <div className="input-columns" style={{ marginTop: '1rem' }}>
                                 <div className="column">
                                     <label>Tipo de Trailer:</label>
                                     <div className="trailer-type-selector">
@@ -658,10 +719,9 @@ const EditTripForm = () => {
                                         </button>
                                     </div>
                                 </div>
-                            </div>
+                                <div className="column">
+                                {trailerType === 'interna' && (
 
-                            {trailerType === 'interna' && (
-                                <div className="input-columns" style={{ marginTop: '1rem' }}>
                                     <div className="column">
                                         <label>Trailer (Caja Interna):</label>
                                         <Select
@@ -680,10 +740,8 @@ const EditTripForm = () => {
                                             isDisabled={isFormDisabled}
                                         />
                                     </div>
-                                </div>
-                            )}
-                            {trailerType === 'externa' && (
-                                <div className="input-columns" style={{ marginTop: '1rem' }}>
+                                )}
+                                {trailerType === 'externa' && (
                                     <div className="column">
                                         <label>Trailer (Caja Externa):</label>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -714,8 +772,13 @@ const EditTripForm = () => {
                                             </button>
                                         </div>
                                     </div>
+
+                                )}
                                 </div>
-                            )}
+                              
+                            </div>
+                                
+
                         </div>
 
                         <br />
@@ -764,13 +827,13 @@ const EditTripForm = () => {
                                                     readOnly={isFormDisabled}
                                                 />
 
-                                                
+
                                             </div>
 
-                                            
+
 
                                             <div className="column">
-                                                   <label style={{ marginTop: '10px' }}>Millas PC*Miler Practicas (Etapa):</label>
+                                                <label style={{ marginTop: '10px' }}>Millas PC*Miler Practicas (Etapa):</label>
                                                 <input
                                                     type="number"
                                                     step="1"
