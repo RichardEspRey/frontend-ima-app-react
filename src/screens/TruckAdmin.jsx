@@ -4,7 +4,7 @@ import redIcon from '../assets/images/Icons_alerts/shield-red.png';
 import greenIcon from '../assets/images/Icons_alerts/shield-green.png'; 
 import yellowIcon from '../assets/images/Icons_alerts/shield-yellow.png'; 
 import greyIcon from '../assets/images/Icons_alerts/shield-grey.png'; 
-import questionIcon from '../assets/images/Icons_alerts/question.png'; 
+import questionIcon from '../assets/images/Icons_alerts/question3.png'; 
 import ModalArchivo from '../components/ModalArchivoEditor.jsx'; 
 import { Tooltip } from 'react-tooltip';
 import { useNavigate } from 'react-router-dom'; // Asegúrate de tener react-router-dom instalado
@@ -17,7 +17,7 @@ const TruckAdmin = () => {
   const [valorActual, setValorActual] = useState(null);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
-  const rowsPerPage = 4;
+  const rowsPerPage = 6;
   const [trailers, setTrailers] = useState([]);
 
   const from = page * rowsPerPage;

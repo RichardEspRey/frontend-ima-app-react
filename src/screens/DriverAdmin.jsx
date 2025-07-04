@@ -19,7 +19,7 @@ const DriverAdmin = () => {
   const apiHost = import.meta.env.VITE_API_HOST;
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
-  const rowsPerPage = 4;
+  const rowsPerPage = 6;
   const [selectedValue, setSelectedValue] = useState('');
   const [drivers, setDrivers] = useState([]);
 
@@ -104,9 +104,9 @@ const DriverAdmin = () => {
   let icon = redIcon;
   let mensaje = `Vencimiento: ${fecha.toLocaleDateString('es-MX')}`;
 
-  if (diffInDays >= 90) icon = greenIcon;
-  else if (diffInDays >= 60) icon = yellowIcon;
-  else if (diffInDays >= 30) icon = redIcon;
+  if (diffInDays >= 60) icon = greenIcon;
+  else if (diffInDays >= 2) icon = yellowIcon;
+  else if (diffInDays >= 1) icon = redIcon;
 
   return (
     <>
