@@ -181,8 +181,8 @@ const TripRow = ({ trip, onEdit, onFinalize, onAlmostOver, getDocumentUrl }) => 
                                             tooltipTitle += '\n\nParadas en Ruta:';
                                             etapa.stops_in_transit.forEach((stop, i) => {
                                                 tooltipTitle += `\n- ${stop.location || 'Ubicación desconocida'}`;
-                                                if (stop.cita_entrega_doc) {
-                                                    tooltipTitle += ` (Cita Entrega: ${stop.cita_entrega_doc.nombre_archivo})`;
+                                                if (stop.bl_firmado_doc) {
+                                                    tooltipTitle += ` (Cita Entrega: ${stop.bl_firmado_doc.nombre_archivo})`;
                                                 }
                                             });
                                         }
@@ -223,15 +223,15 @@ const TripRow = ({ trip, onEdit, onFinalize, onAlmostOver, getDocumentUrl }) => 
                                                                                 ({dayjs(`2000-01-01 ${stop.time_of_delivery}`).format('h:mm A')})
                                                                             </span>
                                                                         )}
-                                                                        {stop.cita_entrega_doc && (
+                                                                        {stop.bl_firmado_doc && (
                                                                             <MuiLink
-                                                                                href={getDocumentUrl(stop.cita_entrega_doc.path_servidor_real || stop.cita_entrega_doc.nombre_archivo)}
+                                                                                href={getDocumentUrl(stop.bl_firmado_doc.path_servidor_real || stop.bl_firmado_doc.nombre_archivo)}
                                                                                 target="_blank"
                                                                                 rel="noopener noreferrer"
                                                                                 sx={{ ml: 0.5 }}
-                                                                                title={`Ver Cita Entrega (${stop.cita_entrega_doc.nombre_archivo})`}
+                                                                                title={`Ver Cita Entrega (${stop.bl_firmado_doc.nombre_archivo})`}
                                                                             >
-                                                                                (Cita de entrega)
+                                                                                (BL Firmado)
                                                                             </MuiLink>
                                                                         )}
                                                                     </li>
