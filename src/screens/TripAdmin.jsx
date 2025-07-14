@@ -9,14 +9,13 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import dayjs from 'dayjs'; // Import dayjs
-import 'dayjs/locale/es'; // Import Spanish locale for dayjs if needed
-import updateLocale from 'dayjs/plugin/updateLocale'; // Plugin to update locale settings
-import isSameOrAfter from 'dayjs/plugin/isSameOrAfter'; // Plugin for isSameOrAfter
-import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'; // Plugin for isSameOrBefore
-import localizedFormat from 'dayjs/plugin/localizedFormat'; // Plugin for localized formats
+import dayjs from 'dayjs';
+import 'dayjs/locale/es';
+import updateLocale from 'dayjs/plugin/updateLocale';
+import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
+import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
+import localizedFormat from 'dayjs/plugin/localizedFormat';
 
-// Configure dayjs for Spanish locale and other plugins
 dayjs.extend(updateLocale);
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
@@ -55,10 +54,9 @@ import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 
 // Componente TripRow
-const TripRow = ({ trip, onEdit, onFinalize, getDocumentUrl }) => {
+const TripRow = ({ trip, onEdit, onFinalize, onAlmostOver, getDocumentUrl }) => { // MODIFICACIÓN CLAVE: Agregado onAlmostOver
     const [open, setOpen] = useState(false);
 
-    // Initial Date (Loading Date of the first stage)
     let loadingDateToShow = '-';
     let loadingDateTitle = 'Fecha de carga no disponible';
 
@@ -69,7 +67,6 @@ const TripRow = ({ trip, onEdit, onFinalize, getDocumentUrl }) => {
         loadingDateTitle = 'Fecha de carga (1ª Etapa) no especificada';
     }
 
-    // Creation Date (Actual creation date of the trip record)
     const creationDateForDisplay = trip.creation_date
         ? dayjs(trip.creation_date).format("DD/MM/YY")
         : '-';
@@ -94,7 +91,6 @@ const TripRow = ({ trip, onEdit, onFinalize, getDocumentUrl }) => {
                                 <Typography variant="body2" component="span" noWrap title={trip.driver_nombre || 'Principal'}>
                                     {trip.driver_nombre || 'N/A'}
                                 </Typography>
-                                {/* <Chip label="P" size="small" sx={{ height: '18px', fontSize: '0.7rem' }} title="Principal" color="primary" /> */}
                             </Box>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                                 <Typography variant="body2" component="span" noWrap title={trip.driver_second_nombre}>
@@ -124,20 +120,21 @@ const TripRow = ({ trip, onEdit, onFinalize, getDocumentUrl }) => {
                         let chipColor = 'default';
                         if (currentStatus === 'Completed') { chipColor = 'success'; }
                         else if (currentStatus === 'In Transit') { chipColor = 'warning'; }
+                        else if (currentStatus === 'Almost Over') { chipColor = 'primary'; } // NUEVA LÍNEA: Color para "Almost Over"
                         else if (currentStatus === 'Cancelled') { chipColor = 'error'; }
                         else if (currentStatus === 'In Coming') { chipColor = 'info'; }
                         return (<Chip label={currentStatus} color={chipColor} size="small" />);
                     })()}
                 </TableCell>
 
-                {/* NEW COLUMN: Creation Date Cell */}
+                {/* Creation Date Cell */}
                 <TableCell sx={{ whiteSpace: 'nowrap' }} title={creationDateTimeTitle}>
                     {creationDateForDisplay}
                 </TableCell>
 
                 {/* Actions Cell */}
                 <TableCell>
-                    <Box sx={{ display: 'flex', gap: 0.5 }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}> {/* MODIFICACIÓN: Cambiado a column para los botones */}
                         {(() => {
                             const currentStatus = trip.status || 'In Transit';
                             let label = 'Editar';
@@ -145,20 +142,30 @@ const TripRow = ({ trip, onEdit, onFinalize, getDocumentUrl }) => {
                             else { label = "Editar" }
                             return (<Button size="small" variant="outlined" onClick={() => onEdit(trip.trip_id)}>{label}</Button>);
                         })()}
+                        {/* NUEVO BOTÓN: Casi Finalizar */}
+                        <Button
+                            size="small"
+                            variant="outlined" // Puedes usar 'outlined' o 'contained'
+                            color="primary" // Puedes elegir otro color como 'secondary' o 'info'
+                            onClick={() => onAlmostOver(trip.trip_id, trip.trip_number)}
+                            disabled={trip.status === 'Completed' || trip.status === 'Cancelled' || trip.status === 'Almost Over'} // Deshabilitar si ya está finalizado, cancelado o casi finalizado
+                            sx={{ fontSize: '0.75rem', mt: 0.5 }} // mt para margen superior si se muestra en columna
+                        >Almost Over</Button>
+                        {/* FIN NUEVO BOTÓN */}
                         <Button
                             size="small"
                             variant="contained"
                             color="success"
                             onClick={() => onFinalize(trip.trip_id, trip.trip_number)}
                             disabled={trip.status === 'Completed' || trip.status === 'Cancelled'}
-                            sx={{ fontSize: '0.75rem' }}
+                            sx={{ fontSize: '0.75rem', mt: 0.5 }} // mt para margen superior
                         >Finalizar</Button>
                     </Box>
                 </TableCell>
             </TableRow>
             <TableRow>
-                {/* Colspan adjusted for the additional column. Original visible columns (excluding expand button) were 7. Now there are 8. */}
-                <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={9}> {/* 1 (expand) + 8 (data columns) = 9 */}
+                {/* Colspan adjusted for the additional column. 1 (expand) + 8 (data columns) = 9 */}
+                <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={9}>
                     <Collapse in={open} timeout="auto" unmountOnExit>
                         <Box sx={{ margin: 1, padding: 1, border: '1px solid rgba(224, 224, 224, 1)', borderRadius: '4px' }}>
                             <Typography variant="h6" gutterBottom component="div" sx={{ fontSize: '1rem' }}>
@@ -174,8 +181,8 @@ const TripRow = ({ trip, onEdit, onFinalize, getDocumentUrl }) => {
                                             tooltipTitle += '\n\nParadas en Ruta:';
                                             etapa.stops_in_transit.forEach((stop, i) => {
                                                 tooltipTitle += `\n- ${stop.location || 'Ubicación desconocida'}`;
-                                                if (stop.bl_firmado_doc) {
-                                                    tooltipTitle += ` (Cita Entrega: ${stop.bl_firmado_doc.nombre_archivo})`;
+                                                if (stop.cita_entrega_doc) {
+                                                    tooltipTitle += ` (Cita Entrega: ${stop.cita_entrega_doc.nombre_archivo})`;
                                                 }
                                             });
                                         }
@@ -188,7 +195,8 @@ const TripRow = ({ trip, onEdit, onFinalize, getDocumentUrl }) => {
                                                             <strong>E{etapa.stage_number} ({etapa.stageType?.replace('borderCrossing', 'Cruce').replace('normalTrip', 'Normal').replace('emptyMileage', 'Millaje Vacío') || 'N/A'}):</strong> {etapa.origin} &rarr; {etapa.destination} ({etapa.travel_direction})
                                                         </span>
                                                     </Tooltip>
-                                               
+                                                    {/* Display etapa.estatus here */}
+                                             
                                                     {etapa.ci_number && <><br /><span style={{ fontSize: '0.9em', color: '#555' }}>CI: {etapa.ci_number}</span></>}
                                                     <br />
                                                     <span style={{ fontSize: '0.9em', color: '#555' }}>
@@ -215,13 +223,13 @@ const TripRow = ({ trip, onEdit, onFinalize, getDocumentUrl }) => {
                                                                                 ({dayjs(`2000-01-01 ${stop.time_of_delivery}`).format('h:mm A')})
                                                                             </span>
                                                                         )}
-                                                                        {stop.bl_firmado_doc && (
+                                                                        {stop.cita_entrega_doc && (
                                                                             <MuiLink
-                                                                                href={getDocumentUrl(stop.bl_firmado_doc.path_servidor_real || stop.bl_firmado_doc.nombre_archivo)}
+                                                                                href={getDocumentUrl(stop.cita_entrega_doc.path_servidor_real || stop.cita_entrega_doc.nombre_archivo)}
                                                                                 target="_blank"
                                                                                 rel="noopener noreferrer"
                                                                                 sx={{ ml: 0.5 }}
-                                                                                title={`Ver Cita Entrega (${stop.bl_firmado_doc.nombre_archivo})`}
+                                                                                title={`Ver Cita Entrega (${stop.cita_entrega_doc.nombre_archivo})`}
                                                                             >
                                                                                 (Cita de entrega)
                                                                             </MuiLink>
@@ -378,13 +386,14 @@ const TripAdmin = () => {
 
         // Sort the filtered trips
         return filtered.sort((a, b) => {
-            // Priority: 'In Coming' (1) > 'In Transit' (2) > 'Completed' (3) > 'Cancelled' (4) > Others (5)
-            const statusOrder = (status) => {
+            // Priority: 'In Coming' (1) > 'In Transit' (2) > 'Almost Over' (3) > 'Completed' (4) > 'Cancelled' (5) > Others (6)
+            const statusOrder = (status) => { // MODIFICACIÓN: Añadido "Almost Over" en el orden de prioridad
                 if (status === 'In Coming') return 1;
                 if (status === 'In Transit') return 2;
-                if (status === 'Completed') return 3;
-                if (status === 'Cancelled') return 4;
-                return 5; // For any other status
+                if (status === 'Almost Over') return 3; // Nuevo estado, antes de Completed
+                if (status === 'Completed') return 4;
+                if (status === 'Cancelled') return 5;
+                return 6; // Para cualquier otro estado
             };
 
             const orderA = statusOrder(a.status);
@@ -396,18 +405,14 @@ const TripAdmin = () => {
             }
 
             // Secondary sort: If status priority is the same, sort by creation_date (newest to oldest)
-            // Ensure creation_date is a valid Day.js object or can be parsed
-            const dateA = a.creation_date ? dayjs(a.creation_date) : dayjs('1900-01-01'); // Provide a very old date for nulls to push them to the end (or specific handling if you want nulls last)
-            const dateB = b.creation_date ? dayjs(b.creation_date) : dayjs('1900-01-01'); // Provide a very old date for nulls
+            const dateA = a.creation_date ? dayjs(a.creation_date) : dayjs('1900-01-01');
+            const dateB = b.creation_date ? dayjs(b.creation_date) : dayjs('1900-01-01');
 
-            // Compare dates: dateB.diff(dateA) will be positive if dateB is newer than dateA
-            // (meaning b comes before a, achieving newest to oldest)
             if (dateA.isValid() && dateB.isValid()) {
-                return dateB.diff(dateA);
+                return dateB.diff(dateA); // Descending order (newer first)
             }
-            // Handle cases where dates might be invalid/null if the default old date isn't sufficient
-            if (!dateA.isValid() && dateB.isValid()) return 1; // a (invalid) comes after b (valid)
-            if (dateA.isValid() && !dateB.isValid()) return -1; // a (valid) comes before b (invalid)
+            if (!dateA.isValid() && dateB.isValid()) return 1;
+            if (dateA.isValid() && !dateB.isValid()) return -1;
 
             // Tertiary sort: If status and creation_date are the same, sort by trip_number (ascending)
             return (a.trip_number || '').localeCompare(b.trip_number || '');
@@ -418,6 +423,39 @@ const TripAdmin = () => {
         if (!tripId) { console.error("ID inválido"); return; }
         navigate(`/edit-trip/${tripId}`);
     };
+
+    // NUEVO HANDLER: handleAlmostOverTrip
+    const handleAlmostOverTrip = async (tripId, tripNumber) => {
+        if (!tripId) return;
+        const confirmation = await Swal.fire({
+            title: '¿Marcar como "Casi Finalizado"?',
+            text: `Viaje #${tripNumber} será marcado como "Casi Finalizado" y sus recursos serán liberados.`,
+            icon: 'info', // O 'warning'
+            showCancelButton: true,
+            confirmButtonText: 'Sí, continuar',
+            cancelButtonText: 'Cancelar'
+        });
+        if (confirmation.isConfirmed) {
+            try {
+                const apiUrl = `${apiHost}/new_trips.php`;
+                const formData = new FormData();
+                formData.append('op', 'AlmostOverTrip'); // NUEVA OPERACIÓN EN EL BACKEND
+                formData.append('trip_id', tripId);
+                const response = await fetch(apiUrl, { method: 'POST', body: formData });
+                const result = await response.json();
+                if (response.ok && result.status === 'success') {
+                    Swal.fire('¡Éxito!', result.message || 'Viaje marcado como "Casi Finalizado" y recursos liberados.', 'success');
+                    fetchTrips(); // Refrescar la tabla
+                } else {
+                    throw new Error(result.error || result.message || 'No se pudo marcar como "Casi Finalizado".');
+                }
+            } catch (err) {
+                console.error("Error al marcar como casi finalizado:", err);
+                Swal.fire('Error', `Error al marcar como "Casi Finalizado": ${err.message}`, 'error');
+            }
+        }
+    };
+    // FIN NUEVO HANDLER
 
     const handleFinalizeTrip = async (tripId, tripNumber) => {
         if (!tripId) return;
@@ -484,14 +522,14 @@ const TripAdmin = () => {
                             <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>Trailer</TableCell>
                             <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>Initial Date</TableCell> {/* This will display loadingDateToShow */}
                             <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>Status</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>Creation Date</TableCell> {/* NEW COLUMN HEADER */}
+                            <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>Creation Date</TableCell> {/* NUEVA LÍNEA: Encabezado para la columna Creation Date */}
                             <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>Actions</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
                         {filteredAndSortedTrips.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={9} align="center">No se encontraron viajes con los filtros aplicados.</TableCell> {/* Adjusted colSpan to 9 */}
+                                <TableCell colSpan={9} align="center">No se encontraron viajes con los filtros aplicados.</TableCell>
                             </TableRow>
                         ) : (
                             filteredAndSortedTrips
@@ -502,6 +540,7 @@ const TripAdmin = () => {
                                         trip={trip}
                                         onEdit={handleEditTrip}
                                         onFinalize={handleFinalizeTrip}
+                                        onAlmostOver={handleAlmostOverTrip} // MODIFICACIÓN CLAVE: Pasar el nuevo handler a TripRow
                                         getDocumentUrl={getDocumentUrl}
                                     />
                                 ))
