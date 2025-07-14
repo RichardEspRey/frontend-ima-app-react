@@ -16,12 +16,12 @@ import { format } from 'date-fns';
 
 const initialBorderCrossingDocs = {
     ima_invoice: null, carta_porte: null, ci: null, entry: null,
-    manifiesto: null, cita_entrega: null, bl: null, orden_retiro: null, bl_firmado: null,
+    manifiesto: null,  bl: null, orden_retiro: null, bl_firmado: null,
 };
 
 const initialNormalTripDocs = {
     ima_invoice: null, ci: null,
-    cita_entrega: null, bl: null, bl_firmado: null,
+   bl: null, bl_firmado: null,
 
 };
 
@@ -89,7 +89,8 @@ const TripForm = ({ tripNumber, onSuccess }) => {
         rate_tarifa: '',
         millas_pcmiller: '',
         millas_pcmiller_practicas: '',
-        documentos: { ...initialNormalTripDocs }
+        documentos: { ...initialNormalTripDocs },
+        comments: ''
     }]);
 
     const handleTrailerTypeChange = (type) => {
@@ -250,7 +251,7 @@ const TripForm = ({ tripNumber, onSuccess }) => {
         setModalTarget({ stageIndex, docType });
         setModalAbierto(true);
 
-        if (['ima_invoice', 'carta_porte', 'ci', 'entry', 'manifiesto', 'cita_entrega', 'bl', 'orden_retiro', 'bl_firmado'].includes(docType)) {
+        if (['ima_invoice', 'carta_porte', 'ci', 'entry', 'manifiesto',  'bl', 'orden_retiro', 'bl_firmado'].includes(docType)) {
             setMostrarFechaVencimientoModal(false);
         } else {
             setMostrarFechaVencimientoModal(true);
@@ -361,6 +362,8 @@ const TripForm = ({ tripNumber, onSuccess }) => {
             millas_pcmiller: etapa.millas_pcmiller,
             millas_pcmiller_practicas: etapa.millas_pcmiller_practicas,
             estatus: etapa.estatus,
+            comments: '',
+            time_of_delivery:'',
             // Enviar solo metadatos de documentos en el JSON
             documentos: Object.entries(etapa.documentos).reduce((acc, [key, value]) => {
                 if (value) { // Si hay datos para este tipo de documento
@@ -424,7 +427,7 @@ const TripForm = ({ tripNumber, onSuccess }) => {
                     zip_code_origin: '', zip_code_destination: '', loading_date: null, delivery_date: null,
                     company_id: '', travel_direction: '', warehouse_origin_id: '', warehouse_destination_id: '',
                     ci_number: '', rate_tarifa: '', millas_pcmiller: '', millas_pcmiller_practicas: '',
-                    documentos: { ...initialNormalTripDocs }
+                    documentos: { ...initialNormalTripDocs }, comments: '', time_of_delivery: ''
                 }]);
 
                 // navigate('/admin-trips');
@@ -491,14 +494,14 @@ const TripForm = ({ tripNumber, onSuccess }) => {
             onSuccess();
         }
         // Resetear el formulario después de éxito
-        setFormData({ trip_number: '', driver_id: '', driver_id_second: '',truck_id: '', caja_id: '' });
+        setFormData({ trip_number: '', driver_id: '', driver_id_second: '', truck_id: '', caja_id: '' });
         setTripMode('individual');
         setEtapas([{
             stage_number: 1, stageType: 'normalTrip', origin: '', destination: '',
             zip_code_origin: '', zip_code_destination: '', loading_date: null, delivery_date: null,
             company_id: '', travel_direction: '', warehouse_origin_id: '', warehouse_destination_id: '',
             ci_number: '', rate_tarifa: '', millas_pcmiller: '', millas_pcmiller_practicas: '',
-            documentos: { ...initialNormalTripDocs }
+            documentos: { ...initialNormalTripDocs }, comments: '', time_of_delivery: ''
         }]);
     }
 
@@ -803,7 +806,19 @@ const TripForm = ({ tripNumber, onSuccess }) => {
                         </div>
                     </div>
                     <div className="input-columns">
-                        <div className="column"></div>
+                        <div className="column">
+
+                            <label htmlFor={`comments-${index}`} >Comments:</label>
+                            <textarea
+                                id={`comments-${index}`}
+                                name={`comments-${index}`}
+                                value={etapa.comments}
+                                onChange={(e) => handleEtapaChange(index, 'comments', e.target.value)}
+                                className="form-input"
+                                rows="3"
+                            />
+
+                        </div>
                         <div className="column">
                             <label htmlFor={`millas_pcmiller_practicas-${index}`} >Millas PC Miller Practicas:</label>
                             <input
@@ -840,9 +855,15 @@ const TripForm = ({ tripNumber, onSuccess }) => {
 
                                     </div>
                                     <div className="column">
-                                        <label>Cita Entrega:</label>
-                                        <button type="button" className="upload-button" onClick={() => abrirModal('cita_entrega', index)}>Subir</button>
-                                        {etapa.documentos?.cita_entrega && (<p className="doc-info"><i>{etapa.documentos.cita_entrega.fileName}{etapa.documentos.cita_entrega.vencimiento ? ` - V: ${etapa.documentos.cita_entrega.vencimiento}` : ''}</i></p>)}
+                                        <label htmlFor={`time_of_delivery-${index}`} style={{ marginTop: '10px' }}>Cita Entrega:</label>
+                                        <input
+                                            type="time"
+                                            id={`time_of_delivery-${index}`}
+                                            name={`time_of_delivery-${index}`}
+                                            value={etapa.time_of_delivery || ''} 
+                                            onChange={(e) => handleEtapaChange(index, 'time_of_delivery', e.target.value)}
+                                            className="form-input"
+                                        />
                                     </div>
                                 </div>
 
@@ -854,11 +875,7 @@ const TripForm = ({ tripNumber, onSuccess }) => {
                                         <button type="button" className="upload-button" onClick={() => abrirModal('bl', index)}>Subir</button>
                                         {etapa.documentos?.bl && (<p className="doc-info"><i>{etapa.documentos.bl.fileName}</i></p>)}
                                     </div>
-                                    {/* <div className="column">
-                                        <label>Orden Retiro:</label>
-                                        <button type="button" className="upload-button" onClick={() => abrirModal('orden_retiro', index)}>Subir</button>
-                                        {etapa.documentos?.orden_retiro && (<p className="doc-info"><i>{etapa.documentos.orden_retiro.fileName}{etapa.documentos.orden_retiro.vencimiento ? ` - V: ${etapa.documentos.orden_retiro.vencimiento}` : ''}</i></p>)}
-                                    </div> */}
+                                    
                                     <div className="column">
                                         <label>BL Firmado:</label>
                                         <button type="button" className="upload-button" onClick={() => abrirModal('bl_firmado', index)}>Subir</button>
@@ -905,9 +922,9 @@ const TripForm = ({ tripNumber, onSuccess }) => {
                                         {etapa.documentos?.manifiesto && (<p className="doc-info"><i>{etapa.documentos.manifiesto.fileName}</i></p>)}
                                     </div>
                                     <div className="column">
-                                        <label>Cita Entrega:</label>
-                                        <button type="button" className="upload-button" onClick={() => abrirModal('cita_entrega', index)}>Subir</button>
-                                        {etapa.documentos?.cita_entrega && (<p className="doc-info"><i>{etapa.documentos.cita_entrega.fileName}{etapa.documentos.cita_entrega.vencimiento ? ` - V: ${etapa.documentos.cita_entrega.vencimiento}` : ''}</i></p>)}
+                                        {/* <label>Cita Entrega:</label> */}
+                                        {/* <button type="button" className="upload-button" onClick={() => abrirModal('cita_entrega', index)}>Subir</button>
+                                        {etapa.documentos?.cita_entrega && (<p className="doc-info"><i>{etapa.documentos.cita_entrega.fileName}{etapa.documentos.cita_entrega.vencimiento ? ` - V: ${etapa.documentos.cita_entrega.vencimiento}` : ''}</i></p>)} */}
                                     </div>
                                 </div>
 

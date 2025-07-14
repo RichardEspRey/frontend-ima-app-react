@@ -17,7 +17,7 @@ import ModalCajaExterna from './ModalCajaExterna';
 
 
 const initialBorderCrossingDocs = {
-    ima_invoice: null, carta_porte: null, ci: null, entry: null,
+    ima_invoice: null, doda: null, ci: null, entry: null,
     manifiesto: null, cita_entrega: null, bl: null, orden_retiro: null, bl_firmado: null,
 };
 
@@ -86,7 +86,9 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
         rate_tarifa: '',
         millas_pcmiller: '',
         millas_pcmiller_practicas: '',
-        documentos: { ...initialBorderCrossingDocs } // Documentos para cruce
+        documentos: { ...initialBorderCrossingDocs },// Documentos para cruce
+        comments: '',
+        time_of_delivery: ''
     }]);
 
     const handleTrailerTypeChange = (type) => {
@@ -204,12 +206,18 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
             const updatedEtapas = [...prevEtapas];
             const updatedEtapa = { ...updatedEtapas[index] };
             updatedEtapa[field] = value;
+
+            // --- Lógica para el estado de la etapa basada en CI Number ---
+            if (field === 'ci_number') {
+                updatedEtapa.estatus = value && value.trim() !== '' ? 'In Transit' : 'In Coming';
+            }
+            // --- Fin de la lógica para el estado de la etapa ---
+
             updatedEtapas[index] = updatedEtapa;
             return updatedEtapas;
         });
 
     };
-
     const handleGuardarDocumentoEtapa = (data) => {
         const { stageIndex, docType } = modalTarget;
         if (stageIndex === null || !docType) return;
@@ -250,7 +258,7 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
     const abrirModal = (docType, stageIndex = null) => {
         setModalTarget({ stageIndex, docType });
         setModalAbierto(true);
-        if (['ima_invoice', 'carta_porte', 'ci', 'entry', 'manifiesto', 'cita_entrega', 'bl', 'orden_retiro', 'bl_firmado'].includes(docType)) {
+        if (['ima_invoice', 'doda', 'ci', 'entry', 'manifiesto', 'cita_entrega', 'bl', 'orden_retiro', 'bl_firmado'].includes(docType)) {
             setMostrarFechaVencimientoModal(false);
         } else {
             setMostrarFechaVencimientoModal(true);
@@ -292,6 +300,9 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
             initialDocs = {};
         }
 
+        // Determine initial status based on ci_number for borderCrossing, or default for normalTrip
+        const initialStatus = tipoEtapa === 'borderCrossing' ? 'In Coming' : 'In Transit';
+
 
 
         setEtapas(prevEtapas => [
@@ -303,7 +314,7 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
                 loading_date: null, delivery_date: null, company_id: null, travel_direction: '',
                 warehouse_origin_id: null, warehouse_destination_id: null, ci_number: '',
                 rate_tarifa: '', millas_pcmiller: '', millas_pcmiller_practicas: '', estatus: 'In Transit',
-                documentos: initialDocs
+                documentos: initialDocs, comments: '', time_of_delivery: ''
 
             }
         ]);
@@ -366,11 +377,15 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
 
         const etapasParaJson = etapas.map(etapa => ({
             ...etapa,
-            // Formatear fechas a yyyy-MM-dd ANTES de stringify
+            // Format dates to YYYY-MM-DD BEFORE stringify
             loading_date: etapa.loading_date ? format(etapa.loading_date, 'yyyy-MM-dd') : null,
             delivery_date: etapa.delivery_date ? format(etapa.delivery_date, 'yyyy-MM-dd') : null,
+            // Set the status based on ci_number for borderCrossing stages
+            estatus: etapa.stageType === 'borderCrossing' && etapa.ci_number && etapa.ci_number.trim() !== ''
+                ? 'In Transit'
+                : (etapa.stageType === 'borderCrossing' ? 'In Coming' : 'In Transit'), // Default to 'In Transit' for normal trips
             documentos: Object.entries(etapa.documentos).reduce((acc, [key, value]) => {
-                if (value) { // Si hay datos para este tipo de documento
+                if (value) { // If there is data for this document type
                     acc[key] = {
                         fileName: value.fileName || '',
                         vencimiento: value.vencimiento || null
@@ -502,7 +517,10 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
             rate_tarifa: '',
             millas_pcmiller: '',
             millas_pcmiller_practicas: '',
-            documentos: { ...initialBorderCrossingDocs }
+            estatus: 'In Coming', // Set initial status for the first stage
+            documentos: { ...initialBorderCrossingDocs },
+            comments: '',
+            time_of_delivery: ''
         }])
     }
 
@@ -638,7 +656,7 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
                             </div>
                         )}
                     </div>
-                   
+
                     {/* Columna vacía para mantener la alineación si no hay segundo conductor */}
                     {/* {tripMode === 'individual' && <div className="column"></div>} */}
                 </div>
@@ -794,7 +812,17 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
                         </div>
                     </div>
                     <div className="input-columns">
-                        <div className="column"></div>
+                        <div className="column">
+                            <label htmlFor={`comments-${index}`} >Comments:</label>
+                            <textarea
+                                id={`comments-${index}`}
+                                name={`comments-${index}`}
+                                value={etapa.comments}
+                                onChange={(e) => handleEtapaChange(index, 'comments', e.target.value)}
+                                className="form-input"
+                                rows="3"
+                            />
+                        </div>
                         <div className="column">
                             <label htmlFor={`millas_pcmiller_practicas-${index}`} >Millas PC Miller Practicas:</label>
                             <input
@@ -808,25 +836,27 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
                     {etapa.stageType === 'borderCrossing' && (
                         <div className="subsection">
                             <legend className="card-label">Documentos de Etapa {etapa.stage_number}</legend>
-                            <div className="input-columns">
+                            <div className="input-columns" >
                                 <div className="column">
                                     <div className="column">
                                         <label htmlFor={`ima_invoice-${index}`}>IMA Invoice:</label>
                                         <button type="button" className="upload-button" onClick={() => abrirModal('ima_invoice', index)}>Subir</button>
                                         {etapa.documentos?.ima_invoice && (<p className="doc-info"><i>{etapa.documentos.ima_invoice.fileName}</i></p>)}
                                     </div>
-                                    <div className="column">
-                                        <label htmlFor={`carta_porte-${index}`}>Carta Porte:</label>
-                                        <button type="button" className="upload-button" onClick={() => abrirModal('carta_porte', index)}>Subir</button>
-                                        {etapa.documentos?.carta_porte && (<p className="doc-info"><i>{etapa.documentos.carta_porte.fileName}</i></p>)}
-                                    </div>
+
                                     <div className="column">
                                         <label htmlFor={`ci-${index}`}>CI:</label>
                                         <button type="button" className="upload-button" onClick={() => abrirModal('ci', index)}>Subir</button>
                                         {etapa.documentos?.ci && (<p className="doc-info"><i>{etapa.documentos.ci.fileName}</i></p>)}
                                     </div>
+
+                                    <div className="column">
+                                        <label htmlFor={`doda-${index}`}>DODA:</label>
+                                        <button type="button" className="upload-button" onClick={() => abrirModal('doda', index)}>Subir</button>
+                                        {etapa.documentos?.doda && (<p className="doc-info"><i>{etapa.documentos.doda.fileName}</i></p>)}
+                                    </div>
                                 </div>
-                                <div className="column">
+                                <div className="column" >
                                     <div className="column">
                                         <label htmlFor={`entry-${index}`}>Entry:</label>
                                         <button type="button" className="upload-button" onClick={() => abrirModal('entry', index)}>Subir</button>
@@ -837,10 +867,17 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
                                         <button type="button" className="upload-button" onClick={() => abrirModal('manifiesto', index)}>Subir</button>
                                         {etapa.documentos?.manifiesto && (<p className="doc-info"><i>{etapa.documentos.manifiesto.fileName}</i></p>)}
                                     </div>
+
                                     <div className="column">
-                                        <label htmlFor={`cita_entrega-${index}`}>Cita Entrega:</label>
-                                        <button type="button" className="upload-button" onClick={() => abrirModal('cita_entrega', index)}>Subir</button>
-                                        {etapa.documentos?.cita_entrega && (<p className="doc-info"><i>{etapa.documentos.cita_entrega.fileName}</i></p>)}
+                                        <label htmlFor={`time_of_delivery-${index}`} style={{ marginTop: '10px' }}>Cita Entrega:</label>
+                                        <input
+                                            type="time"
+                                            id={`time_of_delivery-${index}`}
+                                            name={`time_of_delivery-${index}`}
+                                            value={etapa.time_of_delivery || ''}
+                                            onChange={(e) => handleEtapaChange(index, 'time_of_delivery', e.target.value)}
+                                            className="form-input"
+                                        />
                                     </div>
                                 </div>
                                 <div className="column">
