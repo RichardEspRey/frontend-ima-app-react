@@ -64,12 +64,16 @@ const [originalDocumentos, setOriginalDocumentos] = useState({});
       const result = await response.json();
       console.log(`Documento ${tipo_documento} actualizado:`, result);
 
-      await Swal.fire({
+      const { isConfirmed } = await Swal.fire({
         icon: 'success',
         title: 'Éxito',
         text: `Documento ${tipo_documento} actualizado`,
         confirmButtonText: 'Aceptar'
       });
+      
+      if (isConfirmed){
+          window.location.reload();
+      }return;
 
     } catch (error) {
       console.error(`Error al enviar ${tipo_documento}:`, error);

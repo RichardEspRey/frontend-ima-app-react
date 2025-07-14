@@ -169,7 +169,7 @@ const enviarDocumentos = async (idConductor) => {
       confirmButtonText: 'Aceptar'
     });
 
-      if (!isConfirmed){
+      if (isConfirmed){
           window.location.reload();
       }return;
 

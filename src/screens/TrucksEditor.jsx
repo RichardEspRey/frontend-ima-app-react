@@ -93,7 +93,7 @@ const TruckScreen = () => {
           text: `Documento ${tipo_documento} actualizado`,
           confirmButtonText: 'Aceptar'
         });
-        if (!isConfirmed) window.location.reload();
+        if (isConfirmed) window.location.reload();
         return;
       } catch (error) {
         console.error(`Error al enviar ${tipo_documento}:`, error);

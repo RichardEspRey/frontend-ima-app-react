@@ -90,4 +90,12 @@
     cursor: pointer;
     color: white;
   }
-  
+  .documentCounter {
+  margin-left: 6px;
+  background-color: red;
+  color: white;
+  border-radius: 12px;
+  padding: 2px 6px;
+  font-size: 12px;
+  font-weight: bold;
+}

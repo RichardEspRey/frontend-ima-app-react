@@ -40,7 +40,7 @@ const Login = () => {
       const data = JSON.parse(text);
 
       if (data.status === 'success') {
-        await login(data.user.id, data.user.name);
+        await login(data.user.id, data.user.name,data.user.type);
         navigate('/home'); 
       } else {
         alert(data.message);
