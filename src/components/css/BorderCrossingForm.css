@@ -129,13 +129,35 @@
   font-size: 16px;
 }
 
-.column input {
+.column input, textarea{
   padding: 15px;
   margin-bottom: 25px;
   border-radius: 5px;
   border: 1px solid #ccc;
   width: 100%;
   font-size: 16px;
+}
+
+.form-input {
+  /* Espaciado y tamaño */
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+
+  /* Bordes y apariencia */
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #fff;
+
+  /* Transición suave para el efecto de foco */
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+/* Estilo cuando el usuario hace clic en el campo */
+.form-input:focus {
+  outline: none; /* Quita el borde por defecto del navegador */
+  border-color: #007bff; /* Un color azul para resaltar */
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25); /* Un suave resplandor */
 }
 
 /* For Chrome, Safari, Edge, Opera */

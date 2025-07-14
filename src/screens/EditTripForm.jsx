@@ -18,11 +18,11 @@ import { format, parseISO } from 'date-fns';
 import './css/EditTripForm.css';
 
 const initialBorderCrossingDocs = {
-    ima_invoice: null, carta_porte: null, ci: null, entry: null,
-    manifiesto: null, cita_entrega: null, bl: null, orden_retiro: null, bl_firmado: null,
+    ima_invoice: null, doda: null, ci: null, entry: null,
+    manifiesto: null, bl: null, orden_retiro: null, bl_firmado: null,
 };
 const initialNormalTripDocs = {
-    ima_invoice: null, ci: null, cita_entrega: null, bl: null, bl_firmado: null,
+    ima_invoice: null, ci: null, bl: null, bl_firmado: null,
 };
 
 const selectStyles = {
@@ -140,12 +140,13 @@ const EditTripForm = () => {
                                 stop_id: stop.stop_id,
                                 location: stop.location || '',
                                 stop_order: stop.stop_order,
-                                cita_entrega_doc: stop.cita_entrega_doc ? {
-                                    fileName: stop.cita_entrega_doc.nombre_archivo?.split(/[\\/]/).pop() || 'Archivo existente',
-                                    vencimiento: stop.cita_entrega_doc.fecha_vencimiento || null,
+                                time_of_delivery: stop.time_of_delivery || '',
+                                bl_firmado_doc: stop.bl_firmado_doc ? {
+                                    fileName: stop.bl_firmado_doc.nombre_archivo?.split(/[\\/]/).pop() || 'Archivo existente',
+                                    vencimiento: stop.bl_firmado_doc.fecha_vencimiento || null,
                                     file: null,
-                                    document_id: stop.cita_entrega_doc.document_id,
-                                    serverPath: stop.cita_entrega_doc.path_servidor_real
+                                    document_id: stop.bl_firmado_doc.document_id,
+                                    serverPath: stop.bl_firmado_doc.path_servidor_real
                                 } : null
                             }))
                             : [];
@@ -155,7 +156,8 @@ const EditTripForm = () => {
                             stageType: tipoEtapaActual,
                             loading_date: loadingDateObj, delivery_date: deliveryDateObj,
                             documentos: documentosBase,
-                            stops_in_transit: stopsInTransit
+                            stops_in_transit: stopsInTransit, comments: etapa.comments || '',
+                            time_of_delivery: etapa.time_of_delivery || ''
                         };
                     });
                     setEtapas(processedEtapas);
@@ -259,9 +261,9 @@ const EditTripForm = () => {
         setModalTarget({ stageIndex, docType, stopIndex });
         setModalAbierto(true);
 
-        if (docType === 'cita_entrega_doc' && stopIndex !== null) {
+        if (docType === 'bl_firmado_doc' && stopIndex !== null) {
             setMostrarFechaVencimientoModal(false);
-        } else if (['ima_invoice', 'carta_porte', 'ci', 'entry', 'manifiesto', 'cita_entrega', 'bl', 'orden_retiro', 'bl_firmado'].includes(docType)) {
+        } else if (['ima_invoice', 'doda', 'ci', 'entry', 'manifiesto', 'bl', 'orden_retiro', 'bl_firmado'].includes(docType)) {
             setMostrarFechaVencimientoModal(false);
         } else {
             setMostrarFechaVencimientoModal(true);
@@ -290,7 +292,9 @@ const EditTripForm = () => {
                 stop_id: `new-stop-${Date.now()}-${Math.random()}`,
                 location: '',
                 stop_order: currentStops.length + 1,
-                cita_entrega_doc: null
+                bl_firmado_doc: null,
+                time_of_delivery: '',
+
             };
             stageToUpdate.stops_in_transit = [...currentStops, newStop];
             updatedEtapas[stageIndex] = stageToUpdate;
@@ -337,6 +341,8 @@ const EditTripForm = () => {
                 warehouse_origin_id: null, warehouse_destination_id: null, ci_number: '',
                 rate_tarifa: '', millas_pcmiller: '', millas_pcmiller_practicas: '', estatus: 'In Transit',
                 documentos: initialDocs,
+                comments: '',
+                time_of_delivery: '',
                 stops_in_transit: []
             };
 
@@ -393,12 +399,13 @@ const EditTripForm = () => {
             })).filter(doc => doc.fileName !== null);
 
             const stopsJson = (etapa.stops_in_transit || []).map((stop, indexStop) => {
-                const stopDocData = stop.cita_entrega_doc;
+                const stopDocData = stop.bl_firmado_doc;
                 return {
                     stop_id: typeof stop.stop_id === 'string' && stop.stop_id.startsWith('new-stop-') ? null : stop.stop_id,
                     location: stop.location || null,
                     stop_order: stop.stop_order || (indexStop + 1),
-                    cita_entrega_doc: stopDocData ? {
+                    time_of_delivery: stop.time_of_delivery || null,
+                    bl_firmado_doc: stopDocData ? {
                         document_id: stopDocData.document_id || null,
                         fileName: stopDocData.fileName || null,
                         hasNewFile: !!(stopDocData && stopDocData.file instanceof File)
@@ -419,7 +426,8 @@ const EditTripForm = () => {
                 ci_number: etapa.ci_number || null,
                 rate_tarifa: etapa.rate_tarifa || null, millas_pcmiller: etapa.millas_pcmiller || null,
                 millas_pcmiller_practicas: etapa.millas_pcmiller_practicas || null,
-
+                comments: etapa.comments || null, // <-- AÑADIR
+                time_of_delivery: etapa.time_of_delivery || null, // <-- AÑADIR
                 estatus: etapa.estatus || 'In Transit',
                 documentos: etapaDocs,
                 stops_in_transit: stopsJson
@@ -437,11 +445,11 @@ const EditTripForm = () => {
             });
 
             (etapa.stops_in_transit || []).forEach((stop, indexStop) => {
-                const citaDoc = stop.cita_entrega_doc;
+                const citaDoc = stop.bl_firmado_doc;
                 if (citaDoc && citaDoc.file instanceof File) {
-                    const fieldName = `etapa_${indexEtapa}_stop_${indexStop}_cita_entrega_file`;
+                    const fieldName = `etapa_${indexEtapa}_stop_${indexStop}_bl_firmado_file`;
                     dataToSend.append(fieldName, citaDoc.file, citaDoc.fileName);
-                    if (citaDoc.document_id) { dataToSend.append(`etapa_${indexEtapa}_stop_${indexStop}_cita_entrega_replace_id`, citaDoc.document_id); }
+                    if (citaDoc.document_id) { dataToSend.append(`etapa_${indexEtapa}_stop_${indexStop}_bl_firmado_replace_id`, citaDoc.document_id); }
                 }
             });
         });
@@ -720,64 +728,64 @@ const EditTripForm = () => {
                                     </div>
                                 </div>
                                 <div className="column">
-                                {trailerType === 'interna' && (
+                                    {trailerType === 'interna' && (
 
-                                    <div className="column">
-                                        <label>Trailer (Caja Interna):</label>
-                                        <Select
-                                            id="caja_id"
-                                            name="caja_id"
-                                            value={formData.caja_id ? { value: formData.caja_id, label: formData.caja_no_caja || `ID: ${formData.caja_id}` } : null}
-                                            onChange={(selected) => {
-                                                handleFormChange('caja_id', selected ? selected.value : '');
-                                                handleFormChange('caja_no_caja', selected ? selected.label : '');
-                                            }}
-                                            options={trailerOptions}
-                                            placeholder="Seleccionar Trailer Interno"
-                                            isLoading={loadingCajas}
-                                            styles={selectStyles}
-                                            isClearable
-                                            isDisabled={isFormDisabled}
-                                        />
-                                    </div>
-                                )}
-                                {trailerType === 'externa' && (
-                                    <div className="column">
-                                        <label>Trailer (Caja Externa):</label>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                        <div className="column">
+                                            <label>Trailer (Caja Interna):</label>
                                             <Select
-                                                id="caja_externa_id"
-                                                name="caja_externa_id"
-                                                value={formData.caja_externa_id ? { value: formData.caja_externa_id, label: formData.caja_externa_no_caja || `ID: ${formData.caja_externa_id}` } : null}
+                                                id="caja_id"
+                                                name="caja_id"
+                                                value={formData.caja_id ? { value: formData.caja_id, label: formData.caja_no_caja || `ID: ${formData.caja_id}` } : null}
                                                 onChange={(selected) => {
-                                                    handleFormChange('caja_externa_id', selected ? selected.value : '');
-                                                    handleFormChange('caja_externa_no_caja', selected ? selected.label : '');
+                                                    handleFormChange('caja_id', selected ? selected.value : '');
+                                                    handleFormChange('caja_no_caja', selected ? selected.label : '');
                                                 }}
-                                                options={activeExternalTrailers.map(c => ({ value: c.caja_externa_id, label: c.no_caja }))}
-                                                placeholder="Seleccionar Trailer Externo"
-                                                isLoading={loadingCajasExternas}
-                                                styles={{ ...selectStyles, container: (base) => ({ ...base, flex: 1 }) }}
+                                                options={trailerOptions}
+                                                placeholder="Seleccionar Trailer Interno"
+                                                isLoading={loadingCajas}
+                                                styles={selectStyles}
                                                 isClearable
                                                 isDisabled={isFormDisabled}
                                             />
-                                            <button
-                                                type='button'
-                                                onClick={() => setIsModalCajaExternaOpen(true)}
-                                                className="accept-button"
-                                                style={{ height: '48px', width: '48px', flexShrink: 0 }}
-                                                title="Registrar Nueva Caja Externa"
-                                                disabled={isFormDisabled}
-                                            >
-                                                +
-                                            </button>
                                         </div>
-                                    </div>
+                                    )}
+                                    {trailerType === 'externa' && (
+                                        <div className="column">
+                                            <label>Trailer (Caja Externa):</label>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                <Select
+                                                    id="caja_externa_id"
+                                                    name="caja_externa_id"
+                                                    value={formData.caja_externa_id ? { value: formData.caja_externa_id, label: formData.caja_externa_no_caja || `ID: ${formData.caja_externa_id}` } : null}
+                                                    onChange={(selected) => {
+                                                        handleFormChange('caja_externa_id', selected ? selected.value : '');
+                                                        handleFormChange('caja_externa_no_caja', selected ? selected.label : '');
+                                                    }}
+                                                    options={activeExternalTrailers.map(c => ({ value: c.caja_externa_id, label: c.no_caja }))}
+                                                    placeholder="Seleccionar Trailer Externo"
+                                                    isLoading={loadingCajasExternas}
+                                                    styles={{ ...selectStyles, container: (base) => ({ ...base, flex: 1 }) }}
+                                                    isClearable
+                                                    isDisabled={isFormDisabled}
+                                                />
+                                                <button
+                                                    type='button'
+                                                    onClick={() => setIsModalCajaExternaOpen(true)}
+                                                    className="accept-button"
+                                                    style={{ height: '48px', width: '48px', flexShrink: 0 }}
+                                                    title="Registrar Nueva Caja Externa"
+                                                    disabled={isFormDisabled}
+                                                >
+                                                    +
+                                                </button>
+                                            </div>
+                                        </div>
 
-                                )}
+                                    )}
                                 </div>
-                              
+
                             </div>
-                                
+
 
                         </div>
 
@@ -843,6 +851,18 @@ const EditTripForm = () => {
                                                     className="form-input"
                                                     readOnly={isFormDisabled}
                                                 />
+                                            </div>
+
+                                            <div className="column">
+
+                                                <label  >Comments:</label>
+                                                <textarea
+                                                    value={etapa.comments}
+                                                    onChange={(e) => handleStageChange(index, 'comments', e.target.value)}
+                                                    className="form-input"
+                                                    rows="3"
+                                                />
+
                                             </div>
                                         </div>
                                     </div>
@@ -1037,7 +1057,17 @@ const EditTripForm = () => {
 
                                         </div>
                                         <div className="input-columns">
-                                            <div className="column"></div>
+                                            <div className="column">
+
+                                                <label  >Comments:</label>
+                                                <textarea
+                                                    value={etapa.comments}
+                                                    onChange={(e) => handleStageChange(index, 'comments', e.target.value)}
+                                                    className="form-input"
+                                                    rows="3"
+                                                />
+
+                                            </div>
                                             <div className="column">
                                                 <label style={{ marginTop: '10px' }}>Millas PC*Miler Practicas (Etapa):</label>
                                                 <input
@@ -1063,15 +1093,16 @@ const EditTripForm = () => {
                                                             <button type="button" className="upload-button" onClick={() => abrirModal('ima_invoice', index)} disabled={isFormDisabled}> Subir/Cambiar </button>
                                                             {etapa.documentos?.ima_invoice && (<p className="doc-info"><i> <a href={getDocumentUrl(etapa.documentos.ima_invoice.serverPath)} target="_blank" rel="noopener noreferrer">{etapa.documentos.ima_invoice.fileName}</a> {etapa.documentos.ima_invoice.vencimiento ? ` - V: ${etapa.documentos.ima_invoice.vencimiento}` : ''}</i></p>)}
                                                         </div>
-                                                        <div className="column">
-                                                            <label htmlFor={`carta_porte-${index}`}>Carta Porte:</label>
-                                                            <button type="button" className="upload-button" onClick={() => abrirModal('carta_porte', index)} disabled={isFormDisabled}>Subir/Cambiar</button>
-                                                            {etapa.documentos?.carta_porte && (<p className="doc-info"><i> <a href={getDocumentUrl(etapa.documentos.carta_porte.serverPath)} target="_blank" rel="noopener noreferrer">{etapa.documentos.carta_porte.fileName}</a> {etapa.documentos.carta_porte.vencimiento ? ` - V: ${etapa.documentos.carta_porte.vencimiento}` : ''}</i></p>)}
-                                                        </div>
+                                                        
                                                         <div className="column">
                                                             <label htmlFor={`ci-${index}`}>CI:</label>
                                                             <button type="button" className="upload-button" onClick={() => abrirModal('ci', index)} disabled={isFormDisabled}>Subir/Cambiar</button>
                                                             {etapa.documentos?.ci && (<p className="doc-info"><i> <a href={getDocumentUrl(etapa.documentos.ci.serverPath)} target="_blank" rel="noopener noreferrer">{etapa.documentos.ci.fileName}</a> {etapa.documentos.ci.vencimiento ? ` - V: ${etapa.documentos.ci.vencimiento}` : ''}</i></p>)}
+                                                        </div>
+                                                        <div className="column">
+                                                            <label htmlFor={`doda-${index}`}>DODA:</label>
+                                                            <button type="button" className="upload-button" onClick={() => abrirModal('doda', index)} disabled={isFormDisabled}>Subir/Cambiar</button>
+                                                            {etapa.documentos?.doda && (<p className="doc-info"><i> <a href={getDocumentUrl(etapa.documentos.doda.serverPath)} target="_blank" rel="noopener noreferrer">{etapa.documentos.doda.fileName}</a> {etapa.documentos.doda.vencimiento ? ` - V: ${etapa.documentos.doda.vencimiento}` : ''}</i></p>)}
                                                         </div>
                                                     </div>
                                                     <div className="column ">
@@ -1086,9 +1117,17 @@ const EditTripForm = () => {
                                                             {etapa.documentos?.manifiesto && (<p className="doc-info"><i> <a href={getDocumentUrl(etapa.documentos.manifiesto.serverPath)} target="_blank" rel="noopener noreferrer">{etapa.documentos.manifiesto.fileName}</a></i></p>)}
                                                         </div>
                                                         <div className="column">
-                                                            <label htmlFor={`cita_entrega-${index}`}>Cita Entrega:</label>
-                                                            <button type="button" className="upload-button" onClick={() => abrirModal('cita_entrega', index)} disabled={isFormDisabled}>Subir/Cambiar</button>
-                                                            {etapa.documentos?.cita_entrega && (<p className="doc-info"><i> <a href={getDocumentUrl(etapa.documentos.cita_entrega.serverPath)} target="_blank" rel="noopener noreferrer">{etapa.documentos.cita_entrega.fileName}</a> {etapa.documentos.cita_entrega.vencimiento ? ` - V: ${etapa.documentos.cita_entrega.vencimiento}` : ''}</i></p>)}
+                                                            <div className="column">
+                                                                <label htmlFor={`time_of_delivery-${index}`} style={{ marginTop: '10px' }}>Cita Entrega:</label>
+                                                                <input
+                                                                    type="time"
+                                                                    id={`time_of_delivery-${index}`}
+                                                                    name={`time_of_delivery-${index}`}
+                                                                    value={etapa.time_of_delivery || ''}
+                                                                    onChange={(e) => handleStageChange(index, 'time_of_delivery', e.target.value)}
+                                                                    className="form-input"
+                                                                />
+                                                            </div>
                                                         </div>
                                                     </div>
                                                     <div className="column">
@@ -1127,9 +1166,17 @@ const EditTripForm = () => {
                                                             {etapa.documentos?.ci && (<p className="doc-info"><i> <a href={getDocumentUrl(etapa.documentos.ci.serverPath)} target="_blank" rel="noopener noreferrer">{etapa.documentos.ci.fileName}</a> {etapa.documentos.ci.vencimiento ? ` - V: ${etapa.documentos.ci.vencimiento}` : ''}</i></p>)}
                                                         </div>
                                                         <div className="column">
-                                                            <label htmlFor={`cita_entrega-${index}`}>Cita Entrega:</label>
-                                                            <button type="button" className="upload-button" onClick={() => abrirModal('cita_entrega', index)} disabled={isFormDisabled}>Subir/Cambiar</button>
-                                                            {etapa.documentos?.cita_entrega && (<p className="doc-info"><i> <a href={getDocumentUrl(etapa.documentos.cita_entrega.serverPath)} target="_blank" rel="noopener noreferrer">{etapa.documentos.cita_entrega.fileName}</a> {etapa.documentos.cita_entrega.vencimiento ? ` - V: ${etapa.documentos.cita_entrega.vencimiento}` : ''}</i></p>)}
+                                                            <div className="column">
+                                                                <label htmlFor={`time_of_delivery-${index}`} style={{ marginTop: '10px' }}>Cita Entrega:</label>
+                                                                <input
+                                                                    type="time"
+                                                                    id={`time_of_delivery-${index}`}
+                                                                    name={`time_of_delivery-${index}`}
+                                                                    value={etapa.time_of_delivery || ''}
+                                                                    onChange={(e) => handleStageChange(index, 'time_of_delivery', e.target.value)}
+                                                                    className="form-input"
+                                                                />
+                                                            </div>
                                                         </div>
                                                     </div>
                                                     <div className="column">
@@ -1174,26 +1221,38 @@ const EditTripForm = () => {
                                                                     readOnly={isFormDisabled}
                                                                 />
 
+
+                                                                <div className="column">
+                                                                    <label>Hora de Entrega (Parada):</label>
+                                                                    <input
+                                                                        type="time"
+                                                                        value={stop.time_of_delivery || ''}
+                                                                        onChange={(e) => handleStopChange(index, stopIndex, 'time_of_delivery', e.target.value)}
+                                                                        className="form-input"
+                                                                        readOnly={isFormDisabled}
+                                                                    />
+                                                                </div>
+
                                                             </div>
 
                                                             <div className="column">
-                                                                <label htmlFor={`cita_entrega_stop-${index}-${stopIndex}`} style={{ marginTop: '15px' }}>Cita Entrega (Parada):</label>
-                                                                <button type="button" className="upload-button" onClick={() => abrirModal('cita_entrega_doc', index, stopIndex)} disabled={isFormDisabled}>Subir/Cambiar</button>
-                                                                {stop.cita_entrega_doc && (
+                                                                <label htmlFor={`bl_firmado_stop-${index}-${stopIndex}`} style={{ marginTop: '15px' }}>Bl Firmado (Parada):</label>
+                                                                <button type="button" className="upload-button" onClick={() => abrirModal('bl_firmado_doc', index, stopIndex)} disabled={isFormDisabled}>Subir/Cambiar</button>
+                                                                {stop.bl_firmado_doc && (
                                                                     <p className="doc-info">
                                                                         <i>
-                                                                            <a href={getDocumentUrl(stop.cita_entrega_doc.serverPath)} target="_blank" rel="noopener noreferrer">
-                                                                                {stop.cita_entrega_doc.fileName}
+                                                                            <a href={getDocumentUrl(stop.bl_firmado_doc.serverPath)} target="_blank" rel="noopener noreferrer">
+                                                                                {stop.bl_firmado_doc.fileName}
                                                                             </a>
                                                                         </i>
                                                                     </p>
                                                                 )}
-                                                                {stop.cita_entrega_doc && !isFormDisabled && (
+                                                                {stop.bl_firmado_doc && !isFormDisabled && (
                                                                     <Button
                                                                         variant="text"
                                                                         color="error"
                                                                         size="small"
-                                                                        onClick={() => handleStopChange(index, stopIndex, 'cita_entrega_doc', null)}
+                                                                        onClick={() => handleStopChange(index, stopIndex, 'bl_firmado_doc', null)}
                                                                         sx={{ fontSize: '0.7em', mt: 0.5, ml: 1, textTransform: 'none' }}
                                                                     >
                                                                         Eliminar Doc

@@ -10,16 +10,55 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import dayjs from 'dayjs';
+import 'dayjs/locale/es';
+import updateLocale from 'dayjs/plugin/updateLocale';
+import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
+import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
+import localizedFormat from 'dayjs/plugin/localizedFormat';
+
+dayjs.extend(updateLocale);
+dayjs.extend(isSameOrAfter);
+dayjs.extend(isSameOrBefore);
+dayjs.extend(localizedFormat);
+
+dayjs.updateLocale('es', {
+  months: [
+    "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio",
+    "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+  ],
+  weekdays: [
+    "Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"
+  ],
+  weekdaysShort: ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"],
+  weekdaysMin: ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa"],
+  longDateFormat: {
+    LT: 'h:mm A',
+    LTS: 'h:mm:ss A',
+    L: 'DD/MM/YYYY',
+    LL: 'D [de] MMMM [de] YYYY',
+    LLL: 'D [de] MMMM [de] YYYY h:mm A',
+    LLLL: 'dddd, D [de] MMMM [de] YYYY h:mm A'
+  },
+  meridiem: (hour) => {
+    if (hour < 12) {
+      return 'AM';
+    } else {
+      return 'PM';
+    }
+  }
+});
+
+
 import './css/TripAdmin.css';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 
 // Componente TripRow
-const TripRow = ({ trip, onEdit, onFinalize, getDocumentUrl }) => {
+const TripRow = ({ trip, onEdit, onFinalize, onAlmostOver, getDocumentUrl }) => { // MODIFICACIÓN CLAVE: Agregado onAlmostOver
     const [open, setOpen] = useState(false);
 
     let loadingDateToShow = '-';
-    let loadingDateTitle = 'Fecha de carga no disponible'; 
+    let loadingDateTitle = 'Fecha de carga no disponible';
 
     if (Array.isArray(trip.etapas) && trip.etapas.length > 0 && trip.etapas[0].loading_date) {
         loadingDateToShow = dayjs(trip.etapas[0].loading_date).format("DD/MM/YY");
@@ -27,6 +66,13 @@ const TripRow = ({ trip, onEdit, onFinalize, getDocumentUrl }) => {
     } else if (trip.etapas && trip.etapas.length > 0) {
         loadingDateTitle = 'Fecha de carga (1ª Etapa) no especificada';
     }
+
+    const creationDateForDisplay = trip.creation_date
+        ? dayjs(trip.creation_date).format("DD/MM/YY")
+        : '-';
+    const creationDateTimeTitle = trip.creation_date
+        ? `Fecha de Creación: ${dayjs(trip.creation_date).format("DD/MM/YY HH:mm")}`
+        : 'Fecha de creación no disponible';
     
     return (
         <React.Fragment>
@@ -37,7 +83,7 @@ const TripRow = ({ trip, onEdit, onFinalize, getDocumentUrl }) => {
                     </IconButton>
                 </TableCell>
                 <TableCell component="th" scope="row">{trip.trip_number}</TableCell>
-                {/* --- INICIO DE LA MODIFICACIÓN --- */}
+                {/* Driver(s) Cell */}
                 <TableCell>
                     {trip.driver_second_nombre ? (
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
@@ -45,7 +91,6 @@ const TripRow = ({ trip, onEdit, onFinalize, getDocumentUrl }) => {
                                 <Typography variant="body2" component="span" noWrap title={trip.driver_nombre || 'Principal'}>
                                     {trip.driver_nombre || 'N/A'}
                                 </Typography>
-                                {/* <Chip label="P" size="small" sx={{ height: '18px', fontSize: '0.7rem' }} title="Principal" color="primary" /> */}
                             </Box>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                                 <Typography variant="body2" component="span" noWrap title={trip.driver_second_nombre}>
@@ -58,24 +103,38 @@ const TripRow = ({ trip, onEdit, onFinalize, getDocumentUrl }) => {
                         trip.driver_nombre || trip.driver_id || '-'
                     )}
                 </TableCell>
-                {/* --- FIN DE LA MODIFICACIÓN --- */}
+                {/* Truck Cell */}
                 <TableCell>{trip.truck_unidad || trip.truck_id || '-'}</TableCell>
-                <TableCell>{trip.caja_no_caja || trip.caja_id || trip.caja_externa_no_caja || trip.caja_externa_id||'N/A'}</TableCell>
+                {/* Trailer Cell */}
+                <TableCell>{trip.caja_no_caja || trip.caja_id || trip.caja_externa_no_caja || trip.caja_externa_id || 'N/A'}</TableCell>
+                
+                {/* Initial Date Cell (Loading Date of First Stage) */}
                 <TableCell sx={{ whiteSpace: 'nowrap' }} title={loadingDateTitle}>
                     {loadingDateToShow}
                 </TableCell>
+                
+                {/* Status Cell */}
                 <TableCell>
                     {(() => {
                         const currentStatus = trip.status || 'In Transit';
                         let chipColor = 'default';
                         if (currentStatus === 'Completed') { chipColor = 'success'; }
                         else if (currentStatus === 'In Transit') { chipColor = 'warning'; }
+                        else if (currentStatus === 'Almost Over') { chipColor = 'primary'; } // NUEVA LÍNEA: Color para "Almost Over"
                         else if (currentStatus === 'Cancelled') { chipColor = 'error'; }
+                        else if (currentStatus === 'In Coming') { chipColor = 'info'; }
                         return (<Chip label={currentStatus} color={chipColor} size="small" />);
                     })()}
                 </TableCell>
+
+                {/* Creation Date Cell */}
+                <TableCell sx={{ whiteSpace: 'nowrap' }} title={creationDateTimeTitle}>
+                    {creationDateForDisplay}
+                </TableCell>
+
+                {/* Actions Cell */}
                 <TableCell>
-                    <Box sx={{ display: 'flex', gap: 0.5 }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}> {/* MODIFICACIÓN: Cambiado a column para los botones */}
                         {(() => {
                             const currentStatus = trip.status || 'In Transit';
                             let label = 'Editar';
@@ -83,19 +142,30 @@ const TripRow = ({ trip, onEdit, onFinalize, getDocumentUrl }) => {
                             else { label = "Editar" }
                             return (<Button size="small" variant="outlined" onClick={() => onEdit(trip.trip_id)}>{label}</Button>);
                         })()}
+                        {/* NUEVO BOTÓN: Casi Finalizar */}
+                        <Button
+                            size="small"
+                            variant="outlined" // Puedes usar 'outlined' o 'contained'
+                            color="primary" // Puedes elegir otro color como 'secondary' o 'info'
+                            onClick={() => onAlmostOver(trip.trip_id, trip.trip_number)}
+                            disabled={trip.status === 'Completed' || trip.status === 'Cancelled' || trip.status === 'Almost Over'} // Deshabilitar si ya está finalizado, cancelado o casi finalizado
+                            sx={{ fontSize: '0.75rem', mt: 0.5 }} // mt para margen superior si se muestra en columna
+                        >Almost Over</Button>
+                        {/* FIN NUEVO BOTÓN */}
                         <Button
                             size="small"
                             variant="contained"
                             color="success"
                             onClick={() => onFinalize(trip.trip_id, trip.trip_number)}
                             disabled={trip.status === 'Completed' || trip.status === 'Cancelled'}
-                            sx={{ fontSize: '0.75rem' }}
+                            sx={{ fontSize: '0.75rem', mt: 0.5 }} // mt para margen superior
                         >Finalizar</Button>
                     </Box>
                 </TableCell>
             </TableRow>
             <TableRow>
-                <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={8}>
+                {/* Colspan adjusted for the additional column. 1 (expand) + 8 (data columns) = 9 */}
+                <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={9}>
                     <Collapse in={open} timeout="auto" unmountOnExit>
                         <Box sx={{ margin: 1, padding: 1, border: '1px solid rgba(224, 224, 224, 1)', borderRadius: '4px' }}>
                             <Typography variant="h6" gutterBottom component="div" sx={{ fontSize: '1rem' }}>
@@ -111,8 +181,8 @@ const TripRow = ({ trip, onEdit, onFinalize, getDocumentUrl }) => {
                                             tooltipTitle += '\n\nParadas en Ruta:';
                                             etapa.stops_in_transit.forEach((stop, i) => {
                                                 tooltipTitle += `\n- ${stop.location || 'Ubicación desconocida'}`;
-                                                if (stop.cita_entrega_doc) {
-                                                    tooltipTitle += ` (Cita Entrega: ${stop.cita_entrega_doc.nombre_archivo})`;
+                                                if (stop.bl_firmado_doc) {
+                                                    tooltipTitle += ` (Cita Entrega: ${stop.bl_firmado_doc.nombre_archivo})`;
                                                 }
                                             });
                                         }
@@ -125,29 +195,43 @@ const TripRow = ({ trip, onEdit, onFinalize, getDocumentUrl }) => {
                                                             <strong>E{etapa.stage_number} ({etapa.stageType?.replace('borderCrossing', 'Cruce').replace('normalTrip', 'Normal').replace('emptyMileage', 'Millaje Vacío') || 'N/A'}):</strong> {etapa.origin} &rarr; {etapa.destination} ({etapa.travel_direction})
                                                         </span>
                                                     </Tooltip>
+                                                    {/* Display etapa.estatus here */}
+                                             
                                                     {etapa.ci_number && <><br /><span style={{ fontSize: '0.9em', color: '#555' }}>CI: {etapa.ci_number}</span></>}
                                                     <br />
                                                     <span style={{ fontSize: '0.9em', color: '#555' }}>
                                                         Carga: {etapa.loading_date ? dayjs(etapa.loading_date).format("DD/MM/YY") : '-'} |
-                                                        Entrega: {etapa.delivery_date ? dayjs(etapa.delivery_date).format("DD/MM/YY") : '-'}
+                                                        Entrega: {etapa.delivery_date
+                                                            ? dayjs(etapa.delivery_date).format("DD/MM/YY") +
+                                                            (etapa.time_of_delivery
+                                                                ? ' - ' + dayjs(`2000-01-01 ${etapa.time_of_delivery}`).format('h:mm A')
+                                                                : '')
+                                                            : '-'
+                                                        }
                                                     </span>
 
                                                     {Array.isArray(etapa.stops_in_transit) && etapa.stops_in_transit.length > 0 && (
                                                         <Box sx={{ mt: 1, borderTop: '1px dashed #ccc', pt: 1, fontSize: '0.9em' }}>
                                                             <Typography variant="body2" sx={{ fontWeight: 'bold', fontSize: '0.9em', mb: 0.5 }}>Paradas en Ruta:</Typography>
                                                             <ul style={{ margin: '0', paddingLeft: '15px', listStyleType: 'disc', fontSize: 'inherit' }}>
+
                                                                 {etapa.stops_in_transit.map((stop, stopIndex) => (
                                                                     <li key={stop.stop_id || `stop-${stopIndex}`} style={{ marginBottom: '2px' }}>
                                                                         {stop.location || 'Ubicación desconocida'}
-                                                                        {stop.cita_entrega_doc && (
+                                                                        {stop.time_of_delivery && (
+                                                                            <span style={{ marginLeft: '5px' }}>
+                                                                                ({dayjs(`2000-01-01 ${stop.time_of_delivery}`).format('h:mm A')})
+                                                                            </span>
+                                                                        )}
+                                                                        {stop.bl_firmado_doc && (
                                                                             <MuiLink
-                                                                                href={getDocumentUrl(stop.cita_entrega_doc.path_servidor_real || stop.cita_entrega_doc.nombre_archivo)}
+                                                                                href={getDocumentUrl(stop.bl_firmado_doc.path_servidor_real || stop.bl_firmado_doc.nombre_archivo)}
                                                                                 target="_blank"
                                                                                 rel="noopener noreferrer"
                                                                                 sx={{ ml: 0.5 }}
-                                                                                title={`Ver Cita Entrega (${stop.cita_entrega_doc.nombre_archivo})`}
+                                                                                title={`Ver Cita Entrega (${stop.bl_firmado_doc.nombre_archivo})`}
                                                                             >
-                                                                                (Cita de entrega)
+                                                                                (BL Firmado)
                                                                             </MuiLink>
                                                                         )}
                                                                     </li>
@@ -195,14 +279,13 @@ const TripRow = ({ trip, onEdit, onFinalize, getDocumentUrl }) => {
 };
 
 
-// Componente Principal TripAdmin
 const TripAdmin = () => {
     const [trips, setTrips] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [search, setSearch] = useState("");
     const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [rowsPerPage, setRowsPerPage] = useState(25);
     const [startDate, setStartDate] = useState(null);
     const [endDate, setEndDate] = useState(null);
     const navigate = useNavigate();
@@ -221,6 +304,7 @@ const TripAdmin = () => {
             let result;
             try {
                 result = JSON.parse(responseText);
+                console.log(result)
             }
             catch (e) {
                 console.error("Error parseando JSON:", e, "Respuesta recibida:", responseText);
@@ -270,37 +354,108 @@ const TripAdmin = () => {
         return `${webRootPath}${encodeURIComponent(fileName)}`;
     };
 
-    const filteredTrips = useMemo(() => trips.filter(trip => {
-        let tripCreationDate = null;
-        if (trip.creation_date) { try { tripCreationDate = new Date(trip.creation_date); if (isNaN(tripCreationDate.getTime())) { tripCreationDate = null; } } catch (e) { } }
-        const start = startDate ? new Date(startDate.setHours(0, 0, 0, 0)) : null;
-        const end = endDate ? new Date(endDate.setHours(23, 59, 59, 999)) : null;
-        const withinDateRange = ((!start || (tripCreationDate && tripCreationDate >= start)) && (!end || (tripCreationDate && tripCreationDate <= end)));
-        const searchLower = search.toLowerCase();
-        const matchesSearch = search === "" || (
-            (trip.trip_id?.toString() || '').toLowerCase().includes(searchLower) ||
-            (trip.trip_number || '').toLowerCase().includes(searchLower) ||
-            (trip.driver_nombre || '').toLowerCase().includes(searchLower) ||
-            (trip.driver_second_nombre || '').toLowerCase().includes(searchLower) || // <-- Añadido a la búsqueda
-            (trip.truck_unidad || '').toLowerCase().includes(searchLower) ||
-            (trip.caja_no_caja || '').toLowerCase().includes(searchLower) ||
-            (trip.status || '').toLowerCase().includes(searchLower) ||
-            (trip.etapas && trip.etapas.some(etapa =>
-                (etapa.ci_number || '').toLowerCase().includes(searchLower) ||
-                (etapa.origin || '').toLowerCase().includes(searchLower) ||
-                (etapa.destination || '').toLowerCase().includes(searchLower) ||
-                (etapa.nombre_compania || '').toLowerCase().includes(searchLower) ||
-                (etapa.stageType === 'stopStage' && (etapa.origin || '').toLowerCase().includes(searchLower)) ||
-                (etapa.stageType === 'stopStage' && (etapa.reason || '').toLowerCase().includes(searchLower))
-            ))
-        );
-        return matchesSearch && withinDateRange;
-    }), [trips, search, startDate, endDate]);
+    const filteredAndSortedTrips = useMemo(() => {
+        const filtered = trips.filter(trip => {
+            let tripCreationDate = null;
+            if (trip.creation_date) { try { tripCreationDate = dayjs(trip.creation_date); if (!tripCreationDate.isValid()) { tripCreationDate = null; } } catch (e) { } }
+            const start = startDate ? dayjs(startDate).startOf('day') : null;
+            const end = endDate ? dayjs(endDate).endOf('day') : null;
+
+            const withinDateRange = ((!start || (tripCreationDate && tripCreationDate.isSameOrAfter(start))) && (!end || (tripCreationDate && tripCreationDate.isSameOrBefore(end))));
+            const searchLower = search.toLowerCase();
+            const matchesSearch = search === "" || (
+                (trip.trip_id?.toString() || '').toLowerCase().includes(searchLower) ||
+                (trip.trip_number || '').toLowerCase().includes(searchLower) ||
+                (trip.driver_nombre || '').toLowerCase().includes(searchLower) ||
+                (trip.driver_second_nombre || '').toLowerCase().includes(searchLower) ||
+                (trip.truck_unidad || '').toLowerCase().includes(searchLower) ||
+                (trip.caja_no_caja || '').toLowerCase().includes(searchLower) ||
+                (trip.status || '').toLowerCase().includes(searchLower) ||
+                (trip.etapas && trip.etapas.some(etapa =>
+                    (etapa.ci_number || '').toLowerCase().includes(searchLower) ||
+                    (etapa.origin || '').toLowerCase().includes(searchLower) ||
+                    (etapa.destination || '').toLowerCase().includes(searchLower) ||
+                    (etapa.nombre_compania || '').toLowerCase().includes(searchLower) ||
+                    (etapa.stageType === 'stopStage' && (etapa.origin || '').toLowerCase().includes(searchLower)) ||
+                    (etapa.stageType === 'stopStage' && (etapa.reason || '').toLowerCase().includes(searchLower)) ||
+                    (etapa.estatus || '').toLowerCase().includes(searchLower)
+                ))
+            );
+            return matchesSearch && withinDateRange;
+        });
+
+        // Sort the filtered trips
+        return filtered.sort((a, b) => {
+            // Priority: 'In Coming' (1) > 'In Transit' (2) > 'Almost Over' (3) > 'Completed' (4) > 'Cancelled' (5) > Others (6)
+            const statusOrder = (status) => { // MODIFICACIÓN: Añadido "Almost Over" en el orden de prioridad
+                if (status === 'In Coming') return 1;
+                if (status === 'In Transit') return 2;
+                if (status === 'Almost Over') return 3; // Nuevo estado, antes de Completed
+                if (status === 'Completed') return 4;
+                if (status === 'Cancelled') return 5;
+                return 6; // Para cualquier otro estado
+            };
+
+            const orderA = statusOrder(a.status);
+            const orderB = statusOrder(b.status);
+
+            // Primary sort by status priority
+            if (orderA !== orderB) {
+                return orderA - orderB;
+            }
+
+            // Secondary sort: If status priority is the same, sort by creation_date (newest to oldest)
+            const dateA = a.creation_date ? dayjs(a.creation_date) : dayjs('1900-01-01');
+            const dateB = b.creation_date ? dayjs(b.creation_date) : dayjs('1900-01-01');
+
+            if (dateA.isValid() && dateB.isValid()) {
+                return dateB.diff(dateA); // Descending order (newer first)
+            }
+            if (!dateA.isValid() && dateB.isValid()) return 1;
+            if (dateA.isValid() && !dateB.isValid()) return -1;
+
+            // Tertiary sort: If status and creation_date are the same, sort by trip_number (ascending)
+            return (a.trip_number || '').localeCompare(b.trip_number || '');
+        });
+    }, [trips, search, startDate, endDate]);
 
     const handleEditTrip = (tripId) => {
         if (!tripId) { console.error("ID inválido"); return; }
         navigate(`/edit-trip/${tripId}`);
     };
+
+    // NUEVO HANDLER: handleAlmostOverTrip
+    const handleAlmostOverTrip = async (tripId, tripNumber) => {
+        if (!tripId) return;
+        const confirmation = await Swal.fire({
+            title: '¿Marcar como "Casi Finalizado"?',
+            text: `Viaje #${tripNumber} será marcado como "Casi Finalizado" y sus recursos serán liberados.`,
+            icon: 'info', // O 'warning'
+            showCancelButton: true,
+            confirmButtonText: 'Sí, continuar',
+            cancelButtonText: 'Cancelar'
+        });
+        if (confirmation.isConfirmed) {
+            try {
+                const apiUrl = `${apiHost}/new_trips.php`;
+                const formData = new FormData();
+                formData.append('op', 'AlmostOverTrip'); // NUEVA OPERACIÓN EN EL BACKEND
+                formData.append('trip_id', tripId);
+                const response = await fetch(apiUrl, { method: 'POST', body: formData });
+                const result = await response.json();
+                if (response.ok && result.status === 'success') {
+                    Swal.fire('¡Éxito!', result.message || 'Viaje marcado como "Casi Finalizado" y recursos liberados.', 'success');
+                    fetchTrips(); // Refrescar la tabla
+                } else {
+                    throw new Error(result.error || result.message || 'No se pudo marcar como "Casi Finalizado".');
+                }
+            } catch (err) {
+                console.error("Error al marcar como casi finalizado:", err);
+                Swal.fire('Error', `Error al marcar como "Casi Finalizado": ${err.message}`, 'error');
+            }
+        }
+    };
+    // FIN NUEVO HANDLER
 
     const handleFinalizeTrip = async (tripId, tripNumber) => {
         if (!tripId) return;
@@ -360,21 +515,24 @@ const TripAdmin = () => {
                 <Table stickyHeader size="small">
                     <TableHead>
                         <TableRow>
-                            <TableCell />
-                            {/* --- INICIO DE MODIFICACIÓN --- */}
-                            {['Trip #', 'Driver(s)', 'Truck', 'Trailer', 'Initial Date', 'Status', 'Actions'].map((title) => (
-                                <TableCell key={title} sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>{title}</TableCell>
-                            ))}
-                            {/* --- FIN DE MODIFICACIÓN --- */}
+                            <TableCell /> {/* For expand/collapse icon */}
+                            <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>Trip #</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>Driver(s)</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>Truck</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>Trailer</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>Initial Date</TableCell> {/* This will display loadingDateToShow */}
+                            <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>Status</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>Creation Date</TableCell> {/* NUEVA LÍNEA: Encabezado para la columna Creation Date */}
+                            <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>Actions</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {filteredTrips.length === 0 ? (
+                        {filteredAndSortedTrips.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={8} align="center">No se encontraron viajes con los filtros aplicados.</TableCell>
+                                <TableCell colSpan={9} align="center">No se encontraron viajes con los filtros aplicados.</TableCell>
                             </TableRow>
                         ) : (
-                            filteredTrips
+                            filteredAndSortedTrips
                                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                                 .map((trip) => (
                                     <TripRow
@@ -382,6 +540,7 @@ const TripAdmin = () => {
                                         trip={trip}
                                         onEdit={handleEditTrip}
                                         onFinalize={handleFinalizeTrip}
+                                        onAlmostOver={handleAlmostOverTrip} // MODIFICACIÓN CLAVE: Pasar el nuevo handler a TripRow
                                         getDocumentUrl={getDocumentUrl}
                                     />
                                 ))
@@ -391,9 +550,9 @@ const TripAdmin = () => {
             </TableContainer>
 
             <TablePagination
-                rowsPerPageOptions={[10, 25, 50, 100]}
+                rowsPerPageOptions={[25, 50, 100]}
                 component="div"
-                count={filteredTrips.length}
+                count={filteredAndSortedTrips.length}
                 rowsPerPage={rowsPerPage}
                 page={page}
                 onPageChange={(event, newPage) => setPage(newPage)}
