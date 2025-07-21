@@ -133,8 +133,8 @@ const menuFiltrado = menuItems.filter(item =>
         ...prev,
         IMA: data.Users[0].documentos_faltantes_ima|| 0,
         Conductores: data.Users[0].documentos_faltantes_driver|| 0,
-        Camiones: data.Users[0].documentos_faltantes_trailer + data.Users[0].documentos_faltantes_truck|| 0,
-        Trailers: data.Users[0].documentos_faltantes_truck || 0,
+        Camiones: parseInt(data.Users[0].documentos_faltantes_trailer) + parseInt(data.Users[0].documentos_faltantes_truck) || 0,
+ 
       }));
 
       
