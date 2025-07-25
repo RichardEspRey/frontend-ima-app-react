@@ -83,7 +83,7 @@ const TrailerEdit = () => {
       try {
         const response = await fetch(`${apiHost}/cajas_docs.php`, { method: 'POST', body: formDataFile });
         const result = await response.json();
-        Swal.fire({ icon: 'success', title: 'Éxito', text: `Documento ${tipo_documento} actualizado` });
+        Swal.fire({ icon: 'success', title: 'Éxito', text: `Documentos actualizados` });
       } catch (error) {
         console.error(`Error al enviar ${tipo_documento}:`, error);
       }

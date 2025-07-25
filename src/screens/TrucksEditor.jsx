@@ -87,14 +87,7 @@ const TruckScreen = () => {
       try {
         const response = await fetch(`${apiHost}/trucks_docs.php`, { method: 'POST', body: formDataFile });
         const result = await response.json();
-        const { isConfirmed } = await Swal.fire({
-          icon: 'success',
-          title: 'Éxito',
-          text: `Documento ${tipo_documento} actualizado`,
-          confirmButtonText: 'Aceptar'
-        });
-        if (isConfirmed) window.location.reload();
-        return;
+        Swal.fire({ icon: 'success', title: 'Éxito', text: `Documentos actualizados` });
       } catch (error) {
         console.error(`Error al enviar ${tipo_documento}:`, error);
       }

@@ -159,24 +159,13 @@ const enviarDocumentos = async (idConductor) => {
       });
 
       const result = await response.json();
-
-
-       const { isConfirmed } = await Swal.fire({
-        icon: 'success',
-        title: 'Éxito',
-        text: `Documento ${tipo_documento} actualizado`,
-      showCancelButton: false,
-      confirmButtonText: 'Aceptar'
-    });
-
-      if (isConfirmed){
-          window.location.reload();
-      }return;
+      Swal.fire({ icon: 'success', title: 'Éxito', text: `Documentos actualizados` });
 
     } catch (error) {
       console.error(`Error al enviar ${tipo_documento}:`, error);
     }
   }
+    
 };
 
 const handleSubmit = async () => {
