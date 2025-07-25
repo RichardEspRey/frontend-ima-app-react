@@ -65,13 +65,28 @@ const EditTripForm = () => {
     const [trailerType, setTrailerType] = useState('interna');
     const [IsModalCajaExternaOpen, setIsModalCajaExternaOpen] = useState(false);
 
-    const getDocumentUrl = (serverPath) => {
-        if (!serverPath) return '#';
-        const uploadsWebPath = `${apiHost}/Uploads/Trips/`;
-        const fileName = serverPath.split(/[\\/]/).pop();
-        if (!fileName) return '#';
-        return `${uploadsWebPath}${encodeURIComponent(fileName)}`;
+   
+    const getDocumentUrl = (doc) => {
+        if (!doc) return '#';
+
+        if (doc.file instanceof File) {
+            return URL.createObjectURL(doc.file);
+        }
+
+       
+        if (doc.serverPath && typeof doc.serverPath === 'string') {
+            const uploadsWebPath = `${apiHost}/Uploads/Trips/`;
+      
+            const fileName = doc.serverPath.split(/[\\/]/).pop();
+            if (fileName) {
+                return `${uploadsWebPath}${encodeURIComponent(fileName)}`;
+            }
+        }
+
+   
+        return '#';
     };
+
 
     useEffect(() => {
         const fetchTripDetails = async () => {
@@ -128,8 +143,10 @@ const EditTripForm = () => {
                                 if (documentosBase.hasOwnProperty(doc.tipo_documento)) {
                                     documentosBase[doc.tipo_documento] = {
                                         fileName: doc.nombre_archivo?.split(/[\\/]/).pop() || 'Archivo existente',
-                                        vencimiento: doc.fecha_vencimiento || null, file: null,
-                                        document_id: doc.document_id, serverPath: doc.path_servidor_real
+                                        vencimiento: doc.fecha_vencimiento || null,
+                                        file: null, // Asegurar que 'file' es null para documentos cargados de DB
+                                        document_id: doc.document_id,
+                                        serverPath: doc.path_servidor_real
                                     };
                                 }
                             });
@@ -144,7 +161,7 @@ const EditTripForm = () => {
                                 bl_firmado_doc: stop.bl_firmado_doc ? {
                                     fileName: stop.bl_firmado_doc.nombre_archivo?.split(/[\\/]/).pop() || 'Archivo existente',
                                     vencimiento: stop.bl_firmado_doc.fecha_vencimiento || null,
-                                    file: null,
+                                    file: null, // Asegurar que 'file' es null para documentos de parada cargados de DB
                                     document_id: stop.bl_firmado_doc.document_id,
                                     serverPath: stop.bl_firmado_doc.path_servidor_real
                                 } : null
@@ -190,20 +207,20 @@ const EditTripForm = () => {
 
     const handleStageChange = (index, field, value) => {
         setEtapas(prevEtapas => {
-        const updatedEtapas = [...prevEtapas];
-        const updatedEtapa = { ...updatedEtapas[index] };
-        updatedEtapa[field] = value;
+            const updatedEtapas = [...prevEtapas];
+            const updatedEtapa = { ...updatedEtapas[index] };
+            updatedEtapa[field] = value;
 
-        // --- Lógica para actualizar estatus de etapa en frontend ---
-        if (field === 'ci_number' && updatedEtapa.stageType === 'borderCrossing') {
-            if (value && value.trim() !== '') {
-                // Si el CI tiene valor, el estatus debe ser 'In Transit'
-                updatedEtapa.estatus = 'In Transit';
-            } else {
-                // Si el CI está vacío, el estatus debe ser 'In Coming'
-                updatedEtapa.estatus = 'In Coming';
+            // Lógica para actualizar estatus de etapa en frontend
+            if (field === 'ci_number' && updatedEtapa.stageType === 'borderCrossing') {
+                if (value && value.trim() !== '') {
+                    updatedEtapa.estatus = 'In Transit';
+                } else {
+                    updatedEtapa.estatus = 'In Coming';
+                }
             }
-        }
+            // Fin lógica para actualizar estatus
+
             updatedEtapas[index] = updatedEtapa;
             return updatedEtapas;
         });
@@ -238,9 +255,9 @@ const EditTripForm = () => {
                 updatedStop[docType] = {
                     fileName: data.fileName,
                     vencimiento: data.vencimiento,
-                    file: data.file,
+                    file: data.file, // Guardar el objeto File
                     document_id: (updatedStop[docType] && updatedStop[docType].document_id) ? updatedStop[docType].document_id : null,
-                    serverPath: null,
+                    serverPath: null, // Reiniciar serverPath para archivos nuevos
                     hasNewFile: !!data.file
                 };
                 updatedStops[stopIndex] = updatedStop;
@@ -252,9 +269,9 @@ const EditTripForm = () => {
                     [docType]: {
                         fileName: data.fileName,
                         vencimiento: data.vencimiento,
-                        file: data.file,
+                        file: data.file, // Guardar el objeto File
                         document_id: (etapaActual.documentos[docType] && etapaActual.documentos[docType].document_id) ? etapaActual.documentos[docType].document_id : null,
-                        serverPath: null,
+                        serverPath: null, // Reiniciar serverPath para archivos nuevos
                         hasNewFile: !!data.file
                     }
                 };
@@ -350,12 +367,24 @@ const EditTripForm = () => {
                 origin: '', destination: '', zip_code_origin: '', zip_code_destination: '',
                 loading_date: null, delivery_date: null, company_id: null, travel_direction: '',
                 warehouse_origin_id: null, warehouse_destination_id: null, ci_number: '',
-                rate_tarifa: '', millas_pcmiller: '', millas_pcmiller_practicas: '', estatus: 'In Transit',
+                rate_tarifa: '', millas_pcmiller: '', millas_pcmiller_practicas: '', estatus: 'In Transit', // Default status
                 documentos: initialDocs,
                 comments: '',
                 time_of_delivery: '',
                 stops_in_transit: []
             };
+
+            // Lógica para determinar el estatus inicial de la nueva etapa
+            if (tipoEtapa === 'borderCrossing') {
+                // For a new borderCrossing stage, if ci_number is empty, status should be 'In Coming'
+                // This will be overridden by backend if it has a CI
+                if (!newEtapa.ci_number || newEtapa.ci_number.trim() === '') {
+                    newEtapa.estatus = 'In Coming';
+                } else {
+                    newEtapa.estatus = 'In Transit';
+                }
+            }
+
 
             const updatedEtapas = [...prevEtapas];
             updatedEtapas.splice(insertAtIndex, 0, newEtapa);
@@ -389,13 +418,12 @@ const EditTripForm = () => {
 
         const dataToSend = new FormData();
         dataToSend.append('op', 'Update');
-        dataToSend.append('trip_id', tripId); // Keep this to identify the trip for update
+        dataToSend.append('trip_id', tripId);
 
-        // Append the potentially changed trip_number
-        dataToSend.append('trip_number', formData.trip_number || ''); // Add this line
+        dataToSend.append('trip_number', formData.trip_number || '');
 
         Object.entries(formData).forEach(([key, value]) => {
-            if (key !== 'status' && key !== 'trip_number') { // Exclude status and now trip_number, as it's added explicitly
+            if (key !== 'status' && key !== 'trip_number') {
                 dataToSend.append(key, value || '');
             }
         });
@@ -406,6 +434,7 @@ const EditTripForm = () => {
                 document_id: docData?.document_id || null,
                 fileName: docData?.fileName || null,
                 vencimiento: docData?.vencimiento || null,
+                // No incluir 'file' aquí, solo metadatos para JSON
                 hasNewFile: !!(docData && docData.file instanceof File)
             })).filter(doc => doc.fileName !== null);
 
@@ -437,9 +466,9 @@ const EditTripForm = () => {
                 ci_number: etapa.ci_number || null,
                 rate_tarifa: etapa.rate_tarifa || null, millas_pcmiller: etapa.millas_pcmiller || null,
                 millas_pcmiller_practicas: etapa.millas_pcmiller_practicas || null,
-                comments: etapa.comments || null, // <-- AÑADIR
-                time_of_delivery: etapa.time_of_delivery || null, // <-- AÑADIR
-                estatus: etapa.estatus || 'In Transit',
+                comments: etapa.comments || null,
+                time_of_delivery: etapa.time_of_delivery || null,
+                estatus: etapa.estatus || 'In Transit', // Enviar el estatus actualizado desde el frontend
                 documentos: etapaDocs,
                 stops_in_transit: stopsJson
             };
@@ -656,7 +685,7 @@ const EditTripForm = () => {
                             <div className="input-columns">
 
                                 <div className="column">
-                                    <label htmlFor="trip_number">Trip Number:</label> {/* Added Label */}
+                                    <label htmlFor="trip_number">Trip Number:</label>
                                     <input
                                         type="text"
                                         id="trip_number"
@@ -665,7 +694,7 @@ const EditTripForm = () => {
                                         onChange={(e) => handleFormChange('trip_number', e.target.value)}
                                         placeholder="Número de Viaje"
                                         className="form-input"
-                                        readOnly={isFormDisabled} // Keep this based on the overall form status
+                                        readOnly={isFormDisabled}
                                     />
                                 </div>
                                 <div className="column">
@@ -866,7 +895,7 @@ const EditTripForm = () => {
 
                                             <div className="column">
 
-                                                <label  >Comments:</label>
+                                                <label>Comments:</label>
                                                 <textarea
                                                     value={etapa.comments}
                                                     onChange={(e) => handleStageChange(index, 'comments', e.target.value)}
@@ -1070,7 +1099,7 @@ const EditTripForm = () => {
                                         <div className="input-columns">
                                             <div className="column">
 
-                                                <label  >Comments:</label>
+                                                <label>Comments:</label>
                                                 <textarea
                                                     value={etapa.comments}
                                                     onChange={(e) => handleStageChange(index, 'comments', e.target.value)}
@@ -1102,30 +1131,30 @@ const EditTripForm = () => {
                                                         <div className="column">
                                                             <label htmlFor={`ima_invoice-${index}`}>IMA Invoice:</label>
                                                             <button type="button" className="upload-button" onClick={() => abrirModal('ima_invoice', index)} disabled={isFormDisabled}> Subir/Cambiar </button>
-                                                            {etapa.documentos?.ima_invoice && (<p className="doc-info"><i> <a href={getDocumentUrl(etapa.documentos.ima_invoice.serverPath)} target="_blank" rel="noopener noreferrer">{etapa.documentos.ima_invoice.fileName}</a> {etapa.documentos.ima_invoice.vencimiento ? ` - V: ${etapa.documentos.ima_invoice.vencimiento}` : ''}</i></p>)}
+                                                            {etapa.documentos?.ima_invoice && (<p className="doc-info"><i> <a href={getDocumentUrl(etapa.documentos.ima_invoice)} target="_blank" rel="noopener noreferrer">{etapa.documentos.ima_invoice.fileName}</a> {etapa.documentos.ima_invoice.vencimiento ? ` - V: ${etapa.documentos.ima_invoice.vencimiento}` : ''}</i></p>)}
                                                         </div>
-                                                        
+
                                                         <div className="column">
                                                             <label htmlFor={`ci-${index}`}>CI:</label>
                                                             <button type="button" className="upload-button" onClick={() => abrirModal('ci', index)} disabled={isFormDisabled}>Subir/Cambiar</button>
-                                                            {etapa.documentos?.ci && (<p className="doc-info"><i> <a href={getDocumentUrl(etapa.documentos.ci.serverPath)} target="_blank" rel="noopener noreferrer">{etapa.documentos.ci.fileName}</a> {etapa.documentos.ci.vencimiento ? ` - V: ${etapa.documentos.ci.vencimiento}` : ''}</i></p>)}
+                                                            {etapa.documentos?.ci && (<p className="doc-info"><i> <a href={getDocumentUrl(etapa.documentos.ci)} target="_blank" rel="noopener noreferrer">{etapa.documentos.ci.fileName}</a> {etapa.documentos.ci.vencimiento ? ` - V: ${etapa.documentos.ci.vencimiento}` : ''}</i></p>)}
                                                         </div>
                                                         <div className="column">
                                                             <label htmlFor={`doda-${index}`}>DODA:</label>
                                                             <button type="button" className="upload-button" onClick={() => abrirModal('doda', index)} disabled={isFormDisabled}>Subir/Cambiar</button>
-                                                            {etapa.documentos?.doda && (<p className="doc-info"><i> <a href={getDocumentUrl(etapa.documentos.doda.serverPath)} target="_blank" rel="noopener noreferrer">{etapa.documentos.doda.fileName}</a> {etapa.documentos.doda.vencimiento ? ` - V: ${etapa.documentos.doda.vencimiento}` : ''}</i></p>)}
+                                                            {etapa.documentos?.doda && (<p className="doc-info"><i> <a href={getDocumentUrl(etapa.documentos.doda)} target="_blank" rel="noopener noreferrer">{etapa.documentos.doda.fileName}</a> {etapa.documentos.doda.vencimiento ? ` - V: ${etapa.documentos.doda.vencimiento}` : ''}</i></p>)}
                                                         </div>
                                                     </div>
                                                     <div className="column ">
                                                         <div className="column">
                                                             <label htmlFor={`entry-${index}`}>Entry:</label>
                                                             <button type="button" className="upload-button" onClick={() => abrirModal('entry', index)} disabled={isFormDisabled}>Subir/Cambiar</button>
-                                                            {etapa.documentos?.entry && (<p className="doc-info"><i> <a href={getDocumentUrl(etapa.documentos.entry.serverPath)} target="_blank" rel="noopener noreferrer">{etapa.documentos.entry.fileName}</a></i></p>)}
+                                                            {etapa.documentos?.entry && (<p className="doc-info"><i> <a href={getDocumentUrl(etapa.documentos.entry)} target="_blank" rel="noopener noreferrer">{etapa.documentos.entry.fileName}</a></i></p>)}
                                                         </div>
                                                         <div className="column">
                                                             <label htmlFor={`manifiesto-${index}`}>Manifiesto:</label>
                                                             <button type="button" className="upload-button" onClick={() => abrirModal('manifiesto', index)} disabled={isFormDisabled}>Subir/Cambiar</button>
-                                                            {etapa.documentos?.manifiesto && (<p className="doc-info"><i> <a href={getDocumentUrl(etapa.documentos.manifiesto.serverPath)} target="_blank" rel="noopener noreferrer">{etapa.documentos.manifiesto.fileName}</a></i></p>)}
+                                                            {etapa.documentos?.manifiesto && (<p className="doc-info"><i> <a href={getDocumentUrl(etapa.documentos.manifiesto)} target="_blank" rel="noopener noreferrer">{etapa.documentos.manifiesto.fileName}</a></i></p>)}
                                                         </div>
                                                         <div className="column">
                                                             <div className="column">
@@ -1145,17 +1174,12 @@ const EditTripForm = () => {
                                                         <div className="column">
                                                             <label htmlFor={`bl-${index}`}>BL:</label>
                                                             <button type="button" className="upload-button" onClick={() => abrirModal('bl', index)} disabled={isFormDisabled}>Subir/Cambiar</button>
-                                                            {etapa.documentos?.bl && (<p className="doc-info"><i> <a href={getDocumentUrl(etapa.documentos.bl.serverPath)} target="_blank" rel="noopener noreferrer">{etapa.documentos.bl.fileName}</a></i></p>)}
-                                                        </div>
-                                                        <div className="column">
-                                                            <label htmlFor={`orden_retiro-${index}`}>Orden Retiro:</label>
-                                                            <button type="button" className="upload-button" onClick={() => abrirModal('orden_retiro', index)} disabled={isFormDisabled}>Subir/Cambiar</button>
-                                                            {etapa.documentos?.orden_retiro && (<p className="doc-info"><i> <a href={getDocumentUrl(etapa.documentos.orden_retiro.serverPath)} target="_blank" rel="noopener noreferrer">{etapa.documentos.orden_retiro.fileName}</a> {etapa.documentos.orden_retiro.vencimiento ? ` - V: ${etapa.documentos.orden_retiro.vencimiento}` : ''}</i></p>)}
+                                                            {etapa.documentos?.bl && (<p className="doc-info"><i> <a href={getDocumentUrl(etapa.documentos.bl)} target="_blank" rel="noopener noreferrer">{etapa.documentos.bl.fileName}</a></i></p>)}
                                                         </div>
                                                         <div className="column">
                                                             <label htmlFor={`bl_firmado-${index}`}>BL Firmado:</label>
                                                             <button type="button" className="upload-button" onClick={() => abrirModal('bl_firmado', index)} disabled={isFormDisabled}>Subir/Cambiar</button>
-                                                            {etapa.documentos?.bl_firmado && (<p className="doc-info"><i> <a href={getDocumentUrl(etapa.documentos.bl_firmado.serverPath)} target="_blank" rel="noopener noreferrer">{etapa.documentos.bl_firmado.fileName}</a> {etapa.documentos.bl_firmado.vencimiento ? ` - V: ${etapa.documentos.bl_firmado.vencimiento}` : ''}</i></p>)}
+                                                            {etapa.documentos?.bl_firmado && (<p className="doc-info"><i> <a href={getDocumentUrl(etapa.documentos.bl_firmado)} target="_blank" rel="noopener noreferrer">{etapa.documentos.bl_firmado.fileName}</a> {etapa.documentos.bl_firmado.vencimiento ? ` - V: ${etapa.documentos.bl_firmado.vencimiento}` : ''}</i></p>)}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -1169,12 +1193,12 @@ const EditTripForm = () => {
                                                         <div className="column">
                                                             <label htmlFor={`ima_invoice-${index}`}>IMA Invoice:</label>
                                                             <button type="button" className="upload-button" onClick={() => abrirModal('ima_invoice', index)} disabled={isFormDisabled}>Subir/Cambiar</button>
-                                                            {etapa.documentos?.ima_invoice && (<p className="doc-info"><i> <a href={getDocumentUrl(etapa.documentos.ima_invoice.serverPath)} target="_blank" rel="noopener noreferrer">{etapa.documentos.ima_invoice.fileName}</a> {etapa.documentos.ima_invoice.vencimiento ? ` - V: ${etapa.documentos.ima_invoice.vencimiento}` : ''}</i></p>)}
+                                                            {etapa.documentos?.ima_invoice && (<p className="doc-info"><i> <a href={getDocumentUrl(etapa.documentos.ima_invoice)} target="_blank" rel="noopener noreferrer">{etapa.documentos.ima_invoice.fileName}</a> {etapa.documentos.ima_invoice.vencimiento ? ` - V: ${etapa.documentos.ima_invoice.vencimiento}` : ''}</i></p>)}
                                                         </div>
                                                         <div className="column">
                                                             <label htmlFor={`ci-${index}`}>CI:</label>
                                                             <button type="button" className="upload-button" onClick={() => abrirModal('ci', index)} disabled={isFormDisabled}>Subir/Cambiar</button>
-                                                            {etapa.documentos?.ci && (<p className="doc-info"><i> <a href={getDocumentUrl(etapa.documentos.ci.serverPath)} target="_blank" rel="noopener noreferrer">{etapa.documentos.ci.fileName}</a> {etapa.documentos.ci.vencimiento ? ` - V: ${etapa.documentos.ci.vencimiento}` : ''}</i></p>)}
+                                                            {etapa.documentos?.ci && (<p className="doc-info"><i> <a href={getDocumentUrl(etapa.documentos.ci)} target="_blank" rel="noopener noreferrer">{etapa.documentos.ci.fileName}</a> {etapa.documentos.ci.vencimiento ? ` - V: ${etapa.documentos.ci.vencimiento}` : ''}</i></p>)}
                                                         </div>
                                                         <div className="column">
                                                             <div className="column">
@@ -1194,12 +1218,12 @@ const EditTripForm = () => {
                                                         <div className="column">
                                                             <label htmlFor={`bl-${index}`}>BL:</label>
                                                             <button type="button" className="upload-button" onClick={() => abrirModal('bl', index)} disabled={isFormDisabled}>Subir/Cambiar</button>
-                                                            {etapa.documentos?.bl && (<p className="doc-info"><i> <a href={getDocumentUrl(etapa.documentos.bl.serverPath)} target="_blank" rel="noopener noreferrer">{etapa.documentos.bl.fileName}</a></i></p>)}
+                                                            {etapa.documentos?.bl && (<p className="doc-info"><i> <a href={getDocumentUrl(etapa.documentos.bl)} target="_blank" rel="noopener noreferrer">{etapa.documentos.bl.fileName}</a></i></p>)}
                                                         </div>
                                                         <div className="column">
                                                             <label htmlFor={`bl_firmado-${index}`}>BL Firmado:</label>
                                                             <button type="button" className="upload-button" onClick={() => abrirModal('bl_firmado', index)} disabled={isFormDisabled}>Subir/Cambiar</button>
-                                                            {etapa.documentos?.bl_firmado && (<p className="doc-info"><i> <a href={getDocumentUrl(etapa.documentos.bl_firmado.serverPath)} target="_blank" rel="noopener noreferrer">{etapa.documentos.bl_firmado.fileName}</a> {etapa.documentos.bl_firmado.vencimiento ? ` - V: ${etapa.documentos.bl_firmado.vencimiento}` : ''}</i></p>)}
+                                                            {etapa.documentos?.bl_firmado && (<p className="doc-info"><i> <a href={getDocumentUrl(etapa.documentos.bl_firmado)} target="_blank" rel="noopener noreferrer">{etapa.documentos.bl_firmado.fileName}</a> {etapa.documentos.bl_firmado.vencimiento ? ` - V: ${etapa.documentos.bl_firmado.vencimiento}` : ''}</i></p>)}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -1252,7 +1276,7 @@ const EditTripForm = () => {
                                                                 {stop.bl_firmado_doc && (
                                                                     <p className="doc-info">
                                                                         <i>
-                                                                            <a href={getDocumentUrl(stop.bl_firmado_doc.serverPath)} target="_blank" rel="noopener noreferrer">
+                                                                            <a href={getDocumentUrl(stop.bl_firmado_doc)} target="_blank" rel="noopener noreferrer">
                                                                                 {stop.bl_firmado_doc.fileName}
                                                                             </a>
                                                                         </i>
