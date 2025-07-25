@@ -190,9 +190,20 @@ const EditTripForm = () => {
 
     const handleStageChange = (index, field, value) => {
         setEtapas(prevEtapas => {
-            const updatedEtapas = [...prevEtapas];
-            const updatedEtapa = { ...updatedEtapas[index] };
-            updatedEtapa[field] = value;
+        const updatedEtapas = [...prevEtapas];
+        const updatedEtapa = { ...updatedEtapas[index] };
+        updatedEtapa[field] = value;
+
+        // --- Lógica para actualizar estatus de etapa en frontend ---
+        if (field === 'ci_number' && updatedEtapa.stageType === 'borderCrossing') {
+            if (value && value.trim() !== '') {
+                // Si el CI tiene valor, el estatus debe ser 'In Transit'
+                updatedEtapa.estatus = 'In Transit';
+            } else {
+                // Si el CI está vacío, el estatus debe ser 'In Coming'
+                updatedEtapa.estatus = 'In Coming';
+            }
+        }
             updatedEtapas[index] = updatedEtapa;
             return updatedEtapas;
         });
