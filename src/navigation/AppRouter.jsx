@@ -22,6 +22,12 @@ import TrailerEdit from '../screens/TrailerEdit.jsx';
 import EditTripForm from '../screens/EditTripForm.jsx';
 import ImaScreen from '../screens/ImaScreen.jsx';
 import ImaAdmin from '../screens/ImaAdmin.jsx';
+import DieselAdmin from '../screens/Trips/DieselAdmin.jsx';
+import DieselDetalle from '../screens/Trips/DieselDetalle.jsx';
+import DieselEditor from '../screens/Trips/DieselEditor.jsx';
+import GastosAdmin from '../screens/Trips/GastosAdmin.jsx';
+import GastosDetalle from '../screens/Trips/GastosDetalle.jsx';
+import GastosEditor from '../screens/Trips/GastosEditor.jsx';
 
 const AppRouter = () => {
   const { user, loading } = useContext(AuthContext);
@@ -146,6 +152,60 @@ const AppRouter = () => {
                 element={
                   <DashboardLayout>
                     <TripAdmin />
+                  </DashboardLayout>
+                }
+              />
+
+               <Route
+                path="/admin-diesel"
+                element={
+                  <DashboardLayout>
+                    <DieselAdmin />
+                  </DashboardLayout>
+                }
+              />
+
+              <Route
+                path="/detalle-diesel/:tripId"
+                element={
+                  <DashboardLayout>
+                    <DieselDetalle />
+                  </DashboardLayout>
+                }
+              />
+
+              <Route
+                path="/editor-diesel/:id/:trip_id"
+                element={
+                  <DashboardLayout>
+                    <DieselEditor />
+                  </DashboardLayout>
+                }
+              />
+
+               <Route
+                path="/admin-gastos"
+                element={
+                  <DashboardLayout>
+                    <GastosAdmin />
+                  </DashboardLayout>
+                }
+              />
+
+               <Route
+                path="/detalle-gastos/:tripId"
+                element={
+                  <DashboardLayout>
+                    <GastosDetalle />
+                  </DashboardLayout>
+                }
+              />
+
+              <Route
+                path="/editor-gastos/:id/:trip_id"
+                element={
+                  <DashboardLayout>
+                    <GastosEditor />
                   </DashboardLayout>
                 }
               />

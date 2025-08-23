@@ -14,6 +14,8 @@ import iconTrailer from '../assets/images/icons/trailer.png';
 import iconBox from '../assets/images/icons/caja.png';
 import iconReport from '../assets/images/icons/report.png';
 import iconExit from '../assets/images/icons/exit.png';
+import iconList from '../assets/images/icons/list.png';
+
 
 const menuItems = [
   { name: 'Inicio', icon: iconDashboard, route: '/home', rolesPermitidos: ['admin'] },
@@ -52,7 +54,17 @@ const menuItems = [
     rolesPermitidos: ['admin', 'Vendedor'],
     subItems: [
       { name: 'Nuevo Viaje', route: '/trips' },
-      { name: 'Administrador de viajes', route: '/admin-trips' }
+      { name: 'Administrador de viajes', route: '/admin-trips' },
+      { name: 'Gastos diesel', route: '/admin-diesel' },
+      { name: 'Gastos viajes', route: '/admin-gastos' }
+    ]
+  },
+  {
+    name: 'Mantenimientos',
+    icon: iconList,
+    rolesPermitidos: ['admin', 'Vendedor'],
+    subItems: [
+      { name: 'Inspeccion final', route: '/trips' }
     ]
   },
   { name: 'Reportes', icon: iconReport, route: '/reportes', rolesPermitidos: ['admin'] }

@@ -48,7 +48,6 @@ const DriverScreen = () => {
 
 
   const envioDatosPrincipal = async () => {
-    console.log(formData);
     try {
       const formDataToSend = new FormData();
 

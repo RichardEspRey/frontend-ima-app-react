@@ -6,7 +6,6 @@ import Header from '../components/Header';
 const DashboardLayout = ({ children}) => {
   return (
     <div className="container">
-      {/* <Sidebar navigate={navigate} /> */}
       <Sidebar/>
       <div className="mainContainer">
         <Header />
