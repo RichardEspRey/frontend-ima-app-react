@@ -21,6 +21,7 @@ const styles = {
 
 const StockAdmin = () => {
     const [inventoryList, setInventoryList] = useState([]);
+    const apiHost = import.meta.env.VITE_API_HOST;
     const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState(true);
 
@@ -32,7 +33,7 @@ const StockAdmin = () => {
 
             try {
          
-                const response = await fetch('http://localhost/API/inventory.php', {
+                const response = await fetch(`${apiHost}/inventory.php`, {
                     method: 'POST',
                     body: formData
                 });

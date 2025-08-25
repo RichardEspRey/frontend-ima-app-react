@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Select from 'react-select';
 import "./css/ExpenseScreen.css";
 import DatePicker from 'react-datepicker';
@@ -25,6 +25,7 @@ const selectStyles = {
 
 const ExpenseScreen = () => {
     // --- ESTADOS GENERALES DEL GASTO ---
+    const apiHost = import.meta.env.VITE_API_HOST;
     const [country, setCountry] = useState(null);
     const ID_MANTENIMIENTO = 3;
     const [expenseDate, setExpenseDate] = useState(new Date());
@@ -34,30 +35,38 @@ const ExpenseScreen = () => {
 
     const [expenseDetails, setExpenseDetails] = useState([]);
 
-
-
     const { expenseTypes, loading: typesLoading } = useFetchExpenseTypes();
     const { maintenanceCategories, loading: categoriesLoading } = useFetchCategories();
     const { subcategories, loading: subcategoriesLoading } = useFetchSubcategories();
     const { inventoryItems, loading: itemsLoading, setInventoryItems } = useFetchInventoryItems();
 
-    // --- ESTADOS PARA MANEJO DE ARCHIVOS ---
 
     const [modalState, setModalState] = useState({
         isOpen: false,
-        fileType: null, // 'facturaPdf' o 'ticketJpg'
+        fileType: null, 
     });
     const [files, setFiles] = useState({
-        facturaPdf: null, // Guardará solo el objeto File
+        facturaPdf: null, 
         ticketJpg: null,
     });
-    const pdfInputRef = useRef(null);
-    const jpgInputRef = useRef(null); // Para saber qué input de archivo activar
+    // const pdfInputRef = useRef(null);
+    // const jpgInputRef = useRef(null); 
 
+    const resetForm = () => {
+        setCountry(null);
+        setExpenseDate(new Date());
+        setTotalAmount('0.00');
+        setOriginalAmount('');
+        setExchangeRate('');
+        setExpenseDetails([]);
+        setFiles({ facturaPdf: null, ticketJpg: null });
+        // Si estás usando react-router y quieres redirigir, puedes hacerlo aquí
+        // navigate('/ruta-a-la-lista');
+    };
 
-    // useEffect para recalcular el monto total
+  
     useEffect(() => {
-        // LÓGICA ACTUALIZADA: Si hay un monto original, úsalo. Si no, calcula desde los detalles.
+
         if (originalAmount && exchangeRate) {
             const convertedAmount = parseFloat(originalAmount) * parseFloat(exchangeRate);
             setTotalAmount(convertedAmount.toFixed(2));
@@ -88,14 +97,14 @@ const ExpenseScreen = () => {
                 formData.append('op', 'createInventoryItem');
                 formData.append('itemName', selection.label);
                 formData.append('subcategoryId', detail.subcategory);
-                const response = await fetch('http://localhost/API/save_expense.php', { method: 'POST', body: formData });
+                const response = await fetch(`${apiHost}/save_expense.php`, { method: 'POST', body: formData });
                 const result = await response.json();
 
                 if (result.status === 'success') {
                     const newItem = { value: result.itemId, label: selection.label, id_subcategoria: detail.subcategory };
                     setInventoryItems(prevItems => [...prevItems, newItem]);
 
-                    // UNA SOLA ORDEN para actualizar el estado
+                   
                     handleDetailChange(detail.id, { itemId: result.itemId, itemDescription: selection.label });
 
                     Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Artículo creado', showConfirmButton: false, timer: 2000 });
@@ -104,7 +113,7 @@ const ExpenseScreen = () => {
                 Swal.fire('Error', `No se pudo crear el artículo: ${error.message}`, 'error');
             }
         }
-        // CASO 3: El usuario selecciona un artículo existente (UNA SOLA ORDEN)
+       
         else {
             handleDetailChange(detail.id, {
                 itemId: selection.value,
@@ -115,7 +124,7 @@ const ExpenseScreen = () => {
 
     const handleSaveFromModal = (fileData) => {
         if (modalState.fileType) {
-            // fileData es { file: Archivo, fileName: 'nombre.pdf' }
+           
             setFiles(prev => ({ ...prev, [modalState.fileType]: fileData.file }));
         }
     };
@@ -125,7 +134,7 @@ const ExpenseScreen = () => {
             if (detail.id === id) {
                 const updatedDetail = { ...detail, ...updates };
 
-                // Lógica de reseteo inteligente
+              
                 if (updates.hasOwnProperty('category') && updates.category !== detail.category) {
                     updatedDetail.subcategory = null;
                     updatedDetail.itemId = null;
@@ -189,8 +198,6 @@ const ExpenseScreen = () => {
 
         const detailsData = expenseDetails.map(detail => {
 
-            // const selectedItemObject = inventoryItems.find(item => item.value === detail.itemId);
-            // const itemDescription = selectedItemObject ? selectedItemObject.label : '';
             const description = detail.itemDescription || '';
             return {
                 id_tipo_gasto: detail.expenseType,
@@ -205,19 +212,20 @@ const ExpenseScreen = () => {
 
         apiFormData.append('detailsData', JSON.stringify(detailsData));
         console.log("Datos que se van a enviar:", detailsData);
-        // 3. Archivos y envío (esto ya estaba bien)
+
         
 
         apiFormData.append('op', 'Alta');
 
         try {
-            const response = await fetch(`http://localhost/API/save_expense.php`, {
+            const response = await fetch(`${apiHost}/save_expense.php`, {
                 method: 'POST',
                 body: apiFormData,
             });
             const result = await response.json();
             if (result.status === 'success') {
                 Swal.fire('¡Éxito!', 'Gasto guardado correctamente.', 'success');
+                resetForm();
             } else {
                 throw new Error(result.message);
             }
@@ -226,16 +234,13 @@ const ExpenseScreen = () => {
         }
     };
 
-
-
-
-    const handleFileChange = (event, fileType) => {
-        const file = event.target.files[0];
-        if (file) {
-            setFiles(prev => ({ ...prev, [fileType]: file }));
-        }
-        event.target.value = null; // Resetea para poder subir el mismo archivo otra vez
-    };
+    // const handleFileChange = (event, fileType) => {
+    //     const file = event.target.files[0];
+    //     if (file) {
+    //         setFiles(prev => ({ ...prev, [fileType]: file }));
+    //     }
+    //     event.target.value = null; 
+    // };
 
     const countries = [{ value: 'MX', label: 'México' }, { value: 'US', label: 'Estados Unidos' }];
 
@@ -260,7 +265,7 @@ const ExpenseScreen = () => {
                         <div className="additional-card">
                             <form className="card-container" onSubmit={handleSaveExpense}>
                                 <div className="form-actions">
-                                    <button type="button" className="cancel-button">Cancelar</button>
+                                    <button type="button" className="cancel-button" onClick={resetForm}>Cancelar</button>
                                     <button type="submit" className="accept-button">Guardar Gasto</button>
                                 </div>
                                 <div className="form-section">

@@ -24,6 +24,9 @@ import ImaScreen from '../screens/ImaScreen.jsx';
 import ImaAdmin from '../screens/ImaAdmin.jsx';
 import ExpenseScreen from '../screens/ExpenseScreen.jsx';
 import  StockAdmin  from '../screens/StockAdmin.jsx';
+import ServiceOrderScreen from '../screens/ServiceOrderScreen.jsx';
+import ServiceOrderAdmin from '../screens/ServiceOrderAdmin.jsx';
+
 
 const AppRouter = () => {
   const { user, loading } = useContext(AuthContext);
@@ -189,7 +192,7 @@ const AppRouter = () => {
               />
 
               <Route
-              path="new-expense"
+              path="/new-expense"
               element = {
                 <DashboardLayout>
                   <ExpenseScreen/>
@@ -198,12 +201,39 @@ const AppRouter = () => {
               />
 
               <Route
-              path="view-inventory"
+              path="/view-inventory"
               element = {
                 <DashboardLayout>
                   <StockAdmin/>
                 </DashboardLayout>
               }
+              />
+
+              <Route
+              path="/new-service-order"
+              element = {
+                <DashboardLayout>
+                  <ServiceOrderScreen/>
+                </DashboardLayout>
+              }
+              />
+
+              <Route
+              path="/admin-service-order"
+              element = {
+                <DashboardLayout>
+                  <ServiceOrderAdmin/>
+                </DashboardLayout>
+              }
+              />
+
+              <Route
+                path="/editar-orden/:orderId"
+                element={
+                  <DashboardLayout> 
+                    <ServiceOrderScreen /> 
+                  </DashboardLayout>
+                }
               />
 
 

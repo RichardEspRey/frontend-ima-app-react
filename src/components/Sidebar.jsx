@@ -61,11 +61,11 @@ const menuItems = [
     icon: iconReport, 
    subItems: [
       { name: 'Inventario', route: '/view-inventory' },
+      // { name: 'Orden de Servicio' , route:'/new-service-order'},
+      { name: 'Administrador Ordenes de Servicio', route: '/admin-service-order'}
    ]
    },
-  // { name: 'Reportes', 
-  //   icon: iconReport, 
-  //   route: '/reportes' }
+
 
 ];
 

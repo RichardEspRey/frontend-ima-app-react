@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 
 // Este hook ahora trae TODAS las subcategorías de una vez.
 const useFetchSubcategories = () => {
+    const apiHost = import.meta.env.VITE_API_HOST;
     const [subcategories, setSubcategories] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -12,7 +13,7 @@ const useFetchSubcategories = () => {
             formData.append('op', 'getAllSubcategories'); 
 
             try {
-                const response = await fetch('http://localhost/API/save_expense.php', {
+                const response = await fetch(`${apiHost}/save_expense.php`, {
                     method: 'POST',
                     body: formData,
                 });

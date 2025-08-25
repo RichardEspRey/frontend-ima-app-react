@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 
 const useFetchExpenseTypes = () => {
+    const apiHost = import.meta.env.VITE_API_HOST;
     const [expenseTypes, setExpenseTypes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -12,7 +13,7 @@ const useFetchExpenseTypes = () => {
                 const formData = new FormData();
                 formData.append('op', 'getExpenseTypes');
 
-                const response = await fetch('http://localhost/API/save_expense.php', {
+                const response = await fetch(`${apiHost}/save_expense.php`, {
                     method: 'POST',
                     body: formData
                 });

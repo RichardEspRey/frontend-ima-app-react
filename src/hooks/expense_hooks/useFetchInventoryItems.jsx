@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 
 const useFetchInventoryItems = () => {
+    const apiHost = import.meta.env.VITE_API_HOST;
     const [inventoryItems, setInventoryItems] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -14,7 +15,7 @@ const useFetchInventoryItems = () => {
 
             try {
                 // Este es el fetch que busca los datos
-                const response = await fetch('http://localhost/API/save_expense.php', {
+                const response = await fetch(`${apiHost}/save_expense.php`, {
                     method: 'POST',
                     body: formData,
                 });
