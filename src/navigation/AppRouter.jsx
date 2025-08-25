@@ -23,6 +23,7 @@ import EditTripForm from '../screens/EditTripForm.jsx';
 import ImaScreen from '../screens/ImaScreen.jsx';
 import ImaAdmin from '../screens/ImaAdmin.jsx';
 import ExpenseScreen from '../screens/ExpenseScreen.jsx';
+import  StockAdmin  from '../screens/StockAdmin.jsx';
 
 const AppRouter = () => {
   const { user, loading } = useContext(AuthContext);
@@ -192,6 +193,15 @@ const AppRouter = () => {
               element = {
                 <DashboardLayout>
                   <ExpenseScreen/>
+                </DashboardLayout>
+              }
+              />
+
+              <Route
+              path="view-inventory"
+              element = {
+                <DashboardLayout>
+                  <StockAdmin/>
                 </DashboardLayout>
               }
               />

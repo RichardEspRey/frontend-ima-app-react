@@ -56,6 +56,13 @@ const menuItems = [
       { name: 'Nuevo Gasto', route: '/new-expense' },
    ]
    },
+
+   { name: 'Mantenimiento', 
+    icon: iconReport, 
+   subItems: [
+      { name: 'Inventario', route: '/view-inventory' },
+   ]
+   },
   // { name: 'Reportes', 
   //   icon: iconReport, 
   //   route: '/reportes' }
