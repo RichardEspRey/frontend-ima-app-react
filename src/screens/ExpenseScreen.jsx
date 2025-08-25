@@ -27,7 +27,7 @@ const ExpenseScreen = () => {
     // --- ESTADOS GENERALES DEL GASTO ---
     const apiHost = import.meta.env.VITE_API_HOST;
     const [country, setCountry] = useState(null);
-    const ID_MANTENIMIENTO = 3;
+    const ID_MANTENIMIENTO = '3'
     const [expenseDate, setExpenseDate] = useState(new Date());
     const [totalAmount, setTotalAmount] = useState('0.00');
     const [originalAmount, setOriginalAmount] = useState('');
