@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { setActiveMenu, setExpandedMenu, setSelectedSubMenu } from '../redux/menuSlice';
 import { AuthContext } from '../auth/AuthContext';
 import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
-import { useNavigate } from 'react-router-dom'; 
+import { useNavigate } from 'react-router-dom';
 
 import logo from '../assets/images/logo_white.png';
 import iconDashboard from '../assets/images/icons/dashboard.png';
@@ -37,7 +37,7 @@ const menuItems = [
     icon: iconTrailer,
     subItems: [
       { name: 'Alta de camiones', route: '/trucks' },
-      { name: 'Administrador de camiones', route:  '/admin-trucks' },
+      { name: 'Administrador de camiones', route: '/admin-trucks' },
       { name: 'Alta de Cajas', route: '/trailers' },
       { name: 'Administrador de cajas', route: '/admin-trailers' }
     ]
@@ -50,8 +50,16 @@ const menuItems = [
       { name: 'Administrador de viajes', route: '/admin-trips' }
     ]
   },
-  { name: 'Reportes', icon: iconReport, route: '/reportes' }
-  
+  { name: 'Gastos', 
+    icon: iconReport, 
+   subItems: [
+      { name: 'Nuevo Gasto', route: '/new-expense' },
+   ]
+   },
+  // { name: 'Reportes', 
+  //   icon: iconReport, 
+  //   route: '/reportes' }
+
 ];
 
 const Sidebar = () => {

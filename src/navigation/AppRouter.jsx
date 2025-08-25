@@ -22,6 +22,7 @@ import TrailerEdit from '../screens/TrailerEdit.jsx';
 import EditTripForm from '../screens/EditTripForm.jsx';
 import ImaScreen from '../screens/ImaScreen.jsx';
 import ImaAdmin from '../screens/ImaAdmin.jsx';
+import ExpenseScreen from '../screens/ExpenseScreen.jsx';
 
 const AppRouter = () => {
   const { user, loading } = useContext(AuthContext);
@@ -184,6 +185,15 @@ const AppRouter = () => {
                     <ImaScreen/> 
                   </DashboardLayout>
                 }
+              />
+
+              <Route
+              path="new-expense"
+              element = {
+                <DashboardLayout>
+                  <ExpenseScreen/>
+                </DashboardLayout>
+              }
               />
 
 
