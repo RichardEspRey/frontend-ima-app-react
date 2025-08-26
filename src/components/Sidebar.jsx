@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { setActiveMenu, setExpandedMenu, setSelectedSubMenu } from '../redux/menuSlice';
 import { AuthContext } from '../auth/AuthContext';
 import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
-import { useNavigate } from 'react-router-dom'; 
+import { useNavigate } from 'react-router-dom';
 
 import logo from '../assets/images/logo_white.png';
 import iconDashboard from '../assets/images/icons/dashboard.png';
@@ -64,9 +64,19 @@ const menuItems = [
     icon: iconList,
     rolesPermitidos: ['admin', 'Vendedor'],
     subItems: [
-      { name: 'Inspeccion final', route: '/Inspeccion-final' }
+      { name: 'Inspeccion final', route: '/Inspeccion-final' },
+      { name: 'Inventario', route: '/view-inventory' },
+      // { name: 'Orden de Servicio' , route:'/new-service-order'},
+      { name: 'Administrador Ordenes de Servicio', route: '/admin-service-order'}
     ]
   },
+    { name: 'Gastos', 
+    icon: iconReport, 
+   subItems: [
+      { name: 'Nuevo Gasto', route: '/new-expense' },
+   ]
+   },
+
   { name: 'Reportes', icon: iconReport, route: '/reportes', rolesPermitidos: ['admin'] }
 ];
 

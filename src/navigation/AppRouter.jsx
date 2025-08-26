@@ -29,6 +29,11 @@ import GastosAdmin from '../screens/Trips/GastosAdmin.jsx';
 import GastosDetalle from '../screens/Trips/GastosDetalle.jsx';
 import GastosEditor from '../screens/Trips/GastosEditor.jsx';
 import Inspeccion_final from '../screens/Mantenimientos/Inspeccion_final.jsx';
+import ExpenseScreen from '../screens/ExpenseScreen.jsx';
+import  StockAdmin  from '../screens/StockAdmin.jsx';
+import ServiceOrderScreen from '../screens/ServiceOrderScreen.jsx';
+import ServiceOrderAdmin from '../screens/ServiceOrderAdmin.jsx';
+
 
 const AppRouter = () => {
   const { user, loading } = useContext(AuthContext);
@@ -252,6 +257,51 @@ const AppRouter = () => {
                 element={
                   <DashboardLayout> 
                     <Inspeccion_final /> 
+                  </DashboardLayout>
+                }
+              />
+
+              <Route
+              path="/new-expense"
+              element = {
+                <DashboardLayout>
+                  <ExpenseScreen/>
+                </DashboardLayout>
+              }
+              />
+
+              <Route
+              path="/view-inventory"
+              element = {
+                <DashboardLayout>
+                  <StockAdmin/>
+                </DashboardLayout>
+              }
+              />
+
+              <Route
+              path="/new-service-order"
+              element = {
+                <DashboardLayout>
+                  <ServiceOrderScreen/>
+                </DashboardLayout>
+              }
+              />
+
+              <Route
+              path="/admin-service-order"
+              element = {
+                <DashboardLayout>
+                  <ServiceOrderAdmin/>
+                </DashboardLayout>
+              }
+              />
+
+              <Route
+                path="/editar-orden/:orderId"
+                element={
+                  <DashboardLayout> 
+                    <ServiceOrderScreen /> 
                   </DashboardLayout>
                 }
               />
