@@ -1,0 +1,73 @@
+/* Estructura principal de la pantalla */
+.service-order-container {
+    padding: 20px;
+    font-family: Arial, sans-serif;
+}
+
+/* La rejilla principal con 3 columnas */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* Crea 3 columnas de igual tamaño */
+    gap: 20px; /* Espacio entre las columnas y filas */
+    margin-bottom: 30px;
+}
+
+/* Un grupo de formulario (etiqueta + input) */
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #333;
+}
+
+/* Un elemento que debe ocupar todo el ancho */
+.full-width {
+    grid-column: 1 / -1; /* Ocupa desde la primera hasta la última columna */
+}
+
+/* Estilos para la tabla de detalles */
+.details-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.details-table th, .details-table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+}
+
+.details-table th {
+    background-color: #f2f2f2;
+}
+
+/* Estilos para los botones */
+.action-button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    background-color: #007bff;
+    color: white;
+}
+
+.remove-button {
+    background-color: #dc3545;
+    color: white;
+    padding: 5px 10px;
+}
+
+.save-order-button {
+    display: block;
+    width: 100%;
+    padding: 15px;
+    font-size: 18px;
+    margin-top: 20px;
+    background-color: #28a745;
+} 
