@@ -28,6 +28,7 @@ import DieselEditor from '../screens/Trips/DieselEditor.jsx';
 import GastosAdmin from '../screens/Trips/GastosAdmin.jsx';
 import GastosDetalle from '../screens/Trips/GastosDetalle.jsx';
 import GastosEditor from '../screens/Trips/GastosEditor.jsx';
+import Inspeccion_final from '../screens/Mantenimientos/Inspeccion_final.jsx';
 
 const AppRouter = () => {
   const { user, loading } = useContext(AuthContext);
@@ -242,6 +243,15 @@ const AppRouter = () => {
                 element={
                   <DashboardLayout> 
                     <ImaScreen/> 
+                  </DashboardLayout>
+                }
+              />
+
+               <Route
+                path="/Inspeccion-final"
+                element={
+                  <DashboardLayout> 
+                    <Inspeccion_final /> 
                   </DashboardLayout>
                 }
               />

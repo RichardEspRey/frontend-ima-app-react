@@ -63,6 +63,7 @@ const actualizar = async () => {
       method: "POST",
       body: formDataToSend,
     });
+    
     const result = await response.json();
 
     if (result.status === "success" && result.row?.[0]?.resp == 1) {

@@ -64,7 +64,7 @@ const menuItems = [
     icon: iconList,
     rolesPermitidos: ['admin', 'Vendedor'],
     subItems: [
-      { name: 'Inspeccion final', route: '/trips' }
+      { name: 'Inspeccion final', route: '/Inspeccion-final' }
     ]
   },
   { name: 'Reportes', icon: iconReport, route: '/reportes', rolesPermitidos: ['admin'] }
