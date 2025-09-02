@@ -24,9 +24,9 @@
     color: #333;
 }
 
-/* Un elemento que debe ocupar todo el ancho */
+
 .full-width {
-    grid-column: 1 / -1; /* Ocupa desde la primera hasta la última columna */
+    grid-column: 1 / -1;
 }
 
 /* Estilos para la tabla de detalles */
@@ -71,3 +71,65 @@
     margin-top: 20px;
     background-color: #28a745;
 } 
+
+.back-button {
+    background-color: #6c757d; /* Un color gris neutro */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 8px 15px;
+    font-size: 25px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.back-button:hover {
+    background-color: #5a6268;
+}
+
+
+.order-total {
+    width: 350px; 
+    
+    margin-right: 0;
+    padding: 20px;
+    background-color: #f8f9fa; 
+    border: 1px solid #dee2e6; 
+    border-radius: 8px;
+    font-family: sans-serif;
+}
+
+
+.total-line {
+    display: flex;
+    justify-content: space-between; 
+    margin-bottom: 12px;
+    font-size: 16px;
+}
+
+
+.total-label {
+    color: #495057; 
+}
+
+
+.total-value {
+    font-weight: bold;
+    color: #212529; 
+}
+
+.grand-total {
+    border-top: 2px solid #adb5bd; 
+    padding-top: 15px;
+    margin-top: 15px;
+    font-size: 20px; 
+    font-weight: bold;
+}
+
+.grand-total .total-label {
+    color: #212529; 
+}
+
+.grand-total .total-value {
+    color: #007bff; 
+}

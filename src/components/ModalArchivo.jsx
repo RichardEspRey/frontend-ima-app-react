@@ -3,37 +3,45 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import './css/ModalArchivo.css';
 
-const ModalArchivo = ({ isOpen, onClose, onSave, nombreCampo, valorActual, mostrarFechaVencimiento = true }) => {
+const ModalArchivo = ({ isOpen, onClose, onSave, title = "Subir/Editar Archivo",     
+  saveButtonText = "Guardar", valorActual, mostrarFechaVencimiento = true, accept = "application/pdf" }) => {
+
   const [archivo, setArchivo] = useState(null);
   const [fechaVencimiento, setFechaVencimiento] = useState(new Date());
   const [previewUrl, setPreviewUrl] = useState(null);
-  const fileInputRef = useRef(null); 
+  const fileInputRef = useRef(null);
 
-useEffect(() => {
-  if (isOpen) {
-    setArchivo(null);
+  useEffect(() => {
+    if (isOpen) {
+      setArchivo(null);
 
-    if (valorActual?.url) {
-      setPreviewUrl(valorActual.url); // ✅ si ya hay un documento, se precarga
-    } else {
-      setPreviewUrl(null); // solo limpiar si no hay nada
+      if (valorActual?.url) {
+        setPreviewUrl(valorActual.url);
+      } else {
+        setPreviewUrl(null);
+      }
+
+      setFechaVencimiento(
+        valorActual?.vencimiento ? new Date(valorActual.vencimiento) : new Date()
+      );
     }
-
-    setFechaVencimiento(
-      valorActual?.vencimiento ? new Date(valorActual.vencimiento) : new Date()
-    );
-  }
-}, [isOpen, valorActual]);
+  }, [isOpen, valorActual]);
 
 
 
   const handleArchivoChange = (e) => {
     const file = e.target.files[0];
-    if (file && file.type === 'application/pdf') {
+    if (!file) return;
+
+    const allowedTypes = accept.split(',').map(type => type.trim());
+
+    if (allowedTypes.includes(file.type) || allowedTypes[0] === '*/*') {
       setArchivo(file);
+      // Limpia la previsualización anterior para evitar fugas de memoria
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
       setPreviewUrl(URL.createObjectURL(file));
     } else {
-      alert('Por favor selecciona un archivo PDF válido.');
+      alert(`Tipo de archivo no válido. Se esperaba: ${accept}`);
     }
   };
 
@@ -66,7 +74,7 @@ useEffect(() => {
     <div className="modal-overlay">
       <div className="modal">
         <div className="modal-header">
-          
+          <h4>{title}</h4>
           <button onClick={onClose} className="close-button">&times;</button>
         </div>
 
@@ -86,21 +94,29 @@ useEffect(() => {
 
         <div className="dropzone">
           <label className="drop-text">
-            <div>Deje aquí sus archivos PDF's para cargarlos</div>
+            <div>Deje aquí sus archivos para cargarlos</div>
           </label>
-          <button type='button' className="browse-button" onClick={handleBrowseClick}>Browse file</button> 
+
+          <button type='button' className="browse-button" onClick={handleBrowseClick}>
+            Seleccionar Archivo
+          </button>
           <input
             type="file"
-            ref={fileInputRef} 
+            ref={fileInputRef}
             onChange={handleArchivoChange}
             style={{ display: 'none' }}
-            accept="application/pdf"
+            accept={accept}
           />
 
           {previewUrl && (
             <div className="archivo-preview">
               <strong>Vista previa:</strong>
-              <iframe src={previewUrl} title="Vista previa PDF" width="100%" height="400px" />
+              {/* Lógica para mostrar imagen o iframe */}
+              {previewUrl.startsWith('blob:') && archivo?.type.startsWith('image/') ? (
+                <img src={previewUrl} alt="Vista previa" style={{ maxWidth: '100%' }} />
+              ) : (
+                <iframe src={previewUrl} title="Vista previa" width="100%" height="400px" />
+              )}
             </div>
           )}
         </div>
