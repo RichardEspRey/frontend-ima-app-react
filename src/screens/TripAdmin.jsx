@@ -20,7 +20,7 @@ dayjs.extend(updateLocale);
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
 dayjs.extend(localizedFormat);
-
+dayjs.locale('es'); 
 dayjs.updateLocale('es', {
     months: [
         "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio",
@@ -53,8 +53,8 @@ import './css/TripAdmin.css';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 
-// Componente TripRow
-const TripRow = ({ trip, onEdit, onFinalize, onAlmostOver, getDocumentUrl }) => { // MODIFICACIÓN CLAVE: Agregado onAlmostOver
+
+const TripRow = ({ trip, onEdit, onFinalize, onAlmostOver, getDocumentUrl }) => {
     const [open, setOpen] = useState(false);
 
     let loadingDateToShow = '-';
@@ -67,12 +67,13 @@ const TripRow = ({ trip, onEdit, onFinalize, onAlmostOver, getDocumentUrl }) => 
         loadingDateTitle = 'Fecha de carga (1ª Etapa) no especificada';
     }
 
-    const creationDateForDisplay = trip.creation_date
-        ? dayjs(trip.creation_date).format("DD/MM/YY")
-        : '-';
-    const creationDateTimeTitle = trip.creation_date
-        ? `Fecha de Creación: ${dayjs(trip.creation_date).format("DD/MM/YY HH:mm")}`
-        : 'Fecha de creación no disponible';
+    const returnDateForDisplay = trip.return_date 
+        ? dayjs(trip.return_date).format('dddd D, YYYY') 
+        : '- ';
+    
+    const returnDateTitle = trip.return_date 
+        ? `Fecha de Regreso: ${dayjs(trip.return_date).format('dddd D [de] MMMM [de] YYYY')}` // Tooltip completo
+        : 'Fecha de regreso no asignada';
 
     const trailerTooltipContent = (
         <React.Fragment>
@@ -167,9 +168,9 @@ const TripRow = ({ trip, onEdit, onFinalize, onAlmostOver, getDocumentUrl }) => 
                 </TableCell>
 
                 {/* Creation Date Cell */}
-                <TableCell sx={{ whiteSpace: 'nowrap' }} title={creationDateTimeTitle}>
-                    {creationDateForDisplay}
-                </TableCell>
+                <TableCell sx={{ whiteSpace: 'nowrap' }} title={returnDateTitle}>
+            {returnDateForDisplay}
+        </TableCell>
 
                 {/* Actions Cell */}
                 <TableCell>
@@ -604,7 +605,9 @@ const TripAdmin = () => {
                             <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>Trailer</TableCell>
                             <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>Initial Date</TableCell> {/* This will display loadingDateToShow */}
                             <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>Status</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>Creation Date</TableCell> {/* NUEVA LÍNEA: Encabezado para la columna Creation Date */}
+      
+                            <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>Return Date</TableCell>
+        
                             <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>Actions</TableCell>
                         </TableRow>
                     </TableHead>
