@@ -43,10 +43,10 @@ const ExpenseScreen = () => {
 
     const [modalState, setModalState] = useState({
         isOpen: false,
-        fileType: null, 
+        fileType: null,
     });
     const [files, setFiles] = useState({
-        facturaPdf: null, 
+        facturaPdf: null,
         ticketJpg: null,
     });
     // const pdfInputRef = useRef(null);
@@ -64,7 +64,7 @@ const ExpenseScreen = () => {
         // navigate('/ruta-a-la-lista');
     };
 
-  
+
     useEffect(() => {
 
         if (originalAmount && exchangeRate) {
@@ -104,7 +104,7 @@ const ExpenseScreen = () => {
                     const newItem = { value: result.itemId, label: selection.label, id_subcategoria: detail.subcategory };
                     setInventoryItems(prevItems => [...prevItems, newItem]);
 
-                   
+
                     handleDetailChange(detail.id, { itemId: result.itemId, itemDescription: selection.label });
 
                     Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Artículo creado', showConfirmButton: false, timer: 2000 });
@@ -113,7 +113,7 @@ const ExpenseScreen = () => {
                 Swal.fire('Error', `No se pudo crear el artículo: ${error.message}`, 'error');
             }
         }
-       
+
         else {
             handleDetailChange(detail.id, {
                 itemId: selection.value,
@@ -124,7 +124,8 @@ const ExpenseScreen = () => {
 
     const handleSaveFromModal = (fileData) => {
         if (modalState.fileType) {
-           
+            // fileData es { file: Archivo, fileName: 'nombre.pdf' }
+            // Guardamos solo el objeto File en nuestro estado.
             setFiles(prev => ({ ...prev, [modalState.fileType]: fileData.file }));
         }
     };
@@ -134,7 +135,7 @@ const ExpenseScreen = () => {
             if (detail.id === id) {
                 const updatedDetail = { ...detail, ...updates };
 
-              
+
                 if (updates.hasOwnProperty('category') && updates.category !== detail.category) {
                     updatedDetail.subcategory = null;
                     updatedDetail.itemId = null;
@@ -213,7 +214,7 @@ const ExpenseScreen = () => {
         apiFormData.append('detailsData', JSON.stringify(detailsData));
         console.log("Datos que se van a enviar:", detailsData);
 
-        
+
 
         apiFormData.append('op', 'Alta');
 
@@ -460,7 +461,7 @@ const ExpenseScreen = () => {
                                 onClose={() => setModalState({ isOpen: false, fileType: null })}
                                 onSave={handleSaveFromModal}
                                 title={modalState.fileType === 'facturaPdf' ? 'Adjuntar Factura PDF' : 'Adjuntar Ticket de Gasto'}
-                                saveButtonText="Seleccionar"
+                                saveButtonText="Seleccionar Archivo"
                                 accept={modalState.fileType === 'facturaPdf' ? 'application/pdf' : 'image/jpeg,image/png'}
                                 mostrarFechaVencimiento={false}
                             />

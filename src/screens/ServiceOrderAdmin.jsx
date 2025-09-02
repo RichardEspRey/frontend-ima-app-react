@@ -10,12 +10,12 @@ import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 
 import EditDetailModal from '../components/EditDetailModa';
-
+const apiHost = import.meta.env.VITE_API_HOST;
 
 
 const OrderRow = ({ order, onEdit, onChangeStatus, onEditDetail }) => {
     const [open, setOpen] = useState(false);
-    const apiHost = import.meta.env.VITE_API_HOST;
+
 
     const getStatusChipColor = (status) => {
         if (status === 'Completado') return 'success';
