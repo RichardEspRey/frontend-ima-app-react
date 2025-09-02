@@ -66,7 +66,8 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
         driver_id_second: '', // Campo para el segundo conductor
         truck_id: '',
         caja_id: '',
-        caja_externa_id: ''
+        caja_externa_id: '',
+        return_date: null
     });
 
     const [etapas, setEtapas] = useState([{
@@ -361,9 +362,6 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
         }
 
 
-
-
-
         const dataToSend = new FormData();
         dataToSend.append('op', 'Alta');
         dataToSend.append('trip_number', formData.trip_number);
@@ -372,6 +370,8 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
         dataToSend.append('truck_id', formData.truck_id);
         dataToSend.append('caja_id', formData.caja_id || '');
         dataToSend.append('caja_externa_id', formData.caja_externa_id || '');
+
+        dataToSend.append('return_date', formData.return_date || '');
 
         // Procesar y añadir etapas (como JSON) y sus archivos
 
@@ -497,7 +497,8 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
             driver_id_second: '', // Limpiar segundo conductor
             truck_id: '',
             caja_id: '',
-            caja_externa_id: ''
+            caja_externa_id: '',
+            return_date: null
         });
         setTripMode('individual'); // Resetear modo de viaje
         setEtapas([{
@@ -572,6 +573,18 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
 
                 {/* Fila 2: Recursos Principales (Drivers y Truck) */}
                 <div className="input-columns" style={{ marginTop: '1rem' }}>
+                    <div className="column">
+                        <label htmlFor='return_date' >Return Date:</label>
+                        <DatePicker
+                            id="return_date"
+                            selected={formData.return_date}
+                            onChange={(date) => setForm('return_date', date)}
+                            dateFormat="dd/MM/yyyy"
+                            placeholderText="Fecha de Regreso"
+                            className="form-input date-picker-full-width"
+                            isClearable
+                        />
+                    </div>
                     <div className="column">
                         <label htmlFor="driver_id">Driver Principal:</label>
                         <Select

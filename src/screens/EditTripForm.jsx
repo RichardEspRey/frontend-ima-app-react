@@ -47,7 +47,7 @@ const EditTripForm = () => {
 
     const [formData, setFormData] = useState({
         trip_number: '', driver_id: '', driver_id_second: '', driver_nombre: '', driver_second_nombre: '', truck_id: '', caja_id: '',
-        caja_externa_id: '', caja_no_caja: '', caja_externa_no_caja: ''
+        caja_externa_id: '', caja_no_caja: '', caja_externa_no_caja: '', return_date: null
     });
     const [etapas, setEtapas] = useState([]);
 
@@ -100,6 +100,7 @@ const EditTripForm = () => {
                         truck_id: trip.truck_id || '',
                         caja_id: trip.caja_id || '',
                         caja_externa_id: trip.caja_externa_id || '',
+                        return_date: trip.return_date ? parseISO(trip.return_date) : null,
                         status: trip.status || 'In Transit',
                         driver_nombre: trip.driver_nombre || '',
                         truck_unidad: trip.truck_unidad || '',
@@ -399,6 +400,8 @@ const EditTripForm = () => {
                 dataToSend.append(key, value || '');
             }
         });
+        dataToSend.append('return_date', formData.return_date instanceof Date ? format(formData.return_date, 'yyyy-MM-dd') : '');
+
 
         const etapasParaJson = etapas.map((etapa, indexEtapa) => {
             const etapaDocs = Object.entries(etapa.documentos).map(([tipo, docData]) => ({
@@ -668,6 +671,19 @@ const EditTripForm = () => {
                                         readOnly={isFormDisabled} // Keep this based on the overall form status
                                     />
                                 </div>
+                                <div className="column">
+                                      <label htmlFor="return_date">Return Date:</label>
+                                      <DatePicker
+                                          id="return_date"
+                                          selected={formData.return_date}
+                                          onChange={(date) => handleFormChange('return_date', date)}
+                                          dateFormat="dd/MM/yyyy"
+                                          placeholderText="Fecha de Regreso"
+                                          className="form-input date-picker-full-width"
+                                          isClearable
+                                          disabled={isFormDisabled}
+                                      />
+                                  </div>
                                 <div className="column">
                                     <label htmlFor="driver_id">Driver Principal:</label>
                                     <Select id="driver_id"
