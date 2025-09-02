@@ -15,6 +15,7 @@ import iconBox from '../assets/images/icons/caja.png';
 import iconReport from '../assets/images/icons/report.png';
 import iconExit from '../assets/images/icons/exit.png';
 import iconList from '../assets/images/icons/list.png';
+import iconGasto from '../assets/images/icons/gasto.png'
 
 
 const menuItems = [
@@ -48,13 +49,12 @@ const menuItems = [
       { name: 'Administrador de cajas', route: '/admin-trailers' }
     ]
   },
+
   {
-    name: 'Viajes',
-    icon: iconBox,
-    rolesPermitidos: ['admin', 'Vendedor'],
+    name: 'Gastos',
+    icon: iconGasto,
     subItems: [
-      { name: 'Nuevo Viaje', route: '/trips' },
-      { name: 'Administrador de viajes', route: '/admin-trips' },
+      { name: 'Nuevo Gasto', route: '/new-expense' },
       { name: 'Gastos diesel', route: '/admin-diesel' },
       { name: 'Gastos viajes', route: '/admin-gastos' }
     ]
@@ -64,18 +64,22 @@ const menuItems = [
     icon: iconList,
     rolesPermitidos: ['admin', 'Vendedor'],
     subItems: [
-      { name: 'Inspeccion final', route: '/Inspeccion-final' },
       { name: 'Inventario', route: '/view-inventory' },
+      { name: 'Inspeccion final', route: '/Inspeccion-final' },
       // { name: 'Orden de Servicio' , route:'/new-service-order'},
-      { name: 'Administrador Ordenes de Servicio', route: '/admin-service-order'}
+      { name: 'Administrador Ordenes de Servicio', route: '/admin-service-order' }
     ]
   },
-    { name: 'Gastos', 
-    icon: iconReport, 
-   subItems: [
-      { name: 'Nuevo Gasto', route: '/new-expense' },
-   ]
-   },
+  {
+    name: 'Viajes',
+    icon: iconBox,
+    rolesPermitidos: ['admin', 'Vendedor'],
+    subItems: [
+      { name: 'Nuevo Viaje', route: '/trips' },
+      { name: 'Administrador de viajes', route: '/admin-trips' }
+    ]
+  },
+
 
   { name: 'Reportes', icon: iconReport, route: '/reportes', rolesPermitidos: ['admin'] }
 ];
@@ -83,25 +87,25 @@ const menuItems = [
 
 const Sidebar = () => {
   const [notificaciones, setNotificaciones] = useState({
-  IMA: 0,
-  Conductores: 0,
-  Camiones: 0,
-  Trailers: 0,
-});
+    IMA: 0,
+    Conductores: 0,
+    Camiones: 0,
+    Trailers: 0,
+  });
 
   const [subnotificaciones, setsubnotificaciones] = useState({
-  'Administrador de camiones': 0,
-  'Administrador de cajas': 0,
-});
+    'Administrador de camiones': 0,
+    'Administrador de cajas': 0,
+  });
 
   const apiHost = import.meta.env.VITE_API_HOST;
   const { user, logout } = useContext(AuthContext);
   const tipoUsuario = user?.tipo_usuario || '';
 
 
-const menuFiltrado = menuItems.filter(item =>
-  !item.rolesPermitidos || item.rolesPermitidos.includes(tipoUsuario)
-);
+  const menuFiltrado = menuItems.filter(item =>
+    !item.rolesPermitidos || item.rolesPermitidos.includes(tipoUsuario)
+  );
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -129,51 +133,51 @@ const menuFiltrado = menuItems.filter(item =>
     navigate(route);
   }, [dispatch, navigate]);
 
- 
+
   const handleLogout = () => logout();
-  
 
 
-  
+
+
 
   const fetchdocs = async () => {
-  const formDataToSend = new FormData();
-  formDataToSend.append('op', 'getStatus');
+    const formDataToSend = new FormData();
+    formDataToSend.append('op', 'getStatus');
 
-  try {
-    const response = await fetch(`${apiHost}/IMA_Docs.php`, {
-      method: 'POST',
-      body: formDataToSend
-    });
+    try {
+      const response = await fetch(`${apiHost}/IMA_Docs.php`, {
+        method: 'POST',
+        body: formDataToSend
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (data.status === 'success' ) {
-
-  
-      setNotificaciones((prev) => ({
-        ...prev,
-        IMA: data.Users[0].documentos_faltantes_ima|| 0,
-        Conductores: data.Users[0].documentos_faltantes_driver|| 0,
-        Camiones: parseInt(data.Users[0].documentos_faltantes_trailer) + parseInt(data.Users[0].documentos_faltantes_truck) || 0,
- 
-      }));
-
-      
-      setsubnotificaciones((prev) => ({
-        ...prev,
-        'Administrador de camiones': data.Users[0].documentos_faltantes_truck || 0,
-        'Administrador de cajas': data.Users[0].documentos_faltantes_trailer  || 0,
-      }));
-   
+      if (data.status === 'success') {
 
 
+        setNotificaciones((prev) => ({
+          ...prev,
+          IMA: data.Users[0].documentos_faltantes_ima || 0,
+          Conductores: data.Users[0].documentos_faltantes_driver || 0,
+          Camiones: parseInt(data.Users[0].documentos_faltantes_trailer) + parseInt(data.Users[0].documentos_faltantes_truck) || 0,
 
+        }));
+
+
+        setsubnotificaciones((prev) => ({
+          ...prev,
+          'Administrador de camiones': data.Users[0].documentos_faltantes_truck || 0,
+          'Administrador de cajas': data.Users[0].documentos_faltantes_trailer || 0,
+        }));
+
+
+
+
+      }
+    } catch (error) {
+      console.error('Error al obtener los documentos:', error);
     }
-  } catch (error) {
-    console.error('Error al obtener los documentos:', error);
-  }
-};
+  };
 
 
   useEffect(() => {
@@ -196,7 +200,7 @@ const menuFiltrado = menuItems.filter(item =>
               <img src={item.icon} alt="icon" className="icon" />
               <span className="menuText">
                 {item.name}
-                 {notificaciones[item.name] > 0 && (
+                {notificaciones[item.name] > 0 && (
                   <span className="documentCounter">{notificaciones[item.name]}</span>
                 )}
               </span>
@@ -216,9 +220,9 @@ const menuFiltrado = menuItems.filter(item =>
                     onClick={() => handleSubMenuSelect(subItem.route)}
                   >
                     {subItem.name}
-                     {subnotificaciones[subItem.name] > 0 && (
-                  <span className="documentCounter">{subnotificaciones[subItem.name]}</span>
-                )}
+                    {subnotificaciones[subItem.name] > 0 && (
+                      <span className="documentCounter">{subnotificaciones[subItem.name]}</span>
+                    )}
                   </button>
                 ))}
               </div>

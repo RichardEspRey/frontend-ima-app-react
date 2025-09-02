@@ -37,6 +37,7 @@ const Login = () => {
       });
 
       const text = await response.text();
+      console.log("respuesta"+text);
       const data = JSON.parse(text);
 
       if (data.status === 'success') {

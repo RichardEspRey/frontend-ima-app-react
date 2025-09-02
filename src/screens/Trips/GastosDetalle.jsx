@@ -51,9 +51,16 @@ const fetchGasto = async () => {
     
   };
 
+   const cancelar = () =>{
+    navigate(`/admin-gastos`)
+  }
+
   return (
    <div className="driver-admin">
       <h1 className="title">Detalle de Gasto</h1>
+      <div className="btnConteiner">
+          <button className="btn cancelar" onClick={cancelar}> Volver al admin</button>
+        </div>
       <TableContainer component={Paper}>
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead>

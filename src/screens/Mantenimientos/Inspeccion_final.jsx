@@ -9,23 +9,23 @@ import {
 import { KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
 
 const OPS = {
-  SUMMARY: 'All_CL_Final',          // <- cambia si tu backend usa otro nombre
-  DETAIL: 'collapse_CL_Final',      // <- cambia si tu backend usa 'collapse'
-  DETAIL_TRIP_PARAM: 'trip_id',     // <- cambia a 'viaje_id' si tu backend lo requiere
+  SUMMARY: 'All_CL_Final',          
+  DETAIL: 'collapse_CL_Final',    
+  DETAIL_TRIP_PARAM: 'trip_id',     
 };
 
 const Inspeccion_final = () => {
   const navigate = useNavigate();
   const apiHost = import.meta.env.VITE_API_HOST;
 
-  const [rows, setRows] = useState([]);                       // resumen
+  const [rows, setRows] = useState([]);                      
   const [loadingSummary, setLoadingSummary] = useState(false);
   const [errorSummary, setErrorSummary] = useState('');
 
-  const [openByTrip, setOpenByTrip] = useState({});           // { [viaje_id]: boolean }
-  const [detailsByTrip, setDetailsByTrip] = useState({});     // { [viaje_id]: {motor:[], exterior:[], ...} }
-  const [loadingByTrip, setLoadingByTrip] = useState({});     // { [viaje_id]: boolean }
-  const [errorByTrip, setErrorByTrip] = useState({});         // { [viaje_id]: string }
+  const [openByTrip, setOpenByTrip] = useState({});          
+  const [detailsByTrip, setDetailsByTrip] = useState({});    
+  const [loadingByTrip, setLoadingByTrip] = useState({});     
+  const [errorByTrip, setErrorByTrip] = useState({});         
 
   // Helpers
   const toFormBody = (obj) =>
@@ -60,7 +60,7 @@ const Inspeccion_final = () => {
     return grouped;
   };
 
-  // 1) Cargar resumen
+
   const fetchSummary = async () => {
     setLoadingSummary(true);
     setErrorSummary('');
@@ -131,8 +131,28 @@ const Inspeccion_final = () => {
     if (next) await fetchDetail(viajeId);
   };
 
-  const handleVer = (viajeId) => {
-    navigate(`/inspeccion/${viajeId}`);
+  const handleFinalizar = async (viajeId) => {
+      const formDataToSend = new FormData();
+      formDataToSend.append('op', 'U_CL_Final');
+      formDataToSend.append('trip_id', viajeId);
+
+
+    try {
+      const response = await fetch(`${apiHost}/formularios.php`, {
+        method: 'POST',
+        body: formDataToSend,
+      });
+
+      const data = await response.json();
+    
+      if (data.status === 'success') {
+         window.location.reload();
+        
+      }
+
+    } catch (error) {
+      console.error('Error al obtener los conductores:', error);
+    }
   };
 
   return (
@@ -210,9 +230,9 @@ const Inspeccion_final = () => {
                       <Button
                         variant="text"
                         sx={{ fontWeight: 'bold', fontSize: 16 }}
-                        onClick={() => handleVer(viajeId)}
+                        onClick={() => handleFinalizar(viajeId)}
                       >
-                        Ver
+                        Finalizar
                       </Button>
                     </TableCell>
                   </TableRow>

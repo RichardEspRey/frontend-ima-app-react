@@ -51,10 +51,17 @@ const fetchDiesel = async () => {
    const handleVer = (id, trip_id) => {
     navigate(`/editor-diesel/${id}/${trip_id}`);
   };
+  
+   const cancelar = () =>{
+    navigate(`/admin-diesel`)
+  }
 
   return (
    <div className="driver-admin">
       <h1 className="title">Detalle de diesel</h1>
+       <div className="btnConteiner">
+          <button className="btn cancelar" onClick={cancelar}> Volver al admin</button>
+        </div>
       <TableContainer component={Paper}>
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead>

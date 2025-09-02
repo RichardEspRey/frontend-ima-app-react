@@ -2,11 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { PhotoProvider, PhotoView } from 'react-photo-view';
 import 'react-datepicker/dist/react-datepicker.css';
 import 'react-photo-view/dist/react-photo-view.css';
-import '../../screens/css/DieselEditor.css';
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
 import { useParams } from 'react-router-dom';
-import '../../screens/css/DieselEditor.css';
+import styles from '../../screens/css/DieselEditor.module.css';
 
 const GastoEditor = () => {
   const navigate = useNavigate();
@@ -125,6 +124,7 @@ const fetchTickets = async () => {
   fd.append('op', 'getTickets');
   fd.append('id', id);
   fd.append('trip_id', trip_id);
+  fd.append('opcion', 'gasto');
 
   try {
     const resp = await fetch(`${apiHost}/formularios.php`, { method: 'POST', body: fd });
@@ -180,8 +180,8 @@ useEffect(() => {
           <button className="btn guardar"  onClick={actualizar}>Guardar</button>
         </div>
 
-        <div className="form-columns">
-          <div className="column">
+        <div className={styles.formColumns}>
+          <div className={styles.column}>
             <label>No de registro</label>
             <input
               type="text"
@@ -224,12 +224,12 @@ useEffect(() => {
 
 
         
-          <div className="form-columns">
-            <div className="column">
+         <div className={styles.formColumns}>
+          <div className={styles.column}>
                 <h3>Tickets</h3>
 
                 <PhotoProvider>
-                <div className="thumb-grid">
+                <div className={styles.thumbGrid} >
                     {tickets.length === 0 ? (
                     <p>Sin imágenes.</p>
                     ) : (
@@ -243,7 +243,7 @@ useEffect(() => {
                             href={item.url}
                             target="_blank"
                             rel="noreferrer"
-                            className="thumb-file"
+                            className={styles.thumbFile}
                             title={`Abrir archivo ${item.ext.toUpperCase()}`}
                             >
                             Ver archivo
@@ -253,7 +253,7 @@ useEffect(() => {
                         return (
                         <PhotoView key={item.id} src={item.url}>
                             <img
-                            className="thumb"
+                            className={styles.thumb}
                             src={item.url}
                             alt={`ticket ${item.id}`}
                             loading="lazy"
