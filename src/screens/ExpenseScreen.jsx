@@ -27,7 +27,7 @@ const ExpenseScreen = () => {
     // --- ESTADOS GENERALES DEL GASTO ---
     const apiHost = import.meta.env.VITE_API_HOST;
     const [country, setCountry] = useState(null);
-    const ID_MANTENIMIENTO = '3'
+    const ID_MANTENIMIENTO = "3"
     const [expenseDate, setExpenseDate] = useState(new Date());
     const [totalAmount, setTotalAmount] = useState('0.00');
     const [originalAmount, setOriginalAmount] = useState('');
@@ -49,8 +49,7 @@ const ExpenseScreen = () => {
         facturaPdf: null,
         ticketJpg: null,
     });
-    // const pdfInputRef = useRef(null);
-    // const jpgInputRef = useRef(null); 
+
 
     const resetForm = () => {
         setCountry(null);
@@ -60,15 +59,14 @@ const ExpenseScreen = () => {
         setExchangeRate('');
         setExpenseDetails([]);
         setFiles({ facturaPdf: null, ticketJpg: null });
-        // Si estás usando react-router y quieres redirigir, puedes hacerlo aquí
-        // navigate('/ruta-a-la-lista');
+      
     };
 
 
     useEffect(() => {
 
         if (originalAmount && exchangeRate) {
-            const convertedAmount = parseFloat(originalAmount) * parseFloat(exchangeRate);
+            const convertedAmount = parseFloat(originalAmount) / parseFloat(exchangeRate);
             setTotalAmount(convertedAmount.toFixed(2));
         } else if (originalAmount) {
             setTotalAmount(parseFloat(originalAmount).toFixed(2));
@@ -84,7 +82,7 @@ const ExpenseScreen = () => {
     }, [originalAmount, exchangeRate, expenseDetails]);
 
     const handleArticleChange = async (selection, detail) => {
-        // CASO 1: El usuario borra la selección (UNA SOLA ORDEN)
+     
         if (!selection) {
             handleDetailChange(detail.id, { itemId: null, itemDescription: '' });
             return;
@@ -235,13 +233,7 @@ const ExpenseScreen = () => {
         }
     };
 
-    // const handleFileChange = (event, fileType) => {
-    //     const file = event.target.files[0];
-    //     if (file) {
-    //         setFiles(prev => ({ ...prev, [fileType]: file }));
-    //     }
-    //     event.target.value = null; 
-    // };
+ 
 
     const countries = [{ value: 'MX', label: 'México' }, { value: 'US', label: 'Estados Unidos' }];
 
