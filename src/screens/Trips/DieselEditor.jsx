@@ -193,8 +193,8 @@ useEffect(() => {
           <button className="btn guardar"  onClick={actualizar}>Guardar</button>
         </div>
 
-        <div className="form-columns">
-          <div className="column">
+        <div className={styles.formColumns}>
+          <div className={styles.column}>
             <label>No de registro</label>
             <input
               type="text"
@@ -248,12 +248,12 @@ useEffect(() => {
 
 
         
-          <div className="form-columns">
-            <div className="column">
+           <div className={styles.formColumns}>
+              <div className={styles.column}>
                 <h3>Tickets</h3>
 
                 <PhotoProvider>
-                <div className="thumb-grid">
+                <div className={styles.thumbGrid} >
                     {tickets.length === 0 ? (
                     <p>Sin imágenes.</p>
                     ) : (
@@ -267,7 +267,7 @@ useEffect(() => {
                             href={item.url}
                             target="_blank"
                             rel="noreferrer"
-                            className="thumb-file"
+                            className={styles.thumbFile}
                             title={`Abrir archivo ${item.ext.toUpperCase()}`}
                             >
                             Ver archivo
@@ -277,7 +277,7 @@ useEffect(() => {
                         return (
                         <PhotoView key={item.id} src={item.url}>
                             <img
-                            className="thumb"
+                            className={styles.thumb}
                             src={item.url}
                             alt={`ticket ${item.id}`}
                             loading="lazy"

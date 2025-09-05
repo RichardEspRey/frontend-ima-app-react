@@ -41,6 +41,7 @@ const Login = () => {
       const data = JSON.parse(text);
 
       if (data.status === 'success') {
+        console.log(data.user.type);
         await login(data.user.id, data.user.name,data.user.type);
         navigate('/home'); 
       } else {

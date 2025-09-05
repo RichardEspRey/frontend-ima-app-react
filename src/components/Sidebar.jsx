@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import './css/Sidebar.css';
 import { useDispatch, useSelector } from 'react-redux';
 import { setActiveMenu, setExpandedMenu, setSelectedSubMenu } from '../redux/menuSlice';
@@ -15,75 +15,81 @@ import iconBox from '../assets/images/icons/caja.png';
 import iconReport from '../assets/images/icons/report.png';
 import iconExit from '../assets/images/icons/exit.png';
 import iconList from '../assets/images/icons/list.png';
-import iconGasto from '../assets/images/icons/gasto.png'
+import iconGasto from '../assets/images/icons/gasto.png';
 
+// Convención final:
+// - rolesPermitidos: array de roles permitidos (padre y subitems).
+// - Sin permisos granulares.
 
 const menuItems = [
   { name: 'Inicio', icon: iconDashboard, route: '/home', rolesPermitidos: ['admin'] },
+
   {
     name: 'IMA',
     icon: iconIMA,
     rolesPermitidos: ['admin'],
     subItems: [
-      { name: 'Alta de documentos', route: '/ImaScreen' },
-      { name: 'Administrador de documentos', route: '/ImaAdmin' }
+      { name: 'Alta de documentos', route: '/ImaScreen', rolesPermitidos: ['admin'] },
+      { name: 'Administrador de documentos', route: '/ImaAdmin', rolesPermitidos: ['admin'] }
     ]
   },
+
   {
     name: 'Conductores',
     icon: iconDriver,
-    rolesPermitidos: ['admin', 'documentador'],
+    rolesPermitidos: ['admin', 'Angeles'],
     subItems: [
-      { name: 'Alta de conductores', route: '/drivers' },
-      { name: 'Administrador de conductores', route: '/admin-drivers' }
+      { name: 'Alta de conductores', route: '/drivers', rolesPermitidos: ['admin', 'Angeles'] },
+      { name: 'Administrador de conductores', route: '/admin-drivers', rolesPermitidos: ['admin', 'Angeles'] }
     ]
   },
+
   {
     name: 'Camiones',
     icon: iconTrailer,
-    rolesPermitidos: ['admin'],
+    rolesPermitidos: ['admin','Angeles'],
     subItems: [
-      { name: 'Alta de camiones', route: '/trucks' },
-      { name: 'Administrador de camiones', route: '/admin-trucks' },
-      { name: 'Alta de Cajas', route: '/trailers' },
-      { name: 'Administrador de cajas', route: '/admin-trailers' }
+      { name: 'Alta de camiones', route: '/trucks', rolesPermitidos: ['admin','Angeles'] },
+      { name: 'Administrador de camiones', route: '/admin-trucks', rolesPermitidos: ['admin','Angeles'] },
+      { name: 'Alta de Cajas', route: '/trailers', rolesPermitidos: ['admin','Angeles'] },
+      { name: 'Administrador de cajas', route: '/admin-trailers', rolesPermitidos: ['admin','Angeles'] }
     ]
   },
 
   {
     name: 'Gastos',
     icon: iconGasto,
+    rolesPermitidos: ['admin', 'Angeles','Blanca'],
     subItems: [
-      { name: 'Nuevo Gasto', route: '/new-expense' },
-      { name: 'Gastos diesel', route: '/admin-diesel' },
-      { name: 'Gastos viajes', route: '/admin-gastos' }
+      { name: 'Nuevo Gasto', route: '/new-expense', rolesPermitidos: ['admin', 'Angeles'] },
+      { name: 'Gastos diesel', route: '/admin-diesel', rolesPermitidos: ['admin','Blanca'] },
+      { name: 'Gastos viajes', route: '/admin-gastos', rolesPermitidos: ['admin','Blanca'] }
     ]
   },
+
   {
     name: 'Mantenimientos',
     icon: iconList,
-    rolesPermitidos: ['admin', 'Vendedor'],
+    rolesPermitidos: ['admin', 'Angeles','Candy'],
     subItems: [
-      { name: 'Inventario', route: '/view-inventory' },
-      { name: 'Inspeccion final', route: '/Inspeccion-final' },
-      // { name: 'Orden de Servicio' , route:'/new-service-order'},
-      { name: 'Administrador Ordenes de Servicio', route: '/admin-service-order' }
+      { name: 'Inventario', route: '/view-inventory', rolesPermitidos: ['admin','Angeles','Candy'] },
+      { name: 'Inspeccion final', route: '/Inspeccion-final', rolesPermitidos: ['admin','Angeles','Candy'] },
+      { name: 'Administrador Ordenes de Servicio', route: '/admin-service-order', rolesPermitidos: ['admin','Angeles','Candy'] }
     ]
   },
+
   {
     name: 'Viajes',
     icon: iconBox,
-    rolesPermitidos: ['admin', 'Vendedor'],
+    rolesPermitidos: ['admin', 'Angel','Candy','Blanca'],
     subItems: [
-      { name: 'Nuevo Viaje', route: '/trips' },
-      { name: 'Administrador de viajes', route: '/admin-trips' }
+      { name: 'Nuevo Viaje', route: '/trips', rolesPermitidos: ['admin', 'Angel'] },
+      { name: 'Administrador de viajes', route: '/admin-trips', rolesPermitidos: ['admin','Angel','Blanca','Candy'] }
     ]
   },
 
-
   { name: 'Reportes', icon: iconReport, route: '/reportes', rolesPermitidos: ['admin'] }
 ];
-
 
 const Sidebar = () => {
   const [notificaciones, setNotificaciones] = useState({
@@ -100,18 +106,63 @@ const Sidebar = () => {
 
   const apiHost = import.meta.env.VITE_API_HOST;
   const { user, logout } = useContext(AuthContext);
-  const tipoUsuario = user?.tipo_usuario || '';
 
+  // Rol desde contexto o localStorage
+  const [tipoUsuario, setTipoUsuario] = useState('');
 
-  const menuFiltrado = menuItems.filter(item =>
-    !item.rolesPermitidos || item.rolesPermitidos.includes(tipoUsuario)
-  );
+  useEffect(() => {
+    const storedType = localStorage.getItem('type') || '';
+    setTipoUsuario((user?.tipo_usuario || storedType || '').trim());
+  }, [user]);
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const activeMenu = useSelector((state) => state.menu.activeMenu);
   const expandedMenu = useSelector((state) => state.menu.expandedMenu);
   const selectedSubMenu = useSelector((state) => state.menu.selectedSubMenu);
+
+  // Comparador por rol (case-insensitive)
+  const roleAllowed = useCallback(
+    (roles) => {
+      if (!roles || roles.length === 0) return true; // si no está definido, se muestra a todos
+      const u = String(tipoUsuario || '').toLowerCase();
+      return roles.some(r => String(r).toLowerCase() === u);
+    },
+    [tipoUsuario]
+  );
+
+  // Filtrado SOLO por roles:
+  const filterMenuByAccess = useCallback((items) => {
+    return items.reduce((acc, item) => {
+      const canSeeSection = roleAllowed(item.rolesPermitidos);
+
+      // Si no puede ver la sección, no se muestra (aunque tenga subitems)
+      if (!canSeeSection) return acc;
+
+      // Si tiene subitems, filtrarlos por roles (si no define, hereda del padre)
+      if (Array.isArray(item.subItems) && item.subItems.length > 0) {
+        const visibleSubs = item.subItems.filter((si) => {
+          const subRoles = si.rolesPermitidos ?? item.rolesPermitidos;
+          return roleAllowed(subRoles);
+        });
+
+        // Si el padre tiene route, lo mostramos aunque no haya subitems visibles;
+        // si no tiene route, mostrar solo si hay subitems visibles.
+        if (item.route) {
+          acc.push({ ...item, subItems: visibleSubs });
+        } else if (visibleSubs.length > 0) {
+          acc.push({ ...item, subItems: visibleSubs });
+        }
+        return acc;
+      }
+
+      // Ítem sin subitems
+      acc.push(item);
+      return acc;
+    }, []);
+  }, [roleAllowed]);
+
+  const menuFiltrado = useMemo(() => filterMenuByAccess(menuItems), [filterMenuByAccess]);
 
   const handleNavigate = useCallback((route) => {
     dispatch(setActiveMenu(route));
@@ -120,7 +171,8 @@ const Sidebar = () => {
     navigate(route);
   }, [dispatch, navigate]);
 
-  const toggleSubMenu = useCallback((menuName) => {
+  const toggleSubMenu = useCallback((menuName, hasVisibleSubs) => {
+    if (!hasVisibleSubs) return;
     dispatch(setExpandedMenu(expandedMenu === menuName ? null : menuName));
     if (expandedMenu === menuName) {
       dispatch(setSelectedSubMenu(null));
@@ -133,12 +185,7 @@ const Sidebar = () => {
     navigate(route);
   }, [dispatch, navigate]);
 
-
   const handleLogout = () => logout();
-
-
-
-
 
   const fetchdocs = async () => {
     const formDataToSend = new FormData();
@@ -153,32 +200,23 @@ const Sidebar = () => {
       const data = await response.json();
 
       if (data.status === 'success') {
-
-
         setNotificaciones((prev) => ({
           ...prev,
           IMA: data.Users[0].documentos_faltantes_ima || 0,
           Conductores: data.Users[0].documentos_faltantes_driver || 0,
-          Camiones: parseInt(data.Users[0].documentos_faltantes_trailer) + parseInt(data.Users[0].documentos_faltantes_truck) || 0,
-
+          Camiones: (parseInt(data.Users[0].documentos_faltantes_trailer) || 0) + (parseInt(data.Users[0].documentos_faltantes_truck) || 0),
         }));
-
 
         setsubnotificaciones((prev) => ({
           ...prev,
           'Administrador de camiones': data.Users[0].documentos_faltantes_truck || 0,
           'Administrador de cajas': data.Users[0].documentos_faltantes_trailer || 0,
         }));
-
-
-
-
       }
     } catch (error) {
       console.error('Error al obtener los documentos:', error);
     }
   };
-
 
   useEffect(() => {
     fetchdocs();
@@ -191,44 +229,49 @@ const Sidebar = () => {
       </div>
 
       <div className="menuList">
-        {menuFiltrado.map((item) => (
-          <div key={item.name}>
-            <button
-              className={`menuItem ${activeMenu === item.route && !item.subItems ? 'activeMenuItem' : ''} ${item.subItems ? 'hasSubMenu' : ''}`}
-              onClick={() => item.subItems ? toggleSubMenu(item.name) : handleNavigate(item.route)}
-            >
-              <img src={item.icon} alt="icon" className="icon" />
-              <span className="menuText">
-                {item.name}
-                {notificaciones[item.name] > 0 && (
-                  <span className="documentCounter">{notificaciones[item.name]}</span>
-                )}
-              </span>
-              {item.subItems && (
-                expandedMenu === item.name
-                  ? <FaChevronUp className="arrowIcon" />
-                  : <FaChevronDown className="arrowIcon" />
-              )}
-            </button>
+        {menuFiltrado.map((item) => {
+          const hasSubs = !!(item.subItems && item.subItems.length > 0);
 
-            {item.subItems && expandedMenu === item.name && (
-              <div className="subMenuContainer">
-                {item.subItems.map((subItem) => (
-                  <button
-                    key={subItem.name}
-                    className={`subMenuItem ${selectedSubMenu === subItem.route ? 'activeSubMenuItem' : ''}`}
-                    onClick={() => handleSubMenuSelect(subItem.route)}
-                  >
-                    {subItem.name}
-                    {subnotificaciones[subItem.name] > 0 && (
-                      <span className="documentCounter">{subnotificaciones[subItem.name]}</span>
-                    )}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        ))}
+          return (
+            <div key={item.name}>
+              <button
+                className={`menuItem ${activeMenu === item.route && !hasSubs ? 'activeMenuItem' : ''} ${hasSubs ? 'hasSubMenu' : ''}`}
+                onClick={() => hasSubs ? toggleSubMenu(item.name, hasSubs) : (item.route && handleNavigate(item.route))}
+                disabled={!hasSubs && !item.route}
+              >
+                <img src={item.icon} alt="icon" className="icon" />
+                <span className="menuText">
+                  {item.name}
+                  {notificaciones[item.name] > 0 && (
+                    <span className="documentCounter">{notificaciones[item.name]}</span>
+                  )}
+                </span>
+                {hasSubs && (
+                  expandedMenu === item.name
+                    ? <FaChevronUp className="arrowIcon" />
+                    : <FaChevronDown className="arrowIcon" />
+                )}
+              </button>
+
+              {hasSubs && expandedMenu === item.name && (
+                <div className="subMenuContainer">
+                  {item.subItems.map((subItem) => (
+                    <button
+                      key={subItem.name}
+                      className={`subMenuItem ${selectedSubMenu === subItem.route ? 'activeSubMenuItem' : ''}`}
+                      onClick={() => handleSubMenuSelect(subItem.route)}
+                    >
+                      {subItem.name}
+                      {subnotificaciones[subItem.name] > 0 && (
+                        <span className="documentCounter">{subnotificaciones[subItem.name]}</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       <button className="logoutButton" onClick={handleLogout}>
