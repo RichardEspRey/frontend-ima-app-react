@@ -1,0 +1,94 @@
+.formColumns {
+  display: grid;
+  grid-template-columns: 1fr 1fr; 
+  gap: 16px;
+  align-items: start;
+}
+.title{
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: center;
+}
+.titulos{
+  padding-left:10px;
+}
+
+.column2 {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+ background-color: white;
+  padding: 12px;
+  border-radius: 12px;
+}
+.column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+ 
+  padding: 12px;
+  border-radius: 12px;
+}
+.column label {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+.contenido{
+  margin-bottom: 10px;
+}
+.select{
+    padding: 12px;
+
+    border-radius: 5px;
+    border: 1px solid #ccc; 
+}
+.input{
+    padding: 12px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+  }
+
+.thumbGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+  cursor: zoom-in;
+}
+
+.thumbFile {
+  display: inline-block;
+  padding: 8px 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  text-decoration: none;
+}
+.check{
+  width: 18px;
+  height: 18px;
+}
+.span{
+font-size: 18px;
+
+}
+.butonAdd{
+  padding-left: 10px;
+  margin-left: 10px;
+}
+
+.butonGuardar{
+  margin-top: 10px;
+  margin-bottom: 10px;
+  width: 300px;
+  height: 25;
+  font-size: 18px;
+  background-color: rgb(3, 150, 255);
+}

@@ -4,6 +4,7 @@ import Swal from 'sweetalert2';
 import { Box, Typography, CircularProgress, Alert, Button } from '@mui/material';
 
 import ModalArchivo from '../components/ModalArchivo';
+import ModalCajaExterna from '../components/ModalCajaExterna';
 import useFetchActiveDrivers from '../hooks/useFetchActiveDrivers';
 import useFetchActiveTrucks from '../hooks/useFetchActiveTrucks';
 import useFetchActiveTrailers from '../hooks/useFetchActiveTrailers';
@@ -63,9 +64,10 @@ const EditTripForm = () => {
     const { activeWarehouses, loading: loadingWarehouses, refetchWarehouses } = useFetchWarehouses();
 
     const [trailerType, setTrailerType] = useState('interna');
-    const [IsModalCajaExternaOpen, setIsModalCajaExternaOpen] = useState(false);
+    const [isModalCajaExternaOpen, setIsModalCajaExternaOpen] = useState(false);
 
-   
+
+
     const getDocumentUrl = (doc) => {
         if (!doc) return '#';
 
@@ -73,17 +75,17 @@ const EditTripForm = () => {
             return URL.createObjectURL(doc.file);
         }
 
-       
+
         if (doc.serverPath && typeof doc.serverPath === 'string') {
             const uploadsWebPath = `${apiHost}/Uploads/Trips/`;
-      
+
             const fileName = doc.serverPath.split(/[\\/]/).pop();
             if (fileName) {
                 return `${uploadsWebPath}${encodeURIComponent(fileName)}`;
             }
         }
 
-   
+
         return '#';
     };
 
@@ -239,6 +241,35 @@ const EditTripForm = () => {
             updatedEtapas[stageIndex] = updatedStage;
             return updatedEtapas;
         });
+    };
+    // EditTripForm.jsx
+    const handleSaveExternalCaja = async (cajaData) => {
+        const dataToSend = new FormData();
+        dataToSend.append('op', 'Alta');
+        Object.entries(cajaData).forEach(([k, v]) => dataToSend.append(k, v));
+
+        try {
+            const endpoint = `${apiHost}/caja_externa.php`;
+            const response = await fetch(endpoint, { method: 'POST', body: dataToSend });
+            const result = await response.json();
+
+            if (result.status === 'success' && result.caja) {
+                Swal.fire('¡Éxito!', 'Caja externa registrada y asignada al viaje.', 'success');
+
+                // asigna la nueva caja al form de edición
+                handleFormChange('caja_externa_id', result.caja.caja_externa_id);
+                handleFormChange('caja_externa_no_caja', result.caja.no_caja);
+                handleFormChange('caja_id', ''); // limpia interna si la hubiera
+
+                // recarga catálogo y cierra modal
+                refetchExternalTrailers();
+                setIsModalCajaExternaOpen(false);
+            } else {
+                Swal.fire('Error', result.message || 'No se pudo registrar la caja.', 'error');
+            }
+        } catch (err) {
+            Swal.fire('Error de Conexión', `No se pudo comunicar con el servidor: ${err.message}`, 'error');
+        }
     };
 
     const handleGuardarDocumento = (data) => {
@@ -701,18 +732,18 @@ const EditTripForm = () => {
                                     />
                                 </div>
                                 <div className="column">
-                                      <label htmlFor="return_date">Return Date:</label>
-                                      <DatePicker
-                                          id="return_date"
-                                          selected={formData.return_date}
-                                          onChange={(date) => handleFormChange('return_date', date)}
-                                          dateFormat="dd/MM/yyyy"
-                                          placeholderText="Fecha de Regreso"
-                                          className="form-input date-picker-full-width"
-                                          isClearable
-                                          disabled={isFormDisabled}
-                                      />
-                                  </div>
+                                    <label htmlFor="return_date">Return Date:</label>
+                                    <DatePicker
+                                        id="return_date"
+                                        selected={formData.return_date}
+                                        onChange={(date) => handleFormChange('return_date', date)}
+                                        dateFormat="dd/MM/yyyy"
+                                        placeholderText="Fecha de Regreso"
+                                        className="form-input date-picker-full-width"
+                                        isClearable
+                                        disabled={isFormDisabled}
+                                    />
+                                </div>
                                 <div className="column">
                                     <label htmlFor="driver_id">Driver Principal:</label>
                                     <Select id="driver_id"
@@ -834,6 +865,7 @@ const EditTripForm = () => {
                                                 >
                                                     +
                                                 </button>
+
                                             </div>
                                         </div>
 
@@ -1193,6 +1225,11 @@ const EditTripForm = () => {
                                                             {etapa.documentos?.bl && (<p className="doc-info"><i> <a href={getDocumentUrl(etapa.documentos.bl)} target="_blank" rel="noopener noreferrer">{etapa.documentos.bl.fileName}</a></i></p>)}
                                                         </div>
                                                         <div className="column">
+                                                            <label>Orden Retiro:</label>
+                                                            <button type="button" className="upload-button" onClick={() => abrirModal('orden_retiro', index)}>Subir/Cambiar</button>
+                                                            {etapa.documentos?.orden_retiro && (<p className="doc-info"><i> <a href={getDocumentUrl(etapa.documentos.orden_retiro)} target="_blank" rel="noopener noreferrer">{etapa.documentos.orden_retiro.fileName}</a></i></p>)}
+                                                        </div>
+                                                        <div className="column">
                                                             <label htmlFor={`bl_firmado-${index}`}>BL Firmado:</label>
                                                             <button type="button" className="upload-button" onClick={() => abrirModal('bl_firmado', index)} disabled={isFormDisabled}>Subir/Cambiar</button>
                                                             {etapa.documentos?.bl_firmado && (<p className="doc-info"><i> <a href={getDocumentUrl(etapa.documentos.bl_firmado)} target="_blank" rel="noopener noreferrer">{etapa.documentos.bl_firmado.fileName}</a> {etapa.documentos.bl_firmado.vencimiento ? ` - V: ${etapa.documentos.bl_firmado.vencimiento}` : ''}</i></p>)}
@@ -1341,6 +1378,13 @@ const EditTripForm = () => {
                                 nombreCampo={modalTarget.docType}
                                 valorActual={getCurrentDocValueForModal()}
                                 mostrarFechaVencimiento={mostrarFechaVencimientoModal}
+                            />
+                        )}
+                        {isModalCajaExternaOpen && (
+                            <ModalCajaExterna
+                                isOpen={isModalCajaExternaOpen}
+                                onClose={() => setIsModalCajaExternaOpen(false)}
+                                onSave={handleSaveExternalCaja}
                             />
                         )}
 

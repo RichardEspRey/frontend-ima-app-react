@@ -32,6 +32,7 @@ import Inspeccion_final from '../screens/Mantenimientos/Inspeccion_final.jsx';
 import ExpenseScreen from '../screens/ExpenseScreen.jsx';
 import  StockAdmin  from '../screens/StockAdmin.jsx';
 import ServiceOrderScreen from '../screens/ServiceOrderScreen.jsx';
+import ServiceOrderScreenEdit from '../screens/ServiceOrderScreenEdit.jsx';
 import ServiceOrderAdmin from '../screens/ServiceOrderAdmin.jsx';
 
 
@@ -301,7 +302,7 @@ const AppRouter = () => {
                 path="/editar-orden/:orderId"
                 element={
                   <DashboardLayout> 
-                    <ServiceOrderScreen /> 
+                    <ServiceOrderScreenEdit /> 
                   </DashboardLayout>
                 }
               />

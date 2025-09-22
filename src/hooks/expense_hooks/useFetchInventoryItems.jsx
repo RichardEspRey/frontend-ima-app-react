@@ -38,9 +38,9 @@ const useFetchInventoryItems = () => {
         };
 
         fetchAllItems();
-    }, []); // El array vacío [] asegura que esto se ejecute solo una vez, cuando el componente se monta.
+    }, []); 
 
-    // Devolvemos la lista y la función para poder modificarla después
+    
     return { inventoryItems, loading, setInventoryItems }; 
 };
 

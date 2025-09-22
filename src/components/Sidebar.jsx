@@ -59,11 +59,11 @@ const menuItems = [
   {
     name: 'Gastos',
     icon: iconGasto,
-    rolesPermitidos: ['admin', 'Angeles','Blanca'],
+    rolesPermitidos: ['admin', 'Angeles','Blanca','Candy','Mia'],
     subItems: [
-      { name: 'Nuevo Gasto', route: '/new-expense', rolesPermitidos: ['admin', 'Angeles'] },
-      { name: 'Gastos diesel', route: '/admin-diesel', rolesPermitidos: ['admin','Blanca'] },
-      { name: 'Gastos viajes', route: '/admin-gastos', rolesPermitidos: ['admin','Blanca'] }
+      { name: 'Nuevo Gasto', route: '/new-expense', rolesPermitidos: ['admin', 'Angeles','Mia'] },
+      { name: 'Gastos diesel', route: '/admin-diesel', rolesPermitidos: ['admin','Blanca','Candy','Mia'] },
+      { name: 'Gastos viajes', route: '/admin-gastos', rolesPermitidos: ['admin','Blanca','Mia'] }
     ]
   },
 
@@ -81,10 +81,10 @@ const menuItems = [
   {
     name: 'Viajes',
     icon: iconBox,
-    rolesPermitidos: ['admin', 'Angel','Candy','Blanca'],
+    rolesPermitidos: ['admin','Candy','Blanca'],
     subItems: [
-      { name: 'Nuevo Viaje', route: '/trips', rolesPermitidos: ['admin', 'Angel'] },
-      { name: 'Administrador de viajes', route: '/admin-trips', rolesPermitidos: ['admin','Angel','Blanca','Candy'] }
+      { name: 'Nuevo Viaje', route: '/trips', rolesPermitidos: ['admin','Blanca'] },
+      { name: 'Administrador de viajes', route: '/admin-trips', rolesPermitidos: ['admin','Blanca','Candy','Mia'] }
     ]
   },
 
