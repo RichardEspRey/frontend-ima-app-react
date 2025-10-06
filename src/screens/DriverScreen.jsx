@@ -8,12 +8,12 @@ import Swal from 'sweetalert2';
 const DriverScreen = () => {
   const apiHost = import.meta.env.VITE_API_HOST;
   const [formData, setFormData] = useState({
-      nombre: '',
-      fechaEntrada: '',
-      rfc: '',
-      phone_usa: '',
-      phone_mex: '',
-      visa: ''
+    nombre: '',
+    fechaEntrada: '',
+    rfc: '',
+    phone_usa: '',
+    phone_mex: '',
+    visa: ''
   });
 
   const [selectedFieldName, setSelectedFieldName] = useState(null);
@@ -39,11 +39,11 @@ const DriverScreen = () => {
     setCampoActual(campo);
     setModalAbierto(true);
     if (['INE', 'Acta_Nacimiento', 'CURP', 'Comprobante_domicilio', 'Constancia', 'Solicitud_empleo', 'Atidoping'].includes(campo)) {
-            setMostrarFechaVencimientoModal(false);
-        } else {
-            setMostrarFechaVencimientoModal(true);
+      setMostrarFechaVencimientoModal(false);
+    } else {
+      setMostrarFechaVencimientoModal(true);
 
-        }
+    }
   };
 
 
@@ -54,7 +54,7 @@ const DriverScreen = () => {
       // Aquí añadimos solo campos de texto (no archivos)
       formDataToSend.append('op', 'Alta'); // operación que espera el backend
       formDataToSend.append('name', formData.nombre);
-      formDataToSend.append('fecha_ingreso', formData.fechaEntrada); 
+      formDataToSend.append('fecha_ingreso', formData.fechaEntrada);
       formDataToSend.append('rfc', formData.rfc);
       formDataToSend.append('visa', formData.visa);
       formDataToSend.append('phone_mex', formData.phone_mex);
@@ -105,40 +105,70 @@ const DriverScreen = () => {
 
         const result = await response.json();
         console.log(`Documento ${tipo_documento} enviado:`, result);
-    
+
       } catch (error) {
         console.error(`Error al enviar ${tipo_documento}:`, error);
       }
-      
+
     }
   };
-  const handleSubmit = async () => {
-    const idConductor = await envioDatosPrincipal();
 
-    if (idConductor) {
-      await enviarDocumentos(idConductor);
-      Swal.fire({
-          icon: 'success',
-          title: 'Éxito',
-          text: 'Driver dado de alta!',
-        });
-     setFormData({
-      nombre: '',
-      fechaEntrada: '',
-      rfc: '',
-      phone_usa: '',
-      phone_mex: '',
-      visa: ''
+  const handleSubmit = async () => {
+    let timerInterval;
+    const start = Date.now();
+
+    Swal.fire({
+      title: 'Procesando…',
+      html: 'Tiempo transcurrido: <b>0</b> ms',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+        const b = Swal.getPopup().querySelector('b');
+        timerInterval = setInterval(() => {
+          b.textContent = `${Date.now() - start}`;
+        }, 100);
+      },
+      willClose: () => clearInterval(timerInterval),
     });
 
+    try {
+      const idConductor = await envioDatosPrincipal();
+      if (!idConductor) throw new Error('No se obtuvo el ID del conductor');
 
+      await enviarDocumentos(idConductor);
+
+      Swal.close();
+
+      await Swal.fire({
+        icon: 'success',
+        title: 'Éxito',
+        text: 'Driver dado de alta!',
+      });
+
+      setFormData({
+        nombre: '',
+        fechaEntrada: '',
+        rfc: '',
+        phone_usa: '',
+        phone_mex: '',
+        visa: '',
+      });
       setDocumentos({});
+    } catch (err) {
 
+      Swal.close();
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: err?.message || 'Ocurrió un problema al guardar.',
+      });
     }
   };
 
-  
-  const cancelar = () =>{
+
+
+
+  const cancelar = () => {
     setFormData({
       nombre: '',
       fechaEntrada: '',
@@ -150,8 +180,8 @@ const DriverScreen = () => {
 
     setDocumentos({});
 
-    }
-  
+  }
+
   return (
 
     <div >
@@ -159,7 +189,7 @@ const DriverScreen = () => {
       <h1 className="titulo">Alta de Conductor</h1>
       <div className="conductores-container">
         <div className="btnConteiner">
-          <button className="btn cancelar"onClick={cancelar}> Cancelar</button>
+          <button className="btn cancelar" onClick={cancelar}> Cancelar</button>
           <button className="btn guardar" onClick={handleSubmit}>Guardar</button>
         </div>
 
@@ -191,8 +221,8 @@ const DriverScreen = () => {
               <p>{documentos.Acta_Nacimiento.fileName} - {documentos.Acta_Nacimiento.vencimiento}</p>
             )}
 
-           
-             <label>CURP (PDF)</label>
+
+            <label>CURP (PDF)</label>
             <button type="button" onClick={() => abrirModal('CURP')}>Subir documento</button>
             {documentos.CURP && (
               <p>{documentos.CURP.fileName} - {documentos.CURP.vencimiento}</p>
@@ -204,7 +234,7 @@ const DriverScreen = () => {
               <p>{documentos.Comprobante_domicilio.fileName} - {documentos.Comprobante_domicilio.vencimiento}</p>
             )}
 
-                <label>Constancia de situacio fiscal (PDF)</label>
+            <label>Constancia de situacio fiscal (PDF)</label>
             <button type="button" onClick={() => abrirModal('Constancia')}>Subir documento</button>
             {documentos.Constancia && (
               <p>{documentos.Constancia.fileName} - {documentos.Constancia.vencimiento}</p>
@@ -217,13 +247,13 @@ const DriverScreen = () => {
               value={formData.rfc}
               onChange={(e) => handleInputChange('rfc', e.target.value)}
             />
-          
-            
+
+
           </div>
 
           {/* Puedes continuar con las otras dos columnas como en tu versión original */}
           <div className="column">
-           
+
             <label>Visa</label>
             <button type="button" onClick={() => abrirModal('Visa')}>Subir documento</button>
             {documentos.Visa && (
@@ -238,14 +268,14 @@ const DriverScreen = () => {
               onChange={(e) => handleInputChange('visa', e.target.value)}
             />
 
-            
+
             <label>I-94 (PDF)</label>
             <button type="button" onClick={() => abrirModal('I')}>Subir documento</button>
             {documentos.I && (
               <p>{documentos.I.fileName} - {documentos.I.vencimiento}</p>
             )}
 
-          
+
           </div>
 
 
@@ -257,18 +287,18 @@ const DriverScreen = () => {
               <p>{documentos.Solicitud_empleo.fileName} - {documentos.Solicitud_empleo.vencimiento}</p>
             )}
 
-              <label>Licencia (PDF)</label>
+            <label>Licencia (PDF)</label>
             <button type="button" onClick={() => abrirModal('Licencia')}>Subir documento</button>
             {documentos.Licencia && (
               <p>{documentos.Licencia.fileName} - {documentos.Licencia.vencimiento}</p>
             )}
-            
-              <label>APTO Medico(PDF)</label>
+
+            <label>APTO Medico(PDF)</label>
             <button type="button" onClick={() => abrirModal('APTO')}>Subir documento</button>
             {documentos.APTO && (
               <p>{documentos.APTO.fileName} - {documentos.APTO.vencimiento}</p>
             )}
-            
+
             <label>Atidoping</label>
             <button type="button" onClick={() => abrirModal('Atidoping')}>Subir documento</button>
             {documentos.Atidoping && (

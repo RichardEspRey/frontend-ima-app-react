@@ -16,12 +16,12 @@ import { format } from 'date-fns';
 
 const initialBorderCrossingDocs = {
     ima_invoice: null, carta_porte: null, ci: null, entry: null,
-    manifiesto: null,  bl: null, orden_retiro: null, bl_firmado: null,
+    manifiesto: null, bl: null, orden_retiro: null, bl_firmado: null,
 };
 
 const initialNormalTripDocs = {
     ima_invoice: null, ci: null,
-   bl: null, bl_firmado: null,
+    bl: null, bl_firmado: null,
 
 };
 
@@ -251,7 +251,7 @@ const TripForm = ({ tripNumber, onSuccess }) => {
         setModalTarget({ stageIndex, docType });
         setModalAbierto(true);
 
-        if (['ima_invoice', 'carta_porte', 'ci', 'entry', 'manifiesto',  'bl', 'orden_retiro', 'bl_firmado'].includes(docType)) {
+        if (['ima_invoice', 'carta_porte', 'ci', 'entry', 'manifiesto', 'bl', 'orden_retiro', 'bl_firmado'].includes(docType)) {
             setMostrarFechaVencimientoModal(false);
         } else {
             setMostrarFechaVencimientoModal(true);
@@ -330,6 +330,22 @@ const TripForm = ({ tripNumber, onSuccess }) => {
                 return;
             }
         }
+        let timerInterval;
+        const start = Date.now();
+
+        Swal.fire({
+            title: 'Procesando…',
+            html: 'Tiempo transcurrido: <b>0</b> ms',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+                const b = Swal.getPopup().querySelector('b');
+                timerInterval = setInterval(() => {
+                    b.textContent = `${Date.now() - start}`;
+                }, 100);
+            },
+            willClose: () => clearInterval(timerInterval),
+        });
 
         const dataToSend = new FormData();
         dataToSend.append('op', 'Alta');
@@ -363,7 +379,7 @@ const TripForm = ({ tripNumber, onSuccess }) => {
             millas_pcmiller_practicas: etapa.millas_pcmiller_practicas,
             estatus: etapa.estatus,
             comments: '',
-            time_of_delivery:'',
+            time_of_delivery: '',
             // Enviar solo metadatos de documentos en el JSON
             documentos: Object.entries(etapa.documentos).reduce((acc, [key, value]) => {
                 if (value) { // Si hay datos para este tipo de documento
@@ -410,6 +426,7 @@ const TripForm = ({ tripNumber, onSuccess }) => {
             console.log("Respuesta del servidor (Alta):", result);
 
             if (response.ok && result.status === "success") {
+                Swal.close();
                 Swal.fire({
                     icon: 'success', title: '¡Éxito!',
                     text: result.message || 'Viaje y etapas guardados correctamente.',
@@ -432,7 +449,7 @@ const TripForm = ({ tripNumber, onSuccess }) => {
 
                 // navigate('/admin-trips');
             } else {
-
+                Swal.close();
                 Swal.fire({
                     icon: 'error', title: 'Error al Guardar',
                     text: result.error || result.message || 'No se pudo guardar la información. Verifica los datos e intenta de nuevo.',
@@ -440,6 +457,7 @@ const TripForm = ({ tripNumber, onSuccess }) => {
             }
         } catch (error) {
             console.error('Error en fetch o procesando respuesta (Alta):', error);
+            Swal.close();
             Swal.fire({
                 icon: 'error', title: 'Error de Conexión',
                 text: `No se pudo comunicar con el servidor. ${error.message}`,
@@ -860,7 +878,7 @@ const TripForm = ({ tripNumber, onSuccess }) => {
                                             type="time"
                                             id={`time_of_delivery-${index}`}
                                             name={`time_of_delivery-${index}`}
-                                            value={etapa.time_of_delivery || ''} 
+                                            value={etapa.time_of_delivery || ''}
                                             onChange={(e) => handleEtapaChange(index, 'time_of_delivery', e.target.value)}
                                             className="form-input"
                                         />
@@ -875,7 +893,7 @@ const TripForm = ({ tripNumber, onSuccess }) => {
                                         <button type="button" className="upload-button" onClick={() => abrirModal('bl', index)}>Subir</button>
                                         {etapa.documentos?.bl && (<p className="doc-info"><i>{etapa.documentos.bl.fileName}</i></p>)}
                                     </div>
-                                    
+
                                     <div className="column">
                                         <label>BL Firmado:</label>
                                         <button type="button" className="upload-button" onClick={() => abrirModal('bl_firmado', index)}>Subir</button>
@@ -987,5 +1005,5 @@ const TripForm = ({ tripNumber, onSuccess }) => {
     );
 };
 
-// *** Exportar el componente renombrado ***
+
 export default TripForm;

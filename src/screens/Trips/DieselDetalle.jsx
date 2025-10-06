@@ -68,8 +68,9 @@ const fetchDiesel = async () => {
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead>
             <TableRow>
+              <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 16}} align="center">No</TableCell>
               <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 16}} align="center">Trip number</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 16}} align="center">Trip ID</TableCell>
+     
               <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 16}} align="center">Fecha de modificacion</TableCell>
               <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 16}} align="center">Odometro al momento</TableCell>
               <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 16}} align="center">Galones</TableCell>
@@ -81,10 +82,10 @@ const fetchDiesel = async () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {registros.map((row) => ( 
+            {registros.map((row, idx) => ( 
               <TableRow key={row.id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                <TableCell align="center" sx={{ whiteSpace: 'nowrap', fontSize: 18}}>{idx+1 }</TableCell>
                 <TableCell align="center" sx={{ whiteSpace: 'nowrap', fontSize: 18}}>{row.trip_number}</TableCell>
-                <TableCell align="center" sx={{ whiteSpace: 'nowrap', fontSize: 18}}>{row.trip_id}</TableCell>
                 <TableCell align="center" sx={{ whiteSpace: 'nowrap', fontSize: 18}}>{row.fecha}</TableCell>
                 <TableCell align="center" sx={{ whiteSpace: 'nowrap', fontSize: 18}}>{row.odometro}mi</TableCell>
                 <TableCell align="center" sx={{ whiteSpace: 'nowrap', fontSize: 18}}>{row.galones}gal</TableCell>

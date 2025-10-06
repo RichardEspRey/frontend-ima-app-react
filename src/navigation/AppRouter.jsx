@@ -28,9 +28,10 @@ import DieselEditor from '../screens/Trips/DieselEditor.jsx';
 import GastosAdmin from '../screens/Trips/GastosAdmin.jsx';
 import GastosDetalle from '../screens/Trips/GastosDetalle.jsx';
 import GastosEditor from '../screens/Trips/GastosEditor.jsx';
+import AdminGastosGeneral from '../screens/AdminGastos.jsx';
 import Inspeccion_final from '../screens/Mantenimientos/Inspeccion_final.jsx';
 import ExpenseScreen from '../screens/ExpenseScreen.jsx';
-import  StockAdmin  from '../screens/StockAdmin.jsx';
+import StockAdmin  from '../screens/StockAdmin.jsx';
 import ServiceOrderScreen from '../screens/ServiceOrderScreen.jsx';
 import ServiceOrderScreenEdit from '../screens/ServiceOrderScreenEdit.jsx';
 import ServiceOrderAdmin from '../screens/ServiceOrderAdmin.jsx';
@@ -213,6 +214,15 @@ const AppRouter = () => {
                 element={
                   <DashboardLayout>
                     <GastosEditor />
+                  </DashboardLayout>
+                }
+              />
+
+              <Route
+                path="/admin-gastos-generales"
+                element={
+                  <DashboardLayout>
+                    <AdminGastosGeneral />
                   </DashboardLayout>
                 }
               />

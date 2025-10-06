@@ -103,27 +103,58 @@ const TrailerScreen = () => {
       }
     }
   };
-  const handleSubmit = async () => {
-    const idConductor = await envioDatosPrincipal();
-
-    if (idConductor) {
-      await enviarDocumentos(idConductor);
-        Swal.fire({
+  
+    const handleSubmit = async () => {
+      let timerInterval;
+      const start = Date.now();
+  
+      Swal.fire({
+        title: 'Procesando…',
+        html: 'Tiempo transcurrido: <b>0</b> ms',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+          const b = Swal.getPopup().querySelector('b');
+          timerInterval = setInterval(() => {
+            b.textContent = `${Date.now() - start}`;
+          }, 100);
+        },
+        willClose: () => clearInterval(timerInterval),
+      });
+  
+      try {
+        const idConductor = await envioDatosPrincipal();
+        if (!idConductor) throw new Error('No se obtuvo el ID del conductor');
+  
+        await enviarDocumentos(idConductor);
+  
+        Swal.close();
+  
+        await Swal.fire({
           icon: 'success',
           title: 'Éxito',
-          text: 'Todos los documentos fueron enviados correctamente',
+          text: 'Caja dada de alta!',
         });
-      setFormData({
-        numero_caja: '',
-        no_placa: '',
-        estado_placa: '',
-        numero_vin: '',
-      });
+  
+        setFormData({
+          numero_caja: '',
+          no_placa: '',
+          estado_placa: '',
+          numero_vin: '',
+        });
+        setDocumentos({});
+      } catch (err) {
+  
+        Swal.close();
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: err?.message || 'Ocurrió un problema al guardar.',
+        });
+      }
+    };
 
-      setDocumentos({});
 
-    }
-  };
   const cancelar = () => {
     setFormData({
         numero_caja: '',

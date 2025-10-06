@@ -39,6 +39,11 @@
     background-color: white;
     border: 1px solid #000;
   }
+
+ .eliminar {
+    background-color: rgb(255, 33, 33);
+    border: 1px solid #000;
+  }
   
   .form-columns {
     display: flex;

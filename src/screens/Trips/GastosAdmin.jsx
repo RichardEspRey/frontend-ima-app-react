@@ -27,6 +27,7 @@ const GastosAdmin = () => {
       const data = await response.json();
       if (data.status === 'success') {
         const formatted = data.id.map(t => ({
+          trip_number: t.trip_number,
           trip_id: t.trip_id,
           fecha: t.fecha,
           registros: t.registros,
@@ -53,7 +54,7 @@ const GastosAdmin = () => {
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead>
             <TableRow>
-              <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 22}} align="center">Trip ID</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 16}} align="center">Trip number</TableCell>
               <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 22}} align="center">Ultima modificacion</TableCell>
               <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 22}} align="center">No de registros</TableCell>
               <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 22}} align="center">Monto total</TableCell>
@@ -64,7 +65,7 @@ const GastosAdmin = () => {
           <TableBody>
             {registros.map((row) => ( 
               <TableRow key={row.trip_id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                <TableCell align="center" sx={{ whiteSpace: 'nowrap', fontSize: 18}}>{row.trip_id}</TableCell>
+                <TableCell align="center" sx={{ whiteSpace: 'nowrap', fontSize: 18}}>{row.trip_number}</TableCell>
                 <TableCell align="center" sx={{ whiteSpace: 'nowrap', fontSize: 18}}>{row.fecha}</TableCell>
                 <TableCell align="center" sx={{ whiteSpace: 'nowrap', fontSize: 18}}>{row.registros}</TableCell>
                 <TableCell align="center" sx={{ whiteSpace: 'nowrap', fontSize: 18}}>${row.monto}</TableCell>

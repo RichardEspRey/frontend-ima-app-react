@@ -83,6 +83,67 @@ const actualizar = async () => {
 };
 
 
+  const eliminar = async () => {
+    const result = await Swal.fire({
+      title: '¿Eliminar registro?',
+      text: 'Perderás el registro',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      Swal.fire({
+        title: 'Eliminando…',
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading(),
+      });
+
+      const formData = new FormData();
+      formData.append('op', 'delete_gasto');
+      formData.append('id', id); 
+
+      const resp = await fetch(`${apiHost}/formularios.php`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await resp.json();
+      Swal.close();
+
+      if (data.status === 'success') {
+        await Swal.fire({
+          icon: 'success',
+          title: 'Eliminado',
+          text: 'Registro eliminado',
+        });
+
+        if (trip_id) {
+          navigate(`/detalle-gastos/${trip_id}`);
+        } else {
+          navigate('/admin-gastos'); 
+        }
+      } else {
+        throw new Error(data.message || 'No se pudo eliminar el registro');
+      }
+    } catch (err) {
+      Swal.close();
+      console.error('Error al eliminar:', err);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: err?.message || 'Ocurrió un problema al eliminar.',
+      });
+    }
+  };
+
+
+
 
   const fetchRegisters = async () => {
     const formDataToSend = new FormData();
@@ -102,6 +163,7 @@ const actualizar = async () => {
       const row = data.row[0];
       const formValues = {
         id: row.id || '',
+        trip_number: row.trip_number || '',
         trip_id: row.trip_id || '',
         monto: row.monto || '',
         fecha: row.fecha || '',
@@ -176,26 +238,20 @@ useEffect(() => {
       <h1 className="titulo">Editor de registro de gasto</h1>
       <div className="conductores-container">
         <div className="btnConteiner">
-          <button className="btn cancelar" onClick={cancelar}> Cancelar</button>
-          <button className="btn guardar"  onClick={actualizar}>Guardar</button>
+          <button className="cancelar" onClick={cancelar}> Cancelar</button>
+          <button className="guardar"  onClick={actualizar}>Guardar</button>
+          <button className="eliminar" onClick={eliminar}>Eliminar</button>
         </div>
 
         <div className={styles.formColumns}>
           <div className={styles.column}>
-            <label>No de registro</label>
+             
+            <label>Trip Number</label>
             <input
               type="text"
               disabled
-              value={formData.id}
-              onChange={(e) => handleInputChange('id', e.target.value)}
-            />
-
-            <label>Trip ID</label>
-            <input
-              type="text"
-              disabled
-              value={formData.trip_id}
-              onChange={(e) => handleInputChange('trip_id', e.target.value)}
+              value={formData.trip_number}
+              onChange={(e) => handleInputChange('trip_number_id', e.target.value)}
             />
 
             <label>Driver</label>
@@ -220,6 +276,21 @@ useEffect(() => {
                onChange={(e) => handleInputChange('monto', e.target.value)}
              />
 
+            <label hidden>Trip ID</label>
+            <input
+              type="hidden"
+              disabled
+              value={formData.trip_id}
+              onChange={(e) => handleInputChange('trip_id', e.target.value)}
+            />
+            
+            <label hidden>No de registro</label>
+            <input
+              type="hidden"
+              disabled
+              value={formData.id}
+              onChange={(e) => handleInputChange('id', e.target.value)}
+            />
           </div>
 
 

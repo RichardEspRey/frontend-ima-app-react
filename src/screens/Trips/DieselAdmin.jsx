@@ -56,7 +56,7 @@ const DieselAdmin = () => {
           <TableHead>
             <TableRow>
               <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 20}} align="center">Trip number</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 20}} align="center">Trip ID</TableCell>
+        
               <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 20}} align="center">Ultima modificacion</TableCell>
               <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 20}} align="center">Millas recorridas</TableCell>
               <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 20}} align="center">Galones totales</TableCell>
@@ -69,7 +69,7 @@ const DieselAdmin = () => {
             {registros.map((row) => ( 
               <TableRow key={row.trip_id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                 <TableCell align="center" sx={{ whiteSpace: 'nowrap', fontSize: 18}}>{row.trip_number}</TableCell>
-                <TableCell align="center" sx={{ whiteSpace: 'nowrap', fontSize: 18}}>{row.trip_id}</TableCell>
+
                 <TableCell align="center" sx={{ whiteSpace: 'nowrap', fontSize: 18}}>{row.fecha}</TableCell>
                 <TableCell align="center" sx={{ whiteSpace: 'nowrap', fontSize: 18}}>{row.odometro}mi</TableCell>
                 <TableCell align="center" sx={{ whiteSpace: 'nowrap', fontSize: 18}}>{row.galones}gal</TableCell>

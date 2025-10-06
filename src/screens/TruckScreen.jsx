@@ -109,17 +109,64 @@ const TruckScreen = () => {
       }
     }
   };
-  const handleSubmit = async () => {
-    const idConductor = await envioDatosPrincipal();
 
-    if (idConductor) {
+
+  const handleSubmit = async () => {
+    let timerInterval;
+    const start = Date.now();
+
+    Swal.fire({
+      title: 'Procesando…',
+      html: 'Tiempo transcurrido: <b>0</b> ms',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+        const b = Swal.getPopup().querySelector('b');
+        timerInterval = setInterval(() => {
+          b.textContent = `${Date.now() - start}`;
+        }, 100);
+      },
+      willClose: () => clearInterval(timerInterval),
+    });
+
+    try {
+      const idConductor = await envioDatosPrincipal();
+      if (!idConductor) throw new Error('No se obtuvo el ID del conductor');
+
       await enviarDocumentos(idConductor);
-        Swal.fire({
-          icon: 'success',
-          title: 'Éxito',
-          text: 'Todos los documentos fueron enviados correctamente',
-        });
+
+      Swal.close();
+
+      await Swal.fire({
+        icon: 'success',
+        title: 'Éxito',
+        text: 'Camion dado de alta!',
+      });
+
       setFormData({
+        Unidad: '',
+        PlacaMX: '',
+        PlacaEUA: '',
+        Modelo: '',
+        Marca: '',
+        Numero: '',
+        Tag: '',
+      });
+      setDocumentos({});
+    } catch (err) {
+
+      Swal.close();
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: err?.message || 'Ocurrió un problema al guardar.',
+      });
+    }
+  };
+
+
+  const cancelar = () => {
+    setFormData({
         Unidad: '',
         PlacaMX: '',
         PlacaEUA: '',
@@ -130,9 +177,8 @@ const TruckScreen = () => {
       });
 
       setDocumentos({});
+  }
 
-    }
-  };
 
 
   return (
@@ -142,7 +188,7 @@ const TruckScreen = () => {
       <h1 className="titulo">Alta de Camion</h1>
       <div className="conductores-container">
         <div className="btnConteiner">
-          <button className="btn cancelar">Cancelar</button>
+          <button className="btn cancelar" onClick={cancelar}>Cancelar</button>
           <button className="btn guardar" onClick={handleSubmit}>Guardar</button>
         </div>
 

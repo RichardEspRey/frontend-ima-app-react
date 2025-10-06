@@ -97,8 +97,6 @@ const DieselEditor = () => {
     }
   };
 
-
-
   const fetchRegisters = async () => {
     const formDataToSend = new FormData();
     formDataToSend.append('op', 'get_diesel');
@@ -189,8 +187,71 @@ const DieselEditor = () => {
       fleetone: ''
     });
 
-    navigate(`/admin-diesel`)
+    navigate(`/detalle-diesel/${trip_id}`);
   }
+
+  const eliminar = async () => {
+    // 1) Confirmación
+    const result = await Swal.fire({
+      title: '¿Eliminar registro?',
+      text: 'Perderás el registro',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      Swal.fire({
+        title: 'Eliminando…',
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading(),
+      });
+
+      const formData = new FormData();
+      formData.append('op', 'delete_diesel');
+      formData.append('id', id); 
+
+      const resp = await fetch(`${apiHost}/formularios.php`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await resp.json();
+      Swal.close();
+
+      if (data.status === 'success') {
+        await Swal.fire({
+          icon: 'success',
+          title: 'Eliminado',
+          text: 'Registro eliminado',
+        });
+
+     
+        if (trip_id) {
+          navigate(`/detalle-diesel/${trip_id}`);
+        } else {
+          navigate('/admin-diesel'); // fallback
+        }
+      } else {
+        throw new Error(data.message || 'No se pudo eliminar el registro');
+      }
+    } catch (err) {
+      Swal.close();
+      console.error('Error al eliminar:', err);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: err?.message || 'Ocurrió un problema al eliminar.',
+      });
+    }
+  };
+
+
 
   return (
 
@@ -199,20 +260,13 @@ const DieselEditor = () => {
       <h1 className="titulo">Editor de registro diesel</h1>
       <div className="conductores-container">
         <div className="btnConteiner">
-          <button className="btn cancelar" onClick={cancelar}> Cancelar</button>
-          <button className="btn guardar" onClick={actualizar}>Guardar</button>
+          <button className="cancelar" onClick={cancelar}> Cancelar</button>
+          <button className="guardar" onClick={actualizar}>Guardar</button>
+          <button className="eliminar" onClick={eliminar}>Eliminar</button>
         </div>
 
         <div className={styles.formColumns}>
           <div className={styles.column}>
-            <label>No de registro</label>
-            <input
-              type="text"
-              disabled
-              value={formData.id}
-              onChange={(e) => handleInputChange('id', e.target.value)}
-            />
-
 
 
             <label>Trip Number</label>
@@ -220,7 +274,7 @@ const DieselEditor = () => {
               type="text"
               disabled
               value={formData.trip_number}
-              onChange={(e) => handleInputChange('triptrip_number_id', e.target.value)}
+              onChange={(e) => handleInputChange('trip_number_id', e.target.value)}
             />
 
             <label>Driver</label>
@@ -258,12 +312,14 @@ const DieselEditor = () => {
               value={formData.monto}
               onChange={(e) => handleInputChange('monto', e.target.value)}
             />
+
             <label>Fleetone</label>
             <input
               type="text"
               value={formData.fleetone}
               onChange={(e) => handleInputChange('fleetone', e.target.value)}
             />
+
             <label htmlFor="trip_id" hidden>Trip ID</label>
             <input
               type="hidden"
@@ -272,6 +328,13 @@ const DieselEditor = () => {
               value={formData.trip_id}
             />
 
+            <label hidden>No de registro</label>
+            <input
+              type="hidden"
+              disabled
+              value={formData.id}
+              onChange={(e) => handleInputChange('id', e.target.value)}
+            />
 
 
           </div>
