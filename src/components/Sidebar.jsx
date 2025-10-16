@@ -85,7 +85,17 @@ const menuItems = [
     rolesPermitidos: ['admin','Candy','Blanca'],
     subItems: [
       { name: 'Nuevo Viaje', route: '/trips', rolesPermitidos: ['admin','Blanca'] },
-      { name: 'Administrador de viajes', route: '/admin-trips', rolesPermitidos: ['admin','Blanca','Candy','Mia'] }
+      { name: 'Administrador de viajes', route: '/admin-trips', rolesPermitidos: ['admin','Blanca','Candy','Mia'] },
+      { name: 'Resumen', route: '/ResumenTrip', rolesPermitidos: ['admin','Blanca','Candy','Mia'] }
+    ]
+  },
+
+  {
+    name: 'Finanzas',
+    icon: iconBox,
+    rolesPermitidos: ['admin'],
+    subItems: [
+      { name: 'Ventas', route: '/finanzas', rolesPermitidos: ['admin'] }
     ]
   },
 

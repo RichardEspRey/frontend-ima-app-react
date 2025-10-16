@@ -173,7 +173,7 @@ const Inspeccion_final = () => {
           <TableHead>
             <TableRow>
               <TableCell />{/* collapse btn */}
-              <TableCell align="center" sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 22 }}>Trip ID</TableCell>
+              <TableCell align="center" sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 22 }}>Trip number</TableCell>
               <TableCell align="center" sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 22 }}>Driver</TableCell>
               <TableCell align="center" sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 22 }}>Truck</TableCell>
               <TableCell align="center" sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 22 }}>Fallas</TableCell>
@@ -185,13 +185,14 @@ const Inspeccion_final = () => {
 
           <TableBody>
             {rows.map((row) => {
-              const viajeId = row.viaje_id || row.trip_id || row.tripId;
+              const viajeId = row.viaje_id;
               const abierto = !!openByTrip[viajeId];
               const loading = !!loadingByTrip[viajeId];
               const error = errorByTrip[viajeId];
               const det = detailsByTrip[viajeId];
               
               const completed = Number(row.status) === 1;
+              console.log("STATUS:", row.status, "->", Number(row.status));
               return (
                 <React.Fragment key={viajeId}>
                   <TableRow hover>
@@ -201,7 +202,7 @@ const Inspeccion_final = () => {
                       </IconButton>
                     </TableCell>
 
-                    <TableCell align="center" sx={{ whiteSpace: 'nowrap', fontSize: 18 }}>{viajeId}</TableCell>
+                    <TableCell align="center" sx={{ whiteSpace: 'nowrap', fontSize: 18 }}>{row.trip_number}</TableCell>
                     <TableCell align="center" sx={{ whiteSpace: 'nowrap', fontSize: 18 }}>
                       {row.driver_nombre || row.nombre || '-'}
                     </TableCell>

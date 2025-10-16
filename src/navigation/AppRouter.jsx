@@ -35,6 +35,8 @@ import StockAdmin  from '../screens/StockAdmin.jsx';
 import ServiceOrderScreen from '../screens/ServiceOrderScreen.jsx';
 import ServiceOrderScreenEdit from '../screens/ServiceOrderScreenEdit.jsx';
 import ServiceOrderAdmin from '../screens/ServiceOrderAdmin.jsx';
+import Finanzas from '../screens/Finanzas.jsx';
+import ResumenTrip from '../screens/ResumenTrip.jsx';
 
 
 const AppRouter = () => {
@@ -313,6 +315,24 @@ const AppRouter = () => {
                 element={
                   <DashboardLayout> 
                     <ServiceOrderScreenEdit /> 
+                  </DashboardLayout>
+                }
+              />
+
+               <Route
+                path="/finanzas"
+                element={
+                  <DashboardLayout> 
+                    <Finanzas /> 
+                  </DashboardLayout>
+                }
+              />
+
+              <Route
+                path="/ResumenTrip"
+                element={
+                  <DashboardLayout> 
+                    <ResumenTrip /> 
                   </DashboardLayout>
                 }
               />
