@@ -5,6 +5,7 @@ import { setActiveMenu, setExpandedMenu, setSelectedSubMenu } from '../redux/men
 import { AuthContext } from '../auth/AuthContext';
 import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
+import { Collapse } from '@mui/material'; // Importado de MUI
 
 import logo from '../assets/images/logo_white.png';
 import iconDashboard from '../assets/images/icons/dashboard.png';
@@ -224,60 +225,67 @@ const Sidebar = () => {
   }, []);
 
   return (
-    <div className="sidebar">
-      <div className="logoContainer">
-        <img className="logo" src={logo} alt="Logo" />
+    <div className="sidebar-container">
+      <div className="sidebar-logo-wrapper">
+        <img className="sidebar-logo" src={logo} alt="Logo de la aplicación" />
       </div>
 
-      <div className="menuList">
+      <div className="menu-list-wrapper">
         {menuFiltrado.map((item) => {
           const hasSubs = !!(item.subItems && item.subItems.length > 0);
+          const isOpen = expandedMenu === item.name; // <--- Definición de isOpen para Collapse
 
           return (
-            <div key={item.name}>
+            <div key={item.name} className="menu-section">
               <button
-                className={`menuItem ${activeMenu === item.route && !hasSubs ? 'activeMenuItem' : ''} ${hasSubs ? 'hasSubMenu' : ''}`}
+                className={`menu-item ${activeMenu === item.route && !hasSubs ? 'active-item' : ''} ${hasSubs ? 'has-submenu' : ''}`}
                 onClick={() => hasSubs ? toggleSubMenu(item.name, hasSubs) : (item.route && handleNavigate(item.route))}
                 disabled={!hasSubs && !item.route}
               >
-                <img src={item.icon} alt="icon" className="icon" />
-                <span className="menuText">
+                <img src={item.icon} alt={`${item.name} icon`} className="menu-icon" />
+                <span className="menu-text-content">
                   {item.name}
                   {notificaciones[item.name] > 0 && (
-                    <span className="documentCounter">{notificaciones[item.name]}</span>
+                    <span className="notification-badge">{notificaciones[item.name]}</span>
                   )}
                 </span>
                 {hasSubs && (
-                  expandedMenu === item.name
-                    ? <FaChevronUp className="arrowIcon" />
-                    : <FaChevronDown className="arrowIcon" />
+                  <span className="arrow-icon-wrapper">
+                    {isOpen
+                      ? <FaChevronUp />
+                      : <FaChevronDown />}
+                  </span>
                 )}
               </button>
 
-              {hasSubs && expandedMenu === item.name && (
-                <div className="subMenuContainer">
-                  {item.subItems.map((subItem) => (
-                    <button
-                      key={subItem.name}
-                      className={`subMenuItem ${selectedSubMenu === subItem.route ? 'activeSubMenuItem' : ''}`}
-                      onClick={() => handleSubMenuSelect(subItem.route)}
-                    >
-                      {subItem.name}
-                      {subnotificaciones[subItem.name] > 0 && (
-                        <span className="documentCounter">{subnotificaciones[subItem.name]}</span>
-                      )}
-                    </button>
-                  ))}
-                </div>
+              {/* Uso de MUI Collapse para la transición suave */}
+              {hasSubs && (
+                <Collapse in={isOpen} timeout="auto" unmountOnExit>
+                  <div className="submenu-container">
+                    {item.subItems.map((subItem) => (
+                      <button
+                        key={subItem.name}
+                        className={`submenu-item ${selectedSubMenu === subItem.route ? 'active-submenu' : ''}`}
+                        onClick={() => handleSubMenuSelect(subItem.route)}
+                      >
+                        <span className="submenu-dot" /> {/* Punto visual para subitem */}
+                        {subItem.name}
+                        {subnotificaciones[subItem.name] > 0 && (
+                          <span className="notification-badge">{subnotificaciones[subItem.name]}</span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </Collapse>
               )}
             </div>
           );
         })}
       </div>
 
-      <button className="logoutButton" onClick={handleLogout}>
-        <img src={iconExit} className="icon" alt="logout" />
-        <span className="menuText">Logout</span>
+      <button className="logout-button" onClick={handleLogout}>
+        <img src={iconExit} className="menu-icon" alt="logout" />
+        <span className="menu-text-content">Log Out</span>
       </button>
     </div>
   );

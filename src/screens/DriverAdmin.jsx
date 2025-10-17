@@ -179,12 +179,12 @@ const DriverAdmin = () => {
   
   return (
     <div className="driver-admin">
-      <h1 className="title">Administrador de conductores</h1>
+      <h1 className="title">Drivers Administrator</h1>
 
       <div className="toolbar">
         <input
           type="text"
-          placeholder="Buscar por nombre"
+          placeholder="Search by name"
           value={search}
           onChange={(e) => {
             setSearch(e.target.value);
@@ -197,8 +197,8 @@ const DriverAdmin = () => {
           onChange={(e) => setSelectedValue(e.target.value)}
         >
           <option value="">Status</option>
-          <option value="opcion1">Opción 1</option>
-          <option value="opcion2">Opción 2</option>
+          <option value="opcion1">Option 1</option>
+          <option value="opcion2">Option 2</option>
         </select>
       </div>
 
@@ -206,14 +206,14 @@ const DriverAdmin = () => {
         <table>
           <thead>
             <tr>
-              <th>No de empleado</th>
-              <th>Nombre</th>
-              <th>Fecha de entrada</th>
+              <th>No of employee</th>
+              <th>Name</th>
+              <th>Birthdate</th>
               <th>APTO</th>
               <th>I-94</th>
               <th>VISA</th>
-              <th>Licencia</th>
-              <th>Acciones</th>
+              <th>Licenses</th>
+              <th>Actions</th>
               <th></th>
             </tr>
           </thead>
@@ -232,7 +232,7 @@ const DriverAdmin = () => {
                     className="ver-btn"
                     onClick={() => navigate(`/editor-drivers/${driver.id}`)}
                     >
-                    Ver
+                    View
                   </button>
                 </td>
                  <td>
@@ -240,7 +240,7 @@ const DriverAdmin = () => {
                     className="ver-btn"
                     onClick={() => eliminar(driver.id)}
                     >
-                    Eliminar
+                    Delete
                   </button>
                 </td>
               </tr>
@@ -250,14 +250,14 @@ const DriverAdmin = () => {
 
         <div className="pagination">
           <button disabled={page === 0} onClick={() => setPage(page - 1)}>
-            Anterior
+            Previous
           </button>
           <span>{`${from + 1}-${to} de ${filteredDrivers.length}`}</span>
           <button
             disabled={to >= filteredDrivers.length}
             onClick={() => setPage(page + 1)}
           >
-            Siguiente
+            Next
           </button>
         </div>
       </div>

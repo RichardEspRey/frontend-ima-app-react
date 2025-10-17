@@ -149,11 +149,11 @@ const abrirModalConDocumento = (campo) => {
 
   return (
     <div className="driver-admin">
-      <h1 className="title">Administrador de documentos IMA EXPRESS LCC</h1>
+      <h1 className="title">Documents Administrator IMA EXPRESS LCC</h1>
       <div className="toolbar">
         <input
           type="text"
-          placeholder="Buscar por número de caja"
+          placeholder="Search by Box ID"
           value={search}
           onChange={(e) => {
             setSearch(e.target.value);
@@ -185,16 +185,16 @@ const abrirModalConDocumento = (campo) => {
         </table>
 
         <div className="pagination">
-          <button disabled={page === 0} onClick={() => setPage(page - 1)}>Anterior</button>
-          <span>{`${from + 1}-${to} de ${filteredCajas.length}`}</span>
-          <button disabled={to >= filteredCajas.length} onClick={() => setPage(page + 1)}>Siguiente</button>
+          <button disabled={page === 0} onClick={() => setPage(page - 1)}>Previous</button>
+          <span>{`${from + 1}-${to} of ${filteredCajas.length}`}</span>
+          <button disabled={to >= filteredCajas.length} onClick={() => setPage(page + 1)}>Next</button>
         </div>
       </div>
 
       <ModalArchivo
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onSave={(data) => console.log('Guardado:', data)}
+        onSave={(data) => console.log('Saved:', data)}
         nombreCampo="Documento"
         valorActual={valorActual}
         endpoint="IMA_Docs.php" 
