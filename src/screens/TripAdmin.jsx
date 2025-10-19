@@ -532,7 +532,7 @@ const TripAdmin = () => {
                     <TableBody>
                         {filteredAndSortedTrips.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={9} align="center">No se encontraron viajes con los filtros aplicados.</TableCell>
+                                <TableCell colSpan={10} align="center">No se encontraron viajes con los filtros aplicados.</TableCell>
                             </TableRow>
                         ) : (
                             filteredAndSortedTrips
@@ -545,6 +545,7 @@ const TripAdmin = () => {
                                         onFinalize={handleFinalizeTrip}
                                         onAlmostOver={handleAlmostOverTrip}
                                         getDocumentUrl={getDocumentUrl}
+                                        onSummary={handleSummary}
                                     />
                                 ))
                         )}
