@@ -1,4 +1,4 @@
-.sidebar {
+/* .sidebar {
     width: 250px;
     background-color: #3C48E1;
     height: 100vh;
@@ -98,4 +98,198 @@
   padding: 2px 6px;
   font-size: 12px;
   font-weight: bold;
+} */
+
+/* --- Variables de Diseño --- */
+:root {
+    --primary-blue: #3C48E1; /* Color principal */
+    --hover-bg: #4f5bda; /* Azul de hover (más claro y vibrante) */
+    --active-bg: #2B36A0; /* Azul de ítem activo (más oscuro y profundo) */
+    --text-color: #ffffff; /* Texto principal blanco */
+    --sub-text-color: #e0e0e0; /* Texto de submenú */
+    --transition-speed: 0.25s; /* Transiciones rápidas */
+    --border-radius: 6px;
+    --item-height: 45px;
+}
+
+/* --- Contenedor Principal --- */
+.sidebar-container {
+    width: 250px;
+    background-color: var(--primary-blue);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 4px 0 8px rgba(0, 0, 0, 0.2);
+    overflow-y: auto; 
+    overflow-x: hidden;
+    scrollbar-width: none;
+}
+
+.sidebar-container::-webkit-scrollbar {
+    display: none;
+}
+
+/* --- Logo --- */
+.sidebar-logo-wrapper {
+    padding: 20px 20px 10px 20px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15); /* Separador suave y más visible */
+    margin-bottom: 10px;
+}
+
+.sidebar-logo {
+    width: 200px;
+    height: 100px;
+    object-fit: contain;
+}
+
+/* --- Lista de Menú --- */
+.menu-list-wrapper {
+    flex-grow: 1;
+    padding: 10px 15px;
+}
+
+.menu-section {
+    margin-bottom: 4px;
+}
+
+/* --- Ítems de Menú (Padres) --- */
+.menu-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    height: var(--item-height);
+    padding: 0 10px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: var(--text-color);
+    font-size: 15px;
+    font-weight: 600;
+    text-align: left;
+    border-radius: var(--border-radius);
+    transition: background-color var(--transition-speed);
+}
+
+.menu-item:hover {
+    background-color: var(--hover-bg);
+}
+
+/* Estado Activo para Ítems sin Submenú */
+.menu-item.active-item {
+    background-color: var(--active-bg);
+    color: var(--text-color);
+    font-weight: 700;
+}
+
+/* --- Iconos y Texto --- */
+.menu-icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+    object-fit: contain;
+    filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(100%); 
+    transition: filter var(--transition-speed); 
+}
+
+.menu-item.active-item .menu-icon {
+    filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(100%); 
+}
+
+.menu-text-content {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    text-align: left;
+}
+
+.arrow-icon-wrapper {
+    font-size: 10px; 
+    color: var(--text-color);
+    /* Transformación para rotar la flecha de forma suave, aunque MUI maneja la FaChevronDown/Up */
+    transition: transform var(--transition-speed);
+}
+
+/* --- Contador de Notificaciones / Badges --- */
+.notification-badge {
+    margin-left: 6px;
+    background-color: #dc3545; /* Rojo de alerta */
+    color: white;
+    border-radius: 12px;
+    padding: 2px 6px;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+/* --- Submenú Contenedor (Solo padding, MUI maneja la transición) --- */
+.submenu-container {
+    padding-left: 15px; 
+    padding-top: 4px;
+    padding-bottom: 4px;
+    /* QUITAMOS max-height y transition aquí, lo maneja MUI Collapse */
+}
+
+/* --- Ítems del Submenú --- */
+.submenu-item {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 8px 10px;
+    border: none;
+    background: none;
+    color: var(--sub-text-color);
+    font-size: 14px;
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+    border-radius: var(--border-radius);
+    transition: background-color var(--transition-speed), color var(--transition-speed);
+}
+
+.submenu-item:hover {
+    background-color: var(--hover-bg);
+    color: var(--text-color);
+}
+
+.submenu-item.active-submenu {
+    background-color: var(--active-bg);
+    color: var(--text-color);
+    font-weight: 600;
+}
+
+.submenu-dot {
+    width: 5px;
+    height: 5px;
+    background-color: var(--sub-text-color);
+    border-radius: 50%;
+    margin-right: 12px;
+    transition: background-color var(--transition-speed);
+}
+
+.submenu-item.active-submenu .submenu-dot {
+    background-color: var(--text-color);
+}
+
+/* --- Botón de Logout --- */
+.logout-button {
+    display: flex;
+    align-items: center;
+    width: calc(100% - 30px);
+    height: var(--item-height);
+    padding: 0 10px;
+    margin: 15px 15px 20px 15px; 
+    background-color: var(--active-bg); 
+    border: none;
+    color: var(--text-color);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: var(--border-radius);
+    transition: background-color var(--transition-speed);
+}
+
+.logout-button:hover {
+    background-color: #dc3545; /* Usamos el color de la notificación para una salida clara */
 }

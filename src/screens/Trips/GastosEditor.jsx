@@ -233,20 +233,20 @@ useEffect(() => {
 
   return (
 
-   <div >
+   <div>
 
-      <h1 className="titulo">Editor de registro de gasto</h1>
+      <h1 className="titulo">Expense log editor</h1>
       <div className="conductores-container">
         <div className="btnConteiner">
-          <button className="cancelar" onClick={cancelar}> Cancelar</button>
-          <button className="guardar"  onClick={actualizar}>Guardar</button>
-          <button className="eliminar" onClick={eliminar}>Eliminar</button>
+          <button className="cancelar" onClick={cancelar}> Cancel</button>
+          <button className="guardar"  onClick={actualizar}>Save</button>
+          <button className="eliminar" onClick={eliminar}>Delete</button>
         </div>
 
         <div className={styles.formColumns}>
           <div className={styles.column}>
              
-            <label>Trip Number</label>
+            <label>Trip</label>
             <input
               type="text"
               disabled
@@ -262,14 +262,14 @@ useEffect(() => {
               onChange={(e) => handleInputChange('nombre', e.target.value)}
             />
 
-            <label>Tipo de gasto</label>
+            <label>Expense (type)</label>
             <input
               type="text"
               value={formData.tipo_gasto}
               onChange={(e) => handleInputChange('tipo_gasto', e.target.value)}
             />
 
-            <label>Monto</label>
+            <label>Total</label>
             <input
                type="text"
                value={formData.monto}
@@ -284,7 +284,7 @@ useEffect(() => {
               onChange={(e) => handleInputChange('trip_id', e.target.value)}
             />
             
-            <label hidden>No de registro</label>
+            <label hidden>Register ID</label>
             <input
               type="hidden"
               disabled

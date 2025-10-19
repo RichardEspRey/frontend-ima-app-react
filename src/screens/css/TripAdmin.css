@@ -33,3 +33,20 @@
                              El !important es para asegurar que sobreescriba otros estilos si es necesario,
                              pero úsalo con precaución. Prueba primero sin !important. */
 }
+
+.form-input-datepicker {
+    padding: 7.5px 14px; 
+    border: 1px solid #ccc; /* Border gris claro de MUI Outline */
+    border-radius: 4px; 
+    width: 100%; /* Ocupa todo el ancho de la Grid item */
+    font-size: 1rem;
+    box-sizing: border-box;
+    height: 40px; /* Altura estándar de TextField size="small" */
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-input-datepicker:focus {
+    border-color: #1976d2; /* Azul primario de MUI al enfocar */
+    box-shadow: 0 0 0 1px #1976d2;
+    outline: none;
+}

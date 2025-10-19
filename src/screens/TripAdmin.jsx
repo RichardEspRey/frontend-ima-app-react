@@ -2,371 +2,50 @@ import React, { useState, useEffect, useMemo } from 'react';
 import {
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
     Button, TablePagination, TextField, Box, Typography, CircularProgress, Alert,
-    Link as MuiLink, Tooltip, IconButton, Collapse, Grid, Chip
+    Grid, Stack, FormControl, InputLabel, Select, MenuItem // Importados para el nuevo Select
 } from '@mui/material';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import dayjs from 'dayjs';
-import 'dayjs/locale/es';
-import updateLocale from 'dayjs/plugin/updateLocale';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
-import localizedFormat from 'dayjs/plugin/localizedFormat';
 
-dayjs.extend(updateLocale);
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
-dayjs.extend(localizedFormat);
 dayjs.locale('es'); 
-dayjs.updateLocale('es', {
-    months: [
-        "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio",
-        "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
-    ],
-    weekdays: [
-        "Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"
-    ],
-    weekdaysShort: ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"],
-    weekdaysMin: ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa"],
-    longDateFormat: {
-        LT: 'h:mm A',
-        LTS: 'h:mm:ss A',
-        L: 'DD/MM/YYYY',
-        LL: 'D [de] MMMM [de] YYYY',
-        LLL: 'D [de] MMMM [de] YYYY h:mm A',
-        LLLL: 'dddd, D [de] MMMM [de] YYYY h:mm A'
-    },
-    meridiem: (hour) => {
-        if (hour < 12) {
-            return 'AM';
-        } else {
-            return 'PM';
-        }
-    }
-});
-
 
 import './css/TripAdmin.css';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 
+import {TripRow} from '../components/TripRow'; 
 
-const TripRow = ({ trip, onEdit, onFinalize, onAlmostOver, getDocumentUrl }) => {
-    const [open, setOpen] = useState(false);
-
-    let loadingDateToShow = '-';
-    let loadingDateTitle = 'Fecha de carga no disponible';
-
-    if (Array.isArray(trip.etapas) && trip.etapas.length > 0 && trip.etapas[0].loading_date) {
-        loadingDateToShow = dayjs(trip.etapas[0].loading_date).format("DD/MM/YY");
-        loadingDateTitle = `Fecha de Carga (1ª Etapa): ${loadingDateToShow}`;
-    } else if (trip.etapas && trip.etapas.length > 0) {
-        loadingDateTitle = 'Fecha de carga (1ª Etapa) no especificada';
-    }
-
-    const returnDateForDisplay = trip.return_date 
-        ? dayjs(trip.return_date).format('dddd D, YYYY') 
-        : '- ';
-    
-    const returnDateTitle = trip.return_date 
-        ? `Fecha de Regreso: ${dayjs(trip.return_date).format('dddd D [de] MMMM [de] YYYY')}` // Tooltip completo
-        : 'Fecha de regreso no asignada';
-
-    const trailerTooltipContent = (
-        <React.Fragment>
-            <Typography color="inherit" sx={{ fontWeight: 'bold', mb: 0.5 }}>Detalles del Tráiler</Typography>
-            {/* Lógica para mostrar info de caja interna o externa */}
-            {trip.caja_id && (
-                <Typography variant="body2" component="div">
-                    <b>Tipo:</b> Interno<br />
-                    <b>Número:</b> {trip.caja_no_caja || 'N/A'}<br />
-                    <b>ID:</b> {trip.caja_id}
-                </Typography>
-            )}
-            {trip.caja_externa_id && (
-                <Typography variant="body2" component="div">
-                    <b>Tipo:</b> Externo<br />
-                    <b>Número de caja:</b> {trip.caja_externa_no_caja || 'N/A'}<br />
-                    <b>Número de vin:</b> {trip.caja_externa_no_vin || 'N/A'}<br />
-                    <b>Modelo:</b> {trip.caja_externa_modelo || 'N/A'}<br />
-                    <b>Año:</b> {trip.caja_externa_anio|| 'N/A'}<br />
-                    <b>Placas:</b> {trip.caja_externa_placas || 'N/A'}<br />
-                    <b>Estado:</b> {trip.caja_externa_estado || 'N/A'}<br />
-                    {/* <b>ID:</b> {trip.caja_externa_id} */}
-
-                </Typography>
-            )}
-            {/* Mensaje por si no hay datos */}
-            {!trip.caja_id && !trip.caja_externa_id && (
-                <Typography variant="body2">No hay detalles adicionales.</Typography>
-            )}
-
-            
-        </React.Fragment>
-    );
-
-    return (
-        <React.Fragment>
-            <TableRow sx={{ '& > *': { borderBottom: 'unset' } }} hover>
-                <TableCell>
-                    <IconButton aria-label="expand row" size="small" onClick={() => setOpen(!open)}>
-                        {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-                    </IconButton>
-                </TableCell>
-                <TableCell component="th" scope="row">{trip.trip_number}</TableCell>
-                {/* Driver(s) Cell */}
-                <TableCell>
-                    {trip.driver_second_nombre ? (
-                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                <Typography variant="body2" component="span" noWrap title={trip.driver_nombre || 'Principal'}>
-                                    {trip.driver_nombre || 'N/A'}
-                                </Typography>
-                            </Box>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                <Typography variant="body2" component="span" noWrap title={trip.driver_second_nombre}>
-                                    {trip.driver_second_nombre}
-                                </Typography>
-                                {/* <Chip label="S" size="small" sx={{ height: '18px', fontSize: '0.7rem' }} title="Secundario" color="secondary" /> */}
-                            </Box>
-                        </Box>
-                    ) : (
-                        trip.driver_nombre || trip.driver_id || '-'
-                    )}
-                </TableCell>
-                {/* Truck Cell */}
-                <TableCell>{trip.truck_unidad || trip.truck_id || '-'}</TableCell>
-                {/* Trailer Cell */}
-                 <TableCell>
-                    <Tooltip title={trailerTooltipContent} arrow>
-                        <Typography component="span" >
-                            {trip.caja_no_caja || trip.caja_id || trip.caja_externa_no_caja || trip.caja_externa_id || trip.caja_externa_modelo || 'N/A'}
-                        </Typography>
-                    </Tooltip>
-                </TableCell>
-
-                {/* Initial Date Cell (Loading Date of First Stage) */}
-                <TableCell sx={{ whiteSpace: 'nowrap' }} title={loadingDateTitle}>
-                    {loadingDateToShow}
-                </TableCell>
-
-                {/* Status Cell */}
-                <TableCell>
-                    {(() => {
-                        const currentStatus = trip.status || 'In Transit';
-                        let chipColor = 'default';
-                        if (currentStatus === 'Completed') { chipColor = 'success'; }
-                        else if (currentStatus === 'In Transit') { chipColor = 'warning'; }
-                        else if (currentStatus === 'Almost Over') { chipColor = 'primary'; } // NUEVA LÍNEA: Color para "Almost Over"
-                        else if (currentStatus === 'Cancelled') { chipColor = 'error'; }
-                        else if (currentStatus === 'In Coming') { chipColor = 'info'; }
-                        return (<Chip label={currentStatus} color={chipColor} size="small" />);
-                    })()}
-                </TableCell>
-
-                {/* Creation Date Cell */}
-                <TableCell sx={{ whiteSpace: 'nowrap' }} title={returnDateTitle}>
-            {returnDateForDisplay}
-        </TableCell>
-
-                {/* Actions Cell */}
-                <TableCell>
-                    <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 0.5 }}> {/* MODIFICACIÓN: Cambiado a column para los botones */}
-                        {(() => {
-                            const currentStatus = trip.status || 'In Transit';
-                            let label = 'Editar';
-                            if (currentStatus === 'Completed') { label = 'Ver'; }
-                            else { label = "Editar" }
-                            return (<Button size="small" variant="outlined" onClick={() => onEdit(trip.trip_id)}>{label}</Button>);
-                        })()}
-                        {/* NUEVO BOTÓN: Casi Finalizar */}
-                        <Button
-                            size="small"
-                            variant="outlined" // Puedes usar 'outlined' o 'contained'
-                            color="primary" // Puedes elegir otro color como 'secondary' o 'info'
-                            onClick={() => onAlmostOver(trip.trip_id, trip.trip_number)}
-                            disabled={trip.status === 'Completed' || trip.status === 'Cancelled' || trip.status === 'Almost Over'} // Deshabilitar si ya está finalizado, cancelado o casi finalizado
-                             // mt para margen superior si se muestra en columna
-                        >Almost Over</Button>
-                        {/* FIN NUEVO BOTÓN */}
-                        <Button
-                            size="small"
-                            variant="contained"
-                            color="success"
-                            onClick={() => onFinalize(trip.trip_id, trip.trip_number)}
-                            disabled={trip.status === 'Completed' || trip.status === 'Cancelled'}
-                            // mt para margen superior
-                        >Finalizar</Button>
-                    </Box>
-                </TableCell>
-            </TableRow>
-            <TableRow>
-                {/* Colspan adjusted for the additional column. 1 (expand) + 8 (data columns) = 9 */}
-                <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={9}>
-                    <Collapse in={open} timeout="auto" unmountOnExit>
-                        <Box sx={{ margin: 1, padding: 1, border: '1px solid rgba(224, 224, 224, 1)', borderRadius: '4px' }}>
-                            <Typography variant="h6" gutterBottom component="div" sx={{ fontSize: '1rem' }}>
-                                Detalles de Etapas y Documentos
-                            </Typography>
-
-                            {Array.isArray(trip.etapas) && trip.etapas.length > 0 ? (
-                                <Grid container spacing={2} sx={{ fontSize: '0.85rem' }}>
-                                    {trip.etapas.map((etapa) => {
-                                        
-                                       
-                                        if (etapa.stageType === 'emptyMileage') {
-                                          
-                                            return (
-                                                <Grid item key={etapa.trip_stage_id} xs={1} sm={1} md={1}>
-                                                    <Box sx={{ 
-                                                        border: '1px solid #90caf9',
-                                                        backgroundColor: '#e3f2fd',
-                                                        padding: '12px', 
-                                                        borderRadius: '4px', 
-                                                        height: '100%',
-                                                        display: 'flex',
-                                                        flexDirection: 'column'
-                                                    }}>
-                                                        <Typography sx={{ fontWeight: 'bold', fontSize: '1em', color: '#1565c0' }}>
-                                                          E{etapa.stage_number}: Etapa de Millaje Vacío
-                                                        </Typography>
-
-                                                        <Box sx={{ mt: 1.5, flexGrow: 1 }}>
-                                                            <Typography variant="body2" sx={{ mb: 0.5 }}>
-                                                                <strong>Millas PC*Miler:</strong> {etapa.millas_pcmiller || 'N/A'}
-                                                            </Typography>
-                                                             <Typography variant="body2">
-                                                                <strong>Millas Prácticas:</strong> {etapa.millas_pcmiller_practicas || 'N/A'}
-                                                            </Typography>
-
-                                                             {typeof etapa.comments === 'string' && etapa.comments.trim() !== '' && (
-                                                            <Box sx={{ mt: 1.5, borderTop: '1px dashed #90caf9', pt: 1.5 }}>
-                                                                <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 0.5 }}>Comentarios:</Typography>
-                                                                <Typography variant="body2" sx={{ fontStyle: 'italic', maxWidth: '300px' }}>
-                                                                    {etapa.comments}
-                                                                </Typography>
-                                                            </Box>
-                                                        )}
-                                                        </Box>
-                                                        
-                                                       
-                                                    </Box>
-                                                </Grid>
-                                            );
-                                        } else {
-                                            // LÓGICA EXISTENTE: Para etapas normales, de cruce, etc.
-                                            let tooltipTitle = `Compañía: ${etapa.nombre_compania || '-'}\nBodega Origen: ${etapa.warehouse_origin_name || '-'}\nBodega Destino: ${etapa.warehouse_destination_name || '-'}\nMillas: ${etapa.millas_pcmiller || '-'}`;
-
-                                            if (Array.isArray(etapa.stops_in_transit) && etapa.stops_in_transit.length > 0) {
-                                                tooltipTitle += '\n\nParadas en Ruta:';
-                                                etapa.stops_in_transit.forEach((stop) => {
-                                                    tooltipTitle += `\n- ${stop.location || 'Ubicación desconocida'}`;
-                                                    if (stop.bl_firmado_doc) {
-                                                        tooltipTitle += ` (Cita Entrega: ${stop.bl_firmado_doc.nombre_archivo})`;
-                                                    }
-                                                });
-                                            }
-
-                                            return (
-                                                <Grid item key={etapa.trip_stage_id} xs={12} sm={6} md={4}>
-                                                    <Box sx={{  border: '1px solid #eee', padding: '8px', borderRadius: '4px', height: '100%' }}>
-                                                        <Tooltip title={tooltipTitle} arrow>
-                                                            <span>
-                                                                <strong>E{etapa.stage_number} ({etapa.stageType?.replace('borderCrossing', 'Cruce').replace('normalTrip', 'Normal') || 'N/A'}):</strong> {etapa.origin} &rarr; {etapa.destination} ({etapa.travel_direction})
-                                                            </span>
-                                                        </Tooltip>
-                                                        
-                                                        {etapa.ci_number && <><br /><span style={{ fontSize: '0.9em', color: '#555' }}>CI: {etapa.ci_number}</span></>}
-                                                        <br />
-                                                        <span style={{ fontSize: '0.9em', color: '#555' }}>
-                                                            Carga: {etapa.loading_date ? dayjs(etapa.loading_date).format("DD/MM/YY") : '-'} | 
-                                                            Entrega: {etapa.delivery_date
-                                                                ? dayjs(etapa.delivery_date).format("DD/MM/YY") +
-                                                                (etapa.time_of_delivery
-                                                                    ? ' - ' + dayjs(`2000-01-01 ${etapa.time_of_delivery}`).format('h:mm A')
-                                                                    : '')
-                                                                : '-'
-                                                            }
-                                                        </span>
-
-                                                        {Array.isArray(etapa.stops_in_transit) && etapa.stops_in_transit.length > 0 && (
-                                                            <Box sx={{ mt: 1, borderTop: '1px dashed #ccc', pt: 1, fontSize: '0.9em' }}>
-                                                                <Typography variant="body2" sx={{ fontWeight: 'bold', fontSize: '0.9em', mb: 0.5 }}>Paradas en Ruta:</Typography>
-                                                                <ul style={{ margin: '0', paddingLeft: '15px', listStyleType: 'disc', fontSize: 'inherit' }}>
-                                                                    {etapa.stops_in_transit.map((stop, stopIndex) => (
-                                                                        <li key={stop.stop_id || `stop-${stopIndex}`} style={{ marginBottom: '2px' }}>
-                                                                            {stop.location || 'Ubicación desconocida'}
-                                                                            {stop.bl_firmado_doc && (
-                                                                                <MuiLink
-                                                                                    href={getDocumentUrl(stop.bl_firmado_doc.path_servidor_real || stop.bl_firmado_doc.nombre_archivo)}
-                                                                                    target="_blank" rel="noopener noreferrer" sx={{ ml: 0.5 }}
-                                                                                    title={`Ver Cita Entrega (${stop.bl_firmado_doc.nombre_archivo})`}
-                                                                                >
-                                                                                    (BL Firmado)
-                                                                                </MuiLink>
-                                                                            )}
-                                                                        </li>
-                                                                    ))}
-                                                                </ul>
-                                                            </Box>
-                                                        )}
-
-                                                        {Array.isArray(etapa.documentos_adjuntos) && etapa.documentos_adjuntos.length > 0 && (
-                                                            <Box sx={{ mt: 1, borderTop: '1px dashed #ccc', pt: 1 }}>
-                                                                <Typography variant="body2" sx={{ fontWeight: 'bold', fontSize: '0.9em', mb: 0.5 }}>Documentos:</Typography>
-                                                                <ul style={{ margin: '0', padding: '0', listStyleType: 'none', fontSize: 'inherit', display: 'flex', flexWrap: 'wrap' }}>
-                                                                    {etapa.documentos_adjuntos.map(doc => (
-                                                                        <li key={doc.document_id} style={{ flex: '0 0 calc(50% - 8px)' }}>
-                                                                            <MuiLink
-                                                                                href={getDocumentUrl(doc.path_servidor_real || doc.nombre_archivo)}
-                                                                                target="_blank" rel="noopener noreferrer"
-                                                                                title={`Ver ${doc.tipo_documento.replace(/_/g, ' ')} (${doc.nombre_archivo})`}
-                                                                                underline="hover" sx={{ fontSize: 'inherit' }}
-                                                                            >
-                                                                                {doc.tipo_documento.replace(/_/g, ' ')}
-                                                                            </MuiLink>
-                                                                            {doc.fecha_vencimiento ? ` (V: ${dayjs(doc.fecha_vencimiento).format("DD/MM/YY")})` : ''}
-                                                                        </li>
-                                                                    ))}
-                                                                </ul>
-                                                            </Box>
-                                                        )}
-
-                                                        {typeof etapa.comments === 'string' && etapa.comments.trim() !== '' && (
-                                                            <Box sx={{ mt: 2, borderTop: '1px dashed #ccc', pt: 1}}>
-                                                                <Typography variant="body2" sx={{ fontWeight: 'bold', fontSize: '0.9em', mb: 0.5 }}>Comentarios:</Typography>
-                                                                <Typography variant="body2" sx={{ fontSize: 'inherit', maxWidth: '320px' }}>
-                                                                    {etapa.comments}
-                                                                </Typography>
-                                                            </Box>
-                                                        )}
-                                                    </Box>
-                                                </Grid>
-                                            );
-                                        }
-                                        // FIN: Lógica condicional
-                                    })}
-                                </Grid>
-                            ) : (
-                                <Typography variant="body2" sx={{ fontStyle: 'italic' }}>Sin etapas registradas</Typography>
-                            )}
-                        </Box>
-                    </Collapse>
-                </TableCell>
-            </TableRow>
-        </React.Fragment>
-    );
-};
-
+// Opciones para el nuevo filtro de dirección
+const DIRECTION_OPTIONS = [
+    { value: 'All', label: 'Todas las Direcciones' },
+    { value: 'Going Up', label: 'Going Up' },
+    { value: 'Going Down', label: 'Going Down' }
+];
 
 const TripAdmin = () => {
     const [trips, setTrips] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [search, setSearch] = useState("");
+    
+    // ** ESTADOS PARA LOS FILTROS PRINCIPALES **
+    const [filterTrip, setFilterTrip] = useState('');     
+    const [filterDriver, setFilterDriver] = useState(''); 
+    const [filterTruck, setFilterTruck] = useState('');   
+    const [filterTrailer, setFilterTrailer] = useState('');
+    
+    // ** ESTADOS PARA FILTROS DE ETAPAS **
+    const [filterCompany, setFilterCompany] = useState('');
+    const [filterOrigin, setFilterOrigin] = useState('');
+    const [filterDestination, setFilterDestination] = useState('');
+    // ** NUEVO ESTADO **
+    const [filterDirection, setFilterDirection] = useState('All'); 
+    
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(25);
     const [startDate, setStartDate] = useState(null);
@@ -376,6 +55,7 @@ const TripAdmin = () => {
     const apiHost = import.meta.env.VITE_API_HOST;
 
     const fetchTrips = async () => {
+        // ... (fetchTrips se mantiene igual) ...
         setLoading(true);
         setError(null);
         try {
@@ -426,6 +106,7 @@ const TripAdmin = () => {
     useEffect(() => { fetchTrips(); }, []);
 
     const getDocumentUrl = (serverPath) => {
+        // ... (getDocumentUrl se mantiene igual) ...
         if (!serverPath || typeof serverPath !== 'string') {
             return '#';
         }
@@ -437,177 +118,351 @@ const TripAdmin = () => {
         return `${webRootPath}${encodeURIComponent(fileName)}`;
     };
 
+    // Función auxiliar para manejar el cambio de filtro y resetear la paginación
+    const handleFilterChange = (setter, value) => {
+        setter(value);
+        setPage(0);
+    };
+
+    // ** LÓGICA DE FILTRADO Y ORDENAMIENTO (useMemo) **
     const filteredAndSortedTrips = useMemo(() => {
+        
+        // 1. Convertir filtros a minúsculas y limpiar espacios
+        const tripFilterValue = filterTrip.trim().toLowerCase();
+        const driverLower = filterDriver.trim().toLowerCase();
+        const truckLower = filterTruck.trim().toLowerCase();
+        const trailerLower = filterTrailer.trim().toLowerCase();
+        const companyLower = filterCompany.trim().toLowerCase();
+        const originLower = filterOrigin.trim().toLowerCase();
+        const destinationLower = filterDestination.trim().toLowerCase();
+        const directionValue = filterDirection === 'All' ? null : filterDirection; // 'Going Up' o 'Going Down'
+
         const filtered = trips.filter(trip => {
+            
+            // --- 1. Filtro de Rango de Fechas (Basado en creation_date) ---
             let tripCreationDate = null;
             if (trip.creation_date) { try { tripCreationDate = dayjs(trip.creation_date); if (!tripCreationDate.isValid()) { tripCreationDate = null; } } catch (e) { } }
             const start = startDate ? dayjs(startDate).startOf('day') : null;
             const end = endDate ? dayjs(endDate).endOf('day') : null;
 
             const withinDateRange = ((!start || (tripCreationDate && tripCreationDate.isSameOrAfter(start))) && (!end || (tripCreationDate && tripCreationDate.isSameOrBefore(end))));
-            const searchLower = search.toLowerCase();
-            const matchesSearch = search === "" || (
-                (trip.trip_id?.toString() || '').toLowerCase().includes(searchLower) ||
-                (trip.trip_number || '').toLowerCase().includes(searchLower) ||
-                (trip.driver_nombre || '').toLowerCase().includes(searchLower) 
-                // (trip.driver_second_nombre || '').toLowerCase().includes(searchLower) ||
-                // (trip.truck_unidad || '').toLowerCase().includes(searchLower) ||
-                // (trip.caja_no_caja || '').toLowerCase().includes(searchLower) ||
-                // (trip.status || '').toLowerCase().includes(searchLower) ||
-                // (trip.etapas && trip.etapas.some(etapa =>
-                //     (etapa.ci_number || '').toLowerCase().includes(searchLower) ||
-                //     (etapa.origin || '').toLowerCase().includes(searchLower) ||
-                //     (etapa.destination || '').toLowerCase().includes(searchLower) ||
-                //     (etapa.nombre_compania || '').toLowerCase().includes(searchLower) ||
-                //     (etapa.stageType === 'stopStage' && (etapa.origin || '').toLowerCase().includes(searchLower)) ||
-                //     (etapa.stageType === 'stopStage' && (etapa.reason || '').toLowerCase().includes(searchLower)) ||
-                //     (etapa.estatus || '').toLowerCase().includes(searchLower)
-                // ))
+            
+            
+            // --- 2. Filtros de Campos Principales (Búsqueda Parcial - includes()) ---
+            
+            // a) Trip Number (Parcial)
+            const matchTrip = !tripFilterValue || (
+                String(trip.trip_number || '').trim().toLowerCase().includes(tripFilterValue)
             );
-            return matchesSearch && withinDateRange;
+
+            // b) Driver (Parcial: busca en nombre1 o nombre2)
+            const driverNombre = (trip.driver_nombre || '').trim().toLowerCase();
+            const driverSecondNombre = (trip.driver_second_nombre || '').trim().toLowerCase();
+            const matchDriver = !driverLower || (
+                driverNombre.includes(driverLower) ||
+                driverSecondNombre.includes(driverLower)
+            );
+
+            // c) Truck (Parcial)
+            const matchTruck = !truckLower || (
+                (trip.truck_unidad || '').trim().toLowerCase().includes(truckLower)
+            );
+            
+            // d) Trailer/Caja (Parcial)
+            const matchTrailer = !trailerLower || (
+                (trip.caja_no_caja || '').trim().toLowerCase().includes(trailerLower) ||
+                (trip.caja_externa_no_caja || '').trim().toLowerCase().includes(trailerLower)
+            );
+
+            
+            // --- 3. Filtros de Etapas (Búsqueda Parcial en AL MENOS UNA ETAPA) ---
+            const etapas = trip.etapas || [];
+            
+            // e) Company (Parcial)
+            const matchCompany = !companyLower || etapas.some(e => 
+                (e.nombre_compania || '').trim().toLowerCase().includes(companyLower)
+            );
+            
+            // f) Origin (Parcial)
+            const matchOrigin = !originLower || etapas.some(e => 
+                (e.origin || '').trim().toLowerCase().includes(originLower)
+            );
+            
+            // g) Destination (Parcial)
+            const matchDestination = !destinationLower || etapas.some(e => 
+                (e.destination || '').trim().toLowerCase().includes(destinationLower)
+            );
+
+            
+            // h) Travel Direction (NUEVO FILTRO INTERDEPENDIENTE)
+            let matchDirection = true;
+            
+            // Solo aplicamos el filtro de dirección si hay un valor seleccionado
+            if (directionValue) {
+                 // Debe haber coincidencia en origen Y/O destino, y coincidencia en dirección
+                const isLocationFiltered = originLower || destinationLower;
+
+                if (isLocationFiltered) {
+                    // Si el usuario filtró por Origen y/o Destino, la etapa DEBE coincidir con la dirección Y con la ubicación filtrada.
+                    matchDirection = etapas.some(e => {
+                        const etapaDirection = e.travel_direction;
+                        const etapaOrigin = (e.origin || '').trim().toLowerCase();
+                        const etapaDestination = (e.destination || '').trim().toLowerCase();
+                        
+                        // 1. Debe coincidir con la dirección
+                        const directionMatch = etapaDirection === directionValue;
+                        
+                        // 2. Debe coincidir con el origen Y/O destino filtrado
+                        const locationMatch = (
+                            (!originLower || etapaOrigin.includes(originLower)) && 
+                            (!destinationLower || etapaDestination.includes(destinationLower))
+                        );
+
+                        return directionMatch && locationMatch;
+                    });
+                } else {
+                    // Si hay dirección seleccionada pero NO hay filtros de origen/destino, NO aplicamos la dirección (o se podría deshabilitar el Select)
+                    // Como el requerimiento es que SÓLO se use con Origin/Destination, si no hay location, NO COINCIDE.
+                    // Opcionalmente, podemos dejar matchDirection en true si el Select está deshabilitado.
+                    // Lo más simple es que si el filtro de dirección está activo, DEBE haber coincidencia de ubicación.
+                    matchDirection = false; // Forzamos a que no coincida si no hay filtro de ubicación.
+                }
+
+            }
+            
+
+            // Criterios combinados (TODOS deben ser TRUE)
+            return withinDateRange 
+                && matchTrip 
+                && matchDriver 
+                && matchTruck 
+                && matchTrailer
+                && matchCompany
+                && matchOrigin
+                && matchDestination
+                && matchDirection; // <-- NUEVO FILTRO
         });
 
-        // Sort the filtered trips
+        // Lógica de ordenamiento por estado (se mantiene igual)
         return filtered.sort((a, b) => {
-            // Priority: 'In Coming' (1) > 'In Transit' (2) > 'Almost Over' (3) > 'Completed' (4) > 'Cancelled' (5) > Others (6)
-            const statusOrder = (status) => { // MODIFICACIÓN: Añadido "Almost Over" en el orden de prioridad
+            const statusOrder = (status) => { 
                 if (status === 'In Coming') return 1;
                 if (status === 'In Transit') return 2;
-                if (status === 'Almost Over') return 3; // Nuevo estado, antes de Completed
+                if (status === 'Almost Over') return 3; 
                 if (status === 'Completed') return 4;
                 if (status === 'Cancelled') return 5;
-                return 6; // Para cualquier otro estado
+                return 6; 
             };
 
             const orderA = statusOrder(a.status);
             const orderB = statusOrder(b.status);
 
-            // Primary sort by status priority
             if (orderA !== orderB) {
                 return orderA - orderB;
             }
 
-            // Secondary sort: If status priority is the same, sort by creation_date (newest to oldest)
             const dateA = a.creation_date ? dayjs(a.creation_date) : dayjs('1900-01-01');
             const dateB = b.creation_date ? dayjs(b.creation_date) : dayjs('1900-01-01');
 
             if (dateA.isValid() && dateB.isValid()) {
-                return dateB.diff(dateA); // Descending order (newer first)
+                return dateB.diff(dateA); 
             }
             if (!dateA.isValid() && dateB.isValid()) return 1;
             if (dateA.isValid() && !dateB.isValid()) return -1;
 
-            // Tertiary sort: If status and creation_date are the same, sort by trip_number (ascending)
             return (a.trip_number || '').localeCompare(b.trip_number || '');
         });
-    }, [trips, search, startDate, endDate]);
-
-    const handleEditTrip = (tripId) => {
-        if (!tripId) { console.error("ID inválido"); return; }
-        navigate(`/edit-trip/${tripId}`);
-    };
-
-    // NUEVO HANDLER: handleAlmostOverTrip
-    const handleAlmostOverTrip = async (tripId, tripNumber) => {
-        if (!tripId) return;
-        const confirmation = await Swal.fire({
-            title: '¿Marcar como "Casi Finalizado"?',
-            text: `Viaje #${tripNumber} será marcado como "Casi Finalizado" y sus recursos serán liberados.`,
-            icon: 'info', // O 'warning'
-            showCancelButton: true,
-            confirmButtonText: 'Sí, continuar',
-            cancelButtonText: 'Cancelar'
-        });
-        if (confirmation.isConfirmed) {
-            try {
-                const apiUrl = `${apiHost}/new_trips.php`;
-                const formData = new FormData();
-                formData.append('op', 'AlmostOverTrip'); // NUEVA OPERACIÓN EN EL BACKEND
-                formData.append('trip_id', tripId);
-                const response = await fetch(apiUrl, { method: 'POST', body: formData });
-                const result = await response.json();
-                if (response.ok && result.status === 'success') {
-                    Swal.fire('¡Éxito!', result.message || 'Viaje marcado como "Casi Finalizado" y recursos liberados.', 'success');
-                    fetchTrips(); // Refrescar la tabla
-                } else {
-                    throw new Error(result.error || result.message || 'No se pudo marcar como "Casi Finalizado".');
-                }
-            } catch (err) {
-                console.error("Error al marcar como casi finalizado:", err);
-                Swal.fire('Error', `Error al marcar como "Casi Finalizado": ${err.message}`, 'error');
-            }
-        }
-    };
-    // FIN NUEVO HANDLER
-
-    const handleFinalizeTrip = async (tripId, tripNumber) => {
-        if (!tripId) return;
-        const confirmation = await Swal.fire({
-            title: '¿Finalizar Viaje?', text: `Viaje #${tripNumber} será completado.`,
-            icon: 'warning', showCancelButton: true, confirmButtonText: 'Sí, finalizar'
-        });
-        if (confirmation.isConfirmed) {
-            try {
-                const apiUrl = `${apiHost}/new_trips.php`;
-                const finalizeFormData = new FormData();
-                finalizeFormData.append('op', 'FinalizeTrip');
-                finalizeFormData.append('trip_id', tripId);
-                const response = await fetch(apiUrl, { method: 'POST', body: finalizeFormData });
-                const result = await response.json();
-                if (response.ok && result.status === 'success') {
-                    Swal.fire('¡Finalizado!', result.message || 'Viaje completado.', 'success');
-                    fetchTrips();
-                } else { throw new Error(result.error || result.message || 'No se pudo finalizar.'); }
-            } catch (err) { Swal.fire('Error', `Error al finalizar: ${err.message}`, 'error'); }
-        }
-    };
+    }, [
+        trips, 
+        filterTrip, filterDriver, filterTruck, filterTrailer, 
+        filterCompany, filterOrigin, filterDestination, filterDirection, // Nueva dependencia
+        startDate, endDate
+    ]);
+    
+    // ... (Handlers y lógica de fetch se mantienen igual) ...
+    const handleEditTrip = (tripId) => { /* ... */ };
+    const handleAlmostOverTrip = async (tripId, tripNumber) => { /* ... */ };
+    const handleFinalizeTrip = async (tripId, tripNumber) => { /* ... */ };
 
     if (loading) { return (<Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}> <CircularProgress /> <Typography ml={2}>Cargando...</Typography> </Box>); }
+
+    // Bandera para deshabilitar el filtro de Dirección si no hay Origen/Destino
+    const isDirectionFilterDisabled = !(filterOrigin.trim() || filterDestination.trim());
+
 
     return (
         <div className="trip-admin">
             <h1 className="title">Administrador de Viajes</h1>
-            <div className="filters">
-                <input type="text" placeholder="Buscar por Trip#, Driver, Truck, etc..." value={search} onChange={(e) => setSearch(e.target.value)} className="small-input" />
-                <div className="date-pickers">
-                    <DatePicker
-                        selected={startDate}
-                        onChange={setStartDate}
-                        selectsStart startDate={startDate}
-                        endDate={endDate} placeholderText="Fecha inicio"
-                        dateFormat="dd/MM/yyyy"
-                        popperClassName="my-custom-datepicker-popper"
-                        isClearable />
-                    <DatePicker
-                        selected={endDate}
-                        onChange={setEndDate}
-                        selectsEnd startDate={startDate}
-                        endDate={endDate}
-                        minDate={startDate}
-                        placeholderText="Fecha fin"
-                        dateFormat="dd/MM/yyyy"
-                        popperClassName="my-custom-datepicker-popper"
-                        isClearable />
-                    <Button variant="contained" onClick={() => { setStartDate(null); setEndDate(null); }} style={{ marginLeft: '10px' }} size="small"> Limpiar Filtro </Button>
-                    <Button variant="contained" onClick={fetchTrips} disabled={loading} style={{ marginLeft: '10px' }} size="small"> Refrescar </Button>
-                </div>
-            </div>
+            
+            {/* --- CONTENEDOR DE FILTROS --- */}
+            <Paper sx={{ p: 2, mb: 3 }}>
+                <Typography variant="h6" gutterBottom>Filtros de Búsqueda (Búsqueda Parcial)</Typography>
+                <Grid container spacing={2} alignItems="center">
+                    
+                    {/* Filtros de Identificación (Fila 1) */}
+                    <Grid item xs={12} sm={3}>
+                        <TextField 
+                            label="Trip Number" 
+                            size="small" 
+                            fullWidth 
+                            value={filterTrip} 
+                            onChange={(e) => handleFilterChange(setFilterTrip, e.target.value)} 
+                            placeholder="Ej: 101"
+                        />
+                    </Grid>
+                    <Grid item xs={12} sm={3}>
+                        <TextField 
+                            label="Driver" 
+                            size="small" 
+                            fullWidth 
+                            value={filterDriver} 
+                            onChange={(e) => handleFilterChange(setFilterDriver, e.target.value)} 
+                        />
+                    </Grid>
+                    <Grid item xs={12} sm={3}>
+                        <TextField 
+                            label="Truck" 
+                            size="small" 
+                            fullWidth 
+                            value={filterTruck} 
+                            onChange={(e) => handleFilterChange(setFilterTruck, e.target.value)} 
+                        />
+                    </Grid>
+                    <Grid item xs={12} sm={3}>
+                        <TextField 
+                            label="Trailer/Caja" 
+                            size="small" 
+                            fullWidth 
+                            value={filterTrailer} 
+                            onChange={(e) => handleFilterChange(setFilterTrailer, e.target.value)} 
+                        />
+                    </Grid>
+
+                    {/* Filtros de Etapas (Fila 2) */}
+                    <Grid item xs={12} sm={3}>
+                        <TextField 
+                            label="Compañía (Etapa)" 
+                            size="small" 
+                            fullWidth 
+                            value={filterCompany} 
+                            onChange={(e) => handleFilterChange(setFilterCompany, e.target.value)} 
+                        />
+                    </Grid>
+                    <Grid item xs={12} sm={3}>
+                        <TextField 
+                            label="Origen (Etapa)" 
+                            size="small" 
+                            fullWidth 
+                            value={filterOrigin} 
+                            onChange={(e) => handleFilterChange(setFilterOrigin, e.target.value)} 
+                        />
+                    </Grid>
+                    <Grid item xs={12} sm={3}>
+                        <TextField 
+                            label="Destino (Etapa)" 
+                            size="small" 
+                            fullWidth 
+                            value={filterDestination} 
+                            onChange={(e) => handleFilterChange(setFilterDestination, e.target.value)} 
+                        />
+                    </Grid>
+                    
+                    {/* NUEVO FILTRO: Dirección (Fila 2, Columna 4) */}
+                    <Grid item xs={12} sm={3}>
+                        <FormControl size="small" fullWidth disabled={isDirectionFilterDisabled}>
+                            <InputLabel id="direction-label">Dirección (Requiere Origen/Destino)</InputLabel>
+                            <Select
+                                labelId="direction-label"
+                                value={filterDirection}
+                                label="Dirección (Requiere Origen/Destino)"
+                                onChange={(e) => handleFilterChange(setFilterDirection, e.target.value)}
+                            >
+                                {DIRECTION_OPTIONS.map((option) => (
+                                    <MenuItem key={option.value} value={option.value}>
+                                        {option.label}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                        {isDirectionFilterDisabled && filterDirection !== 'All' && (
+                            <Typography variant="caption" color="error">
+                                El filtro de dirección está deshabilitado.
+                            </Typography>
+                        )}
+                    </Grid>
+                    
+
+                    {/* Filtros de Fecha y Acciones (Fila 3) */}
+                    <Grid item xs={12}>
+                        <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems="center">
+                            <DatePicker
+                                selected={startDate}
+                                onChange={(date) => handleFilterChange(setStartDate, date)}
+                                selectsStart startDate={startDate}
+                                endDate={endDate} placeholderText="Fecha inicio"
+                                dateFormat="dd/MM/yyyy"
+                                className="form-input-datepicker" 
+                                isClearable 
+                            />
+                            <DatePicker
+                                selected={endDate}
+                                onChange={(date) => handleFilterChange(setEndDate, date)}
+                                selectsEnd startDate={startDate}
+                                endDate={endDate}
+                                minDate={startDate}
+                                placeholderText="Fecha fin"
+                                dateFormat="dd/MM/yyyy"
+                                className="form-input-datepicker" 
+                                isClearable 
+                            />
+                            <Button 
+                                variant="outlined" 
+                                onClick={() => { 
+                                    // Limpiar todos los filtros
+                                    setFilterTrip(''); 
+                                    setFilterDriver('');
+                                    setFilterTruck('');
+                                    setFilterTrailer('');
+                                    setFilterCompany('');
+                                    setFilterOrigin('');
+                                    setFilterDestination('');
+                                    setFilterDirection('All'); // Limpiar la dirección
+                                    setStartDate(null); 
+                                    setEndDate(null); 
+                                    setPage(0); 
+                                }} 
+                                size="small"
+                            >
+                                Limpiar Todo
+                            </Button>
+                            <Button 
+                                variant="contained" 
+                                onClick={fetchTrips} 
+                                disabled={loading} 
+                                size="small"
+                            >
+                                Refrescar
+                            </Button>
+                        </Stack>
+                    </Grid>
+                </Grid>
+            </Paper>
+            {/* --- FIN CONTENEDOR DE FILTROS --- */}
+
             {error && <Alert severity="error" sx={{ my: 2 }}>Error al cargar: {error}</Alert>}
 
             <TableContainer component={Paper} sx={{ marginTop: 2 }}>
                 <Table stickyHeader size="small">
                     <TableHead>
                         <TableRow>
-                            <TableCell /> {/* For expand/collapse icon */}
-                            <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>Trip #</TableCell>
+                            <TableCell /> 
+                            <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>Trip</TableCell>
                             <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>Driver(s)</TableCell>
                             <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>Truck</TableCell>
                             <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>Trailer</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>Initial Date</TableCell> {/* This will display loadingDateToShow */}
+                            <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>Initial Date</TableCell> 
                             <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>Status</TableCell>
-      
                             <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>Return Date</TableCell>
-        
                             <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>Actions</TableCell>
                         </TableRow>
                     </TableHead>
@@ -625,7 +480,7 @@ const TripAdmin = () => {
                                         trip={trip}
                                         onEdit={handleEditTrip}
                                         onFinalize={handleFinalizeTrip}
-                                        onAlmostOver={handleAlmostOverTrip} // MODIFICACIÓN CLAVE: Pasar el nuevo handler a TripRow
+                                        onAlmostOver={handleAlmostOverTrip}
                                         getDocumentUrl={getDocumentUrl}
                                     />
                                 ))

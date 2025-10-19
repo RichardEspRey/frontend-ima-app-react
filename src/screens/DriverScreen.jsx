@@ -141,8 +141,8 @@ const DriverScreen = () => {
 
       await Swal.fire({
         icon: 'success',
-        title: 'Éxito',
-        text: 'Driver dado de alta!',
+        title: 'Success',
+        text: 'Driver added successfully!',
       });
 
       setFormData({
@@ -160,7 +160,7 @@ const DriverScreen = () => {
       Swal.fire({
         icon: 'error',
         title: 'Error',
-        text: err?.message || 'Ocurrió un problema al guardar.',
+        text: err?.message || 'An error occurred while saving.',
       });
     }
   };
@@ -186,56 +186,56 @@ const DriverScreen = () => {
 
     <div >
 
-      <h1 className="titulo">Alta de Conductor</h1>
+      <h1 className="titulo">Driver Registration</h1>
       <div className="conductores-container">
         <div className="btnConteiner">
-          <button className="btn cancelar" onClick={cancelar}> Cancelar</button>
-          <button className="btn guardar" onClick={handleSubmit}>Guardar</button>
+          <button className="btn cancelar" onClick={cancelar}> Cancel</button>
+          <button className="btn guardar" onClick={handleSubmit}>Save</button>
         </div>
 
         <div className="form-columns">
           {/* Puedes continuar con las otras dos columnas como en tu versión original */}
           <div className="column">
-            <label>Nombre de conductor</label>
+            <label>Name of Driver</label>
             <input
               type="text"
-              placeholder="Nombre y apellidos"
+              placeholder="Full name"
               value={formData.nombre}
               onChange={(e) => handleInputChange('nombre', e.target.value)}
             />
 
-            <label>Fecha de entrada</label>
+            <label>Entry Date</label>
             <input
               type="date"
               value={formData.fechaEntrada}
               onChange={(e) => handleInputChange('fechaEntrada', e.target.value)}
             />
             <label>INE</label>
-            <button type="button" onClick={() => abrirModal('INE')}>Subir documento</button>
+            <button type="button" onClick={() => abrirModal('INE')}>Upload Document</button>
             {documentos.INE && (
               <p>{documentos.INE.fileName} - {documentos.INE.vencimiento}</p>
             )}
-            <label>Acta de nacimiento (PDF)</label>
-            <button type="button" onClick={() => abrirModal('Acta_Nacimiento')}>Subir documento</button>
+            <label>Birth Certificate (PDF)</label>
+            <button type="button" onClick={() => abrirModal('Acta_Nacimiento')}>Upload Document</button>
             {documentos.Acta_Nacimiento && (
               <p>{documentos.Acta_Nacimiento.fileName} - {documentos.Acta_Nacimiento.vencimiento}</p>
             )}
 
 
             <label>CURP (PDF)</label>
-            <button type="button" onClick={() => abrirModal('CURP')}>Subir documento</button>
+            <button type="button" onClick={() => abrirModal('CURP')}>Upload Document</button>
             {documentos.CURP && (
               <p>{documentos.CURP.fileName} - {documentos.CURP.vencimiento}</p>
             )}
 
-            <label>Comprobante de domicilio (PDF)</label>
-            <button type="button" onClick={() => abrirModal('Comprobante_domicilio')}>Subir documento</button>
+            <label>Proof of Address (PDF)</label>
+            <button type="button" onClick={() => abrirModal('Comprobante_domicilio')}>Upload Document</button>
             {documentos.Comprobante_domicilio && (
               <p>{documentos.Comprobante_domicilio.fileName} - {documentos.Comprobante_domicilio.vencimiento}</p>
             )}
 
-            <label>Constancia de situacio fiscal (PDF)</label>
-            <button type="button" onClick={() => abrirModal('Constancia')}>Subir documento</button>
+            <label>Tax Status (PDF)</label>
+            <button type="button" onClick={() => abrirModal('Constancia')}>Upload Document</button>
             {documentos.Constancia && (
               <p>{documentos.Constancia.fileName} - {documentos.Constancia.vencimiento}</p>
             )}
@@ -255,22 +255,22 @@ const DriverScreen = () => {
           <div className="column">
 
             <label>Visa</label>
-            <button type="button" onClick={() => abrirModal('Visa')}>Subir documento</button>
+            <button type="button" onClick={() => abrirModal('Visa')}>Upload Document</button>
             {documentos.Visa && (
               <p>{documentos.Visa.fileName} - {documentos.Visa.vencimiento}</p>
             )}
 
-            <label>No. Visa</label>
+            <label>Visa Number</label>
             <input
               type="text"
-              placeholder="Ingrese el numero de visa"
+              placeholder="Enter visa number"
               value={formData.visa}
               onChange={(e) => handleInputChange('visa', e.target.value)}
             />
 
 
             <label>I-94 (PDF)</label>
-            <button type="button" onClick={() => abrirModal('I')}>Subir documento</button>
+            <button type="button" onClick={() => abrirModal('I')}>Upload Document</button>
             {documentos.I && (
               <p>{documentos.I.fileName} - {documentos.I.vencimiento}</p>
             )}
@@ -281,26 +281,26 @@ const DriverScreen = () => {
 
           {/* Puedes continuar con las otras dos columnas como en tu versión original */}
           <div className="column">
-            <label>Solicitud de empleo (PDF)</label>
-            <button type="button" onClick={() => abrirModal('Solicitud_empleo')}>Subir documento</button>
+            <label>Job Application (PDF)</label>
+            <button type="button" onClick={() => abrirModal('Solicitud_empleo')}>Upload Document</button>
             {documentos.Solicitud_empleo && (
               <p>{documentos.Solicitud_empleo.fileName} - {documentos.Solicitud_empleo.vencimiento}</p>
             )}
 
-            <label>Licencia (PDF)</label>
-            <button type="button" onClick={() => abrirModal('Licencia')}>Subir documento</button>
+            <label>Licenses (PDF)</label>
+            <button type="button" onClick={() => abrirModal('Licencia')}>Upload Document</button>
             {documentos.Licencia && (
               <p>{documentos.Licencia.fileName} - {documentos.Licencia.vencimiento}</p>
             )}
 
             <label>APTO Medico(PDF)</label>
-            <button type="button" onClick={() => abrirModal('APTO')}>Subir documento</button>
+            <button type="button" onClick={() => abrirModal('APTO')}>Upload Document</button>
             {documentos.APTO && (
               <p>{documentos.APTO.fileName} - {documentos.APTO.vencimiento}</p>
             )}
 
-            <label>Atidoping</label>
-            <button type="button" onClick={() => abrirModal('Atidoping')}>Subir documento</button>
+            <label>Antidoping</label>
+            <button type="button" onClick={() => abrirModal('Atidoping')}>Upload Document</button>
             {documentos.Atidoping && (
               <p>{documentos.Atidoping.fileName} - {documentos.Atidoping.vencimiento}</p>
             )}
@@ -313,10 +313,10 @@ const DriverScreen = () => {
               onChange={(e) => handleInputChange('phone_usa', e.target.value)}
             />
 
-            <label>Numero celular MEX </label>
+            <label>Phone Number MEX </label>
             <input
               type="Text"
-              placeholder="Ingresar numero Mexicano"
+              placeholder="Enter Mexican phone number"
               value={formData.phone_mex}
               onChange={(e) => handleInputChange('phone_mex', e.target.value)}
             />

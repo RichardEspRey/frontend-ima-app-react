@@ -60,25 +60,25 @@ const fetchDiesel = async () => {
 
   return (
    <div className="driver-admin">
-      <h1 className="title">Detalle de diesel</h1>
+      <h1 className="title">Diesel Detail</h1>
        <div className="btnConteiner">
-          <button className="btn cancelar" onClick={cancelar}> Volver al admin</button>
+          <button className="btn cancelar" onClick={cancelar}>Return</button>
         </div>
       <TableContainer component={Paper}>
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead>
             <TableRow>
-              <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 16}} align="center">No</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 16}} align="center">Trip number</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 16}} align="center">No.</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 16}} align="center">Trip</TableCell>
      
-              <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 16}} align="center">Fecha de modificacion</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 16}} align="center">Odometro al momento</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 16}} align="center">Galones</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 16}} align="center">Monto</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 16}} align="center">Last update</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 16}} align="center">Current odometer</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 16}} align="center">Gal.</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 16}} align="center">Total ($)</TableCell>
               <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 16}} align="center">Driver</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 16}} align="center">Estado</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 16}} align="center">Fleetone</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 16}} align="center">Acciones</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 16}} align="center">Status</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 16}} align="center">Fleet One</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 16}} align="center">Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -94,7 +94,7 @@ const fetchDiesel = async () => {
                 <TableCell align="center" sx={{ whiteSpace: 'nowrap', fontSize: 18}}>{row.estado}</TableCell>
                 <TableCell align="center" sx={{ whiteSpace: 'nowrap', fontSize: 18}}>{row.fleetone}</TableCell>
                 <TableCell align="center" >
-                  <Button variant="text" sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 18}} onClick={() => handleVer(row.id, row.trip_id)}>Editar</Button> {/* 👈 aquí navegas */}
+                  <Button variant="text" sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 18}} onClick={() => handleVer(row.id, row.trip_id)}>Edit</Button> {/* 👈 aquí navegas */}
                 </TableCell>
               </TableRow>
             ))}

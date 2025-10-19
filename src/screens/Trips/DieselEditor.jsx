@@ -255,21 +255,21 @@ const DieselEditor = () => {
 
   return (
 
-    <div >
+    <div>
 
-      <h1 className="titulo">Editor de registro diesel</h1>
+      <h1 className="titulo">Diesel log editor</h1>
       <div className="conductores-container">
         <div className="btnConteiner">
-          <button className="cancelar" onClick={cancelar}> Cancelar</button>
-          <button className="guardar" onClick={actualizar}>Guardar</button>
-          <button className="eliminar" onClick={eliminar}>Eliminar</button>
+          <button className="cancelar" onClick={cancelar}> Cancel</button>
+          <button className="guardar" onClick={actualizar}>Save</button>
+          <button className="eliminar" onClick={eliminar}>Delete</button>
         </div>
 
         <div className={styles.formColumns}>
           <div className={styles.column}>
 
 
-            <label>Trip Number</label>
+            <label>Trip</label>
             <input
               type="text"
               disabled
@@ -284,14 +284,14 @@ const DieselEditor = () => {
               value={formData.nombre}
               onChange={(e) => handleInputChange('nombre', e.target.value)}
             />
-            <label>Estado</label>
+            <label>Status</label>
             <input
               type="text"
               value={formData.estado}
               onChange={(e) => handleInputChange('estado', e.target.value)}
             />
 
-            <label>Odometro</label>
+            <label>Odometer (mi.)</label>
             <input
               type="text"
               value={formData.odometro}
@@ -299,21 +299,21 @@ const DieselEditor = () => {
             />
 
 
-            <label>Galones</label>
+            <label>Gal</label>
             <input
               type="text"
               value={formData.galones}
               onChange={(e) => handleInputChange('galones', e.target.value)}
             />
 
-            <label>Monto</label>
+            <label>Total ($)</label>
             <input
               type="text"
               value={formData.monto}
               onChange={(e) => handleInputChange('monto', e.target.value)}
             />
 
-            <label>Fleetone</label>
+            <label>Fleet One</label>
             <input
               type="text"
               value={formData.fleetone}

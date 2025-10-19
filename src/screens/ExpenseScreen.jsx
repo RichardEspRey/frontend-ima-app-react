@@ -11,6 +11,7 @@ import useFetchInventoryItems from '../hooks/expense_hooks/useFetchInventoryItem
 import useFetchSubcategories from '../hooks/expense_hooks/useFetchSubcategories';
 import useFetchCategories from '../hooks/expense_hooks/useFetchCategories';
 import useFetchExpenseTypes from '../hooks/expense_hooks/useFetchExpenseTypes';
+import useFetchExchangeRate from '../hooks/useFetchExchangeRate';
 
 const selectStyles = {
     control: (provided) => ({
@@ -31,7 +32,7 @@ const ExpenseScreen = () => {
     const [expenseDate, setExpenseDate] = useState(new Date());
     const [totalAmount, setTotalAmount] = useState('0.00');
     const [originalAmount, setOriginalAmount] = useState('');
-    const [exchangeRate, setExchangeRate] = useState('');
+    const { exchangeRate, setExchangeRate, fetchExchangeRate } = useFetchExchangeRate();
 
     const [expenseDetails, setExpenseDetails] = useState([]);
 
@@ -63,23 +64,23 @@ const ExpenseScreen = () => {
     };
 
 
-    useEffect(() => {
+    // useEffect(() => {
 
-        if (originalAmount && exchangeRate) {
-            const convertedAmount = parseFloat(originalAmount) / parseFloat(exchangeRate);
-            setTotalAmount(convertedAmount.toFixed(2));
-        } else if (originalAmount) {
-            setTotalAmount(parseFloat(originalAmount).toFixed(2));
-        }
-        else {
-            const detailsTotal = expenseDetails.reduce((sum, item) => {
-                const price = parseFloat(item.price) || 0;
-                const quantity = parseInt(item.quantity) || 0;
-                return sum + (price * quantity);
-            }, 0);
-            setTotalAmount(detailsTotal.toFixed(2));
-        }
-    }, [originalAmount, exchangeRate, expenseDetails]);
+    //     if (originalAmount && exchangeRate) {
+    //         const convertedAmount = parseFloat(originalAmount) / parseFloat(exchangeRate);
+    //         setTotalAmount(convertedAmount.toFixed(2));
+    //     } else if (originalAmount) {
+    //         setTotalAmount(parseFloat(originalAmount).toFixed(2));
+    //     }
+    //     else {
+    //         const detailsTotal = expenseDetails.reduce((sum, item) => {
+    //             const price = parseFloat(item.price) || 0;
+    //             const quantity = parseInt(item.quantity) || 0;
+    //             return sum + (price * quantity);
+    //         }, 0);
+    //         setTotalAmount(detailsTotal.toFixed(2));
+    //     }
+    // }, [originalAmount, exchangeRate, expenseDetails]);
 
     const handleArticleChange = async (selection, detail) => {
      
@@ -108,7 +109,7 @@ const ExpenseScreen = () => {
                     Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Artículo creado', showConfirmButton: false, timer: 2000 });
                 } else { throw new Error(result.message); }
             } catch (error) {
-                Swal.fire('Error', `No se pudo crear el artículo: ${error.message}`, 'error');
+                Swal.fire('Error', `Failed to create item: ${error.message}`, 'error');
             }
         }
 
@@ -172,7 +173,7 @@ const ExpenseScreen = () => {
         event.preventDefault();
 
         if (!country || !expenseDate || expenseDetails.length === 0) {
-            Swal.fire('Campos incompletos', 'Asegúrate de seleccionar país, fecha y agregar al menos un detalle de gasto.', 'warning');
+            Swal.fire('Incomplete fields', 'Make sure to select a country, date, and add at least one expense detail.', 'warning');
             return;
         }
 
@@ -210,7 +211,7 @@ const ExpenseScreen = () => {
         });
 
         apiFormData.append('detailsData', JSON.stringify(detailsData));
-        console.log("Datos que se van a enviar:", detailsData);
+        console.log("Data to be sent:", detailsData);
 
 
 
@@ -223,19 +224,64 @@ const ExpenseScreen = () => {
             });
             const result = await response.json();
             if (result.status === 'success') {
-                Swal.fire('¡Éxito!', 'Gasto guardado correctamente.', 'success');
+                Swal.fire('Success!', 'Expense saved successfully.', 'success');
                 resetForm();
             } else {
                 throw new Error(result.message);
             }
         } catch (error) {
-            Swal.fire('Error', `No se pudo guardar el gasto: ${error.message}`, 'error');
+            Swal.fire('Error', `Failed to save expense: ${error.message}`, 'error');
         }
     };
 
  
 
     const countries = [{ value: 'MX', label: 'México' }, { value: 'US', label: 'Estados Unidos' }];
+
+    // CALCULAR TOTAL Y CARGAR TASA
+    useEffect(() => {
+        const isMX = country && country.value === 'MX';
+        const currentExchangeRate = parseFloat(exchangeRate) || 0;
+        
+        let newTotal = 0;
+        
+        // 1. CARGA CONDICIONAL DE LA TASA
+        if (isMX && !currentExchangeRate) {
+            // Si es MX y la tasa no ha cargado, la cargamos
+            fetchExchangeRate();
+        } else if (!isMX && exchangeRate) {
+            // Si cambiamos de MX a US, limpiamos la tasa
+            setExchangeRate('');
+        }
+
+        // 2. CÁLCULO DEL TOTAL (USD)
+        if (originalAmount) {
+            const original = parseFloat(originalAmount);
+            
+            if (!isMX) {
+                // País = US: Monto Original (USD) = Monto Final (USD)
+                newTotal = original;
+            } else if (isMX && currentExchangeRate) {
+                // País = MX: Monto Original (MXN) / Tasa (MXN/USD) = Monto Final (USD)
+                newTotal = original / currentExchangeRate;
+            } else {
+                 // País = MX, pero la tasa aún no ha cargado
+                newTotal = 0; 
+            }
+        }
+        else {
+            // Gasto basado en la suma de detalles (Asumimos detalles en USD si no hay monto original)
+            newTotal = expenseDetails.reduce((sum, item) => {
+                const price = parseFloat(item.price) || 0;
+                const quantity = parseInt(item.quantity) || 0;
+                return sum + (price * quantity);
+            }, 0);
+        }
+
+        setTotalAmount(newTotal.toFixed(2));
+        
+    }, [country, originalAmount, exchangeRate, expenseDetails, fetchExchangeRate, setExchangeRate]);
+
 
     const handleRemoveFile = (fileType) => {
         setFiles(prev => ({ ...prev, [fileType]: null }));
@@ -253,19 +299,19 @@ const ExpenseScreen = () => {
         <div className="app-screen-container">
             <div className="app-screen-wrapper">
                 <div className="app-container">
-                    <span className="app-label">Nuevo Gasto</span>
+                    <span className="app-label">New Expense</span>
                     <div className="main-content-flex">
                         <div className="additional-card">
                             <form className="card-container" onSubmit={handleSaveExpense}>
                                 <div className="form-actions">
-                                    <button type="button" className="cancel-button" onClick={resetForm}>Cancelar</button>
-                                    <button type="submit" className="accept-button">Guardar Gasto</button>
+                                    <button type="button" className="cancel-button" onClick={resetForm}>Cancel</button>
+                                    <button type="submit" className="accept-button">Save Expense</button>
                                 </div>
                                 <div className="form-section">
-                                    <legend className="card-label">Datos Generales del Gasto</legend>
+                                    <legend className="card-label">General Expense Data</legend>
                                     <div className="input-columns">
                                         <div className="column">
-                                            <label>País de gasto:</label>
+                                            <label>Expense Country:</label>
                                             <Select
                                                 value={country}
                                                 onChange={setCountry}
@@ -274,7 +320,7 @@ const ExpenseScreen = () => {
                                                 isClearable />
                                         </div>
                                         <div className="column">
-                                            <label>Fecha de ticket:</label>
+                                            <label>Ticket Date:</label>
                                             <DatePicker
                                                 selected={expenseDate}
                                                 onChange={(date) => setExpenseDate(date)}
@@ -285,27 +331,27 @@ const ExpenseScreen = () => {
                                 </div>
 
                                 <div className="column">
-                                    <label>Monto Original:</label>
+                                    <label>Original Amount:</label>
                                     <input
                                         type="number"
-                                        placeholder="Monto del ticket"
+                                        placeholder="Ticket amount"
                                         className="form-input"
                                         value={originalAmount}
                                         onChange={(e) => setOriginalAmount(e.target.value)}
                                     />
                                 </div>
                                 <div className="column">
-                                    <label>Tipo de Cambio:</label>
+                                    <label>Exchange Rate:</label>
                                     <input
                                         type="number"
-                                        placeholder="Si aplica"
+                                        placeholder="If applicable"
                                         className="form-input"
                                         value={exchangeRate}
                                         onChange={(e) => setExchangeRate(e.target.value)}
                                     />
                                 </div>
                                 <div className="column">
-                                    <label>Monto Total (Final):</label>
+                                    <label>Total Amount (Final):</label>
                                     <input
                                         type="text"
                                         placeholder="Total"
@@ -317,7 +363,7 @@ const ExpenseScreen = () => {
 
 
                                 <div className="form-section">
-                                    <legend className="card-label">Agregar Detalle al Gasto</legend>
+                                    <legend className="card-label">Add Expense Detail</legend>
                                     {expenseDetails.map((detail) => {
                                         console.log(
                                             `Comparando: typeof item.id_subcategoria (${typeof inventoryItems[0]?.id_subcategoria})`,
@@ -334,7 +380,7 @@ const ExpenseScreen = () => {
                                             <div key={detail.id} className="detail-item-container">
                                                 <div className="input-columns">
                                                     <div className="column">
-                                                        <label>Tipo de Gasto:</label>
+                                                        <label>Expense Type:</label>
                                                         <Select
                                                             options={expenseTypes}
                                                             isLoading={typesLoading}
@@ -345,14 +391,14 @@ const ExpenseScreen = () => {
                                                         />
                                                     </div>
                                                     <div className="column">
-                                                        <label>Precio:</label>
+                                                        <label>Price:</label>
                                                         <input
                                                             type="number"
                                                             value={detail.price}
                                                             onChange={(e) => handleDetailChange(detail.id, { price: e.target.value })}
                                                             className="form-input" /></div>
                                                     <div className="column">
-                                                        <label>Cantidad:</label>
+                                                        <label>Quantity:</label>
                                                         <input
                                                             type="number"
                                                             value={detail.quantity}
@@ -365,7 +411,7 @@ const ExpenseScreen = () => {
                                                 {detail.expenseType === ID_MANTENIMIENTO && (
                                                     <div className="input-columns maintenance-fields">
                                                         <div className="column">
-                                                            <label>Categoría:</label>
+                                                            <label>Category:</label>
                                                             <Select
                                                                 options={maintenanceCategories}
                                                                 isLoading={categoriesLoading}
@@ -374,7 +420,7 @@ const ExpenseScreen = () => {
 
                                                                 styles={selectStyles} /></div>
                                                         <div className="column">
-                                                            <label>Subcategoría:</label>
+                                                            <label>Subcategory:</label>
                                                             <Select
                                                                 options={filteredSubcategories}
                                                                 isLoading={subcategoriesLoading}
@@ -383,7 +429,7 @@ const ExpenseScreen = () => {
                                                                 isDisabled={!detail.category} styles={selectStyles}
                                                             />
                                                         </div>
-                                                        <div className="column"><label>Artículo:</label>
+                                                        <div className="column"><label>Item:</label>
                                                             <CreatableSelect
                                                                 options={filteredItems}
                                                                 isLoading={itemsLoading}
@@ -398,7 +444,7 @@ const ExpenseScreen = () => {
 
                                                                 isDisabled={!detail.subcategory}
                                                                 isClearable
-                                                                placeholder="Selecciona o escribe un artículo..."
+                                                                placeholder="Select or type an item..."
                                                                 styles={selectStyles}
                                                             />
                                                         </div>
@@ -407,18 +453,18 @@ const ExpenseScreen = () => {
                                             </div>
                                         );
                                     })}
-                                    <button type="button" onClick={handleAddDetail} className="add-detail-button">+ Agregar Item</button>
+                                    <button type="button" onClick={handleAddDetail} className="add-detail-button">+ Add Item</button>
                                 </div>
 
                                 <div className="form-section">
-                                    <legend className="card-label">Documentos (Facturas/Tickets)</legend>
+                                    <legend className="card-label">Documents (Invoices/Tickets)</legend>
                                     <div className="input-columns">
                                         {/* Botón para PDF */}
                                         <div className="column">
-                                            <label>Factura (PDF)</label>
+                                            <label>Invoice (PDF)</label>
                                             {!files.facturaPdf ? (
                                                 <button type="button" className="upload-button" onClick={() => setModalState({ isOpen: true, fileType: 'facturaPdf' })}>
-                                                    Adjuntar PDF
+                                                    Attach PDF
                                                 </button>
                                             ) : (
                                                 <div className="file-display">
@@ -434,7 +480,7 @@ const ExpenseScreen = () => {
                                             <label>Ticket (JPG/PNG)</label>
                                             {!files.ticketJpg ? (
                                                 <button type="button" className="upload-button" onClick={() => setModalState({ isOpen: true, fileType: 'ticketJpg' })}>
-                                                    Adjuntar Imagen
+                                                    Attach Image
                                                 </button>
                                             ) : (
                                                 <div className="file-display">
@@ -459,13 +505,13 @@ const ExpenseScreen = () => {
                             />
                         </div>
                         <div className="previsualizador-card">
-                            <h3 className="preview-title">Resumen del Gasto</h3>
+                            <h3 className="preview-title">Expense Summary</h3>
                             <div className="preview-general-info">
-                                <p><strong>País:</strong> {country?.label || 'N/A'}</p>
-                                <p><strong>Fecha:</strong> {expenseDate ? expenseDate.toLocaleDateString() : 'N/A'}</p>
-                                <p><strong>Monto Total:</strong> ${totalAmount}</p>
+                                <p><strong>Country:</strong> {country?.label || 'N/A'}</p>
+                                <p><strong>Date:</strong> {expenseDate ? expenseDate.toLocaleDateString() : 'N/A'}</p>
+                                <p><strong>Total Amount:</strong> ${totalAmount}</p>
                             </div>
-                            <h4 className="preview-subtitle">Detalles:</h4>
+                            <h4 className="preview-subtitle">Details:</h4>
                             <ul className="preview-details-list">
                                 {expenseDetails.map((detail) => {
 
@@ -478,29 +524,29 @@ const ExpenseScreen = () => {
 
                                     return (
                                         <li key={detail.id} className="preview-detail-item">
-                                            <p><strong>Tipo:</strong> {typeLabel}</p>
+                                            <p><strong>Type:</strong> {typeLabel}</p>
                                             {isMaintenance && (
                                                 <p className="preview-maintenance-info">
-                                                    <strong>Categoría:</strong> {categoryLabel}<br />
-                                                    <strong>Subcategoría:</strong> {subcategoryLabel}<br />
-                                                    <strong>Artículo:</strong> {itemLabel}
+                                                    <strong>Category:</strong> {categoryLabel}<br />
+                                                    <strong>Subcategory:</strong> {subcategoryLabel}<br />
+                                                    <strong>Item:</strong> {itemLabel}
                                                 </p>
                                             )}
 
                                             <p>
-                                                <strong>Cantidad:</strong> {detail.quantity || 0} x
-                                                <strong> Precio:</strong> ${parseFloat(detail.price || 0).toFixed(2)} =
+                                                <strong>Quantity:</strong> {detail.quantity || 0} x
+                                                <strong> Price:</strong> ${parseFloat(detail.price || 0).toFixed(2)} =
                                                 <strong> Subtotal:</strong> ${getSubtotal(detail.price, detail.quantity)}
                                             </p>
                                         </li>
                                     );
                                 })}
                             </ul>
-                            <h4 className="preview-subtitle">Documentos:</h4>
+                            <h4 className="preview-subtitle">Documents:</h4>
                             <ul className="preview-documents-list">
                                 {files.facturaPdf && <li>{files.facturaPdf.name}</li>}
                                 {files.ticketJpg && <li>{files.ticketJpg.name}</li>}
-                                {!files.facturaPdf && !files.ticketJpg && <li>No hay documentos adjuntos.</li>}
+                                {!files.facturaPdf && !files.ticketJpg && <li>No documents attached.</li>}
                             </ul>
                         </div>
                     </div>

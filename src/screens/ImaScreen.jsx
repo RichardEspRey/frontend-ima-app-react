@@ -66,9 +66,9 @@ const [originalDocumentos, setOriginalDocumentos] = useState({});
 
       const { isConfirmed } = await Swal.fire({
         icon: 'success',
-        title: 'Éxito',
-        text: `Documento ${tipo_documento} actualizado`,
-        confirmButtonText: 'Aceptar'
+        title: 'Success',
+        text: `Document ${tipo_documento} updated`,
+        confirmButtonText: 'Accept'
       });
       
       if (isConfirmed){
@@ -95,19 +95,19 @@ const handleSubmit = async () => {
   if (cambios.length === 0) {
     Swal.fire({
       icon: 'info',
-      title: 'Sin cambios',
-      text: 'No se detectaron cambios en los documentos.'
+      title: 'No changes detected',
+      text: 'No changes were detected in the documents.'
     });
     return;
   }
 
   const { isConfirmed } = await Swal.fire({
-    title: '¿Confirmar cambios?',
-    html: `<b>Modificaciones detectadas:</b><br>${cambios.join('<br>')}`,
+    title: '¿Confirm changes?',
+    html: `<b>Updates detected:</b><br>${cambios.join('<br>')}`,
     icon: 'question',
     showCancelButton: true,
-    confirmButtonText: 'Sí, guardar',
-    cancelButtonText: 'Cancelar'
+    confirmButtonText: 'Yes, save',
+    cancelButtonText: 'Cancel'
   });
 
   if (!isConfirmed) return;
@@ -177,32 +177,32 @@ const handleSubmit = async () => {
 
     <div >
 
-      <h1 className="titulo">Alta de Documentos IMA EXPRESS LCC</h1>
+      <h1 className="titulo">Document Upload IMA EXPRESS LCC</h1>
       <div className="conductores-container">
         <div className="btnConteiner">
-          <button className="btn cancelar">Cancelar</button>
-          <button className="btn guardar" onClick={handleSubmit}>Guardar</button>
+          <button className="btn cancelar">Cancel</button>
+          <button className="btn guardar" onClick={handleSubmit}>Save</button>
         </div>
 
         <div className="form-columns">
           {/* Puedes continuar con las otras dos columnas como en tu versión original */}
           <div className="column">
-            <h2>Documentos USA</h2>
+            <h2>USA Documents</h2>
             <label>MC(PDF)</label>
-            <button type="button" onClick={() => abrirModal('MC')}>Subir documento</button>
+            <button type="button" onClick={() => abrirModal('MC')}>Upload Document</button>
             {documentos.MC && (
               <p>{documentos.MC.fileName} - {documentos.MC.vencimiento}</p>
             )}
             
 
             <label>W9(PDF)</label>
-            <button type="button" onClick={() => abrirModal('W9')}>Subir documento</button>
+            <button type="button" onClick={() => abrirModal('W9')}>Upload Document</button>
             {documentos.W9 && (
               <p>{documentos.W9.fileName} - {documentos.W9.vencimiento}</p>
             )}
 
             <label>IFTA(PDF)</label>
-            <button type="button" onClick={() => abrirModal('IFTA')}>Subir documento</button>
+            <button type="button" onClick={() => abrirModal('IFTA')}>Upload Document</button>
             {documentos.IFTA && (
               <p>{documentos.IFTA.fileName} - {documentos.IFTA.vencimiento}</p>
             )}
@@ -214,27 +214,27 @@ const handleSubmit = async () => {
             )}
 
             <label>Permiso KYU(PDF)</label>
-            <button type="button" onClick={() => abrirModal('Permiso_KYU')}>Subir documento</button>
+            <button type="button" onClick={() => abrirModal('Permiso_KYU')}>Upload Document</button>
             {documentos.Permiso_KYU && (
               <p>{documentos.Permiso_KYU.fileName} - {documentos.Permiso_KYU.vencimiento}</p>
             )}
 
             <label>UCR(PDF)</label>
-            <button type="button" onClick={() => abrirModal('UCR')}>Subir documento</button>
+            <button type="button" onClick={() => abrirModal('UCR')}>Upload Document</button>
             {documentos.UCR && (
               <p>{documentos.UCR.fileName} - {documentos.UCR.vencimiento}</p>
             )}
 
             <label>SCAC(PDF)</label>
-            <button type="button" onClick={() => abrirModal('SCAC')}>Subir documento</button>
+            <button type="button" onClick={() => abrirModal('SCAC')}>Upload Document</button>
             {documentos.SCAC && (
               <p>{documentos.SCAC.fileName} - {documentos.SCAC.vencimiento}</p>
             )}
           </div>
           <div className="column">
-            <h2>Documentos MEX</h2>
+            <h2>MEX Documents</h2>
             <label>CAAT(PDF)</label>
-            <button type="button" onClick={() => abrirModal('CAAT')}>Subir documento</button>
+            <button type="button" onClick={() => abrirModal('CAAT')}>Upload Document</button>
             {documentos.CAAT && (
               <p>{documentos.CAAT.fileName} - {documentos.CAAT.vencimiento}</p>
             )}
