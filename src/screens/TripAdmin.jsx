@@ -127,7 +127,7 @@ const TripAdmin = () => {
     // ** LÓGICA DE FILTRADO Y ORDENAMIENTO (useMemo) **
     const filteredAndSortedTrips = useMemo(() => {
         
-        // 1. Convertir filtros a minúsculas y limpiar espacios
+        // Convertir filtros a minúsculas y limpiar espacios
         const tripFilterValue = filterTrip.trim().toLowerCase();
         const driverLower = filterDriver.trim().toLowerCase();
         const truckLower = filterTruck.trim().toLowerCase();
@@ -139,7 +139,7 @@ const TripAdmin = () => {
 
         const filtered = trips.filter(trip => {
             
-            // --- 1. Filtro de Rango de Fechas (Basado en creation_date) ---
+            // Filtro de Rango de Fechas (Basado en creation_date) ---
             let tripCreationDate = null;
             if (trip.creation_date) { try { tripCreationDate = dayjs(trip.creation_date); if (!tripCreationDate.isValid()) { tripCreationDate = null; } } catch (e) { } }
             const start = startDate ? dayjs(startDate).startOf('day') : null;
@@ -464,6 +464,7 @@ const TripAdmin = () => {
                             <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>Status</TableCell>
                             <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>Return Date</TableCell>
                             <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>Actions</TableCell>
+                            {/* <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>Resumen</TableCell> */}
                         </TableRow>
                     </TableHead>
                     <TableBody>
