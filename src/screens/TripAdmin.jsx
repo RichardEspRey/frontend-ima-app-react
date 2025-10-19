@@ -280,9 +280,71 @@ const TripAdmin = () => {
     ]);
     
     // ... (Handlers y lógica de fetch se mantienen igual) ...
-    const handleEditTrip = (tripId) => { /* ... */ };
-    const handleAlmostOverTrip = async (tripId, tripNumber) => { /* ... */ };
-    const handleFinalizeTrip = async (tripId, tripNumber) => { /* ... */ };
+    const handleEditTrip = (tripId) => {
+        if (!tripId) { console.error("ID inválido"); return; }
+        navigate(`/edit-trip/${tripId}`);
+    };
+
+    const handleAlmostOverTrip = async (tripId, tripNumber) => {
+        if (!tripId) return;
+        const confirmation = await Swal.fire({
+            title: '¿Marcar como "Casi Finalizado"?',
+            text: `Viaje #${tripNumber} será marcado como "Casi Finalizado" y sus recursos serán liberados.`,
+            icon: 'info', 
+            showCancelButton: true,
+            confirmButtonText: 'Sí, continuar',
+            cancelButtonText: 'Cancelar'
+        });
+        if (confirmation.isConfirmed) {
+            try {
+                const apiUrl = `${apiHost}/new_trips.php`;
+                const formData = new FormData();
+                formData.append('op', 'AlmostOverTrip'); 
+                formData.append('trip_id', tripId);
+                const response = await fetch(apiUrl, { method: 'POST', body: formData });
+                const result = await response.json();
+                if (response.ok && result.status === 'success') {
+                    Swal.fire('¡Éxito!', result.message || 'Viaje marcado como "Casi Finalizado" y recursos liberados.', 'success');
+                    fetchTrips(); 
+                } else {
+                    throw new Error(result.error || result.message || 'No se pudo marcar como "Casi Finalizado".');
+                }
+            } catch (err) {
+                console.error("Error al marcar como casi finalizado:", err);
+                Swal.fire('Error', `Error al marcar como "Casi Finalizado": ${err.message}`, 'error');
+            }
+        }
+    };
+
+    const handleFinalizeTrip = async (tripId, tripNumber) => {
+        if (!tripId) return;
+        const confirmation = await Swal.fire({
+            title: '¿Finalizar Viaje?', text: `Viaje #${tripNumber} será completado.`,
+            icon: 'warning', showCancelButton: true, confirmButtonText: 'Sí, finalizar'
+        });
+        if (confirmation.isConfirmed) {
+            try {
+                const apiUrl = `${apiHost}/new_trips.php`;
+                const finalizeFormData = new FormData();
+                finalizeFormData.append('op', 'FinalizeTrip');
+                finalizeFormData.append('trip_id', tripId);
+                const response = await fetch(apiUrl, { method: 'POST', body: finalizeFormData });
+                const result = await response.json();
+                if (response.ok && result.status === 'success') {
+                    Swal.fire('¡Finalizado!', result.message || 'Viaje completado.', 'success');
+                    fetchTrips();
+                } else { throw new Error(result.error || result.message || 'No se pudo finalizar.'); }
+            } catch (err) { Swal.fire('Error', `Error al finalizar: ${err.message}`, 'error'); }
+        }
+    };
+    
+    const handleSummary = (tripId) => {
+        if (!tripId) { 
+            console.error("ID de viaje inválido para resumen"); 
+            return; 
+        }
+        navigate(`/resumen-viaje/${tripId}`); 
+    };
 
     if (loading) { return (<Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}> <CircularProgress /> <Typography ml={2}>Cargando...</Typography> </Box>); }
 
@@ -464,7 +526,7 @@ const TripAdmin = () => {
                             <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>Status</TableCell>
                             <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>Return Date</TableCell>
                             <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>Actions</TableCell>
-                            {/* <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>Resumen</TableCell> */}
+                            <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>Resumen</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
