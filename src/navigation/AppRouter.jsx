@@ -329,7 +329,7 @@ const AppRouter = () => {
               />
 
               <Route
-                path="/ResumenTrip"
+                path="/ResumenTrip/:tripId"
                 element={
                   <DashboardLayout> 
                     <ResumenTrip /> 

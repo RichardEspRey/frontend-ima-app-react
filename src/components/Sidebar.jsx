@@ -87,7 +87,6 @@ const menuItems = [
     subItems: [
       { name: 'Nuevo Viaje', route: '/trips', rolesPermitidos: ['admin','Blanca'] },
       { name: 'Administrador de viajes', route: '/admin-trips', rolesPermitidos: ['admin','Blanca','Candy','Mia'] },
-      { name: 'Resumen', route: '/ResumenTrip', rolesPermitidos: ['admin','Blanca','Candy','Mia'] }
     ]
   },
 

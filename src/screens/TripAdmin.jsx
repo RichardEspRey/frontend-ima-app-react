@@ -343,7 +343,7 @@ const TripAdmin = () => {
             console.error("ID de viaje inválido para resumen"); 
             return; 
         }
-        navigate(`/resumen-viaje/${tripId}`); 
+        navigate(`/ResumenTrip/${tripId}`); 
     };
 
     if (loading) { return (<Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}> <CircularProgress /> <Typography ml={2}>Cargando...</Typography> </Box>); }
