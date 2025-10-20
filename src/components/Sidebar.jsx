@@ -63,7 +63,7 @@ const menuItems = [
     rolesPermitidos: ['admin', 'Angeles','Blanca','Candy','Mia'],
     subItems: [
       { name: 'Nuevo Gasto', route: '/new-expense', rolesPermitidos: ['admin', 'Angeles','Mia'] },
-      { name: 'Administrador gastos', route: '/admin-gastos-generales', rolesPermitidos: ['admin'] },
+      { name: 'Administrador gastos', route: '/admin-gastos-generales', rolesPermitidos: ['admin','Angeles'] },
       { name: 'Gastos diesel', route: '/admin-diesel', rolesPermitidos: ['admin','Blanca','Candy','Mia'] },
       { name: 'Gastos viajes', route: '/admin-gastos', rolesPermitidos: ['admin','Blanca','Mia'] }
     ]
