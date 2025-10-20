@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "docs:dev": "npx htmldocs@latest dev",
     "lint": "eslint .",
     "preview": "vite preview",
     "start": "electron .",
@@ -25,6 +26,8 @@
     "@reduxjs/toolkit": "^2.6.1",
     "axios": "^1.8.4",
     "dayjs": "^1.11.13",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^3.0.3",
     "react": "^19.0.0",
     "react-datepicker": "^8.2.1",
     "react-dom": "^19.0.0",
