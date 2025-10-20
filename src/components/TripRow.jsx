@@ -46,7 +46,7 @@ dayjs.updateLocale('es', {
 });
 
 
-export const TripRow = ({ trip, onEdit, onFinalize, onAlmostOver, getDocumentUrl }) => {
+export const TripRow = ({ trip, onEdit, onFinalize, onAlmostOver, getDocumentUrl, onSummary }) => {
     const [open, setOpen] = useState(false);
 
     console.log(trip)
@@ -191,9 +191,21 @@ export const TripRow = ({ trip, onEdit, onFinalize, onAlmostOver, getDocumentUrl
                         >Finalizar</Button>
                     </Box>
                 </TableCell>
+
+                {/* Resumen Cell */}
+                <TableCell>
+                    <Button 
+                        size="small" 
+                        variant="contained" 
+                        color="secondary"
+                        onClick={() => onSummary(trip.trip_id)}
+                    >
+                        Resumen
+                    </Button>
+                </TableCell>
             </TableRow>
             <TableRow>
-                <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={9}>
+                <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={10}>
                     <Collapse in={open} timeout="auto" unmountOnExit>
                         <Box sx={{ margin: 1, padding: 1, border: '1px solid rgba(224, 224, 224, 1)', borderRadius: '4px' }}>
                             <Typography variant="h6" gutterBottom component="div" sx={{ fontSize: '1rem' }}>
