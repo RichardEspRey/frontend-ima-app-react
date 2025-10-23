@@ -5,29 +5,38 @@ import { setActiveMenu, setExpandedMenu, setSelectedSubMenu } from '../redux/men
 import { AuthContext } from '../auth/AuthContext';
 import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
-import { Collapse } from '@mui/material'; // Importado de MUI
+import { Collapse } from '@mui/material';
+
+// 🚨 NUEVAS IMPORTACIONES DE REACT-ICONS (Md)
+import { 
+    MdDashboard, MdCarRental, MdLocalShipping, MdDirectionsBus, MdLocalGasStation, 
+    MdAttachMoney, MdExitToApp, MdList, MdAssignment, MdTrendingUp, MdBarChart 
+} from 'react-icons/md'; 
 
 import logo from '../assets/images/logo_white.png';
-import iconDashboard from '../assets/images/icons/dashboard.png';
-import iconIMA from '../assets/images/icons/administrar.png';
-import iconDriver from '../assets/images/icons/Driver.png';
-import iconTrailer from '../assets/images/icons/trailer.png';
-import iconBox from '../assets/images/icons/caja.png';
-import iconReport from '../assets/images/icons/report.png';
-import iconExit from '../assets/images/icons/exit.png';
-import iconList from '../assets/images/icons/list.png';
-import iconGasto from '../assets/images/icons/gasto.png';
 
-// Convención final:
-// - rolesPermitidos: array de roles permitidos (padre y subitems).
-// - Sin permisos granulares.
+// 🚨 ELIMINAMOS LAS IMPORTACIONES DE PNG/JPEG ANTIGUAS
+
+// Mapeo de nombres de menú a componentes de iconos
+const iconMap = {
+    'Inicio': MdDashboard,
+    'IMA': MdAssignment,         // Documentación
+    'Conductores': MdCarRental,   // Conductor
+    'Camiones': MdDirectionsBus,  // Camión/Trailer
+    'Gastos': MdLocalGasStation,  // Gasto/Diesel
+    'Mantenimientos': MdList,     // Lista/Mantenimiento
+    'Viajes': MdLocalShipping,    // Camión de carga
+    'Finanzas': MdAttachMoney,    // Dinero
+    'Reportes': MdBarChart,       // Gráficos/Reporte
+};
+
 
 const menuItems = [
-  { name: 'Inicio', icon: iconDashboard, route: '/home', rolesPermitidos: ['admin'] },
+  // 🚨 AJUSTE: Eliminamos la propiedad 'icon' ya que usamos el map
+  { name: 'Inicio', route: '/home', rolesPermitidos: ['admin'] },
 
   {
     name: 'IMA',
-    icon: iconIMA,
     rolesPermitidos: ['admin'],
     subItems: [
       { name: 'Alta de documentos', route: '/ImaScreen', rolesPermitidos: ['admin'] },
@@ -37,7 +46,6 @@ const menuItems = [
 
   {
     name: 'Conductores',
-    icon: iconDriver,
     rolesPermitidos: ['admin', 'Angeles'],
     subItems: [
       { name: 'Alta de conductores', route: '/drivers', rolesPermitidos: ['admin', 'Angeles'] },
@@ -47,7 +55,6 @@ const menuItems = [
 
   {
     name: 'Camiones',
-    icon: iconTrailer,
     rolesPermitidos: ['admin','Angeles'],
     subItems: [
       { name: 'Alta de camiones', route: '/trucks', rolesPermitidos: ['admin','Angeles'] },
@@ -59,7 +66,6 @@ const menuItems = [
 
   {
     name: 'Gastos',
-    icon: iconGasto,
     rolesPermitidos: ['admin', 'Angeles','Blanca','Candy','Mia'],
     subItems: [
       { name: 'Nuevo Gasto', route: '/new-expense', rolesPermitidos: ['admin', 'Angeles','Mia'] },
@@ -71,7 +77,6 @@ const menuItems = [
 
   {
     name: 'Mantenimientos',
-    icon: iconList,
     rolesPermitidos: ['admin', 'Angeles','Candy'],
     subItems: [
       { name: 'Inventario', route: '/view-inventory', rolesPermitidos: ['admin','Angeles','Candy'] },
@@ -82,7 +87,6 @@ const menuItems = [
 
   {
     name: 'Viajes',
-    icon: iconBox,
     rolesPermitidos: ['admin','Candy','Blanca'],
     subItems: [
       { name: 'Nuevo Viaje', route: '/trips', rolesPermitidos: ['admin','Blanca'] },
@@ -92,14 +96,13 @@ const menuItems = [
 
   {
     name: 'Finanzas',
-    icon: iconBox,
     rolesPermitidos: ['admin'],
     subItems: [
       { name: 'Ventas', route: '/finanzas', rolesPermitidos: ['admin'] }
     ]
   },
 
-  { name: 'Reportes', icon: iconReport, route: '/reportes', rolesPermitidos: ['admin'] }
+  { name: 'Reportes', route: '/reportes', rolesPermitidos: ['admin'] }
 ];
 
 const Sidebar = () => {
@@ -242,7 +245,8 @@ const Sidebar = () => {
       <div className="menu-list-wrapper">
         {menuFiltrado.map((item) => {
           const hasSubs = !!(item.subItems && item.subItems.length > 0);
-          const isOpen = expandedMenu === item.name; // <--- Definición de isOpen para Collapse
+          const isOpen = expandedMenu === item.name; 
+          const IconComponent = iconMap[item.name]; // 🚨 OBTENEMOS EL COMPONENTE DE ICONO
 
           return (
             <div key={item.name} className="menu-section">
@@ -251,7 +255,9 @@ const Sidebar = () => {
                 onClick={() => hasSubs ? toggleSubMenu(item.name, hasSubs) : (item.route && handleNavigate(item.route))}
                 disabled={!hasSubs && !item.route}
               >
-                <img src={item.icon} alt={`${item.name} icon`} className="menu-icon" />
+                {/* 🚨 REEMPLAZO DEL ICONO POR EL COMPONENTE SVG */}
+                {IconComponent && <IconComponent className="menu-icon" />}
+                
                 <span className="menu-text-content">
                   {item.name}
                   {notificaciones[item.name] > 0 && (
@@ -293,8 +299,9 @@ const Sidebar = () => {
       </div>
 
       <button className="logout-button" onClick={handleLogout}>
-        <img src={iconExit} className="menu-icon" alt="logout" />
-        <span className="menu-text-content">Log Out</span>
+        {/* 🚨 ICONO DE SALIDA */}
+        <MdExitToApp className="menu-icon" />
+        <span className="menu-text-content">Cerrar Sesión</span>
       </button>
     </div>
   );

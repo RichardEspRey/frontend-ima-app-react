@@ -2,8 +2,10 @@ import React, { useState, useEffect, useMemo } from 'react';
 import {
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
     Button, TablePagination, TextField, Box, Typography, CircularProgress, Alert,
-    Grid, Stack, FormControl, InputLabel, Select, MenuItem // Importados para el nuevo Select
+    Grid, Stack, FormControl, InputLabel, Select, MenuItem, Collapse
 } from '@mui/material';
+
+import FilterListIcon from '@mui/icons-material/FilterList';
 
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -43,8 +45,10 @@ const TripAdmin = () => {
     const [filterCompany, setFilterCompany] = useState('');
     const [filterOrigin, setFilterOrigin] = useState('');
     const [filterDestination, setFilterDestination] = useState('');
-    // ** NUEVO ESTADO **
     const [filterDirection, setFilterDirection] = useState('All'); 
+
+    // ** Visibilidad de filtros **
+    const [showFilters, setShowFilters] = useState(false);
     
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(25);
@@ -106,7 +110,6 @@ const TripAdmin = () => {
     useEffect(() => { fetchTrips(); }, []);
 
     const getDocumentUrl = (serverPath) => {
-        // ... (getDocumentUrl se mantiene igual) ...
         if (!serverPath || typeof serverPath !== 'string') {
             return '#';
         }
@@ -355,160 +358,173 @@ const TripAdmin = () => {
     return (
         <div className="trip-admin">
             <h1 className="title">Administrador de Viajes</h1>
+
+            <Box sx={{ mb: 2 }}>
+                <Button
+                    variant="outlined"
+                    startIcon={<FilterListIcon />}
+                    onClick={() => setShowFilters(p => !p)}
+                    sx={{ mb: 1 }}
+                >
+                    {showFilters ? 'Ocultar Filtros' : 'Mostrar Filtros'}
+                </Button>
+            </Box>
             
             {/* --- CONTENEDOR DE FILTROS --- */}
-            <Paper sx={{ p: 2, mb: 3 }}>
-                <Typography variant="h6" gutterBottom>Filtros de Búsqueda (Búsqueda Parcial)</Typography>
-                <Grid container spacing={2} alignItems="center">
-                    
-                    {/* Filtros de Identificación (Fila 1) */}
-                    <Grid item xs={12} sm={3}>
-                        <TextField 
-                            label="Trip Number" 
-                            size="small" 
-                            fullWidth 
-                            value={filterTrip} 
-                            onChange={(e) => handleFilterChange(setFilterTrip, e.target.value)} 
-                            placeholder="Ej: 101"
-                        />
-                    </Grid>
-                    <Grid item xs={12} sm={3}>
-                        <TextField 
-                            label="Driver" 
-                            size="small" 
-                            fullWidth 
-                            value={filterDriver} 
-                            onChange={(e) => handleFilterChange(setFilterDriver, e.target.value)} 
-                        />
-                    </Grid>
-                    <Grid item xs={12} sm={3}>
-                        <TextField 
-                            label="Truck" 
-                            size="small" 
-                            fullWidth 
-                            value={filterTruck} 
-                            onChange={(e) => handleFilterChange(setFilterTruck, e.target.value)} 
-                        />
-                    </Grid>
-                    <Grid item xs={12} sm={3}>
-                        <TextField 
-                            label="Trailer/Caja" 
-                            size="small" 
-                            fullWidth 
-                            value={filterTrailer} 
-                            onChange={(e) => handleFilterChange(setFilterTrailer, e.target.value)} 
-                        />
-                    </Grid>
-
-                    {/* Filtros de Etapas (Fila 2) */}
-                    <Grid item xs={12} sm={3}>
-                        <TextField 
-                            label="Compañía (Etapa)" 
-                            size="small" 
-                            fullWidth 
-                            value={filterCompany} 
-                            onChange={(e) => handleFilterChange(setFilterCompany, e.target.value)} 
-                        />
-                    </Grid>
-                    <Grid item xs={12} sm={3}>
-                        <TextField 
-                            label="Origen (Etapa)" 
-                            size="small" 
-                            fullWidth 
-                            value={filterOrigin} 
-                            onChange={(e) => handleFilterChange(setFilterOrigin, e.target.value)} 
-                        />
-                    </Grid>
-                    <Grid item xs={12} sm={3}>
-                        <TextField 
-                            label="Destino (Etapa)" 
-                            size="small" 
-                            fullWidth 
-                            value={filterDestination} 
-                            onChange={(e) => handleFilterChange(setFilterDestination, e.target.value)} 
-                        />
-                    </Grid>
-                    
-                    {/* NUEVO FILTRO: Dirección (Fila 2, Columna 4) */}
-                    <Grid item xs={12} sm={3}>
-                        <FormControl size="small" fullWidth disabled={isDirectionFilterDisabled}>
-                            <InputLabel id="direction-label">Dirección (Requiere Origen/Destino)</InputLabel>
-                            <Select
-                                labelId="direction-label"
-                                value={filterDirection}
-                                label="Dirección (Requiere Origen/Destino)"
-                                onChange={(e) => handleFilterChange(setFilterDirection, e.target.value)}
-                            >
-                                {DIRECTION_OPTIONS.map((option) => (
-                                    <MenuItem key={option.value} value={option.value}>
-                                        {option.label}
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
-                        {isDirectionFilterDisabled && filterDirection !== 'All' && (
-                            <Typography variant="caption" color="error">
-                                El filtro de dirección está deshabilitado.
-                            </Typography>
-                        )}
-                    </Grid>
-                    
-
-                    {/* Filtros de Fecha y Acciones (Fila 3) */}
-                    <Grid item xs={12}>
-                        <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems="center">
-                            <DatePicker
-                                selected={startDate}
-                                onChange={(date) => handleFilterChange(setStartDate, date)}
-                                selectsStart startDate={startDate}
-                                endDate={endDate} placeholderText="Fecha inicio"
-                                dateFormat="dd/MM/yyyy"
-                                className="form-input-datepicker" 
-                                isClearable 
+            <Collapse in={showFilters} timeout="auto" unmountOnExit>
+                <Paper sx={{ p: 2, mb: 3 }}>
+                    <Typography variant="h6" gutterBottom>Filtros de Búsqueda (Búsqueda Parcial)</Typography>
+                    <Grid container spacing={2} alignItems="center">
+                        
+                        {/* Filtros de Identificación (Fila 1) */}
+                        <Grid item xs={12} sm={3}>
+                            <TextField 
+                                label="Trip Number" 
+                                size="small" 
+                                fullWidth 
+                                value={filterTrip} 
+                                onChange={(e) => handleFilterChange(setFilterTrip, e.target.value)} 
+                                placeholder="Ej: 101"
                             />
-                            <DatePicker
-                                selected={endDate}
-                                onChange={(date) => handleFilterChange(setEndDate, date)}
-                                selectsEnd startDate={startDate}
-                                endDate={endDate}
-                                minDate={startDate}
-                                placeholderText="Fecha fin"
-                                dateFormat="dd/MM/yyyy"
-                                className="form-input-datepicker" 
-                                isClearable 
+                        </Grid>
+                        <Grid item xs={12} sm={3}>
+                            <TextField 
+                                label="Driver" 
+                                size="small" 
+                                fullWidth 
+                                value={filterDriver} 
+                                onChange={(e) => handleFilterChange(setFilterDriver, e.target.value)} 
                             />
-                            <Button 
-                                variant="outlined" 
-                                onClick={() => { 
-                                    // Limpiar todos los filtros
-                                    setFilterTrip(''); 
-                                    setFilterDriver('');
-                                    setFilterTruck('');
-                                    setFilterTrailer('');
-                                    setFilterCompany('');
-                                    setFilterOrigin('');
-                                    setFilterDestination('');
-                                    setFilterDirection('All'); // Limpiar la dirección
-                                    setStartDate(null); 
-                                    setEndDate(null); 
-                                    setPage(0); 
-                                }} 
-                                size="small"
-                            >
-                                Limpiar Todo
-                            </Button>
-                            <Button 
-                                variant="contained" 
-                                onClick={fetchTrips} 
-                                disabled={loading} 
-                                size="small"
-                            >
-                                Refrescar
-                            </Button>
-                        </Stack>
+                        </Grid>
+                        <Grid item xs={12} sm={3}>
+                            <TextField 
+                                label="Truck" 
+                                size="small" 
+                                fullWidth 
+                                value={filterTruck} 
+                                onChange={(e) => handleFilterChange(setFilterTruck, e.target.value)} 
+                            />
+                        </Grid>
+                        <Grid item xs={12} sm={3}>
+                            <TextField 
+                                label="Trailer/Caja" 
+                                size="small" 
+                                fullWidth 
+                                value={filterTrailer} 
+                                onChange={(e) => handleFilterChange(setFilterTrailer, e.target.value)} 
+                            />
+                        </Grid>
+
+                        {/* Filtros de Etapas (Fila 2) */}
+                        <Grid item xs={12} sm={3}>
+                            <TextField 
+                                label="Compañía (Etapa)" 
+                                size="small" 
+                                fullWidth 
+                                value={filterCompany} 
+                                onChange={(e) => handleFilterChange(setFilterCompany, e.target.value)} 
+                            />
+                        </Grid>
+                        <Grid item xs={12} sm={3}>
+                            <TextField 
+                                label="Origen (Etapa)" 
+                                size="small" 
+                                fullWidth 
+                                value={filterOrigin} 
+                                onChange={(e) => handleFilterChange(setFilterOrigin, e.target.value)} 
+                            />
+                        </Grid>
+                        <Grid item xs={12} sm={3}>
+                            <TextField 
+                                label="Destino (Etapa)" 
+                                size="small" 
+                                fullWidth 
+                                value={filterDestination} 
+                                onChange={(e) => handleFilterChange(setFilterDestination, e.target.value)} 
+                            />
+                        </Grid>
+                        
+                        {/* NUEVO FILTRO: Dirección (Fila 2, Columna 4) */}
+                        <Grid item xs={12} sm={3}>
+                            <FormControl size="small" fullWidth disabled={isDirectionFilterDisabled}>
+                                <InputLabel id="direction-label">Dirección (Requiere Origen/Destino)</InputLabel>
+                                <Select
+                                    labelId="direction-label"
+                                    value={filterDirection}
+                                    label="Dirección (Requiere Origen/Destino)"
+                                    onChange={(e) => handleFilterChange(setFilterDirection, e.target.value)}
+                                >
+                                    {DIRECTION_OPTIONS.map((option) => (
+                                        <MenuItem key={option.value} value={option.value}>
+                                            {option.label}
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
+                            {isDirectionFilterDisabled && filterDirection !== 'All' && (
+                                <Typography variant="caption" color="error">
+                                    El filtro de dirección está deshabilitado.
+                                </Typography>
+                            )}
+                        </Grid>
+                        
+
+                        {/* Filtros de Fecha y Acciones (Fila 3) */}
+                        <Grid item xs={12}>
+                            <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems="center">
+                                <DatePicker
+                                    selected={startDate}
+                                    onChange={(date) => handleFilterChange(setStartDate, date)}
+                                    selectsStart startDate={startDate}
+                                    endDate={endDate} placeholderText="Fecha inicio"
+                                    dateFormat="dd/MM/yyyy"
+                                    className="form-input-datepicker" 
+                                    isClearable 
+                                />
+                                <DatePicker
+                                    selected={endDate}
+                                    onChange={(date) => handleFilterChange(setEndDate, date)}
+                                    selectsEnd startDate={startDate}
+                                    endDate={endDate}
+                                    minDate={startDate}
+                                    placeholderText="Fecha fin"
+                                    dateFormat="dd/MM/yyyy"
+                                    className="form-input-datepicker" 
+                                    isClearable 
+                                />
+                                <Button 
+                                    variant="outlined" 
+                                    onClick={() => { 
+                                        // Limpiar todos los filtros
+                                        setFilterTrip(''); 
+                                        setFilterDriver('');
+                                        setFilterTruck('');
+                                        setFilterTrailer('');
+                                        setFilterCompany('');
+                                        setFilterOrigin('');
+                                        setFilterDestination('');
+                                        setFilterDirection('All'); // Limpiar la dirección
+                                        setStartDate(null); 
+                                        setEndDate(null); 
+                                        setPage(0); 
+                                    }} 
+                                    size="small"
+                                >
+                                    Limpiar Todo
+                                </Button>
+                                <Button 
+                                    variant="contained" 
+                                    onClick={fetchTrips} 
+                                    disabled={loading} 
+                                    size="small"
+                                >
+                                    Refrescar
+                                </Button>
+                            </Stack>
+                        </Grid>
                     </Grid>
-                </Grid>
-            </Paper>
+                </Paper>
+            </Collapse>
             {/* --- FIN CONTENEDOR DE FILTROS --- */}
 
             {error && <Alert severity="error" sx={{ my: 2 }}>Error al cargar: {error}</Alert>}

@@ -108,7 +108,11 @@ export const TripRow = ({ trip, onEdit, onFinalize, onAlmostOver, getDocumentUrl
                         {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
                     </IconButton>
                 </TableCell>
-                <TableCell component="th" scope="row">{trip.trip_number}</TableCell>
+                <TableCell component="th" scope="row">
+                    <Box sx={{ whiteSpace: 'nowrap' }}>
+                        {trip.trip_number}
+                    </Box>
+                </TableCell>
                 {/* Driver(s) Cell */}
                 <TableCell>
                     {trip.driver_second_nombre ? (
@@ -165,7 +169,7 @@ export const TripRow = ({ trip, onEdit, onFinalize, onAlmostOver, getDocumentUrl
 
                 {/* Actions Cell */}
                 <TableCell>
-                    <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 0.5 }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 0.5, whiteSpace: 'nowrap' }}>
                         {(() => {
                             const currentStatus = trip.status || 'In Transit';
                             let label = 'Editar';

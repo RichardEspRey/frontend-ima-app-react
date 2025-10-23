@@ -100,7 +100,6 @@
   font-weight: bold;
 } */
 
-/* --- Variables de Diseño --- */
 :root {
     --primary-blue: #3C48E1; /* Color principal */
     --hover-bg: #4f5bda; /* Azul de hover (más claro y vibrante) */
@@ -109,7 +108,8 @@
     --sub-text-color: #e0e0e0; /* Texto de submenú */
     --transition-speed: 0.25s; /* Transiciones rápidas */
     --border-radius: 6px;
-    --item-height: 45px;
+    --item-height: 40px; /* Reducido ligeramente a 40px para más compactación */
+    --padding-unit: 8px; /* Unidad base (8px) */
 }
 
 /* --- Contenedor Principal --- */
@@ -123,18 +123,18 @@
     overflow-y: auto; 
     overflow-x: hidden;
     scrollbar-width: none;
+    font-family: "Roboto", sans-serif;
 }
 
 .sidebar-container::-webkit-scrollbar {
     display: none;
 }
 
-/* --- Logo --- */
 .sidebar-logo-wrapper {
-    padding: 20px 20px 10px 20px;
+    padding: calc(3 * var(--padding-unit)) 20px calc(2 * var(--padding-unit)) 20px; 
     text-align: center;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.15); /* Separador suave y más visible */
-    margin-bottom: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    margin-bottom: var(--padding-unit);
 }
 
 .sidebar-logo {
@@ -143,24 +143,23 @@
     object-fit: contain;
 }
 
-/* --- Lista de Menú --- */
 .menu-list-wrapper {
     flex-grow: 1;
-    padding: 10px 15px;
+    padding: 0 var(--padding-unit); 
 }
 
 .menu-section {
-    margin-bottom: 4px;
+    margin-bottom: calc(2 * var(--padding-unit)); 
 }
 
-/* --- Ítems de Menú (Padres) --- */
 .menu-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
     width: 100%;
     height: var(--item-height);
-    padding: 0 10px;
+    padding: 0 var(--padding-unit); 
+    margin-bottom: 4px;
     border: none;
     background: none;
     cursor: pointer;
@@ -170,31 +169,33 @@
     text-align: left;
     border-radius: var(--border-radius);
     transition: background-color var(--transition-speed);
+    font-family: "Roboto", sans-serif; /* Asegurar ítems */
 }
 
 .menu-item:hover {
     background-color: var(--hover-bg);
+    color: var(--text-color);
 }
 
-/* Estado Activo para Ítems sin Submenú */
 .menu-item.active-item {
     background-color: var(--active-bg);
     color: var(--text-color);
     font-weight: 700;
+    /* Opcional: Borde izquierdo para destacar el activo */
+    /* border-left: 4px solid var(--text-color); */
+    /* padding-left: 6px; */
 }
 
-/* --- Iconos y Texto --- */
 .menu-icon {
-    width: 20px;
-    height: 20px;
-    margin-right: 10px;
-    object-fit: contain;
-    filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(100%); 
+    width: 18px;
+    height: 18px;
+    margin-right: 12px;
+    color: var(--text-color);
     transition: filter var(--transition-speed); 
 }
 
 .menu-item.active-item .menu-icon {
-    filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(100%); 
+    color: var(--text-color);
 }
 
 .menu-text-content {
@@ -204,17 +205,10 @@
     text-align: left;
 }
 
-.arrow-icon-wrapper {
-    font-size: 10px; 
-    color: var(--text-color);
-    /* Transformación para rotar la flecha de forma suave, aunque MUI maneja la FaChevronDown/Up */
-    transition: transform var(--transition-speed);
-}
-
-/* --- Contador de Notificaciones / Badges --- */
+/* --- Contador de Notificaciones / Badges (Mantenido) --- */
 .notification-badge {
     margin-left: 6px;
-    background-color: #dc3545; /* Rojo de alerta */
+    background-color: #dc3545; 
     color: white;
     border-radius: 12px;
     padding: 2px 6px;
@@ -223,20 +217,18 @@
     line-height: 1;
 }
 
-/* --- Submenú Contenedor (Solo padding, MUI maneja la transición) --- */
 .submenu-container {
-    padding-left: 15px; 
-    padding-top: 4px;
-    padding-bottom: 4px;
-    /* QUITAMOS max-height y transition aquí, lo maneja MUI Collapse */
+    padding-left: 20px; 
+    padding-top: 0;
+    padding-bottom: 0;
 }
 
-/* --- Ítems del Submenú --- */
 .submenu-item {
     display: flex;
     align-items: center;
     width: 100%;
-    padding: 8px 10px;
+    /* Ajustamos el padding para que el texto se alinee con el padre indentado */
+    padding: var(--padding-unit) calc(2 * var(--padding-unit)) var(--padding-unit) 10px; 
     border: none;
     background: none;
     color: var(--sub-text-color);
@@ -260,8 +252,8 @@
 }
 
 .submenu-dot {
-    width: 5px;
-    height: 5px;
+    width: 4px;
+    height: 4px;
     background-color: var(--sub-text-color);
     border-radius: 50%;
     margin-right: 12px;
@@ -276,10 +268,10 @@
 .logout-button {
     display: flex;
     align-items: center;
-    width: calc(100% - 30px);
+    width: calc(100% - 2 * var(--padding-unit)); 
     height: var(--item-height);
     padding: 0 10px;
-    margin: 15px 15px 20px 15px; 
+    margin: calc(2 * var(--padding-unit)) var(--padding-unit) calc(2 * var(--padding-unit)) var(--padding-unit); 
     background-color: var(--active-bg); 
     border: none;
     color: var(--text-color);
@@ -291,5 +283,5 @@
 }
 
 .logout-button:hover {
-    background-color: #dc3545; /* Usamos el color de la notificación para una salida clara */
+    background-color: #dc3545; 
 }
