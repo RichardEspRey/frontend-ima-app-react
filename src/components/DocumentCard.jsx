@@ -4,7 +4,6 @@ import { Tooltip } from 'react-tooltip';
 const DocumentCard = ({ docKey, documento, getIconByFecha, abrirModalConDocumento }) => {
     const doc = documento[docKey];
     
-    // El icono de estatus de color (escudo) ya incluye el Tooltip y onClick
     const StatusIconComponent = getIconByFecha(docKey); 
     
     const vencimiento = doc?.vencimiento 
