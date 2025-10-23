@@ -7,7 +7,6 @@ import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { Collapse } from '@mui/material';
 
-// 🚨 NUEVAS IMPORTACIONES DE REACT-ICONS (Md)
 import { 
     MdDashboard, MdCarRental, MdLocalShipping, MdDirectionsBus, MdLocalGasStation, 
     MdAttachMoney, MdExitToApp, MdList, MdAssignment, MdTrendingUp, MdBarChart 
@@ -15,9 +14,7 @@ import {
 
 import logo from '../assets/images/logo_white.png';
 
-// 🚨 ELIMINAMOS LAS IMPORTACIONES DE PNG/JPEG ANTIGUAS
 
-// Mapeo de nombres de menú a componentes de iconos
 const iconMap = {
     'Inicio': MdDashboard,
     'IMA': MdAssignment,         // Documentación
@@ -32,7 +29,6 @@ const iconMap = {
 
 
 const menuItems = [
-  // 🚨 AJUSTE: Eliminamos la propiedad 'icon' ya que usamos el map
   { name: 'Inicio', route: '/home', rolesPermitidos: ['admin'] },
 
   {
@@ -121,7 +117,6 @@ const Sidebar = () => {
   const apiHost = import.meta.env.VITE_API_HOST;
   const { user, logout } = useContext(AuthContext);
 
-  // Rol desde contexto o localStorage
   const [tipoUsuario, setTipoUsuario] = useState('');
 
   useEffect(() => {
@@ -138,7 +133,7 @@ const Sidebar = () => {
   // Comparador por rol (case-insensitive)
   const roleAllowed = useCallback(
     (roles) => {
-      if (!roles || roles.length === 0) return true; // si no está definido, se muestra a todos
+      if (!roles || roles.length === 0) return true;
       const u = String(tipoUsuario || '').toLowerCase();
       return roles.some(r => String(r).toLowerCase() === u);
     },
@@ -150,10 +145,8 @@ const Sidebar = () => {
     return items.reduce((acc, item) => {
       const canSeeSection = roleAllowed(item.rolesPermitidos);
 
-      // Si no puede ver la sección, no se muestra (aunque tenga subitems)
       if (!canSeeSection) return acc;
 
-      // Si tiene subitems, filtrarlos por roles (si no define, hereda del padre)
       if (Array.isArray(item.subItems) && item.subItems.length > 0) {
         const visibleSubs = item.subItems.filter((si) => {
           const subRoles = si.rolesPermitidos ?? item.rolesPermitidos;
@@ -246,7 +239,7 @@ const Sidebar = () => {
         {menuFiltrado.map((item) => {
           const hasSubs = !!(item.subItems && item.subItems.length > 0);
           const isOpen = expandedMenu === item.name; 
-          const IconComponent = iconMap[item.name]; // 🚨 OBTENEMOS EL COMPONENTE DE ICONO
+          const IconComponent = iconMap[item.name];
 
           return (
             <div key={item.name} className="menu-section">
@@ -255,7 +248,6 @@ const Sidebar = () => {
                 onClick={() => hasSubs ? toggleSubMenu(item.name, hasSubs) : (item.route && handleNavigate(item.route))}
                 disabled={!hasSubs && !item.route}
               >
-                {/* 🚨 REEMPLAZO DEL ICONO POR EL COMPONENTE SVG */}
                 {IconComponent && <IconComponent className="menu-icon" />}
                 
                 <span className="menu-text-content">
@@ -273,7 +265,6 @@ const Sidebar = () => {
                 )}
               </button>
 
-              {/* Uso de MUI Collapse para la transición suave */}
               {hasSubs && (
                 <Collapse in={isOpen} timeout="auto" unmountOnExit>
                   <div className="submenu-container">
@@ -283,7 +274,7 @@ const Sidebar = () => {
                         className={`submenu-item ${selectedSubMenu === subItem.route ? 'active-submenu' : ''}`}
                         onClick={() => handleSubMenuSelect(subItem.route)}
                       >
-                        <span className="submenu-dot" /> {/* Punto visual para subitem */}
+                        <span className="submenu-dot" /> 
                         {subItem.name}
                         {subnotificaciones[subItem.name] > 0 && (
                           <span className="notification-badge">{subnotificaciones[subItem.name]}</span>
@@ -299,7 +290,6 @@ const Sidebar = () => {
       </div>
 
       <button className="logout-button" onClick={handleLogout}>
-        {/* 🚨 ICONO DE SALIDA */}
         <MdExitToApp className="menu-icon" />
         <span className="menu-text-content">Cerrar Sesión</span>
       </button>

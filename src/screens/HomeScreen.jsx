@@ -1,11 +1,27 @@
-import React from "react";
-import './css/HomeScreen.css';
+import { Box, Typography } from '@mui/material'; 
 
 const HomeScreen = () => {
   return (
-    <div className="home-container">
-      <h1 className="home-text">Welcome to the Dashboard</h1>
-    </div>
+
+    <Box 
+      sx={{ 
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100%',
+      }}
+    >
+      <Typography 
+        variant="h3" 
+        component="h1" 
+        sx={{ 
+          fontWeight: 700,
+          color: 'text.primary'
+        }}
+      >
+        Welcome to the Dashboard
+      </Typography>
+    </Box>
   );
 };
 
