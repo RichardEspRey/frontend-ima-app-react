@@ -76,24 +76,34 @@ export default function ResumenTrip() {
     return { invoice: inv, diesel, expenses, driverPayManual: driver, total };
   }, [summary, driverPayManual]);
 
-  const generatePDF = async () => {
-    const elementsToHide = document.querySelectorAll('.no-print');
-    elementsToHide.forEach(el => el.style.display = 'none');
+ const generatePDF = async () => {
+  const elementsToHide = document.querySelectorAll('.no-print');
+  elementsToHide.forEach(el => el.style.display = 'none');
 
-    const element = printRef.current;
-    const canvas = await html2canvas(element, { scale: 2, useCORS: true, logging: false });
-    const imgData = canvas.toDataURL('image/jpeg', 1.0);
+  const element = printRef.current;
+  const canvas = await html2canvas(element, { scale: 2, useCORS: true, logging: false });
+  const imgData = canvas.toDataURL('image/jpeg', 1.0);
 
-    const pdfWidth = 210; // A4 width mm
-    const pdfHeight = (pdfWidth / canvas.width) * canvas.height;
-    const pdf = new jsPDF('p', 'mm', 'a4');
-    pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
-    pdf.output('dataurlnewwindow', {
-      filename: `Resumen_Viaje_${summary?.trip?.trip_number || 'NA'}.pdf`
-    });
+  const pdf = new jsPDF('p', 'mm', 'a4');
+  const pageW = pdf.internal.pageSize.getWidth();   // 210 mm en A4
+  const pageH = pdf.internal.pageSize.getHeight();  // 297 mm en A4
 
-    elementsToHide.forEach(el => el.style.display = '');
-  };
+  // Márgenes deseados (ajusta a gusto)
+  const margin = { top: 5, right: 8, bottom: 0, left: 8 };
+
+  // Escalamos la imagen al ancho disponible (página - márgenes laterales)
+  const imgW = pageW - margin.left - margin.right;
+  const imgH = (imgW / canvas.width) * canvas.height;
+
+  // Dibuja la imagen con padding/margen izquierdo
+  pdf.addImage(imgData, 'JPEG', margin.left, margin.top, imgW, imgH);
+
+  pdf.output('dataurlnewwindow', {
+    filename: `Resumen_Viaje_${summary?.trip?.trip_number || 'NA'}.pdf`
+  });
+
+  elementsToHide.forEach(el => el.style.display = '');
+};
 
   if (loading || !summary) {
     return (
@@ -237,7 +247,7 @@ export default function ResumenTrip() {
                     <TableCell>{fmtDate(r.fecha)}</TableCell>
                     <TableCell>{r.odometro || '—'}</TableCell> {/* no viene odómetro en payload */}
                     <TableCell>{Number(r.galones ?? 0).toFixed(2)} gal</TableCell>
-                    <TableCell>{money(r.monto || 0, 'USD')}</TableCell>
+                    <TableCell>{money(r.fleetone || 0, 'USD')}</TableCell>
                     <TableCell>{r.nombre || '—'}</TableCell>
 
                   </TableRow>
@@ -334,7 +344,7 @@ export default function ResumenTrip() {
                   <TableCell>{money(totals.expenses, 'USD')}</TableCell>
                   <TableCell sx={{ color: '#2e7d32' }}>Dato de la Base de datos</TableCell>
                 </TableRow>
-                <TableRow>
+                <TableRow className="no-print">
                   <TableCell sx={{ fontWeight: 900 }}>Total</TableCell>
                   <TableCell sx={{ fontWeight: 900 }}>{money(totals.total, 'USD')}</TableCell>
                   <TableCell />
@@ -345,17 +355,17 @@ export default function ResumenTrip() {
         </Box>
 
         {/* Resumen final */}
-        <Box sx={{ mt: 3 }}>
-          <TableContainer component={Paper} variant="outlined">
+        <Box sx={{ mt: 3 }} >
+          <TableContainer component={Paper} variant="outlined" >
             <Table size="small">
               <TableHead>
-                <TableRow>
+                <TableRow className="no-print">
                   <TableCell>Viajes</TableCell>
                   <TableCell>Total ($)</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                <TableRow hover>
+                <TableRow hover className="no-print">
                   <TableCell>{header.trip_number || '—'}</TableCell>
                   <TableCell>{money(totals.total, 'USD')}</TableCell>
                 </TableRow>

@@ -95,7 +95,8 @@ const menuItems = [
     icon: iconBox,
     rolesPermitidos: ['admin'],
     subItems: [
-      { name: 'Ventas', route: '/finanzas', rolesPermitidos: ['admin'] }
+      { name: 'Ventas', route: '/finanzas', rolesPermitidos: ['admin'] },
+      { name: 'Residuo de viaje', route: '/ResiduoTrip', rolesPermitidos: ['admin'] }
     ]
   },
 

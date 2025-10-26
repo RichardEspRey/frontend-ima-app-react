@@ -192,7 +192,7 @@ const Inspeccion_final = () => {
               const det = detailsByTrip[viajeId];
               
               const completed = Number(row.status) === 1;
-              console.log("STATUS:", row.status, "->", Number(row.status));
+          
               return (
                 <React.Fragment key={viajeId}>
                   <TableRow hover>
