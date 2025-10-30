@@ -1,6 +1,8 @@
-import React, { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext, useCallback } from 'react';
 import { AuthContext } from '../auth/AuthContext';
 import { menuItemsConfig } from '../config/menuConfig';
+import UserTable from '../components/UserTable';
+import PermissionModal from '../components/PermissionModal';
 import { 
     Container, Typography, Box, Paper, CircularProgress, 
     Alert, Switch, FormControlLabel,
@@ -16,7 +18,7 @@ const getSectionsToManage = () => {
 const ADMIN_EMAILS_ACCESS = ['1', 'Israel_21027', 'Angelica_21020'];
 
 const ProfileAccessManager = () => {
-    const { user } = useContext(AuthContext);
+    const { user, userPermissions } = useContext(AuthContext);
     const apiHost = import.meta.env.VITE_API_HOST;
 
     const [loading, setLoading] = useState(true);
@@ -24,11 +26,12 @@ const ProfileAccessManager = () => {
     const [users, setUsers] = useState([]);
     const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
     
-    const [expanded, setExpanded] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedUser, setSelectedUser] = useState(null);
 
     const sectionsToManage = getSectionsToManage();
 
-    const fetchUsers = async () => {
+    const fetchUsers = useCallback(async () => {
         setLoading(true);
         setError('');
         try {
@@ -52,20 +55,36 @@ const ProfileAccessManager = () => {
             setError('No se pudo conectar con el servidor.');
         }
         setLoading(false);
-    };
+    }, [apiHost]);
 
     useEffect(() => {
         fetchUsers();
-    }, []);
+    }, [fetchUsers, userPermissions]);
 
     const handlePermissionChange = async (userId, sectionName, canView) => {
+        let userUpdated = false;
+
         // Bloqueo temporal optimista
-        const updatedUsers = users.map(u => 
-            u.id === userId 
-            ? { ...u, permissions: { ...u.permissions, [sectionName]: canView } } 
-            : u
-        );
+        const updatedUsers = users.map(u => {
+            if (u.id === userId) {
+                userUpdated = true;
+                // Crear una nueva copia del objeto de permisos
+                const newPermissions = { ...u.permissions, [sectionName]: canView };
+                return { ...u, permissions: newPermissions };
+            }
+            return u;
+        });
+
         setUsers(updatedUsers);
+
+        if (userUpdated && selectedUser && selectedUser.id === userId) {
+            // Encontrar el usuario actualizado dentro del nuevo arreglo `updatedUsers`
+            const updatedUserInModal = updatedUsers.find(u => u.id === userId);
+            if (updatedUserInModal) {
+                // Actualizar el estado `selectedUser` para forzar la re-renderización del modal
+                setSelectedUser(updatedUserInModal); 
+            }
+        }
 
         try {
             const formData = new FormData();
@@ -94,12 +113,19 @@ const ProfileAccessManager = () => {
         }
     };
 
-    const handleCloseSnackbar = () => {
-        setSnackbar({ ...snackbar, open: false });
+    // Funciones para gestionar el modal
+    const handleOpenModal = (userToEdit) => {
+        setSelectedUser(userToEdit);
+        setIsModalOpen(true);
     };
 
-    const handleChangeAccordion = (panel) => (event, isExpanded) => {
-        setExpanded(isExpanded ? panel : false);
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setSelectedUser(null);
+    };
+
+    const handleCloseSnackbar = () => {
+        setSnackbar({ ...snackbar, open: false });
     };
 
     // Validación de acceso
@@ -133,103 +159,20 @@ const ProfileAccessManager = () => {
 
             {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
             
-            <Box sx={{ maxWidth: '100%' }}>
-                <Grid container spacing={3}>
-                    {users.map((u) => (
-                        <Grid item xs={12} key={u.id}>
-                            <Card variant="outlined" sx={{ borderRadius: 2 }}>
-                                <Accordion 
-                                    expanded={expanded === `user-${u.id}`} 
-                                    onChange={handleChangeAccordion(`user-${u.id}`)}
-                                    sx={{ '&.MuiAccordion-root': { border: 'none', boxShadow: 'none' } }}
-                                >
-                                    <AccordionSummary
-                                        expandIcon={<ExpandMoreIcon />}
-                                        aria-controls={`panel-content-${u.id}`}
-                                        id={`panel-header-${u.id}`}
-                                        sx={{ 
-                                            backgroundColor: (theme) => theme.palette.action.hover, 
-                                            borderBottom: '1px solid',
-                                            borderColor: (theme) => theme.palette.divider
-                                        }}
-                                    >
-                                        <Box sx={{ display: 'flex', flexDirection: 'column', textAlign: 'left' }}>
-                                            <Typography variant="h6">{u.name}</Typography>
-                                            <Typography variant="body2" color="text.secondary">
-                                                {u.email} (Rol: {u.type})
-                                            </Typography>
-                                        </Box>
-                                    </AccordionSummary>
-                                    <AccordionDetails sx={{ p: 3 }}>
-                                        <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>Permisos de Menú</Typography>
-                                        
-                                        <Grid container spacing={2}>
-                                            {sectionsToManage.map(section => (
-                                                <Grid item xs={12} sm={6} md={4} key={section.name}>
-                                                    <Paper elevation={1} sx={{ p: 2, backgroundColor: (theme) => theme.palette.grey[50] }}>
-                                                        <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>
-                                                            {section.name}
-                                                        </Typography>
-                                                        
-                                                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                                                            {section.subItems && section.subItems.length > 0 ? (
-                                                                section.subItems.map(subItem => {
+            {/* VISTA MAESTRA CON BÚSQUEDA Y PAGINACIÓN */}
+            <UserTable 
+                users={users} 
+                onEditUser={handleOpenModal} 
+            />
 
-                                                                    const permissionName = subItem.name;
-
-                                                                    const canView = u.permissions[permissionName] !== undefined ? u.permissions[permissionName] : false;
-
-                                                                    return (
-                                                                        <Tooltip key={permissionName} title={permissionName} placement="top">
-                                                                            <FormControlLabel
-                                                                                control={
-                                                                                    <Switch
-                                                                                        checked={canView}
-                                                                                        onChange={(e) => 
-                                                                                            handlePermissionChange(u.id, permissionName, e.target.checked)
-                                                                                        }
-                                                                                        size="small"
-                                                                                        color="secondary"
-                                                                                    />
-                                                                                }
-                                                                                
-                                                                                label={`${permissionName.substring(0, 15)}${permissionName.length > 15 ? '...' : ''}`}
-                                                                                sx={{ m: 0, justifyContent: 'space-between', width: '100%', mr: 0 }}
-                                                                                labelPlacement="start"
-                                                                            />
-                                                                        </Tooltip>
-                                                                    );
-                                                                })
-                                                            ) : (
-                                                                // Permiso para sección sin subitems
-                                                                <FormControlLabel
-                                                                    control={
-                                                                        <Switch
-                                                                            checked={u.permissions[section.name] !== undefined ? u.permissions[section.name] : false}
-                                                                            onChange={(e) => 
-                                                                                handlePermissionChange(u.id, section.name, e.target.checked)
-                                                                            }
-                                                                            size="small"
-                                                                            color="primary"
-                                                                        />
-                                                                    }
-                                                                    label="Ver Sección"
-                                                                    sx={{ m: 0, justifyContent: 'space-between', width: '100%', mr: 0 }}
-                                                                    labelPlacement="start"
-                                                                />
-                                                            )}
-                                                        </Box>
-                                                    </Paper>
-                                                </Grid>
-                                            ))}
-                                        </Grid>
-                                    </AccordionDetails>
-                                </Accordion>
-                            </Card>
-                        </Grid>
-                    ))}
-                </Grid>
-            </Box>
+            {/* MODAL DE EDICIÓN DE PERMISOS */}
+            <PermissionModal
+                open={isModalOpen}
+                handleClose={handleCloseModal}
+                user={selectedUser}
+                sectionsToManage={sectionsToManage}
+                handlePermissionChange={handlePermissionChange}
+            />
 
             <Snackbar 
                 open={snackbar.open} 
