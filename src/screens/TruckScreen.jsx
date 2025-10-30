@@ -1,39 +1,39 @@
-import React, { useState } from 'react';
-import './css/ConductoresScreen.css';
+import { useState, useCallback } from 'react';
+import { Box, Paper, Typography, Grid, Stack, TextField, Button, CircularProgress } from '@mui/material'; 
 import 'react-datepicker/dist/react-datepicker.css';
-import ModalArchivo from '../components/ModalArchivo.jsx'; // ajusta la ruta si es necesario
+import ModalArchivo from '../components/ModalArchivo.jsx'; 
 import Swal from 'sweetalert2';
+import TruckInput from '../components/TruckInput';
 
 
 const TruckScreen = () => {
    const apiHost = import.meta.env.VITE_API_HOST;
   const [formData, setFormData] = useState({
-    Unidad: '',
-    PlacaMX: '',
-    PlacaEUA: '',
-    Modelo: '',
-    Marca: '',
-    Numero: '',
-    Tag: ''
+    Unidad: '', PlacaMX: '', PlacaEUA: '', Modelo: '',
+    Marca: '', Numero: '', Tag: ''
   });
 
-  const [selectedFieldName, setSelectedFieldName] = useState(null);
+  const [documentos, setDocumentos] = useState({});
+  const [modalAbierto, setModalAbierto] = useState(false);
+  const [campoActual, setCampoActual] = useState(null);
 
   const handleInputChange = (name, value) => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
-
-
-  {/*utiles*/ }
-  const [documentos, setDocumentos] = useState({});
-  const [modalAbierto, setModalAbierto] = useState(false);
-  const [campoActual, setCampoActual] = useState(null);
 
   const handleGuardarDocumento = (campo, data) => {
     setDocumentos(prev => ({
       ...prev,
       [campo]: data
     }));
+  };
+  
+  const handleClearDocument = (documentKey) => {
+      setDocumentos(prev => {
+          const newState = { ...prev };
+          delete newState[documentKey];
+          return newState;
+      });
   };
 
   const abrirModal = (campo) => {
@@ -42,13 +42,11 @@ const TruckScreen = () => {
   };
 
 
-  const envioDatosPrincipal = async () => {
-    console.log(formData);
+  // ** LÓGICA DE ENVÍO AL BACKEND (se mantiene) **
+  const envioDatosPrincipal = useCallback(async () => { /* ... */
     try {
       const formDataToSend = new FormData();
-  
-      // Aquí añadimos solo campos de texto (no archivos)
-      formDataToSend.append('op', 'Alta'); // operación que espera el backend
+      formDataToSend.append('op', 'Alta'); 
       formDataToSend.append('Unidad', formData.Unidad);
       formDataToSend.append('PlacaMX', formData.PlacaMX);
       formDataToSend.append('PlacaEUA', formData.PlacaEUA);
@@ -57,35 +55,27 @@ const TruckScreen = () => {
       formDataToSend.append('Numero', formData.Numero);
       formDataToSend.append('Tag', formData.Tag);
 
-      // Enviar al backend
-
       const response = await fetch(`${apiHost}/trucks.php`, {
         method: 'POST',
         body: formDataToSend,
       });
 
       const result = await response.json();
-      console.log('Respuesta del servidor:', result);
-
-      const truck_id = result.id;
-      console.log("ID recibido del backend:", truck_id);
 
       if (result.status === "success") {
-
-        const truck_id = result.id;
-        console.log("ID recibido del backend:", truck_id);
-        return truck_id;
+        return result.id;
       } else {
-        throw new Error("Error al guardar datos básicos");
+        throw new Error(`Error al guardar datos básicos: ${result.message || 'Error desconocido'}`);
       }
     } catch (error) {
       console.error('Error al enviar los datos:', error);
-      alert('Error al conectar con el servidor');
+      throw new Error('Error al conectar con el servidor para guardar datos principales.');
     }
-  };
+  }, [apiHost, formData]);
 
-  const enviarDocumentos = async (truck_id) => {
-    const entries = Object.entries(documentos); // clave: nombre campo, valor: { file, vencimiento }
+  const enviarDocumentos = useCallback(async (truck_id) => {
+    const entries = Object.entries(documentos); 
+    let success = true;
 
     for (const [tipo_documento, { file, vencimiento }] of entries) {
       const formDataFile = new FormData();
@@ -102,16 +92,18 @@ const TruckScreen = () => {
         });
 
         const result = await response.json();
-        console.log(`Documento ${tipo_documento} enviado:`, result);
+        if (result.status !== "success") success = false;
         
       } catch (error) {
         console.error(`Error al enviar ${tipo_documento}:`, error);
+        success = false;
       }
     }
-  };
+    return success;
+  }, [apiHost, documentos]);
 
 
-  const handleSubmit = async () => {
+  const handleSubmit = async () => { /* ... */
     let timerInterval;
     const start = Date.now();
 
@@ -122,36 +114,27 @@ const TruckScreen = () => {
       didOpen: () => {
         Swal.showLoading();
         const b = Swal.getPopup().querySelector('b');
-        timerInterval = setInterval(() => {
-          b.textContent = `${Date.now() - start}`;
-        }, 100);
+        timerInterval = setInterval(() => { if (b) b.textContent = `${Date.now() - start}`; }, 100);
       },
       willClose: () => clearInterval(timerInterval),
     });
 
     try {
-      const idConductor = await envioDatosPrincipal();
-      if (!idConductor) throw new Error('No se obtuvo el ID del conductor');
+      const truck_id = await envioDatosPrincipal();
+      if (!truck_id) throw new Error('No se obtuvo el ID del camión');
 
-      await enviarDocumentos(idConductor);
+      const docsSuccess = await enviarDocumentos(truck_id);
 
       Swal.close();
 
       await Swal.fire({
-        icon: 'success',
-        title: 'Éxito',
-        text: 'Camion dado de alta!',
+        icon: docsSuccess ? 'success' : 'warning',
+        title: docsSuccess ? 'Éxito' : 'Registro Parcial',
+        text: docsSuccess ? 'Camión dado de alta!' : 'Camión registrado, pero algunos documentos fallaron.',
       });
 
-      setFormData({
-        Unidad: '',
-        PlacaMX: '',
-        PlacaEUA: '',
-        Modelo: '',
-        Marca: '',
-        Numero: '',
-        Tag: '',
-      });
+      // Limpieza (Reset)
+      setFormData({ Unidad: '', PlacaMX: '', PlacaEUA: '', Modelo: '', Marca: '', Numero: '', Tag: '' });
       setDocumentos({});
     } catch (err) {
 
@@ -166,188 +149,84 @@ const TruckScreen = () => {
 
 
   const cancelar = () => {
-    setFormData({
-        Unidad: '',
-        PlacaMX: '',
-        PlacaEUA: '',
-        Modelo: '',
-        Marca: '',
-        Numero: '',
-        Tag: '',
-      });
-
-      setDocumentos({});
+    setFormData({ Unidad: '', PlacaMX: '', PlacaEUA: '', Modelo: '', Marca: '', Numero: '', Tag: '' });
+    setDocumentos({});
   }
 
 
-
   return (
+    <Box sx={{ p: 3 }}>
 
-    <div >
- 
-      <h1 className="titulo">Alta de Camion</h1>
-      <div className="conductores-container">
-        <div className="btnConteiner">
-          <button className="btn cancelar" onClick={cancelar}>Cancelar</button>
-          <button className="btn guardar" onClick={handleSubmit}>Guardar</button>
-        </div>
+      {/* Título Principal */}
+      <Typography variant="h4" component="h1" fontWeight={700} gutterBottom sx={{ mb: 3 }}>
+        Alta de Camión
+      </Typography>
+      
+      {/* Contenedor principal del formulario */}
+      <Paper elevation={1} sx={{ p: 3, border: '1px solid #ccc' }}>
+        
+        {/* Botones de acción (Save / Cancel) */}
+        <Stack direction="row" justifyContent="flex-end" spacing={2} sx={{ mb: 3 }}>
+          <Button variant="outlined" color="error" onClick={cancelar}>Cancelar</Button>
+          <Button variant="contained" color="primary" onClick={handleSubmit}>Guardar</Button>
+        </Stack>
 
-        <div className="form-columns">
+        <Grid container spacing={4}>
           
-             {/* Columna 1 */}
-          <div className="column">
-            <h2>Registros generales</h2>
-            <label>Unidad</label>
-            <input
-              type="text"
-              placeholder="Unidad"
-              value={formData.Unidad}
-              onChange={(e) => handleInputChange('Unidad', e.target.value)}
-            />
+            <Grid item xs={12} md={4} 
+                // 🚨 AÑADIMOS ESTOS ESTILOS PARA FORZAR LA FLEXIBILIDAD Y MINIMIZAR EL ANCHO 🚨
+                sx={{ 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    minWidth: 0, /* Permite que el contenido interno se encoja */
+                    px: 2 /* Asegura padding lateral */
+                }}
+            >
+                <Typography variant="h5" fontWeight={600} gutterBottom sx={{ borderBottom: '1px solid #eee', pb: 1 }}>
+                    Registros Generales
+                </Typography>
+                
+                {/* Aseguramos que los TextFields usen 100% de ese espacio flexible */}
+                <TextField label="Unidad" fullWidth size="small" sx={{ mb: 2 }} value={formData.Unidad} onChange={(e) => handleInputChange('Unidad', e.target.value)} />
+                <TextField label="Placa MEX" fullWidth size="small" sx={{ mb: 2 }} value={formData.PlacaMX} onChange={(e) => handleInputChange('PlacaMX', e.target.value)} />
+                <TextField label="Placa USA" fullWidth size="small" sx={{ mb: 2 }} value={formData.PlacaEUA} onChange={(e) => handleInputChange('PlacaEUA', e.target.value)} />
+                <TextField label="Modelo (Año)" fullWidth size="small" sx={{ mb: 2 }} value={formData.Modelo} onChange={(e) => handleInputChange('Modelo', e.target.value)} />
+                <TextField label="Marca de camion" fullWidth size="small" sx={{ mb: 2 }} value={formData.Marca} onChange={(e) => handleInputChange('Marca', e.target.value)} />
+                <TextField label="Numero de VIN" fullWidth size="small" sx={{ mb: 2 }} value={formData.Numero} onChange={(e) => handleInputChange('Numero', e.target.value)} />
+            </Grid>
+              
+            <Grid item xs={12} md={4}>
+               <Typography variant="h5" fontWeight={600} gutterBottom sx={{ borderBottom: '1px solid #eee', pb: 1 }}>
+                    Registros USA
+                </Typography>
 
-            <label>Placa MEX</label>
-            <input
-              type="text"
-              placeholder="Placa MEX"
-              value={formData.PlacaMX}
-              onChange={(e) => handleInputChange('PlacaMX', e.target.value)}
-            />
-
-            <label>Placa USA</label>
-            <input
-              type="text"
-              placeholder="Placa USA"
-              value={formData.PlacaEUA}
-              onChange={(e) => handleInputChange('PlacaEUA', e.target.value)}
-            />
-
-            <label>Modelo (Año)</label>
-            <input
-              type="text"
-              placeholder="Modelo"
-              value={formData.Modelo}
-              onChange={(e) => handleInputChange('Modelo', e.target.value)}
-            />
-
-            <label>Marca de camion</label>
-            <input
-              type="text"
-              placeholder="Marca de camion"
-              value={formData.Marca}
-              onChange={(e) => handleInputChange('Marca', e.target.value)}
-            />
-
-            <label>Numero de VIN</label>
-            <input
-              type="text"
-              placeholder="Numero"
-              value={formData.Numero}
-              onChange={(e) => handleInputChange('Numero', e.target.value)}
-            />
-          </div>
-              {/* Columna 2 */}
-          <div className="column">
-               <h2>Registros USA</h2>
-
-             <label>Registracion</label>
-            <button type="button" onClick={() => abrirModal('registracion')}>Subir documento</button>
-            {documentos.registracion && (
-              <p>{documentos.registracion.fileName} - {documentos.registracion.vencimiento}</p>
-            )}
-
-            <label>Cab Card (PDF)</label>
-            <button type="button" onClick={() => abrirModal('CAB')}>Subir documento</button>
-            {documentos.CAB && (
-              <p>{documentos.CAB.fileName} - {documentos.CAB.vencimiento}</p>
-            )}
-
-              <label>COI (PDF)</label>
-            <button type="button" onClick={() => abrirModal('COI')}>Subir documento</button>
-            {documentos.COI && (
-              <p>{documentos.COI.fileName} - {documentos.COI.vencimiento}</p>
-            )}
-
-
-           <label>Inspecccion mecanica (PDF)</label>
-            <button type="button" onClick={() => abrirModal('mecanica')}>Subir documento</button>
-            {documentos.mecanica && (
-              <p>{documentos.mecanica.fileName} - {documentos.mecanica.vencimiento}</p>
-            )}
+                {/* Documentos USA */}
+                <TruckInput label="Registracion" documentKey="registracion" documentos={documentos} abrirModal={abrirModal} handleClear={handleClearDocument} />
+                <TruckInput label="Cab Card (PDF)" documentKey="CAB" documentos={documentos} abrirModal={abrirModal} handleClear={handleClearDocument} />
+                <TruckInput label="COI (PDF)" documentKey="COI" documentos={documentos} abrirModal={abrirModal} handleClear={handleClearDocument} />
+                <TruckInput label="Inspección mecánica (PDF)" documentKey="mecanica" documentos={documentos} abrirModal={abrirModal} handleClear={handleClearDocument} />
+                <TruckInput label="TX DMV (PDF)" documentKey="TX_DMV" documentos={documentos} abrirModal={abrirModal} handleClear={handleClearDocument} />
+                <TruckInput label="PERMISO NY (PDF)" documentKey="PERMISO_NY" documentos={documentos} abrirModal={abrirModal} handleClear={handleClearDocument} />
+                <TruckInput label="PERMISO NM (PDF)" documentKey="PERMISO_NM" documentos={documentos} abrirModal={abrirModal} handleClear={handleClearDocument} />
+                <TruckInput label="DTOPS (PDF)" documentKey="dtops" documentos={documentos} abrirModal={abrirModal} handleClear={handleClearDocument} />
+                
+                <TextField label="Laredo TAG" fullWidth size="small" sx={{ mb: 2, mt: 2 }} value={formData.Tag} onChange={(e) => handleInputChange('Tag', e.target.value)} />
+            </Grid>
             
+            <Grid item xs={12} md={4}>
+                <Typography variant="h5" fontWeight={600} gutterBottom sx={{ borderBottom: '1px solid #eee', pb: 1 }}>
+                    Registros MEX
+                </Typography>
+                
+                {/* Documentos MEX */}
+                <TruckInput label="Tarjeta de circulación (PDF)" documentKey="Tarjeta_circulacion" documentos={documentos} abrirModal={abrirModal} handleClear={handleClearDocument} />
+                <TruckInput label="Inspección fisio-mecanica (PDF)" documentKey="Inspecccion_fisio_Mecanica" documentos={documentos} abrirModal={abrirModal} handleClear={handleClearDocument} />
+                <TruckInput label="Inspección humos (PDF)" documentKey="Inspecion_humos" documentos={documentos} abrirModal={abrirModal} handleClear={handleClearDocument} />
+                <TruckInput label="Puente fideicomiso (PDF)" documentKey="fideicomiso" documentos={documentos} abrirModal={abrirModal} handleClear={handleClearDocument} />
+                <TruckInput label="Seguro (PDF)" documentKey="seguro" documentos={documentos} abrirModal={abrirModal} handleClear={handleClearDocument} />
+            </Grid>
 
-             <label>TX DMV (PDF)</label>
-            <button type="button" onClick={() => abrirModal('TX_DMV')}>Subir documento</button>
-            {documentos.TX_DMV && (
-              <p>{documentos.TX_DMV.fileName} - {documentos.TX_DMV.vencimiento}</p>
-            )}
-
-            <label>PERMISO NY (PDF)</label>
-            <button type="button" onClick={() => abrirModal('PERMISO_NY')}>Subir documento</button>
-            {documentos.PERMISO_NY && (
-              <p>{documentos.PERMISO_NY.fileName} - {documentos.PERMISO_NY.vencimiento}</p>
-            )}
-
-            <label>PERMISO NM (PDF)</label>
-            <button type="button" onClick={() => abrirModal('PERMISO_NM')}>Subir documento</button>
-            {documentos.PERMISO_NM && (
-              <p>{documentos.PERMISO_NM.fileName} - {documentos.PERMISO_NM.vencimiento}</p>
-            )}
-
-         
-             
-            <label>DTOPS (PDF)</label>
-            <button type="button" onClick={() => abrirModal('dtops')}>Subir documento</button>
-            {documentos.dtops && (
-              <p>{documentos.dtops.fileName} - {documentos.dtops.vencimiento}</p>
-            )}
-
-            <label>Laredo TAG</label>
-            <input
-              type="text"
-              placeholder="Numero"
-              value={formData.Tag}
-              onChange={(e) => handleInputChange('Tag', e.target.value)}
-            />
-
-          </div>
-          {/* Columna 3 */}
-          <div className="column">
-            <h2>Registros MEX</h2>
-           
-            
-            <label>Tarjeta de circulacion (PDF)</label>
-            <button type="button" onClick={() => abrirModal('Tarjeta_circulacion')}>Subir documento</button>
-            {documentos.Tarjeta_circulacion && (
-              <p>{documentos.Tarjeta_circulacion.fileName} - {documentos.Tarjeta_circulacion.vencimiento}</p>
-            )}
-            <label>Inspecccion fisio-mecanica(PDF)</label>
-            <button type="button" onClick={() => abrirModal('Inspecccion_fisio_Mecanica')}>Subir documento</button>
-            {documentos.Inspecccion_fisio_Mecanica && (
-              <p>{documentos.Inspecccion_fisio_Mecanica.fileName} - {documentos.Inspecccion_fisio_Mecanica.vencimiento}</p>
-            )}
-
-            <label>Inspecion humos  (PDF)</label>
-            <button type="button" onClick={() => abrirModal('Inspecion_humos')}>Subir documento</button>
-            {documentos.Inspecion_humos && (
-              <p>{documentos.Inspecion_humos.fileName} - {documentos.Inspecion_humos.vencimiento}</p>
-            )}
-        
-            <label>Puente fideicomiso  (PDF)</label>
-            <button type="button" onClick={() => abrirModal('fideicomiso')}>Subir documento</button>
-            {documentos.fideicomiso && (
-              <p>{documentos.fideicomiso.fileName} - {documentos.fideicomiso.vencimiento}</p>
-            )}
-        
-            <label>Seguro (PDF)</label>
-            <button type="button" onClick={() => abrirModal('seguro')}>Subir documento</button>
-            {documentos.seguro && (
-              <p>{documentos.seguro.fileName} - {documentos.seguro.vencimiento}</p>
-            )}
-        
-        
-          </div>
-
-        </div>
+        </Grid>
         <ModalArchivo
           isOpen={modalAbierto}
           onClose={() => setModalAbierto(false)}
@@ -355,11 +234,10 @@ const TruckScreen = () => {
           nombreCampo={campoActual}
           valorActual={documentos[campoActual]}
         />
-      </div>
-    </div>
+      </Paper>
+    </Box>
   );
 
 };
 
 export default TruckScreen;
-

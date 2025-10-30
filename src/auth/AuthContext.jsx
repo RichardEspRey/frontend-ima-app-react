@@ -11,9 +11,10 @@ export const AuthProvider = ({ children }) => {
       const id = localStorage.getItem('userID');
       const name = localStorage.getItem('userName');
       const type = localStorage.getItem('type');
+      const email = localStorage.getItem('userEmail');
 
-      if (id && name && type) {
-        setUser({ id, name, tipo_usuario: type });
+      if (id && name && type && email) {
+        setUser({ id, name, tipo_usuario: type, email: email });
       }
 
       setLoading(false);
@@ -21,17 +22,19 @@ export const AuthProvider = ({ children }) => {
     checkLoginStatus();
   }, []);
 
-  const login = (id, name, type) => {
+  const login = (id, name, type, email) => {
     localStorage.setItem('userID', id);
     localStorage.setItem('userName', name);
     localStorage.setItem('type', type);
-    setUser({ id, name, tipo_usuario: type });
+    localStorage.setItem('userEmail', email);
+    setUser({ id, name, tipo_usuario: type, email });
   };
 
   const logout = () => {
     localStorage.removeItem('userID');
     localStorage.removeItem('userName');
     localStorage.removeItem('type');
+    localStorage.removeItem('userEmail');
     setUser(null);
   };
 

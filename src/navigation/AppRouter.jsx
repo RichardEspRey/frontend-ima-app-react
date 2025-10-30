@@ -12,6 +12,7 @@ import DriverAdmin from '../screens/DriverAdmin.jsx';
 import DriverEditor from '../screens/DriverEditor.jsx';
 import TripAdmin from '../screens/TripAdmin.jsx';
 import TripScreen from '../screens/TripsScreen.jsx';
+import TripScreenNew from '../screens/TripsScreenNew.jsx';
 import DriverScreen from '../screens/DriverScreen.jsx';
 import TruckAdmin from '../screens/TruckAdmin.jsx';
 import TruckScreen from '../screens/TruckScreen.jsx';
@@ -37,6 +38,7 @@ import ServiceOrderScreenEdit from '../screens/ServiceOrderScreenEdit.jsx';
 import ServiceOrderAdmin from '../screens/ServiceOrderAdmin.jsx';
 import Finanzas from '../screens/Finanzas.jsx';
 import ResumenTrip from '../screens/ResumenTrip.jsx';
+import ProfileAccessManager from '../screens/ProfileAccessManager.jsx';
 
 
 const AppRouter = () => {
@@ -153,6 +155,15 @@ const AppRouter = () => {
                 element={
                   <DashboardLayout>
                     <TripScreen />
+                  </DashboardLayout>
+                }
+              />
+
+              <Route
+                path="/trips-new"
+                element={
+                  <DashboardLayout>
+                    <TripScreenNew />
                   </DashboardLayout>
                 }
               />
@@ -337,6 +348,14 @@ const AppRouter = () => {
                 }
               />
 
+              <Route
+                path="/access-manager"
+                element={
+                  <DashboardLayout>
+                    <ProfileAccessManager />
+                  </DashboardLayout>
+                }
+              />
 
             </>
           )}

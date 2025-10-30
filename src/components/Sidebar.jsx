@@ -3,13 +3,14 @@ import './css/Sidebar.css';
 import { useDispatch, useSelector } from 'react-redux';
 import { setActiveMenu, setExpandedMenu, setSelectedSubMenu } from '../redux/menuSlice';
 import { AuthContext } from '../auth/AuthContext';
+import { menuItemsConfig } from '../config/menuConfig';
 import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { Collapse } from '@mui/material';
 
 import { 
     MdDashboard, MdCarRental, MdLocalShipping, MdDirectionsBus, MdLocalGasStation, 
-    MdAttachMoney, MdExitToApp, MdList, MdAssignment, MdTrendingUp, MdBarChart 
+    MdAttachMoney, MdExitToApp, MdList, MdAssignment, MdTrendingUp, MdBarChart
 } from 'react-icons/md'; 
 
 import logo from '../assets/images/logo_white.png';
@@ -25,80 +26,20 @@ const iconMap = {
     'Viajes': MdLocalShipping,    // Camión de carga
     'Finanzas': MdAttachMoney,    // Dinero
     'Reportes': MdBarChart,       // Gráficos/Reporte
+    'Gestor de Acceso': MdList,   // Lista/Gestor de Acceso
+};
+
+const ADMIN_EMAILS_ACCESS = ['1', 'Israel_21027', 'Angelica_21020'];
+const MANAGEMENT_ITEM = { 
+    name: 'Gestor de Acceso', 
+    route: '/access-manager', 
+    rolesPermitidos: ['admin'] 
 };
 
 
 const menuItems = [
-  { name: 'Inicio', route: '/home', rolesPermitidos: ['admin'] },
-
-  {
-    name: 'IMA',
-    rolesPermitidos: ['admin'],
-    subItems: [
-      { name: 'Alta de documentos', route: '/ImaScreen', rolesPermitidos: ['admin'] },
-      { name: 'Administrador de documentos', route: '/ImaAdmin', rolesPermitidos: ['admin'] }
-    ]
-  },
-
-  {
-    name: 'Conductores',
-    rolesPermitidos: ['admin', 'Angeles'],
-    subItems: [
-      { name: 'Alta de conductores', route: '/drivers', rolesPermitidos: ['admin', 'Angeles'] },
-      { name: 'Administrador de conductores', route: '/admin-drivers', rolesPermitidos: ['admin', 'Angeles'] }
-    ]
-  },
-
-  {
-    name: 'Camiones',
-    rolesPermitidos: ['admin','Angeles'],
-    subItems: [
-      { name: 'Alta de camiones', route: '/trucks', rolesPermitidos: ['admin','Angeles'] },
-      { name: 'Administrador de camiones', route: '/admin-trucks', rolesPermitidos: ['admin','Angeles'] },
-      { name: 'Alta de Cajas', route: '/trailers', rolesPermitidos: ['admin','Angeles'] },
-      { name: 'Administrador de cajas', route: '/admin-trailers', rolesPermitidos: ['admin','Angeles'] }
-    ]
-  },
-
-  {
-    name: 'Gastos',
-    rolesPermitidos: ['admin', 'Angeles','Blanca','Candy','Mia'],
-    subItems: [
-      { name: 'Nuevo Gasto', route: '/new-expense', rolesPermitidos: ['admin', 'Angeles','Mia'] },
-      { name: 'Administrador gastos', route: '/admin-gastos-generales', rolesPermitidos: ['admin','Angeles'] },
-      { name: 'Gastos diesel', route: '/admin-diesel', rolesPermitidos: ['admin','Blanca','Candy','Mia'] },
-      { name: 'Gastos viajes', route: '/admin-gastos', rolesPermitidos: ['admin','Blanca','Mia'] }
-    ]
-  },
-
-  {
-    name: 'Mantenimientos',
-    rolesPermitidos: ['admin', 'Angeles','Candy'],
-    subItems: [
-      { name: 'Inventario', route: '/view-inventory', rolesPermitidos: ['admin','Angeles','Candy'] },
-      { name: 'Inspeccion final', route: '/Inspeccion-final', rolesPermitidos: ['admin','Angeles','Candy'] },
-      { name: 'Administrador Ordenes de Servicio', route: '/admin-service-order', rolesPermitidos: ['admin','Angeles','Candy'] }
-    ]
-  },
-
-  {
-    name: 'Viajes',
-    rolesPermitidos: ['admin','Candy','Blanca'],
-    subItems: [
-      { name: 'Nuevo Viaje', route: '/trips', rolesPermitidos: ['admin','Blanca'] },
-      { name: 'Administrador de viajes', route: '/admin-trips', rolesPermitidos: ['admin','Blanca','Candy','Mia'] },
-    ]
-  },
-
-  {
-    name: 'Finanzas',
-    rolesPermitidos: ['admin'],
-    subItems: [
-      { name: 'Ventas', route: '/finanzas', rolesPermitidos: ['admin'] }
-    ]
-  },
-
-  { name: 'Reportes', route: '/reportes', rolesPermitidos: ['admin'] }
+  ...menuItemsConfig.slice(0),
+  MANAGEMENT_ITEM, 
 ];
 
 const Sidebar = () => {
@@ -117,12 +58,16 @@ const Sidebar = () => {
   const apiHost = import.meta.env.VITE_API_HOST;
   const { user, logout } = useContext(AuthContext);
 
+  const [userPermissions, setUserPermissions] = useState({});
+
   const [tipoUsuario, setTipoUsuario] = useState('');
 
   useEffect(() => {
     const storedType = localStorage.getItem('type') || '';
     setTipoUsuario((user?.tipo_usuario || storedType || '').trim());
   }, [user]);
+
+  const userEmail = user?.email?.trim().toLowerCase() || localStorage.getItem('userEmail')?.trim().toLowerCase() || '';
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -140,34 +85,93 @@ const Sidebar = () => {
     [tipoUsuario]
   );
 
-  // Filtrado SOLO por roles:
-  const filterMenuByAccess = useCallback((items) => {
-    return items.reduce((acc, item) => {
-      const canSeeSection = roleAllowed(item.rolesPermitidos);
-
-      if (!canSeeSection) return acc;
-
-      if (Array.isArray(item.subItems) && item.subItems.length > 0) {
-        const visibleSubs = item.subItems.filter((si) => {
-          const subRoles = si.rolesPermitidos ?? item.rolesPermitidos;
-          return roleAllowed(subRoles);
-        });
-
-        // Si el padre tiene route, lo mostramos aunque no haya subitems visibles;
-        // si no tiene route, mostrar solo si hay subitems visibles.
-        if (item.route) {
-          acc.push({ ...item, subItems: visibleSubs });
-        } else if (visibleSubs.length > 0) {
-          acc.push({ ...item, subItems: visibleSubs });
-        }
-        return acc;
+  // FUNCIÓN PARA FILTRAR POR PERMISOS DINÁMICOS
+  const isSectionAllowed = useCallback((item, visibleSubs = true) => {
+      if (item.name === MANAGEMENT_ITEM.name) {
+          return roleAllowed(item.rolesPermitidos) && ADMIN_EMAILS_ACCESS.includes(userEmail); 
       }
 
-      // Ítem sin subitems
-      acc.push(item);
-      return acc;
-    }, []);
-  }, [roleAllowed]);
+      const dynamicPermission = userPermissions[item.name];
+      
+      if (dynamicPermission !== undefined) {
+          return dynamicPermission;
+      }
+      
+      if (item.subItems && item.subItems.length > 0) {
+          return visibleSubs;
+      }
+
+      return roleAllowed(item.rolesPermitidos);
+
+  }, [roleAllowed, userEmail, userPermissions]);
+
+  // Filtrado SOLO por roles:
+  const filterMenuByAccess = useCallback((items) => {
+      return items.reduce((acc, item) => {
+          
+          if (Array.isArray(item.subItems) && item.subItems.length > 0) {
+              const visibleSubs = item.subItems.filter((subItem) => {
+                  const dynamicSubPermission = userPermissions[subItem.name]; 
+
+                  if (dynamicSubPermission !== undefined) {
+                      return dynamicSubPermission;
+                  }
+                  
+                  // const subRoles = subItem.rolesPermitidos ?? item.rolesPermitidos;
+                  // return roleAllowed(subRoles);
+                  return false
+              });
+
+              //const canSeeSection = isSectionAllowed(item, visibleSubs.length > 0);
+
+              if (visibleSubs.length > 0) {
+                acc.push({ ...item, subItems: visibleSubs });
+              }
+            
+            return acc;
+          }
+
+          const canSeeSection = isSectionAllowed(item);
+
+          if (canSeeSection) {
+              acc.push(item);
+          }
+          return acc;
+      }, []);
+  }, [isSectionAllowed, roleAllowed, userPermissions]);
+
+    // NUEVA FUNCIÓN PARA OBTENER PERMISOS
+    const fetchUserPermissions = useCallback(async () => {
+        const userId = user?.id || localStorage.getItem('userID');
+        if (!userId) return;
+
+        const formData = new FormData();
+        formData.append('op', 'getUserPermissions');
+        formData.append('user_id', userId);
+
+        try {
+            const response = await fetch(`${apiHost}/AccessManager.php`, {
+                method: 'POST',
+                body: formData,
+            });
+
+            const data = await response.json();
+
+            if (data.status === 'success') {
+                setUserPermissions(data.permissions);
+            } else {
+                console.error("Error al obtener permisos:", data.message);
+                setUserPermissions({});
+            }
+        } catch (error) {
+            console.error('Error de conexión al obtener permisos:', error);
+            setUserPermissions({});
+        }
+    }, [apiHost, user?.id]);
+
+  useEffect(() => {
+    fetchUserPermissions();
+  }, [fetchUserPermissions]);
 
   const menuFiltrado = useMemo(() => filterMenuByAccess(menuItems), [filterMenuByAccess]);
 

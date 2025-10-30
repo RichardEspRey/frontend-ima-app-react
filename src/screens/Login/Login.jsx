@@ -42,7 +42,7 @@ const Login = () => {
 
       if (data.status === 'success') {
         console.log(data.user.type);
-        await login(data.user.id, data.user.name,data.user.type);
+        await login(data.user.id, data.user.name,data.user.type, data.user.email);
         navigate('/home'); 
       } else {
         alert(data.message);
