@@ -56,9 +56,9 @@ const Sidebar = () => {
   });
 
   const apiHost = import.meta.env.VITE_API_HOST;
-  const { user, logout } = useContext(AuthContext);
+  const { user, logout, userPermissions } = useContext(AuthContext);
 
-  const [userPermissions, setUserPermissions] = useState({});
+  // const [userPermissions, setUserPermissions] = useState({});
 
   const [tipoUsuario, setTipoUsuario] = useState('');
 
@@ -141,37 +141,37 @@ const Sidebar = () => {
   }, [isSectionAllowed, roleAllowed, userPermissions]);
 
     // NUEVA FUNCIÓN PARA OBTENER PERMISOS
-    const fetchUserPermissions = useCallback(async () => {
-        const userId = user?.id || localStorage.getItem('userID');
-        if (!userId) return;
+  //   const fetchUserPermissions = useCallback(async () => {
+  //       const userId = user?.id || localStorage.getItem('userID');
+  //       if (!userId) return;
 
-        const formData = new FormData();
-        formData.append('op', 'getUserPermissions');
-        formData.append('user_id', userId);
+  //       const formData = new FormData();
+  //       formData.append('op', 'getUserPermissions');
+  //       formData.append('user_id', userId);
 
-        try {
-            const response = await fetch(`${apiHost}/AccessManager.php`, {
-                method: 'POST',
-                body: formData,
-            });
+  //       try {
+  //           const response = await fetch(`${apiHost}/AccessManager.php`, {
+  //               method: 'POST',
+  //               body: formData,
+  //           });
 
-            const data = await response.json();
+  //           const data = await response.json();
 
-            if (data.status === 'success') {
-                setUserPermissions(data.permissions);
-            } else {
-                console.error("Error al obtener permisos:", data.message);
-                setUserPermissions({});
-            }
-        } catch (error) {
-            console.error('Error de conexión al obtener permisos:', error);
-            setUserPermissions({});
-        }
-    }, [apiHost, user?.id]);
+  //           if (data.status === 'success') {
+  //               setUserPermissions(data.permissions);
+  //           } else {
+  //               console.error("Error al obtener permisos:", data.message);
+  //               setUserPermissions({});
+  //           }
+  //       } catch (error) {
+  //           console.error('Error de conexión al obtener permisos:', error);
+  //           setUserPermissions({});
+  //       }
+  //   }, [apiHost, user?.id]);
 
-  useEffect(() => {
-    fetchUserPermissions();
-  }, [fetchUserPermissions]);
+  // useEffect(() => {
+  //   fetchUserPermissions();
+  // }, [fetchUserPermissions]);
 
   const menuFiltrado = useMemo(() => filterMenuByAccess(menuItems), [filterMenuByAccess]);
 

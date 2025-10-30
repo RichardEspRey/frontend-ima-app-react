@@ -3,9 +3,8 @@ import { AuthContext } from '../auth/AuthContext';
 import { menuItemsConfig } from '../config/menuConfig';
 import { 
     Container, Typography, Box, Paper, CircularProgress, 
-    Alert, Table, TableBody, TableCell, TableContainer, 
-    TableHead, TableRow, Switch, FormControlLabel,
-    Snackbar, Card, CardContent,
+    Alert, Switch, FormControlLabel,
+    Snackbar, Card,
     Accordion, AccordionSummary, AccordionDetails, Grid, Tooltip
 } from '@mui/material';
 import { Settings as SettingsIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
