@@ -1,16 +1,16 @@
-import React from 'react';
 import './DashboardLayout.css';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
+import { Outlet } from 'react-router-dom';
 
-const DashboardLayout = ({ children}) => {
+const DashboardLayout = () => {
   return (
     <div className="container">
       <Sidebar/>
       <div className="mainContainer">
         <Header />
         <div className="content">
-          {children}
+          <Outlet />
         </div>
       </div>
     </div>
