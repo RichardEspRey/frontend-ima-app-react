@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import Select from 'react-select';
-import "./css/ExpenseScreen.css";
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { Box, Paper, Typography, Grid, Stack, TextField, Button, InputLabel } from '@mui/material'; 
+// ELIMINAMOS la importación del CSS nativo
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import Swal from 'sweetalert2';
-import CreatableSelect from 'react-select/creatable';
+
+// 🚨 IMPORTAMOS COMPONENTES ESTANDARIZADOS Y HOOKS
+import ExpenseSelect from '../components/ExpenseSelect';
+import DetailRow from '../components/DetailRow';
 import ModalArchivo from '../components/ModalArchivo';
 
 import useFetchInventoryItems from '../hooks/expense_hooks/useFetchInventoryItems';
@@ -13,22 +16,13 @@ import useFetchCategories from '../hooks/expense_hooks/useFetchCategories';
 import useFetchExpenseTypes from '../hooks/expense_hooks/useFetchExpenseTypes';
 import useFetchExchangeRate from '../hooks/useFetchExchangeRate';
 
-const selectStyles = {
-    control: (provided) => ({
-        ...provided,
-        padding: '4px',
-        borderRadius: '5px',
-        border: '1px solid #ccc',
-        fontSize: '16px',
-        minHeight: '40px',
-    }),
-};
+
+const ID_MANTENIMIENTO = "3";
 
 const ExpenseScreen = () => {
     // --- ESTADOS GENERALES DEL GASTO ---
     const apiHost = import.meta.env.VITE_API_HOST;
     const [country, setCountry] = useState(null);
-    const ID_MANTENIMIENTO = "3"
     const [expenseDate, setExpenseDate] = useState(new Date());
     const [totalAmount, setTotalAmount] = useState('0.00');
     const [originalAmount, setOriginalAmount] = useState('');
@@ -52,7 +46,9 @@ const ExpenseScreen = () => {
     });
 
 
-    const resetForm = () => {
+    // ** Handlers de Lógica (Convertidos a useCallback para optimización) **
+    
+    const resetForm = useCallback(() => {
         setCountry(null);
         setExpenseDate(new Date());
         setTotalAmount('0.00');
@@ -60,37 +56,18 @@ const ExpenseScreen = () => {
         setExchangeRate('');
         setExpenseDetails([]);
         setFiles({ facturaPdf: null, ticketJpg: null });
-      
-    };
+    }, [setExchangeRate]); // Añadir setExchangeRate como dependencia
 
 
-    // useEffect(() => {
-
-    //     if (originalAmount && exchangeRate) {
-    //         const convertedAmount = parseFloat(originalAmount) / parseFloat(exchangeRate);
-    //         setTotalAmount(convertedAmount.toFixed(2));
-    //     } else if (originalAmount) {
-    //         setTotalAmount(parseFloat(originalAmount).toFixed(2));
-    //     }
-    //     else {
-    //         const detailsTotal = expenseDetails.reduce((sum, item) => {
-    //             const price = parseFloat(item.price) || 0;
-    //             const quantity = parseInt(item.quantity) || 0;
-    //             return sum + (price * quantity);
-    //         }, 0);
-    //         setTotalAmount(detailsTotal.toFixed(2));
-    //     }
-    // }, [originalAmount, exchangeRate, expenseDetails]);
-
-    const handleArticleChange = async (selection, detail) => {
-     
+    const handleArticleChange = useCallback(async (selection, detail) => {
+        // ... (Tu lógica de creación de artículo y actualización se mantiene)
         if (!selection) {
             handleDetailChange(detail.id, { itemId: null, itemDescription: '' });
             return;
         }
 
-        // CASO 2: El usuario escribe un nuevo artículo
         if (selection.__isNew__) {
+            // Lógica de creación de nuevo artículo
             try {
                 const formData = new FormData();
                 formData.append('op', 'createInventoryItem');
@@ -102,39 +79,33 @@ const ExpenseScreen = () => {
                 if (result.status === 'success') {
                     const newItem = { value: result.itemId, label: selection.label, id_subcategoria: detail.subcategory };
                     setInventoryItems(prevItems => [...prevItems, newItem]);
-
-
                     handleDetailChange(detail.id, { itemId: result.itemId, itemDescription: selection.label });
-
                     Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Artículo creado', showConfirmButton: false, timer: 2000 });
                 } else { throw new Error(result.message); }
             } catch (error) {
                 Swal.fire('Error', `Failed to create item: ${error.message}`, 'error');
             }
         }
-
         else {
             handleDetailChange(detail.id, {
                 itemId: selection.value,
                 itemDescription: selection.label
             });
         }
-    };
+    }, [apiHost, setInventoryItems]);
 
-    const handleSaveFromModal = (fileData) => {
+    const handleSaveFromModal = useCallback((fileData) => {
         if (modalState.fileType) {
-            // fileData es { file: Archivo, fileName: 'nombre.pdf' }
-            // Guardamos solo el objeto File en nuestro estado.
             setFiles(prev => ({ ...prev, [modalState.fileType]: fileData.file }));
         }
-    };
+    }, [modalState.fileType]);
 
-    const handleDetailChange = (id, updates) => {
-        setExpenseDetails(expenseDetails.map(detail => {
+    const handleDetailChange = useCallback((id, updates) => {
+        setExpenseDetails(prevDetails => prevDetails.map(detail => {
             if (detail.id === id) {
                 const updatedDetail = { ...detail, ...updates };
 
-
+                // Lógica de reseteo al cambiar categorías/subcategorías
                 if (updates.hasOwnProperty('category') && updates.category !== detail.category) {
                     updatedDetail.subcategory = null;
                     updatedDetail.itemId = null;
@@ -149,10 +120,10 @@ const ExpenseScreen = () => {
             }
             return detail;
         }));
-    };
+    }, []);
 
-    const handleAddDetail = () => {
-        setExpenseDetails([...expenseDetails,
+    const handleAddDetail = useCallback(() => {
+        setExpenseDetails(prevDetails => [...prevDetails,
         {
             id: Date.now(),
             expenseType: null,
@@ -163,41 +134,100 @@ const ExpenseScreen = () => {
             quantity: '1',
             itemDescription: ''
         }]);
-    };
+    }, []);
 
-    const handleRemoveDetail = (id) => {
-        setExpenseDetails(expenseDetails.filter(detail => detail.id !== id));
-    };
+    const handleRemoveDetail = useCallback((id) => {
+        setExpenseDetails(prevDetails => prevDetails.filter(detail => detail.id !== id));
+    }, []);
+
+
+    const handleRemoveFile = useCallback((fileType) => {
+        setFiles(prev => ({ ...prev, [fileType]: null }));
+    }, []);
+
+    const getSubtotal = useCallback((price, quantity) => {
+        if (price && quantity) {
+            return (parseFloat(price) * parseInt(quantity)).toFixed(2);
+        }
+        return '0.00';
+    }, []);
+
+    // ** LÓGICA DE CÁLCULO Y DIVISAS (useMemo y useEffect) **
+    
+    // Este useEffect ahora es asíncrono y se mantiene para la lógica de divisas
+    useEffect(() => {
+        const isMX = country && country.value === 'MX';
+        const currentExchangeRate = parseFloat(exchangeRate) || 0;
+        
+        let newTotal = 0;
+        
+        // 1. CARGA CONDICIONAL DE LA TASA
+        if (isMX && !currentExchangeRate) {
+            fetchExchangeRate();
+        } else if (!isMX && exchangeRate) {
+            setExchangeRate('');
+        }
+
+        // 2. CÁLCULO DEL TOTAL (USD)
+        if (originalAmount) {
+            const original = parseFloat(originalAmount);
+            
+            if (!isMX) { // País = US
+                newTotal = original;
+            } else if (isMX && currentExchangeRate) { // País = MX
+                // Fórmula: Monto Original (MXN) / Tasa (MXN/USD) = Monto Final (USD)
+                newTotal = original / currentExchangeRate; 
+            } else {
+                newTotal = 0; 
+            }
+        }
+        else {
+            // Gasto basado en la suma de detalles
+            newTotal = expenseDetails.reduce((sum, item) => {
+                const price = parseFloat(item.price) || 0;
+                const quantity = parseInt(item.quantity) || 0;
+                return sum + (price * quantity);
+            }, 0);
+        }
+
+        setTotalAmount(newTotal.toFixed(2));
+        
+    }, [country, originalAmount, exchangeRate, expenseDetails, fetchExchangeRate, setExchangeRate]);
+
 
     const handleSaveExpense = async (event) => {
         event.preventDefault();
+
+        const isMX = country && country.value === 'MX';
 
         if (!country || !expenseDate || expenseDetails.length === 0) {
             Swal.fire('Incomplete fields', 'Make sure to select a country, date, and add at least one expense detail.', 'warning');
             return;
         }
+        // Validación de tasa para MX
+        if (isMX && parseFloat(originalAmount) > 0 && parseFloat(exchangeRate) === 0) {
+             Swal.fire('Incomplete fields', 'Please wait for the Exchange Rate to load or enter it manually for MX.', 'warning');
+            return;
+        }
 
         const apiFormData = new FormData();
-        if (files.facturaPdf) {
-            apiFormData.append('factura_pdf_file', files.facturaPdf);
-        }
-        if (files.ticketJpg) {
-            apiFormData.append('ticket_jpg_file', files.ticketJpg);
-        }
+        // ... (Lógica de files se mantiene)
+        if (files.facturaPdf) apiFormData.append('factura_pdf_file', files.facturaPdf);
+        if (files.ticketJpg) apiFormData.append('ticket_jpg_file', files.ticketJpg);
+
 
         const generalData = {
             fecha_gasto: expenseDate.toISOString().split('T')[0],
             pais: country.value,
-            moneda: country.value === 'MX' ? 'MXN' : 'USD',
-            monto_total: totalAmount,
+            moneda: isMX ? 'MXN' : 'USD', // Moneda Original
+            monto_total: totalAmount, // Monto Final (USD)
             cantidad_original: originalAmount,
-            tipo_cambio: exchangeRate,
+            tipo_cambio: isMX ? exchangeRate : '',
         };
         apiFormData.append('generalData', JSON.stringify(generalData));
 
 
         const detailsData = expenseDetails.map(detail => {
-
             const description = detail.itemDescription || '';
             return {
                 id_tipo_gasto: detail.expenseType,
@@ -211,9 +241,6 @@ const ExpenseScreen = () => {
         });
 
         apiFormData.append('detailsData', JSON.stringify(detailsData));
-        console.log("Data to be sent:", detailsData);
-
-
 
         apiFormData.append('op', 'Alta');
 
@@ -234,325 +261,219 @@ const ExpenseScreen = () => {
         }
     };
 
- 
-
+    const isMX = country && country.value === 'MX';
     const countries = [{ value: 'MX', label: 'México' }, { value: 'US', label: 'Estados Unidos' }];
 
-    // CALCULAR TOTAL Y CARGAR TASA
-    useEffect(() => {
-        const isMX = country && country.value === 'MX';
-        const currentExchangeRate = parseFloat(exchangeRate) || 0;
-        
-        let newTotal = 0;
-        
-        // 1. CARGA CONDICIONAL DE LA TASA
-        if (isMX && !currentExchangeRate) {
-            // Si es MX y la tasa no ha cargado, la cargamos
-            fetchExchangeRate();
-        } else if (!isMX && exchangeRate) {
-            // Si cambiamos de MX a US, limpiamos la tasa
-            setExchangeRate('');
-        }
-
-        // 2. CÁLCULO DEL TOTAL (USD)
-        if (originalAmount) {
-            const original = parseFloat(originalAmount);
-            
-            if (!isMX) {
-                // País = US: Monto Original (USD) = Monto Final (USD)
-                newTotal = original;
-            } else if (isMX && currentExchangeRate) {
-                // País = MX: Monto Original (MXN) / Tasa (MXN/USD) = Monto Final (USD)
-                newTotal = original / currentExchangeRate;
-            } else {
-                 // País = MX, pero la tasa aún no ha cargado
-                newTotal = 0; 
-            }
-        }
-        else {
-            // Gasto basado en la suma de detalles (Asumimos detalles en USD si no hay monto original)
-            newTotal = expenseDetails.reduce((sum, item) => {
-                const price = parseFloat(item.price) || 0;
-                const quantity = parseInt(item.quantity) || 0;
-                return sum + (price * quantity);
-            }, 0);
-        }
-
-        setTotalAmount(newTotal.toFixed(2));
-        
-    }, [country, originalAmount, exchangeRate, expenseDetails, fetchExchangeRate, setExchangeRate]);
-
-
-    const handleRemoveFile = (fileType) => {
-        setFiles(prev => ({ ...prev, [fileType]: null }));
-    };
-
-
-    const getSubtotal = (price, quantity) => {
-        if (price && quantity) {
-            return (parseFloat(price) * parseInt(quantity)).toFixed(2);
-        }
-        return '0.00';
-    };
 
     return (
-        <div className="app-screen-container">
-            <div className="app-screen-wrapper">
-                <div className="app-container">
-                    <span className="app-label">New Expense</span>
-                    <div className="main-content-flex">
-                        <div className="additional-card">
-                            <form className="card-container" onSubmit={handleSaveExpense}>
-                                <div className="form-actions">
-                                    <button type="button" className="cancel-button" onClick={resetForm}>Cancel</button>
-                                    <button type="submit" className="accept-button">Save Expense</button>
-                                </div>
-                                <div className="form-section">
-                                    <legend className="card-label">General Expense Data</legend>
-                                    <div className="input-columns">
-                                        <div className="column">
-                                            <label>Expense Country:</label>
-                                            <Select
-                                                value={country}
-                                                onChange={setCountry}
-                                                options={countries}
-                                                styles={selectStyles}
-                                                isClearable />
-                                        </div>
-                                        <div className="column">
-                                            <label>Ticket Date:</label>
-                                            <DatePicker
-                                                selected={expenseDate}
-                                                onChange={(date) => setExpenseDate(date)}
-                                                className="form-input date-picker-full-width"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
+        <Box sx={{ p: 3 }}>
+             {/* Título Principal */}
+            <Typography variant="h4" component="h1" fontWeight={700} gutterBottom sx={{ mb: 3 }}>
+                New Expense Registration
+            </Typography>
+            
+            <Grid container spacing={4} className="main-content-flex">
+                
+                {/* Columna Izquierda (Formulario de Datos) */}
+                <Grid item xs={12} md={7}>
+                    <Paper elevation={1} sx={{ p: 3, border: '1px solid #ccc' }}>
+                        <form onSubmit={handleSaveExpense}>
+                            {/* Botones de acción (Save / Cancel) */}
+                            <Stack direction="row" justifyContent="flex-end" spacing={2} sx={{ mb: 3 }}>
+                                <Button variant="outlined" color="error" onClick={resetForm}>Cancel</Button>
+                                <Button variant="contained" color="primary" type="submit">Save Expense</Button>
+                            </Stack>
 
-                                <div className="column">
-                                    <label>Original Amount:</label>
-                                    <input
-                                        type="number"
+                            {/* SECCIÓN 1: GENERAL DATA */}
+                            <Typography variant="h6" fontWeight={600} sx={{ borderBottom: '1px solid #eee', pb: 1, mb: 3 }}>
+                                General Expense Data
+                            </Typography>
+                            
+                            <Grid container spacing={2}>
+                                {/* Country and Date */}
+                                <Grid item xs={6}>
+                                    <ExpenseSelect
+                                        label="Expense Country:"
+                                        options={countries}
+                                        value={country}
+                                        onChange={setCountry}
+                                        isClearable
+                                    />
+                                </Grid>
+                                <Grid item xs={6}>
+                                    <InputLabel sx={{ fontWeight: 600, mb: 0.5, fontSize: '0.9rem' }}>Ticket Date:</InputLabel>
+                                    <DatePicker
+                                        selected={expenseDate}
+                                        onChange={setExpenseDate}
+                                        dateFormat="dd/MM/yyyy"
+                                        placeholderText="Fecha del Gasto"
+                                        className="form-input date-picker-full-width" // Asegura el ancho 100%
+                                    />
+                                </Grid>
+                            </Grid>
+                            
+                            {/* Montos */}
+                            <Grid container spacing={2} sx={{ mb: 3 }}>
+                                <Grid item xs={12} md={4}>
+                                    <TextField
+                                        fullWidth size="small" type="number" label={`Original Amount (${isMX ? 'MXN' : 'USD'}):`}
                                         placeholder="Ticket amount"
-                                        className="form-input"
                                         value={originalAmount}
                                         onChange={(e) => setOriginalAmount(e.target.value)}
                                     />
-                                </div>
-                                <div className="column">
-                                    <label>Exchange Rate:</label>
-                                    <input
-                                        type="number"
-                                        placeholder="If applicable"
-                                        className="form-input"
-                                        value={exchangeRate}
-                                        onChange={(e) => setExchangeRate(e.target.value)}
-                                    />
-                                </div>
-                                <div className="column">
-                                    <label>Total Amount (Final):</label>
-                                    <input
-                                        type="text"
-                                        placeholder="Total"
-                                        className="form-input"
+                                </Grid>
+                                
+                                {isMX && (
+                                    <Grid item xs={12} md={4}>
+                                        <TextField
+                                            fullWidth size="small" type="number" label="Exchange Rate (MXN/USD):"
+                                            placeholder="Auto-filled or manual"
+                                            value={exchangeRate}
+                                            onChange={(e) => setExchangeRate(e.target.value)}
+                                        />
+                                    </Grid>
+                                )}
+
+                                <Grid item xs={12} md={4}>
+                                    <TextField
+                                        fullWidth size="small" label="Total Amount (Final USD):"
                                         value={`$${totalAmount}`}
-                                        readOnly
+                                        InputProps={{ readOnly: true }}
                                     />
-                                </div>
+                                </Grid>
+                            </Grid>
 
+                            {/* SECCIÓN 2: EXPENSE DETAILS */}
+                            <Typography variant="h6" fontWeight={600} sx={{ borderBottom: '1px solid #eee', pb: 1, mb: 3, mt: 4 }}>
+                                Expense Details
+                            </Typography>
+                            
+                            {/* Mapeo de Filas de Detalle */}
+                            {expenseDetails.map((detail, index) => (
+                                <DetailRow 
+                                    key={detail.id}
+                                    detail={detail}
+                                    index={index}
+                                    ID_MANTENIMIENTO={ID_MANTENIMIENTO}
+                                    handleDetailChange={handleDetailChange}
+                                    handleArticleChange={handleArticleChange}
+                                    handleRemoveDetail={handleRemoveDetail}
+                                    getSubtotal={getSubtotal}
+                                    expenseTypes={expenseTypes}
+                                    maintenanceCategories={maintenanceCategories}
+                                    subcategories={subcategories}
+                                    inventoryItems={inventoryItems}
+                                    typesLoading={typesLoading}
+                                    categoriesLoading={categoriesLoading}
+                                    subcategoriesLoading={subcategoriesLoading}
+                                    itemsLoading={itemsLoading}
+                                />
+                            ))}
 
-                                <div className="form-section">
-                                    <legend className="card-label">Add Expense Detail</legend>
-                                    {expenseDetails.map((detail) => {
-                                        console.log(
-                                            `Comparando: typeof item.id_subcategoria (${typeof inventoryItems[0]?.id_subcategoria})`,
-                                            `con typeof detail.subcategory (${typeof detail.subcategory})`
-                                        );
-                                        const filteredSubcategories = (subcategories || []).filter(sub => parseInt(sub.id_categoria) == parseInt(detail.category));
+                            <Button type="button" variant="outlined" onClick={handleAddDetail} size="small" sx={{ mt: 1 }}>
+                                + Add Item
+                            </Button>
 
-                                        // Lo mismo para los artículos.
-                                        const filteredItems = (inventoryItems || []).filter(item =>
-                                            parseInt(item.id_subcategoria) == parseInt(detail.subcategory)
-                                        );
+                            {/* SECCIÓN 3: DOCUMENTS */}
+                            <Typography variant="h6" fontWeight={600} sx={{ borderBottom: '1px solid #eee', pb: 1, mb: 3, mt: 4 }}>
+                                Documents (Invoices/Tickets)
+                            </Typography>
+                            
+                            <Grid container spacing={2}>
+                                {/* Botón para PDF */}
+                                <Grid item xs={12} sm={6}>
+                                    <InputLabel sx={{ fontWeight: 600, mb: 0.5, fontSize: '0.9rem' }}>Invoice (PDF)</InputLabel>
+                                    <Stack direction="row" spacing={1} alignItems="center">
+                                        <Button variant="outlined" onClick={() => setModalState({ isOpen: true, fileType: 'facturaPdf' })} size="small">Attach PDF</Button>
+                                        {files.facturaPdf ? (
+                                            <Paper variant="outlined" sx={{ p: 1, flexGrow: 1, display: 'flex', justifyContent: 'space-between' }}>
+                                                <Typography variant="body2">{files.facturaPdf.name}</Typography>
+                                                <Button color="error" size="small" onClick={() => handleRemoveFile('facturaPdf')} sx={{ minWidth: 'unset', p: 0.5 }}>X</Button>
+                                            </Paper>
+                                        ) : (<Typography variant="body2" color="text.secondary">No file</Typography>)}
+                                    </Stack>
+                                </Grid>
 
-                                        return (
-                                            <div key={detail.id} className="detail-item-container">
-                                                <div className="input-columns">
-                                                    <div className="column">
-                                                        <label>Expense Type:</label>
-                                                        <Select
-                                                            options={expenseTypes}
-                                                            isLoading={typesLoading}
-                                                            value={expenseTypes.find(o => o.value === detail.expenseType)}
-                                                            onChange={(selection) => handleDetailChange(detail.id, { expenseType: selection ? selection.value : null })}
+                                {/* Input para Ticket (Imagen) */}
+                                <Grid item xs={12} sm={6}>
+                                    <InputLabel sx={{ fontWeight: 600, mb: 0.5, fontSize: '0.9rem' }}>Ticket (JPG/PNG)</InputLabel>
+                                    <Stack direction="row" spacing={1} alignItems="center">
+                                        <Button variant="outlined" onClick={() => setModalState({ isOpen: true, fileType: 'ticketJpg' })} size="small">Attach Image</Button>
+                                        {files.ticketJpg ? (
+                                            <Paper variant="outlined" sx={{ p: 1, flexGrow: 1, display: 'flex', justifyContent: 'space-between' }}>
+                                                <Typography variant="body2">{files.ticketJpg.name}</Typography>
+                                                <Button color="error" size="small" onClick={() => handleRemoveFile('ticketJpg')} sx={{ minWidth: 'unset', p: 0.5 }}>X</Button>
+                                            </Paper>
+                                        ) : (<Typography variant="body2" color="text.secondary">No file</Typography>)}
+                                    </Stack>
+                                </Grid>
 
-                                                            styles={selectStyles}
-                                                        />
-                                                    </div>
-                                                    <div className="column">
-                                                        <label>Price:</label>
-                                                        <input
-                                                            type="number"
-                                                            value={detail.price}
-                                                            onChange={(e) => handleDetailChange(detail.id, { price: e.target.value })}
-                                                            className="form-input" /></div>
-                                                    <div className="column">
-                                                        <label>Quantity:</label>
-                                                        <input
-                                                            type="number"
-                                                            value={detail.quantity}
-                                                            onChange={(e) => handleDetailChange(detail.id, { quantity: e.target.value })}
-                                                            className="form-input"
-                                                        />
-                                                    </div>
-                                                    <button type="button" onClick={() => handleRemoveDetail(detail.id)} className="remove-button">X</button>
-                                                </div>
-                                                {detail.expenseType === ID_MANTENIMIENTO && (
-                                                    <div className="input-columns maintenance-fields">
-                                                        <div className="column">
-                                                            <label>Category:</label>
-                                                            <Select
-                                                                options={maintenanceCategories}
-                                                                isLoading={categoriesLoading}
-                                                                value={maintenanceCategories.find(o => o.value === detail.category)}
-                                                                onChange={(selection) => handleDetailChange(detail.id, { category: selection ? selection.value : null })}
+                            </Grid>
+                        </form>
+                    </Paper>
+                </Grid>
 
-                                                                styles={selectStyles} /></div>
-                                                        <div className="column">
-                                                            <label>Subcategory:</label>
-                                                            <Select
-                                                                options={filteredSubcategories}
-                                                                isLoading={subcategoriesLoading}
-                                                                value={filteredSubcategories.find(o => o.value === detail.subcategory)}
-                                                                onChange={(selection) => handleDetailChange(detail.id, { subcategory: selection ? selection.value : null })}
-                                                                isDisabled={!detail.category} styles={selectStyles}
-                                                            />
-                                                        </div>
-                                                        <div className="column"><label>Item:</label>
-                                                            <CreatableSelect
-                                                                options={filteredItems}
-                                                                isLoading={itemsLoading}
-                                                                value={
-                                                                    detail.itemDescription
-                                                                        ? { value: detail.itemId, label: detail.itemDescription }
-                                                                        : null
-                                                                }
+                {/* Columna Derecha (Preview/Summary) */}
+                <Grid item xs={12} md={5}>
+                    <Paper elevation={1} sx={{ p: 3, border: '1px solid #ccc' }}>
+                        <Typography variant="h6" fontWeight={600} sx={{ borderBottom: '1px solid #eee', pb: 1, mb: 2 }}>
+                            Expense Summary (Preview)
+                        </Typography>
+                        
+                        <Box sx={{ mb: 2 }}>
+                            <Typography variant="body1"><strong>Country:</strong> {country?.label || 'N/A'}</Typography>
+                            <Typography variant="body1"><strong>Date:</strong> {expenseDate ? expenseDate.toLocaleDateString() : 'N/A'}</Typography>
+                            <Typography variant="body1"><strong>Total Amount (USD):</strong> ${totalAmount}</Typography>
+                            {isMX && originalAmount && (
+                                <>
+                                    <Typography variant="body1"><strong>Original Amount (MXN):</strong> {originalAmount}</Typography>
+                                    <Typography variant="body1"><strong>Exchange Rate:</strong> {exchangeRate}</Typography>
+                                </>
+                            )}
+                        </Box>
+                        
+                        <Typography variant="subtitle1" fontWeight={700} sx={{ mt: 3 }}>Details:</Typography>
+                        <ul style={{ paddingLeft: '20px', margin: '10px 0' }}>
+                            {expenseDetails.map((detail) => {
+                                const typeLabel = expenseTypes.find(t => t.value === detail.expenseType)?.label || 'N/A';
+                                const isMaintenance = typeLabel === 'Mantenimiento';
+                                
+                                return (
+                                    <li key={detail.id} style={{ marginBottom: '8px' }}>
+                                        <Typography variant="body2"><strong>Type:</strong> {typeLabel}</Typography>
+                                        {isMaintenance && (
+                                            <Typography variant="caption" sx={{ ml: 1, display: 'block' }}>
+                                                Cat: {maintenanceCategories.find(c => c.value === detail.category)?.label || 'N/A'} / Sub: {subcategories.find(s => s.value === detail.subcategory)?.label || 'N/A'}
+                                            </Typography>
+                                        )}
+                                        <Typography variant="caption" sx={{ ml: 1, display: 'block' }}>
+                                            Qty: {detail.quantity || 0} x Price: ${parseFloat(detail.price || 0).toFixed(2)} = Subtotal: ${getSubtotal(detail.price, detail.quantity)}
+                                        </Typography>
+                                    </li>
+                                );
+                            })}
+                        </ul>
 
+                        <Typography variant="subtitle1" fontWeight={700} sx={{ mt: 3 }}>Documents:</Typography>
+                        <ul style={{ paddingLeft: '20px', margin: '10px 0' }}>
+                            {files.facturaPdf && <li>Invoice (PDF): {files.facturaPdf.name}</li>}
+                            {files.ticketJpg && <li>Ticket (JPG/PNG): {files.ticketJpg.name}</li>}
+                            {!files.facturaPdf && !files.ticketJpg && <li>No documents attached.</li>}
+                        </ul>
+                    </Paper>
+                </Grid>
+            </Grid>
 
-                                                                onChange={(selection) => handleArticleChange(selection, detail)}
-
-                                                                isDisabled={!detail.subcategory}
-                                                                isClearable
-                                                                placeholder="Select or type an item..."
-                                                                styles={selectStyles}
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        );
-                                    })}
-                                    <button type="button" onClick={handleAddDetail} className="add-detail-button">+ Add Item</button>
-                                </div>
-
-                                <div className="form-section">
-                                    <legend className="card-label">Documents (Invoices/Tickets)</legend>
-                                    <div className="input-columns">
-                                        {/* Botón para PDF */}
-                                        <div className="column">
-                                            <label>Invoice (PDF)</label>
-                                            {!files.facturaPdf ? (
-                                                <button type="button" className="upload-button" onClick={() => setModalState({ isOpen: true, fileType: 'facturaPdf' })}>
-                                                    Attach PDF
-                                                </button>
-                                            ) : (
-                                                <div className="file-display">
-                                                    <span className="file-icon">📄</span>
-                                                    <p className="file-name-display">{files.facturaPdf.name}</p>
-                                                    <button type="button" className="remove-file-button" onClick={() => handleRemoveFile('facturaPdf')}>X</button>
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        {/* Input para Ticket (Imagen) */}
-                                        <div className="column">
-                                            <label>Ticket (JPG/PNG)</label>
-                                            {!files.ticketJpg ? (
-                                                <button type="button" className="upload-button" onClick={() => setModalState({ isOpen: true, fileType: 'ticketJpg' })}>
-                                                    Attach Image
-                                                </button>
-                                            ) : (
-                                                <div className="file-display">
-                                                    <span className="file-icon">🖼️</span>
-                                                    <p className="file-name-display">{files.ticketJpg.name}</p>
-                                                    <button type="button" className="remove-file-button" onClick={() => handleRemoveFile('ticketJpg')}>X</button>
-                                                </div>
-                                            )}
-                                        </div>
-
-                                    </div>
-                                </div>
-                            </form>
-                            <ModalArchivo
-                                isOpen={modalState.isOpen}
-                                onClose={() => setModalState({ isOpen: false, fileType: null })}
-                                onSave={handleSaveFromModal}
-                                title={modalState.fileType === 'facturaPdf' ? 'Adjuntar Factura PDF' : 'Adjuntar Ticket de Gasto'}
-                                saveButtonText="Seleccionar Archivo"
-                                accept={modalState.fileType === 'facturaPdf' ? 'application/pdf' : 'image/jpeg,image/png'}
-                                mostrarFechaVencimiento={false}
-                            />
-                        </div>
-                        <div className="previsualizador-card">
-                            <h3 className="preview-title">Expense Summary</h3>
-                            <div className="preview-general-info">
-                                <p><strong>Country:</strong> {country?.label || 'N/A'}</p>
-                                <p><strong>Date:</strong> {expenseDate ? expenseDate.toLocaleDateString() : 'N/A'}</p>
-                                <p><strong>Total Amount:</strong> ${totalAmount}</p>
-                            </div>
-                            <h4 className="preview-subtitle">Details:</h4>
-                            <ul className="preview-details-list">
-                                {expenseDetails.map((detail) => {
-
-                                    const typeLabel = expenseTypes.find(t => t.value === detail.expenseType)?.label || 'N/A';
-                                    const categoryLabel = maintenanceCategories.find(c => c.value === detail.category)?.label || 'N/A';
-                                    const subcategoryLabel = subcategories.find(s => s.value === detail.subcategory)?.label || 'N/A';
-                                    const itemLabel = detail.itemDescription || 'N/A';
-
-                                    const isMaintenance = typeLabel === 'Mantenimiento';
-
-                                    return (
-                                        <li key={detail.id} className="preview-detail-item">
-                                            <p><strong>Type:</strong> {typeLabel}</p>
-                                            {isMaintenance && (
-                                                <p className="preview-maintenance-info">
-                                                    <strong>Category:</strong> {categoryLabel}<br />
-                                                    <strong>Subcategory:</strong> {subcategoryLabel}<br />
-                                                    <strong>Item:</strong> {itemLabel}
-                                                </p>
-                                            )}
-
-                                            <p>
-                                                <strong>Quantity:</strong> {detail.quantity || 0} x
-                                                <strong> Price:</strong> ${parseFloat(detail.price || 0).toFixed(2)} =
-                                                <strong> Subtotal:</strong> ${getSubtotal(detail.price, detail.quantity)}
-                                            </p>
-                                        </li>
-                                    );
-                                })}
-                            </ul>
-                            <h4 className="preview-subtitle">Documents:</h4>
-                            <ul className="preview-documents-list">
-                                {files.facturaPdf && <li>{files.facturaPdf.name}</li>}
-                                {files.ticketJpg && <li>{files.ticketJpg.name}</li>}
-                                {!files.facturaPdf && !files.ticketJpg && <li>No documents attached.</li>}
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+            <ModalArchivo
+                isOpen={modalState.isOpen}
+                onClose={() => setModalState({ isOpen: false, fileType: null })}
+                onSave={handleSaveFromModal}
+                title={modalState.fileType === 'facturaPdf' ? 'Adjuntar Factura PDF' : 'Adjuntar Ticket de Gasto'}
+                saveButtonText="Seleccionar Archivo"
+                accept={modalState.fileType === 'facturaPdf' ? 'application/pdf' : 'image/jpeg,image/png'}
+                mostrarFechaVencimiento={false}
+            />
+        </Box>
     );
 };
 

@@ -1,21 +1,19 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
-    Box, Typography, TextField, Button, CircularProgress, Stack, // Añadido Stack para botones
-    // Componentes de React-Tooltip y Navigation se mantienen
+    Box, Typography, TextField, Button, CircularProgress, Stack,
 } from '@mui/material'; 
-import './css/DriverAdmin.css';
-import redIcon from '../assets/images/Icons_alerts/shield-red.png'; 
-import greenIcon from '../assets/images/Icons_alerts/shield-green.png'; 
-import yellowIcon from '../assets/images/Icons_alerts/shield-yellow.png'; 
-import greyIcon from '../assets/images/Icons_alerts/shield-grey.png'; 
-import questionIcon from '../assets/images/Icons_alerts/question3.png'; 
+
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import WarningIcon from '@mui/icons-material/Warning';
+import ErrorIcon from '@mui/icons-material/Error';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline'; 
+
 import ModalArchivo from '../components/ModalArchivoEditor.jsx'; 
 import { Tooltip } from 'react-tooltip';
 import { useNavigate } from 'react-router-dom'; 
 import Swal from 'sweetalert2';
 
-// Opciones de filas por página que no tenías en el estado, pero son necesarias en MUI TablePagination
 const ROWS_PER_PAGE_OPTIONS = [6, 12, 24, 48]; 
 
 
@@ -24,21 +22,21 @@ const TruckAdmin = () => {
   const apiHost = import.meta.env.VITE_API_HOST;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [valorActual, setValorActual] = useState(null);
-  const [search, setSearch] = useState('');
+  const [filterUnidad, setFilterUnidad] = useState('');
+  const [filterPlacaMex, setFilterPlacaMex] = useState('');
+  const [filterPlacaEua, setFilterPlacaEua] = useState('');
   const [page, setPage] = useState(0);
   
-  // Modificamos rowsPerPage para usar el primer valor de las opciones si no está definido
   const [rowsPerPage, setRowsPerPage] = useState(ROWS_PER_PAGE_OPTIONS[0]); 
   
   const [trailers, setTrailers] = useState([]);
 
-  // Lógica de cálculo de rango (se mantiene en la función, pero ahora se usa con el estado)
+  // Lógica de cálculo de rango
   const from = page * rowsPerPage;
   const to = Math.min((page + 1) * rowsPerPage, trailers.length);
 
-    // ** LÓGICA DE FETCH (se mantiene igual) **
-    const fetchTrailers = async () => {
-        // ... (Tu código de fetchTrailers)
+    // ** LÓGICA DE FETCH **
+    const fetchTrailers = useCallback(async () => {
         try {
             const response = await fetch(`${apiHost}/trucks.php`, {
                 method: 'POST',
@@ -70,36 +68,51 @@ const TruckAdmin = () => {
         } catch (error) {
             console.error('Error al obtener los trailers:', error);
         }
-    };
+    }, [apiHost]);
 
     useEffect(() => {
         fetchTrailers();
-    }, []);
+    }, [fetchTrailers]);
 
     // ** LÓGICA DE FILTRADO (useMemo para mejor rendimiento) **
     const filteredTrailers = useMemo(() => {
-        const searchLower = search.toLowerCase();
-        return trailers.filter(t =>
-            String(t.unidad).toLowerCase().includes(searchLower) ||
-            String(t.placa_mex || '').toLowerCase().includes(searchLower) ||
-            String(t.placa_eua || '').toLowerCase().includes(searchLower)
-        );
-    }, [trailers, search]);
+        const unidadLower = filterUnidad.toLowerCase();
+        const placaMexLower = filterPlacaMex.toLowerCase();
+        const placaEuaLower = filterPlacaEua.toLowerCase();
 
-    // ** LÓGICA DE ICONOS (se mantiene) **
+        return trailers.filter(t => {
+            const matchUnidad = !unidadLower || 
+                                String(t.unidad).toLowerCase().includes(unidadLower);
+            
+            const matchPlacaMex = !placaMexLower || 
+                                  String(t.placa_mex || '').toLowerCase().includes(placaMexLower);
+            
+            const matchPlacaEua = !placaEuaLower || 
+                                  String(t.placa_eua || '').toLowerCase().includes(placaEuaLower);
+            
+            return matchUnidad && matchPlacaMex && matchPlacaEua;
+        });
+    }, [trailers, filterUnidad, filterPlacaMex, filterPlacaEua]);
+
+    const handleFilterChange = (setter, value) => {
+        setter(value);
+        setPage(0);
+    };
+
+    // ** LÓGICA DE ICONOS (Migrada a SVG MUI) **
     const getIconByFecha = (fechaStr, id, url, tipo) => {
+        const iconStyle = { fontSize: 24, cursor: 'pointer' }; 
+
         if (!fechaStr) {
             return (
-                <>
-                    <img
-                        src={questionIcon}
-                        alt="Sin documento"
-                        className="icon-img"
+                <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                    <HelpOutlineIcon color="disabled" style={iconStyle}
                         data-tooltip-id={`tooltip-${id}-${tipo}`}
                         data-tooltip-content="No se cuenta con el documento"
+                        onClick={() => abrirModalConDocumento(url, fechaStr, id, tipo)}
                     />
                     <Tooltip id={`tooltip-${id}-${tipo}`} place="top" />
-                </>
+                </Box>
             );
         }
 
@@ -107,26 +120,35 @@ const TruckAdmin = () => {
         const hoy = new Date();
         const diffInDays = Math.floor((fecha - hoy) / (1000 * 60 * 60 * 24));
 
-        let icon = redIcon;
+        let IconComponent = CheckCircleIcon;
+        let color = 'success'; // Verde: > 90 días
         let mensaje = `Vencimiento: ${fecha.toLocaleDateString('es-MX')}`;
 
-        if (diffInDays >= 90) icon = greenIcon;
-        else if (diffInDays >= 60) icon = yellowIcon;
-        else if (diffInDays >= 30) icon = redIcon;
-
+        if (diffInDays < 0) { // Vencido
+            IconComponent = ErrorIcon;
+            color = 'error'; // Rojo
+            mensaje = `VENCIDO: ${fecha.toLocaleDateString('es-MX')}`;
+        }
+        else if (diffInDays <= 30) { // Menos de 30 días
+            IconComponent = ErrorIcon;
+            color = 'error'; // Rojo
+        }
+        else if (diffInDays <= 90) { // 30-90 días
+            IconComponent = WarningIcon;
+            color = 'warning'; // Amarillo
+        }
+        
         return (
-            <>
-                <img
-                    src={icon}
-                    alt={tipo}
-                    className="icon-img"
+            <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                <IconComponent 
+                    color={color} 
+                    style={iconStyle}
                     onClick={() => abrirModalConDocumento(url, fechaStr, id, tipo)}
                     data-tooltip-id={`tooltip-${id}-${tipo}`}
                     data-tooltip-content={mensaje}
-                    style={{ cursor: 'pointer' }}
                 />
                 <Tooltip id={`tooltip-${id}-${tipo}`} place="top" />
-            </>
+            </Box>
         );
     };
 
@@ -189,43 +211,77 @@ const TruckAdmin = () => {
 
   return (
     <Box sx={{ p: 3 }}>
-      <Typography variant="h4" component="h1" gutterBottom>Administrador de Trailers</Typography>
+      {/* Título Principal */}
+      <Typography variant="h4" component="h1" fontWeight={700} gutterBottom sx={{ mb: 3 }}>
+        Administrador de Trailers
+      </Typography>
       
-      <Stack direction="row" spacing={2} sx={{ mb: 2 }} className="toolbar">
-        <TextField
-          label="Buscar por unidad"
-          variant="outlined"
-          size="small"
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setPage(0);
-          }}
-        />
-        {/* Aquí puedes añadir otros botones de acción si los necesitas */}
-        <Button variant="contained" onClick={fetchTrailers} size="small">Refrescar</Button>
-      </Stack>
+      {/* Toolbar */}
+      <Box sx={{ mb: 3 }}>
+        <Stack direction="row" spacing={2} alignItems="center">
+            
+            <TextField
+              label="Buscar Unidad"
+              variant="outlined"
+              size="small"
+              value={filterUnidad}
+              onChange={(e) => handleFilterChange(setFilterUnidad, e.target.value)}
+              sx={{ width: 150 }}
+            />
+            <TextField
+              label="Buscar Placa MEX"
+              variant="outlined"
+              size="small"
+              value={filterPlacaMex}
+              onChange={(e) => handleFilterChange(setFilterPlacaMex, e.target.value)}
+              sx={{ width: 200 }}
+            />
+            <TextField
+              label="Buscar Placa EUA"
+              variant="outlined"
+              size="small"
+              value={filterPlacaEua}
+              onChange={(e) => handleFilterChange(setFilterPlacaEua, e.target.value)}
+              sx={{ width: 200 }}
+            />
+            
+            <Button variant="contained" onClick={fetchTrailers} size="small">Refrescar</Button>
+
+            <Button 
+                variant="outlined" 
+                onClick={() => { 
+                    setFilterUnidad(''); 
+                    setFilterPlacaMex(''); 
+                    setFilterPlacaEua(''); 
+                    setPage(0); 
+                }} 
+                size="small"
+            >
+                Limpiar Filtros
+            </Button>
+            
+        </Stack>
+      </Box>
 
       <Paper sx={{ width: '100%', mb: 2 }}>
-        {/* 🚨 Usamos TableContainer para forzar el scroll horizontal 🚨 */}
         <TableContainer sx={{ overflowX: 'auto' }}> 
-          <Table size="small" sx={{ minWidth: 1600 }}> {/* Añadimos un minWidth para que no se apriete */}
+          <Table size="small" stickyHeader sx={{ minWidth: 1600 }}> 
             <TableHead>
               <TableRow>
-                <TableCell sx={{ fontWeight: 'bold' }}>Unidad</TableCell>
-                <TableCell sx={{ fontWeight: 'bold' }}>Placa MEX</TableCell>
-                <TableCell sx={{ fontWeight: 'bold' }}>Placa EUA</TableCell>
-                <TableCell sx={{ fontWeight: 'bold', width: '70px', textAlign: 'center' }}>CAB CARD</TableCell>
-                <TableCell sx={{ fontWeight: 'bold', width: '70px', textAlign: 'center' }}>COI</TableCell>
-                <TableCell sx={{ fontWeight: 'bold', width: '70px', textAlign: 'center' }}>Mecánica</TableCell>
-                <TableCell sx={{ fontWeight: 'bold', width: '70px', textAlign: 'center' }}>TX DMV</TableCell>            
-                <TableCell sx={{ fontWeight: 'bold', width: '70px', textAlign: 'center' }}>DTOPS</TableCell>
-                <TableCell sx={{ fontWeight: 'bold', width: '70px', textAlign: 'center' }}>Permiso NY</TableCell>
-                <TableCell sx={{ fontWeight: 'bold', width: '70px', textAlign: 'center' }}>Permiso NM</TableCell>
-                <TableCell sx={{ fontWeight: 'bold', width: '70px', textAlign: 'center' }}>Fisio Mecánica</TableCell>
-                <TableCell sx={{ fontWeight: 'bold', width: '70px', textAlign: 'center' }}>Humos</TableCell>
-                <TableCell sx={{ fontWeight: 'bold', width: '70px', textAlign: 'center' }}>Seguro</TableCell>
-                <TableCell sx={{ fontWeight: 'bold', width: '150px', textAlign: 'center' }}>Acciones</TableCell>
+                <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>Unidad</TableCell>
+                <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>Placa MEX</TableCell>
+                <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>Placa EUA</TableCell>
+                <TableCell sx={{ fontWeight: 600, width: '70px', textAlign: 'center' }}>CAB CARD</TableCell>
+                <TableCell sx={{ fontWeight: 600, width: '70px', textAlign: 'center' }}>COI</TableCell>
+                <TableCell sx={{ fontWeight: 600, width: '70px', textAlign: 'center' }}>Mecánica</TableCell>
+                <TableCell sx={{ fontWeight: 600, width: '70px', textAlign: 'center' }}>TX DMV</TableCell>            
+                <TableCell sx={{ fontWeight: 600, width: '70px', textAlign: 'center' }}>DTOPS</TableCell>
+                <TableCell sx={{ fontWeight: 600, width: '70px', textAlign: 'center' }}>Permiso NY</TableCell>
+                <TableCell sx={{ fontWeight: 600, width: '70px', textAlign: 'center' }}>Permiso NM</TableCell>
+                <TableCell sx={{ fontWeight: 600, width: '70px', textAlign: 'center' }}>Fisio Mecánica</TableCell>
+                <TableCell sx={{ fontWeight: 600, width: '70px', textAlign: 'center' }}>Humos</TableCell>
+                <TableCell sx={{ fontWeight: 600, width: '70px', textAlign: 'center' }}>Seguro</TableCell>
+                <TableCell sx={{ fontWeight: 600, width: '150px', textAlign: 'center' }}>Acciones</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -237,16 +293,16 @@ const TruckAdmin = () => {
                   <TableCell>{t.placa_eua}</TableCell>
 
                   {/* CELDAS DE ICONOS */}
-                  <TableCell align="center">{getIconByFecha(t.CAB_Fecha, t.truck_id, t.CAB_URL, 'CAB')}</TableCell>
-                  <TableCell align="center">{getIconByFecha(t.COI_Fecha, t.truck_id, t.COI_URL, 'COI')}</TableCell>
-                  <TableCell align="center">{getIconByFecha(t.mecanica_Fecha, t.truck_id, t.mecanica_URL, 'Mecanica')}</TableCell>
-                  <TableCell align="center">{getIconByFecha(t.TX_DMV_Fecha, t.truck_id, t.TX_DMV_URL, 'TX')}</TableCell>
-                  <TableCell align="center">{getIconByFecha(t.dtops_Fecha, t.truck_id, t.dtops_URL, 'DTOPS')}</TableCell>
-                  <TableCell align="center">{getIconByFecha(t.PERMISO_NY_Fecha, t.truck_id, t.PERMISO_NY_URL, 'PERMISO_NY')}</TableCell>
-                  <TableCell align="center">{getIconByFecha(t.PERMISO_NM_Fecha, t.truck_id, t.PERMISO_NM_URL, 'PERMISO_NM')}</TableCell>
-                  <TableCell align="center">{getIconByFecha(t.Inspecccion_fisio_Mecanica_Fecha, t.truck_id, t.Inspecccion_fisio_Mecanica_URL, 'Fisio Mecanica')}</TableCell>
-                  <TableCell align="center">{getIconByFecha(t.Inspecion_humos_Fecha, t.truck_id, t.Inspecion_humos_URL, 'Humos')}</TableCell>
-                  <TableCell align="center">{getIconByFecha(t.seguro_Fecha, t.truck_id, t.seguro_URL, 'Seguro')}</TableCell>
+                  <TableCell>{getIconByFecha(t.CAB_Fecha, t.truck_id, t.CAB_URL, 'CAB')}</TableCell>
+                  <TableCell>{getIconByFecha(t.COI_Fecha, t.truck_id, t.COI_URL, 'COI')}</TableCell>
+                  <TableCell>{getIconByFecha(t.mecanica_Fecha, t.truck_id, t.mecanica_URL, 'Mecanica')}</TableCell>
+                  <TableCell>{getIconByFecha(t.TX_DMV_Fecha, t.truck_id, t.TX_DMV_URL, 'TX')}</TableCell>
+                  <TableCell>{getIconByFecha(t.dtops_Fecha, t.truck_id, t.dtops_URL, 'DTOPS')}</TableCell>
+                  <TableCell>{getIconByFecha(t.PERMISO_NY_Fecha, t.truck_id, t.PERMISO_NY_URL, 'PERMISO_NY')}</TableCell>
+                  <TableCell>{getIconByFecha(t.PERMISO_NM_Fecha, t.truck_id, t.PERMISO_NM_URL, 'PERMISO_NM')}</TableCell>
+                  <TableCell>{getIconByFecha(t.Inspecccion_fisio_Mecanica_Fecha, t.truck_id, t.Inspecccion_fisio_Mecanica_URL, 'Fisio Mecanica')}</TableCell>
+                  <TableCell>{getIconByFecha(t.Inspecion_humos_Fecha, t.truck_id, t.Inspecion_humos_URL, 'Humos')}</TableCell>
+                  <TableCell>{getIconByFecha(t.seguro_Fecha, t.truck_id, t.seguro_URL, 'Seguro')}</TableCell>
 
                   {/* CONSOLIDACIÓN DE ACCIONES */}
                   <TableCell sx={{ whiteSpace: 'nowrap' }}>
@@ -282,7 +338,7 @@ const TruckAdmin = () => {
           </Table>
         </TableContainer>
         
-        {/* Paginación MUI (Manual, ya que no usamos el componente TablePagination) */}
+        {/* Paginación MUI */}
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', p: 1 }}>
             <Typography variant="body2" sx={{ mr: 2 }}>
                 {`Filas por página: ${rowsPerPage}`}
