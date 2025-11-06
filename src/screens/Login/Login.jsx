@@ -37,15 +37,18 @@ const Login = () => {
       });
 
       const text = await response.text();
-      console.log("respuesta"+text);
+      console.log("respuesta" + text);
       const data = JSON.parse(text);
 
       if (data.status === 'success') {
         console.log(data.user.type);
-        await login(data.user.id, data.user.name,data.user.type);
-        navigate('/home'); 
-      } else {
-        alert(data.message);
+        await login(data.user.id, data.user.name, data.user.type);
+
+        if (window?.electron?.checkForUpdates) {
+          window.electron.checkForUpdates();
+        }
+
+        navigate('/home');
       }
     } catch (error) {
       alert('No se pudo conectar con el servidor.');

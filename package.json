@@ -1,7 +1,7 @@
 {
   "name": "imaappdesktopreact",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.1",
   "type": "module",
   "main": "electron.cjs",
   "scripts": {
@@ -27,6 +27,7 @@
     "@reduxjs/toolkit": "^2.6.1",
     "axios": "^1.8.4",
     "dayjs": "^1.11.13",
+    "electron-updater": "^6.6.2",
     "html2canvas": "^1.4.1",
     "jspdf": "^3.0.3",
     "react": "^19.0.0",
@@ -37,6 +38,7 @@
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.4.1",
     "react-select": "^5.10.1",
+    "react-toastify": "^11.0.5",
     "react-tooltip": "^5.28.0",
     "sweetalert2": "^11.17.2",
     "xlsx": "^0.18.5"
@@ -69,6 +71,14 @@
     ],
     "win": {
       "target": "nsis"
-    }
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "RichardEspRey",
+        "repo": "frontend-ima-app-react",
+        "private": true
+      }
+    ]
   }
 }

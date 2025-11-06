@@ -2,12 +2,12 @@ import React, { useEffect, useMemo, useState } from 'react';
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
   TablePagination, TextField, Box, Typography, CircularProgress,
-  Select, MenuItem, InputAdornment, IconButton, Collapse, Button, Chip, Stack, Divider
+  Select, MenuItem, InputAdornment, IconButton, Collapse, Button, Chip, Stack, Divider, Tooltip, Badge
 } from '@mui/material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import SaveIcon from '@mui/icons-material/Save';
 import Swal from 'sweetalert2';
-
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -18,7 +18,7 @@ const money = (v, c = 'MXN') =>
 
 const PAYMENT_METHODS = ['RTS', 'CHEQUE', 'TRIUM PAY', 'DEPOSITO'];
 
-/** Mapa de status para etiqueta/colores (ajústalo a tus valores reales) */
+/** Mapa de status para etiqueta/colores */
 const STATUS_OPTIONS = [
   { value: 3, label: 'Pagada', color: '#2e7d32' }, // verde
   { value: 2, label: 'Cobrada, pendiente RTS', color: '#fdd835' }, // amarillo
@@ -45,7 +45,8 @@ const Finanzas = () => {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [openMap, setOpenMap] = useState({}); // { [trip_id]: boolean } para colapsables
+  const [openMap, setOpenMap] = useState({}); // { [trip_id]: boolean }
+  const [saving, setSaving] = useState(false); // spinner para guardado general
 
   // Carga desde formularios.php con op=All_finanzas
   const fetchFinanzas = async () => {
@@ -61,16 +62,16 @@ const Finanzas = () => {
       const json = await res.json();
 
       if (json.status === 'success' && Array.isArray(json.data)) {
-        // Normaliza: asegura que stages tenga campos editables (si el backend aún no los manda)
+        // Normaliza
         const norm = json.data.map(t => ({
           trip_id: Number(t.trip_id),
           trip_number: t.trip_number ?? '',
           stages_count: Number(t.stages_count ?? 0),
           total_tarifa: Number(t.total_tarifa ?? 0),
-          total_pagada: Number(t.total_pagada ?? 0), 
-          status_trip: t.status_trip != null ? Number(t.status_trip) : null, 
+          total_pagada: Number(t.total_pagada ?? 0),
+          status_trip: t.status_trip != null ? Number(t.status_trip) : null,
           stages: Array.isArray(t.stages) ? t.stages
-            .filter(s => String(s.stageType ?? '').toLowerCase() !== 'emptymileage') // si ya filtras
+            .filter(s => String(s.stageType ?? '').toLowerCase() !== 'emptymileage')
             .map(s => ({
               trip_stage_id: Number(s.trip_stage_id),
               trip_id: Number(s.trip_id),
@@ -82,6 +83,7 @@ const Finanzas = () => {
               paid_rate: s.tarifa_pagada != null ? String(Number(String(s.tarifa_pagada).replace(',', '.'))) : '',
               status: s.status != null ? Number(s.status) : '',
               moneda: s.moneda ?? 'MXN',
+              _dirty: false, // bandera de cambio
             })) : [],
         }));
 
@@ -115,99 +117,130 @@ const Finanzas = () => {
     setOpenMap(prev => ({ ...prev, [trip_id]: !prev[trip_id] }));
   };
 
-  // Cambios locales por stage
+  // Cambios locales por stage (marca _dirty=true)
   const handleStageFieldChange = (trip_id, trip_stage_id, field, value) => {
     setTrips(prev => prev.map(t => {
       if (t.trip_id !== trip_id) return t;
       return {
         ...t,
         stages: t.stages.map(s => (
-          s.trip_stage_id === trip_stage_id ? { ...s, [field]: value } : s
+          s.trip_stage_id === trip_stage_id ? { ...s, [field]: value, _dirty: true } : s
         )),
       };
     }));
   };
 
-  // Guardado por stage (ajusta op y payload a tu backend real)
-  const saveStage = async (trip_id, stage) => {
+  // === Utilidades para guardado general ===
+  const validateStage = (stage) => {
+    const errs = [];
     const metodo = (stage.payment_method ?? '').trim();
     const tarifaStr = String(stage.paid_rate ?? '').trim();
-    const statusVal = stage.status;
-
-    const faltantes = [];
-
-    if (!metodo) faltantes.push('Selecciona un método de pago');
-
     const tarifaNum = Number(tarifaStr);
+
+    if (!metodo) errs.push('Método de pago vacío');
     if (tarifaStr === '' || Number.isNaN(tarifaNum)) {
-      faltantes.push('Captura una tarifa válida (número)');
+      errs.push('Tarifa pagada inválida');
     } else if (tarifaNum <= 0) {
-      faltantes.push('La tarifa debe ser mayor a 0');
+      errs.push('Tarifa pagada debe ser > 0');
+    }
+    if (stage.status === '' || stage.status === null || Number.isNaN(Number(stage.status))) {
+      errs.push('Status no seleccionado');
+    }
+    return errs;
+  };
+
+  const buildPayloadItem = (stage) => {
+    const tarifaNum = Number(String(stage.paid_rate ?? '').trim());
+    return {
+      id: String(stage.trip_stage_id),
+      metodo: (stage.payment_method ?? '').trim(),
+      tarifa: Number.isFinite(tarifaNum) ? tarifaNum.toFixed(2) : '0.00',
+      status: String(Number(stage.status)),
+    };
+  };
+
+  const collectDirtyStages = () => {
+    const dirty = [];
+    for (const t of trips) {
+      for (const s of t.stages) {
+        if (s._dirty) dirty.push({ tripId: t.trip_id, stage: s });
+      }
+    }
+    return dirty;
+  };
+
+  const dirtyCount = useMemo(() => collectDirtyStages().length, [trips]);
+
+  const saveAll = async () => {
+    const dirty = collectDirtyStages();
+    if (dirty.length === 0) {
+      await Swal.fire({ icon: 'info', title: 'Sin cambios', text: 'No hay filas modificadas por guardar.' });
+      return;
     }
 
-    if (statusVal === '' || statusVal === null || Number.isNaN(Number(statusVal))) {
-      faltantes.push('Selecciona un status');
+    // Validación masiva
+    const invalids = [];
+    for (const { stage } of dirty) {
+      const errs = validateStage(stage);
+      if (errs.length) invalids.push({ stage, errs });
     }
 
-    if (faltantes.length) {
+    if (invalids.length) {
+      const html = invalids.slice(0, 10).map(({ stage, errs }) =>
+        `<li><b>Stage ${stage.trip_stage_id}</b>: <ul>${errs.map(e => `<li>${e}</li>`).join('')}</ul></li>`
+      ).join('');
       await Swal.fire({
         icon: 'warning',
-        title: 'Faltan datos',
-        html: `<ul style="text-align:left;margin:0;padding-left:18px">${faltantes.map(f => `<li>${f}</li>`).join('')}</ul>`,
-        confirmButtonText: 'Entendido',
+        title: 'Revisa los datos',
+        html: `<p>Hay ${invalids.length} filas con errores:</p><ul style="text-align:left">${html}${invalids.length > 10 ? '<li>...</li>' : ''}</ul>`,
       });
       return;
     }
 
     const confirm = await Swal.fire({
       icon: 'question',
-      title: '¿Guardar cambios del stage?',
-      text: `Stage #${stage.trip_stage_id}`,
+      title: 'Confirmar guardado',
+      text: `Se guardarán ${dirty.length} cambio(s).`,
       showCancelButton: true,
-      confirmButtonText: 'Guardar',
+      confirmButtonText: 'Guardar todo',
       cancelButtonText: 'Cancelar',
     });
     if (!confirm.isConfirmed) return;
 
-    // Spinner (sin await)
-    Swal.fire({
-      title: 'Guardando…',
-      allowOutsideClick: false,
-      didOpen: () => Swal.showLoading(),
-    });
+    setSaving(true);
+    Swal.fire({ title: 'Guardando…', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
     const controller = new AbortController();
-    const t = setTimeout(() => controller.abort(), 20000); // 20s
+    const tmo = setTimeout(() => controller.abort(), 30000); // 30s
 
     try {
+      // Arreglo para API
+      const items = dirty.map(({ stage }) => buildPayloadItem(stage));
+
       const fd = new FormData();
-      fd.append('op', 'I_pago_stage');
-      fd.append('id', String(stage.trip_stage_id));
-      fd.append('metodo', metodo);
-      fd.append('tarifa', tarifaNum.toFixed(2));
-      fd.append('status', String(Number(statusVal)));
+      fd.append('op', 'I_pago_stage_bulk');      // <— ajusta si tu op se llama distinto
+      fd.append('items', JSON.stringify(items)); // arreglo completo
 
       const res = await fetch(`${apiHost}/formularios.php`, {
         method: 'POST',
         body: fd,
-        // credentials: 'include', // descomenta si usas sesión/cookies
         signal: controller.signal,
       });
 
-      clearTimeout(t);
+      clearTimeout(tmo);
       const json = await res.json();
       Swal.close();
+      setSaving(false);
 
       if (json.status === 'success') {
-
         await Swal.fire({
           icon: 'success',
           title: 'Cambios guardados',
-          text: 'Stage actualizado correctamente.',
-          timer: 1500,
+          text: `Se actualizaron ${dirty.length} fila(s).`,
+          timer: 1600,
           showConfirmButton: false,
         });
-        await fetchFinanzas();
+        await fetchFinanzas(); // recarga limpio (_dirty en false)
       } else {
         await Swal.fire({
           icon: 'error',
@@ -216,9 +249,39 @@ const Finanzas = () => {
         });
       }
     } catch (e) {
-      clearTimeout(t);
+      clearTimeout(tmo);
       Swal.close();
-      console.error('Error al guardar stage:', e);
+      setSaving(false);
+
+      // === Fallback opcional: guardar uno por uno ===
+      // Descomenta para intentar guardar individualmente si tu backend no tiene bulk.
+      /*
+      try {
+        const results = [];
+        for (const { stage } of dirty) {
+          const fd = new FormData();
+          fd.append('op', 'I_pago_stage');
+          const item = buildPayloadItem(stage);
+          fd.append('id', item.id);
+          fd.append('metodo', item.metodo);
+          fd.append('tarifa', item.tarifa);
+          fd.append('status', item.status);
+
+          const r = await fetch(`${apiHost}/formularios.php`, { method: 'POST', body: fd });
+          const j = await r.json();
+          results.push(j.status === 'success');
+        }
+        const ok = results.filter(Boolean).length;
+        await Swal.fire({
+          icon: ok === results.length ? 'success' : 'warning',
+          title: 'Guardado parcial',
+          text: `Exitosos: ${ok}/${results.length}`,
+        });
+        await fetchFinanzas();
+        return;
+      } catch (_) {}
+      */
+
       await Swal.fire({
         icon: 'error',
         title: e.name === 'AbortError' ? 'Tiempo de espera agotado' : 'Error de red',
@@ -229,18 +292,34 @@ const Finanzas = () => {
     }
   };
 
-
-
   return (
     <Paper sx={{ m: 2, p: 2 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, gap: 2, flexWrap: 'wrap' }}>
         <Typography variant="h4">Finanzas</Typography>
-        <TextField
-          size="small"
-          placeholder="Buscar por Trip number"
-          value={search}
-          onChange={(e) => { setSearch(e.target.value); setPage(0); }}
-        />
+
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <TextField
+            size="small"
+            placeholder="Buscar por Trip number"
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setPage(0); }}
+          />
+
+          <Tooltip title={dirtyCount ? `Hay ${dirtyCount} cambios por guardar` : 'No hay cambios'}>
+            <span>
+              <Badge badgeContent={dirtyCount} color="primary">
+                <Button
+                  variant="contained"
+                  startIcon={<SaveIcon />}
+                  disabled={saving || dirtyCount === 0}
+                  onClick={saveAll}
+                >
+                  Guardar cambios
+                </Button>
+              </Badge>
+            </span>
+          </Tooltip>
+        </Box>
       </Box>
 
       <TableContainer>
@@ -299,19 +378,18 @@ const Finanzas = () => {
                       {/* Total Rate */}
                       <TableCell>{money(t.total_tarifa, 'USD')}</TableCell>
 
-                      {/* Total Pagado (nuevo) */}
+                      {/* Total Pagado */}
                       <TableCell>{money(t.total_pagada ?? 0, 'USD')}</TableCell>
 
-                      {/* Status (nuevo) */}
+                      {/* Status trip */}
                       <TableCell>
-                        { <StatusChip value={t.status_trip} /> }
+                        <StatusChip value={t.status_trip} />
                       </TableCell>
                     </TableRow>
 
-
                     {/* Fila colapsable con etapas */}
                     <TableRow>
-                      <TableCell colSpan={4} sx={{ p: 0, borderBottom: isOpen ? '1px solid rgba(224,224,224,1)' : 0 }}>
+                      <TableCell colSpan={6} sx={{ p: 0, borderBottom: isOpen ? '1px solid rgba(224,224,224,1)' : 0 }}>
                         <Collapse in={isOpen} timeout="auto" unmountOnExit>
                           <Box sx={{ p: 2 }}>
                             <Typography variant="h6" gutterBottom>Stages</Typography>
@@ -327,12 +405,12 @@ const Finanzas = () => {
                                   <TableCell>Método de pago</TableCell>
                                   <TableCell>Tarifa pagada</TableCell>
                                   <TableCell>Status</TableCell>
-                                  <TableCell align="right">Acciones</TableCell>
+                                  {/* Se retiró botón Guardar por fila para promover guardado general */}
                                 </TableRow>
                               </TableHead>
                               <TableBody>
                                 {t.stages.map(s => (
-                                  <TableRow key={s.trip_stage_id} hover>
+                                  <TableRow key={s.trip_stage_id} hover selected={!!s._dirty}>
                                     <TableCell>{s.trip_stage_id}</TableCell>
                                     <TableCell>{s.stage_number}</TableCell>
                                     <TableCell>{s.origin || <em>-</em>}</TableCell>
@@ -361,19 +439,14 @@ const Finanzas = () => {
                                         size="small"
                                         value={s.paid_rate}
                                         onChange={(e) => {
-                                          const clean =
-                                            e.target.value === ''
-                                              ? ''
-                                              : e.target.value.replace(/[^\d.]/g, '');
+                                          const clean = e.target.value === '' ? '' : e.target.value.replace(/[^\d.]/g, '');
                                           handleStageFieldChange(t.trip_id, s.trip_stage_id, 'paid_rate', clean);
                                         }}
                                         placeholder="0.00"
                                         inputProps={{ inputMode: 'decimal' }}
                                         fullWidth
                                         InputProps={{
-                                          startAdornment: (
-                                            <InputAdornment position="start">$</InputAdornment>
-                                          ),
+                                          startAdornment: <InputAdornment position="start">$</InputAdornment>,
                                         }}
                                       />
                                     </TableCell>
@@ -408,17 +481,6 @@ const Finanzas = () => {
                                           </MenuItem>
                                         ))}
                                       </Select>
-                                    </TableCell>
-
-                                    {/* Acciones */}
-                                    <TableCell align="right">
-                                      <Button
-                                        variant="contained"
-                                        size="small"
-                                        onClick={() => saveStage(t.trip_id, s)}
-                                      >
-                                        Guardar
-                                      </Button>
                                     </TableCell>
                                   </TableRow>
                                 ))}

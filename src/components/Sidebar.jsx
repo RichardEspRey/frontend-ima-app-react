@@ -17,7 +17,8 @@ import iconReport from '../assets/images/icons/report.png';
 import iconExit from '../assets/images/icons/exit.png';
 import iconList from '../assets/images/icons/list.png';
 import iconGasto from '../assets/images/icons/gasto.png';
-
+import iconUpdate from '../assets/images/icons/update.png'
+import { UpdateContext } from '../App';
 // Convención final:
 // - rolesPermitidos: array de roles permitidos (padre y subitems).
 // - Sin permisos granulares.
@@ -48,50 +49,50 @@ const menuItems = [
   {
     name: 'Camiones',
     icon: iconTrailer,
-    rolesPermitidos: ['admin','Angeles'],
+    rolesPermitidos: ['admin', 'Angeles'],
     subItems: [
-      { name: 'Alta de camiones', route: '/trucks', rolesPermitidos: ['admin','Angeles'] },
-      { name: 'Administrador de camiones', route: '/admin-trucks', rolesPermitidos: ['admin','Angeles'] },
-      { name: 'Alta de Cajas', route: '/trailers', rolesPermitidos: ['admin','Angeles'] },
-      { name: 'Administrador de cajas', route: '/admin-trailers', rolesPermitidos: ['admin','Angeles'] }
+      { name: 'Alta de camiones', route: '/trucks', rolesPermitidos: ['admin', 'Angeles'] },
+      { name: 'Administrador de camiones', route: '/admin-trucks', rolesPermitidos: ['admin', 'Angeles'] },
+      { name: 'Alta de Cajas', route: '/trailers', rolesPermitidos: ['admin', 'Angeles'] },
+      { name: 'Administrador de cajas', route: '/admin-trailers', rolesPermitidos: ['admin', 'Angeles'] }
     ]
   },
 
   {
     name: 'Gastos',
     icon: iconGasto,
-    rolesPermitidos: ['admin', 'Angeles','Blanca','Candy','Mia'],
+    rolesPermitidos: ['admin', 'Angeles', 'Blanca', 'Candy', 'Mia'],
     subItems: [
-      { name: 'Nuevo Gasto', route: '/new-expense', rolesPermitidos: ['admin', 'Angeles','Mia'] },
-      { name: 'Administrador gastos', route: '/admin-gastos-generales', rolesPermitidos: ['admin','Angeles'] },
-      { name: 'Gastos diesel', route: '/admin-diesel', rolesPermitidos: ['admin','Blanca','Candy','Mia'] },
-      { name: 'Gastos viajes', route: '/admin-gastos', rolesPermitidos: ['admin','Blanca','Mia'] }
+      { name: 'Nuevo Gasto', route: '/new-expense', rolesPermitidos: ['admin', 'Angeles', 'Mia'] },
+      { name: 'Administrador gastos', route: '/admin-gastos-generales', rolesPermitidos: ['admin', 'Angeles'] },
+      { name: 'Gastos diesel', route: '/admin-diesel', rolesPermitidos: ['admin', 'Blanca', 'Candy', 'Mia'] },
+      { name: 'Gastos viajes', route: '/admin-gastos', rolesPermitidos: ['admin', 'Blanca', 'Mia'] }
     ]
   },
 
   {
     name: 'Mantenimientos',
     icon: iconList,
-    rolesPermitidos: ['admin', 'Angeles','Candy'],
+    rolesPermitidos: ['admin', 'Angeles', 'Candy'],
     subItems: [
-      { name: 'Inventario', route: '/view-inventory', rolesPermitidos: ['admin','Angeles','Candy'] },
-      { name: 'Inspeccion final', route: '/Inspeccion-final', rolesPermitidos: ['admin','Angeles','Candy'] },
-      { name: 'Administrador Ordenes de Servicio', route: '/admin-service-order', rolesPermitidos: ['admin','Angeles','Candy'] }
+      { name: 'Inventario', route: '/view-inventory', rolesPermitidos: ['admin', 'Angeles', 'Candy'] },
+      { name: 'Inspeccion final', route: '/Inspeccion-final', rolesPermitidos: ['admin', 'Angeles', 'Candy'] },
+      { name: 'Administrador Ordenes de Servicio', route: '/admin-service-order', rolesPermitidos: ['admin', 'Angeles', 'Candy'] }
     ]
   },
 
   {
     name: 'Viajes',
     icon: iconBox,
-    rolesPermitidos: ['admin','Candy','Blanca'],
+    rolesPermitidos: ['admin', 'Candy', 'Blanca'],
     subItems: [
-      { name: 'Nuevo Viaje', route: '/trips', rolesPermitidos: ['admin','Blanca'] },
-      { name: 'Administrador de viajes', route: '/admin-trips', rolesPermitidos: ['admin','Blanca','Candy','Mia'] },
+      { name: 'Nuevo Viaje', route: '/trips', rolesPermitidos: ['admin', 'Blanca'] },
+      { name: 'Administrador de viajes', route: '/admin-trips', rolesPermitidos: ['admin', 'Blanca', 'Candy', 'Mia'] },
     ]
   },
 
   {
-    name: 'Finanzas',
+    name: 'Ejemplo',
     icon: iconBox,
     rolesPermitidos: ['admin'],
     subItems: [
@@ -104,6 +105,8 @@ const menuItems = [
 ];
 
 const Sidebar = () => {
+  const [progress, setProgress] = useState(0);
+  const { updateDisponible } = useContext(UpdateContext);
   const [notificaciones, setNotificaciones] = useState({
     IMA: 0,
     Conductores: 0,
@@ -122,10 +125,20 @@ const Sidebar = () => {
   // Rol desde contexto o localStorage
   const [tipoUsuario, setTipoUsuario] = useState('');
 
+  //obtener credenciales del usuario
   useEffect(() => {
     const storedType = localStorage.getItem('type') || '';
     setTipoUsuario((user?.tipo_usuario || storedType || '').trim());
   }, [user]);
+
+  //obtener barra de progreso descarga
+  useEffect(() => {
+    window.electron?.onUpdateProgress((percent) => {
+      console.log('Progreso de descarga:', percent);
+      setProgress(percent);
+    });
+  }, []);
+
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -292,6 +305,36 @@ const Sidebar = () => {
           );
         })}
       </div>
+
+      <button
+        className="logout-button"
+        onClick={() => window.electron.descargarUpdate()}
+        disabled={!updateDisponible || (progress > 0 && progress < 100)}
+        style={{ opacity: updateDisponible ? 1 : 0.5, cursor: updateDisponible ? 'pointer' : 'not-allowed' }}
+      >
+        <img src={iconUpdate} className="menu-icon" alt="update" />
+        <span className="menu-text-content">Actualizar</span>
+      </button>
+
+      {updateDisponible && progress > 0 && progress < 100 && (
+        <div style={{ padding: '0 16px' }}>
+          <div style={{ marginTop: 4 }}>
+            <div style={{ fontSize: 12, color: '#fff' }}>
+              Descargando actualización… {Math.floor(progress)}%
+            </div>
+            <div style={{ background: '#ccc', borderRadius: 4, overflow: 'hidden', height: 6, marginTop: 4 }}>
+              <div style={{
+                height: '100%',
+                width: `${progress}%`,
+                background: '#4caf50',
+                transition: 'width 0.3s ease'
+              }} />
+            </div>
+          </div>
+        </div>
+      )}
+
+
 
       <button className="logout-button" onClick={handleLogout}>
         <img src={iconExit} className="menu-icon" alt="logout" />
