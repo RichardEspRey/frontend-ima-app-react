@@ -64,7 +64,6 @@ export const OrderRow = ({ order, onEdit, onEditDetail }) => {
                 <TableCell>{serviciosResumen}</TableCell>
 
                 <TableCell align="right" sx={{ fontWeight: 500 }}>{money(totalsOrder.mo)}</TableCell>
-                
                 <TableCell align="right" sx={{ fontWeight: 500 }}>{money(totalsOrder.items)}</TableCell>
 
                 <TableCell align="right" sx={{ fontWeight: 500 }}>
@@ -85,6 +84,7 @@ export const OrderRow = ({ order, onEdit, onEditDetail }) => {
                 </TableCell>
             </TableRow>
 
+            {/* Collapse con cards de servicios */}
             <TableRow>
                 <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={11}>
                     <Collapse in={open} timeout="auto" unmountOnExit>
@@ -141,6 +141,21 @@ export const OrderRow = ({ order, onEdit, onEditDetail }) => {
                                                             />
                                                         </Box>
                                                     }
+                                                    subheader={
+                                                        <Box>
+                                                            <Typography variant="body2">
+                                                                <strong>Mantenimiento:</strong> {svc.tipo_mantenimiento || '—'}
+                                                            </Typography>
+                                                            <Typography variant="body2">
+                                                                <strong>Reparación:</strong> {svc.tipo_reparacion || '—'}
+                                                            </Typography>
+                                                            {svc.fecha_termino && (
+                                                                <Typography variant="caption" color="text.secondary">
+                                                                    Fecha: {svc.fecha_termino}
+                                                                </Typography>
+                                                            )}
+                                                        </Box>
+                                                    }
                                                     sx={{ pb: 1 }}
                                                 />
                                                 <Divider />
@@ -165,6 +180,21 @@ export const OrderRow = ({ order, onEdit, onEditDetail }) => {
                                                                     <Paper key={det.id_detalle} variant="outlined" sx={{ p: 1.25, borderRadius: 1.5 }}>
                                                                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', gap: 1 }}>
                                                                             <Box sx={{ minWidth: 0 }}>
+                                                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                                                                                    <Chip
+                                                                                        label={det.tipo_detalle || '—'}
+                                                                                        size="small"
+                                                                                        variant="outlined"
+                                                                                    />
+                                                                                    {det.id_articulo ? (
+                                                                                        <Chip
+                                                                                            label={`ID Art: ${det.id_articulo}`}
+                                                                                            size="small"
+                                                                                            color="default"
+                                                                                            variant="outlined"
+                                                                                        />
+                                                                                    ) : null}
+                                                                                </Box>
                                                                                 <Typography variant="body2" sx={{ mt: 0.5 }} noWrap title={det.descripcion}>
                                                                                     {det.descripcion || '—'}
                                                                                 </Typography>
@@ -178,6 +208,7 @@ export const OrderRow = ({ order, onEdit, onEditDetail }) => {
                                                                                 <Typography variant="body2" sx={{ fontWeight: 700 }}>
                                                                                     {money(subtotal)}
                                                                                 </Typography>
+
                                                                             </Box>
                                                                         </Box>
                                                                     </Paper>

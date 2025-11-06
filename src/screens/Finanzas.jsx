@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
   TablePagination, TextField, Box, Typography, CircularProgress,
@@ -9,23 +9,16 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import SaveIcon from '@mui/icons-material/Save';
 import Swal from 'sweetalert2';
 
+import { PAYMENT_METHODS, STATUS_OPTIONS } from '../constants/finances';
+import { StageDetailRow } from '../components/StageDetailRow'; 
+
 const apiHost = import.meta.env.VITE_API_HOST;
 
 /* === Helpers === */
-const money = (v, c = 'MXN') =>
-  new Intl.NumberFormat('es-MX', { style: 'currency', currency: c })
+const money = (v) =>
+  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, currencyDisplay: 'symbol' })
     .format(Number(v || 0));
 
-const PAYMENT_METHODS = ['RTS', 'CHEQUE', 'TRIUM PAY', 'DEPOSITO'];
-
-/** Mapa de status para etiqueta/colores */
-const STATUS_OPTIONS = [
-  { value: 3, label: 'Pagada', color: '#2e7d32' }, // verde
-  { value: 2, label: 'Cobrada, pendiente RTS', color: '#fdd835' }, // amarillo
-  { value: 1, label: 'Cobrada, pendiente de pago', color: '#fb8c00' }, // naranja
-  { value: 0, label: 'Pendiente de cobrar', color: '#d32f2f' }, // rojo
-  { value: null, label: 'Pendiente de cobrar', color: '#d32f2f' }, // rojo
-];
 
 const StatusChip = ({ value }) => {
   const meta = STATUS_OPTIONS.find(o => o.value === Number(value));
@@ -40,29 +33,30 @@ const StatusChip = ({ value }) => {
 };
 
 const Finanzas = () => {
-  const [trips, setTrips] = useState([]);     // [{ trip_id, trip_number, stages_count, total_tarifa, stages: [...] }]
+  const [trips, setTrips] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [openMap, setOpenMap] = useState({}); // { [trip_id]: boolean }
-  const [saving, setSaving] = useState(false); // spinner para guardado general
+  const [openMap, setOpenMap] = useState({});
+  const [saving, setSaving] = useState(false);
 
-  // Carga desde formularios.php con op=All_finanzas
-  const fetchFinanzas = async () => {
+  // ** LÓGICA DE FETCH  **
+  const toFormBody = useCallback((obj) =>
+    Object.entries(obj)
+      .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v ?? '')}`)
+      .join('&'), []);
+
+  const fetchFinanzas = useCallback(async () => {
     setLoading(true);
     try {
       const fd = new FormData();
       fd.append('op', 'All_finanzas');
 
-      const res = await fetch(`${apiHost}/formularios.php`, {
-        method: 'POST',
-        body: fd,
-      });
+      const res = await fetch(`${apiHost}/formularios.php`, { method: 'POST', body: fd });
       const json = await res.json();
 
       if (json.status === 'success' && Array.isArray(json.data)) {
-        // Normaliza
         const norm = json.data.map(t => ({
           trip_id: Number(t.trip_id),
           trip_number: t.trip_number ?? '',
@@ -83,7 +77,7 @@ const Finanzas = () => {
               paid_rate: s.tarifa_pagada != null ? String(Number(String(s.tarifa_pagada).replace(',', '.'))) : '',
               status: s.status != null ? Number(s.status) : '',
               moneda: s.moneda ?? 'MXN',
-              _dirty: false, // bandera de cambio
+              _dirty: false, 
             })) : [],
         }));
 
@@ -99,9 +93,9 @@ const Finanzas = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [apiHost, toFormBody]);
 
-  useEffect(() => { fetchFinanzas(); }, []);
+  useEffect(() => { fetchFinanzas(); }, [fetchFinanzas]);
 
   // Filtro por trip_number
   const filtered = useMemo(() => {
@@ -218,8 +212,8 @@ const Finanzas = () => {
       const items = dirty.map(({ stage }) => buildPayloadItem(stage));
 
       const fd = new FormData();
-      fd.append('op', 'I_pago_stage_bulk');      // <— ajusta si tu op se llama distinto
-      fd.append('items', JSON.stringify(items)); // arreglo completo
+      fd.append('op', 'I_pago_stage_bulk');
+      fd.append('items', JSON.stringify(items)); 
 
       const res = await fetch(`${apiHost}/formularios.php`, {
         method: 'POST',
@@ -240,7 +234,7 @@ const Finanzas = () => {
           timer: 1600,
           showConfirmButton: false,
         });
-        await fetchFinanzas(); // recarga limpio (_dirty en false)
+        await fetchFinanzas(); 
       } else {
         await Swal.fire({
           icon: 'error',
@@ -253,35 +247,6 @@ const Finanzas = () => {
       Swal.close();
       setSaving(false);
 
-      // === Fallback opcional: guardar uno por uno ===
-      // Descomenta para intentar guardar individualmente si tu backend no tiene bulk.
-      /*
-      try {
-        const results = [];
-        for (const { stage } of dirty) {
-          const fd = new FormData();
-          fd.append('op', 'I_pago_stage');
-          const item = buildPayloadItem(stage);
-          fd.append('id', item.id);
-          fd.append('metodo', item.metodo);
-          fd.append('tarifa', item.tarifa);
-          fd.append('status', item.status);
-
-          const r = await fetch(`${apiHost}/formularios.php`, { method: 'POST', body: fd });
-          const j = await r.json();
-          results.push(j.status === 'success');
-        }
-        const ok = results.filter(Boolean).length;
-        await Swal.fire({
-          icon: ok === results.length ? 'success' : 'warning',
-          title: 'Guardado parcial',
-          text: `Exitosos: ${ok}/${results.length}`,
-        });
-        await fetchFinanzas();
-        return;
-      } catch (_) {}
-      */
-
       await Swal.fire({
         icon: 'error',
         title: e.name === 'AbortError' ? 'Tiempo de espera agotado' : 'Error de red',
@@ -293,14 +258,16 @@ const Finanzas = () => {
   };
 
   return (
-    <Paper sx={{ m: 2, p: 2 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, gap: 2, flexWrap: 'wrap' }}>
-        <Typography variant="h4">Finanzas</Typography>
+    <Paper sx={{ m: 2, p: 3 }}>
+      {/* Título y Botón de Guardado */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, gap: 2, flexWrap: 'wrap' }}>
+        <Typography variant="h4" component="h1" fontWeight={700}>Administrador de Finanzas</Typography>
 
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Stack direction="row" spacing={2} alignItems="center">
           <TextField
             size="small"
-            placeholder="Buscar por Trip number"
+            label="Buscar Trip number"
+            placeholder="Trip number"
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(0); }}
           />
@@ -319,19 +286,21 @@ const Finanzas = () => {
               </Badge>
             </span>
           </Tooltip>
-        </Box>
+        </Stack>
       </Box>
 
-      <TableContainer>
+      {/* Tabla Principal */}
+      <TableContainer component={Paper} variant="outlined" sx={{ overflowX: 'auto' }}>
         <Table stickyHeader size="small">
           <TableHead>
             <TableRow>
               <TableCell />
-              <TableCell>Trip number</TableCell>
-              <TableCell>Stages</TableCell>
-              <TableCell>Total Rate</TableCell>
-              <TableCell>Total Pagado</TableCell>
-              <TableCell>Status</TableCell>
+              {/* Encabezados de Tabla Principal con fontWeight 600 */}
+              <TableCell sx={{ fontWeight: 600 }}>Trip number</TableCell>
+              <TableCell sx={{ fontWeight: 600 }}>Stages</TableCell>
+              <TableCell sx={{ fontWeight: 600, textAlign: 'right' }}>Total Rate</TableCell>
+              <TableCell sx={{ fontWeight: 600, textAlign: 'right' }}>Total Pagado</TableCell>
+              <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
             </TableRow>
           </TableHead>
 
@@ -365,21 +334,21 @@ const Finanzas = () => {
                       </TableCell>
 
                       {/* Trip number */}
-                      <TableCell>{t.trip_number}</TableCell>
+                      <TableCell sx={{ fontWeight: 500 }}>{t.trip_number}</TableCell>
 
                       {/* Stages */}
                       <TableCell>
                         <Stack direction="row" spacing={1} alignItems="center">
-                          <Chip size="small" label={`${t.stages_count}`} />
+                          <Chip size="small" label={`${t.stages_count}`} sx={{ fontWeight: 600 }} />
                           <Typography variant="body2" color="text.secondary">etapas</Typography>
                         </Stack>
                       </TableCell>
 
                       {/* Total Rate */}
-                      <TableCell>{money(t.total_tarifa, 'USD')}</TableCell>
+                      <TableCell align="right">{money(t.total_tarifa)}</TableCell>
 
                       {/* Total Pagado */}
-                      <TableCell>{money(t.total_pagada ?? 0, 'USD')}</TableCell>
+                      <TableCell align="right">{money(t.total_pagada ?? 0)}</TableCell>
 
                       {/* Status trip */}
                       <TableCell>
@@ -392,97 +361,29 @@ const Finanzas = () => {
                       <TableCell colSpan={6} sx={{ p: 0, borderBottom: isOpen ? '1px solid rgba(224,224,224,1)' : 0 }}>
                         <Collapse in={isOpen} timeout="auto" unmountOnExit>
                           <Box sx={{ p: 2 }}>
-                            <Typography variant="h6" gutterBottom>Stages</Typography>
+                            <Typography variant="h6" fontWeight={700} gutterBottom>Stages</Typography>
                             <Divider sx={{ mb: 1 }} />
                             <Table size="small">
                               <TableHead>
                                 <TableRow>
-                                  <TableCell>ID Stage</TableCell>
-                                  <TableCell>#</TableCell>
-                                  <TableCell>Origen</TableCell>
-                                  <TableCell>Destino</TableCell>
-                                  <TableCell>Tarifa (rate)</TableCell>
-                                  <TableCell>Método de pago</TableCell>
-                                  <TableCell>Tarifa pagada</TableCell>
-                                  <TableCell>Status</TableCell>
-                                  {/* Se retiró botón Guardar por fila para promover guardado general */}
+                                  <TableCell sx={{ fontWeight: 600 }}>ID Stage</TableCell>
+                                  <TableCell sx={{ fontWeight: 600 }}>#</TableCell>
+                                  <TableCell sx={{ fontWeight: 600 }}>Origen</TableCell>
+                                  <TableCell sx={{ fontWeight: 600 }}>Destino</TableCell>
+                                  <TableCell sx={{ fontWeight: 600 }}>Tarifa (rate)</TableCell>
+                                  <TableCell sx={{ fontWeight: 600 }}>Método de pago</TableCell>
+                                  <TableCell sx={{ fontWeight: 600 }}>Tarifa pagada</TableCell>
+                                  <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
                                 </TableRow>
                               </TableHead>
                               <TableBody>
                                 {t.stages.map(s => (
-                                  <TableRow key={s.trip_stage_id} hover selected={!!s._dirty}>
-                                    <TableCell>{s.trip_stage_id}</TableCell>
-                                    <TableCell>{s.stage_number}</TableCell>
-                                    <TableCell>{s.origin || <em>-</em>}</TableCell>
-                                    <TableCell>{s.destination || <em>-</em>}</TableCell>
-                                    <TableCell>{s.rate_tarifa != null ? money(s.rate_tarifa, s.moneda || 'USD') : <em>-</em>}</TableCell>
-
-                                    {/* Método de pago */}
-                                    <TableCell sx={{ minWidth: 180 }}>
-                                      <Select
-                                        size="small"
-                                        value={s.payment_method}
-                                        onChange={(e) => handleStageFieldChange(t.trip_id, s.trip_stage_id, 'payment_method', e.target.value)}
-                                        displayEmpty
-                                        fullWidth
-                                      >
-                                        <MenuItem value=""><em>Seleccionar…</em></MenuItem>
-                                        {PAYMENT_METHODS.map(opt => (
-                                          <MenuItem key={opt} value={opt}>{opt}</MenuItem>
-                                        ))}
-                                      </Select>
-                                    </TableCell>
-
-                                    {/* Tarifa pagada */}
-                                    <TableCell sx={{ minWidth: 160 }}>
-                                      <TextField
-                                        size="small"
-                                        value={s.paid_rate}
-                                        onChange={(e) => {
-                                          const clean = e.target.value === '' ? '' : e.target.value.replace(/[^\d.]/g, '');
-                                          handleStageFieldChange(t.trip_id, s.trip_stage_id, 'paid_rate', clean);
-                                        }}
-                                        placeholder="0.00"
-                                        inputProps={{ inputMode: 'decimal' }}
-                                        fullWidth
-                                        InputProps={{
-                                          startAdornment: <InputAdornment position="start">$</InputAdornment>,
-                                        }}
-                                      />
-                                    </TableCell>
-
-                                    {/* Status */}
-                                    <TableCell sx={{ minWidth: 220 }}>
-                                      <Select
-                                        size="small"
-                                        value={s.status}
-                                        onChange={(e) => handleStageFieldChange(t.trip_id, s.trip_stage_id, 'status', Number(e.target.value))}
-                                        displayEmpty
-                                        fullWidth
-                                        renderValue={(val) => {
-                                          const opt = STATUS_OPTIONS.find(o => o.value === Number(val));
-                                          return opt ? (
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                              <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: opt.color }} />
-                                              {opt.label}
-                                            </Box>
-                                          ) : <em>Seleccionar status…</em>;
-                                        }}
-                                      >
-                                        <MenuItem value="">
-                                          <em>Seleccionar status…</em>
-                                        </MenuItem>
-                                        {STATUS_OPTIONS.map(opt => (
-                                          <MenuItem key={opt.value} value={opt.value}>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                              <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: opt.color }} />
-                                              {opt.label}
-                                            </Box>
-                                          </MenuItem>
-                                        ))}
-                                      </Select>
-                                    </TableCell>
-                                  </TableRow>
+                                  <StageDetailRow 
+                                    key={s.trip_stage_id}
+                                    trip_id={t.trip_id}
+                                    stage={s} 
+                                    handleStageFieldChange={handleStageFieldChange}
+                                  />
                                 ))}
                               </TableBody>
                             </Table>
