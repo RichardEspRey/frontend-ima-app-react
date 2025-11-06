@@ -1,12 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import '../css/DriverAdmin.css';
-import { useNavigate } from 'react-router-dom';
-
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
-  Button, IconButton, Collapse, Box, Typography, CircularProgress, Chip
+  Button, Box, Typography, CircularProgress, Stack 
 } from '@mui/material';
-import { KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
+import Swal from 'sweetalert2';
+
+import { InspeccionRow } from '../../components/InspeccionRow'; 
+
 
 const OPS = {
   SUMMARY: 'All_CL_Final',          
@@ -27,41 +28,36 @@ const Inspeccion_final = () => {
   const [loadingByTrip, setLoadingByTrip] = useState({});     
   const [errorByTrip, setErrorByTrip] = useState({});         
 
-  // Helpers
-  const toFormBody = (obj) =>
+  // Helpers 
+  const toFormBody = useCallback((obj) =>
     Object.entries(obj)
       .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v ?? '')}`)
-      .join('&');
+      .join('&'), []);
 
-  const groupIfNeeded = (data) => {
-    // Ya viene agrupado (motor, exterior, …)
+  const groupIfNeeded = useCallback((data) => {
     if (data.motor || data.exterior || data.neumaticos || data.cabina || data.remolque) {
-      return {
-        motor: data.motor || [],
-        exterior: data.exterior || [],
-        neumaticos: data.neumaticos || [],
-        cabina: data.cabina || [],
-        remolque: data.remolque || [],
-      };
-    }
-    // Viene plano en data.row con 'categoria'
-    const flat = data.rows || data.row || [];
-    const grouped = { motor: [], exterior: [], neumaticos: [], cabina: [], remolque: [] };
-    flat.forEach((r) => {
-      const cat = (r.categoria || '').toLowerCase();
-      if (grouped[cat]) {
-        grouped[cat].push({
-          id: r.id,
-          contenido: r.contenido,
-          fecha: r.fecha || r.fecha_creacion || null,
-        });
+        return {
+          motor: data.motor || [], exterior: data.exterior || [], neumaticos: data.neumaticos || [],
+          cabina: data.cabina || [], remolque: data.remolque || [],
+        };
       }
-    });
-    return grouped;
-  };
+      const flat = data.rows || data.row || [];
+      const grouped = { motor: [], exterior: [], neumaticos: [], cabina: [], remolque: [] };
+      flat.forEach((r) => {
+        const cat = (r.categoria || '').toLowerCase();
+        if (grouped[cat]) {
+          grouped[cat].push({
+            id: r.id,
+            contenido: r.contenido,
+            fecha: r.fecha || r.fecha_creacion || null,
+          });
+        }
+      });
+      return grouped;
+  }, []);
 
 
-  const fetchSummary = async () => {
+  const fetchSummary = useCallback(async () => {
     setLoadingSummary(true);
     setErrorSummary('');
     try {
@@ -77,12 +73,9 @@ const Inspeccion_final = () => {
         const normalized = list.map(r => ({
         ...r,
         status: Number(r.status),
-        cnt_motor: Number(r.cnt_motor ?? 0),
-        cnt_exterior: Number(r.cnt_exterior ?? 0),
-        cnt_neumaticos: Number(r.cnt_neumaticos ?? 0),
-        cnt_cabina: Number(r.cnt_cabina ?? 0),
-        cnt_remolque: Number(r.cnt_remolque ?? 0),
-        total_cnt: Number(r.total_cnt ?? 0),
+        cnt_motor: Number(r.cnt_motor ?? 0), cnt_exterior: Number(r.cnt_exterior ?? 0), 
+        cnt_neumaticos: Number(r.cnt_neumaticos ?? 0), cnt_cabina: Number(r.cnt_cabina ?? 0),
+        cnt_remolque: Number(r.cnt_remolque ?? 0), total_cnt: Number(r.total_cnt ?? 0),
         }));
 
         setRows(normalized);
@@ -94,15 +87,14 @@ const Inspeccion_final = () => {
     } finally {
       setLoadingSummary(false);
     }
-  };
+  }, [apiHost, toFormBody]);
 
   useEffect(() => {
     fetchSummary();
-  }, []);
+  }, [fetchSummary]);
 
-  // 2) Cargar detalle por viaje (lazy)
-  const fetchDetail = async (viajeId) => {
-    if (detailsByTrip[viajeId]) return; // cache
+  const fetchDetail = useCallback(async (viajeId) => {
+    if (detailsByTrip[viajeId]) return;
     setLoadingByTrip((p) => ({ ...p, [viajeId]: true }));
     setErrorByTrip((p) => ({ ...p, [viajeId]: '' }));
     try {
@@ -123,7 +115,8 @@ const Inspeccion_final = () => {
     } finally {
       setLoadingByTrip((p) => ({ ...p, [viajeId]: false }));
     }
-  };
+  }, [apiHost, detailsByTrip, toFormBody, groupIfNeeded]);
+
 
   const toggleOpen = async (viajeId) => {
     const next = !openByTrip[viajeId];
@@ -135,7 +128,16 @@ const Inspeccion_final = () => {
       const formDataToSend = new FormData();
       formDataToSend.append('op', 'U_CL_Final');
       formDataToSend.append('trip_id', viajeId);
+      
+      const { isConfirmed } = await Swal.fire({
+            title: '¿Confirmar Finalización?',
+            text: "Esta acción marca la inspección como finalizada.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, finalizar'
+        });
 
+      if (!isConfirmed) return;
 
     try {
       const response = await fetch(`${apiHost}/formularios.php`, {
@@ -146,40 +148,49 @@ const Inspeccion_final = () => {
       const data = await response.json();
     
       if (data.status === 'success') {
-         window.location.reload();
-        
+         Swal.fire('Éxito', 'Inspección finalizada correctamente.', 'success');
+         fetchSummary();
+      } else {
+        Swal.fire('Error', data.message || 'No se pudo finalizar la inspección.', 'error');
       }
 
     } catch (error) {
-      console.error('Error al obtener los conductores:', error);
+      Swal.fire('Error', 'Error de conexión al finalizar.', 'error');
     }
   };
 
   return (
-    <div className="driver-admin">
-      <h1 className="title">Inspecciones de camiones</h1>
+    <Box sx={{ p: 3 }}>
+      {/* Título Principal  */}
+      <Typography variant="h4" component="h1" fontWeight={700} gutterBottom sx={{ mb: 3 }}>
+        Inspecciones de Camiones
+      </Typography>
 
-      {loadingSummary && (
-        <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-          <CircularProgress size={20} /> <Typography>Cargando…</Typography>
-        </Box>
-      )}
-      {!!errorSummary && (
-        <Typography color="error" sx={{ mb: 2 }}>{errorSummary}</Typography>
-      )}
+      {/* Toolbar y Estado de Carga */}
+      <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+        <Button variant="contained" onClick={fetchSummary} size="small">Refrescar</Button>
+        {loadingSummary && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <CircularProgress size={20} /> <Typography variant="body2">Cargando…</Typography>
+            </Box>
+        )}
+        {!!errorSummary && (
+            <Typography color="error" sx={{ ml: 1 }}>Error: {errorSummary}</Typography>
+        )}
+      </Stack>
 
       <TableContainer component={Paper}>
-        <Table sx={{ minWidth: 900 }} aria-label="inspecciones">
+        <Table stickyHeader size="small" sx={{ minWidth: 900 }} aria-label="inspecciones">
           <TableHead>
             <TableRow>
-              <TableCell />{/* collapse btn */}
-              <TableCell align="center" sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 22 }}>Trip number</TableCell>
-              <TableCell align="center" sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 22 }}>Driver</TableCell>
-              <TableCell align="center" sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 22 }}>Truck</TableCell>
-              <TableCell align="center" sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 22 }}>Fallas</TableCell>
-              <TableCell align="center" sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 22 }}>Status</TableCell>
-              <TableCell align="center" sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 22 }}>Último driver</TableCell>
-              <TableCell align="center" sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 22 }}>Acciones</TableCell>
+              <TableCell />
+              <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>Trip number</TableCell>
+              <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>Driver</TableCell>
+              <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>Truck</TableCell>
+              <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>Fallas</TableCell>
+              <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>Status</TableCell>
+              <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>Último driver</TableCell>
+              <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap', textAlign: 'center' }}>Acciones</TableCell>
             </TableRow>
           </TableHead>
 
@@ -191,111 +202,31 @@ const Inspeccion_final = () => {
               const error = errorByTrip[viajeId];
               const det = detailsByTrip[viajeId];
               
-              const completed = Number(row.status) === 1;
-              console.log("STATUS:", row.status, "->", Number(row.status));
               return (
-                <React.Fragment key={viajeId}>
-                  <TableRow hover>
-                    <TableCell>
-                      <IconButton size="small" onClick={() => toggleOpen(viajeId)}>
-                        {abierto ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
-                      </IconButton>
-                    </TableCell>
-
-                    <TableCell align="center" sx={{ whiteSpace: 'nowrap', fontSize: 18 }}>{row.trip_number}</TableCell>
-                    <TableCell align="center" sx={{ whiteSpace: 'nowrap', fontSize: 18 }}>
-                      {row.driver_nombre || row.nombre || '-'}
-                    </TableCell>
-                    <TableCell align="center" sx={{ whiteSpace: 'nowrap', fontSize: 18 }}>
-                      {row.truck_unidad ?? row.unidad ?? '-'}
-                    </TableCell>
-                    <TableCell align="center" sx={{ whiteSpace: 'nowrap', fontSize: 18 }}>
-                      Total: {row.total_cnt ?? 0}
-                      {(row.cnt_motor ?? row.cnt_exterior ?? row.cnt_neumaticos ?? row.cnt_cabina ?? row.cnt_remolque) && (
-                        <Typography variant="caption" component="div">
-                          M:{row.cnt_motor||0} E:{row.cnt_exterior||0} N:{row.cnt_neumaticos||0} C:{row.cnt_cabina||0} R:{row.cnt_remolque||0}
-                        </Typography>
-                      )}
-                    </TableCell>
-                    <TableCell align="center" sx={{ whiteSpace: 'nowrap', fontSize: 18 }}>
-                      <Chip
-                        label={completed ? 'Completado' : 'Pendiente'}
-                        color={completed ? 'success' : 'warning'}
-                        size="small"
-                        />
-                    </TableCell>
-                    <TableCell align="center" sx={{ whiteSpace: 'nowrap', fontSize: 18 }}>
-                      {row.ultimo_driver || row.driver_nombre || '-'}
-                    </TableCell>
-                    <TableCell align="center">
-                      <Button
-                        variant="text"
-                        sx={{ fontWeight: 'bold', fontSize: 16 }}
-                        onClick={() => handleFinalizar(viajeId)}
-                      >
-                        Finalizar
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-
-                  {/* Collapse */}
-                  <TableRow>
-                    <TableCell colSpan={8} sx={{ p: 0, borderBottom: 0 }}>
-                      <Collapse in={abierto} timeout="auto" unmountOnExit>
-                        <Box sx={{ m: 2 }}>
-                          {loading && (
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <CircularProgress size={20} /> <Typography>Cargando detalle…</Typography>
-                            </Box>
-                          )}
-
-                          {!!error && (
-                            <Typography color="error" sx={{ mb: 1 }}>{error}</Typography>
-                          )}
-
-                          {det && !loading && !error && (
-                            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(260px, 1fr))', gap: 2 }}>
-                              <Categoria titulo="Motor"      items={det.motor} />
-                              <Categoria titulo="Exterior"   items={det.exterior} />
-                              <Categoria titulo="Neumáticos" items={det.neumaticos} />
-                              <Categoria titulo="Cabina"     items={det.cabina} />
-                              <Categoria titulo="Remolque"   items={det.remolque} />
-                            </Box>
-                          )}
-                        </Box>
-                      </Collapse>
-                    </TableCell>
-                  </TableRow>
-                </React.Fragment>
+                <InspeccionRow 
+                    key={viajeId} 
+                    row={row} 
+                    abierto={abierto} 
+                    loading={loading} 
+                    error={error} 
+                    det={det} 
+                    toggleOpen={toggleOpen} 
+                    handleFinalizar={handleFinalizar} 
+                />
               );
             })}
+             {rows.length === 0 && !loadingSummary && (
+                <TableRow>
+                    <TableCell colSpan={8} align="center">
+                        <Typography color="text.secondary" sx={{ py: 2 }}>No se encontraron inspecciones pendientes.</Typography>
+                    </TableCell>
+                </TableRow>
+              )}
           </TableBody>
         </Table>
       </TableContainer>
-    </div>
-  );
-};
-
-function Categoria({ titulo, items = [] }) {
-  return (
-    <Box sx={{ p: 2, border: '1px solid #eee', borderRadius: 2 }}>
-      <Typography variant="h6" sx={{ mb: 1 }}>{titulo} ({items.length})</Typography>
-      {items.length === 0 ? (
-        <Typography variant="body2" color="text.secondary">Sin registros.</Typography>
-      ) : (
-        <ul style={{ margin: 0, paddingLeft: 18 }}>
-          {items.map((it) => (
-            <li key={it.id}>
-              <Typography variant="body2">
-                {it.contenido || '—'}
-                {it.fecha && <em style={{ opacity: 0.7 }}> — {it.fecha}</em>}
-              </Typography>
-            </li>
-          ))}
-        </ul>
-      )}
     </Box>
   );
-}
+};
 
 export default Inspeccion_final;
