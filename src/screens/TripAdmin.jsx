@@ -357,7 +357,9 @@ const TripAdmin = () => {
 
     return (
         <div className="trip-admin">
-            <h1 className="title">Administrador de Viajes</h1>
+            <Typography variant="h4" component="h1" fontWeight={700} gutterBottom sx={{ mb: 3 }}>
+                Administrador de Viajes
+            </Typography>
 
             <Box sx={{ mb: 2 }}>
                 <Button
