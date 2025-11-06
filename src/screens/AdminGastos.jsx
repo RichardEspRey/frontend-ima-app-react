@@ -12,11 +12,14 @@ import { useNavigate } from 'react-router-dom';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
-// --- funciones auxiliares ---
-const money = (v) => new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-}).format(Number(v || 0));
+// Función estandarizada para mostrar el monto en formato USD ($)
+const money = (v) => {
+  return new Intl.NumberFormat('en-US', { 
+    style: 'currency', 
+    currency: 'USD',
+    currencyDisplay: 'symbol' 
+  }).format(Number(v || 0));
+};
 
 const isImageUrl = (url = '') => /\.(png|jpe?g|gif|webp|bmp|tiff?)$/i.test(url);
 const fileName = (path = '') => path.split('/').pop() || '';
@@ -67,7 +70,7 @@ const GastoRow = ({ gasto, navigate }) => {
         <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
           <Collapse in={open} timeout="auto" unmountOnExit>
             <Box sx={{ m: 1, p: 2, border: '1px solid #eee', borderRadius: 2 }}>
-              <Typography variant="h6" sx={{ fontSize: '1rem', mb: 1.5 }}>
+              <Typography variant="h6" fontWeight={600} sx={{ fontSize: '1rem', mb: 1.5 }}>
                 Expense details #{gasto.id_gasto}
               </Typography>
 
@@ -109,13 +112,14 @@ const GastoRow = ({ gasto, navigate }) => {
 
               {/* Tickets */}
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                <Typography variant="h6" sx={{ fontSize: '1rem' }}>Tickets</Typography>
+                <Typography variant="h6" fontWeight={600} sx={{ fontSize: '1rem' }}>Tickets</Typography>
                 <Chip size="small" label={tickets.length} />
               </Box>
 
               {tickets.length === 0 ? (
                 <Typography variant="body2" color="text.secondary">No tickets attached.</Typography>
               ) : (
+                // 🚨 PhotoProvider: Contenedor para visualizar imágenes en lightbox
                 <PhotoProvider>
                   <Stack direction="row" spacing={1.5} sx={{ flexWrap: 'wrap' }}>
                     {tickets.map((t) => {
@@ -132,6 +136,7 @@ const GastoRow = ({ gasto, navigate }) => {
                           backgroundColor: '#fafafa',
                         }}>
                           {esImg ? (
+                            // 🚨 PhotoView: Envuelve la imagen para la galería
                             <PhotoView src={url}>
                               <img
                                 src={url}
@@ -140,16 +145,20 @@ const GastoRow = ({ gasto, navigate }) => {
                               />
                             </PhotoView>
                           ) : (
-                            <Box sx={{
-                              height: 90,
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              borderRadius: 1,
-                              bgcolor: '#fff',
-                              border: '1px dashed #ccc',
-                              fontSize: 12,
-                            }} title={name}>
+                            // Renderizado para documentos que NO son imágenes
+                            <Box
+                              sx={{
+                                height: 90,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                borderRadius: 1,
+                                bgcolor: '#fff',
+                                border: '1px dashed #ccc',
+                                fontSize: 12
+                              }}
+                              title={name}
+                            >
                               {t.tipo_documento || 'Documento'}
                             </Box>
                           )}
@@ -167,6 +176,14 @@ const GastoRow = ({ gasto, navigate }) => {
                   </Stack>
                 </PhotoProvider>
               )}
+
+              <Divider sx={{ my: 2 }} />
+
+              <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <Typography variant="subtitle1" fontWeight={700}> 
+                  Total: <strong>{money(totalMostrado)}</strong>
+                </Typography>
+              </Box>
             </Box>
           </Collapse>
         </TableCell>
@@ -177,15 +194,17 @@ const GastoRow = ({ gasto, navigate }) => {
 
 /* === Tabla principal === */
 const AdminGastos = () => {
-  const navigate = useNavigate(); // ✅ AHORA SÍ dentro del componente
+  const navigate = useNavigate(); //
   const [gastos, setGastos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  
   const [filterCountry, setFilterCountry] = useState('All');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const [startDate, setStartDate] = useState(''); 
+  const [endDate, setEndDate] = useState('');     
+  
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(20);
+  const [rowsPerPage, setRowsPerPage] = useState(20); 
 
   const uniqueCountries = useMemo(() => {
     const countries = new Set(gastos.map(g => g.pais).filter(Boolean));
@@ -211,9 +230,12 @@ const AdminGastos = () => {
 
   useEffect(() => { fetchGastos(); }, []);
 
+  // ** LÓGICA DE FILTRADO **
   const filtered = useMemo(() => {
     let list = gastos;
     const q = search.trim().toLowerCase();
+
+    // Filtro de búsqueda general (ID, país, moneda)
     if (q) {
       list = list.filter(g =>
         String(g.id_gasto).includes(q) ||
@@ -221,33 +243,104 @@ const AdminGastos = () => {
         (g.moneda || '').toLowerCase().includes(q)
       );
     }
-    if (filterCountry !== 'All') list = list.filter(g => g.pais === filterCountry);
+
+    // Filtro por país
+    if (filterCountry !== 'All') {
+      list = list.filter(g => g.pais === filterCountry);
+    }
+
+    // Filtro por RANGO DE FECHAS
     if (startDate || endDate) {
-      list = list.filter(g => {
-        const d = g.fecha_gasto;
-        const afterStart = !startDate || d >= startDate;
-        const beforeEnd = !endDate || d <= endDate;
-        return afterStart && beforeEnd;
-      });
+        list = list.filter(g => {
+            const expenseDate = g.fecha_gasto; 
+            const afterStart = !startDate || expenseDate >= startDate;
+            const beforeEnd = !endDate || expenseDate <= endDate;
+            return afterStart && beforeEnd;
+        });
     }
     return list;
   }, [gastos, search, filterCountry, startDate, endDate]);
 
-  const slice = rowsPerPage === -1 ? filtered : filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+  // ** LÓGICA DE PAGINACIÓN **
+  const slice = rowsPerPage === -1
+    ? filtered
+    : filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+
+  const handleFilterChange = (setter, value) => {
+    setter(value);
+    setPage(0); 
+  };
+  
+  const rowsPerPageOptions = [20, 40, 60, { label: 'Todos', value: -1 }];
+
 
   return (
-    <Paper sx={{ m: 2, p: 2 }}>
-      <Typography variant="h4" sx={{ mb: 2 }}>Expense Manager</Typography>
-      <TableContainer>
-        <Table stickyHeader size="small">
+    <Paper sx={{ m: 2, p: 3 }}>
+      <Typography variant="h4" component="h1" fontWeight={700} gutterBottom>Expense Manager</Typography>
+        
+      {/* Controles de Filtrado */}
+      <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap" sx={{ mb: 3 }}>
+            
+        {/* Filtro de Búsqueda Rápida */}
+        <TextField
+            size="small" 
+            label="Buscar General"
+            placeholder="ID, País o Moneda"
+            value={search}
+            onChange={(e) => handleFilterChange(setSearch, e.target.value)}
+        />
+
+        {/* Filtro por País */}
+        <FormControl size="small" sx={{ minWidth: 120 }}>
+            <InputLabel>Country</InputLabel>
+            <Select
+                value={filterCountry}
+                label="Country"
+                onChange={(e) => handleFilterChange(setFilterCountry, e.target.value)}
+            >
+                {uniqueCountries.map(country => (
+                    <MenuItem key={country} value={country}>
+                        {country}
+                    </MenuItem>
+                ))}
+            </Select>
+        </FormControl>
+
+        {/* Filtro por Fecha de Inicio */}
+        <TextField
+            size="small"
+            label="Fecha Inicio"
+            type="date"
+            value={startDate}
+            onChange={(e) => handleFilterChange(setStartDate, e.target.value)}
+            InputLabelProps={{ shrink: true }}
+            sx={{ width: 150 }}
+        />
+        
+        {/* Filtro por Fecha de Fin */}
+        <TextField
+            size="small"
+            label="Fecha Fin"
+            type="date"
+            value={endDate}
+            onChange={(e) => handleFilterChange(setEndDate, e.target.value)}
+            InputLabelProps={{ shrink: true }}
+            sx={{ width: 150 }}
+        />
+        <Button variant="outlined" onClick={() => { setStartDate(''); setEndDate(''); setPage(0); }} size="small">Limpiar Fechas</Button>
+        <Button variant="contained" onClick={fetchGastos} size="small">Refrescar</Button>
+      </Stack>
+
+      <TableContainer component={Paper} variant="outlined">
+        <Table stickyHeader size="small" aria-label="Expenses table">
           <TableHead>
             <TableRow>
-              <TableCell />
-              <TableCell>Expense Number</TableCell>
-              <TableCell>Date</TableCell>
-              <TableCell>Country</TableCell>
-              <TableCell>Total</TableCell>
-              <TableCell>Actions</TableCell>
+              <TableCell scope="col" /> 
+              <TableCell scope="col" sx={{ fontWeight: 600 }}>Expense Number</TableCell>
+              <TableCell scope="col" sx={{ fontWeight: 600 }}>Date</TableCell>
+              <TableCell scope="col" sx={{ fontWeight: 600 }}>Country</TableCell>
+              <TableCell scope="col" sx={{ fontWeight: 600 }}>Total (USD)</TableCell>
+              <TableCell scope="col" sx={{ fontWeight: 600 }}>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -264,7 +357,7 @@ const AdminGastos = () => {
         </Table>
       </TableContainer>
       <TablePagination
-        rowsPerPageOptions={[20, 40, 60, { label: 'Todos', value: -1 }]}
+        rowsPerPageOptions={rowsPerPageOptions} 
         component="div"
         count={filtered.length}
         rowsPerPage={rowsPerPage}

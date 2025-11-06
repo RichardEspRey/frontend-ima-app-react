@@ -1,15 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import './css/DriverAdmin.css';
-// import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import redIcon from '../assets/images/Icons_alerts/shield-red.png'; 
-import greenIcon from '../assets/images/Icons_alerts/shield-green.png'; 
-import yellowIcon from '../assets/images/Icons_alerts/shield-yellow.png'; 
-import greyIcon from '../assets/images/Icons_alerts/shield-grey.png'; 
-import questionIcon from '../assets/images/Icons_alerts/question3.png'; 
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import {
+    Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
+    TextField, Button, Stack, CircularProgress, Select, MenuItem, FormControl, InputLabel,
+} from '@mui/material';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import WarningIcon from '@mui/icons-material/Warning';
+import ErrorIcon from '@mui/icons-material/Error';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline'; 
+
+// import './css/DriverAdmin.css';
 import ModalArchivo from '../components/ModalArchivoEditor.jsx'; 
 import { Tooltip } from 'react-tooltip';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
+
 
 const DriverAdmin = () => {
   const navigate = useNavigate();
@@ -19,21 +23,32 @@ const DriverAdmin = () => {
   const apiHost = import.meta.env.VITE_API_HOST;
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
-  const rowsPerPage = 6;
-  const [selectedValue, setSelectedValue] = useState('');
+  const [rowsPerPage, setRowsPerPage] = useState(10); // Valor estándar de MUI
+  const [selectedValue, setSelectedValue] = useState(''); // Estado para el futuro filtro de Status
   const [drivers, setDrivers] = useState([]);
 
+  // ** CÁLCULO DE RANGO y FILTRADO **
   const from = page * rowsPerPage;
-  const to = Math.min((page + 1) * rowsPerPage, drivers.length);
+  
+  const filteredDrivers = useMemo(() => {
+    const searchLower = search.toLowerCase();
+    // Filtramos solo por nombre
+    return drivers.filter(driver =>
+      driver.name.toLowerCase().includes(searchLower)
+    );
+  }, [drivers, search]);
+
+  const to = Math.min((page + 1) * rowsPerPage, filteredDrivers.length);
 
 
-    const fetchDrivers = async () => {
-      try {
-        const response = await fetch(`${apiHost}/drivers.php`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: 'op=getAll',
-        });
+    // ** FETCH DE DATOS **
+    const fetchDrivers = useCallback(async () => {
+        try {
+            const response = await fetch(`${apiHost}/drivers.php`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+              body: 'op=getAll',
+            });
 
         const data = await response.json();
 
@@ -63,128 +78,137 @@ const DriverAdmin = () => {
     };
 
 
-  useEffect(() => {
-    fetchDrivers();
-  }, []);
+    useEffect(() => {
+      fetchDrivers();
+    }, [fetchDrivers]);
 
-  const filteredDrivers = drivers.filter(driver =>
-    driver.name.toLowerCase().includes(search.toLowerCase())
-  );
+    
+  // ** FUNCIÓN DE ICONOS (Migrada a Iconos MUI y colores) **
+  const getIconByFecha = (fechaStr, id, url, tipo) => {
+    const iconStyle = { fontSize: 24, cursor: 'pointer' }; 
 
-  const renderIconButton = (fecha, id, url, tipo) => {
-    const icon = getIconByFecha(fecha, id, url, tipo);
-  
+    if (!fechaStr) {
+      return (
+        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+          <HelpOutlineIcon color="disabled" style={iconStyle}
+            data-tooltip-id={`tooltip-${id}-${tipo}`}
+            data-tooltip-content="No se cuenta con el documento"
+            onClick={() => abrirModalConDocumento(url, fechaStr, id, tipo)}
+          />
+          <Tooltip id={`tooltip-${id}-${tipo}`} place="top" />
+        </Box>
+      );
+    }
+
+    const fecha = new Date(fechaStr);
+    const hoy = new Date();
+    // Cálculo de diferencia en días
+    const diffInDays = Math.floor((fecha - hoy) / (1000 * 60 * 60 * 24));
+
+    let IconComponent = CheckCircleIcon;
+    let color = 'success'; 
+    let mensaje = `Vencimiento: ${fecha.toLocaleDateString('es-MX')}`;
+
+    if (diffInDays < 0) {
+      IconComponent = ErrorIcon;
+      color = 'error';
+      mensaje = `VENCIDO: ${fecha.toLocaleDateString('es-MX')}`;
+    }
+    else if (diffInDays <= 30) {
+      IconComponent = ErrorIcon;
+      color = 'error';
+    }
+    else if (diffInDays <= 60) {
+      IconComponent = WarningIcon;
+      color = 'warning';
+    }
+    
     return (
-      <button className="icon-btn" disabled={!fecha}>
-        {icon}
-      </button>
+        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+            <IconComponent 
+                color={color} 
+                style={iconStyle}
+                onClick={() => abrirModalConDocumento(url, fechaStr, id, tipo)}
+                data-tooltip-id={`tooltip-${id}-${tipo}`}
+                data-tooltip-content={mensaje}
+            />
+            <Tooltip id={`tooltip-${id}-${tipo}`} place="top" />
+        </Box>
     );
   };
 
-  const getIconByFecha = (fechaStr, id, url, tipo) => {
-  if (!fechaStr) {
-    return (
-      <>
-        <img
-          src={questionIcon}
-          alt="Sin documento"
-          className="icon-img"
-          data-tooltip-id={`tooltip-${id}`}
-          data-tooltip-content="No se cuenta con el documento"
-        />
-        <Tooltip id={`tooltip-${id}`} place="top" />
-      </>
-    );
+
+  // ** MANEJADORES DE ACCIÓN **
+  const abrirModalConDocumento = (url, fecha, id, tipo) => {
+    setValorActual({
+      url: `${apiHost}/${url}`,
+      vencimiento: fecha,
+      id: id,
+      tipo: tipo
+    });
+    setIsModalOpen(true);
   }
 
-  const fecha = new Date(fechaStr);
-  const hoy = new Date();
-  const diffInDays = Math.floor((fecha - hoy) / (1000 * 60 * 60 * 24));
 
-  let icon = redIcon;
-  let mensaje = `Vencimiento: ${fecha.toLocaleDateString('es-MX')}`;
-
-  if (diffInDays >= 60) icon = greenIcon;
-  else if (diffInDays >= 2) icon = yellowIcon;
-  else if (diffInDays >= 1) icon = redIcon;
-
-  return (
-    <>
-   <img
-      src={icon}
-      alt={tipo}
-      className="icon-img"
-      onClick={() => abrirModalConDocumento(url, fechaStr, id, tipo)}
-      data-tooltip-id={`tooltip-${id}-${tipo}`} // <- ID unificado
-      data-tooltip-content={mensaje}
-      style={{ cursor: 'pointer' }}
-    />
-    <Tooltip id={`tooltip-${id}-${tipo}`} place="top" />
-    </>
-  );
-};
-
-
-  const abrirModalConDocumento = (url, fecha, id, tipo) => {
-  setValorActual({
-    url: `${apiHost}/${url}`, //"http://imaexpressllc.com/API/Uploads/Drivers/Acta_Nacimiento_1_v1_1.pdf"
-    vencimiento: fecha,
-    id: id,
-    tipo: tipo
-
-  });
-  setIsModalOpen(true);
-}
-
-
- const eliminar = async (id) =>  {
-
-  const { isConfirmed } = await Swal.fire({
-    title: '¿Deseas eliminar a este driver?',
-    icon: 'question',
+  const eliminar = async (id) => {
+    const { isConfirmed } = await Swal.fire({
+        title: '¿Deseas eliminar a este driver?',
+        icon: 'question',
         showCancelButton: true,
         confirmButtonText: 'Aceptar'
-      });
-  
-  if (!isConfirmed)return;
-       
-   try {
-      const formDataToSend = new FormData();
-        formDataToSend.append('op', 'Baja'); // operación que espera el backend
+    });
+      
+    if (!isConfirmed) return;
+           
+    try {
+        const formDataToSend = new FormData();
+        formDataToSend.append('op', 'Baja');
         formDataToSend.append('id', id);
 
         const response = await fetch(`${apiHost}/drivers.php`, {
-          method: 'POST',
-          body: formDataToSend,
+            method: 'POST',
+            body: formDataToSend,
         });
 
         const data = await response.json();
         if (data.status === 'success' ) {
-         Swal.fire({
-          icon: 'success',
-          title: 'Éxito',
-          text: 'Driver dado de baja!',
-        });
-        
+            Swal.fire({
+                icon: 'success',
+                title: 'Éxito',
+                text: 'Driver dado de baja!',
+            });
         }
-      } catch (error) {
+    } catch (error) {
         console.error('Error al obtener los conductores:', error);
-      }
-      fetchDrivers();
-       window.location.reload();
-    
-    };
+    }
+    fetchDrivers();
+    window.location.reload();
+  };
 
+  // ** MANEJADORES DE PAGINACIÓN MUI **
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
 
   
   return (
-    <div className="driver-admin">
-      <h1 className="title">Drivers Administrator</h1>
+    <Box sx={{ p: 3 }}>
+      {/* Título Principal */}
+      <Typography variant="h4" component="h1" fontWeight={700} gutterBottom sx={{ mb: 3 }}>
+        Drivers Administrator
+      </Typography>
 
-      <div className="toolbar">
-        <input
-          type="text"
-          placeholder="Search by name"
+      {/* Toolbar */}
+      <Stack direction="row" spacing={2} sx={{ mb: 3 }}>
+        <TextField
+          label="Search by name"
+          variant="outlined"
+          size="small"
           value={search}
           onChange={(e) => {
             setSearch(e.target.value);
@@ -192,91 +216,115 @@ const DriverAdmin = () => {
           }}
         />
 
-        <select
-          value={selectedValue}
-          onChange={(e) => setSelectedValue(e.target.value)}
-        >
-          <option value="">Status</option>
-          <option value="opcion1">Option 1</option>
-          <option value="opcion2">Option 2</option>
-        </select>
-      </div>
-
-      <div className="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>No of employee</th>
-              <th>Name</th>
-              <th>Birthdate</th>
-              <th>APTO</th>
-              <th>I-94</th>
-              <th>VISA</th>
-              <th>Licenses</th>
-              <th>Actions</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredDrivers.slice(from, to).map(driver => (
-              <tr key={driver.id}>
-                <td>{driver.id}</td>
-                <td>{driver.name}</td>
-                <td>{driver.fecha}</td>
-                <td>{renderIconButton(driver.APTO_fecha, `${driver.id}`, driver.APTO_URL, driver.APTO_tipo)}</td>
-                <td>{renderIconButton(driver.I94_fecha, `${driver.id}`, driver.I94_URL, driver.I94_tipo)}</td>
-                <td>{renderIconButton(driver.VISA_fecha, `${driver.id}`, driver.VISA_URL, driver.VISA_tipo)}</td>
-                <td>{renderIconButton(driver.Licencia_fecha, `${driver.id}`, driver.Licencia_URL, driver.Licencia_tipo)}</td>
-                <td>
-                  <button
-                    className="ver-btn"
-                    onClick={() => navigate(`/editor-drivers/${driver.id}`)}
-                    >
-                    View
-                  </button>
-                </td>
-                 <td>
-                  <button
-                    className="ver-btn"
-                    onClick={() => eliminar(driver.id)}
-                    >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-        <div className="pagination">
-          <button disabled={page === 0} onClick={() => setPage(page - 1)}>
-            Previous
-          </button>
-          <span>{`${from + 1}-${to} de ${filteredDrivers.length}`}</span>
-          <button
-            disabled={to >= filteredDrivers.length}
-            onClick={() => setPage(page + 1)}
+        {/* Status Select (Migrado a MUI) */}
+        <FormControl sx={{ minWidth: 120 }} size="small">
+          <InputLabel>Status</InputLabel>
+          <Select
+            value={selectedValue}
+            label="Status"
+            onChange={(e) => setSelectedValue(e.target.value)}
           >
-            Next
-          </button>
-        </div>
-      </div>
-        <ModalArchivo
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          onSave={(data) => {
-            console.log("Guardado:", data);
-          }}
-          nombreCampo="Documento"
-          valorActual={valorActual}
-          endpoint="drivers_docs.php" 
-          tipo="driver_id"
-        />
-    </div>
+            <MenuItem value="">Todas</MenuItem>
+            <MenuItem value="opcion1">Option 1</MenuItem>
+            <MenuItem value="opcion2">Option 2</MenuItem>
+          </Select>
+        </FormControl>
+        <Button variant="outlined" onClick={fetchDrivers} size="small">Refrescar</Button>
+      </Stack>
+
+      {/* Tabla Principal */}
+      <Paper sx={{ width: '100%', mb: 2 }}>
+        {/* Usamos TableContainer para forzar el scroll horizontal si es necesario */}
+        <TableContainer sx={{ overflowX: 'auto' }}> 
+          <Table size="small" stickyHeader sx={{ minWidth: 1000 }}> 
+            <TableHead>
+              <TableRow>
+                <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>No of employee</TableCell>
+                <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>Name</TableCell>
+                <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>Entry Date</TableCell>
+                {/* 🚨 Encabezados de Documentos */}
+                <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap', textAlign: 'center' }}>APTO</TableCell>
+                <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap', textAlign: 'center' }}>I-94</TableCell>
+                <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap', textAlign: 'center' }}>VISA</TableCell>
+                <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap', textAlign: 'center' }}>Licenses</TableCell>
+                <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap', textAlign: 'center', width: '150px' }}>Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {filteredDrivers.slice(from, to).map(driver => (
+                <TableRow key={driver.id} hover>
+                  <TableCell component="th" scope="row">{driver.id}</TableCell>
+                  <TableCell>{driver.name}</TableCell>
+                  <TableCell>{driver.fecha}</TableCell>
+                  
+                  {/* CELDAS DE ICONOS */}
+                  <TableCell>{getIconByFecha(driver.APTO_fecha, driver.id, driver.APTO_URL, driver.APTO_tipo || 'APTO')}</TableCell>
+                  <TableCell>{getIconByFecha(driver.I94_fecha, driver.id, driver.I94_URL, driver.I94_tipo || 'I94')}</TableCell>
+                  <TableCell>{getIconByFecha(driver.VISA_fecha, driver.id, driver.VISA_URL, driver.VISA_tipo || 'VISA')}</TableCell>
+                  <TableCell>{getIconByFecha(driver.Licencia_fecha, driver.id, driver.Licencia_URL, driver.Licencia_tipo || 'LIC')}</TableCell>
+                  
+                  {/* CONSOLIDACIÓN DE ACCIONES */}
+                  <TableCell sx={{ whiteSpace: 'nowrap' }}>
+                    <Stack direction="row" spacing={1} justifyContent="center">
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={() => navigate(`/editor-drivers/${driver.id}`)}
+                      >
+                        View
+                      </Button>
+                      <Button
+                        variant="contained"
+                        color="error"
+                        size="small"
+                        onClick={() => eliminar(driver.id)}
+                      >
+                        Delete
+                      </Button>
+                    </Stack>
+                  </TableCell>
+                </TableRow>
+              ))}
+              {/* Fila para cuando no hay resultados */}
+              {filteredDrivers.length === 0 && (
+                <TableRow>
+                    <TableCell colSpan={8} align="center">
+                        <Typography color="text.secondary" sx={{ py: 2 }}>No se encontraron conductores.</Typography>
+                    </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+
+        {/* Paginación */}
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', p: 1 }}>
+            <Stack direction="row" spacing={1} alignItems="center">
+                <Typography variant="body2" sx={{ mr: 2 }}>
+                    Filas por página: {rowsPerPage}
+                </Typography>
+                <Button disabled={page === 0} onClick={() => setPage(page - 1)} size="small" variant="outlined">Previous</Button>
+                <Typography variant="body2" sx={{ px: 1 }}>
+                    {`${from + 1}-${to} de ${filteredDrivers.length}`}
+                </Typography>
+                <Button disabled={to >= filteredDrivers.length} onClick={() => setPage(page + 1)} size="small" variant="outlined">Next</Button>
+            </Stack>
+        </Box>
+        
+      </Paper>
+
+      <ModalArchivo
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSave={(data) => console.log("Guardado:", data)}
+        nombreCampo="Documento"
+        valorActual={valorActual}
+        endpoint="drivers_docs.php" 
+        tipo="driver_id"
+      />
+    </Box>
   );
-
 };
-
 
 
 export default DriverAdmin;

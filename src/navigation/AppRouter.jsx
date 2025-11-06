@@ -12,6 +12,7 @@ import DriverAdmin from '../screens/DriverAdmin.jsx';
 import DriverEditor from '../screens/DriverEditor.jsx';
 import TripAdmin from '../screens/TripAdmin.jsx';
 import TripScreen from '../screens/TripsScreen.jsx';
+import TripScreenNew from '../screens/TripsScreenNew.jsx';
 import DriverScreen from '../screens/DriverScreen.jsx';
 import TruckAdmin from '../screens/TruckAdmin.jsx';
 import TruckScreen from '../screens/TruckScreen.jsx';
@@ -39,6 +40,7 @@ import ServiceOrderAdmin from '../screens/ServiceOrderAdmin.jsx';
 import Finanzas from '../screens/Finanzas.jsx';
 import ResumenTrip from '../screens/ResumenTrip.jsx';
 import ResiduoTrip from '../screens/Finanzas/ResiduosTrips.jsx';
+import ProfileAccessManager from '../screens/ProfileAccessManager.jsx';
 
 
 const AppRouter = () => {
@@ -56,308 +58,46 @@ const AppRouter = () => {
               <Route path="/login" element={<LoginScreen />} />
             </>
           ) : (
-            <>
-              <Route path="/" element={<Navigate to="/home" replace />} />
-              <Route
-                path="/home"
-                element={
-                  <DashboardLayout>
-                    <HomeScreen />
-                    {/* <TripAdmin/> */}
-                  </DashboardLayout>
-                }
-              />
-              <Route
-                path="/drivers"
-                element={
-                  <DashboardLayout>
-                    <DriverScreen />
-                  </DashboardLayout>
-                }
-              />
+            <Route path="/" element={<DashboardLayout />}> 
+              <Route index element={<Navigate to="/home" replace />} /> 
+              <Route path="/home" element={<HomeScreen />} />
+              <Route path="/drivers" element={<DriverScreen />} />
+              <Route path="/admin-drivers" element={<DriverAdmin />} />
+              <Route path="/editor-drivers/:id" element={<DriverEditor />} />
+              <Route path="/trucks" element={<TruckScreen />} />
+              <Route path="/admin-trucks" element={<TruckAdmin />} />
+              <Route path="/editor-trucks/:id" element={<TrucksEditor />} /> 
+              <Route path="/trailers" element={<TrailerScreen />} />
+              <Route path="/admin-trailers" element={<TrailerAdmin />} />
+              <Route path="/editor-trailers/:id" element={<TrailerEdit />} /> 
+              <Route path="/trips" element={<TripScreen />} />
+              <Route path="/trips-new" element={<TripScreenNew />} />
+              <Route path="/admin-trips" element={<TripAdmin />} />
+              <Route path="/admin-diesel" element={<DieselAdmin />} />
+              <Route path="/detalle-diesel/:tripId" element={<DieselDetalle />} />
+              <Route path="/editor-diesel/:id/:trip_id" element={<DieselEditor />} />
+              <Route path="/admin-gastos" element={<GastosAdmin />} />
+              <Route path="/detalle-gastos/:tripId" element={<GastosDetalle />} />
+              <Route path="/editor-gastos/:id/:trip_id" element={<GastosEditor />} />
+              <Route path="/admin-gastos-generales" element={<AdminGastosGeneral />} />
+              <Route path="/edit-trip/:tripId" element={<EditTripForm />} />
+              <Route path="/edit-trailer/:trailerId" element={<TrailerEdit />} />
+              <Route path="/ImaAdmin" element={<ImaAdmin />} />
+              <Route path="/ImaScreen" element={<ImaScreen />} />
+              <Route path="/Inspeccion-final" element={<Inspeccion_final />} />
+              <Route path="/new-expense" element={<ExpenseScreen />} />
+              <Route path="/edit-expense/:id_gasto" element={<ExpenseEdit />} />
+              <Route path="/view-inventory" element={<StockAdmin />} />
+              <Route path="/new-service-order" element={<ServiceOrderScreen />} />
+              <Route path="/admin-service-order" element={<ServiceOrderAdmin />} />
+              <Route path="/editar-orden/:orderId" element={<ServiceOrderScreenEdit />} />
+              <Route path="/finanzas" element={<Finanzas />} />
+              <Route path="/ResumenTrip/:tripId" element={<ResumenTrip />} />
+              <Route path="/access-manager" element={<ProfileAccessManager />} />
+              <Route path="/ResiduoTrip" element={<ResiduoTrip />} />  
+              <Route path="*" element={<Navigate to="/home" replace />} /> 
 
-              <Route
-                path="/admin-drivers"
-                element={
-                  <DashboardLayout>
-                    <DriverAdmin />
-                  </DashboardLayout>
-                }
-              />
-
-              <Route
-                path="/editor-drivers/:id"
-                element={
-                  <DashboardLayout>
-                    <DriverEditor />
-                  </DashboardLayout>
-                }
-              />
-
-              <Route
-                path="/trucks"
-                element={
-                  <DashboardLayout>
-                    <TruckScreen />
-                  </DashboardLayout>
-                }
-              />
-
-
-              <Route
-                path="/admin-trucks"
-                element={
-                  <DashboardLayout>
-                    <TruckAdmin />
-                  </DashboardLayout>
-                }
-              />
-
-
-              <Route
-                path="/editor-trucks/:id"
-                element={
-                  <DashboardLayout>
-                    <TrucksEditor />
-                  </DashboardLayout>
-                }
-              /> 
-
-              <Route
-                path="/trailers"
-                element={
-                  <DashboardLayout>
-                    <TrailerScreen />
-                  </DashboardLayout>
-                }
-              />
-
-              <Route
-                path="/admin-trailers"
-                element={
-                  <DashboardLayout>
-                    <TrailerAdmin />
-                  </DashboardLayout>
-                }
-              />
-
-              <Route
-                path="/editor-trailers/:id"
-                element={
-                  <DashboardLayout>
-                    <TrailerEdit />
-                  </DashboardLayout>
-                }
-              /> 
-
-              <Route
-                path="/trips"
-                element={
-                  <DashboardLayout>
-                    <TripScreen />
-                  </DashboardLayout>
-                }
-              />
-
-              <Route
-                path="/admin-trips"
-                element={
-                  <DashboardLayout>
-                    <TripAdmin />
-                  </DashboardLayout>
-                }
-              />
-
-               <Route
-                path="/admin-diesel"
-                element={
-                  <DashboardLayout>
-                    <DieselAdmin />
-                  </DashboardLayout>
-                }
-              />
-
-              <Route
-                path="/detalle-diesel/:tripId"
-                element={
-                  <DashboardLayout>
-                    <DieselDetalle />
-                  </DashboardLayout>
-                }
-              />
-
-              <Route
-                path="/editor-diesel/:id/:trip_id"
-                element={
-                  <DashboardLayout>
-                    <DieselEditor />
-                  </DashboardLayout>
-                }
-              />
-
-               <Route
-                path="/admin-gastos"
-                element={
-                  <DashboardLayout>
-                    <GastosAdmin />
-                  </DashboardLayout>
-                }
-              />
-
-               <Route
-                path="/detalle-gastos/:tripId"
-                element={
-                  <DashboardLayout>
-                    <GastosDetalle />
-                  </DashboardLayout>
-                }
-              />
-
-              <Route
-                path="/editor-gastos/:id/:trip_id"
-                element={
-                  <DashboardLayout>
-                    <GastosEditor />
-                  </DashboardLayout>
-                }
-              />
-
-              <Route
-                path="/admin-gastos-generales"
-                element={
-                  <DashboardLayout>
-                    <AdminGastosGeneral />
-                  </DashboardLayout>
-                }
-              />
-
-              <Route
-                path="/edit-trip/:tripId"
-                element={
-                  <DashboardLayout> 
-                    <EditTripForm /> 
-                  </DashboardLayout>
-                }
-              />
-
-              <Route
-                path="/edit-trailer/:trailerId"
-                element={
-                  <DashboardLayout> 
-                    <TrailerEdit /> 
-                  </DashboardLayout>
-                }
-              />
-
-              <Route
-                path="/ImaAdmin"
-                element={
-                  <DashboardLayout> 
-                    <ImaAdmin /> 
-                  </DashboardLayout>
-                }
-              />
-
-              <Route
-                path="/ImaScreen"
-                element={
-                  <DashboardLayout> 
-                    <ImaScreen/> 
-                  </DashboardLayout>
-                }
-              />
-
-               <Route
-                path="/Inspeccion-final"
-                element={
-                  <DashboardLayout> 
-                    <Inspeccion_final /> 
-                  </DashboardLayout>
-                }
-              />
-
-              <Route
-              path="/new-expense"
-              element = {
-                <DashboardLayout>
-                  <ExpenseScreen/>
-                </DashboardLayout>
-              }
-              />
-                <Route
-                path="/edit-expense/:id_gasto"
-                element={
-                  <DashboardLayout>
-                    <ExpenseEdit/>
-                  </DashboardLayout>
-                }
-              />
-
-              <Route
-              path="/view-inventory"
-              element = {
-                <DashboardLayout>
-                  <StockAdmin/>
-                </DashboardLayout>
-              }
-              />
-
-              <Route
-              path="/new-service-order"
-              element = {
-                <DashboardLayout>
-                  <ServiceOrderScreen/>
-                </DashboardLayout>
-              }
-              />
-
-              <Route
-              path="/admin-service-order"
-              element = {
-                <DashboardLayout>
-                  <ServiceOrderAdmin/>
-                </DashboardLayout>
-              }
-              />
-
-              <Route
-                path="/editar-orden/:orderId"
-                element={
-                  <DashboardLayout> 
-                    <ServiceOrderScreenEdit /> 
-                  </DashboardLayout>
-                }
-              />
-
-               <Route
-                path="/finanzas"
-                element={
-                  <DashboardLayout> 
-                    <Finanzas /> 
-                  </DashboardLayout>
-                }
-              />
-              
-              <Route
-                path="/ResiduoTrip"
-                element={
-                  <DashboardLayout> 
-                    <ResiduoTrip/> 
-                  </DashboardLayout>
-                }
-              />
-
-              <Route
-                path="/ResumenTrip/:tripId"
-                element={
-                  <DashboardLayout> 
-                    <ResumenTrip /> 
-                  </DashboardLayout>
-                }
-              />
-
-
-            </>
+            </Route>
           )}
         </Routes>
       </Router>

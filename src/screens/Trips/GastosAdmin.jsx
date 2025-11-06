@@ -1,23 +1,31 @@
-import React, { useState, useEffect } from 'react';
-import '../css/DriverAdmin.css';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import {
+    Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
+    TextField, Button, Stack, CircularProgress,
+} from '@mui/material'; 
 import { useNavigate } from 'react-router-dom';
+import Swal from 'sweetalert2';
 
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Paper from '@mui/material/Paper';
-import Button from '@mui/material/Button'; 
+const money = (v) => {
+    return new Intl.NumberFormat('en-US', { 
+        style: 'currency', 
+        currency: 'USD',
+        minimumFractionDigits: 2,
+        currencyDisplay: 'symbol' 
+    }).format(Number(v || 0));
+};
+
 
 const GastosAdmin = () => {
   const navigate = useNavigate();
   const apiHost = import.meta.env.VITE_API_HOST;
 
   const [registros, setRegistros] = useState([]);
+  const [loading, setLoading] = useState(true); 
 
-  const fetchDiesel = async () => {
+  // ** LÓGICA DE FETCH **
+  const fetchGastos = useCallback(async () => {
+    setLoading(true);
     try {
       const response = await fetch(`${apiHost}/formularios.php`, {
         method: 'POST',
@@ -37,48 +45,104 @@ const GastosAdmin = () => {
         setRegistros(formatted);
       }
     } catch (error) {
-      console.error('Error al obtener diesel:', error);
+      console.error('Error al obtener gastos de viaje:', error);
+    } finally {
+        setLoading(false);
     }
-  };
+  }, [apiHost]);
 
-  useEffect(() => { fetchDiesel(); }, []);
+  useEffect(() => { fetchGastos(); }, [fetchGastos]);
+
+  // ** LÓGICA DE FILTRADO (Añadimos un estado de búsqueda simple para consistencia) **
+  const [search, setSearch] = useState('');
+
+  const filteredRegistros = useMemo(() => {
+      const searchLower = search.toLowerCase();
+      if (!searchLower) return registros;
+      
+      return registros.filter(r =>
+          String(r.trip_number || '').toLowerCase().includes(searchLower) ||
+          String(r.nombre || '').toLowerCase().includes(searchLower)
+      );
+  }, [registros, search]);
+
 
   const handleVer = (tripId) => {
     navigate(`/detalle-gastos/${tripId}`); 
   };
 
+  if (loading) {
+      return (
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh', p: 3 }}>
+              <CircularProgress /> 
+              <Typography ml={2}>Cargando registros de gastos...</Typography> 
+          </Box>
+      );
+  }
+
   return (
-    <div className="driver-admin">
-      <h1 className="title">Travel Expense Manager</h1>
-      <TableContainer component={Paper}>
-        <Table sx={{ minWidth: 650 }} aria-label="simple table">
-          <TableHead>
-            <TableRow>
-              <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 16}} align="center">Trip </TableCell>
-              <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 22}} align="center">Last Update</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 22}} align="center">No of records</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 22}} align="center">Total </TableCell>
-              <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 22}} align="center">Last driver</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 22}} align="center">Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {registros.map((row) => ( 
-              <TableRow key={row.trip_id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                <TableCell align="center" sx={{ whiteSpace: 'nowrap', fontSize: 18}}>{row.trip_number}</TableCell>
-                <TableCell align="center" sx={{ whiteSpace: 'nowrap', fontSize: 18}}>{row.fecha}</TableCell>
-                <TableCell align="center" sx={{ whiteSpace: 'nowrap', fontSize: 18}}>{row.registros}</TableCell>
-                <TableCell align="center" sx={{ whiteSpace: 'nowrap', fontSize: 18}}>${row.monto}</TableCell>
-                <TableCell align="center" sx={{ whiteSpace: 'nowrap', fontSize: 18}}>{row.nombre}</TableCell>
-                <TableCell align="center" >
-                  <Button variant="text" sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 18}} onClick={() => handleVer(row.trip_id)}>View</Button> 
-                </TableCell>
+    <Box sx={{ p: 3 }}>
+      {/* Título Principal */}
+      <Typography variant="h4" component="h1" fontWeight={700} gutterBottom sx={{ mb: 3 }}>
+        Travel Expense Manager
+      </Typography>
+
+      {/* Toolbar con Búsqueda */}
+      <Stack direction="row" spacing={2} sx={{ mb: 3 }} alignItems="center">
+        <TextField
+          label="Buscar por Trip# o Driver"
+          variant="outlined"
+          size="small"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          sx={{ width: 300 }}
+        />
+        <Button variant="contained" onClick={fetchGastos} size="small">Refrescar</Button>
+      </Stack>
+      
+      <Paper sx={{ width: '100%', mb: 2 }}>
+        <TableContainer sx={{ overflowX: 'auto' }}>
+          <Table size="small" stickyHeader aria-label="Travel expenses table">
+            <TableHead>
+              <TableRow>
+                <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>Trip #</TableCell>
+                <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>Last Update</TableCell>
+                <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap', textAlign: 'right' }}>No of records</TableCell>
+                <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap', textAlign: 'right' }}>Total Cost</TableCell>
+                <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>Last Driver</TableCell>
+                <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap', textAlign: 'center', width: 120 }}>Actions</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    </div>
+            </TableHead>
+            <TableBody>
+              {filteredRegistros.length === 0 ? (
+                <TableRow>
+                    <TableCell colSpan={6} align="center">
+                        <Typography color="text.secondary" sx={{ py: 2 }}>No se encontraron registros de gastos de viaje.</Typography>
+                    </TableCell>
+                </TableRow>
+              ) : (
+                filteredRegistros.map((row) => ( 
+                  <TableRow key={row.trip_id} hover>
+                    <TableCell component="th" scope="row">{row.trip_number}</TableCell>
+                    <TableCell>{row.fecha}</TableCell>
+                    <TableCell align="right">{row.registros}</TableCell>
+                    
+                    <TableCell align="right">
+                      <Typography fontWeight={700}>{money(row.monto)}</Typography>
+                    </TableCell>
+                    
+                    <TableCell>{row.nombre}</TableCell>
+                    <TableCell align="center">
+                      <Button variant="contained" size="small" onClick={() => handleVer(row.trip_id)}>View</Button> 
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Paper>
+    </Box>
   );
 };
 

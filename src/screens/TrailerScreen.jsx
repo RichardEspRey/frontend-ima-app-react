@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
-import './css/ConductoresScreen.css';
+import React, { useState, useCallback } from 'react';
+import { Box, Paper, Typography, Grid, Stack, TextField, Button, CircularProgress } from '@mui/material'; 
+// 🚨 ELIMINAMOS la importación del CSS nativo
 import 'react-datepicker/dist/react-datepicker.css';
-import ModalArchivo from '../components/ModalArchivo.jsx'; // ajusta la ruta si es necesario
+import ModalArchivo from '../components/ModalArchivo.jsx'; 
 import Swal from 'sweetalert2';
+// 🚨 Importamos el componente TruckInput (lo usaremos para Cajas/Trailers)
+import TruckInput from '../components/TruckInput'; 
 
 
 const TrailerScreen = () => {
@@ -12,25 +15,30 @@ const TrailerScreen = () => {
     no_placa: '',
     estado_placa: '',
     numero_vin: '',
-
   });
 
-  const [selectedFieldName, setSelectedFieldName] = useState(null);
+  const [documentos, setDocumentos] = useState({});
+  const [modalAbierto, setModalAbierto] = useState(false);
+  const [campoActual, setCampoActual] = useState(null);
 
   const handleInputChange = (name, value) => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
-
-  {/*utiles*/ }
-  const [documentos, setDocumentos] = useState({});
-  const [modalAbierto, setModalAbierto] = useState(false);
-  const [campoActual, setCampoActual] = useState(null);
 
   const handleGuardarDocumento = (campo, data) => {
     setDocumentos(prev => ({
       ...prev,
       [campo]: data
     }));
+  };
+  
+  // Añadimos el handler de limpieza (es buena práctica)
+  const handleClearDocument = (documentKey) => {
+      setDocumentos(prev => {
+          const newState = { ...prev };
+          delete newState[documentKey];
+          return newState;
+      });
   };
 
   const abrirModal = (campo) => {
@@ -39,47 +47,38 @@ const TrailerScreen = () => {
   };
 
 
-  const envioDatosPrincipal = async () => {
-
+  // ** LÓGICA DE ENVÍO AL BACKEND (Envio de datos principales) **
+  const envioDatosPrincipal = useCallback(async () => {
     try {
       const formDataToSend = new FormData();
-
-      // Aquí añadimos solo campos de texto (no archivos)
-      formDataToSend.append('op', 'Alta'); // operación que espera el backend
+      formDataToSend.append('op', 'Alta');
       formDataToSend.append('numero_caja', formData.numero_caja);
       formDataToSend.append('no_placa', formData.no_placa);
       formDataToSend.append('estado_placa', formData.estado_placa);
       formDataToSend.append('no_vin', formData.numero_vin);
 
-
-      // Enviar al backend
       const response = await fetch(`${apiHost}/cajas.php`, {
         method: 'POST',
         body: formDataToSend,
       });
 
       const result = await response.json();
-      console.log('Respuesta del servidor:', result);
-
-      const idConductor = result.id;
-      console.log("ID recibido del backend:", idConductor);
 
       if (result.status === "success") {
-
-        const idConductor = result.id;
-        console.log("ID recibido del backend:", idConductor);
-        return idConductor;
+        return result.id;
       } else {
-        throw new Error("Error al guardar datos básicos");
+        throw new Error(`Error al guardar datos básicos: ${result.message || 'Error desconocido'}`);
       }
     } catch (error) {
       console.error('Error al enviar los datos:', error);
-      alert('Error al conectar con el servidor');
+      throw new Error('Error al conectar con el servidor para guardar datos principales.');
     }
-  };
+  }, [apiHost, formData]);
 
-  const enviarDocumentos = async (caja_id) => {
-    const entries = Object.entries(documentos); // clave: nombre campo, valor: { file, vencimiento }
+  // ** LÓGICA DE ENVÍO AL BACKEND (Envio de documentos) **
+  const enviarDocumentos = useCallback(async (caja_id) => {
+    const entries = Object.entries(documentos);
+    let success = true;
 
     for (const [tipo_documento, { file, vencimiento }] of entries) {
       const formDataFile = new FormData();
@@ -96,13 +95,15 @@ const TrailerScreen = () => {
         });
 
         const result = await response.json();
-        console.log(`Documento ${tipo_documento} enviado:`, result);
+        if (result.status !== "success") success = false;
         
       } catch (error) {
         console.error(`Error al enviar ${tipo_documento}:`, error);
+        success = false;
       }
     }
-  };
+    return success;
+  }, [apiHost, documentos]);
   
     const handleSubmit = async () => {
       let timerInterval;
@@ -116,26 +117,27 @@ const TrailerScreen = () => {
           Swal.showLoading();
           const b = Swal.getPopup().querySelector('b');
           timerInterval = setInterval(() => {
-            b.textContent = `${Date.now() - start}`;
+            if (b) b.textContent = `${Date.now() - start}`;
           }, 100);
         },
         willClose: () => clearInterval(timerInterval),
       });
   
       try {
-        const idConductor = await envioDatosPrincipal();
-        if (!idConductor) throw new Error('No se obtuvo el ID del conductor');
+        const caja_id = await envioDatosPrincipal(); // Corregido el nombre de la variable a caja_id
+        if (!caja_id) throw new Error('No se obtuvo el ID de la caja');
   
-        await enviarDocumentos(idConductor);
+        const docsSuccess = await enviarDocumentos(caja_id);
   
         Swal.close();
   
         await Swal.fire({
-          icon: 'success',
-          title: 'Éxito',
-          text: 'Caja dada de alta!',
+          icon: docsSuccess ? 'success' : 'warning',
+          title: docsSuccess ? 'Éxito' : 'Registro Parcial',
+          text: docsSuccess ? 'Caja dada de alta!' : 'Caja registrada, pero algunos documentos fallaron.',
         });
   
+        // Limpieza (Reset)
         setFormData({
           numero_caja: '',
           no_placa: '',
@@ -167,86 +169,52 @@ const TrailerScreen = () => {
   }
 
   return (
+    <Box sx={{ p: 3 }}>
 
-    <div >
+      {/* Título Principal */}
+      <Typography variant="h4" component="h1" fontWeight={700} gutterBottom sx={{ mb: 3 }}>
+        Alta de Caja (Trailer)
+      </Typography>
+      
+      {/* Contenedor principal del formulario */}
+      <Paper elevation={1} sx={{ p: 3, border: '1px solid #ccc' }}>
+        
+        {/* Botones de acción (Save / Cancel) */}
+        <Stack direction="row" justifyContent="flex-end" spacing={2} sx={{ mb: 3 }}>
+          <Button variant="outlined" color="error" onClick={cancelar}>Cancelar</Button>
+          <Button variant="contained" color="primary" onClick={handleSubmit}>Guardar</Button>
+        </Stack>
 
-      <h1 className="titulo">Alta de Caja</h1>
-      <div className="conductores-container">
-        <div className="btnConteiner">
-          <button className="btn cancelar" onClick={cancelar}>Cancelar</button>
-          <button className="btn guardar" onClick={handleSubmit}>Guardar</button>
-        </div>
-
-        <div className="form-columns">
-          {/* Puedes continuar con las otras dos columnas como en tu versión original */}
-          <div className="column">
-            <label>Número de caja</label>
-            <input
-              type="text"
-              placeholder="Número de caja"
-              value={formData.numero_caja}
-              onChange={(e) => handleInputChange('numero_caja', e.target.value)}
-            />
-
-            <label>Placa</label>
-            <input
-              type="text"
-              placeholder="Placa"
-              value={formData.no_placa}
-              onChange={(e) => handleInputChange('no_placa', e.target.value)}
-            />
-
-            <label>Estado de Placa</label>
-            <input
-              type="text"
-              placeholder="Estado de placa"
-              value={formData.estado_placa}
-              onChange={(e) => handleInputChange('estado_placa', e.target.value)}
-            />
-
-            <label>Número de VIN</label>
-            <input
-              type="text"
-              placeholder="Número de VIN"
-              value={formData.numero_vin}
-              onChange={(e) => handleInputChange('numero_vin', e.target.value)}
-            />
-
-            <label>Registracion (PDF)</label>
-            <button type="button" onClick={() => abrirModal('Registracion')}>Subir documento</button>
-            {documentos.Registracion && (
-              <p>{documentos.Registracion.fileName} - {documentos.Registracion.vencimiento}</p>
-            )}
-
-            <label>Seguro (PDF)</label>
-            <button type="button" onClick={() => abrirModal('seguro')}>Subir documento</button>
-            {documentos.seguro && (
-              <p>{documentos.seguro.fileName} - {documentos.seguro.vencimiento}</p>
-            )}
-
-            <label>Cab Card(PDF)</label>
-            <button type="button" onClick={() => abrirModal('CAB_CARD')}>Subir documento</button>
-            {documentos.CAB_CARD && (
-              <p>{documentos.CAB_CARD.fileName} - {documentos.CAB_CARD.vencimiento}</p>
-            )}
-
-            <label>Fianza(PDF)</label>
-            <button type="button" onClick={() => abrirModal('Fianza')}>Subir documento</button>
-            {documentos.Fianza && (
-              <p>{documentos.Fianza.fileName} - {documentos.Fianza.vencimiento}</p>
-            )}
-
-            <label>Certificado de fumigacion(PDF)</label>
-            <button type="button" onClick={() => abrirModal('CERTIFICADO')}>Subir documento</button>
-            {documentos.CERTIFICADO && (
-              <p>{documentos.CERTIFICADO.fileName} - {documentos.CERTIFICADO.vencimiento}</p>
-            )}
+        {/* 🚨 ESTRUCTURA DE DOS COLUMNAS (6/6) PARA UN MEJOR ACOMODO */}
+        <Grid container spacing={4}>
+          
+          {/* Columna 1: Datos Generales */}
+          <Grid item xs={12} md={6}>
+            <Typography variant="h5" fontWeight={600} gutterBottom sx={{ borderBottom: '1px solid #eee', pb: 1 }}>
+                Registros Generales
+            </Typography>
             
+            <TextField label="Número de caja" fullWidth size="small" sx={{ mb: 2 }} value={formData.numero_caja} onChange={(e) => handleInputChange('numero_caja', e.target.value)} />
+            <TextField label="Placa" fullWidth size="small" sx={{ mb: 2 }} value={formData.no_placa} onChange={(e) => handleInputChange('no_placa', e.target.value)} />
+            <TextField label="Estado de Placa" fullWidth size="small" sx={{ mb: 2 }} value={formData.estado_placa} onChange={(e) => handleInputChange('estado_placa', e.target.value)} />
+            <TextField label="Número de VIN" fullWidth size="small" sx={{ mb: 2 }} value={formData.numero_vin} onChange={(e) => handleInputChange('numero_vin', e.target.value)} />
+          </Grid>
+              
+          {/* Columna 2: Documentos (Unificado) */}
+          <Grid item xs={12} md={6}>
+            <Typography variant="h5" fontWeight={600} gutterBottom sx={{ borderBottom: '1px solid #eee', pb: 1 }}>
+                Documentos de Cumplimiento
+            </Typography>
 
+            <TruckInput label="Registracion (PDF)" documentKey="Registracion" documentos={documentos} abrirModal={abrirModal} handleClear={handleClearDocument} />
+            <TruckInput label="Seguro (PDF)" documentKey="seguro" documentos={documentos} abrirModal={abrirModal} handleClear={handleClearDocument} />
+            <TruckInput label="Cab Card (PDF)" documentKey="CAB_CARD" documentos={documentos} abrirModal={abrirModal} handleClear={handleClearDocument} />
+            <TruckInput label="Fianza (PDF)" documentKey="Fianza" documentos={documentos} abrirModal={abrirModal} handleClear={handleClearDocument} />
+            <TruckInput label="Certificado de fumigación (PDF)" documentKey="CERTIFICADO" documentos={documentos} abrirModal={abrirModal} handleClear={handleClearDocument} />
+          </Grid>
 
-
-          </div>
-        </div>
+        </Grid>
+        
         <ModalArchivo
           isOpen={modalAbierto}
           onClose={() => setModalAbierto(false)}
@@ -254,8 +222,8 @@ const TrailerScreen = () => {
           nombreCampo={campoActual}
           valorActual={documentos[campoActual]}
         />
-      </div>
-    </div>
+      </Paper>
+    </Box>
   );
 
 };

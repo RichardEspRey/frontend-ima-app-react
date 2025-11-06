@@ -8,7 +8,8 @@
 body, html, #root {
   width: 100%;
   height: 100%;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  /* font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; */
+  font-family: "Roboto", Arial, sans-serif;
 }
 
 /* Layout principal */

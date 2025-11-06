@@ -3,105 +3,44 @@ import './css/Sidebar.css';
 import { useDispatch, useSelector } from 'react-redux';
 import { setActiveMenu, setExpandedMenu, setSelectedSubMenu } from '../redux/menuSlice';
 import { AuthContext } from '../auth/AuthContext';
+import { menuItemsConfig } from '../config/menuConfig';
 import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
-import { Collapse } from '@mui/material'; // Importado de MUI
-
-import logo from '../assets/images/logo_white.png';
-import iconDashboard from '../assets/images/icons/dashboard.png';
-import iconIMA from '../assets/images/icons/administrar.png';
-import iconDriver from '../assets/images/icons/Driver.png';
-import iconTrailer from '../assets/images/icons/trailer.png';
-import iconBox from '../assets/images/icons/caja.png';
-import iconReport from '../assets/images/icons/report.png';
-import iconExit from '../assets/images/icons/exit.png';
-import iconList from '../assets/images/icons/list.png';
-import iconGasto from '../assets/images/icons/gasto.png';
+import { Collapse } from '@mui/material';
 import iconUpdate from '../assets/images/icons/update.png'
 import { UpdateContext } from '../App';
-// Convención final:
-// - rolesPermitidos: array de roles permitidos (padre y subitems).
-// - Sin permisos granulares.
+import { 
+    MdDashboard, MdCarRental, MdLocalShipping, MdDirectionsBus, MdLocalGasStation, 
+    MdAttachMoney, MdExitToApp, MdList, MdAssignment, MdTrendingUp, MdBarChart
+} from 'react-icons/md'; 
+
+import logo from '../assets/images/logo_white.png';
+
+
+const iconMap = {
+    'Inicio': MdDashboard,
+    'IMA': MdAssignment,         // Documentación
+    'Conductores': MdCarRental,   // Conductor
+    'Camiones': MdDirectionsBus,  // Camión/Trailer
+    'Gastos': MdLocalGasStation,  // Gasto/Diesel
+    'Mantenimientos': MdList,     // Lista/Mantenimiento
+    'Viajes': MdLocalShipping,    // Camión de carga
+    'Finanzas': MdAttachMoney,    // Dinero
+    'Reportes': MdBarChart,       // Gráficos/Reporte
+    'Gestor de Acceso': MdList,   // Lista/Gestor de Acceso
+};
+
+const ADMIN_EMAILS_ACCESS = ['1', 'Israel_21027', 'Angelica_21020'];
+const MANAGEMENT_ITEM = { 
+    name: 'Gestor de Acceso', 
+    route: '/access-manager', 
+    rolesPermitidos: ['admin'] 
+};
+
 
 const menuItems = [
-  { name: 'Inicio', icon: iconDashboard, route: '/home', rolesPermitidos: ['admin'] },
-
-  {
-    name: 'IMA',
-    icon: iconIMA,
-    rolesPermitidos: ['admin'],
-    subItems: [
-      { name: 'Alta de documentos', route: '/ImaScreen', rolesPermitidos: ['admin'] },
-      { name: 'Administrador de documentos', route: '/ImaAdmin', rolesPermitidos: ['admin'] }
-    ]
-  },
-
-  {
-    name: 'Conductores',
-    icon: iconDriver,
-    rolesPermitidos: ['admin', 'Angeles'],
-    subItems: [
-      { name: 'Alta de conductores', route: '/drivers', rolesPermitidos: ['admin', 'Angeles'] },
-      { name: 'Administrador de conductores', route: '/admin-drivers', rolesPermitidos: ['admin', 'Angeles'] }
-    ]
-  },
-
-  {
-    name: 'Camiones',
-    icon: iconTrailer,
-    rolesPermitidos: ['admin', 'Angeles'],
-    subItems: [
-      { name: 'Alta de camiones', route: '/trucks', rolesPermitidos: ['admin', 'Angeles'] },
-      { name: 'Administrador de camiones', route: '/admin-trucks', rolesPermitidos: ['admin', 'Angeles'] },
-      { name: 'Alta de Cajas', route: '/trailers', rolesPermitidos: ['admin', 'Angeles'] },
-      { name: 'Administrador de cajas', route: '/admin-trailers', rolesPermitidos: ['admin', 'Angeles'] }
-    ]
-  },
-
-  {
-    name: 'Gastos',
-    icon: iconGasto,
-    rolesPermitidos: ['admin', 'Angeles', 'Blanca', 'Candy', 'Mia'],
-    subItems: [
-      { name: 'Nuevo Gasto', route: '/new-expense', rolesPermitidos: ['admin', 'Angeles', 'Mia'] },
-      { name: 'Administrador gastos', route: '/admin-gastos-generales', rolesPermitidos: ['admin', 'Angeles'] },
-      { name: 'Gastos diesel', route: '/admin-diesel', rolesPermitidos: ['admin', 'Blanca', 'Candy', 'Mia'] },
-      { name: 'Gastos viajes', route: '/admin-gastos', rolesPermitidos: ['admin', 'Blanca', 'Mia'] }
-    ]
-  },
-
-  {
-    name: 'Mantenimientos',
-    icon: iconList,
-    rolesPermitidos: ['admin', 'Angeles', 'Candy'],
-    subItems: [
-      { name: 'Inventario', route: '/view-inventory', rolesPermitidos: ['admin', 'Angeles', 'Candy'] },
-      { name: 'Inspeccion final', route: '/Inspeccion-final', rolesPermitidos: ['admin', 'Angeles', 'Candy'] },
-      { name: 'Administrador Ordenes de Servicio', route: '/admin-service-order', rolesPermitidos: ['admin', 'Angeles', 'Candy'] }
-    ]
-  },
-
-  {
-    name: 'Viajes',
-    icon: iconBox,
-    rolesPermitidos: ['admin', 'Candy', 'Blanca'],
-    subItems: [
-      { name: 'Nuevo Viaje', route: '/trips', rolesPermitidos: ['admin', 'Blanca'] },
-      { name: 'Administrador de viajes', route: '/admin-trips', rolesPermitidos: ['admin', 'Blanca', 'Candy', 'Mia'] },
-    ]
-  },
-
-  {
-    name: 'Ejemplo',
-    icon: iconBox,
-    rolesPermitidos: ['admin'],
-    subItems: [
-      { name: 'Ventas', route: '/finanzas', rolesPermitidos: ['admin'] },
-      { name: 'Residuo de viaje', route: '/ResiduoTrip', rolesPermitidos: ['admin'] }
-    ]
-  },
-
-  { name: 'Reportes', icon: iconReport, route: '/reportes', rolesPermitidos: ['admin'] }
+  ...menuItemsConfig.slice(0),
+  MANAGEMENT_ITEM, 
 ];
 
 const Sidebar = () => {
@@ -120,9 +59,10 @@ const Sidebar = () => {
   });
 
   const apiHost = import.meta.env.VITE_API_HOST;
-  const { user, logout } = useContext(AuthContext);
+  const { user, logout, userPermissions } = useContext(AuthContext);
 
-  // Rol desde contexto o localStorage
+  // const [userPermissions, setUserPermissions] = useState({});
+
   const [tipoUsuario, setTipoUsuario] = useState('');
 
   //obtener credenciales del usuario
@@ -130,6 +70,8 @@ const Sidebar = () => {
     const storedType = localStorage.getItem('type') || '';
     setTipoUsuario((user?.tipo_usuario || storedType || '').trim());
   }, [user]);
+
+  const userEmail = user?.email?.trim().toLowerCase() || localStorage.getItem('userEmail')?.trim().toLowerCase() || '';
 
   //obtener barra de progreso descarga
   useEffect(() => {
@@ -149,43 +91,100 @@ const Sidebar = () => {
   // Comparador por rol (case-insensitive)
   const roleAllowed = useCallback(
     (roles) => {
-      if (!roles || roles.length === 0) return true; // si no está definido, se muestra a todos
+      if (!roles || roles.length === 0) return true;
       const u = String(tipoUsuario || '').toLowerCase();
       return roles.some(r => String(r).toLowerCase() === u);
     },
     [tipoUsuario]
   );
 
-  // Filtrado SOLO por roles:
-  const filterMenuByAccess = useCallback((items) => {
-    return items.reduce((acc, item) => {
-      const canSeeSection = roleAllowed(item.rolesPermitidos);
-
-      // Si no puede ver la sección, no se muestra (aunque tenga subitems)
-      if (!canSeeSection) return acc;
-
-      // Si tiene subitems, filtrarlos por roles (si no define, hereda del padre)
-      if (Array.isArray(item.subItems) && item.subItems.length > 0) {
-        const visibleSubs = item.subItems.filter((si) => {
-          const subRoles = si.rolesPermitidos ?? item.rolesPermitidos;
-          return roleAllowed(subRoles);
-        });
-
-        // Si el padre tiene route, lo mostramos aunque no haya subitems visibles;
-        // si no tiene route, mostrar solo si hay subitems visibles.
-        if (item.route) {
-          acc.push({ ...item, subItems: visibleSubs });
-        } else if (visibleSubs.length > 0) {
-          acc.push({ ...item, subItems: visibleSubs });
-        }
-        return acc;
+  // FUNCIÓN PARA FILTRAR POR PERMISOS DINÁMICOS
+  const isSectionAllowed = useCallback((item, visibleSubs = true) => {
+      if (item.name === MANAGEMENT_ITEM.name) {
+          return roleAllowed(item.rolesPermitidos) && ADMIN_EMAILS_ACCESS.includes(userEmail); 
       }
 
-      // Ítem sin subitems
-      acc.push(item);
-      return acc;
-    }, []);
-  }, [roleAllowed]);
+      const dynamicPermission = userPermissions[item.name];
+      
+      if (dynamicPermission !== undefined) {
+          return dynamicPermission;
+      }
+      
+      if (item.subItems && item.subItems.length > 0) {
+          return visibleSubs;
+      }
+
+      return roleAllowed(item.rolesPermitidos);
+
+  }, [roleAllowed, userEmail, userPermissions]);
+
+  // Filtrado SOLO por roles:
+  const filterMenuByAccess = useCallback((items) => {
+      return items.reduce((acc, item) => {
+          
+          if (Array.isArray(item.subItems) && item.subItems.length > 0) {
+              const visibleSubs = item.subItems.filter((subItem) => {
+                  const dynamicSubPermission = userPermissions[subItem.name]; 
+
+                  if (dynamicSubPermission !== undefined) {
+                      return dynamicSubPermission;
+                  }
+                  
+                  // const subRoles = subItem.rolesPermitidos ?? item.rolesPermitidos;
+                  // return roleAllowed(subRoles);
+                  return false
+              });
+
+              //const canSeeSection = isSectionAllowed(item, visibleSubs.length > 0);
+
+              if (visibleSubs.length > 0) {
+                acc.push({ ...item, subItems: visibleSubs });
+              }
+            
+            return acc;
+          }
+
+          const canSeeSection = isSectionAllowed(item);
+
+          if (canSeeSection) {
+              acc.push(item);
+          }
+          return acc;
+      }, []);
+  }, [isSectionAllowed, roleAllowed, userPermissions]);
+
+    // NUEVA FUNCIÓN PARA OBTENER PERMISOS
+  //   const fetchUserPermissions = useCallback(async () => {
+  //       const userId = user?.id || localStorage.getItem('userID');
+  //       if (!userId) return;
+
+  //       const formData = new FormData();
+  //       formData.append('op', 'getUserPermissions');
+  //       formData.append('user_id', userId);
+
+  //       try {
+  //           const response = await fetch(`${apiHost}/AccessManager.php`, {
+  //               method: 'POST',
+  //               body: formData,
+  //           });
+
+  //           const data = await response.json();
+
+  //           if (data.status === 'success') {
+  //               setUserPermissions(data.permissions);
+  //           } else {
+  //               console.error("Error al obtener permisos:", data.message);
+  //               setUserPermissions({});
+  //           }
+  //       } catch (error) {
+  //           console.error('Error de conexión al obtener permisos:', error);
+  //           setUserPermissions({});
+  //       }
+  //   }, [apiHost, user?.id]);
+
+  // useEffect(() => {
+  //   fetchUserPermissions();
+  // }, [fetchUserPermissions]);
 
   const menuFiltrado = useMemo(() => filterMenuByAccess(menuItems), [filterMenuByAccess]);
 
@@ -256,7 +255,8 @@ const Sidebar = () => {
       <div className="menu-list-wrapper">
         {menuFiltrado.map((item) => {
           const hasSubs = !!(item.subItems && item.subItems.length > 0);
-          const isOpen = expandedMenu === item.name; // <--- Definición de isOpen para Collapse
+          const isOpen = expandedMenu === item.name; 
+          const IconComponent = iconMap[item.name];
 
           return (
             <div key={item.name} className="menu-section">
@@ -265,7 +265,8 @@ const Sidebar = () => {
                 onClick={() => hasSubs ? toggleSubMenu(item.name, hasSubs) : (item.route && handleNavigate(item.route))}
                 disabled={!hasSubs && !item.route}
               >
-                <img src={item.icon} alt={`${item.name} icon`} className="menu-icon" />
+                {IconComponent && <IconComponent className="menu-icon" />}
+                
                 <span className="menu-text-content">
                   {item.name}
                   {notificaciones[item.name] > 0 && (
@@ -281,7 +282,6 @@ const Sidebar = () => {
                 )}
               </button>
 
-              {/* Uso de MUI Collapse para la transición suave */}
               {hasSubs && (
                 <Collapse in={isOpen} timeout="auto" unmountOnExit>
                   <div className="submenu-container">
@@ -291,7 +291,7 @@ const Sidebar = () => {
                         className={`submenu-item ${selectedSubMenu === subItem.route ? 'active-submenu' : ''}`}
                         onClick={() => handleSubMenuSelect(subItem.route)}
                       >
-                        <span className="submenu-dot" /> {/* Punto visual para subitem */}
+                        <span className="submenu-dot" /> 
                         {subItem.name}
                         {subnotificaciones[subItem.name] > 0 && (
                           <span className="notification-badge">{subnotificaciones[subItem.name]}</span>
@@ -337,8 +337,8 @@ const Sidebar = () => {
 
 
       <button className="logout-button" onClick={handleLogout}>
-        <img src={iconExit} className="menu-icon" alt="logout" />
-        <span className="menu-text-content">Log Out</span>
+        <MdExitToApp className="menu-icon" />
+        <span className="menu-text-content">Cerrar Sesión</span>
       </button>
     </div>
   );
