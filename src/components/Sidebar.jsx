@@ -30,7 +30,7 @@ const iconMap = {
     'Gestor de Acceso': MdList,   // Lista/Gestor de Acceso
 };
 
-const ADMIN_EMAILS_ACCESS = ['1', 'Israel_21027', 'Angelica_21020'];
+const ADMIN_EMAILS_ACCESS = ['1', 'israel_21027', 'angelica_21020'];
 const MANAGEMENT_ITEM = { 
     name: 'Gestor de Acceso', 
     route: '/access-manager', 

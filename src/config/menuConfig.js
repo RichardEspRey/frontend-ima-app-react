@@ -113,7 +113,7 @@ export const menuItemsConfig = [
 
   {
     name: "Viajes",
-    rolesPermitidos: ["admin", "Candy", "Blanca"],
+    rolesPermitidos: ["dev","admin", "Candy", "Blanca"],
     subItems: [
       {
         name: "Nuevo Viaje",
@@ -123,7 +123,7 @@ export const menuItemsConfig = [
       {
         name: "Nuevo Viaje New",
         route: "/trips-new",
-        rolesPermitidos: ["admin", "Blanca"],
+        rolesPermitidos: ["dev"],
       },
       {
         name: "Administrador de viajes",
