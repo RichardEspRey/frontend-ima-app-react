@@ -12,7 +12,7 @@ import {
 import { Settings as SettingsIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 
 const getSectionsToManage = () => {
-  return menuItemsConfig.filter(item => item.name !== 'Inicio');
+  return menuItemsConfig;
 };
 
 const ADMIN_EMAILS_ACCESS = ['1', 'Israel_21027', 'Angelica_21020'];

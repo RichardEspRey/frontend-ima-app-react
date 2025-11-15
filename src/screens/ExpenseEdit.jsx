@@ -5,8 +5,8 @@ import "./css/ExpenseScreen.css";
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import Swal from 'sweetalert2';
-import CreatableSelect from 'react-select/creatable';
-import ModalArchivo from '../components/ModalArchivo';
+import { PhotoProvider, PhotoView } from 'react-photo-view';
+import 'react-photo-view/dist/react-photo-view.css';
 
 import useFetchInventoryItems from '../hooks/expense_hooks/useFetchInventoryItems';
 import useFetchSubcategories from '../hooks/expense_hooks/useFetchSubcategories';
@@ -26,27 +26,29 @@ const selectStyles = {
 };
 
 const ExpenseEdit = () => {
-  const { id_gasto } = useParams(); // <-- /edit-expense/:id
+  const { id_gasto } = useParams();
   const apiHost = import.meta.env.VITE_API_HOST;
-  const ID_MANTENIMIENTO = "3";
 
   // === ESTADOS GENERALES ===
   const [country, setCountry] = useState(null);
   const [expenseDate, setExpenseDate] = useState(new Date());
   const [totalAmount, setTotalAmount] = useState('0.00');
   const [originalAmount, setOriginalAmount] = useState('');
-  const { exchangeRate, setExchangeRate, fetchExchangeRate } = useFetchExchangeRate();
+  const { exchangeRate, setExchangeRate } = useFetchExchangeRate();
   const [expenseDetails, setExpenseDetails] = useState([]);
+  const [deletedDetails, setDeletedDetails] = useState([]);
+  const [deletedFiles, setDeletedFiles] = useState([]);
+  const [expenseData, setExpenseData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [ticketDate, setTicketDate] = useState(new Date());
 
   // === SELECT HOOKS ===
   const { expenseTypes, loading: typesLoading } = useFetchExpenseTypes();
-  const { maintenanceCategories, loading: categoriesLoading } = useFetchCategories();
-  const { subcategories, loading: subcategoriesLoading } = useFetchSubcategories();
-  const { inventoryItems, loading: itemsLoading, setInventoryItems } = useFetchInventoryItems();
+  const { maintenanceCategories } = useFetchCategories();
+  const { subcategories } = useFetchSubcategories();
+  const { inventoryItems, setInventoryItems } = useFetchInventoryItems();
 
   // === ARCHIVOS ===
-  const [modalState, setModalState] = useState({ isOpen: false, fileType: null });
   const [files, setFiles] = useState({ facturaPdf: null, ticketJpg: null });
 
   // === PAISES ===
@@ -55,7 +57,9 @@ const ExpenseEdit = () => {
     { value: 'US', label: 'Estados Unidos' },
   ];
 
-  // === CARGA DE DATOS DEL GASTO ===
+  // =============================
+  //   CARGA DE DATOS DEL GASTO
+  // =============================
   useEffect(() => {
     const fetchExpense = async () => {
       try {
@@ -63,7 +67,7 @@ const ExpenseEdit = () => {
         const fd = new FormData();
         fd.append('op', 'getGastoById');
         fd.append('id_gasto', id_gasto);
-   
+
         const res = await fetch(`${apiHost}/save_expense.php`, { method: 'POST', body: fd });
         const json = await res.json();
 
@@ -73,35 +77,25 @@ const ExpenseEdit = () => {
         }
 
         const data = json.data;
+        setExpenseData(data);
 
-        // === 1) GENERAL ===
         const selectedCountry = countries.find(c => c.value === data.pais) || null;
         setCountry(selectedCountry);
-        setExpenseDate(new Date(data.fecha_gasto));
+        
+        const fechaGastoLocal = new Date(`${data.fecha_gasto}T00:00:00`);
+        setExpenseDate(fechaGastoLocal);
+
         setTotalAmount(parseFloat(data.monto_total || 0).toFixed(2));
         setOriginalAmount(data.monto_total || '');
         setExchangeRate(selectedCountry?.value === 'MX' ? (data.tipo_cambio || '') : '');
 
-        // === 2) DETALLES ===
-        const mappedDetails = (data.detalles || []).map((d) => ({
-          id: d.id_detalle_gasto,
-          expenseType: expenseTypes.find(et => et.label === d.tipo_gasto)?.value || null,
-          category: d.id_categoria_mantenimiento || null,
-          subcategory: d.id_subcategoria_mantenimiento || null,
-          itemId: d.id_articulo || null,
-          itemDescription: d.descripcion_articulo || '',
-          price: d.precio_unitario || '',
-          quantity: d.cantidad_articulo || '1',
-        }));
-        setExpenseDetails(mappedDetails);
-
-        // === 3) ARCHIVOS ===
+        // === ARCHIVOS ===
         const ticket = data.tickets?.find(t => t.tipo_documento?.includes('Ticket')) || null;
         const factura = data.tickets?.find(t => t.tipo_documento?.includes('Factura')) || null;
 
         setFiles({
-          ticketJpg: ticket ? { name: ticket.nombre_original, url: ticket.url } : null,
-          facturaPdf: factura ? { name: factura.nombre_original, url: factura.url } : null,
+          ticketJpg: ticket ? { id_documento: ticket.id_documento, name: ticket.nombre_original, url: ticket.url } : null,
+          facturaPdf: factura ? { id_documento: factura.id_documento, name: factura.nombre_original, url: factura.url } : null,
         });
       } catch (err) {
         console.error('Error cargando gasto:', err);
@@ -114,18 +108,103 @@ const ExpenseEdit = () => {
     fetchExpense();
   }, [id_gasto]);
 
-  // === FUNCIONES GENERALES (reutilizadas) ===
+  // =============================
+  //   MAPEO DE DETALLES
+  // =============================
+  useEffect(() => {
+    if (!expenseData || !expenseTypes.length) return;
+
+    const mappedDetails = (expenseData.detalles || []).map((d) => {
+      const match = expenseTypes.find(
+        et => et.label.trim().toLowerCase() === (d.tipo_gasto || '').trim().toLowerCase()
+      );
+
+      return {
+        id: d.id_detalle_gasto,
+        expenseType: match ? match.value : null,
+        category: d.id_categoria_mantenimiento || null,
+        subcategory: d.id_subcategoria_mantenimiento || null,
+        itemId: d.id_articulo || null,
+        itemDescription: d.descripcion_articulo || '',
+        price: d.precio_unitario || '',
+        quantity: d.cantidad_articulo || '1',
+      };
+    });
+
+    setExpenseDetails(mappedDetails);
+  }, [expenseData, expenseTypes]);
+
+  // =============================
+  //   FUNCIONES DE DETALLES
+  // =============================
+  const handleDetailChange = (id, field, value) => {
+    setExpenseDetails(prev =>
+      prev.map(d => d.id === id ? { ...d, [field]: value } : d)
+    );
+  };
+
+  const handleDeleteDetail = (id) => {
+    setExpenseDetails(prev => prev.filter(d => d.id !== id));
+    setDeletedDetails(prev => [...prev, id]);
+  };
+
+  // =============================
+  //   FUNCIONES DE ARCHIVOS
+  // =============================
   const handleRemoveFile = (fileType) => {
+    const file = files[fileType];
+    if (file && file.id_documento) {
+      setDeletedFiles(prev => [...prev, file.id_documento]);
+    }
     setFiles(prev => ({ ...prev, [fileType]: null }));
   };
 
-  const getSubtotal = (price, quantity) => {
-    if (price && quantity) {
-      return (parseFloat(price) * parseInt(quantity)).toFixed(2);
-    }
-    return '0.00';
+  const handleAddFile = (fileType, event) => {
+    const file = event.target.files[0];
+    if (file) setFiles(prev => ({ ...prev, [fileType]: file }));
   };
 
+  // =============================
+  //   GUARDAR CAMBIOS
+  // =============================
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const fd = new FormData();
+      fd.append("op", "updateExpense");
+      fd.append("id_gasto", id_gasto);
+      fd.append("detalles", JSON.stringify(expenseDetails));
+      fd.append("eliminados", JSON.stringify(deletedDetails));
+      fd.append("archivos_eliminados", JSON.stringify(deletedFiles));
+      fd.append("monto_total", totalAmount);
+      fd.append("pais", country?.value || '');
+      fd.append("fecha_gasto", expenseDate.toISOString().split('T')[0]);
+      fd.append("fecha_ticket", ticketDate.toISOString().split('T')[0]);
+
+
+      if (files.facturaPdf && files.facturaPdf instanceof File)
+        fd.append("facturaPdf", files.facturaPdf);
+
+      if (files.ticketJpg && files.ticketJpg instanceof File)
+        fd.append("ticketJpg", files.ticketJpg);
+
+      const res = await fetch(`${apiHost}/save_expense.php`, { method: "POST", body: fd });
+      const json = await res.json();
+
+      if (json.status === "success")
+        Swal.fire("Éxito", "El gasto fue actualizado correctamente", "success");
+      else
+        Swal.fire("Error", json.message || "No se pudo actualizar el gasto", "error");
+
+    } catch (err) {
+      console.error(err);
+      Swal.fire("Error", "Ocurrió un error al actualizar el gasto", "error");
+    }
+  };
+
+  // =============================
+  //   RENDER
+  // =============================
   if (loading) {
     return (
       <div className="app-screen-container">
@@ -136,9 +215,6 @@ const ExpenseEdit = () => {
     );
   }
 
-  // Aquí podrías mantener el mismo layout y formulario que tu ExpenseScreen original,
-  // solo que ahora los campos ya vendrán precargados desde la API.
-
   return (
     <div className="app-screen-container">
       <div className="app-screen-wrapper">
@@ -147,7 +223,7 @@ const ExpenseEdit = () => {
 
           <div className="main-content-flex">
             <div className="additional-card">
-              <form className="card-container">
+              <form className="card-container" onSubmit={handleSubmit}>
                 <div className="form-actions">
                   <button type="button" className="cancel-button" onClick={() => window.history.back()}>
                     Cancelar
@@ -155,6 +231,7 @@ const ExpenseEdit = () => {
                   <button type="submit" className="accept-button">Guardar Cambios</button>
                 </div>
 
+                {/* DATOS GENERALES */}
                 <div className="form-section">
                   <legend className="card-label">General Expense Data</legend>
                   <div className="input-columns">
@@ -172,10 +249,11 @@ const ExpenseEdit = () => {
                     <div className="column">
                       <label>Ticket Date:</label>
                       <DatePicker
-                        selected={expenseDate}
-                        onChange={(date) => setExpenseDate(date)}
+                        selected={ticketDate}
+                        onChange={(date) => setTicketDate(date)}
                         className="form-input date-picker-full-width"
                       />
+
                     </div>
                   </div>
                 </div>
@@ -183,16 +261,20 @@ const ExpenseEdit = () => {
                 <div className="column">
                   <label>Total Amount:</label>
                   <input
-                    type="text"
+                    type="number"
                     className="form-input"
-                    value={`$${totalAmount}`}
-                    readOnly
+                    step="0.01"
+                    min="0"
+                    value={totalAmount}
+                    onChange={(e) => setTotalAmount(e.target.value)}
                   />
                 </div>
 
-                {/* Lista de detalles */}
+
+                {/* DETALLES EDITABLES */}
                 <div className="form-section">
                   <legend className="card-label">Expense Details</legend>
+
                   {expenseDetails.length === 0 ? (
                     <p>No details found for this expense.</p>
                   ) : (
@@ -204,18 +286,51 @@ const ExpenseEdit = () => {
                             <Select
                               options={expenseTypes}
                               isLoading={typesLoading}
-                              value={expenseTypes.find(o => o.value === detail.expenseType)}
+                              value={expenseTypes.find(o => String(o.value) === String(detail.expenseType)) || null}
                               styles={selectStyles}
-                              isDisabled
+                              onChange={(opt) => handleDetailChange(detail.id, "expenseType", opt?.value || null)}
                             />
                           </div>
+
+                          <div className="column" style={{ flex: 2 }}>
+                            <label>Description:</label>
+                            <input
+                              type="text"
+                              className="form-input"
+                              value={detail.itemDescription}
+                              onChange={(e) => handleDetailChange(detail.id, "itemDescription", e.target.value)}
+                            />
+                          </div>
+
                           <div className="column">
                             <label>Price:</label>
-                            <input type="number" className="form-input" value={detail.price} readOnly />
+                            <input
+                              type="number"
+                              className="form-input"
+                              value={detail.price}
+                              onChange={(e) => handleDetailChange(detail.id, "price", e.target.value)}
+                            />
                           </div>
+
                           <div className="column">
                             <label>Quantity:</label>
-                            <input type="number" className="form-input" value={detail.quantity} readOnly />
+                            <input
+                              type="number"
+                              className="form-input"
+                              value={detail.quantity}
+                              onChange={(e) => handleDetailChange(detail.id, "quantity", e.target.value)}
+                            />
+                          </div>
+
+                          <div className="column" style={{ display: "flex", alignItems: "flex-end" }}>
+                            <button
+                              type="button"
+                              className="remove-file-button"
+                              style={{ background: "#dc3545", color: "#fff", borderRadius: "6px", padding: "4px 10px" }}
+                              onClick={() => handleDeleteDetail(detail.id)}
+                            >
+                              Eliminar
+                            </button>
                           </div>
                         </div>
                       </div>
@@ -223,41 +338,65 @@ const ExpenseEdit = () => {
                   )}
                 </div>
 
-                {/* Archivos */}
+                {/* ARCHIVOS */}
                 <div className="form-section">
                   <legend className="card-label">Documents</legend>
                   <div className="input-columns">
+
+                    {/* PDF */}
                     <div className="column">
                       <label>Invoice (PDF)</label>
                       {files.facturaPdf ? (
                         <div className="file-display">
                           <span className="file-icon">📄</span>
-                          <a href={files.facturaPdf.url} target="_blank" rel="noopener noreferrer">
-                            {files.facturaPdf.name}
+                          <a
+                            href={files.facturaPdf.url || URL.createObjectURL(files.facturaPdf)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="file-link"
+                          >
+                            {files.facturaPdf.name || "Nuevo archivo PDF"}
                           </a>
                           <button type="button" className="remove-file-button" onClick={() => handleRemoveFile('facturaPdf')}>
                             X
                           </button>
                         </div>
                       ) : (
-                        <p>No PDF attached.</p>
+                        <input type="file" accept="application/pdf" onChange={(e) => handleAddFile('facturaPdf', e)} />
                       )}
                     </div>
 
+                    {/* Imagen Ticket */}
                     <div className="column">
                       <label>Ticket (Image)</label>
                       {files.ticketJpg ? (
                         <div className="file-display">
-                          <span className="file-icon">🖼️</span>
-                          <a href={files.ticketJpg.url} target="_blank" rel="noopener noreferrer">
-                            {files.ticketJpg.name}
-                          </a>
-                          <button type="button" className="remove-file-button" onClick={() => handleRemoveFile('ticketJpg')}>
-                            X
-                          </button>
+                          <PhotoProvider>
+                            <PhotoView src={files.ticketJpg.url || URL.createObjectURL(files.ticketJpg)}>
+                              <img
+                                src={files.ticketJpg.url || URL.createObjectURL(files.ticketJpg)}
+                                alt={files.ticketJpg.name || 'Nuevo ticket'}
+                                style={{
+                                  width: '120px',
+                                  height: 'auto',
+                                  borderRadius: '8px',
+                                  cursor: 'pointer',
+                                  boxShadow: '0 0 6px rgba(0,0,0,0.2)',
+                                }}
+                              />
+                            </PhotoView>
+                          </PhotoProvider>
+                          <div style={{ marginTop: '6px' }}>
+                            <span style={{ fontSize: '0.9em', color: '#666' }}>
+                              {files.ticketJpg.name || 'Nuevo ticket'}
+                            </span>
+                            <button type="button" className="remove-file-button" onClick={() => handleRemoveFile('ticketJpg')}>
+                              X
+                            </button>
+                          </div>
                         </div>
                       ) : (
-                        <p>No image attached.</p>
+                        <input type="file" accept="image/*" onChange={(e) => handleAddFile('ticketJpg', e)} />
                       )}
                     </div>
                   </div>
@@ -265,7 +404,7 @@ const ExpenseEdit = () => {
               </form>
             </div>
 
-            {/* Vista previa */}
+            {/* VISTA PREVIA */}
             <div className="previsualizador-card">
               <h3 className="preview-title">Expense Summary</h3>
               <p><strong>Country:</strong> {country?.label}</p>

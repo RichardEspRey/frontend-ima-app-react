@@ -44,7 +44,7 @@ function toWeekKey(iso) {
   return `${year}-W${String(week).padStart(2, '0')}`;
 }
 
-export default function HomeScreen() {
+export default function Reports() {
   // DATA PARA EL CHART (op=chart_diesel)
   const [rows, setRows] = useState([]);
   const [chartLoading, setChartLoading] = useState(true);
