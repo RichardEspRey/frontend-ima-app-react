@@ -18,7 +18,7 @@ import logo from '../assets/images/logo_white.png';
 
 
 const iconMap = {
-    'Inicio': MdDashboard,
+    'Inicio': MdDashboard,       //Inicio
     'IMA': MdAssignment,         // Documentación
     'Conductores': MdCarRental,   // Conductor
     'Camiones': MdDirectionsBus,  // Camión/Trailer

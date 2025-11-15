@@ -7,7 +7,7 @@ import store from '../redux/store';
 
 import LoginScreen from '../screens/Login/Login.jsx';
 import DashboardLayout from '../layouts/DashboardLayout';
-import HomeScreen from '../screens/HomeScreen.jsx';
+import HomeScreen from '../screens/Reports.jsx';
 import DriverAdmin from '../screens/DriverAdmin.jsx';
 import DriverEditor from '../screens/DriverEditor.jsx';
 import TripAdmin from '../screens/TripAdmin.jsx';
@@ -41,6 +41,8 @@ import Finanzas from '../screens/Finanzas.jsx';
 import ResumenTrip from '../screens/ResumenTrip.jsx';
 import ResiduoTrip from '../screens/Finanzas/ResiduosTrips.jsx';
 import ProfileAccessManager from '../screens/ProfileAccessManager.jsx';
+import Reports from '../screens/Reports.jsx';
+import { Welcome } from '../screens/Welcome.jsx';
 
 
 const AppRouter = () => {
@@ -60,7 +62,7 @@ const AppRouter = () => {
           ) : (
             <Route path="/" element={<DashboardLayout />}> 
               <Route index element={<Navigate to="/home" replace />} /> 
-              <Route path="/home" element={<HomeScreen />} />
+              <Route path="/home" element={<Welcome/>} />
               <Route path="/drivers" element={<DriverScreen />} />
               <Route path="/admin-drivers" element={<DriverAdmin />} />
               <Route path="/editor-drivers/:id" element={<DriverEditor />} />
@@ -95,6 +97,7 @@ const AppRouter = () => {
               <Route path="/ResumenTrip/:tripId" element={<ResumenTrip />} />
               <Route path="/access-manager" element={<ProfileAccessManager />} />
               <Route path="/ResiduoTrip" element={<ResiduoTrip />} />  
+              <Route path="/reports" element={<Reports />} />  
               <Route path="*" element={<Navigate to="/home" replace />} /> 
 
             </Route>
