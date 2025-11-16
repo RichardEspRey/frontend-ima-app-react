@@ -97,7 +97,8 @@ const AppRouter = () => {
               <Route path="/ResumenTrip/:tripId" element={<ResumenTrip />} />
               <Route path="/access-manager" element={<ProfileAccessManager />} />
               <Route path="/ResiduoTrip" element={<ResiduoTrip />} />  
-              <Route path="/reports" element={<Reports />} />  
+              <Route path="/reports" element={<Reports />} /> 
+              <Route path="/margen" element={<Reports />} />  
               <Route path="*" element={<Navigate to="/home" replace />} /> 
 
             </Route>
