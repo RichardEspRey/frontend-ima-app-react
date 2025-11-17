@@ -43,6 +43,7 @@ import ResiduoTrip from '../screens/Finanzas/ResiduosTrips.jsx';
 import ProfileAccessManager from '../screens/ProfileAccessManager.jsx';
 import Reports from '../screens/Reports.jsx';
 import { Welcome } from '../screens/Welcome.jsx';
+import MargenScreen from '../screens/MargenScreen.jsx';
 
 
 const AppRouter = () => {
@@ -97,7 +98,8 @@ const AppRouter = () => {
               <Route path="/ResumenTrip/:tripId" element={<ResumenTrip />} />
               <Route path="/access-manager" element={<ProfileAccessManager />} />
               <Route path="/ResiduoTrip" element={<ResiduoTrip />} />  
-              <Route path="/reports" element={<Reports />} />  
+              <Route path="/reports" element={<Reports />} /> 
+              <Route path="/margen" element={<MargenScreen />} />  
               <Route path="*" element={<Navigate to="/home" replace />} /> 
 
             </Route>

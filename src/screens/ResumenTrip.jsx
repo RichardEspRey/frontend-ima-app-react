@@ -344,35 +344,13 @@ export default function ResumenTrip() {
                   <TableCell>{money(totals.expenses, 'USD')}</TableCell>
                   <TableCell sx={{ color: '#2e7d32' }}>Dato de la Base de datos</TableCell>
                 </TableRow>
-                <TableRow className="no-print">
-                  <TableCell sx={{ fontWeight: 900 }}>Total</TableCell>
-                  <TableCell sx={{ fontWeight: 900 }}>{money(totals.total, 'USD')}</TableCell>
-                  <TableCell />
-                </TableRow>
+                
               </TableBody>
             </Table>
           </Paper>
         </Box>
 
-        {/* Resumen final */}
-        <Box sx={{ mt: 3 }} >
-          <TableContainer component={Paper} variant="outlined" >
-            <Table size="small">
-              <TableHead>
-                <TableRow className="no-print">
-                  <TableCell>Viajes</TableCell>
-                  <TableCell>Total ($)</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                <TableRow hover className="no-print">
-                  <TableCell>{header.trip_number || '—'}</TableCell>
-                  <TableCell>{money(totals.total, 'USD')}</TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Box>
+        
 
         <Divider sx={{ mt: 3 }} />
       </div>
