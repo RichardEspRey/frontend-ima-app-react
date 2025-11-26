@@ -14,7 +14,7 @@ const SummaryCard = ({ title, count, color, label }) => (
             borderLeft: `6px solid ${color}`,
             bgcolor: 'background.paper',
             transition: 'transform 0.2s',
-            '&:hover': { transform: 'translateY(-2px)', boxShadow: 1 }
+            // '&:hover': { transform: 'translateY(-2px)', boxShadow: 1 }
         }}
     >
         <Typography variant="h4" fontWeight={700} sx={{ color: color, mb: 0.5 }}>
