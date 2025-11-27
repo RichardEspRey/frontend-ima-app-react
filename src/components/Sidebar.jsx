@@ -26,7 +26,7 @@ const iconMap = {
     'Mantenimientos': MdList,     // Lista/Mantenimiento
     'Viajes': MdLocalShipping,    // Camión de carga
     'Finanzas': MdAttachMoney,    // Dinero
-    'Reportes': MdBarChart,       // Gráficos/Reporte
+    'Reports': MdBarChart,       // Gráficos/Reporte
     'Gestor de Acceso': MdList,   // Lista/Gestor de Acceso
 };
 

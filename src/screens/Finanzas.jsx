@@ -11,6 +11,7 @@ import Swal from 'sweetalert2';
 
 import { PAYMENT_METHODS, STATUS_OPTIONS } from '../constants/finances';
 import { StageDetailRow } from '../components/StageDetailRow'; 
+import { AlertSummaryCards } from '../components/AlertSummaryCards';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -32,6 +33,63 @@ const StatusChip = ({ value }) => {
   );
 };
 
+// =========================================================================
+// LÓGICA DE RESUMEN DE ESTATUS DEL VIAJE 
+// =========================================================================
+const getTripStatusSummary = (stages) => {
+    if (!stages || stages.length === 0) {
+        return { value: 3, label: 'Completado', color: STATUS_OPTIONS[3].color }; 
+    }
+    
+    const normalizedStages = stages.map(s => ({
+        ...s, 
+        status: s.status != null ? Number(s.status) : 0 
+    }));
+
+    // El Naranja (1) se comporta como Rojo (0) para el estatus general.
+    const hasCriticalStatus = normalizedStages.some(s => s.status === 0 || s.status === 1);
+    
+    if (hasCriticalStatus) {
+        const redStatus = STATUS_OPTIONS.find(o => o.value === 0); // Usamos la meta del Rojo (0)
+        return { 
+            value: 0, 
+            label: redStatus.label, // "Pendiente de cobrar"
+            color: redStatus.color 
+        };
+    }
+
+    // PRIORIDAD MEDIA (AMARILLO): Si no hay Rojos/Naranjas, pero hay Amarillos (2)
+    const hasYellowStatus = normalizedStages.some(s => s.status === 2);
+    
+    if (hasYellowStatus) {
+        const yellowStatus = STATUS_OPTIONS.find(o => o.value === 2);
+        return { value: 2, label: yellowStatus.label, color: yellowStatus.color };
+    }
+    
+    // PRIORIDAD MÍNIMA (VERDE): Si llegamos aquí, todos son 3 (Pagada)
+    const completedStatus = STATUS_OPTIONS.find(o => o.value === 3);
+    return { value: 3, label: completedStatus.label, color: completedStatus.color };
+};
+
+// =========================================================================
+// FUNCIÓN DE CONTADOR DE ESTATUS CRÍTICOS (0, 1, 2)
+// =========================================================================
+const countCriticalStages = (stages) => {
+    if (!stages || stages.length === 0) return { 0: 0, 1: 0, 2: 0 };
+
+    const counts = stages.reduce((acc, s) => {
+        const status = Number(s.status); 
+        // 0 (Rojo), 1 (Naranja), 2 (Amarillo)
+        if (status === 0 || status === 1 || status === 2) {
+            acc[status] = (acc[status] || 0) + 1;
+        }
+        return acc;
+    }, { 0: 0, 1: 0, 2: 0 }); // Inicializamos los contadores de los 3 estados críticos
+
+    return counts;
+};
+
+
 const Finanzas = () => {
   const [trips, setTrips] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -41,7 +99,7 @@ const Finanzas = () => {
   const [openMap, setOpenMap] = useState({});
   const [saving, setSaving] = useState(false);
 
-  // ** LÓGICA DE FETCH  **
+  // ** LÓGICA DE FETCH **
   const toFormBody = useCallback((obj) =>
     Object.entries(obj)
       .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v ?? '')}`)
@@ -57,29 +115,39 @@ const Finanzas = () => {
       const json = await res.json();
 
       if (json.status === 'success' && Array.isArray(json.data)) {
-        const norm = json.data.map(t => ({
-          trip_id: Number(t.trip_id),
-          trip_number: t.trip_number ?? '',
-          stages_count: Number(t.stages_count ?? 0),
-          total_tarifa: Number(t.total_tarifa ?? 0),
-          total_pagada: Number(t.total_pagada ?? 0),
-          status_trip: t.status_trip != null ? Number(t.status_trip) : null,
-          stages: Array.isArray(t.stages) ? t.stages
+        // Normaliza
+        const norm = json.data.map(t => {
+            // Normalización de etapas
+            const stages = Array.isArray(t.stages) ? t.stages
             .filter(s => String(s.stageType ?? '').toLowerCase() !== 'emptymileage')
             .map(s => ({
               trip_stage_id: Number(s.trip_stage_id),
-              trip_id: Number(s.trip_id),
+              trip_id: Number(t.trip_id),
               stage_number: Number(s.stage_number ?? 0),
               origin: s.origin ?? '',
               destination: s.destination ?? '',
               rate_tarifa: s.rate_tarifa != null ? Number(s.rate_tarifa) : null,
               payment_method: (s.metodo_pago ?? '').trim(),
               paid_rate: s.tarifa_pagada != null ? String(Number(String(s.tarifa_pagada).replace(',', '.'))) : '',
-              status: s.status != null ? Number(s.status) : '',
-              moneda: s.moneda ?? 'MXN',
+              status: s.status != null ? Number(s.status) : 0, 
+              moneda: s.moneda ?? 'USD', 
               _dirty: false, 
-            })) : [],
-        }));
+            })) : [];
+
+            // CALCULAR EL ESTATUS RESUMIDO
+            const summaryStatus = getTripStatusSummary(stages);
+
+            return ({
+              trip_id: Number(t.trip_id),
+              trip_number: t.trip_number ?? '',
+              stages_count: Number(t.stages_count ?? 0),
+              total_tarifa: Number(t.total_tarifa ?? 0),
+              total_pagada: Number(t.total_pagada ?? 0),
+              status_trip: summaryStatus.value, // USAMOS EL VALOR RESUMIDO
+              status_label: summaryStatus.label,
+              stages: stages,
+            });
+        });
 
         setTrips(norm);
 
@@ -106,6 +174,19 @@ const Finanzas = () => {
 
   const pageTrips = filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
+  const globalAlertCounts = useMemo(() => {
+    const totals = { 0: 0, 1: 0, 2: 0 };
+    trips.forEach(trip => {
+      trip.stages.forEach(s => {
+        const status = Number(s.status);
+        if (totals[status] !== undefined) {
+            totals[status]++;
+        }
+      });
+    });
+    return totals;
+  }, [trips]);
+
   // Toggle colapsable por trip
   const toggleOpen = (trip_id) => {
     setOpenMap(prev => ({ ...prev, [trip_id]: !prev[trip_id] }));
@@ -124,12 +205,12 @@ const Finanzas = () => {
     }));
   };
 
-  // === Utilidades para guardado general ===
+  // === Utilidades para guardado general (RESTAURADAS) ===
   const validateStage = (stage) => {
     const errs = [];
     const metodo = (stage.payment_method ?? '').trim();
     const tarifaStr = String(stage.paid_rate ?? '').trim();
-    const tarifaNum = Number(tarifaStr);
+    const tarifaNum = Number(tarifaStr.replace(',', '.')); 
 
     if (!metodo) errs.push('Método de pago vacío');
     if (tarifaStr === '' || Number.isNaN(tarifaNum)) {
@@ -138,13 +219,15 @@ const Finanzas = () => {
       errs.push('Tarifa pagada debe ser > 0');
     }
     if (stage.status === '' || stage.status === null || Number.isNaN(Number(stage.status))) {
-      errs.push('Status no seleccionado');
+      errs.push('Status no seleccionado o inválido');
     }
     return errs;
   };
 
   const buildPayloadItem = (stage) => {
-    const tarifaNum = Number(String(stage.paid_rate ?? '').trim());
+    const tarifaStr = String(stage.paid_rate ?? '').trim();
+    const tarifaNum = Number(tarifaStr.replace(',', '.'));
+    
     return {
       id: String(stage.trip_stage_id),
       metodo: (stage.payment_method ?? '').trim(),
@@ -234,6 +317,7 @@ const Finanzas = () => {
           timer: 1600,
           showConfirmButton: false,
         });
+        // Refrescar los datos para obtener los totales actualizados y limpiar _dirty
         await fetchFinanzas(); 
       } else {
         await Swal.fire({
@@ -256,6 +340,7 @@ const Finanzas = () => {
       });
     }
   };
+
 
   return (
     <Paper sx={{ m: 2, p: 3 }}>
@@ -289,6 +374,11 @@ const Finanzas = () => {
         </Stack>
       </Box>
 
+      {/* Tarjetas de Resumen de Alertas */}
+      {!loading && (
+          <AlertSummaryCards globalCounts={globalAlertCounts} />
+      )}
+
       {/* Tabla Principal */}
       <TableContainer component={Paper} variant="outlined" sx={{ overflowX: 'auto' }}>
         <Table stickyHeader size="small">
@@ -301,13 +391,15 @@ const Finanzas = () => {
               <TableCell sx={{ fontWeight: 600, textAlign: 'right' }}>Total Rate</TableCell>
               <TableCell sx={{ fontWeight: 600, textAlign: 'right' }}>Total Pagado</TableCell>
               <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
+              {/* 🚨 NUEVA CABECERA: Alertas/Contadores */}
+              <TableCell sx={{ fontWeight: 600, textAlign: 'center', width: '120px' }}>Alertas</TableCell>
             </TableRow>
           </TableHead>
 
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={6} align="center">
+                <TableCell colSpan={7} align="center"> {/* Colspan 7 (6 columnas + 1 de expansión) */}
                   <Box sx={{ py: 4, display: 'flex', gap: 2, alignItems: 'center', justifyContent: 'center' }}>
                     <CircularProgress size={24} />
                     <Typography>Cargando…</Typography>
@@ -316,13 +408,16 @@ const Finanzas = () => {
               </TableRow>
             ) : pageTrips.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} align="center">
+                <TableCell colSpan={7} align="center"> {/* Colspan 7 */}
                   <Typography color="text.secondary" sx={{ py: 3 }}>Sin registros.</Typography>
                 </TableCell>
               </TableRow>
             ) : (
               pageTrips.map((t) => {
                 const isOpen = !!openMap[t.trip_id];
+                // 🚨 CALCULAR CONTADORES DE ALERTAS
+                const criticalCounts = countCriticalStages(t.stages);
+
                 return (
                   <React.Fragment key={t.trip_id}>
                     {/* Fila principal (trip) */}
@@ -350,15 +445,59 @@ const Finanzas = () => {
                       {/* Total Pagado */}
                       <TableCell align="right">{money(t.total_pagada ?? 0)}</TableCell>
 
-                      {/* Status trip */}
+                      {/* Status trip (Resumido) */}
                       <TableCell>
                         <StatusChip value={t.status_trip} />
+                      </TableCell>
+                      
+                      {/* 🚨 NUEVA COLUMNA: CONTADORES DE ALERTAS 🚨 */}
+                      <TableCell align="center" sx={{ whiteSpace: 'nowrap' }}>
+                        <Stack direction="row" spacing={1} justifyContent="center">
+                            
+                            {/* ROJO (Status 0: Pendiente de cobrar) */}
+                            {criticalCounts[0] > 0 && (
+                                <Tooltip title={`${criticalCounts[0]} pendiente(s) de cobrar (ROJO)`}>
+                                    <Badge
+                                        badgeContent={criticalCounts[0]}
+                                        sx={{ '& .MuiBadge-badge': { bgcolor: STATUS_OPTIONS.find(o => o.value === 0).color, color: 'white', minWidth: '18px', height: '18px' } }}
+                                    >
+                                        <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: STATUS_OPTIONS.find(o => o.value === 0).color }} />
+                                    </Badge>
+                                </Tooltip>
+                            )}
+
+                            {/* NARANJA (Status 1: Cobrada, pendiente de pago) */}
+                            {criticalCounts[1] > 0 && (
+                                <Tooltip title={`${criticalCounts[1]} pendiente(s) de pago (NARANJA)`}>
+                                    <Badge
+                                        badgeContent={criticalCounts[1]}
+                                        sx={{ '& .MuiBadge-badge': { bgcolor: STATUS_OPTIONS.find(o => o.value === 1).color, color: 'white', minWidth: '18px', height: '18px' } }}
+                                    >
+                                        <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: STATUS_OPTIONS.find(o => o.value === 1).color }} />
+                                    </Badge>
+                                </Tooltip>
+                            )}
+
+                            {/* AMARILLO (Status 2: Cobrada, pendiente RTS) */}
+                            {criticalCounts[2] > 0 && (
+                                <Tooltip title={`${criticalCounts[2]} pendiente(s) RTS (AMARILLO)`}>
+                                    <Badge
+                                        badgeContent={criticalCounts[2]}
+                                        // Texto negro en amarillo para mejor contraste
+                                        sx={{ '& .MuiBadge-badge': { bgcolor: STATUS_OPTIONS.find(o => o.value === 2).color, color: 'black', minWidth: '18px', height: '18px' } }}
+                                    >
+                                        <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: STATUS_OPTIONS.find(o => o.value === 2).color }} />
+                                    </Badge>
+                                </Tooltip>
+                            )}
+
+                        </Stack>
                       </TableCell>
                     </TableRow>
 
                     {/* Fila colapsable con etapas */}
                     <TableRow>
-                      <TableCell colSpan={6} sx={{ p: 0, borderBottom: isOpen ? '1px solid rgba(224,224,224,1)' : 0 }}>
+                      <TableCell colSpan={7} sx={{ p: 0, borderBottom: isOpen ? '1px solid rgba(224,224,224,1)' : 0 }}> {/* 🚨 Colspan ajustado a 7 */}
                         <Collapse in={isOpen} timeout="auto" unmountOnExit>
                           <Box sx={{ p: 2 }}>
                             <Typography variant="h6" fontWeight={700} gutterBottom>Stages</Typography>
