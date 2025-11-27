@@ -11,8 +11,9 @@ import iconUpdate from '../assets/images/icons/update.png'
 import { UpdateContext } from '../App';
 import { 
     MdDashboard, MdCarRental, MdLocalShipping, MdDirectionsBus, MdLocalGasStation, 
-    MdAttachMoney, MdExitToApp, MdList, MdAssignment, MdTrendingUp, MdBarChart
+    MdAttachMoney, MdExitToApp, MdList, MdAssignment, MdTrendingUp, MdBarChart 
 } from 'react-icons/md'; 
+import { GrMapLocation } from "react-icons/gr";
 
 import logo from '../assets/images/logo_white.png';
 
@@ -27,6 +28,7 @@ const iconMap = {
     'Viajes': MdLocalShipping,    // Camión de carga
     'Finanzas': MdAttachMoney,    // Dinero
     'Reports': MdBarChart,       // Gráficos/Reporte
+    'Mapa': GrMapLocation,              //Mapa
     'Gestor de Acceso': MdList,   // Lista/Gestor de Acceso
 };
 

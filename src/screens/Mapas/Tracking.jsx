@@ -1,15 +1,17 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState,useRef } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import truckIcon from "../../assets/images/icons/truck.png";
+import Swal from 'sweetalert2';
 
-//Colores únicos para cada camión
+// Colores únicos por camión
 const COLORS = [
   "#e6194b", "#3cb44b", "#ffe119", "#4363d8", "#f58231",
   "#911eb4", "#46f0f0", "#f032e6", "#bcf60c", "#fabebe"
 ];
 
+// Ícono con color único
 function createColoredIcon(angle, color) {
   return L.divIcon({
     html: `
@@ -33,7 +35,7 @@ function createColoredIcon(angle, color) {
   });
 }
 
-//Hace zoom al camión seleccionado
+// Hace zoom al camión seleccionado
 function FlyToSelected({ unit }) {
   const map = useMap();
 
@@ -46,56 +48,78 @@ function FlyToSelected({ unit }) {
   return null;
 }
 
-
 export default function Tracking() {
+
   const [units, setUnits] = useState([]);
   const [selected, setSelected] = useState(null);
+  const first = useRef(true);
 
+
+  // Obtener datos reales
   const fetchUnits = async () => {
-  try {
-    const res = await fetch("http://imaexpressllc.com/API/Tracking.php");
-    const data = await res.json();
-
-    if (data.status === "success") {
-
-      const items = data.units.map((u, i) => ({
-        id: u.id,
-        name: u.nm,
-        lat: u.pos?.y,
-        lon: u.pos?.x,
-        speed: u.pos?.s,
-        heading: u.pos?.c,
-        timestamp: u.pos?.t,
-        color: COLORS[i % COLORS.length]
-      }));
-
-      // Mantener selección si el camión sigue existiendo
-      let previousSelected = null;
-
-      if (selected) {
-        previousSelected = items.find(u => u.id === selected.id);
-      }
-
-      setUnits(items);
-
-      // Si el seleccionado sigue existiendo → mantenerlo
-      if (previousSelected) {
-        setSelected(previousSelected);
-      }
-
-      // Si NO existe → NO seleccionar nada
-      // (esto evita que seleccione el primer camión solo)
+ 
+    let timerInterval;
+    const start = Date.now();
+    if (first.current) {
+      Swal.fire({
+        title: 'Obteniendo unidades…',
+        html: 'Tiempo transcurrido: <b>0</b> ms',
+        allowOutsideClick: false,
+        didOpen: () => {
+          const popup = Swal.getPopup();
+          if (popup) {
+            Swal.showLoading();
+            const b = popup.querySelector('b');
+            timerInterval = setInterval(() => {
+              if (b) b.textContent = `${Date.now() - start}`;
+            }, 100);
+          }
+        },
+        willClose: () => clearInterval(timerInterval),
+      });
     }
 
-  } catch (err) {
-    console.error("Error cargando unidades:", err);
-  }
-};
+    try {
+      const res = await fetch("http://imaexpressllc.com/API/Tracking.php");
+      const data = await res.json();
 
+      if (data.status === "success") {
+        Swal.close();
+        first.current = false;
+        const items = data.units.map((u, i) => ({
+          id: u.id,
+          name: u.nm,
+          lat: u.pos?.y,
+          lon: u.pos?.x,
+          speed: u.pos?.s,
+          heading: u.pos?.c,
+          timestamp: u.pos?.t,
+          address: u.address || "No address available",
+          color: COLORS[i % COLORS.length]
+        }));
+
+        // Mantener selección si sigue existiendo
+        let previousSelected = null;
+        if (selected) {
+          previousSelected = items.find(x => x.id === selected.id);
+        }
+
+        setUnits(items);
+
+        if (previousSelected) {
+          setSelected(previousSelected);
+        }
+      }
+
+    } catch (err) {
+      console.error("Error cargando unidades:", err);
+    }
+  };
 
   useEffect(() => {
     fetchUnits();
-    const interval = setInterval(fetchUnits, 10000);
+    const interval = setInterval(fetchUnits, 30000);
+  
     return () => clearInterval(interval);
   }, []);
 
@@ -143,12 +167,21 @@ export default function Tracking() {
                 Última actualización:
                 {truck.timestamp ? " " + new Date(truck.timestamp * 1000).toLocaleString() : '---'}
               </div>
+
+              {/* Dirección */}
+              <div style={{
+                marginTop: "4px",
+                fontSize: "12px",
+                color: "#444"
+              }}>
+                {truck.address}
+              </div>
             </div>
           </div>
         ))}
       </div>
 
-      {/* ---------------------- MAPA ---------------------- */}
+      {/* ---------------------- MAPA DERECHA ---------------------- */}
       <div style={{ flex: 1 }}>
         <MapContainer
           center={[units[0]?.lat || 0, units[0]?.lon || 0]}
@@ -163,19 +196,17 @@ export default function Tracking() {
               key={u.id}
               position={[u.lat, u.lon]}
               icon={createColoredIcon(u.heading, u.color)}
-              eventHandlers={{
-                click: () => setSelected(u)
-              }}
+              eventHandlers={{ click: () => setSelected(u) }}
             >
               <Popup>
                 <strong>{u.name}</strong><br />
                 Velocidad: {u.speed} km/h <br />
-                Heading: {u.heading}°
+                Dirección: {u.address}
               </Popup>
             </Marker>
           ))}
 
-          {/* Zoom automático al seleccionado */}
+          {/* Zoom automático */}
           {selected && <FlyToSelected unit={selected} />}
         </MapContainer>
       </div>
