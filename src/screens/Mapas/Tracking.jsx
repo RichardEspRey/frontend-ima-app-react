@@ -31,7 +31,7 @@ function createColoredIcon(angle, color) {
     `,
     className: "",
     iconSize: [40, 40],
-    iconAnchor: [20, 20],
+    iconAnchor: [30, 30],
   });
 }
 

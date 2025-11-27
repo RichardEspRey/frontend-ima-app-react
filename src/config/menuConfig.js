@@ -1,6 +1,6 @@
 export const menuItemsConfig = [
   { name: "Inicio", route: "/home", rolesPermitidos: ["admin"] },
-
+  { name: "Mapa", route: "/tracking", rolesPermitidos: ["admin"] },
   {
     name: "IMA",
     rolesPermitidos: ["admin"],
@@ -144,5 +144,5 @@ export const menuItemsConfig = [
 
   { name: "Reports", route: "/reports", rolesPermitidos: ["admin"] },
 
-  { name: "Mapa", route: "/tracking", rolesPermitidos: ["admin"] },
+
 ];

@@ -19,7 +19,7 @@ export const Welcome = () => {
           letterSpacing: '0.5px'
         }}
       >
-        Welcome to the Dashboard
+        Welcome to the IMA EXPRESS
       </Typography>
     </Box>
   );
