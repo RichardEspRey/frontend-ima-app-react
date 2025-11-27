@@ -143,4 +143,6 @@ export const menuItemsConfig = [
   },
 
   { name: "Reports", route: "/reports", rolesPermitidos: ["admin"] },
+
+  { name: "Mapas", route: "/tracking", rolesPermitidos: ["admin"] },
 ];

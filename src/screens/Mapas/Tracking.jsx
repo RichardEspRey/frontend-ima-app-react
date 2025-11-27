@@ -1,0 +1,185 @@
+import { useEffect, useState } from "react";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+import truckIcon from "../../assets/images/icons/truck.png";
+
+//Colores únicos para cada camión
+const COLORS = [
+  "#e6194b", "#3cb44b", "#ffe119", "#4363d8", "#f58231",
+  "#911eb4", "#46f0f0", "#f032e6", "#bcf60c", "#fabebe"
+];
+
+function createColoredIcon(angle, color) {
+  return L.divIcon({
+    html: `
+      <div style="
+        width:40px;
+        height:40px;
+        background:${color};
+        border-radius:50%;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        border:3px solid white;
+        box-shadow:0 0 5px rgba(0,0,0,.4);
+      ">
+        <img src="${truckIcon}" style="transform:rotate(${angle}deg); width:22px; height:22px;" />
+      </div>
+    `,
+    className: "",
+    iconSize: [40, 40],
+    iconAnchor: [20, 20],
+  });
+}
+
+//Hace zoom al camión seleccionado
+function FlyToSelected({ unit }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (unit) {
+      map.flyTo([unit.lat, unit.lon], 14, { duration: 1.2 });
+    }
+  }, [unit]);
+
+  return null;
+}
+
+
+export default function Tracking() {
+  const [units, setUnits] = useState([]);
+  const [selected, setSelected] = useState(null);
+
+  const fetchUnits = async () => {
+  try {
+    const res = await fetch("http://imaexpressllc.com/API/Tracking.php");
+    const data = await res.json();
+
+    if (data.status === "success") {
+
+      const items = data.units.map((u, i) => ({
+        id: u.id,
+        name: u.nm,
+        lat: u.pos?.y,
+        lon: u.pos?.x,
+        speed: u.pos?.s,
+        heading: u.pos?.c,
+        timestamp: u.pos?.t,
+        color: COLORS[i % COLORS.length]
+      }));
+
+      // Mantener selección si el camión sigue existiendo
+      let previousSelected = null;
+
+      if (selected) {
+        previousSelected = items.find(u => u.id === selected.id);
+      }
+
+      setUnits(items);
+
+      // Si el seleccionado sigue existiendo → mantenerlo
+      if (previousSelected) {
+        setSelected(previousSelected);
+      }
+
+      // Si NO existe → NO seleccionar nada
+      // (esto evita que seleccione el primer camión solo)
+    }
+
+  } catch (err) {
+    console.error("Error cargando unidades:", err);
+  }
+};
+
+
+  useEffect(() => {
+    fetchUnits();
+    const interval = setInterval(fetchUnits, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div style={{ display: "flex", height: "calc(100vh - 80px)", width: "100%" }}>
+
+      {/* ---------------------- LISTA IZQUIERDA ---------------------- */}
+      <div style={{
+        width: "350px",
+        background: "#fff",
+        borderRight: "1px solid #ccc",
+        overflowY: "auto"
+      }}>
+        <h3 style={{ padding: "15px", margin: 0 }}>Camiones</h3>
+
+        {units.map((truck) => (
+          <div
+            key={truck.id}
+            onClick={() => setSelected(truck)}
+            style={{
+              padding: "12px",
+              cursor: "pointer",
+              display: "flex",
+              background: selected?.id === truck.id ? "#eef5ff" : "white",
+              borderBottom: "1px solid #eee"
+            }}
+          >
+
+            {/* Línea vertical de color */}
+            <div style={{
+              width: "4px",
+              background: truck.color,
+              marginRight: "10px",
+              borderRadius: "2px"
+            }}></div>
+
+            <div>
+              <strong>{truck.name}</strong>
+
+              <div style={{ fontSize: "12px", opacity: 0.7 }}>
+                Velocidad: {truck.speed} km/h
+              </div>
+
+              <div style={{ fontSize: "12px", opacity: 0.7 }}>
+                Última actualización:
+                {truck.timestamp ? " " + new Date(truck.timestamp * 1000).toLocaleString() : '---'}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* ---------------------- MAPA ---------------------- */}
+      <div style={{ flex: 1 }}>
+        <MapContainer
+          center={[units[0]?.lat || 0, units[0]?.lon || 0]}
+          zoom={5}
+          style={{ height: "100%", width: "100%" }}
+        >
+          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+
+          {/* Mostrar todos los camiones */}
+          {units.map((u) => (
+            <Marker
+              key={u.id}
+              position={[u.lat, u.lon]}
+              icon={createColoredIcon(u.heading, u.color)}
+              eventHandlers={{
+                click: () => setSelected(u)
+              }}
+            >
+              <Popup>
+                <strong>{u.name}</strong><br />
+                Velocidad: {u.speed} km/h <br />
+                Heading: {u.heading}°
+              </Popup>
+            </Marker>
+          ))}
+
+          {/* Zoom automático al seleccionado */}
+          {selected && <FlyToSelected unit={selected} />}
+        </MapContainer>
+      </div>
+
+    </div>
+  );
+}
