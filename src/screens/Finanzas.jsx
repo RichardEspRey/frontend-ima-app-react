@@ -11,6 +11,7 @@ import Swal from 'sweetalert2';
 
 import { PAYMENT_METHODS, STATUS_OPTIONS } from '../constants/finances';
 import { StageDetailRow } from '../components/StageDetailRow'; 
+import { AlertSummaryCards } from '../components/AlertSummaryCards';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -33,7 +34,7 @@ const StatusChip = ({ value }) => {
 };
 
 // =========================================================================
-// LÓGICA DE RESUMEN DE ESTATUS DEL VIAJE (Mantenida)
+// LÓGICA DE RESUMEN DE ESTATUS DEL VIAJE 
 // =========================================================================
 const getTripStatusSummary = (stages) => {
     if (!stages || stages.length === 0) {
@@ -45,41 +46,33 @@ const getTripStatusSummary = (stages) => {
         status: s.status != null ? Number(s.status) : 0 
     }));
 
-    // 1. Detección de MÁXIMA PRIORIDAD (ROJO - 0 o null)
-    const hasRedAlert = normalizedStages.some(s => s.status === 0);
-    if (hasRedAlert) {
-        const redStatus = STATUS_OPTIONS.find(o => o.value === 0);
-        return { value: 0, label: redStatus.label, color: redStatus.color };
+    // El Naranja (1) se comporta como Rojo (0) para el estatus general.
+    const hasCriticalStatus = normalizedStages.some(s => s.status === 0 || s.status === 1);
+    
+    if (hasCriticalStatus) {
+        const redStatus = STATUS_OPTIONS.find(o => o.value === 0); // Usamos la meta del Rojo (0)
+        return { 
+            value: 0, 
+            label: redStatus.label, // "Pendiente de cobrar"
+            color: redStatus.color 
+        };
     }
 
-    // 2. Detección de estados de ALERTA/PENDIENTE (Naranja = 1, Amarillo = 2)
-    const alertStages = normalizedStages.filter(s => s.status === 1 || s.status === 2);
-
-    if (alertStages.length > 0) {
-        const statusCounts = alertStages.reduce((acc, s) => {
-            acc[s.status] = (acc[s.status] || 0) + 1;
-            return acc;
-        }, {});
-        
-        let criticalStatusValue = 0;
-        let maxCount = -1; 
-
-        if (statusCounts[2] != null && statusCounts[2] > maxCount) { maxCount = statusCounts[2]; criticalStatusValue = 2; }
-        if (statusCounts[1] != null && statusCounts[1] > maxCount) { maxCount = statusCounts[1]; criticalStatusValue = 1; }
-
-        if (criticalStatusValue !== 0) {
-            const meta = STATUS_OPTIONS.find(o => o.value === criticalStatusValue);
-            return { value: criticalStatusValue, label: meta.label, color: meta.color };
-        }
+    // PRIORIDAD MEDIA (AMARILLO): Si no hay Rojos/Naranjas, pero hay Amarillos (2)
+    const hasYellowStatus = normalizedStages.some(s => s.status === 2);
+    
+    if (hasYellowStatus) {
+        const yellowStatus = STATUS_OPTIONS.find(o => o.value === 2);
+        return { value: 2, label: yellowStatus.label, color: yellowStatus.color };
     }
     
-    // 3. Mínima Prioridad (Verde - 3): Todos los stages son pagados.
+    // PRIORIDAD MÍNIMA (VERDE): Si llegamos aquí, todos son 3 (Pagada)
     const completedStatus = STATUS_OPTIONS.find(o => o.value === 3);
     return { value: 3, label: completedStatus.label, color: completedStatus.color };
 };
 
 // =========================================================================
-// 🚨 FUNCIÓN DE CONTADOR DE ESTATUS CRÍTICOS (0, 1, 2)
+// FUNCIÓN DE CONTADOR DE ESTATUS CRÍTICOS (0, 1, 2)
 // =========================================================================
 const countCriticalStages = (stages) => {
     if (!stages || stages.length === 0) return { 0: 0, 1: 0, 2: 0 };
@@ -180,6 +173,19 @@ const Finanzas = () => {
   }, [trips, search]);
 
   const pageTrips = filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+
+  const globalAlertCounts = useMemo(() => {
+    const totals = { 0: 0, 1: 0, 2: 0 };
+    trips.forEach(trip => {
+      trip.stages.forEach(s => {
+        const status = Number(s.status);
+        if (totals[status] !== undefined) {
+            totals[status]++;
+        }
+      });
+    });
+    return totals;
+  }, [trips]);
 
   // Toggle colapsable por trip
   const toggleOpen = (trip_id) => {
@@ -367,6 +373,11 @@ const Finanzas = () => {
           </Tooltip>
         </Stack>
       </Box>
+
+      {/* Tarjetas de Resumen de Alertas */}
+      {!loading && (
+          <AlertSummaryCards globalCounts={globalAlertCounts} />
+      )}
 
       {/* Tabla Principal */}
       <TableContainer component={Paper} variant="outlined" sx={{ overflowX: 'auto' }}>
