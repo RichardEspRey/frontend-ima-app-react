@@ -118,7 +118,7 @@ export default function Tracking() {
 
   useEffect(() => {
     fetchUnits();
-    const interval = setInterval(fetchUnits, 30000);
+    const interval = setInterval(fetchUnits, 50000);
   
     return () => clearInterval(interval);
   }, []);
