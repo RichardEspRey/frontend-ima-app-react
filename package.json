@@ -1,7 +1,7 @@
 {
   "name": "imaappdesktopreact",
   "private": true,
-  "version": "1.0.4",
+  "version": "1.0.3",
   "type": "module",
   "main": "electron.cjs",
   "scripts": {
@@ -73,6 +73,10 @@
     ],
     "win": {
       "target": "nsis"
+    },
+    "mac": {
+      "target": ["dmg"],
+      "category": "public.app-category.utilities"
     },
     "publish": [
       {
