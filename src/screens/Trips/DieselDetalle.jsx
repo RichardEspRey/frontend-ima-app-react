@@ -1,33 +1,51 @@
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useEffect, useState, useCallback } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import {
+    Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
+    Button, Box, Typography, Stack, CircularProgress
+} from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import EditIcon from '@mui/icons-material/Edit';
 
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Paper from '@mui/material/Paper';
-import Button from '@mui/material/Button'; 
-import { useNavigate } from 'react-router-dom';
+const apiHost = import.meta.env.VITE_API_HOST;
+
+// Helper para formato de moneda
+const money = (v) =>
+  new Intl.NumberFormat('en-US', { 
+    style: 'currency', 
+    currency: 'USD', 
+    minimumFractionDigits: 2, 
+    currencyDisplay: 'symbol' 
+  }).format(Number(v || 0));
+
+// Helper para limpiar la visualización en la tabla
+const formatCellData = (val) => {
+    if (val === null || val === undefined || val === '' || val === '0' || val === '0.00' || val === 0) {
+        return <span style={{ color: '#ccc' }}>—</span>;
+    }
+    return val;
+};
 
 const DieselDetalle = () => {
   const navigate = useNavigate();
   const { tripId } = useParams();
-  const apiHost = import.meta.env.VITE_API_HOST;
   const [registros, setRegistros] = useState([]);
+  const [loading, setLoading] = useState(true); 
 
-const fetchDiesel = async () => {
+  const fetchDiesel = useCallback(async () => {
+    setLoading(true);
     try {
         const formDataToSend = new FormData();
-        formDataToSend.append('op', 'get_registers_diesel'); // o 'Editar' como lo uses tú
+        formDataToSend.append('op', 'get_registers_diesel'); 
         formDataToSend.append('trip_id', tripId);
 
       const response = await fetch(`${apiHost}/formularios.php`, {
         method: 'POST',
         body: formDataToSend
       });
+      
       const data = await response.json();
+      
       if (data.status === 'success') {
         const formatted = data.id.map(t => ({
           trip_number: t.trip_number,
@@ -45,63 +63,116 @@ const fetchDiesel = async () => {
       }
     } catch (error) {
       console.error('Error al obtener diesel:', error);
+    } finally {
+      setLoading(false);
     }
-  };
+  }, [apiHost, tripId]);
 
-  useEffect(() => { fetchDiesel(); }, []);
+  useEffect(() => { 
+    fetchDiesel(); 
+  }, [fetchDiesel]);
 
-   const handleVer = (id, trip_id) => {
+  const handleVer = (id, trip_id) => {
     navigate(`/editor-diesel/${id}/${trip_id}`);
   };
   
-   const cancelar = () =>{
-    navigate(`/admin-diesel`)
+  const cancelar = () =>{
+    navigate(`/admin-diesel`);
+  }
+
+  if (loading) {
+      return (
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh', p: 3 }}>
+              <CircularProgress /> 
+              <Typography ml={2}>Cargando detalles del viaje...</Typography> 
+          </Box>
+      );
   }
 
   return (
-   <div className="driver-admin">
-      <h1 className="title">Diesel Detail</h1>
-       <div className="btnConteiner">
-          <button className="btn cancelar" onClick={cancelar}>Return</button>
-        </div>
-      <TableContainer component={Paper}>
-        <Table sx={{ minWidth: 650 }} aria-label="simple table">
-          <TableHead>
-            <TableRow>
-              <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 16}} align="center">No.</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 16}} align="center">Trip</TableCell>
-     
-              <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 16}} align="center">Last update</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 16}} align="center">Current odometer</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 16}} align="center">Gal.</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 16}} align="center">Total ($)</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 16}} align="center">Driver</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 16}} align="center">Status</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 16}} align="center">Fleet One</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 16}} align="center">Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {registros.map((row, idx) => ( 
-              <TableRow key={row.id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                <TableCell align="center" sx={{ whiteSpace: 'nowrap', fontSize: 18}}>{idx+1 }</TableCell>
-                <TableCell align="center" sx={{ whiteSpace: 'nowrap', fontSize: 18}}>{row.trip_number}</TableCell>
-                <TableCell align="center" sx={{ whiteSpace: 'nowrap', fontSize: 18}}>{row.fecha}</TableCell>
-                <TableCell align="center" sx={{ whiteSpace: 'nowrap', fontSize: 18}}>{row.odometro}mi</TableCell>
-                <TableCell align="center" sx={{ whiteSpace: 'nowrap', fontSize: 18}}>{row.galones}gal</TableCell>
-                <TableCell align="center" sx={{ whiteSpace: 'nowrap', fontSize: 18}}>${row.monto}</TableCell>
-                <TableCell align="center" sx={{ whiteSpace: 'nowrap', fontSize: 18}}>{row.nombre}</TableCell>
-                <TableCell align="center" sx={{ whiteSpace: 'nowrap', fontSize: 18}}>{row.estado}</TableCell>
-                <TableCell align="center" sx={{ whiteSpace: 'nowrap', fontSize: 18}}>{row.fleetone}</TableCell>
-                <TableCell align="center" >
-                  <Button variant="text" sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', fontSize: 18}} onClick={() => handleVer(row.id, row.trip_id)}>Edit</Button> {/* 👈 aquí navegas */}
-                </TableCell>
+   <Box sx={{ p: 3 }}>
+      {/* Encabezado */}
+      <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
+          <Box>
+             <Typography variant="h4" component="h1" fontWeight={700} gutterBottom>
+                Diesel Detail
+            </Typography>
+            <Typography variant="subtitle1" color="text.secondary">
+                Trip: <strong>#{registros[0]?.trip_number || tripId}</strong>
+            </Typography>
+          </Box>
+          
+          <Button 
+            variant="outlined" 
+            startIcon={<ArrowBackIcon />} 
+            onClick={cancelar}
+            sx={{ fontWeight: 600 }}
+          >
+            Return
+          </Button>
+      </Stack>
+
+      <Paper elevation={1} sx={{ width: '100%', mb: 2, overflow: 'hidden' }}>
+        <TableContainer sx={{ overflowX: 'auto' }}>
+          <Table sx={{ minWidth: 800 }} aria-label="diesel detail table" size="small" stickyHeader>
+            <TableHead>
+              <TableRow>
+                <TableCell sx={{ fontWeight: 600 }}>No.</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Trip</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Last update</TableCell>
+                <TableCell sx={{ fontWeight: 600, textAlign: 'right' }}>Current Odometer</TableCell>
+                <TableCell sx={{ fontWeight: 600, textAlign: 'right' }}>Gal.</TableCell>
+                <TableCell sx={{ fontWeight: 600, textAlign: 'right' }}>Total ($)</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Driver</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>State</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Fleet One</TableCell>
+                <TableCell sx={{ fontWeight: 600, textAlign: 'center' }}>Actions</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    </div>
+            </TableHead>
+            
+            <TableBody>
+              {registros.length === 0 ? (
+                  <TableRow>
+                      <TableCell colSpan={10} align="center">
+                          <Typography color="text.secondary" sx={{ py: 3 }}>No hay registros para este viaje.</Typography>
+                      </TableCell>
+                  </TableRow>
+              ) : (
+                  registros.map((row, idx) => ( 
+                  <TableRow key={row.id} hover>
+                      <TableCell>{idx + 1}</TableCell>
+                      <TableCell sx={{ fontWeight: 500 }}>{row.trip_number}</TableCell>
+                      <TableCell>{row.fecha}</TableCell>
+                      
+                      <TableCell align="right">{row.odometro} mi</TableCell>
+                      <TableCell align="right">{row.galones} gal</TableCell>
+                      <TableCell align="right" sx={{ fontWeight: 600, color: '#3C48E1' }}> 
+                          {money(row.monto)}
+                      </TableCell>
+                      
+                      <TableCell>{row.nombre}</TableCell>
+                      
+                      <TableCell>{formatCellData(row.estado)}</TableCell>
+                      <TableCell>{formatCellData(row.fleetone)}</TableCell>
+                      
+                      <TableCell align="center">
+                          <Button 
+                              variant="contained" 
+                              size="small" 
+                              onClick={() => handleVer(row.id, row.trip_id)}
+                              sx={{ textTransform: 'none' }}
+                          >
+                              Edit
+                          </Button>
+                      </TableCell>
+                  </TableRow>
+                  ))
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Paper>
+    </Box>
   );
 };
 

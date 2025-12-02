@@ -175,16 +175,31 @@ const Finanzas = () => {
   const pageTrips = filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   const globalAlertCounts = useMemo(() => {
-    const totals = { 0: 0, 1: 0, 2: 0 };
-    trips.forEach(trip => {
-      trip.stages.forEach(s => {
-        const status = Number(s.status);
-        if (totals[status] !== undefined) {
-            totals[status]++;
-        }
+    const totals = { 
+          0: { count: 0, totalAmount: 0 }, 
+          1: { count: 0, totalAmount: 0 }, 
+          2: { count: 0, totalAmount: 0 } 
+      };
+
+      trips.forEach(trip => {
+          trip.stages.forEach(s => {
+              const status = Number(s.status);
+              
+              const rateVal = Number(s.rate_tarifa || 0);
+              const paidVal = parseFloat(String(s.paid_rate ?? '0').replace(',', '.'));
+
+              if (totals[status]) {
+                  totals[status].count++;
+                  
+                  if (status === 0) {
+                      totals[status].totalAmount += rateVal;
+                  } else {
+                      totals[status].totalAmount += paidVal;
+                  }
+              }
+          });
       });
-    });
-    return totals;
+      return totals;
   }, [trips]);
 
   // Toggle colapsable por trip

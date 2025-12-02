@@ -78,7 +78,7 @@ export const OrderRow = ({ order, onEdit, onEditDetail }) => {
                     <Chip label={order.estatus || '—'} color={getStatusChipColor(order.estatus)} size="small" sx={{ fontWeight: 600 }} />
                 </TableCell>
                 <TableCell sx={{ whiteSpace: 'nowrap' }}>
-                    <Button size="small" variant="outlined" onClick={() => onEdit(order.id_orden)}>
+                    <Button size="small" variant="contained" onClick={() => onEdit(order.id_orden)}>
                         {String(order.estatus).toLowerCase() === 'completado' ? 'Ver' : 'Editar'}
                     </Button>
                 </TableCell>
