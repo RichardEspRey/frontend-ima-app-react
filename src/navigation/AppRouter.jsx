@@ -45,6 +45,8 @@ import Reports from '../screens/Reports.jsx';
 import Tracking from '../screens/Mapas/Tracking.jsx';
 import { Welcome } from '../screens/Welcome.jsx';
 import MargenScreen from '../screens/MargenScreen.jsx';
+import PaymentDrivers from '../screens/Finanzas/PaymentDrivers.jsx';
+import MillasDriversTable from '../screens/Finanzas/MillasDriversTable.jsx';
 
 
 const AppRouter = () => {
@@ -102,6 +104,8 @@ const AppRouter = () => {
               <Route path="/reports" element={<Reports />} />  
               <Route path="/tracking" element={<Tracking />} />  
               <Route path="/margen" element={<MargenScreen />} />  
+              <Route path="/paymentDrivers" element ={<PaymentDrivers />} />
+              <Route path='/millasDriversTable' element ={<MillasDriversTable/>} />
               <Route path="*" element={<Navigate to="/home" replace />} /> 
 
             </Route>
