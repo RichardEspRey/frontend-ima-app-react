@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
     Button, Box, Typography, Stack, CircularProgress
@@ -28,6 +28,7 @@ const formatCellData = (val) => {
 
 const DieselDetalle = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { tripId } = useParams();
   const [registros, setRegistros] = useState([]);
   const [loading, setLoading] = useState(true); 
@@ -45,6 +46,7 @@ const DieselDetalle = () => {
       });
       
       const data = await response.json();
+      console.log('Diesel data fetched:', data);
       
       if (data.status === 'success') {
         const formatted = data.id.map(t => ({
@@ -77,7 +79,8 @@ const DieselDetalle = () => {
   };
   
   const cancelar = () =>{
-    navigate(`/admin-diesel`);
+    // navigate(`/admin-diesel`);
+    navigate(`/admin-diesel`, { state: location.state });
   }
 
   if (loading) {

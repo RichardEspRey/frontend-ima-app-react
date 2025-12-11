@@ -186,16 +186,22 @@ const Finanzas = () => {
               const status = Number(s.status);
               
               const rateVal = Number(s.rate_tarifa || 0);
-              const paidVal = parseFloat(String(s.paid_rate ?? '0').replace(',', '.'));
+              // const paidVal = parseFloat(String(s.paid_rate ?? '0').replace(',', '.'));
+
+              // if (totals[status]) {
+              //     totals[status].count++;
+                  
+              //     if (status === 0) {
+              //         totals[status].totalAmount += rateVal;
+              //     } else {
+              //         totals[status].totalAmount += paidVal;
+              //     }
+              // }
 
               if (totals[status]) {
                   totals[status].count++;
-                  
-                  if (status === 0) {
-                      totals[status].totalAmount += rateVal;
-                  } else {
-                      totals[status].totalAmount += paidVal;
-                  }
+                  // Siempre sumamos la tarifa original
+                  totals[status].totalAmount += rateVal;
               }
           });
       });
