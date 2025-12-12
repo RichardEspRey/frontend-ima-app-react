@@ -45,7 +45,9 @@ import Reports from '../screens/Reports.jsx';
 import Tracking from '../screens/Mapas/Tracking.jsx';
 import { Welcome } from '../screens/Welcome.jsx';
 import MargenScreen from '../screens/MargenScreen.jsx';
-
+import PaymentDrivers from '../screens/Finanzas/PaymentDrivers.jsx';
+import MillasDriversTable from '../screens/Finanzas/MillasDriversTable.jsx';
+import TicketPayment from '../screens/Finanzas/TicketPayment.jsx';
 
 const AppRouter = () => {
   const { user, loading } = useContext(AuthContext);
@@ -102,6 +104,9 @@ const AppRouter = () => {
               <Route path="/reports" element={<Reports />} />  
               <Route path="/tracking" element={<Tracking />} />  
               <Route path="/margen" element={<MargenScreen />} />  
+              <Route path="/paymentDrivers" element ={<PaymentDrivers />} />
+              <Route path='/millasDriversTable' element ={<MillasDriversTable/>} />
+              <Route path='/ticketPayment/:trip_id' element ={<TicketPayment/>} />
               <Route path="*" element={<Navigate to="/home" replace />} /> 
 
             </Route>
