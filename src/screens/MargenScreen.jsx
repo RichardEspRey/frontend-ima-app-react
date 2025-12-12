@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import { useEffect, useMemo, useState, useCallback } from 'react';
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
   TablePagination, TextField, Box, Typography, CircularProgress, Stack, Button
@@ -24,7 +24,7 @@ const MargenScreen = () => {
   // LÓGICA DE CÁLCULO DE MÁRGENES Y TOTALES
   const calculatedTrips = useMemo(() => {
     return trips.map(t => {
-      const driverPay = Number(t.driver_pay_manual || 0); 
+      const driverPay = Number(t.driver_pay || 0); 
       
       const totalTarifa = Number(t.rate_tarifa || 0); 
       const totalDiesel = Number(t.diesel || 0);
@@ -56,11 +56,10 @@ const MargenScreen = () => {
         const json = await res.json();
         
         if (json.status === 'success' && Array.isArray(json.data)) {
-            // Asumimos que json.data trae [{ trip_number, rate_tarifa, diesel, gastos, ... }]
             setTrips(json.data); 
         } else {
              setTrips([]); 
-             Swal.fire('Error de API', 'No se pudieron cargar los datos financieros de los viajes.', 'error');
+             Swal.fire('Error de API', 'No se pudieron cargar los datos financieros.', 'error');
         }
 
     } catch (error) {
@@ -86,27 +85,6 @@ const MargenScreen = () => {
   // Handlers
   const handlePageChange = (e, newPage) => setPage(newPage);
   const handleChangeRowsPerPage = (e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); };
-
-  const handleSaveDriverPay = async (tripId, newPayAmount) => {
-      try {
-          const fd = new FormData();
-          fd.append('op', 'updateDriverPay');
-          fd.append('trip_id', tripId);
-          fd.append('driver_pay_manual', newPayAmount); 
-          
-          // Lógica de guardado al backend (simulación)
-          // const res = await fetch(`${apiHost}/drivers.php`, { method: 'POST', body: fd });
-          // const json = await res.json();
-          
-          Swal.fire('¡Éxito!', `Pago del driver actualizado a ${money(newPayAmount)} para #${tripId}.`, 'success');
-          
-          // Refrescar los datos para recalcular los márgenes
-          fetchMarginData();
-
-      } catch (error) {
-          Swal.fire('Error', 'No se pudo guardar el pago manual.', 'error');
-      }
-  };
 
   if (loading) {
       return (
@@ -139,7 +117,6 @@ const MargenScreen = () => {
           <Table stickyHeader size="small" sx={{ minWidth: 1000 }}>
             <TableHead>
               <TableRow>
-                <TableCell /> 
                 <TableCell sx={{ fontWeight: 600 }}>Trip #</TableCell>
                 <TableCell sx={{ fontWeight: 600, textAlign: 'right' }}>Total Tarifa</TableCell>
                 <TableCell sx={{ fontWeight: 600, textAlign: 'right' }}>Costo Diesel</TableCell>
@@ -154,12 +131,11 @@ const MargenScreen = () => {
                 <MargenRow 
                     key={t.trip_id} 
                     trip={t} 
-                    onSaveDriverPay={handleSaveDriverPay}
                 />
               ))}
               {filtered.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={7} align="center">
+                    <TableCell colSpan={6} align="center"> 
                       <Typography color="text.secondary" sx={{ py: 3 }}>No hay viajes que mostrar.</Typography>
                     </TableCell>
                   </TableRow>

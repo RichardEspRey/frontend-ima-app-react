@@ -1,36 +1,53 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { 
+  Box, Paper, Typography, Grid, TextField, Button, Stack, 
+  CircularProgress, InputAdornment, Card, CardMedia
+} from '@mui/material';
 import { PhotoProvider, PhotoView } from 'react-photo-view';
-import 'react-datepicker/dist/react-datepicker.css';
 import 'react-photo-view/dist/react-photo-view.css';
 import Swal from 'sweetalert2';
-import { useNavigate } from 'react-router-dom';
-import { useParams } from 'react-router-dom';
-import styles from '../../screens/css/DieselEditor.module.css';
+
+// Iconos
+import SaveIcon from '@mui/icons-material/Save';
+import DeleteIcon from '@mui/icons-material/Delete';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+
+const apiHost = import.meta.env.VITE_API_HOST;
+
+const cleanValue = (val) => {
+    if (!val) return '';
+    const strVal = String(val).trim();
+    if (strVal === '0' || strVal === '0.00') return '';
+    return strVal;
+};
 
 const DieselEditor = () => {
   const navigate = useNavigate();
   const { id, trip_id } = useParams();
   const [tickets, setTickets] = useState([]);
-  const apiHost = import.meta.env.VITE_API_HOST;
+  const [loading, setLoading] = useState(true);
 
   const [formData, setFormData] = useState({
     id: '',
     trip_id: '',
     nombre: '',
-    estado: '',
+    estado: '', 
     odometro: '',
     galones: '',
     monto: '',
-    fleetone: ''
+    fleetone: '', 
+    trip_number: ''
   });
 
   const handleInputChange = (name, value) => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  // ** LÓGICA DE ACTUALIZACIÓN **
   const actualizar = async () => {
     try {
-      // 1) Validación de obligatorios (no vacíos / no espacios)
       const required = ["odometro", "galones", "monto"];
       const vacios = required.filter(
         k => String(formData[k] ?? "").trim() === ""
@@ -44,7 +61,6 @@ const DieselEditor = () => {
         return;
       }
 
-      // 2) Validación de formato numérico
       const odometroNum = Number(formData.odometro);
       const galonesNum = Number(formData.galones);
       const montoNum = Number(formData.monto);
@@ -62,17 +78,19 @@ const DieselEditor = () => {
         return;
       }
 
-      // 3) Construcción del payload (faltaba enviar 'galones')
+      // 3) Construcción del payload
       const formDataToSend = new FormData();
       formDataToSend.append("op", "edit_diesel");
       formDataToSend.append("id", formData.id);
       formDataToSend.append("trip_id", formData.trip_id);
       formDataToSend.append("nombre", formData.nombre);
-      formDataToSend.append("estado", formData.estado);
+      
+      formDataToSend.append("estado", formData.estado); 
+      formDataToSend.append("fleetone", formData.fleetone);
+
       formDataToSend.append("odometro", String(odometroNum));
       formDataToSend.append("galones", String(galonesNum));
       formDataToSend.append("monto", String(montoNum));
-      formDataToSend.append("fleetone", String(formData.fleetone));
 
       const response = await fetch(`${apiHost}/formularios.php`, {
         method: "POST",
@@ -81,10 +99,12 @@ const DieselEditor = () => {
       const result = await response.json();
 
       if (result.status === "success" && result.row?.[0]?.resp == 1) {
-        Swal.fire({
+        await Swal.fire({
           icon: "success",
           title: "¡Éxito!",
-          text: "Cambios realizados con éxito."
+          text: "Cambios realizados con éxito.",
+          timer: 1500,
+          showConfirmButton: false
         });
         navigate(`/detalle-diesel/${trip_id}`);
       } else {
@@ -93,112 +113,19 @@ const DieselEditor = () => {
 
     } catch (error) {
       console.error("Error al enviar los datos:", error);
-      alert("Error al conectar con el servidor");
+      Swal.fire("Error", "Error al conectar con el servidor", "error");
     }
   };
 
-  const fetchRegisters = async () => {
-    const formDataToSend = new FormData();
-    formDataToSend.append('op', 'get_diesel');
-    formDataToSend.append('id', id);
-    formDataToSend.append('trip_id', trip_id);
-
-    try {
-      const response = await fetch(`${apiHost}/formularios.php`, {
-        method: 'POST',
-        body: formDataToSend,
-      });
-
-      const data = await response.json();
-
-      if (data.status === 'success') {
-        const row = data.row[0];
-        const formValues = {
-          id: row.id || '',
-          trip_number: row.trip_number || '',
-          trip_id: row.trip_id || '',
-          monto: row.monto || '',
-          fecha: row.fecha || '',
-          odometro: row.odometro || '',
-          galones: row.galones || '',
-          nombre: row.nombre || '',
-          estado: row.estado || '',
-          fleetone: row.fleetone || ''
-        };
-
-        setFormData(formValues);
-
-
-      }
-
-    } catch (error) {
-      console.error('Error al obtener los conductores:', error);
-    }
-  };
-
-  const fetchTickets = async () => {
-    const fd = new FormData();
-    fd.append('op', 'getTickets');
-    fd.append('id', id);
-    fd.append('trip_id', trip_id);
-    fd.append('opcion', 'diesel');
-    try {
-      const resp = await fetch(`${apiHost}/formularios.php`, { method: 'POST', body: fd });
-      const json = await resp.json();
-
-      if (json.status === 'success' && Array.isArray(json.data)) {
-        const list = json.data
-          .filter(it => typeof it.url_pdf === 'string' && it.url_pdf) // válidos
-          .map(it => {
-            const ext = (it.url_pdf.split('.').pop() || '').toLowerCase();
-            // Une base + ruta evitando dobles slashes
-            const url = it.url_pdf.startsWith('http')
-              ? it.url_pdf
-              : `${apiHost}/${it.url_pdf}`.replace(/([^:]\/)\/+/g, '$1');
-            return { ...it, url, ext };
-          });
-        setTickets(list);
-      } else {
-        setTickets([]);
-      }
-    } catch (e) {
-      console.error('Error fetchTickets:', e);
-      setTickets([]);
-    }
-  };
-
-
-  useEffect(() => {
-
-    fetchRegisters();
-    fetchTickets();
-  }, []);
-
-  const cancelar = () => {
-    setFormData({
-      id: '',
-      trip_number: '',
-      trip_id: '',
-      nombre: '',
-      estado: '',
-      odometro: '',
-      galones: '',
-      monto: '',
-      fleetone: ''
-    });
-
-    navigate(`/detalle-diesel/${trip_id}`);
-  }
-
+  // ** LÓGICA DE ELIMINACIÓN **
   const eliminar = async () => {
-    // 1) Confirmación
     const result = await Swal.fire({
       title: '¿Eliminar registro?',
-      text: 'Perderás el registro',
+      text: 'Esta acción no se puede deshacer.',
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
+      confirmButtonColor: '#d32f2f',
+      cancelButtonColor: '#3085d6',
       confirmButtonText: 'Sí, eliminar',
       cancelButtonText: 'Cancelar',
     });
@@ -206,192 +133,186 @@ const DieselEditor = () => {
     if (!result.isConfirmed) return;
 
     try {
-      Swal.fire({
-        title: 'Eliminando…',
-        allowOutsideClick: false,
-        didOpen: () => Swal.showLoading(),
-      });
+      Swal.fire({ title: 'Eliminando…', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
       const formData = new FormData();
       formData.append('op', 'delete_diesel');
       formData.append('id', id); 
 
-      const resp = await fetch(`${apiHost}/formularios.php`, {
-        method: 'POST',
-        body: formData,
-      });
-
+      const resp = await fetch(`${apiHost}/formularios.php`, { method: 'POST', body: formData });
       const data = await resp.json();
       Swal.close();
 
       if (data.status === 'success') {
-        await Swal.fire({
-          icon: 'success',
-          title: 'Eliminado',
-          text: 'Registro eliminado',
-        });
-
-     
-        if (trip_id) {
-          navigate(`/detalle-diesel/${trip_id}`);
-        } else {
-          navigate('/admin-diesel'); // fallback
-        }
+        await Swal.fire({ icon: 'success', title: 'Eliminado', text: 'Registro eliminado correctamente.', timer: 1500, showConfirmButton: false });
+        navigate(trip_id ? `/detalle-diesel/${trip_id}` : '/admin-diesel');
       } else {
         throw new Error(data.message || 'No se pudo eliminar el registro');
       }
     } catch (err) {
       Swal.close();
-      console.error('Error al eliminar:', err);
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: err?.message || 'Ocurrió un problema al eliminar.',
-      });
+      Swal.fire({ icon: 'error', title: 'Error', text: err?.message || 'Ocurrió un problema al eliminar.' });
     }
   };
 
+  // ** FETCH DATA **
+  const fetchAllData = useCallback(async () => {
+    setLoading(true);
+    try {
+        const fdReg = new FormData();
+        fdReg.append('op', 'get_diesel');
+        fdReg.append('id', id);
+        fdReg.append('trip_id', trip_id);
 
+        const respReg = await fetch(`${apiHost}/formularios.php`, { method: 'POST', body: fdReg });
+        const dataReg = await respReg.json();
+
+        if (dataReg.status === 'success' && dataReg.row && dataReg.row[0]) {
+            const row = dataReg.row[0];
+            setFormData({
+                id: row.id || '',
+                trip_number: row.trip_number || '',
+                trip_id: row.trip_id || '',
+                monto: row.monto || '',
+                fecha: row.fecha || '',
+                odometro: row.odometro || '',
+                galones: row.galones || '',
+                nombre: row.nombre || '',
+                
+                estado: cleanValue(row.estado),
+                fleetone: cleanValue(row.fleetone)
+            });
+        }
+        
+        // 2. Fetch Tickets
+        const fdTick = new FormData();
+        fdTick.append('op', 'getTickets');
+        fdTick.append('id', id);
+        fdTick.append('trip_id', trip_id);
+        fdTick.append('opcion', 'diesel');
+
+        const respTick = await fetch(`${apiHost}/formularios.php`, { method: 'POST', body: fdTick });
+        const jsonTick = await respTick.json();
+
+        if (jsonTick.status === 'success' && Array.isArray(jsonTick.data)) {
+            const list = jsonTick.data
+              .filter(it => typeof it.url_pdf === 'string' && it.url_pdf)
+              .map(it => {
+                const ext = (it.url_pdf.split('.').pop() || '').toLowerCase();
+                const url = it.url_pdf.startsWith('http')
+                  ? it.url_pdf
+                  : `${apiHost}/${it.url_pdf}`.replace(/([^:]\/)\/+/g, '$1');
+                return { ...it, url, ext };
+              });
+            setTickets(list);
+        } else {
+            setTickets([]);
+        }
+
+    } catch (error) {
+        console.error('Error cargando datos:', error);
+    } finally {
+        setLoading(false);
+    }
+  }, [apiHost, id, trip_id]);
+
+  useEffect(() => { fetchAllData(); }, [fetchAllData]);
+
+  const cancelar = () => { navigate(`/detalle-diesel/${trip_id}`); }
+
+  if (loading) {
+      return (<Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh', p: 3 }}><CircularProgress /><Typography ml={2}>Cargando editor...</Typography></Box>);
+  }
 
   return (
+    <Box sx={{ p: 3 }}>
+      {/* Header */}
+      <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
+          <Typography variant="h4" component="h1" fontWeight={700}>Diesel Log Editor</Typography>
+          <Stack direction="row" spacing={2}>
+             <Button variant="outlined" color="inherit" startIcon={<ArrowBackIcon />} onClick={cancelar}>Cancel</Button>
+             <Button variant="contained" color="error" startIcon={<DeleteIcon />} onClick={eliminar}>Delete</Button>
+             <Button variant="contained" color="primary" startIcon={<SaveIcon />} onClick={actualizar}>Save Changes</Button>
+          </Stack>
+      </Stack>
 
-    <div>
+      <Grid container spacing={3}>
+        <Grid item xs={12} md={6}>
+            <Paper elevation={1} sx={{ p: 3, border: '1px solid #ccc' }}>
+                <Typography variant="h6" fontWeight={600} gutterBottom sx={{ borderBottom: '1px solid #eee', pb: 1, mb: 3 }}>
+                    Detalles del Registro
+                </Typography>
 
-      <h1 className="titulo">Diesel log editor</h1>
-      <div className="conductores-container">
-        <div className="btnConteiner">
-          <button className="cancelar" onClick={cancelar}> Cancel</button>
-          <button className="guardar" onClick={actualizar}>Save</button>
-          <button className="eliminar" onClick={eliminar}>Delete</button>
-        </div>
+                <Grid container spacing={2}>
+                    <Grid item xs={12}><TextField label="Trip Number" value={formData.trip_number} fullWidth size="small" disabled variant="filled" /></Grid>
+                    <Grid item xs={12}><TextField label="Driver" value={formData.nombre} fullWidth size="small" disabled variant="filled" /></Grid>
+                    
+                    <Grid item xs={12} sm={6}>
+                        <TextField
+                            label="State"
+                            value={formData.estado}
+                            onChange={(e) => handleInputChange('estado', e.target.value)}
+                            fullWidth size="small"
+                            placeholder="e.g. TX, NM"
+                        />
+                    </Grid>
+                     <Grid item xs={12} sm={6}>
+                        <TextField
+                            label="Fleet One ($)"
+                            value={formData.fleetone}
+                            onChange={(e) => handleInputChange('fleetone', e.target.value)}
+                            fullWidth size="small"
+                            type="number"
+                            placeholder="0.00"
+                        />
+                    </Grid>
+                    
+                    <Grid item xs={12} sm={6}><TextField label="Odometer" type="number" value={formData.odometro} onChange={(e) => handleInputChange('odometro', e.target.value)} fullWidth size="small" InputProps={{ endAdornment: <InputAdornment position="end">mi</InputAdornment> }} /></Grid>
+                    <Grid item xs={12} sm={6}><TextField label="Gallons" type="number" value={formData.galones} onChange={(e) => handleInputChange('galones', e.target.value)} fullWidth size="small" InputProps={{ endAdornment: <InputAdornment position="end">gal</InputAdornment> }} /></Grid>
+                    <Grid item xs={12}><TextField label="Total Cost" type="number" value={formData.monto} onChange={(e) => handleInputChange('monto', e.target.value)} fullWidth size="small" InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }} /></Grid>
+                </Grid>
+            </Paper>
+        </Grid>
+        <Grid item xs={12} md={6}>
+            <Paper elevation={1} sx={{ p: 3, border: '1px solid #ccc', height: '100%' }}>
+                <Typography variant="h6" fontWeight={600} gutterBottom sx={{ borderBottom: '1px solid #eee', pb: 1, mb: 3 }}>
+                    Tickets & Evidencia
+                </Typography>
 
-        <div className={styles.formColumns}>
-          <div className={styles.column}>
-
-
-            <label>Trip</label>
-            <input
-              type="text"
-              disabled
-              value={formData.trip_number}
-              onChange={(e) => handleInputChange('trip_number_id', e.target.value)}
-            />
-
-            <label>Driver</label>
-            <input
-              type="text"
-              disabled
-              value={formData.nombre}
-              onChange={(e) => handleInputChange('nombre', e.target.value)}
-            />
-            <label>Status</label>
-            <input
-              type="text"
-              value={formData.estado}
-              onChange={(e) => handleInputChange('estado', e.target.value)}
-            />
-
-            <label>Odometer (mi.)</label>
-            <input
-              type="text"
-              value={formData.odometro}
-              onChange={(e) => handleInputChange('odometro', e.target.value)}
-            />
-
-
-            <label>Gal</label>
-            <input
-              type="text"
-              value={formData.galones}
-              onChange={(e) => handleInputChange('galones', e.target.value)}
-            />
-
-            <label>Total ($)</label>
-            <input
-              type="text"
-              value={formData.monto}
-              onChange={(e) => handleInputChange('monto', e.target.value)}
-            />
-
-            <label>Fleet One</label>
-            <input
-              type="text"
-              value={formData.fleetone}
-              onChange={(e) => handleInputChange('fleetone', e.target.value)}
-            />
-
-            <label htmlFor="trip_id" hidden>Trip ID</label>
-            <input
-              type="hidden"
-              id="trip_id"
-              name="trip_id"
-              value={formData.trip_id}
-            />
-
-            <label hidden>No de registro</label>
-            <input
-              type="hidden"
-              disabled
-              value={formData.id}
-              onChange={(e) => handleInputChange('id', e.target.value)}
-            />
-
-
-          </div>
-
-
-
-          <div className={styles.formColumns}>
-            <div className={styles.column}>
-              <h3>Tickets</h3>
-
-              <PhotoProvider>
-                <div className={styles.thumbGrid} >
-                  {tickets.length === 0 ? (
-                    <p>Sin imágenes.</p>
-                  ) : (
-                    tickets.map(item => {
-                      const isImage = ['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(item.ext);
-                      if (!isImage) {
-                        // Si no es imagen (e.g. PDF), muestra un link
-                        return (
-                          <a
-                            key={item.id}
-                            href={item.url}
-                            target="_blank"
-                            rel="noreferrer"
-                            className={styles.thumbFile}
-                            title={`Abrir archivo ${item.ext.toUpperCase()}`}
-                          >
-                            Ver archivo
-                          </a>
-                        );
-                      }
-                      return (
-                        <PhotoView key={item.id} src={item.url}>
-                          <img
-                            className={styles.thumb}
-                            src={item.url}
-                            alt={`ticket ${item.id}`}
-                            loading="lazy"
-                          />
-                        </PhotoView>
-                      );
-                    })
-                  )}
-                </div>
-              </PhotoProvider>
-            </div>
-          </div>
-
-
-
-        </div>
-
-      </div>
-    </div>
+                <PhotoProvider>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+                        {tickets.length === 0 ? (
+                            <Typography color="text.secondary" sx={{ fontStyle: 'italic' }}>No hay documentos adjuntos.</Typography>
+                        ) : (
+                            tickets.map((item) => {
+                                const isImage = ['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(item.ext);
+                                if (isImage) {
+                                    return (
+                                        <PhotoView key={item.id} src={item.url}>
+                                            <Card sx={{ width: 120, cursor: 'zoom-in' }}>
+                                                <CardMedia component="img" height="120" image={item.url} alt={`ticket ${item.id}`} sx={{ objectFit: 'cover' }} />
+                                            </Card>
+                                        </PhotoView>
+                                    );
+                                } else {
+                                    return (
+                                        <Card key={item.id} sx={{ width: 120, height: 120, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#f5f5f5' }} variant="outlined">
+                                            <Button href={item.url} target="_blank" rel="noreferrer" sx={{ display: 'flex', flexDirection: 'column', textTransform: 'none', height: '100%', width: '100%' }}>
+                                                <PictureAsPdfIcon sx={{ fontSize: 40, color: '#d32f2f', mb: 1 }} />
+                                                <Typography variant="caption" align="center" sx={{ lineHeight: 1.2 }}>Ver Archivo</Typography>
+                                            </Button>
+                                        </Card>
+                                    );
+                                }
+                            })
+                        )}
+                    </Box>
+                </PhotoProvider>
+            </Paper>
+        </Grid>
+      </Grid>
+    </Box>
   );
-
 };
 
 export default DieselEditor;
