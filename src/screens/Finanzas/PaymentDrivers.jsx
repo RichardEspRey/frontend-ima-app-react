@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useMemo, useCallback } from "react";
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
-  TablePagination, TextField, Box, Typography, CircularProgress, Chip
+  TablePagination, TextField, Box, Typography, CircularProgress, Chip, Button
 } from "@mui/material";
 
 import Swal from "sweetalert2";
+import { useNavigate } from 'react-router-dom';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -25,7 +26,7 @@ const PaymentStatusChip = ({ value }) => {
   switch (String(value)) {
     case "0":
       label = "Pendiente de autorización";
-      color = "#ffa726"; // naranja
+      color = "#ff1500ff"; // naranja
       break;
     case "1":
       label = "Pagado";
@@ -33,7 +34,42 @@ const PaymentStatusChip = ({ value }) => {
       break;
     case "2":
       label = "Autorización de pago";
-      color = "#29b6f6"; // azul
+      color = "#f4ff1cff"; // azul
+      break;
+    default:
+      label = "Desconocido";
+      color = "#bdbdbd";
+  }
+
+  return (
+    <Chip
+      label={label}
+      size="small"
+      sx={{
+        bgcolor: color,
+        color: "#fff",
+        fontWeight: 600,
+      }}
+    />
+  );
+};
+
+const StatusTrip = ({ value }) => {
+  let label = "";
+  let color = "";
+
+  switch (String(value)) {
+    case "Completed":
+      label = "Completed";
+      color = "#2e7d32"; // naranja
+      break;
+    case "Almost Over":
+      label = "Almost Over";
+      color = "#1976d2"; // verde
+      break;
+    case "In Transit":
+      label = "In Transit";
+      color = "#ed6c02"; // azul
       break;
     default:
       label = "Desconocido";
@@ -55,6 +91,7 @@ const PaymentStatusChip = ({ value }) => {
 
 
 const PaymentDrivers = () => {
+  const navigate = useNavigate();
   const [trips, setTrips] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -86,7 +123,8 @@ const PaymentDrivers = () => {
           total_millas_cortas: Number(t.total_millas_cortas ?? 0),
           status_payment: t.status_payment,
           Pago_driver: t.Pago_driver ? Number(t.Pago_driver) : null,
-          pago_aproximado: Number(t.pago_aproximado ?? 0),
+          pago_aproximado: t.total_millas_cortas * t.valor_milla,
+          status_trip: t.status
         }));
 
         setTrips(norm);
@@ -101,6 +139,31 @@ const PaymentDrivers = () => {
       setLoading(false);
     }
   }, [apiHost]);
+
+  const handleFinalizarPago = async (tripId) => {
+    try {
+      const fd = new FormData();
+      fd.append("op", "update_ticket_pago");
+      fd.append("trip_id", tripId);
+
+      const res = await fetch(`${apiHost}/formularios.php`, {
+        method: "POST",
+        body: fd,
+      });
+
+      const json = await res.json();
+
+      if (json.status === "success") {
+        Swal.fire("Éxito", "Pago actualizado correctamente", "success");
+        fetchPayments(); // 🔄 refresca la tabla
+      } else {
+        Swal.fire("Error", "No se pudo actualizar el pago", "error");
+      }
+    } catch (err) {
+      Swal.fire("Error", "Error de conexión", "error");
+    }
+  };
+
 
   useEffect(() => {
     fetchPayments();
@@ -131,15 +194,34 @@ const PaymentDrivers = () => {
           Pago a Operadores
         </Typography>
 
-        <TextField
-          size="small"
-          label="Buscar Trip"
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setPage(0);
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            mb: 3,
+            flexWrap: "wrap",
+            gap: 2,
           }}
-        />
+        >
+          <TextField
+            size="small"
+            label="Buscar Trip"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(0);
+            }}
+          />
+          <Button variant="contained"
+            color="primary"
+            onClick={() => navigate(`/millasDriversTable`)}
+          >
+            Drivers
+          </Button>
+
+        </Box>
+
+
       </Box>
 
       <TableContainer component={Paper}>
@@ -150,10 +232,10 @@ const PaymentDrivers = () => {
               <TableCell style={{ fontWeight: 600 }}>Conductor</TableCell>
               <TableCell style={{ fontWeight: 600 }}>Etapas</TableCell>
               <TableCell style={{ fontWeight: 600 }}>Millas cortas</TableCell>
-              <TableCell style={{ fontWeight: 600 }}>Tarifa total</TableCell>
-              <TableCell style={{ fontWeight: 600 }}>Pago Realizado</TableCell>
-              <TableCell style={{ fontWeight: 600 }}>Pago aproximado (tarifa actual)</TableCell>
-              <TableCell style={{ fontWeight: 600 }}>Estatus</TableCell>
+              <TableCell style={{ fontWeight: 600 }}>Pago autorizado</TableCell>
+              <TableCell style={{ fontWeight: 600 }}>Status</TableCell>
+              <TableCell style={{ fontWeight: 600 }}>Actions</TableCell>
+              <TableCell style={{ fontWeight: 600 }}>Status de viaje</TableCell>
             </TableRow>
           </TableHead>
 
@@ -176,20 +258,63 @@ const PaymentDrivers = () => {
                 </TableCell>
               </TableRow>
             ) : (
-              pageTrips.map((t) => (
-                <TableRow key={t.trip_id}>
-                  <TableCell>{t.trip_number}</TableCell>
-                  <TableCell>{t.nombre}</TableCell>
-                  <TableCell>{t.stages_count}</TableCell>
-                  <TableCell>{t.total_millas_cortas}</TableCell>
-                  <TableCell>{money(t.total_tarifa)}</TableCell>
-                  <TableCell>{t.Pago_driver ? money(t.Pago_driver) : "---"}</TableCell>
-                  <TableCell>{money(t.pago_aproximado)}</TableCell>
-                  <TableCell>
-                    <PaymentStatusChip value={t.status_payment} />
-                  </TableCell>
-                </TableRow>
-              ))
+              pageTrips.map((t) => {
+
+                // 👇 AQUÍ VAN
+                const isPendiente = String(t.status_payment) === "0";
+                const isAutorizado = String(t.status_payment) === "2";
+                const isPagado = String(t.status_payment) === "1";
+
+                return (
+                  <TableRow key={t.trip_id}>
+                    <TableCell>{t.trip_number}</TableCell>
+                    <TableCell>{t.nombre}</TableCell>
+                    <TableCell>{t.stages_count}</TableCell>
+                    <TableCell>{t.total_millas_cortas}</TableCell>
+
+                    <TableCell>
+                      {t.Pago_driver ? money(t.Pago_driver) : "---"}
+                    </TableCell>
+
+                    <TableCell>
+                      <PaymentStatusChip value={t.status_payment} />
+                    </TableCell>
+
+                    <TableCell>
+                      <Box sx={{ display: "flex", gap: 2 }}>
+
+                        {/* VER TICKET */}
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          disabled={isAutorizado || isPagado}
+                          sx={{ opacity: isAutorizado || isPagado ? 0.5 : 1 }}
+                          onClick={() => navigate(`/ticketPayment/${t.trip_id}`)}
+                        >
+                          Ver ticket
+                        </Button>
+
+                        {/* FINALIZAR PAGO */}
+                        <Button
+                          variant="contained"
+                          color="success"
+                          disabled={!isAutorizado}
+                          sx={{ opacity: !isAutorizado ? 0.5 : 1 }}
+                          onClick={() => handleFinalizarPago(t.trip_id)}
+                        >
+                          Finalizar pago
+                        </Button>
+
+                      </Box>
+                    </TableCell>
+
+                    <TableCell>
+                      <StatusTrip value={t.status_trip} />
+                    </TableCell>
+                  </TableRow>
+                );
+              })
+
             )}
           </TableBody>
         </Table>
