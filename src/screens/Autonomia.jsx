@@ -24,7 +24,6 @@ export default function Autonomia() {
     setLoading(true);
     try {
       const fd = new FormData();
-      // Usamos el endpoint específico para esta lógica avanzada
       fd.append('op', 'get_truck_autonomy'); 
       
       const res = await fetch(`${apiHost}/autonomia.php`, { method: 'POST', body: fd });
@@ -105,7 +104,7 @@ export default function Autonomia() {
                 </TableRow>
               ) : (
                 trucks.map((truck) => (
-                  <TableRow key={truck.truck_id} hover>
+                  <TableRow key={truck.truck_id}>
                     {/* Información del Camión */}
                     <TableCell>
                         <Typography fontWeight={700} variant="body1">
