@@ -139,11 +139,15 @@ export const menuItemsConfig = [
     subItems: [
       { name: "Ventas", route: "/finanzas", rolesPermitidos: ["admin"] },
       { name: "Margen", route: "/margen", rolesPermitidos: ["admin", "dev"] },
-      { name: "Pagos", route: "/paymentDrivers", rolesPermitidos: ["admin", "dev"] },
+      {
+        name: "Pagos",
+        route: "/paymentDrivers",
+        rolesPermitidos: ["admin", "dev"],
+      },
     ],
   },
 
   { name: "Reports", route: "/reports", rolesPermitidos: ["admin"] },
 
-
+  { name: "Autonomía", route: "/autonomia", rolesPermitidos: ["admin"] },
 ];

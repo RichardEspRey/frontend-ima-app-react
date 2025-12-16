@@ -48,6 +48,7 @@ import MargenScreen from '../screens/MargenScreen.jsx';
 import PaymentDrivers from '../screens/Finanzas/PaymentDrivers.jsx';
 import MillasDriversTable from '../screens/Finanzas/MillasDriversTable.jsx';
 import TicketPayment from '../screens/Finanzas/TicketPayment.jsx';
+import Autonomia from '../screens/Autonomia.jsx';
 
 const AppRouter = () => {
   const { user, loading } = useContext(AuthContext);
@@ -107,6 +108,7 @@ const AppRouter = () => {
               <Route path="/paymentDrivers" element ={<PaymentDrivers />} />
               <Route path='/millasDriversTable' element ={<MillasDriversTable/>} />
               <Route path='/ticketPayment/:trip_id' element ={<TicketPayment/>} />
+              <Route path="/autonomia" element={<Autonomia />} />
               <Route path="*" element={<Navigate to="/home" replace />} /> 
 
             </Route>
