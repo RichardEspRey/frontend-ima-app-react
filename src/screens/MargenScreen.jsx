@@ -56,6 +56,7 @@ const MargenScreen = () => {
         const json = await res.json();
         
         if (json.status === 'success' && Array.isArray(json.data)) {
+            console.log(json.data)
             setTrips(json.data); 
         } else {
              setTrips([]); 
