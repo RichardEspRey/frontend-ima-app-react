@@ -1,15 +1,16 @@
 import React, { useEffect, useState, useCallback } from "react";
 import {
   Box, Paper, Typography, Grid, Chip, CircularProgress, Stack, Slider,
-  IconButton, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, InputAdornment, Tooltip
+  IconButton, Button, Dialog, DialogTitle, DialogContent, DialogActions, 
+  TextField, InputAdornment, MenuItem 
 } from "@mui/material";
 import LocalGasStationIcon from '@mui/icons-material/LocalGasStation';
 import SettingsIcon from '@mui/icons-material/Settings';
+import FilterListIcon from '@mui/icons-material/FilterList';
 import Swal from 'sweetalert2';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
-// --- COMPONENTE VISUAL DE MEDIDOR (MEJORADO) ---
 const FuelGauge = ({ percent, value, capacity }) => {
     let color = '#2e7d32'; 
     if (percent < 50) color = '#fbc02d'; 
@@ -17,24 +18,14 @@ const FuelGauge = ({ percent, value, capacity }) => {
 
     const radius = 80;
     const stroke = 12;
-    const center = 100;
     
     const arcLength = Math.PI * radius; 
-    
     const strokeDasharray = `${arcLength} ${arcLength}`;
-    
     const strokeDashoffset = arcLength - (percent / 100) * arcLength;
 
     return (
         <Box sx={{ position: 'relative', width: 200, height: 120, margin: '0 auto' }}>
             <svg width="100%" height="100%" viewBox="0 0 200 110">
-                <defs>
-                    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" style={{ stopColor: color, stopOpacity: 1 }} />
-                        <stop offset="100%" style={{ stopColor: color, stopOpacity: 0.8 }} />
-                    </linearGradient>
-                </defs>
-
                 <path
                     d={`M 20,100 A 80,80 0 0 1 180,100`} 
                     fill="none"
@@ -42,7 +33,6 @@ const FuelGauge = ({ percent, value, capacity }) => {
                     strokeWidth={stroke}
                     strokeLinecap="round"
                 />
-
                 <path
                     d={`M 20,100 A 80,80 0 0 1 180,100`}
                     fill="none"
@@ -53,18 +43,10 @@ const FuelGauge = ({ percent, value, capacity }) => {
                     strokeDashoffset={strokeDashoffset}
                     style={{ transition: 'stroke-dashoffset 0.8s ease-in-out' }}
                 />
-
                 <text x="10" y="105" fontSize="12" fontWeight="bold" fill="#999">E</text>
                 <text x="182" y="105" fontSize="12" fontWeight="bold" fill="#999">F</text>
             </svg>
-
-            <Box sx={{ 
-                position: 'absolute', 
-                bottom: 10, 
-                left: 0, 
-                width: '100%', 
-                textAlign: 'center' 
-            }}>
+            <Box sx={{ position: 'absolute', bottom: 10, left: 0, width: '100%', textAlign: 'center' }}>
                 <Typography variant="h5" fontWeight={800} color="text.primary" sx={{ lineHeight: 1 }}>
                     {Math.round(percent)}%
                 </Typography>
@@ -76,18 +58,21 @@ const FuelGauge = ({ percent, value, capacity }) => {
     );
 };
 
-// --- TARJETA DE UNIDAD ---
 const UnitCard = ({ truck, onUpdate, onConfig }) => {
     const [fuel, setFuel] = useState(truck.current_fuel);
     const [dirty, setDirty] = useState(false);
 
-    // Actualizar estado local si cambia la prop
     useEffect(() => {
         setFuel(truck.current_fuel);
     }, [truck.current_fuel]);
 
     const getStatusColor = (status) => {
         const s = (status || '').toLowerCase();
+        if (s === 'completed') return 'default'; 
+        if (s === 'almost over') return 'info'; 
+        if (s === 'in transit') return 'success';
+        if (s === 'in coming') return 'warning';
+        
         if (s.includes('transit') || s.includes('route')) return 'success';
         if (s.includes('load') || s.includes('charg')) return 'warning';
         return 'primary';
@@ -103,33 +88,24 @@ const UnitCard = ({ truck, onUpdate, onConfig }) => {
         setDirty(false);
     };
 
-    // Calculamos porcentaje seguro (0 a 100)
     const percent = truck.tank_capacity > 0 
         ? Math.min(100, Math.max(0, (fuel / truck.tank_capacity) * 100))
         : 0;
 
     return (
-        <Paper elevation={3} sx={{ borderRadius: 3, overflow: 'hidden', display: 'flex', flexDirection: 'column', height: '100%' }}>
-            
-            {/* Encabezado */}
+        <Paper elevation={3} sx={{ borderRadius: 3, overflow: 'hidden', display: 'flex', flexDirection: 'column', height: '100%', minWidth: 250 }}>
             <Box sx={{ p: 2, pb: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <Box>
                     <Typography variant="h6" fontWeight={800} sx={{ lineHeight: 1.2 }}>
                         Unidad {truck.unidad}
                     </Typography>
-                    <Chip 
-                        label={truck.Placa_MEX} 
-                        size="small" 
-                        variant="outlined" 
-                        sx={{ mt: 0.5, height: 20, fontSize: '0.65rem', fontWeight: 600 }} 
-                    />
+                    <Chip label={truck.Placa_MEX} size="small" variant="outlined" sx={{ mt: 0.5, height: 20, fontSize: '0.65rem', fontWeight: 600 }} />
                 </Box>
                 <IconButton size="small" onClick={() => onConfig(truck)}>
                     <SettingsIcon fontSize="small" />
                 </IconButton>
             </Box>
 
-            {/* Info de Viaje */}
             <Box sx={{ px: 2, mt: 1 }}>
                 <Box sx={{ 
                     bgcolor: truck.trip_number ? '#e3f2fd' : '#f5f5f5', 
@@ -145,28 +121,16 @@ const UnitCard = ({ truck, onUpdate, onConfig }) => {
                 </Box>
             </Box>
 
-            {/* Medidor (Odometer) */}
             <Box sx={{ mt: 1, display: 'flex', justifyContent: 'center' }}>
                 <FuelGauge percent={percent} value={fuel} capacity={truck.tank_capacity} />
             </Box>
 
-            {/* Área de Ajuste Manual y Datos (Fondo Diferente) */}
             <Box sx={{ bgcolor: '#fafafa', p: 2, flexGrow: 1, borderTop: '1px solid #eee' }}>
-                
-                {/* Slider de Ajuste */}
                 <Box sx={{ mb: 2 }}>
                     <Stack direction="row" justifyContent="space-between" alignItems="center" mb={0.5}>
-                        <Typography variant="caption" fontWeight={700} color="text.secondary">
-                            Ajuste Manual
-                        </Typography>
+                        <Typography variant="caption" fontWeight={700} color="text.secondary">Ajuste Manual</Typography>
                         {dirty && (
-                            <Button 
-                                size="small" 
-                                variant="contained" 
-                                color="primary" 
-                                onClick={handleSaveAdjustment}
-                                sx={{ minWidth: 50, py: 0, fontSize: '0.6rem', height: 20 }}
-                            >
+                            <Button size="small" variant="contained" color="primary" onClick={handleSaveAdjustment} sx={{ minWidth: 50, py: 0, fontSize: '0.6rem', height: 20 }}>
                                 Guardar
                             </Button>
                         )}
@@ -179,29 +143,21 @@ const UnitCard = ({ truck, onUpdate, onConfig }) => {
                             max={Number(truck.tank_capacity) || 200} 
                             onChange={handleSliderChange} 
                             size="small"
-                            sx={{
-                                color: percent < 20 ? '#d32f2f' : '#1976d2',
-                                '& .MuiSlider-thumb': { width: 12, height: 12 }
-                            }}
+                            sx={{ color: percent < 20 ? '#d32f2f' : '#1976d2', '& .MuiSlider-thumb': { width: 12, height: 12 } }}
                         />
                     </Stack>
                 </Box>
 
-                {/* Métricas Inferiores */}
                 <Grid container spacing={1} sx={{ pt: 1, borderTop: '1px dashed #e0e0e0' }}>
                     <Grid item xs={6} sx={{ textAlign: 'center', borderRight: '1px solid #eee' }}>
-                        <Typography variant="caption" color="text.secondary" display="block">
-                            Autonomía
-                        </Typography>
+                        <Typography variant="caption" color="text.secondary" display="block">Autonomía</Typography>
                         <Typography variant="body1" fontWeight={800} color="primary.main">
-                            {truck.promedio_mpg > 0 ? truck.promedio_mpg.toFixed(1) : '--'} 
+                            {truck.promedio_mpg > 0 ? truck.promedio_mpg.toFixed(2) : '--'} 
                             <span style={{ fontSize: '0.7em', marginLeft: 2, fontWeight: 400 }}>MPG</span>
                         </Typography>
                     </Grid>
                     <Grid item xs={6} sx={{ textAlign: 'center' }}>
-                        <Typography variant="caption" color="text.secondary" display="block">
-                            Rango Est.
-                        </Typography>
+                        <Typography variant="caption" color="text.secondary" display="block">Rango Est.</Typography>
                         <Typography variant="body1" fontWeight={800} color="secondary.main">
                             {truck.promedio_mpg > 0 ? (fuel * truck.promedio_mpg).toFixed(0) : '--'} 
                             <span style={{ fontSize: '0.7em', marginLeft: 2, fontWeight: 400 }}>mi</span>
@@ -213,12 +169,11 @@ const UnitCard = ({ truck, onUpdate, onConfig }) => {
     );
 };
 
-
-// --- PANTALLA PRINCIPAL ---
 export default function EstatusUnidades() {
     const [units, setUnits] = useState([]);
     const [loading, setLoading] = useState(true);
-    
+    const [statusFilter, setStatusFilter] = useState('All'); 
+
     // Modal Config
     const [openModal, setOpenModal] = useState(false);
     const [selectedTruck, setSelectedTruck] = useState(null);
@@ -247,7 +202,6 @@ export default function EstatusUnidades() {
         fetchDashboard();
     }, [fetchDashboard]);
 
-    // Guardar cambios
     const handleUpdateTruck = async (truckId, currentFuel, capacity) => {
         try {
             const fd = new FormData();
@@ -288,18 +242,56 @@ export default function EstatusUnidades() {
         }
     };
 
+    const filteredUnits = units.filter(unit => {
+        if (statusFilter === 'All') return true;
+        const currentStatus = (unit.trip_status || '').toLowerCase();
+        const filterTarget = statusFilter.toLowerCase();
+        
+        if (statusFilter === 'Sin Viaje') return !unit.trip_number;
+
+        return currentStatus === filterTarget;
+    });
+
     return (
         <Box sx={{ p: 3 }}>
-            <Stack direction="row" alignItems="center" spacing={2} mb={1}>
-                <Typography variant="h4" fontWeight={700}>
-                    Tablero de Combustible
-                </Typography>
-                <Chip label="Tiempo Real" color="success" size="small" variant="outlined" />
+            <Stack direction={{ xs: 'column', sm: 'row' }} alignItems="center" justifyContent="space-between" mb={3} spacing={2}>
+                <Box>
+                    <Stack direction="row" alignItems="center" spacing={2}>
+                        <Typography variant="h4" fontWeight={700}>
+                            Tablero de Combustible
+                        </Typography>
+                        <Chip label="Tiempo Real" color="success" size="small" variant="outlined" />
+                    </Stack>
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                        Monitoreo de niveles, autonomía y estatus de viajes activos.
+                    </Typography>
+                </Box>
+
+                <Box sx={{ minWidth: 200 }}>
+                    <TextField
+                        select
+                        label="Filtrar por Estatus"
+                        size="small"
+                        fullWidth
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                        InputProps={{
+                            startAdornment: (
+                                <InputAdornment position="start">
+                                    <FilterListIcon fontSize="small" />
+                                </InputAdornment>
+                            ),
+                        }}
+                    >
+                        <MenuItem value="All">Todos</MenuItem>
+                        <MenuItem value="In Transit">In Transit</MenuItem>
+                        <MenuItem value="In Coming">In Coming</MenuItem>
+                        <MenuItem value="Almost Over">Almost Over</MenuItem>
+                        <MenuItem value="Completed">Completed</MenuItem>
+                        <MenuItem value="Sin Viaje">Sin Viaje Asignado</MenuItem> 
+                    </TextField>
+                </Box>
             </Stack>
-            
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
-                Monitoreo de niveles, autonomía y estatus de viajes activos.
-            </Typography>
 
             {loading ? (
                 <Box display="flex" justifyContent="center" mt={5}>
@@ -308,15 +300,25 @@ export default function EstatusUnidades() {
                 </Box>
             ) : (
                 <Grid container spacing={3}>
-                    {units.map(truck => (
-                        <Grid item xs={12} sm={6} md={4} lg={3} key={truck.truck_id}>
-                            <UnitCard 
-                                truck={truck} 
-                                onUpdate={handleUpdateTruck} 
-                                onConfig={openConfig} 
-                            />
+                    {filteredUnits.length > 0 ? (
+                        filteredUnits.map(truck => (
+                            <Grid item xs={12} sm={6} md={4} lg={3} key={truck.truck_id}>
+                                <UnitCard 
+                                    truck={truck} 
+                                    onUpdate={handleUpdateTruck} 
+                                    onConfig={openConfig} 
+                                />
+                            </Grid>
+                        ))
+                    ) : (
+                        <Grid item xs={12}>
+                            <Paper sx={{ p: 4, textAlign: 'center', bgcolor: '#f5f5f5' }}>
+                                <Typography color="text.secondary">
+                                    No hay unidades con el estatus "{statusFilter}"
+                                </Typography>
+                            </Paper>
                         </Grid>
-                    ))}
+                    )}
                 </Grid>
             )}
 
