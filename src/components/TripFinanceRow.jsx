@@ -1,3 +1,4 @@
+import { useContext } from 'react'
 import { 
   TableRow, TableCell, IconButton, Chip, Stack, Typography, 
   Collapse, Box, Divider, Table, TableHead, TableBody, Tooltip, Badge 
@@ -7,6 +8,7 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { STATUS_OPTIONS } from '../constants/finances';
 import { StageDetailRow } from './StageDetailRow'; 
 import { money, countCriticalStages } from '../utils/financeHelpers';
+import { AuthContext } from '../auth/AuthContext';
 
 const StatusChip = ({ value }) => {
   const meta = STATUS_OPTIONS.find(o => o.value === Number(value));
@@ -36,7 +38,13 @@ const AlertBadge = ({ count, statusValue, tooltip }) => {
 };
 
 export const TripFinanceRow = ({ trip, isOpen, onToggle, onStageChange }) => {
+  const { user } = useContext(AuthContext); 
   const criticalCounts = countCriticalStages(trip.stages);
+
+  // Definir roles permitidos
+  const ROLES_PERMITIDOS = ['admin', 'dev'];
+  const userRole = (user?.tipo_usuario || '').toLowerCase();
+  const canViewDeficit = ROLES_PERMITIDOS.includes(userRole);
 
   return (
     <>
@@ -80,6 +88,11 @@ export const TripFinanceRow = ({ trip, isOpen, onToggle, onStageChange }) => {
                     <TableCell sx={{ fontWeight: 600 }}>Tarifa (rate)</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Método de pago</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Tarifa pagada</TableCell>
+                    
+                    {canViewDeficit && (
+                        <TableCell sx={{ fontWeight: 600, color: '#d32f2f' }}>% Déficit</TableCell>
+                    )}
+
                     <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
                   </TableRow>
                 </TableHead>
