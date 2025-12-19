@@ -130,6 +130,11 @@ export const menuItemsConfig = [
         route: "/admin-trips",
         rolesPermitidos: ["admin", "Blanca", "Candy", "Mia"],
       },
+      {
+        name: "Estatus de Unidades",
+        route: "/estatus-unidades",
+        rolesPermitidos: ["dev", "admin", "Blanca", "Candy", "Mia"],
+      },
     ],
   },
 
