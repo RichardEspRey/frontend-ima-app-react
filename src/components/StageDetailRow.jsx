@@ -23,7 +23,7 @@ export const StageDetailRow = ({ trip_id, stage, handleStageFieldChange }) => {
     return (
         <TableRow hover selected={!!stage._dirty} sx={{ bgcolor: stage._dirty ? '#fff3e0' : 'transparent' }}> 
             <TableCell sx={{ fontWeight: 500 }}>{stage.trip_stage_id}</TableCell>
-            <TableCell>{stage.stage_number}</TableCell>
+            {/* <TableCell>{stage.stage_number}</TableCell> */}
             <TableCell>{stage.origin || <em>-</em>}</TableCell>
             <TableCell>{stage.destination || <em>-</em>}</TableCell>
             
