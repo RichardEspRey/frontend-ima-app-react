@@ -1,14 +1,16 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
-  TablePagination, TextField, Box, Typography, CircularProgress, Button, Badge, Tooltip, Stack
+  TablePagination, TextField, Box, Typography, CircularProgress, Button, Badge, Tooltip, Stack, MenuItem
 } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
+import FilterListIcon from '@mui/icons-material/FilterList';
 import Swal from 'sweetalert2';
 
 import { TripFinanceRow } from '../components/TripFinanceRow';
 import { AlertSummaryCards } from '../components/AlertSummaryCards';
 import { getTripStatusSummary, validateStage, buildPayloadItem, collectDirtyStages } from '../utils/financeHelpers';
+import { STATUS_OPTIONS } from '../constants/finances'; // Importamos las opciones para el filtro
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -16,12 +18,12 @@ const Finanzas = () => {
   const [trips, setTrips] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All'); 
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [openMap, setOpenMap] = useState({});
   const [saving, setSaving] = useState(false);
 
-  // --- Fetch Data ---
   const fetchFinanzas = useCallback(async () => {
     setLoading(true);
     try {
@@ -74,13 +76,28 @@ const Finanzas = () => {
 
   useEffect(() => { fetchFinanzas(); }, [fetchFinanzas]);
 
-  // --- Computed ---
-  const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    return !q ? trips : trips.filter(t => (t.trip_number || '').toLowerCase().includes(q));
-  }, [trips, search]);
+  const filteredAndSorted = useMemo(() => {
+    let result = [...trips];
 
-  const pageTrips = filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+    if (search.trim()) {
+      const q = search.trim().toLowerCase();
+      result = result.filter(t => (t.trip_number || '').toLowerCase().includes(q));
+    }
+
+    if (statusFilter !== 'All') {
+      result = result.filter(t => t.status_trip === Number(statusFilter));
+    }
+
+    result.sort((a, b) => {
+      const statusA = a.status_trip ?? 0;
+      const statusB = b.status_trip ?? 0;
+      return statusA - statusB; 
+    });
+
+    return result;
+  }, [trips, search, statusFilter]);
+
+  const pageTrips = filteredAndSorted.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
   
   const dirtyCount = useMemo(() => collectDirtyStages(trips).length, [trips]);
 
@@ -98,7 +115,6 @@ const Finanzas = () => {
       return totals;
   }, [trips]);
 
-  // --- Handlers ---
   const toggleOpen = (trip_id) => setOpenMap(prev => ({ ...prev, [trip_id]: !prev[trip_id] }));
 
   const handleStageFieldChange = (trip_id, trip_stage_id, field, value) => {
@@ -115,7 +131,6 @@ const Finanzas = () => {
     const dirty = collectDirtyStages(trips);
     if (dirty.length === 0) return Swal.fire({ icon: 'info', title: 'Sin cambios' });
 
-    // Validar
     const invalids = dirty.filter(({ stage }) => validateStage(stage).length > 0)
                           .map(({ stage }) => ({ stage, errs: validateStage(stage) }));
 
@@ -162,11 +177,40 @@ const Finanzas = () => {
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4" fontWeight={700}>Administrador de Finanzas</Typography>
-        <Stack direction="row" spacing={2}>
+        
+        <Stack direction="row" spacing={2} alignItems="center">
+          {/* Filtro de Estatus */}
+          <TextField
+            select
+            label="Filtrar por Estatus"
+            size="small"
+            value={statusFilter}
+            onChange={(e) => { setStatusFilter(e.target.value); setPage(0); }}
+            sx={{ minWidth: 220 }}
+            InputProps={{
+                startAdornment: <FilterListIcon fontSize="small" sx={{ mr: 1, color: 'action.active' }} />,
+            }}
+          >
+            <MenuItem value="All">Todos</MenuItem>
+            {STATUS_OPTIONS.map((opt) => (
+                <MenuItem key={opt.value} value={opt.value}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: opt.color }} />
+                        {opt.label}
+                    </Box>
+                </MenuItem>
+            ))}
+          </TextField>
+
+          {/* Búsqueda por Trip */}
           <TextField 
-            size="small" label="Buscar Trip" value={search} 
+            size="small" 
+            label="Buscar Trip" 
+            value={search} 
             onChange={(e) => { setSearch(e.target.value); setPage(0); }} 
           />
+
+          {/* Botón Guardar */}
           <Tooltip title={dirtyCount ? `Guardar ${dirtyCount} cambios` : 'Sin cambios'}>
             <Badge badgeContent={dirtyCount} color="primary">
               <Button variant="contained" startIcon={<SaveIcon />} disabled={saving || !dirtyCount} onClick={saveAll}>
@@ -196,7 +240,7 @@ const Finanzas = () => {
             {loading ? (
               <TableRow><TableCell colSpan={7} align="center"><CircularProgress sx={{ m: 2 }} /></TableCell></TableRow>
             ) : pageTrips.length === 0 ? (
-              <TableRow><TableCell colSpan={7} align="center">Sin registros.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={7} align="center">Sin registros coinciden con los filtros.</TableCell></TableRow>
             ) : (
               pageTrips.map((t) => (
                 <TripFinanceRow 
@@ -215,7 +259,7 @@ const Finanzas = () => {
       <TablePagination
         rowsPerPageOptions={[10, 25, 50]}
         component="div"
-        count={filtered.length}
+        count={filteredAndSorted.length}
         rowsPerPage={rowsPerPage}
         page={page}
         onPageChange={(e, p) => setPage(p)}
