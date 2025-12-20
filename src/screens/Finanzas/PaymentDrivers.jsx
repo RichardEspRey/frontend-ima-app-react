@@ -1,15 +1,21 @@
-import React, { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
-  TablePagination, TextField, Box, Typography, CircularProgress, Chip, Button
+  TablePagination, TextField, Box, Typography, CircularProgress, Chip, Button,
+  Stack, Tooltip, IconButton, InputAdornment
 } from "@mui/material";
+
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import PaidIcon from '@mui/icons-material/Paid';
+import AssignmentIndIcon from '@mui/icons-material/AssignmentInd';
+import FilterListIcon from '@mui/icons-material/FilterList';
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 
 import Swal from "sweetalert2";
 import { useNavigate } from 'react-router-dom';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
-// === HELPER DE MONEY ===
 const money = (v) =>
   new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -17,78 +23,58 @@ const money = (v) =>
     minimumFractionDigits: 2,
   }).format(Number(v || 0));
 
-
-// === CHIP DE STATUS DE PAGO ===
 const PaymentStatusChip = ({ value }) => {
   let label = "";
-  let color = "";
+  let color = "default"; 
 
   switch (String(value)) {
     case "0":
-      label = "Pendiente de autorización";
-      color = "#ff1500ff"; // naranja
+      label = "Pendiente Autorización";
+      color = "warning";
       break;
     case "1":
       label = "Pagado";
-      color = "#66bb6a"; // verde
+      color = "success";
       break;
     case "2":
-      label = "Autorización de pago";
-      color = "#f4ff1cff"; // azul
+      label = "Autorizado (Por Pagar)";
+      color = "info";
       break;
     default:
       label = "Desconocido";
-      color = "#bdbdbd";
+      color = "default";
   }
 
   return (
     <Chip
       label={label}
       size="small"
-      sx={{
-        bgcolor: color,
-        color: "#fff",
-        fontWeight: 600,
-      }}
+      color={color}
+      variant={String(value) === "1" ? "filled" : "outlined"}
+      sx={{ fontWeight: 600 }}
     />
   );
 };
 
 const StatusTrip = ({ value }) => {
-  let label = "";
-  let color = "";
+  let label = value || "Desconocido";
+  let color = "#bdbdbd";
 
   switch (String(value)) {
-    case "Completed":
-      label = "Completed";
-      color = "#2e7d32"; // naranja
-      break;
-    case "Almost Over":
-      label = "Almost Over";
-      color = "#1976d2"; // verde
-      break;
-    case "In Transit":
-      label = "In Transit";
-      color = "#ed6c02"; // azul
-      break;
-    default:
-      label = "Desconocido";
-      color = "#bdbdbd";
+    case "Completed": color = "#2e7d32"; break;
+    case "Almost Over": color = "#1976d2"; break;
+    case "In Transit": color = "#ed6c02"; break;
+    default: color = "#757575";
   }
 
   return (
     <Chip
       label={label}
       size="small"
-      sx={{
-        bgcolor: color,
-        color: "#fff",
-        fontWeight: 600,
-      }}
+      sx={{ bgcolor: color, color: "#fff", fontWeight: 600, fontSize: '0.75rem' }}
     />
   );
 };
-
 
 const PaymentDrivers = () => {
   const navigate = useNavigate();
@@ -96,21 +82,15 @@ const PaymentDrivers = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [rowsPerPage, setRowsPerPage] = useState(25);
 
-  // === FETCH PRINCIPAL ===
   const fetchPayments = useCallback(async () => {
     setLoading(true);
-
     try {
       const fd = new FormData();
       fd.append("op", "All_paymentDrivers");
 
-      const res = await fetch(`${apiHost}/formularios.php`, {
-        method: "POST",
-        body: fd,
-      });
-
+      const res = await fetch(`${apiHost}/formularios.php`, { method: "POST", body: fd });
       const json = await res.json();
 
       if (json.status === "success" && Array.isArray(json.data)) {
@@ -122,11 +102,9 @@ const PaymentDrivers = () => {
           total_tarifa: Number(t.total_tarifa ?? 0),
           total_millas_cortas: Number(t.total_millas_cortas ?? 0),
           status_payment: t.status_payment,
-          Pago_driver: t.Pago_driver ? Number(t.Pago_driver) : null,
-          pago_aproximado: t.total_millas_cortas * t.valor_milla,
+          Pago_driver: t.Pago_driver ? Number(t.Pago_driver) : 0,
           status_trip: t.status
         }));
-
         setTrips(norm);
       } else {
         setTrips([]);
@@ -138,142 +116,137 @@ const PaymentDrivers = () => {
     } finally {
       setLoading(false);
     }
-  }, [apiHost]);
-
-  const handleFinalizarPago = async (tripId) => {
-    try {
-      const fd = new FormData();
-      fd.append("op", "update_ticket_pago");
-      fd.append("trip_id", tripId);
-
-      const res = await fetch(`${apiHost}/formularios.php`, {
-        method: "POST",
-        body: fd,
-      });
-
-      const json = await res.json();
-
-      if (json.status === "success") {
-        Swal.fire("Éxito", "Pago actualizado correctamente", "success");
-        fetchPayments(); // 🔄 refresca la tabla
-      } else {
-        Swal.fire("Error", "No se pudo actualizar el pago", "error");
-      }
-    } catch (err) {
-      Swal.fire("Error", "Error de conexión", "error");
-    }
-  };
-
+  }, []);
 
   useEffect(() => {
     fetchPayments();
   }, [fetchPayments]);
 
-  // === FILTRO POR TRIP_NUMBER ===
+  const handleFinalizarPago = async (tripId) => {
+    Swal.fire({
+        title: '¿Finalizar Pago?',
+        text: "Se marcará este viaje como PAGADO.",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#2e7d32',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Sí, pagar',
+        cancelButtonText: 'Cancelar'
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            try {
+                const fd = new FormData();
+                fd.append("op", "update_ticket_pago");
+                fd.append("trip_id", tripId);
+          
+                const res = await fetch(`${apiHost}/formularios.php`, { method: "POST", body: fd });
+                const json = await res.json();
+          
+                if (json.status === "success") {
+                  Swal.fire("Éxito", "Pago actualizado correctamente", "success");
+                  fetchPayments(); 
+                } else {
+                  Swal.fire("Error", "No se pudo actualizar el pago", "error");
+                }
+              } catch (err) {
+                Swal.fire("Error", "Error de conexión", "error");
+              }
+        }
+    })
+  };
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return trips;
-    return trips.filter((t) => (t.trip_number || "").toLowerCase().includes(q));
+    return trips.filter((t) => (t.trip_number || "").toLowerCase().includes(q) || (t.nombre || "").toLowerCase().includes(q));
   }, [trips, search]);
 
   const pageTrips = filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
-
   return (
     <Paper sx={{ m: 2, p: 3 }}>
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          mb: 3,
-          flexWrap: "wrap",
-          gap: 2,
-        }}
-      >
-        <Typography variant="h4" fontWeight={700}>
-          Pago a Operadores
-        </Typography>
-
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            mb: 3,
-            flexWrap: "wrap",
-            gap: 2,
-          }}
-        >
-          <TextField
-            size="small"
-            label="Buscar Trip"
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setPage(0);
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Typography variant="h4" fontWeight={700}>Pago a Operadores</Typography>
+        
+        <Stack direction="row" spacing={2} alignItems="center">
+          <TextField 
+            size="small" 
+            label="Buscar Trip o Conductor" 
+            value={search} 
+            onChange={(e) => { setSearch(e.target.value); setPage(0); }} 
+            InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <FilterListIcon fontSize="small" />
+                  </InputAdornment>
+                ),
             }}
+            sx={{ minWidth: 250 }}
           />
-          <Button variant="contained"
-            color="primary"
+          
+          <Button 
+            variant="contained" 
+            startIcon={<AssignmentIndIcon />}
             onClick={() => navigate(`/millasDriversTable`)}
+            sx={{ textTransform: 'none' }}
           >
-            Drivers
+            Administrar Drivers
           </Button>
-
-        </Box>
-
-
+        </Stack>
       </Box>
 
-      <TableContainer component={Paper}>
+      <TableContainer component={Paper} variant="outlined" sx={{ mt: 3 }}>
         <Table stickyHeader size="small">
           <TableHead>
             <TableRow>
-              <TableCell style={{ fontWeight: 600 }}>Trip</TableCell>
-              <TableCell style={{ fontWeight: 600 }}>Conductor</TableCell>
-              <TableCell style={{ fontWeight: 600 }}>Etapas</TableCell>
-              <TableCell style={{ fontWeight: 600 }}>Millas cortas</TableCell>
-              <TableCell style={{ fontWeight: 600 }}>Pago autorizado</TableCell>
-              <TableCell style={{ fontWeight: 600 }}>Status</TableCell>
-              <TableCell style={{ fontWeight: 600 }}>Actions</TableCell>
-              <TableCell style={{ fontWeight: 600 }}>Status de viaje</TableCell>
+              <TableCell sx={{ fontWeight: 600 }}>Trip #</TableCell>
+              <TableCell sx={{ fontWeight: 600 }}>Conductor</TableCell>
+              <TableCell sx={{ fontWeight: 600, textAlign:'center' }}>Etapas</TableCell>
+              <TableCell sx={{ fontWeight: 600, textAlign:'right' }}>Millas</TableCell>
+              <TableCell sx={{ fontWeight: 600, textAlign:'right' }}>Monto Pago</TableCell>
+              <TableCell sx={{ fontWeight: 600 }}>Estatus Pago</TableCell>
+              <TableCell sx={{ fontWeight: 600 }}>Estatus Viaje</TableCell>
+              <TableCell sx={{ fontWeight: 600, textAlign:'center' }}>Acciones</TableCell>
             </TableRow>
           </TableHead>
 
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={8} align="center">
-                  <Box sx={{ py: 4, display: "flex", gap: 2, justifyContent: "center" }}>
-                    <CircularProgress size={24} />
-                    <Typography>Cargando…</Typography>
-                  </Box>
+                <TableCell colSpan={8} align="center" sx={{ py: 5 }}>
+                  <CircularProgress size={30} sx={{ mr: 2 }} />
+                  Cargando datos...
                 </TableCell>
               </TableRow>
             ) : pageTrips.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} align="center">
-                  <Typography sx={{ py: 3 }} color="text.secondary">
-                    Sin registros
-                  </Typography>
+                <TableCell colSpan={8} align="center" sx={{ py: 4 }}>
+                  <Typography color="text.secondary">No se encontraron registros</Typography>
                 </TableCell>
               </TableRow>
             ) : (
               pageTrips.map((t) => {
-
-                // 👇 AQUÍ VAN
-                const isPendiente = String(t.status_payment) === "0";
                 const isAutorizado = String(t.status_payment) === "2";
                 const isPagado = String(t.status_payment) === "1";
 
                 return (
-                  <TableRow key={t.trip_id}>
-                    <TableCell>{t.trip_number}</TableCell>
-                    <TableCell>{t.nombre}</TableCell>
-                    <TableCell>{t.stages_count}</TableCell>
-                    <TableCell>{t.total_millas_cortas}</TableCell>
-
+                  <TableRow key={t.trip_id} hover>
                     <TableCell>
-                      {t.Pago_driver ? money(t.Pago_driver) : "---"}
+                        <Typography fontWeight={600} color="primary" variant="body2">#{t.trip_number}</Typography>
+                    </TableCell>
+                    <TableCell>
+                        <Stack direction="row" alignItems="center" spacing={1}>
+                            <LocalShippingIcon fontSize="small" color="action" />
+                            <Typography variant="body2">{t.nombre}</Typography>
+                        </Stack>
+                    </TableCell>
+                    <TableCell align="center">{t.stages_count}</TableCell>
+                    <TableCell align="right">{t.total_millas_cortas}</TableCell>
+
+                    <TableCell align="right">
+                      <Typography fontWeight={700} color="success.main">
+                          {t.Pago_driver ? money(t.Pago_driver) : "---"}
+                      </Typography>
                     </TableCell>
 
                     <TableCell>
@@ -281,47 +254,57 @@ const PaymentDrivers = () => {
                     </TableCell>
 
                     <TableCell>
-                      <Box sx={{ display: "flex", gap: 2 }}>
-
-                        {/* VER TICKET */}
-                        <Button
-                          variant="contained"
-                          color="primary"
-                          disabled={isAutorizado || isPagado}
-                          sx={{ opacity: isAutorizado || isPagado ? 0.5 : 1 }}
-                          onClick={() => navigate(`/ticketPayment/${t.trip_id}`)}
-                        >
-                          Ver ticket
-                        </Button>
-
-                        {/* FINALIZAR PAGO */}
-                        <Button
-                          variant="contained"
-                          color="success"
-                          disabled={!isAutorizado}
-                          sx={{ opacity: !isAutorizado ? 0.5 : 1 }}
-                          onClick={() => handleFinalizarPago(t.trip_id)}
-                        >
-                          Finalizar pago
-                        </Button>
-
-                      </Box>
+                      <StatusTrip value={t.status_trip} />
                     </TableCell>
 
-                    <TableCell>
-                      <StatusTrip value={t.status_trip} />
+                    <TableCell align="center">
+                      <Stack direction="row" spacing={1} justifyContent="center">
+                        <Tooltip title="Ver Ticket">
+                          <span>
+                              <IconButton
+                                  size="small"
+                                  color="primary"
+                                  disabled={isPagado}
+                                  onClick={() => navigate(`/ticketPayment/${t.trip_id}`)}
+                              >
+                                  <VisibilityIcon fontSize="small" />
+                              </IconButton>
+                          </span>
+                        </Tooltip>
+
+                        <Tooltip title={!isAutorizado ? "Requiere Autorización" : "Finalizar Pago"}>
+                            <span>
+                              <Button
+                                  variant="contained"
+                                  color="success"
+                                  size="small"
+                                  disabled={!isAutorizado}
+                                  onClick={() => handleFinalizarPago(t.trip_id)}
+                                  startIcon={<PaidIcon />}
+                                  sx={{ 
+                                      textTransform: 'none', 
+                                      px: 2, 
+                                      py: 0.5, 
+                                      minWidth: '90px',
+                                      fontSize: '0.75rem'
+                                  }}
+                              >
+                                  Pagar
+                              </Button>
+                            </span>
+                        </Tooltip>
+                      </Stack>
                     </TableCell>
                   </TableRow>
                 );
               })
-
             )}
           </TableBody>
         </Table>
       </TableContainer>
 
       <TablePagination
-        rowsPerPageOptions={[10, 25, 50]}
+        rowsPerPageOptions={[25, 50, 100]}
         component="div"
         count={filtered.length}
         rowsPerPage={rowsPerPage}
