@@ -82,7 +82,7 @@ export const TripFinanceRow = ({ trip, isOpen, onToggle, onStageChange }) => {
               <Table size="small">
                 <TableHead>
                   <TableRow>
-                    <TableCell sx={{ fontWeight: 600 }}>ID Stage</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Invoice Number</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Origen</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Destino</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Tarifa (rate)</TableCell>

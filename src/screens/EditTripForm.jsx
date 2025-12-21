@@ -4,7 +4,6 @@ import Swal from 'sweetalert2';
 import { Box, Typography, CircularProgress, Alert, Button, Container, Stack, Paper } from '@mui/material';
 import { format, parseISO } from 'date-fns';
 
-// Hooks
 import useFetchActiveDrivers from '../hooks/useFetchActiveDrivers';
 import useFetchActiveTrucks from '../hooks/useFetchActiveTrucks';
 import useFetchActiveTrailers from '../hooks/useFetchActiveTrailers';
@@ -12,13 +11,12 @@ import useFetchActiveExternalTrailers from '../hooks/useFetchActiveExternalTrail
 import useFetchCompanies from '../hooks/useFetchCompanies';
 import useFetchWarehouses from '../hooks/useFetchWarehouses';
 
-// Components & Helpers
 import ModalArchivo from '../components/ModalArchivo';
 import ModalCajaExterna from '../components/ModalCajaExterna';
 import GeneralTripInfo from '../components/trip-form/GeneralTripInfo';
 import StageCard from '../components/trip-form/StageCard';
 import { initialBorderCrossingDocs, initialNormalTripDocs } from '../utils/tripFormConstants';
-import './css/EditTripForm.css'; // Mantenemos tu CSS por si tienes estilos globales
+import './css/EditTripForm.css'; 
 
 const EditTripForm = () => {
     const apiHost = import.meta.env.VITE_API_HOST;
@@ -123,6 +121,7 @@ const EditTripForm = () => {
                         return {
                             ...etapa,
                             stageType: type,
+                            invoice_number: etapa.invoice_number || '', 
                             loading_date: etapa.loading_date ? parseISO(etapa.loading_date) : null,
                             delivery_date: etapa.delivery_date ? parseISO(etapa.delivery_date) : null,
                             documentos: baseDocs,
@@ -201,7 +200,6 @@ const EditTripForm = () => {
     const abrirModal = (docType, stageIndex, stopIndex = null) => {
         setModalTarget({ stageIndex, docType, stopIndex });
         setModalAbierto(true);
-        // Lógica de vencimiento simplificada
         setMostrarFechaVencimientoModal(!['ima_invoice', 'doda', 'ci', 'entry', 'manifiesto', 'bl', 'orden_retiro', 'bl_firmado', 'bl_firmado_doc'].includes(docType));
     };
 
@@ -263,6 +261,7 @@ const EditTripForm = () => {
         const baseDocs = type === 'normalTrip' ? { ...initialNormalTripDocs } : type === 'borderCrossing' ? { ...initialBorderCrossingDocs } : {};
         const newStage = {
             trip_stage_id: `new-stage-${Date.now()}`, stageType: type,
+            invoice_number: '', 
             origin: '', destination: '', estatus: type === 'borderCrossing' ? 'In Coming' : 'In Transit',
             documentos: baseDocs, stops_in_transit: [], comments: '',
             loading_date: null, delivery_date: null
@@ -291,7 +290,7 @@ const EditTripForm = () => {
             if (!['status', 'trip_number', 'return_date'].includes(k)) fd.append(k, v || '');
         });
 
-        // Construcción del JSON de Etapas (Misma lógica original)
+        // Construcción del JSON de Etapas
         const etapasJson = etapas.map(etapa => {
              const docsMeta = Object.entries(etapa.documentos).map(([tipo, data]) => ({
                 tipo_documento: tipo,
@@ -352,9 +351,29 @@ const EditTripForm = () => {
         try {
             const res = await fetch(`${apiHost}/new_trips.php`, { method: 'POST', body: fd });
             const result = await res.json();
+            
             if (result.status === 'success') {
+                
+                try {
+                    const invoicesPayload = etapas.map(e => ({
+                        stage_number: e.stage_number,
+                        invoice_number: e.invoice_number
+                    }));
+
+                    const fdInv = new FormData();
+                    fdInv.append('op', 'update_invoices');
+                    fdInv.append('trip_id', tripId);
+                    fdInv.append('invoices', JSON.stringify(invoicesPayload));
+
+                    await fetch(`${apiHost}/update_invoices.php`, { method: 'POST', body: fdInv });
+                    
+                } catch (invErr) {
+                    console.warn("Error guardando invoices:", invErr);
+                }
+
                 Swal.fire('Guardado', result.message, 'success');
                 navigate('/admin-trips');
+
             } else { throw new Error(result.message); }
         } catch (e) { Swal.fire('Error', e.message, 'error'); }
     };
@@ -392,7 +411,6 @@ const EditTripForm = () => {
 
     return (
         <Container maxWidth="xl" sx={{ py: 3, pb: 10 }}>
-            {/* Header Sticky */}
             <Paper sx={{ p: 2, mb: 3, position: 'sticky', top: 10, zIndex: 100, display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: 3 }}>
                 <Box>
                     <Typography variant="h5" fontWeight={700}>Editar Viaje #{formData.trip_number || tripId}</Typography>

@@ -184,6 +184,16 @@ const StageCard = ({
                                     value={etapa.rate_tarifa} onChange={(e) => handleStageChange(index, 'rate_tarifa', e.target.value)} disabled={isFormDisabled} />
                             </Grid>
                             <Grid item xs={6} md={3}>
+                                <TextField 
+                                    fullWidth 
+                                    label="Invoice Number" 
+                                    size="small"
+                                    value={etapa.invoice_number || ''} 
+                                    onChange={(e) => handleStageChange(index, 'invoice_number', e.target.value)} 
+                                    disabled={isFormDisabled} 
+                                />
+                            </Grid>
+                            <Grid item xs={6} md={3}>
                                 <TextField fullWidth label="Millas Cortas" type="number" size="small"
                                     value={etapa.millas_pcmiller} onChange={(e) => handleStageChange(index, 'millas_pcmiller', e.target.value)} disabled={isFormDisabled} />
                             </Grid>
