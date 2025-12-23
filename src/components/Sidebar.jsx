@@ -30,6 +30,7 @@ const iconMap = {
     'Reports': MdBarChart,       // Gráficos/Reporte
     'Mapa': GrMapLocation,              //Mapa
     'Gestor de Acceso': MdList,   // Lista/Gestor de Acceso
+    'Estatus de Unidades': MdTrendingUp, // Estatus de Unidades
 };
 
 const ADMIN_EMAILS_ACCESS = ['1', 'israel_21027', 'angelica_21020'];

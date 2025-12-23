@@ -1,5 +1,7 @@
+import React, { useContext } from 'react';
 import { TableCell, TableRow, TextField, Select, MenuItem, InputAdornment, Box, Typography } from '@mui/material';
 import { PAYMENT_METHODS, STATUS_OPTIONS } from '../constants/finances';
+import { AuthContext } from '../auth/AuthContext';
 
 // Helpers 
 const money = (v) =>
@@ -17,13 +19,43 @@ const renderStatusValue = (val) => {
     );
 };
 
-
 export const StageDetailRow = ({ trip_id, stage, handleStageFieldChange }) => {
+    const { user } = useContext(AuthContext);
+
+    // Lógica de Permisos
+    const ROLES_PERMITIDOS = ['admin', 'dev'];
+    const userRole = (user?.tipo_usuario || '').toLowerCase();
+    const canViewDeficit = ROLES_PERMITIDOS.includes(userRole);
+
+    const isPagada = Number(stage.status) === 3; 
     
+    let deficitContent = '-';
+    let deficitColor = 'text.secondary';
+
+    if (canViewDeficit && isPagada) {
+        const rate = Number(stage.rate_tarifa || 0);
+        const paidStr = String(stage.paid_rate || '').replace(/[^\d.-]/g, '');
+        const paid = Number(paidStr || 0);
+
+        if (rate > 0) {
+            const difference = rate - paid;
+            const percent = (difference / rate) * 100;
+            
+            deficitContent = `${percent.toFixed(2)}%`;
+            
+            if (percent > 0) deficitColor = 'error.main';
+            else if (percent < 0) deficitColor = 'success.main';
+            else deficitColor = 'text.primary';
+        }
+    }
+
     return (
         <TableRow hover selected={!!stage._dirty} sx={{ bgcolor: stage._dirty ? '#fff3e0' : 'transparent' }}> 
-            <TableCell sx={{ fontWeight: 500 }}>{stage.trip_stage_id}</TableCell>
-            <TableCell>{stage.stage_number}</TableCell>
+            {/* <TableCell sx={{ fontWeight: 500 }}>{stage.trip_stage_id}</TableCell> */}
+            <TableCell sx={{ fontWeight: 500 }}>
+                {stage.invoice_number ? stage.invoice_number : <em>-</em>}
+            </TableCell>
+            {/* <TableCell>{stage.stage_number}</TableCell> */}
             <TableCell>{stage.origin || <em>-</em>}</TableCell>
             <TableCell>{stage.destination || <em>-</em>}</TableCell>
             
@@ -64,6 +96,14 @@ export const StageDetailRow = ({ trip_id, stage, handleStageFieldChange }) => {
                     }}
                 />
             </TableCell>
+
+            {canViewDeficit && (
+                <TableCell sx={{ fontWeight: 700 }}>
+                    <Typography variant="body2" color={deficitColor} fontWeight="bold">
+                        {isPagada ? deficitContent : '-'}
+                    </Typography>
+                </TableCell>
+            )}
 
             <TableCell sx={{ minWidth: 220 }}>
                 <Select

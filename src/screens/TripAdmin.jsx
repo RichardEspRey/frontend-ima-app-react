@@ -15,13 +15,13 @@ import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
-dayjs.locale('es'); 
+dayjs.locale('es');
 
 import './css/TripAdmin.css';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 
-import {TripRow} from '../components/TripRow'; 
+import { TripRow } from '../components/TripRow';
 
 // Opciones para el nuevo filtro de dirección
 const DIRECTION_OPTIONS = [
@@ -34,22 +34,22 @@ const TripAdmin = () => {
     const [trips, setTrips] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    
+
     // ** ESTADOS PARA LOS FILTROS PRINCIPALES **
-    const [filterTrip, setFilterTrip] = useState('');     
-    const [filterDriver, setFilterDriver] = useState(''); 
-    const [filterTruck, setFilterTruck] = useState('');   
+    const [filterTrip, setFilterTrip] = useState('');
+    const [filterDriver, setFilterDriver] = useState('');
+    const [filterTruck, setFilterTruck] = useState('');
     const [filterTrailer, setFilterTrailer] = useState('');
-    
+
     // ** ESTADOS PARA FILTROS DE ETAPAS **
     const [filterCompany, setFilterCompany] = useState('');
     const [filterOrigin, setFilterOrigin] = useState('');
     const [filterDestination, setFilterDestination] = useState('');
-    const [filterDirection, setFilterDirection] = useState('All'); 
+    const [filterDirection, setFilterDirection] = useState('All');
 
     // ** Visibilidad de filtros **
     const [showFilters, setShowFilters] = useState(false);
-    
+
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(25);
     const [startDate, setStartDate] = useState(null);
@@ -59,7 +59,6 @@ const TripAdmin = () => {
     const apiHost = import.meta.env.VITE_API_HOST;
 
     const fetchTrips = async () => {
-        // ... (fetchTrips se mantiene igual) ...
         setLoading(true);
         setError(null);
         try {
@@ -121,15 +120,14 @@ const TripAdmin = () => {
         return `${webRootPath}${encodeURIComponent(fileName)}`;
     };
 
-    // Función auxiliar para manejar el cambio de filtro y resetear la paginación
     const handleFilterChange = (setter, value) => {
         setter(value);
         setPage(0);
     };
 
-    // ** LÓGICA DE FILTRADO Y ORDENAMIENTO (useMemo) **
+    // ** LÓGICA DE FILTRADO Y ORDENAMIENTO **
     const filteredAndSortedTrips = useMemo(() => {
-        
+
         // Convertir filtros a minúsculas y limpiar espacios
         const tripFilterValue = filterTrip.trim().toLowerCase();
         const driverLower = filterDriver.trim().toLowerCase();
@@ -138,10 +136,10 @@ const TripAdmin = () => {
         const companyLower = filterCompany.trim().toLowerCase();
         const originLower = filterOrigin.trim().toLowerCase();
         const destinationLower = filterDestination.trim().toLowerCase();
-        const directionValue = filterDirection === 'All' ? null : filterDirection; // 'Going Up' o 'Going Down'
+        const directionValue = filterDirection === 'All' ? null : filterDirection;
 
         const filtered = trips.filter(trip => {
-            
+
             // Filtro de Rango de Fechas (Basado en creation_date) ---
             let tripCreationDate = null;
             if (trip.creation_date) { try { tripCreationDate = dayjs(trip.creation_date); if (!tripCreationDate.isValid()) { tripCreationDate = null; } } catch (e) { } }
@@ -149,16 +147,15 @@ const TripAdmin = () => {
             const end = endDate ? dayjs(endDate).endOf('day') : null;
 
             const withinDateRange = ((!start || (tripCreationDate && tripCreationDate.isSameOrAfter(start))) && (!end || (tripCreationDate && tripCreationDate.isSameOrBefore(end))));
-            
-            
+
+
             // --- 2. Filtros de Campos Principales (Búsqueda Parcial - includes()) ---
-            
+
             // a) Trip Number (Parcial)
             const matchTrip = !tripFilterValue || (
                 String(trip.trip_number || '').trim().toLowerCase().includes(tripFilterValue)
             );
 
-            // b) Driver (Parcial: busca en nombre1 o nombre2)
             const driverNombre = (trip.driver_nombre || '').trim().toLowerCase();
             const driverSecondNombre = (trip.driver_second_nombre || '').trim().toLowerCase();
             const matchDriver = !driverLower || (
@@ -166,95 +163,88 @@ const TripAdmin = () => {
                 driverSecondNombre.includes(driverLower)
             );
 
-            // c) Truck (Parcial)
             const matchTruck = !truckLower || (
                 (trip.truck_unidad || '').trim().toLowerCase().includes(truckLower)
             );
-            
+
             // d) Trailer/Caja (Parcial)
             const matchTrailer = !trailerLower || (
                 (trip.caja_no_caja || '').trim().toLowerCase().includes(trailerLower) ||
                 (trip.caja_externa_no_caja || '').trim().toLowerCase().includes(trailerLower)
             );
 
-            
+
             // --- 3. Filtros de Etapas (Búsqueda Parcial en AL MENOS UNA ETAPA) ---
             const etapas = trip.etapas || [];
-            
+
             // e) Company (Parcial)
-            const matchCompany = !companyLower || etapas.some(e => 
+            const matchCompany = !companyLower || etapas.some(e =>
                 (e.nombre_compania || '').trim().toLowerCase().includes(companyLower)
             );
-            
+
             // f) Origin (Parcial)
-            const matchOrigin = !originLower || etapas.some(e => 
+            const matchOrigin = !originLower || etapas.some(e =>
                 (e.origin || '').trim().toLowerCase().includes(originLower)
             );
-            
+
             // g) Destination (Parcial)
-            const matchDestination = !destinationLower || etapas.some(e => 
+            const matchDestination = !destinationLower || etapas.some(e =>
                 (e.destination || '').trim().toLowerCase().includes(destinationLower)
             );
 
-            
+
             // h) Travel Direction (NUEVO FILTRO INTERDEPENDIENTE)
             let matchDirection = true;
-            
+
             // Solo aplicamos el filtro de dirección si hay un valor seleccionado
             if (directionValue) {
-                 // Debe haber coincidencia en origen Y/O destino, y coincidencia en dirección
+                // Debe haber coincidencia en origen Y/O destino, y coincidencia en dirección
                 const isLocationFiltered = originLower || destinationLower;
 
                 if (isLocationFiltered) {
-                    // Si el usuario filtró por Origen y/o Destino, la etapa DEBE coincidir con la dirección Y con la ubicación filtrada.
                     matchDirection = etapas.some(e => {
                         const etapaDirection = e.travel_direction;
                         const etapaOrigin = (e.origin || '').trim().toLowerCase();
                         const etapaDestination = (e.destination || '').trim().toLowerCase();
-                        
+
                         // 1. Debe coincidir con la dirección
                         const directionMatch = etapaDirection === directionValue;
-                        
+
                         // 2. Debe coincidir con el origen Y/O destino filtrado
                         const locationMatch = (
-                            (!originLower || etapaOrigin.includes(originLower)) && 
+                            (!originLower || etapaOrigin.includes(originLower)) &&
                             (!destinationLower || etapaDestination.includes(destinationLower))
                         );
 
                         return directionMatch && locationMatch;
                     });
                 } else {
-                    // Si hay dirección seleccionada pero NO hay filtros de origen/destino, NO aplicamos la dirección (o se podría deshabilitar el Select)
-                    // Como el requerimiento es que SÓLO se use con Origin/Destination, si no hay location, NO COINCIDE.
-                    // Opcionalmente, podemos dejar matchDirection en true si el Select está deshabilitado.
-                    // Lo más simple es que si el filtro de dirección está activo, DEBE haber coincidencia de ubicación.
-                    matchDirection = false; // Forzamos a que no coincida si no hay filtro de ubicación.
+                    matchDirection = false;
                 }
 
             }
-            
+
 
             // Criterios combinados (TODOS deben ser TRUE)
-            return withinDateRange 
-                && matchTrip 
-                && matchDriver 
-                && matchTruck 
+            return withinDateRange
+                && matchTrip
+                && matchDriver
+                && matchTruck
                 && matchTrailer
                 && matchCompany
                 && matchOrigin
                 && matchDestination
-                && matchDirection; // <-- NUEVO FILTRO
+                && matchDirection; 
         });
 
-        // Lógica de ordenamiento por estado (se mantiene igual)
         return filtered.sort((a, b) => {
-            const statusOrder = (status) => { 
+            const statusOrder = (status) => {
                 if (status === 'In Coming') return 1;
                 if (status === 'In Transit') return 2;
-                if (status === 'Almost Over') return 3; 
+                if (status === 'Almost Over') return 3;
                 if (status === 'Completed') return 4;
                 if (status === 'Cancelled') return 5;
-                return 6; 
+                return 6;
             };
 
             const orderA = statusOrder(a.status);
@@ -268,7 +258,7 @@ const TripAdmin = () => {
             const dateB = b.creation_date ? dayjs(b.creation_date) : dayjs('1900-01-01');
 
             if (dateA.isValid() && dateB.isValid()) {
-                return dateB.diff(dateA); 
+                return dateB.diff(dateA);
             }
             if (!dateA.isValid() && dateB.isValid()) return 1;
             if (dateA.isValid() && !dateB.isValid()) return -1;
@@ -276,12 +266,12 @@ const TripAdmin = () => {
             return (a.trip_number || '').localeCompare(b.trip_number || '');
         });
     }, [
-        trips, 
-        filterTrip, filterDriver, filterTruck, filterTrailer, 
+        trips,
+        filterTrip, filterDriver, filterTruck, filterTrailer,
         filterCompany, filterOrigin, filterDestination, filterDirection, // Nueva dependencia
         startDate, endDate
     ]);
-    
+
     // ... (Handlers y lógica de fetch se mantienen igual) ...
     const handleEditTrip = (tripId) => {
         if (!tripId) { console.error("ID inválido"); return; }
@@ -293,7 +283,7 @@ const TripAdmin = () => {
         const confirmation = await Swal.fire({
             title: '¿Marcar como "Casi Finalizado"?',
             text: `Viaje #${tripNumber} será marcado como "Casi Finalizado" y sus recursos serán liberados.`,
-            icon: 'info', 
+            icon: 'info',
             showCancelButton: true,
             confirmButtonText: 'Sí, continuar',
             cancelButtonText: 'Cancelar'
@@ -302,13 +292,13 @@ const TripAdmin = () => {
             try {
                 const apiUrl = `${apiHost}/new_trips.php`;
                 const formData = new FormData();
-                formData.append('op', 'AlmostOverTrip'); 
+                formData.append('op', 'AlmostOverTrip');
                 formData.append('trip_id', tripId);
                 const response = await fetch(apiUrl, { method: 'POST', body: formData });
                 const result = await response.json();
                 if (response.ok && result.status === 'success') {
                     Swal.fire('¡Éxito!', result.message || 'Viaje marcado como "Casi Finalizado" y recursos liberados.', 'success');
-                    fetchTrips(); 
+                    fetchTrips();
                 } else {
                     throw new Error(result.error || result.message || 'No se pudo marcar como "Casi Finalizado".');
                 }
@@ -340,20 +330,59 @@ const TripAdmin = () => {
             } catch (err) { Swal.fire('Error', `Error al finalizar: ${err.message}`, 'error'); }
         }
     };
-    
+
     const handleSummary = (tripId) => {
-        if (!tripId) { 
-            console.error("ID de viaje inválido para resumen"); 
-            return; 
+        if (!tripId) {
+            console.error("ID de viaje inválido para resumen");
+            return;
         }
-        navigate(`/ResumenTrip/${tripId}`); 
+        navigate(`/ResumenTrip/${tripId}`);
     };
 
     if (loading) { return (<Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}> <CircularProgress /> <Typography ml={2}>Cargando...</Typography> </Box>); }
 
-    // Bandera para deshabilitar el filtro de Dirección si no hay Origen/Destino
     const isDirectionFilterDisabled = !(filterOrigin.trim() || filterDestination.trim());
 
+    const userType = localStorage.getItem('type');
+    const isAdmin = userType === 'admin';
+    const handleReactivateTrip = async (tripId, tripNumber) => {
+        if (!tripId) return;
+
+        const confirmation = await Swal.fire({
+            title: '¿Reactivar viaje?',
+            text: `El viaje #${tripNumber} será reactivado.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, reactivar',
+            cancelButtonText: 'Cancelar'
+        });
+
+        if (!confirmation.isConfirmed) return;
+
+        try {
+            const apiUrl = `${apiHost}/new_trips.php`;
+            const formData = new FormData();
+            formData.append('op', 'activate_trip');
+            formData.append('trip_id', tripId);
+
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (response.ok && result.status === 'success') {
+                Swal.fire('¡Éxito!', result.message || 'Viaje reactivado correctamente.', 'success');
+                fetchTrips();
+            } else {
+                throw new Error(result.error || result.message || 'No se pudo reactivar el viaje.');
+            }
+        } catch (err) {
+            console.error('Error al reactivar viaje:', err);
+            Swal.fire('Error', err.message, 'error');
+        }
+    };
 
     return (
         <div className="trip-admin">
@@ -371,81 +400,80 @@ const TripAdmin = () => {
                     {showFilters ? 'Ocultar Filtros' : 'Mostrar Filtros'}
                 </Button>
             </Box>
-            
+
             {/* --- CONTENEDOR DE FILTROS --- */}
             <Collapse in={showFilters} timeout="auto" unmountOnExit>
                 <Paper sx={{ p: 2, mb: 3 }}>
                     <Typography variant="h6" gutterBottom>Filtros de Búsqueda (Búsqueda Parcial)</Typography>
                     <Grid container spacing={2} alignItems="center">
-                        
+
                         {/* Filtros de Identificación (Fila 1) */}
                         <Grid item xs={12} sm={3}>
-                            <TextField 
-                                label="Trip Number" 
-                                size="small" 
-                                fullWidth 
-                                value={filterTrip} 
-                                onChange={(e) => handleFilterChange(setFilterTrip, e.target.value)} 
+                            <TextField
+                                label="Trip Number"
+                                size="small"
+                                fullWidth
+                                value={filterTrip}
+                                onChange={(e) => handleFilterChange(setFilterTrip, e.target.value)}
                                 placeholder="Ej: 101"
                             />
                         </Grid>
                         <Grid item xs={12} sm={3}>
-                            <TextField 
-                                label="Driver" 
-                                size="small" 
-                                fullWidth 
-                                value={filterDriver} 
-                                onChange={(e) => handleFilterChange(setFilterDriver, e.target.value)} 
+                            <TextField
+                                label="Driver"
+                                size="small"
+                                fullWidth
+                                value={filterDriver}
+                                onChange={(e) => handleFilterChange(setFilterDriver, e.target.value)}
                             />
                         </Grid>
                         <Grid item xs={12} sm={3}>
-                            <TextField 
-                                label="Truck" 
-                                size="small" 
-                                fullWidth 
-                                value={filterTruck} 
-                                onChange={(e) => handleFilterChange(setFilterTruck, e.target.value)} 
+                            <TextField
+                                label="Truck"
+                                size="small"
+                                fullWidth
+                                value={filterTruck}
+                                onChange={(e) => handleFilterChange(setFilterTruck, e.target.value)}
                             />
                         </Grid>
                         <Grid item xs={12} sm={3}>
-                            <TextField 
-                                label="Trailer/Caja" 
-                                size="small" 
-                                fullWidth 
-                                value={filterTrailer} 
-                                onChange={(e) => handleFilterChange(setFilterTrailer, e.target.value)} 
+                            <TextField
+                                label="Trailer/Caja"
+                                size="small"
+                                fullWidth
+                                value={filterTrailer}
+                                onChange={(e) => handleFilterChange(setFilterTrailer, e.target.value)}
                             />
                         </Grid>
 
-                        {/* Filtros de Etapas (Fila 2) */}
                         <Grid item xs={12} sm={3}>
-                            <TextField 
-                                label="Compañía (Etapa)" 
-                                size="small" 
-                                fullWidth 
-                                value={filterCompany} 
-                                onChange={(e) => handleFilterChange(setFilterCompany, e.target.value)} 
+                            <TextField
+                                label="Compañía (Etapa)"
+                                size="small"
+                                fullWidth
+                                value={filterCompany}
+                                onChange={(e) => handleFilterChange(setFilterCompany, e.target.value)}
                             />
                         </Grid>
                         <Grid item xs={12} sm={3}>
-                            <TextField 
-                                label="Origen (Etapa)" 
-                                size="small" 
-                                fullWidth 
-                                value={filterOrigin} 
-                                onChange={(e) => handleFilterChange(setFilterOrigin, e.target.value)} 
+                            <TextField
+                                label="Origen (Etapa)"
+                                size="small"
+                                fullWidth
+                                value={filterOrigin}
+                                onChange={(e) => handleFilterChange(setFilterOrigin, e.target.value)}
                             />
                         </Grid>
                         <Grid item xs={12} sm={3}>
-                            <TextField 
-                                label="Destino (Etapa)" 
-                                size="small" 
-                                fullWidth 
-                                value={filterDestination} 
-                                onChange={(e) => handleFilterChange(setFilterDestination, e.target.value)} 
+                            <TextField
+                                label="Destino (Etapa)"
+                                size="small"
+                                fullWidth
+                                value={filterDestination}
+                                onChange={(e) => handleFilterChange(setFilterDestination, e.target.value)}
                             />
                         </Grid>
-                        
+
                         {/* NUEVO FILTRO: Dirección (Fila 2, Columna 4) */}
                         <Grid item xs={12} sm={3}>
                             <FormControl size="small" fullWidth disabled={isDirectionFilterDisabled}>
@@ -469,7 +497,7 @@ const TripAdmin = () => {
                                 </Typography>
                             )}
                         </Grid>
-                        
+
 
                         {/* Filtros de Fecha y Acciones (Fila 3) */}
                         <Grid item xs={12}>
@@ -480,8 +508,8 @@ const TripAdmin = () => {
                                     selectsStart startDate={startDate}
                                     endDate={endDate} placeholderText="Fecha inicio"
                                     dateFormat="dd/MM/yyyy"
-                                    className="form-input-datepicker" 
-                                    isClearable 
+                                    className="form-input-datepicker"
+                                    isClearable
                                 />
                                 <DatePicker
                                     selected={endDate}
@@ -491,14 +519,14 @@ const TripAdmin = () => {
                                     minDate={startDate}
                                     placeholderText="Fecha fin"
                                     dateFormat="dd/MM/yyyy"
-                                    className="form-input-datepicker" 
-                                    isClearable 
+                                    className="form-input-datepicker"
+                                    isClearable
                                 />
-                                <Button 
-                                    variant="outlined" 
-                                    onClick={() => { 
+                                <Button
+                                    variant="outlined"
+                                    onClick={() => {
                                         // Limpiar todos los filtros
-                                        setFilterTrip(''); 
+                                        setFilterTrip('');
                                         setFilterDriver('');
                                         setFilterTruck('');
                                         setFilterTrailer('');
@@ -506,18 +534,18 @@ const TripAdmin = () => {
                                         setFilterOrigin('');
                                         setFilterDestination('');
                                         setFilterDirection('All'); // Limpiar la dirección
-                                        setStartDate(null); 
-                                        setEndDate(null); 
-                                        setPage(0); 
-                                    }} 
+                                        setStartDate(null);
+                                        setEndDate(null);
+                                        setPage(0);
+                                    }}
                                     size="small"
                                 >
                                     Limpiar Todo
                                 </Button>
-                                <Button 
-                                    variant="contained" 
-                                    onClick={fetchTrips} 
-                                    disabled={loading} 
+                                <Button
+                                    variant="contained"
+                                    onClick={fetchTrips}
+                                    disabled={loading}
                                     size="small"
                                 >
                                     Refrescar
@@ -527,7 +555,6 @@ const TripAdmin = () => {
                     </Grid>
                 </Paper>
             </Collapse>
-            {/* --- FIN CONTENEDOR DE FILTROS --- */}
 
             {error && <Alert severity="error" sx={{ my: 2 }}>Error al cargar: {error}</Alert>}
 
@@ -535,16 +562,22 @@ const TripAdmin = () => {
                 <Table stickyHeader size="small">
                     <TableHead>
                         <TableRow>
-                            <TableCell /> 
+                            <TableCell />
                             <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>Trip</TableCell>
                             <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>Driver(s)</TableCell>
                             <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>Truck</TableCell>
                             <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>Trailer</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>Initial Date</TableCell> 
+                            <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>Initial Date</TableCell>
                             <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>Status</TableCell>
                             <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>Return Date</TableCell>
                             <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>Actions</TableCell>
                             <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>Resumen</TableCell>
+                            {isAdmin && (
+                                <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>
+                                    Acciones especiales
+                                </TableCell>
+                            )}
+
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -562,9 +595,12 @@ const TripAdmin = () => {
                                         onEdit={handleEditTrip}
                                         onFinalize={handleFinalizeTrip}
                                         onAlmostOver={handleAlmostOverTrip}
+                                        onReactivate={handleReactivateTrip}
+                                        isAdmin={isAdmin}
                                         getDocumentUrl={getDocumentUrl}
                                         onSummary={handleSummary}
                                     />
+
                                 ))
                         )}
                     </TableBody>
