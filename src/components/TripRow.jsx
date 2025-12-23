@@ -12,7 +12,6 @@ import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import localizedFormat from 'dayjs/plugin/localizedFormat';
 
-// Re-extender dayjs y configurar locale (Necesario ya que este componente lo usa intensamente)
 dayjs.extend(updateLocale);
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
@@ -72,7 +71,6 @@ export const TripRow = ({ trip, onEdit, onFinalize, onAlmostOver, getDocumentUrl
     const trailerTooltipContent = (
         <>
             <Typography color="inherit" sx={{ fontWeight: 'bold', mb: 0.5 }}>Detalles del Tráiler</Typography>
-            {/* Lógica para mostrar info de caja interna o externa */}
             {trip.caja_id && (
                 <Typography variant="body2" component="div">
                     <b>Tipo:</b> Interno<br />
@@ -91,7 +89,6 @@ export const TripRow = ({ trip, onEdit, onFinalize, onAlmostOver, getDocumentUrl
                     <b>Estado:</b> {trip.caja_externa_estado || 'N/A'}<br />
                 </Typography>
             )}
-            {/* Mensaje por si no hay datos */}
             {!trip.caja_id && !trip.caja_externa_id && (
                 <Typography variant="body2">No hay detalles adicionales.</Typography>
             )}
@@ -177,7 +174,6 @@ export const TripRow = ({ trip, onEdit, onFinalize, onAlmostOver, getDocumentUrl
                             else { label = "Editar" }
                             return (<Button size="small" variant="outlined" onClick={() => onEdit(trip.trip_id)}>{label}</Button>);
                         })()}
-                        {/* NUEVO BOTÓN: Casi Finalizar */}
                         <Button
                             size="small"
                             variant="outlined" 
@@ -185,7 +181,6 @@ export const TripRow = ({ trip, onEdit, onFinalize, onAlmostOver, getDocumentUrl
                             onClick={() => onAlmostOver(trip.trip_id, trip.trip_number)}
                             disabled={trip.status === 'Completed' || trip.status === 'Cancelled' || trip.status === 'Almost Over'}
                         >Almost Over</Button>
-                        {/* FIN NUEVO BOTÓN */}
                         <Button
                             size="small"
                             variant="contained"
@@ -261,7 +256,6 @@ export const TripRow = ({ trip, onEdit, onFinalize, onAlmostOver, getDocumentUrl
                                                 </Grid>
                                             );
                                         } else {
-                                            // LÓGICA EXISTENTE: Para etapas normales, de cruce, etc.
                                             let tooltipTitle = `Compañía: ${etapa.nombre_compania || '-'}\nBodega Origen: ${etapa.warehouse_origin_name || '-'}\nBodega Destino: ${etapa.warehouse_destination_name || '-'}\nMillas: ${etapa.millas_pcmiller || '-'}`;
 
                                             if (Array.isArray(etapa.stops_in_transit) && etapa.stops_in_transit.length > 0) {
