@@ -1,29 +1,29 @@
-import React, { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import {
-  Box,
-  Paper,
-  Typography,
-  Table,
-  TableHead,
-  TableBody,
-  TableRow,
-  TableCell,
-  TextField,
-  Divider,
-  Button,
+  Box, Paper, Typography, Table, TableHead, TableBody, TableRow, TableCell,
+  TextField, Divider, Button, Grid, Stack, Chip, Card, CardContent, InputAdornment, IconButton, Tooltip
 } from "@mui/material";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
-import { useNavigate } from 'react-router-dom';
+
+import PrintIcon from '@mui/icons-material/Print';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import PersonIcon from '@mui/icons-material/Person';
+import RouteIcon from '@mui/icons-material/Route';
+
 import GastosModal from "../../components/GastosModal";
+
+const apiHost = import.meta.env.VITE_API_HOST;
 
 const TicketPayment = () => {
   const navigate = useNavigate();
-  const apiHost = import.meta.env.VITE_API_HOST;
   const { trip_id } = useParams();
-
   const printRef = useRef(null);
 
   const [loading, setLoading] = useState(true);
@@ -34,18 +34,13 @@ const TicketPayment = () => {
   const [ajustes, setAjustes] = useState({});
   const [openGastosModal, setOpenGastosModal] = useState(false);
 
-  // === FETCH PRINCIPAL ===
   const fetchTicket = useCallback(async () => {
     try {
       const fd = new FormData();
       fd.append("op", "get_ticket_pago");
       fd.append("trip_id", trip_id);
 
-      const res = await fetch(`${apiHost}/formularios.php`, {
-        method: "POST",
-        body: fd,
-      });
-
+      const res = await fetch(`${apiHost}/formularios.php`, { method: "POST", body: fd });
       const json = await res.json();
 
       if (json.status === "success") {
@@ -62,62 +57,51 @@ const TicketPayment = () => {
     }
   }, [apiHost, trip_id]);
 
+  useEffect(() => { fetchTicket(); }, [fetchTicket]);
+
   const AutorizarPago = async () => {
-    try {
-    
-      const fd = new FormData();
-      fd.append("op", "send_ticket_pago");
-      fd.append("trip_id", trip_id);
-      fd.append("driver_id", info.driver_id);
-      fd.append("amount", totalPagar);
-
-      const res = await fetch(`${apiHost}/formularios.php`, {
-        method: "POST",
-        body: fd,
-      });
-
-      const json = await res.json();
-      console.log(json)
-      if (json.status === "success") {
-        Swal.fire({
-          icon: "success",
-          title: "¡Éxito!",
-          text: "Pago Autorizado."
-        });
-        navigate(`/paymentDrivers`);
-
-      } else {
-        Swal.fire("Sin datos", "Error al autorizar pago.", "info");
-      }
-
-    } catch (err) {
-      Swal.fire("Error", "No se pudo cargar la información.", "error");
-    } finally {
-      setLoading(false);
-    }
+    Swal.fire({
+        title: '¿Autorizar Pago?',
+        text: `Total a pagar: $${totalPagar.toFixed(2)}`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#2e7d32',
+        confirmButtonText: 'Sí, Autorizar'
+    }).then(async (result) => {
+        if(result.isConfirmed) {
+            try {
+                const fd = new FormData();
+                fd.append("op", "send_ticket_pago");
+                fd.append("trip_id", trip_id);
+                fd.append("driver_id", info.driver_id);
+                fd.append("amount", totalPagar);
+          
+                const res = await fetch(`${apiHost}/formularios.php`, { method: "POST", body: fd });
+                const json = await res.json();
+                
+                if (json.status === "success") {
+                  Swal.fire("¡Éxito!", "Pago Autorizado.", "success");
+                  navigate(`/paymentDrivers`);
+                } else {
+                  Swal.fire("Error", "Error al autorizar pago.", "error");
+                }
+              } catch (err) {
+                Swal.fire("Error", "No se pudo procesar la solicitud.", "error");
+              }
+        }
+    });
   };
 
-  useEffect(() => {
-    fetchTicket();
-  }, [fetchTicket]);
-
-  // === AJUSTES DE MILLAS ===
   const handleAjuste = (stageNum, value) => {
-    setAjustes((prev) => ({
-      ...prev,
-      [stageNum]: Number(value) || 0,
-    }));
+    setAjustes((prev) => ({ ...prev, [stageNum]: Number(value) || 0 }));
   };
 
-  // === CORRECCIÓN DE DESTINO PARA ETAPAS VACÍAS ===
   const getDestino = (stage, index) => {
     if (stage.stageType !== "emptyMileage") return stage.destination;
-
     const next = stages[index + 1];
     return next?.origin || "N/A";
   };
 
-  // === TOTALES ===
   const totalMillasAjustadas = stages.reduce((acc, s) => {
     const adj = ajustes[s.stage_number] ?? 0;
     return acc + (Number(s.millas_pcmiller) - adj);
@@ -128,197 +112,241 @@ const TicketPayment = () => {
     Number(avance || 0) -
     Number(gastos || 0);
 
-  // =============================================
-  // === FUNCIÓN GENERAR PDF SIN COLUMNAS EXTRA ===
-  // =============================================
   const handlePrint = async () => {
     const element = printRef.current;
-
-    // Ocultar columnas que NO deben imprimirse
     const ajustesCols = element.querySelectorAll(".col-ajuste");
-    const finalesCols = element.querySelectorAll(".col-final");
+    const finalesCols = element.querySelectorAll(".col-final"); 
+    
     ajustesCols.forEach(col => (col.style.display = "none"));
     finalesCols.forEach(col => (col.style.display = "none"));
+    
+    element.style.padding = "20px";
 
-    // Aumentar padding SOLO para el render del PDF
-    element.style.padding = "5px";
-
-    // Captura
-    const canvas = await html2canvas(element, { scale: 2 });
+    const canvas = await html2canvas(element, { scale: 2, backgroundColor: "#ffffff" });
     const imgData = canvas.toDataURL("image/png");
-
-    // Crear PDF con márgenes
+    
     const pdf = new jsPDF("p", "mm", "letter");
-    const marginX = 10;
-    const marginY = 10;
-    const pdfWidth = pdf.internal.pageSize.getWidth() - marginX * 2;
+    const pdfWidth = pdf.internal.pageSize.getWidth() - 20;
     const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
 
-    pdf.addImage(imgData, "PNG", marginX, marginY, pdfWidth, pdfHeight);
-    pdf.save(`ticket_${trip_id}.pdf`);
+    pdf.addImage(imgData, "PNG", 10, 10, pdfWidth, pdfHeight);
+    pdf.save(`Ticket_Pago_${info?.trip_number || trip_id}.pdf`);
 
-    // Restaurar estilos
     ajustesCols.forEach(col => (col.style.display = ""));
     finalesCols.forEach(col => (col.style.display = ""));
     element.style.padding = "";
   };
 
-
-  if (loading) return <Typography>Cargando…</Typography>;
+  if (loading) return <Box p={5} textAlign="center"><Typography>Cargando información del ticket...</Typography></Box>;
 
   return (
-    <Paper sx={{ p: 3, m: 2 }}>
-
-      {/* TÍTULO + BOTÓN IMPRIMIR */}
-      <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 1, gap: 2 }}>
-        <Button variant="contained" color="primary" onClick={() => navigate(`/paymentDrivers`)}>
-          Volver
+    <Box sx={{ p: 3, maxWidth: 1200, margin: '0 auto' }}>
+      
+      <Stack direction="row" justifyContent="space-between" alignItems="center" mb={3}>
+        <Button startIcon={<ArrowBackIcon />} onClick={() => navigate(`/paymentDrivers`)} sx={{ color: 'text.secondary' }}>
+            Volver a Pagos
         </Button>
-        <Button variant="outlined" color="secondary" onClick={handlePrint}>
-          Imprimir PDF
-        </Button>
-      </Box>
-      {/* === CONTENIDO A IMPRIMIR === */}
-      <div ref={printRef}>
-        <Typography variant="h4" fontWeight={700}>
-          Ticket de Pago
-        </Typography>
-        <Divider sx={{ my: 2 }} />
-        {/* INFO PRINCIPAL */}
-        <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-          <Box>
-            <Typography fontWeight={700}>Nombre: {info.driver_name}</Typography>
-            <Typography fontWeight={700}>Truck: {info.unidad}</Typography>
-            <Typography>Trip: {info.trip_number}</Typography>
-          </Box>
+        <Stack direction="row" spacing={2}>
+            <Button variant="outlined" startIcon={<PrintIcon />} onClick={handlePrint}>
+                Imprimir PDF
+            </Button>
+            <Button variant="contained" color="success" startIcon={<CheckCircleIcon />} onClick={AutorizarPago}>
+                Autorizar Pago
+            </Button>
+        </Stack>
+      </Stack>
 
-          <Box>
-            <Typography fontWeight={700}>Pago de milla: ${info.valor_milla}</Typography>
-            <Typography className="col-final" fontWeight={700}>
-              Total de millas recorridas: {info.total_millas_cortas}
-            </Typography>
-          </Box>
-        </Box>
+      <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }} ref={printRef}>
+        
+        <Stack direction="row" justifyContent="space-between" alignItems="flex-start" mb={3} pb={2} borderBottom="1px solid #eee">
+            <Box>
+                <Typography variant="h4" fontWeight={800} color="primary.main">Ticket de Pago</Typography>
+                <Typography variant="body2" color="text.secondary">ID Transacción: {trip_id}</Typography>
+            </Box>
+            <Box textAlign="right">
+                <Chip 
+                    icon={<RouteIcon />} 
+                    label={`Trip #${info.trip_number}`} 
+                    color="primary" 
+                    variant="outlined" 
+                    sx={{ fontWeight: 'bold', fontSize: '1rem', px: 1 }} 
+                />
+            </Box>
+        </Stack>
 
-        <Divider sx={{ my: 3 }} />
+        <Grid container spacing={3} mb={4}>
+            <Grid item xs={12} md={8}>
+                <Card variant="outlined" sx={{ bgcolor: '#f8f9fa', height: '100%' }}>
+                    <CardContent>
+                        <Grid container spacing={2}>
+                            <Grid item xs={6}>
+                                <Stack direction="row" spacing={1} alignItems="center" mb={1}>
+                                    <PersonIcon color="action" fontSize="small" />
+                                    <Typography variant="caption" textTransform="uppercase" fontWeight={700} color="text.secondary">Conductor</Typography>
+                                </Stack>
+                                <Typography variant="h6" fontWeight={600}>{info.driver_name}</Typography>
+                            </Grid>
+                            <Grid item xs={6}>
+                                <Stack direction="row" spacing={1} alignItems="center" mb={1}>
+                                    <LocalShippingIcon color="action" fontSize="small" />
+                                    <Typography variant="caption" textTransform="uppercase" fontWeight={700} color="text.secondary">Unidad</Typography>
+                                </Stack>
+                                <Typography variant="h6" fontWeight={600}>{info.unidad}</Typography>
+                            </Grid>
+                        </Grid>
+                    </CardContent>
+                </Card>
+            </Grid>
+            <Grid item xs={12} md={4}>
+                 <Card variant="outlined" sx={{ height: '100%', borderColor: 'primary.light' }}>
+                    <CardContent>
+                        <Typography variant="caption" textTransform="uppercase" fontWeight={700} color="primary.main">Tarifa por Milla</Typography>
+                        <Typography variant="h4" fontWeight={700} color="primary.main">${info.valor_milla}</Typography>
+                        <Typography variant="body2" color="text.secondary" mt={1}>Total Recorrido: {info.total_millas_cortas} mi</Typography>
+                    </CardContent>
+                 </Card>
+            </Grid>
+        </Grid>
 
-        {/* TABLA */}
-        <Table>
-          <TableHead>
+        <Typography variant="h6" fontWeight={700} gutterBottom sx={{ mt: 4 }}>Detalle de Recorrido</Typography>
+        <Table size="small" sx={{ mb: 4 }}>
+          <TableHead sx={{ bgcolor: '#f5f5f5' }}>
             <TableRow>
-              <TableCell sx={{ fontWeight: 700 }}>Zip destino</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Ciudad destino</TableCell>
-              <TableCell className="col-final" sx={{ fontWeight: 700 }}>Millas</TableCell>
-
-              <TableCell className="col-ajuste" sx={{ fontWeight: 700 }}>
-                Ajuste de millas
-              </TableCell>
-
-              <TableCell sx={{ fontWeight: 700 }}>
-                Millas finales
-              </TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>Destino (Zip / Ciudad)</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>Tipo Etapa</TableCell>
+              <TableCell align="right" sx={{ fontWeight: 700 }}>Millas Orig.</TableCell>
+              <TableCell align="center" sx={{ fontWeight: 700 }} className="col-ajuste">Ajuste (-)</TableCell>
+              <TableCell align="right" sx={{ fontWeight: 700 }}>Millas Finales</TableCell>
             </TableRow>
           </TableHead>
-
           <TableBody>
             {stages.map((s, i) => {
               const ajuste = ajustes[s.stage_number] ?? 0;
               const finalMillas = Number(s.millas_pcmiller) - ajuste;
+              const isEmtpy = s.stageType === "emptyMileage";
 
               return (
                 <TableRow key={s.stage_number}>
                   <TableCell>
-                    {s.zip_code_destination || "N/A"}{" "}
-                    {s.stageType === "normalTrip" && "(etapa normal)"}
-                    {s.stageType === "emptyMileage" && "(etapa vacía)"}
+                    <Typography variant="body2" fontWeight={600}>{s.zip_code_destination || "N/A"}</Typography>
+                    <Typography variant="caption" color={isEmtpy ? "error" : "text.secondary"}>
+                         {getDestino(s, i)}
+                    </Typography>
                   </TableCell>
-
-                  <TableCell
-                    sx={{ color: s.stageType === "emptyMileage" ? "red" : "inherit" }}
-                  >
-                    {getDestino(s, i)}
+                  <TableCell>
+                    <Chip 
+                        label={isEmtpy ? "Vacía" : "Normal"} 
+                        size="small" 
+                        color={isEmtpy ? "default" : "primary"} 
+                        variant="outlined"
+                        sx={{ height: 20, fontSize: '0.7rem' }}
+                    />
                   </TableCell>
-
-                  <TableCell className="col-final">{s.millas_pcmiller}</TableCell>
-
-                  <TableCell className="col-ajuste">
+                  <TableCell align="right" sx={{ fontFamily: 'monospace' }}>{s.millas_pcmiller}</TableCell>
+                  
+                  <TableCell align="center" className="col-ajuste">
                     <TextField
                       size="small"
                       type="number"
-                      sx={{ width: "100px" }}
+                      placeholder="0"
                       value={ajustes[s.stage_number] ?? ""}
                       onChange={(e) => handleAjuste(s.stage_number, e.target.value)}
+                      sx={{ width: 80, '& input': { textAlign: 'center', p: 0.5 } }}
                     />
                   </TableCell>
 
-                  <TableCell >{finalMillas}</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 700 }}>{finalMillas}</TableCell>
                 </TableRow>
               );
             })}
           </TableBody>
         </Table>
 
-        <Divider sx={{ my: 3 }} />
+        <Divider sx={{ mb: 4 }} />
 
-        {/* TOTAL A PAGAR */}
-        <Box sx={{ display: "flex", justifyContent: "space-between", mt: 2 }}>
-          <TextField
-            size="small"
-            label="Avance"
-            type="number"
-            onChange={(e) => setAvance(e.target.value)}
-          />
-          <Box sx={{ display: "flex", justifyContent: "space-between", gap: 2 }}>
-            <TextField
-              size="small"
-              label="Gastos"
-              value={gastos}
-              type="number"
-              onChange={(e) => setGastos(e.target.value)}
-            />
+        <Grid container spacing={4}>
+            <Grid item xs={12} md={6}>
+                <Typography variant="subtitle2" textTransform="uppercase" color="text.secondary" mb={2}>Deducciones y Gastos</Typography>
+                <Stack spacing={2}>
+                    <TextField
+                        fullWidth
+                        size="small"
+                        label="Anticipo / Avance"
+                        type="number"
+                        value={avance}
+                        onChange={(e) => setAvance(e.target.value)}
+                        InputProps={{
+                            startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                        }}
+                    />
+                    <Stack direction="row" spacing={1}>
+                        <TextField
+                            fullWidth
+                            size="small"
+                            label="Gastos de Viaje"
+                            value={gastos}
+                            type="number"
+                            onChange={(e) => setGastos(e.target.value)}
+                            InputProps={{
+                                startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                            }}
+                        />
+                        <Tooltip title="Ver detalle de gastos">
+                            <IconButton 
+                                color="primary" 
+                                onClick={() => setOpenGastosModal(true)} 
+                                sx={{ border: '1px solid #ddd', borderRadius: 1 }}
+                                className="col-final"
+                            >
+                                <ReceiptLongIcon />
+                            </IconButton>
+                        </Tooltip>
+                    </Stack>
+                </Stack>
+            </Grid>
 
-            <Button className="col-final"
-              variant="contained"
-              color="primary"
-              onClick={() => setOpenGastosModal(true)}
-            >
-              Ver gastos
-            </Button>
-          </Box>
+            <Grid item xs={12} md={6}>
+                <Paper 
+                    elevation={0} 
+                    sx={{ 
+                        bgcolor: '#263238', 
+                        color: '#fff', 
+                        p: 3, 
+                        borderRadius: 2, 
+                        textAlign: 'right' 
+                    }}
+                >
+                    <Stack spacing={1}>
+                        <Stack direction="row" justifyContent="space-between">
+                            <Typography variant="body2" color="rgba(255,255,255,0.7)">Millas Totales (Ajustadas):</Typography>
+                            <Typography variant="body1" fontWeight={600}>{totalMillasAjustadas} mi</Typography>
+                        </Stack>
+                        <Stack direction="row" justifyContent="space-between">
+                             <Typography variant="body2" color="rgba(255,255,255,0.7)">Subtotal Bruto:</Typography>
+                             <Typography variant="body1">
+                                ${(Number(info?.valor_milla ?? 0) * totalMillasAjustadas).toFixed(2)}
+                             </Typography>
+                        </Stack>
+                        <Divider sx={{ borderColor: 'rgba(255,255,255,0.2)', my: 1 }} />
+                        <Stack direction="row" justifyContent="space-between" alignItems="center">
+                            <Typography variant="h6" fontWeight={400}>Total a Pagar:</Typography>
+                            <Typography variant="h3" fontWeight={700}>
+                                ${isNaN(totalPagar) ? "0.00" : totalPagar.toFixed(2)}
+                            </Typography>
+                        </Stack>
+                    </Stack>
+                </Paper>
+            </Grid>
+        </Grid>
+      </Paper>
 
-
-          <Typography fontWeight={700}>
-            Millas finales: {totalMillasAjustadas}
-          </Typography>
-
-          <Typography fontWeight={700}>
-            Total a pagar: ${isNaN(totalPagar) ? "0.00" : totalPagar.toFixed(2)}
-          </Typography>
-        </Box>
-      </div>
-
-      <Divider sx={{ my: 3 }} />
-
-      {/* BOTÓN PAGO */}
-      <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
-        <Button variant="contained" color="primary"
-          onClick={AutorizarPago}
-        >
-          Autorizar pago
-        </Button>
-      </Box>
       <GastosModal
         open={openGastosModal}
         onClose={() => setOpenGastosModal(false)}
         tripId={trip_id}
       />
-
-    </Paper>
-
+    </Box>
   );
-
 };
-
-
 
 export default TicketPayment;

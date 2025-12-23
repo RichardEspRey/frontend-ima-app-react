@@ -120,13 +120,12 @@ const TripAdmin = () => {
         return `${webRootPath}${encodeURIComponent(fileName)}`;
     };
 
-    // Función auxiliar para manejar el cambio de filtro y resetear la paginación
     const handleFilterChange = (setter, value) => {
         setter(value);
         setPage(0);
     };
 
-    // ** LÓGICA DE FILTRADO Y ORDENAMIENTO (useMemo) **
+    // ** LÓGICA DE FILTRADO Y ORDENAMIENTO **
     const filteredAndSortedTrips = useMemo(() => {
 
         // Convertir filtros a minúsculas y limpiar espacios
@@ -137,7 +136,7 @@ const TripAdmin = () => {
         const companyLower = filterCompany.trim().toLowerCase();
         const originLower = filterOrigin.trim().toLowerCase();
         const destinationLower = filterDestination.trim().toLowerCase();
-        const directionValue = filterDirection === 'All' ? null : filterDirection; // 'Going Up' o 'Going Down'
+        const directionValue = filterDirection === 'All' ? null : filterDirection;
 
         const filtered = trips.filter(trip => {
 
@@ -157,7 +156,6 @@ const TripAdmin = () => {
                 String(trip.trip_number || '').trim().toLowerCase().includes(tripFilterValue)
             );
 
-            // b) Driver (Parcial: busca en nombre1 o nombre2)
             const driverNombre = (trip.driver_nombre || '').trim().toLowerCase();
             const driverSecondNombre = (trip.driver_second_nombre || '').trim().toLowerCase();
             const matchDriver = !driverLower || (
@@ -165,7 +163,6 @@ const TripAdmin = () => {
                 driverSecondNombre.includes(driverLower)
             );
 
-            // c) Truck (Parcial)
             const matchTruck = !truckLower || (
                 (trip.truck_unidad || '').trim().toLowerCase().includes(truckLower)
             );
@@ -205,7 +202,6 @@ const TripAdmin = () => {
                 const isLocationFiltered = originLower || destinationLower;
 
                 if (isLocationFiltered) {
-                    // Si el usuario filtró por Origen y/o Destino, la etapa DEBE coincidir con la dirección Y con la ubicación filtrada.
                     matchDirection = etapas.some(e => {
                         const etapaDirection = e.travel_direction;
                         const etapaOrigin = (e.origin || '').trim().toLowerCase();
@@ -223,11 +219,7 @@ const TripAdmin = () => {
                         return directionMatch && locationMatch;
                     });
                 } else {
-                    // Si hay dirección seleccionada pero NO hay filtros de origen/destino, NO aplicamos la dirección (o se podría deshabilitar el Select)
-                    // Como el requerimiento es que SÓLO se use con Origin/Destination, si no hay location, NO COINCIDE.
-                    // Opcionalmente, podemos dejar matchDirection en true si el Select está deshabilitado.
-                    // Lo más simple es que si el filtro de dirección está activo, DEBE haber coincidencia de ubicación.
-                    matchDirection = false; // Forzamos a que no coincida si no hay filtro de ubicación.
+                    matchDirection = false;
                 }
 
             }
@@ -242,10 +234,9 @@ const TripAdmin = () => {
                 && matchCompany
                 && matchOrigin
                 && matchDestination
-                && matchDirection; // <-- NUEVO FILTRO
+                && matchDirection; 
         });
 
-        // Lógica de ordenamiento por estado (se mantiene igual)
         return filtered.sort((a, b) => {
             const statusOrder = (status) => {
                 if (status === 'In Coming') return 1;
@@ -350,7 +341,6 @@ const TripAdmin = () => {
 
     if (loading) { return (<Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}> <CircularProgress /> <Typography ml={2}>Cargando...</Typography> </Box>); }
 
-    // Bandera para deshabilitar el filtro de Dirección si no hay Origen/Destino
     const isDirectionFilterDisabled = !(filterOrigin.trim() || filterDestination.trim());
 
     const userType = localStorage.getItem('type');
@@ -456,7 +446,6 @@ const TripAdmin = () => {
                             />
                         </Grid>
 
-                        {/* Filtros de Etapas (Fila 2) */}
                         <Grid item xs={12} sm={3}>
                             <TextField
                                 label="Compañía (Etapa)"
@@ -566,7 +555,6 @@ const TripAdmin = () => {
                     </Grid>
                 </Paper>
             </Collapse>
-            {/* --- FIN CONTENEDOR DE FILTROS --- */}
 
             {error && <Alert severity="error" sx={{ my: 2 }}>Error al cargar: {error}</Alert>}
 
