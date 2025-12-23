@@ -1,7 +1,16 @@
 import { Paper, Stack, Box, Typography, Divider } from '@mui/material';
 import { STATUS_OPTIONS } from '../constants/finances';
 
-const SummaryCard = ({ title, count, color, label }) => (
+const money = (v) =>
+  new Intl.NumberFormat('en-US', { 
+    style: 'currency', 
+    currency: 'USD', 
+    minimumFractionDigits: 2, 
+    currencyDisplay: 'symbol' 
+  }).format(Number(v || 0));
+
+
+const SummaryCard = ({ title, data, color, label }) => (
     <Paper
         elevation={0}
         variant="outlined"
@@ -14,12 +23,17 @@ const SummaryCard = ({ title, count, color, label }) => (
             borderLeft: `6px solid ${color}`,
             bgcolor: 'background.paper',
             transition: 'transform 0.2s',
-            // '&:hover': { transform: 'translateY(-2px)', boxShadow: 1 }
         }}
     >
-        <Typography variant="h4" fontWeight={700} sx={{ color: color, mb: 0.5 }}>
-            {count}
-        </Typography>
+        <Stack direction="row" justifyContent="space-between" alignItems="baseline">
+            <Typography variant="h4" fontWeight={700} sx={{ color: color, mb: 0.5 }}>
+                {data.count || 0}
+            </Typography>
+            <Typography variant="h6" fontWeight={600} sx={{ color: 'text.primary' }}>
+                {money(data.totalAmount)}
+            </Typography>
+        </Stack>
+        
         <Typography variant="subtitle2" fontWeight={700} color="text.primary">
             {title}
         </Typography>
@@ -30,7 +44,6 @@ const SummaryCard = ({ title, count, color, label }) => (
 );
 
 export const AlertSummaryCards = ({ globalCounts }) => {
-    // Obtenemos los colores de las constantes
     const redMeta = STATUS_OPTIONS.find(o => o.value === 0);
     const orangeMeta = STATUS_OPTIONS.find(o => o.value === 1);
     const yellowMeta = STATUS_OPTIONS.find(o => o.value === 2);
@@ -43,21 +56,21 @@ export const AlertSummaryCards = ({ globalCounts }) => {
         >
             <SummaryCard 
                 title="Pendientes de Cobrar" 
-                count={globalCounts[0] || 0} 
+                data={globalCounts[0]} 
                 color={redMeta.color} 
-                label="Requiere Atención Inmediata"
+                label="Monto total pendiente (Alta Prioridad)"
             />
             <SummaryCard 
                 title="Pendientes de Pago" 
-                count={globalCounts[1] || 0} 
+                data={globalCounts[1]} 
                 color={orangeMeta.color} 
-                label="En proceso de cobro"
+                label="En proceso de pago/transferencia"
             />
             <SummaryCard 
                 title="Pendientes RTS" 
-                count={globalCounts[2] || 0} 
+                data={globalCounts[2]} 
                 color={yellowMeta.color} 
-                label="Documentación pendiente"
+                label="Documentación o proceso pendiente"
             />
         </Stack>
     );

@@ -2,6 +2,11 @@ export const menuItemsConfig = [
   { name: "Inicio", route: "/home", rolesPermitidos: ["admin"] },
   { name: "Mapa", route: "/tracking", rolesPermitidos: ["admin"] },
   {
+    name: "Estatus de Unidades",
+    route: "/estatus-unidades",
+    rolesPermitidos: ["dev", "admin"],
+  },
+  {
     name: "IMA",
     rolesPermitidos: ["admin"],
     subItems: [
@@ -108,6 +113,11 @@ export const menuItemsConfig = [
         route: "/admin-service-order",
         rolesPermitidos: ["admin", "Angeles", "Candy"],
       },
+      {
+        name: "Autonomías",
+        route: "/autonomia",
+        rolesPermitidos: ["admin", "dev", "Angeles", "Candy"],
+      },
     ],
   },
 
@@ -137,13 +147,15 @@ export const menuItemsConfig = [
     name: "Finanzas",
     rolesPermitidos: ["admin"],
     subItems: [
+      {
+        name: "Pagos",
+        route: "/paymentDrivers",
+        rolesPermitidos: ["admin", "dev"],
+      },
       { name: "Ventas", route: "/finanzas", rolesPermitidos: ["admin"] },
       { name: "Margen", route: "/margen", rolesPermitidos: ["admin", "dev"] },
-      { name: "Pagos", route: "/paymentDrivers", rolesPermitidos: ["admin", "dev"] },
     ],
   },
 
   { name: "Reports", route: "/reports", rolesPermitidos: ["admin"] },
-
-
 ];

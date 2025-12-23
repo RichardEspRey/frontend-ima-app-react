@@ -1,7 +1,7 @@
 {
   "name": "imaappdesktopreact",
   "private": true,
-  "version": "1.0.3",
+  "version": "1.0.6",
   "type": "module",
   "main": "electron.cjs",
   "scripts": {
