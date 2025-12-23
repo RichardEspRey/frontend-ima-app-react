@@ -17,7 +17,7 @@ dayjs.extend(updateLocale);
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
 dayjs.extend(localizedFormat);
-dayjs.locale('es'); 
+dayjs.locale('es');
 dayjs.updateLocale('es', {
     months: [
         "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio",
@@ -46,7 +46,17 @@ dayjs.updateLocale('es', {
 });
 
 
-export const TripRow = ({ trip, onEdit, onFinalize, onAlmostOver, getDocumentUrl, onSummary }) => {
+export const TripRow = ({
+    trip,
+    onEdit,
+    onFinalize,
+    onAlmostOver,
+    onReactivate,
+    isAdmin,
+    getDocumentUrl,
+    onSummary
+}) => {
+
     const [open, setOpen] = useState(false);
 
     console.log(trip)
@@ -61,11 +71,11 @@ export const TripRow = ({ trip, onEdit, onFinalize, onAlmostOver, getDocumentUrl
         loadingDateTitle = 'Fecha de carga (1ª Etapa) no especificada';
     }
 
-    const returnDateForDisplay = trip.return_date 
-        ? dayjs(trip.return_date).format('dddd D, YYYY') 
+    const returnDateForDisplay = trip.return_date
+        ? dayjs(trip.return_date).format('dddd D, YYYY')
         : '- ';
-    
-    const returnDateTitle = trip.return_date 
+
+    const returnDateTitle = trip.return_date
         ? `Fecha de Regreso: ${dayjs(trip.return_date).format('dddd D [de] MMMM [de] YYYY')}` // Tooltip completo
         : 'Fecha de regreso no asignada';
 
@@ -86,7 +96,7 @@ export const TripRow = ({ trip, onEdit, onFinalize, onAlmostOver, getDocumentUrl
                     <b>Número de caja:</b> {trip.caja_externa_no_caja || 'N/A'}<br />
                     <b>Número de vin:</b> {trip.caja_externa_no_vin || 'N/A'}<br />
                     <b>Modelo:</b> {trip.caja_externa_modelo || 'N/A'}<br />
-                    <b>Año:</b> {trip.caja_externa_anio|| 'N/A'}<br />
+                    <b>Año:</b> {trip.caja_externa_anio || 'N/A'}<br />
                     <b>Placas:</b> {trip.caja_externa_placas || 'N/A'}<br />
                     <b>Estado:</b> {trip.caja_externa_estado || 'N/A'}<br />
                 </Typography>
@@ -96,7 +106,7 @@ export const TripRow = ({ trip, onEdit, onFinalize, onAlmostOver, getDocumentUrl
                 <Typography variant="body2">No hay detalles adicionales.</Typography>
             )}
 
-            
+
         </>
     );
 
@@ -135,7 +145,7 @@ export const TripRow = ({ trip, onEdit, onFinalize, onAlmostOver, getDocumentUrl
                 {/* Truck Cell */}
                 <TableCell>{trip.truck_unidad || trip.truck_id || '-'}</TableCell>
                 {/* Trailer Cell */}
-                 <TableCell>
+                <TableCell>
                     <Tooltip title={trailerTooltipContent} arrow>
                         <Typography component="span" >
                             {trip.caja_no_caja || trip.caja_id || trip.caja_externa_no_caja || trip.caja_externa_id || trip.caja_externa_modelo || 'N/A'}
@@ -180,7 +190,7 @@ export const TripRow = ({ trip, onEdit, onFinalize, onAlmostOver, getDocumentUrl
                         {/* NUEVO BOTÓN: Casi Finalizar */}
                         <Button
                             size="small"
-                            variant="outlined" 
+                            variant="outlined"
                             color="primary"
                             onClick={() => onAlmostOver(trip.trip_id, trip.trip_number)}
                             disabled={trip.status === 'Completed' || trip.status === 'Cancelled' || trip.status === 'Almost Over'}
@@ -198,18 +208,36 @@ export const TripRow = ({ trip, onEdit, onFinalize, onAlmostOver, getDocumentUrl
 
                 {/* Resumen Cell */}
                 <TableCell>
-                    <Button 
-                        size="small" 
-                        variant="contained" 
+                    <Button
+                        size="small"
+                        variant="contained"
                         color="secondary"
                         onClick={() => onSummary(trip.trip_id)}
                     >
                         Resumen
                     </Button>
                 </TableCell>
+
+                {isAdmin && (
+                    <TableCell>
+                        <Button
+                            size="small"
+                            variant="outlined"
+                            color="warning"
+                            onClick={() => onReactivate(trip.trip_id, trip.trip_number)}
+                            disabled={trip.status !== 'Cancelled' && trip.status !== 'Completed'}
+                        >
+                            Reactivar viaje
+                        </Button>
+                    </TableCell>
+                )}
             </TableRow>
             <TableRow>
-                <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={10}>
+                <TableCell
+                    style={{ paddingBottom: 0, paddingTop: 0 }}
+                    colSpan={isAdmin ? 11 : 10}
+                >
+
                     <Collapse in={open} timeout="auto" unmountOnExit>
                         <Box sx={{ margin: 1, padding: 1, border: '1px solid rgba(224, 224, 224, 1)', borderRadius: '4px' }}>
                             <Typography variant="h6" gutterBottom component="div" sx={{ fontSize: '1rem' }}>
@@ -219,44 +247,44 @@ export const TripRow = ({ trip, onEdit, onFinalize, onAlmostOver, getDocumentUrl
                             {Array.isArray(trip.etapas) && trip.etapas.length > 0 ? (
                                 <Grid container spacing={2} sx={{ fontSize: '0.85rem' }}>
                                     {trip.etapas.map((etapa) => {
-                                        
-                                       
+
+
                                         if (etapa.stageType === 'emptyMileage') {
-                                          
+
                                             return (
                                                 <Grid item key={etapa.trip_stage_id} xs={12} sm={6} md={4}>
-                                                    <Box sx={{ 
+                                                    <Box sx={{
                                                         border: '1px solid #90caf9',
                                                         backgroundColor: '#e3f2fd',
-                                                        padding: '12px', 
-                                                        borderRadius: '4px', 
+                                                        padding: '12px',
+                                                        borderRadius: '4px',
                                                         height: '100%',
                                                         display: 'flex',
                                                         flexDirection: 'column'
                                                     }}>
                                                         <Typography sx={{ fontWeight: 'bold', fontSize: '1em', color: '#1565c0' }}>
-                                                          E{etapa.stage_number}: Etapa de Millaje Vacío
+                                                            E{etapa.stage_number}: Etapa de Millaje Vacío
                                                         </Typography>
 
                                                         <Box sx={{ mt: 1.5, flexGrow: 1 }}>
                                                             <Typography variant="body2" sx={{ mb: 0.5 }}>
                                                                 <strong>Millas PC*Miler:</strong> {etapa.millas_pcmiller || 'N/A'}
                                                             </Typography>
-                                                             <Typography variant="body2">
+                                                            <Typography variant="body2">
                                                                 <strong>Millas Prácticas:</strong> {etapa.millas_pcmiller_practicas || 'N/A'}
                                                             </Typography>
 
-                                                             {typeof etapa.comments === 'string' && etapa.comments.trim() !== '' && (
-                                                            <Box sx={{ mt: 1.5, borderTop: '1px dashed #90caf9', pt: 1.5 }}>
-                                                                <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 0.5 }}>Comentarios:</Typography>
-                                                                <Typography variant="body2" sx={{ fontStyle: 'italic', maxWidth: '300px' }}>
-                                                                    {etapa.comments}
-                                                                </Typography>
-                                                            </Box>
-                                                        )}
+                                                            {typeof etapa.comments === 'string' && etapa.comments.trim() !== '' && (
+                                                                <Box sx={{ mt: 1.5, borderTop: '1px dashed #90caf9', pt: 1.5 }}>
+                                                                    <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 0.5 }}>Comentarios:</Typography>
+                                                                    <Typography variant="body2" sx={{ fontStyle: 'italic', maxWidth: '300px' }}>
+                                                                        {etapa.comments}
+                                                                    </Typography>
+                                                                </Box>
+                                                            )}
                                                         </Box>
-                                                        
-                                                       
+
+
                                                     </Box>
                                                 </Grid>
                                             );
@@ -273,17 +301,17 @@ export const TripRow = ({ trip, onEdit, onFinalize, onAlmostOver, getDocumentUrl
 
                                             return (
                                                 <Grid item key={etapa.trip_stage_id} xs={12} sm={6} md={4}>
-                                                    <Box sx={{  border: '1px solid #eee', padding: '8px', borderRadius: '4px', height: '100%' }}>
+                                                    <Box sx={{ border: '1px solid #eee', padding: '8px', borderRadius: '4px', height: '100%' }}>
                                                         <Tooltip title={tooltipTitle} arrow>
                                                             <span>
                                                                 <strong>E{etapa.stage_number} ({etapa.stageType?.replace('borderCrossing', 'Cruce').replace('normalTrip', 'Normal') || 'N/A'}):</strong> {etapa.origin} &rarr; {etapa.destination} ({etapa.travel_direction})
                                                             </span>
                                                         </Tooltip>
-                                                        
+
                                                         {etapa.ci_number && <><br /><span style={{ fontSize: '0.9em', color: '#555' }}>CI: {etapa.ci_number}</span></>}
                                                         <br />
                                                         <span style={{ fontSize: '0.9em', color: '#555' }}>
-                                                            Carga: {etapa.loading_date ? dayjs(etapa.loading_date).format("DD/MM/YY") : '-'} | 
+                                                            Carga: {etapa.loading_date ? dayjs(etapa.loading_date).format("DD/MM/YY") : '-'} |
                                                             Entrega: {etapa.delivery_date
                                                                 ? dayjs(etapa.delivery_date).format("DD/MM/YY") +
                                                                 (etapa.time_of_delivery
@@ -337,7 +365,7 @@ export const TripRow = ({ trip, onEdit, onFinalize, onAlmostOver, getDocumentUrl
                                                         )}
 
                                                         {typeof etapa.comments === 'string' && etapa.comments.trim() !== '' && (
-                                                            <Box sx={{ mt: 2, borderTop: '1px dashed #ccc', pt: 1}}>
+                                                            <Box sx={{ mt: 2, borderTop: '1px dashed #ccc', pt: 1 }}>
                                                                 <Typography variant="body2" sx={{ fontWeight: 'bold', fontSize: '0.9em', mb: 0.5 }}>Comentarios:</Typography>
                                                                 <Typography variant="body2" sx={{ fontSize: 'inherit', maxWidth: '320px' }}>
                                                                     {etapa.comments}
