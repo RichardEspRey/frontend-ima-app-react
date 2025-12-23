@@ -1,31 +1,53 @@
-// src/pages/ServiceOrderAdmin.jsx
-
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import {
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
     Button, TablePagination, TextField, Box, Typography, CircularProgress,
-    Stack
+    Stack, Grid, FormControl, InputLabel, Select, MenuItem, IconButton
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
+
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import dayjs from 'dayjs';
+import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
+import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
+
+import useFetchRepairTypes from '../hooks/service_order/useFetchRepairTypes.jsx';
 import EditDetailModal from '../components/EditDetailModa';
-import { OrderRow } from '../components/OrderRow'; // Importado
+import { OrderRow } from '../components/OrderRow';
+
+dayjs.extend(isSameOrAfter);
+dayjs.extend(isSameOrBefore);
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
-// ... (Las funciones money, getStatusChipColor, OrderRow, etc. se asumen definidas/importadas)
-
 const ServiceOrderAdmin = () => {
-    const [editingDetail, setEditingDetail] = useState(null);
+    const navigate = useNavigate();
+    
+    // --- ESTADOS DE DATOS ---
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [searchTerm, setSearchTerm] = useState('');
+    const [editingDetail, setEditingDetail] = useState(null);
+
+    // --- ESTADOS DE FILTROS ---
+    const [filterId, setFilterId] = useState(''); // <--- NUEVO
+    const [filterTruck, setFilterTruck] = useState('');
+    const [filterMaintenance, setFilterMaintenance] = useState('All');
+    const [filterRepair, setFilterRepair] = useState('All');
+    const [startDate, setStartDate] = useState(null);
+    const [endDate, setEndDate] = useState(null);
+
+    // Paginación
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
-    const navigate = useNavigate();
 
-    // ... (fetchOrders, useEffect, handleSaveDetail, filteredOrders, handleEditOrder se mantienen) ...
+    // Hook para Tipos de Reparación
+    const { repairTypes, loadingRepairTypes, refetchRepairTypes } = useFetchRepairTypes();
 
+    // --- FETCH ---
     const fetchOrders = useCallback(async () => {
         setLoading(true);
         const formData = new FormData();
@@ -40,7 +62,6 @@ const ServiceOrderAdmin = () => {
                 setOrders(result.data);
             } else {
                 setOrders([]);
-                console.error('Respuesta no exitosa del backend:', result.message);
             }
         } catch (error) {
             console.error('Error al cargar las órdenes de servicio:', error);
@@ -48,7 +69,7 @@ const ServiceOrderAdmin = () => {
         } finally {
             setLoading(false);
         }
-    }, [apiHost]);
+    }, []);
 
     useEffect(() => {
         fetchOrders();
@@ -61,10 +82,7 @@ const ServiceOrderAdmin = () => {
         formData.append('estatus', updated.estatus);
 
         try {
-            const response = await fetch(`${apiHost}/service_order.php`, {
-                method: 'POST',
-                body: formData,
-            });
+            const response = await fetch(`${apiHost}/service_order.php`, { method: 'POST', body: formData });
             const result = await response.json();
 
             if (result.status === 'success') {
@@ -79,25 +97,63 @@ const ServiceOrderAdmin = () => {
         }
     };
 
-
+    // --- LÓGICA DE FILTRADO ---
     const filteredOrders = useMemo(() => {
-        const term = (searchTerm || '').toLowerCase().trim();
-        if (!term) return orders;
         return orders.filter((o) => {
-            const idMatch = String(o.id_orden).includes(term);
-            const camionMatch = (o.nombre_camion || '').toLowerCase().includes(term);
-            const servicios = o.servicios || [];
-            const svcMatch = servicios.some(s =>
-                (s.tipo_mantenimiento || '').toLowerCase().includes(term) ||
-                (s.tipo_reparacion || '').toLowerCase().includes(term)
-            );
-            return idMatch || camionMatch || svcMatch;
+            
+            if (filterId.trim()) {
+                if (!String(o.id_orden).includes(filterId.trim())) return false;
+            }
+
+            if (filterTruck.trim()) {
+                const truckName = String(o.nombre_camion || '').trim().toLowerCase();
+                const filterVal = filterTruck.trim().toLowerCase();
+                if (truckName !== filterVal) {
+                    return false;
+                }
+            }
+
+            if (filterMaintenance !== 'All') {
+                const servicios = o.servicios || [];
+                const hasType = servicios.some(s => 
+                    (s.tipo_mantenimiento || '').toLowerCase() === filterMaintenance.toLowerCase()
+                );
+                if (!hasType) return false;
+            }
+
+            if (filterRepair !== 'All') {
+                const servicios = o.servicios || [];
+                const hasRepair = servicios.some(s => 
+                    (s.tipo_reparacion || '').toLowerCase() === filterRepair.toLowerCase()
+                );
+                if (!hasRepair) return false;
+            }
+
+            if (startDate || endDate) {
+                const orderDate = dayjs(o.fecha_orden); 
+                if (!orderDate.isValid()) return false;
+
+                if (startDate && orderDate.isBefore(dayjs(startDate).startOf('day'))) return false;
+                if (endDate && orderDate.isAfter(dayjs(endDate).endOf('day'))) return false;
+            }
+
+            return true;
         });
-    }, [orders, searchTerm]);
+    }, [orders, filterId, filterTruck, filterMaintenance, filterRepair, startDate, endDate]);
 
     const handleEditOrder = (orderId) => {
         if (!orderId) return;
         navigate(`/editar-orden/${orderId}`);
+    };
+
+    const clearFilters = () => {
+        setFilterId('');
+        setFilterTruck('');
+        setFilterMaintenance('All');
+        setFilterRepair('All');
+        setStartDate(null);
+        setEndDate(null);
+        setPage(0);
     };
 
     return (
@@ -109,18 +165,124 @@ const ServiceOrderAdmin = () => {
                 </Button>
             </Box>
 
-            <TextField
-                label="Buscar por ID, Camión o Tipo de servicio"
-                variant="outlined"
-                fullWidth
-                size="small"
-                value={searchTerm}
-                onChange={(e) => {
-                    setSearchTerm(e.target.value);
-                    setPage(0);
-                }}
-                sx={{ mb: 2 }}
-            />
+            <Paper variant="outlined" sx={{ p: 2, mb: 3, bgcolor: '#f8f9fa', borderRadius: 2 }}>
+                <Typography variant="subtitle2" gutterBottom color="text.secondary" fontWeight={600}>
+                    Filtros de Búsqueda
+                </Typography>
+                
+                <Grid container spacing={2} alignItems="center">
+                    
+                    <Grid item xs={6} sm={4} md={1.5}>
+                        <TextField
+                            label="ID Orden"
+                            placeholder="#"
+                            variant="outlined"
+                            size="small"
+                            fullWidth
+                            value={filterId}
+                            onChange={(e) => { setFilterId(e.target.value); setPage(0); }}
+                        />
+                    </Grid>
+
+                    <Grid item xs={6} sm={4} md={1.5}>
+                        <TextField
+                            label="Camión (Exacto)"
+                            placeholder="Ej: 101"
+                            variant="outlined"
+                            size="small"
+                            fullWidth
+                            value={filterTruck}
+                            onChange={(e) => { setFilterTruck(e.target.value); setPage(0); }}
+                        />
+                    </Grid>
+
+                    <Grid item xs={12} sm={4} md={2}>
+                        <FormControl fullWidth size="small">
+                            <InputLabel>Mantenimiento</InputLabel>
+                            <Select
+                                value={filterMaintenance}
+                                label="Mantenimiento"
+                                onChange={(e) => { setFilterMaintenance(e.target.value); setPage(0); }}
+                            >
+                                <MenuItem value="All">Todos</MenuItem>
+                                <MenuItem value="Preventivo">Preventivo</MenuItem>
+                                <MenuItem value="Correctivo">Correctivo</MenuItem>
+                            </Select>
+                        </FormControl>
+                    </Grid>
+
+                    <Grid item xs={12} sm={6} md={2}>
+                        <FormControl fullWidth size="small">
+                            <InputLabel>Tipo Reparación</InputLabel>
+                            <Select
+                                value={filterRepair}
+                                label="Tipo Reparación"
+                                onChange={(e) => { setFilterRepair(e.target.value); setPage(0); }}
+                                disabled={loadingRepairTypes}
+                            >
+                                <MenuItem value="All">Todas</MenuItem>
+                                {repairTypes.map((type) => (
+                                    <MenuItem key={type.value} value={type.label}>
+                                        {type.label}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                    </Grid>
+
+                    <Grid item xs={12} sm={6} md={3}>
+                        <Stack direction="row" spacing={1} alignItems="center">
+                            <DatePicker
+                                selected={startDate}
+                                onChange={(date) => { setStartDate(date); setPage(0); }}
+                                selectsStart
+                                startDate={startDate}
+                                endDate={endDate}
+                                placeholderText="Desde"
+                                dateFormat="dd/MM/yyyy"
+                                className="form-input-datepicker" 
+                                isClearable
+                                customInput={<TextField size="small" fullWidth label="Desde" />}
+                            />
+                            <DatePicker
+                                selected={endDate}
+                                onChange={(date) => { setEndDate(date); setPage(0); }}
+                                selectsEnd
+                                startDate={startDate}
+                                endDate={endDate}
+                                minDate={startDate}
+                                placeholderText="Hasta"
+                                dateFormat="dd/MM/yyyy"
+                                className="form-input-datepicker"
+                                isClearable
+                                customInput={<TextField size="small" fullWidth label="Hasta" />}
+                            />
+                        </Stack>
+                    </Grid>
+
+                    <Grid item xs={12} md={2} display="flex" justifyContent="flex-end" gap={1}>
+                        <IconButton 
+                            color="error" 
+                            onClick={clearFilters}
+                            title="Limpiar Filtros"
+                            sx={{ border: '1px solid #ffcdd2', borderRadius: 1 }}
+                        >
+                            <DeleteSweepIcon />
+                        </IconButton>
+                        <Button 
+                            variant="outlined" 
+                            color="primary"
+                            size="small"
+                            onClick={() => { fetchOrders(); refetchRepairTypes(); }}
+                            startIcon={<RefreshIcon />}
+                            sx={{ minWidth: '100px' }}
+                        >
+                            Refrescar
+                        </Button>
+                    </Grid>
+
+                </Grid>
+            </Paper>
 
             <TableContainer component={Paper} variant="outlined" sx={{ overflowX: 'auto' }}>
                 <Table stickyHeader size="small">
@@ -153,7 +315,9 @@ const ServiceOrderAdmin = () => {
                         ) : filteredOrders.length === 0 ? (
                             <TableRow>
                                 <TableCell colSpan={11} align="center">
-                                    <Typography color="text.secondary" sx={{ py: 3 }}>No hay órdenes que coincidan.</Typography>
+                                    <Typography color="text.secondary" sx={{ py: 3 }}>
+                                        No hay órdenes que coincidan con los filtros seleccionados.
+                                    </Typography>
                                 </TableCell>
                             </TableRow>
                         ) : (
