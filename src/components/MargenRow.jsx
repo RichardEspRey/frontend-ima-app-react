@@ -16,7 +16,7 @@ export const MargenRow = ({ trip }) => {
             <TableCell sx={{ fontWeight: 500 }}>{trip.trip_number}</TableCell>
             
             {/* Ingresos */}
-            <TableCell align="right">{money(trip.rate_tarifa)}</TableCell>
+            <TableCell align="right">{money(trip.tarifa_pagada)}</TableCell>
             
             {/* Egresos */}
             <TableCell align="right">{money(trip.diesel)}</TableCell>

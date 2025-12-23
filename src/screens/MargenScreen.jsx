@@ -26,7 +26,7 @@ const MargenScreen = () => {
     return trips.map(t => {
       const driverPay = Number(t.driver_pay || 0); 
       
-      const totalTarifa = Number(t.rate_tarifa || 0); 
+      const totalTarifa = Number(t.tarifa_pagada || 0); 
       const totalDiesel = Number(t.diesel || 0);
       const totalGastos = Number(t.gastos || 0); 
 
@@ -36,7 +36,7 @@ const MargenScreen = () => {
       return {
         ...t,
         trip_id: Number(t.trip_id),
-        rate_tarifa: totalTarifa,
+        tarifa_pagada: totalTarifa,
         diesel: totalDiesel,
         expenses: totalGastos,
         driver_pay: driverPay,
@@ -56,6 +56,7 @@ const MargenScreen = () => {
         const json = await res.json();
         
         if (json.status === 'success' && Array.isArray(json.data)) {
+            console.log(json.data)
             setTrips(json.data); 
         } else {
              setTrips([]); 

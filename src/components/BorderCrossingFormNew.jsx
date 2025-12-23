@@ -527,7 +527,7 @@ const BorderCrossingFormNew = ({ tripNumber, onSuccess }) => {
 
 
     return (
-        <form onSubmit={handleSubmit} className="card-container">
+        <form  className="card-container">
             {/* <style>{`
                 .trip-mode-selector, .trailer-type-selector {
                     display: flex;
