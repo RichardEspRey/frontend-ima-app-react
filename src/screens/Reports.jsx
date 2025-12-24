@@ -12,9 +12,11 @@ import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import ShowChartIcon from '@mui/icons-material/ShowChart';
 import TableViewIcon from '@mui/icons-material/TableView';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance'; 
+import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange'; // Icono para RTS
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
+// === HELPERS ===
 const valueFormatter = (v) =>
   new Intl.NumberFormat('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
     .format(Number(v || 0));
@@ -49,6 +51,7 @@ function toWeekKey(iso) {
   return `${year}-W${String(week).padStart(2, '0')}`;
 }
 
+// === COMPONENTE KPI CARD ===
 const KPICard = ({ title, value, icon, color, subLabel }) => (
   <Card 
     elevation={0} 
@@ -90,9 +93,13 @@ export default function Reports() {
   const [tableLoading, setTableLoading] = useState(true);
   const [groupBy, setGroupBy] = useState('day'); 
 
-  // -- STATES FINANZAS --
+  // -- STATES FINANZAS GLOBAL --
   const [financesData, setFinancesData] = useState([]);
   const [financesLoading, setFinancesLoading] = useState(true);
+
+  // -- STATES FINANZAS RTS (NUEVO) --
+  const [rtsData, setRtsData] = useState([]);
+  const [rtsLoading, setRtsLoading] = useState(true);
 
   // --- FETCH DIESEL ---
   const fetchChart = useCallback(async () => {
@@ -121,7 +128,7 @@ export default function Reports() {
     finally { setTableLoading(false); }
   }, []);
 
-  // --- FETCH FINANZAS ---
+  // --- FETCH FINANZAS GLOBAL ---
   const fetchFinances = useCallback(async () => {
     setFinancesLoading(true);
     try {
@@ -148,11 +155,39 @@ export default function Reports() {
     }
   }, []);
 
+  // --- FETCH FINANZAS RTS (NUEVO) ---
+  const fetchRTS = useCallback(async () => {
+    setRtsLoading(true);
+    try {
+        const fd = new FormData();
+        fd.append('op', 'chart_finances_rts'); // <--- Endpoint Nuevo
+        const res = await fetch(`${apiHost}/charts.php`, { method: 'POST', body: fd });
+        const json = await res.json();
+        if (json.status === 'success' && Array.isArray(json.data)) {
+            const mapped = json.data.map(item => ({
+                periodo: item.periodo,
+                label: toMonthLabel(item.periodo),
+                rate: Number(item.total_rate),
+                paid: Number(item.total_paid)
+            }));
+            setRtsData(mapped);
+        } else {
+            setRtsData([]);
+        }
+    } catch (e) {
+        console.error("Error fetching RTS finances", e);
+        setRtsData([]);
+    } finally {
+        setRtsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     fetchChart();
     fetchTable();
     fetchFinances();
-  }, [fetchChart, fetchTable, fetchFinances]);
+    fetchRTS(); // <--- Cargar RTS
+  }, [fetchChart, fetchTable, fetchFinances, fetchRTS]);
 
   // --- DATA PROCESSING DIESEL ---
   const base = useMemo(() => {
@@ -210,6 +245,7 @@ export default function Reports() {
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
       
+      {/* 1. HEADER & CONTROLES */}
       <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems="center" mb={4} spacing={2}>
         <Box>
             <Typography variant="h4" fontWeight={800} sx={{ letterSpacing: '-0.5px' }}>
@@ -234,6 +270,7 @@ export default function Reports() {
         </Paper>
       </Stack>
 
+      {/* 2. CARDS DE RESUMEN (KPIs) */}
       <Grid container spacing={3} mb={5}>
         <Grid item xs={12} md={4}>
             <KPICard 
@@ -264,10 +301,11 @@ export default function Reports() {
         </Grid>
       </Grid>
 
+      {/* 3. GRÁFICA: FINANZAS GLOBAL (RATE vs PAGADO) */}
       <Paper elevation={0} variant="outlined" sx={{ p: 4, borderRadius: 4, mb: 5, bgcolor: '#fff' }}>
         <Stack direction="row" alignItems="center" spacing={1} mb={3}>
             <Box sx={{ width: 4, height: 24, bgcolor: '#9c27b0', borderRadius: 1 }} />
-            <Typography variant="h6" fontWeight={700}>Facturación vs Cobranza (Por mes de finalización)</Typography>
+            <Typography variant="h6" fontWeight={700}>Facturación vs Cobranza (Global)</Typography>
         </Stack>
         
         <Box sx={{ width: '100%', minHeight: 400 }}>
@@ -284,7 +322,7 @@ export default function Reports() {
             ) : (
                 <BarChart
                     dataset={financesData}
-                    xAxis={[{ dataKey: 'label', label: 'Mes de Finalización', scaleType: 'band' }]}
+                    xAxis={[{ dataKey: 'label', label: 'Mes de Entrega', scaleType: 'band' }]}
                     series={[
                         { dataKey: 'rate', label: 'Total Tarifa (Rate)', valueFormatter, color: '#1976d2' }, 
                         { dataKey: 'paid', label: 'Total Pagado', valueFormatter, color: '#ed6c02' }, 
@@ -297,6 +335,41 @@ export default function Reports() {
         </Box>
       </Paper>
 
+      {/* 4. GRÁFICA: FINANZAS RTS (SOLO RTS) - NUEVA SECCIÓN */}
+      <Paper elevation={0} variant="outlined" sx={{ p: 4, borderRadius: 4, mb: 5, bgcolor: '#fff' }}>
+        <Stack direction="row" alignItems="center" spacing={1} mb={3}>
+            <Box sx={{ width: 4, height: 24, bgcolor: '#e91e63', borderRadius: 1 }} />
+            <Typography variant="h6" fontWeight={700}>Facturación RTS (Solo stages RTS)</Typography>
+        </Stack>
+        
+        <Box sx={{ width: '100%', minHeight: 400 }}>
+            {rtsLoading ? (
+                <Stack alignItems="center" justifyContent="center" height={350}>
+                    <CircularProgress color="secondary" />
+                    <Typography variant="caption" mt={2}>Filtrando RTS...</Typography>
+                </Stack>
+            ) : rtsData.length === 0 ? (
+                <Stack alignItems="center" justifyContent="center" height={350}>
+                    <CurrencyExchangeIcon sx={{ fontSize: 60, color: '#e0e0e0', mb: 2 }} />
+                    <Typography color="text.secondary">No hay registros con método de pago "RTS"</Typography>
+                </Stack>
+            ) : (
+                <BarChart
+                    dataset={rtsData}
+                    xAxis={[{ dataKey: 'label', label: 'Mes de Entrega', scaleType: 'band' }]}
+                    series={[
+                        { dataKey: 'rate', label: 'RTS Tarifa', valueFormatter, color: '#8e24aa' }, // Morado
+                        { dataKey: 'paid', label: 'RTS Pagado', valueFormatter, color: '#ff9800' }, // Naranja
+                    ]}
+                    {...chartSetting}
+                    slotProps={{ legend: { direction: 'row', position: { vertical: 'top', horizontal: 'middle' }, padding: -5 } }}
+                    borderRadius={4}
+                />
+            )}
+        </Box>
+      </Paper>
+
+      {/* 5. GRÁFICA: COSTOS DIÉSEL */}
       <Paper elevation={0} variant="outlined" sx={{ p: 4, borderRadius: 4, mb: 5, bgcolor: '#fff' }}>
         <Stack direction="row" alignItems="center" spacing={1} mb={3}>
             <Box sx={{ width: 4, height: 24, bgcolor: 'primary.main', borderRadius: 1 }} />
@@ -325,6 +398,7 @@ export default function Reports() {
         </Box>
       </Paper>
 
+      {/* 6. TABLA DE DETALLE DIÉSEL */}
       <Paper elevation={0} variant="outlined" sx={{ borderRadius: 4, overflow: 'hidden' }}>
         <Box sx={{ p: 3, bgcolor: '#fcfcfc', borderBottom: '1px solid #eee' }}>
             <Stack direction="row" alignItems="center" spacing={1}>
