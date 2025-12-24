@@ -46,7 +46,23 @@ const TicketPayment = () => {
       if (json.status === "success") {
         setInfo(json.data.info_viaje);
         setStages(json.data.stages);
-        setGastos(json.data.gastos?.[0]?.monto ?? 0);
+        
+        const savedAjustes = {};
+        json.data.stages.forEach(s => {
+            if (s.ajuste_millas && Number(s.ajuste_millas) !== 0) {
+                savedAjustes[s.stage_number] = Number(s.ajuste_millas);
+            }
+        });
+        setAjustes(savedAjustes);
+
+        if (json.data.saved_data) {
+            setAvance(Number(json.data.saved_data.anticipo || 0));
+            setGastos(Number(json.data.saved_data.gastos_aplicados || 0));
+        } else {
+            setGastos(json.data.gastos?.[0]?.monto ?? 0);
+            setAvance(0);
+        }
+
       } else {
         Swal.fire("Error", "No se pudieron cargar los datos del ticket.", "error");
       }
@@ -75,12 +91,16 @@ const TicketPayment = () => {
                 fd.append("trip_id", trip_id);
                 fd.append("driver_id", info.driver_id);
                 fd.append("amount", totalPagar);
+                
+                fd.append("anticipo", avance);
+                fd.append("gastos", gastos);
+                fd.append("ajustes", JSON.stringify(ajustes)); 
           
                 const res = await fetch(`${apiHost}/formularios.php`, { method: "POST", body: fd });
                 const json = await res.json();
                 
                 if (json.status === "success") {
-                  Swal.fire("¡Éxito!", "Pago Autorizado.", "success");
+                  Swal.fire("¡Éxito!", "Pago Autorizado y datos guardados.", "success");
                   navigate(`/paymentDrivers`);
                 } else {
                   Swal.fire("Error", "Error al autorizar pago.", "error");
