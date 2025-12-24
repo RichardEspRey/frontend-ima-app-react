@@ -264,7 +264,7 @@ const PaymentDrivers = () => {
                               <IconButton
                                   size="small"
                                   color="primary"
-                                  disabled={isPagado}
+                                  // disabled={isPagado}
                                   onClick={() => navigate(`/ticketPayment/${t.trip_id}`)}
                               >
                                   <VisibilityIcon fontSize="small" />
