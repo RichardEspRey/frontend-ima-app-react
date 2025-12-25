@@ -285,7 +285,7 @@ export default function ServiceOrderScreenEdit() {
 
                     <Paper sx={{ p: 3, borderRadius: 2 }} elevation={2}>
                         <Typography variant="h6" gutterBottom fontWeight={600} color="primary">Agregar Nuevo Servicio</Typography>
-                        <Grid container spacing={2}>
+                        <Grid container spacing={2} alignItems="end">
                             <Grid item xs={12} md={4}>
                                 <TextField 
                                     select label="Tipo Mantenimiento" fullWidth 

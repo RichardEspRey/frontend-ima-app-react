@@ -6,7 +6,6 @@ import {
 } from "@mui/material";
 import { BarChart } from '@mui/x-charts/BarChart';
 
-// Iconos
 import LocalGasStationIcon from '@mui/icons-material/LocalGasStation';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import ShowChartIcon from '@mui/icons-material/ShowChart';
@@ -16,7 +15,6 @@ import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange'; // Icon
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
-// === HELPERS ===
 const valueFormatter = (v) =>
   new Intl.NumberFormat('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
     .format(Number(v || 0));
@@ -97,7 +95,7 @@ export default function Reports() {
   const [financesData, setFinancesData] = useState([]);
   const [financesLoading, setFinancesLoading] = useState(true);
 
-  // -- STATES FINANZAS RTS (NUEVO) --
+  // -- STATES FINANZAS RTS --
   const [rtsData, setRtsData] = useState([]);
   const [rtsLoading, setRtsLoading] = useState(true);
 
@@ -155,12 +153,12 @@ export default function Reports() {
     }
   }, []);
 
-  // --- FETCH FINANZAS RTS (NUEVO) ---
+  // --- FETCH FINANZAS RTS ---
   const fetchRTS = useCallback(async () => {
     setRtsLoading(true);
     try {
         const fd = new FormData();
-        fd.append('op', 'chart_finances_rts'); // <--- Endpoint Nuevo
+        fd.append('op', 'chart_finances_rts');
         const res = await fetch(`${apiHost}/charts.php`, { method: 'POST', body: fd });
         const json = await res.json();
         if (json.status === 'success' && Array.isArray(json.data)) {
@@ -186,7 +184,7 @@ export default function Reports() {
     fetchChart();
     fetchTable();
     fetchFinances();
-    fetchRTS(); // <--- Cargar RTS
+    fetchRTS();
   }, [fetchChart, fetchTable, fetchFinances, fetchRTS]);
 
   // --- DATA PROCESSING DIESEL ---
@@ -245,7 +243,6 @@ export default function Reports() {
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
       
-      {/* 1. HEADER & CONTROLES */}
       <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems="center" mb={4} spacing={2}>
         <Box>
             <Typography variant="h4" fontWeight={800} sx={{ letterSpacing: '-0.5px' }}>
@@ -270,7 +267,6 @@ export default function Reports() {
         </Paper>
       </Stack>
 
-      {/* 2. CARDS DE RESUMEN (KPIs) */}
       <Grid container spacing={3} mb={5}>
         <Grid item xs={12} md={4}>
             <KPICard 
@@ -301,7 +297,6 @@ export default function Reports() {
         </Grid>
       </Grid>
 
-      {/* 3. GRÁFICA: FINANZAS GLOBAL (RATE vs PAGADO) */}
       <Paper elevation={0} variant="outlined" sx={{ p: 4, borderRadius: 4, mb: 5, bgcolor: '#fff' }}>
         <Stack direction="row" alignItems="center" spacing={1} mb={3}>
             <Box sx={{ width: 4, height: 24, bgcolor: '#9c27b0', borderRadius: 1 }} />
@@ -335,7 +330,6 @@ export default function Reports() {
         </Box>
       </Paper>
 
-      {/* 4. GRÁFICA: FINANZAS RTS (SOLO RTS) - NUEVA SECCIÓN */}
       <Paper elevation={0} variant="outlined" sx={{ p: 4, borderRadius: 4, mb: 5, bgcolor: '#fff' }}>
         <Stack direction="row" alignItems="center" spacing={1} mb={3}>
             <Box sx={{ width: 4, height: 24, bgcolor: '#e91e63', borderRadius: 1 }} />
@@ -369,7 +363,6 @@ export default function Reports() {
         </Box>
       </Paper>
 
-      {/* 5. GRÁFICA: COSTOS DIÉSEL */}
       <Paper elevation={0} variant="outlined" sx={{ p: 4, borderRadius: 4, mb: 5, bgcolor: '#fff' }}>
         <Stack direction="row" alignItems="center" spacing={1} mb={3}>
             <Box sx={{ width: 4, height: 24, bgcolor: 'primary.main', borderRadius: 1 }} />
@@ -398,7 +391,6 @@ export default function Reports() {
         </Box>
       </Paper>
 
-      {/* 6. TABLA DE DETALLE DIÉSEL */}
       <Paper elevation={0} variant="outlined" sx={{ borderRadius: 4, overflow: 'hidden' }}>
         <Box sx={{ p: 3, bgcolor: '#fcfcfc', borderBottom: '1px solid #eee' }}>
             <Stack direction="row" alignItems="center" spacing={1}>

@@ -214,7 +214,7 @@ export default function ServiceOrderScreen() {
                             Agregar Servicio
                         </Typography>
                         
-                        <Grid container spacing={2} sx={{ mt: 0 }}>
+                        <Grid container spacing={2} sx={{ mt: 0 }} alignItems="end">
                             <Grid item xs={12} md={4}>
                                 <TextField 
                                     select label="Tipo Mantenimiento" fullWidth 
