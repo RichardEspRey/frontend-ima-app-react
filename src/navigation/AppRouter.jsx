@@ -50,6 +50,8 @@ import MillasDriversTable from '../screens/Finanzas/MillasDriversTable.jsx';
 import TicketPayment from '../screens/Finanzas/TicketPayment.jsx';
 import Autonomia from '../screens/Autonomia.jsx';
 import EstatusUnidades from '../screens/EstatusUnidades.jsx';
+import Afinaciones from '../screens/Afinaciones.jsx';
+import AfinacionesHistory from '../screens/AfinacionesHistory.jsx';
 
 const AppRouter = () => {
   const { user, loading } = useContext(AuthContext);
@@ -110,6 +112,8 @@ const AppRouter = () => {
               <Route path='/millasDriversTable' element ={<MillasDriversTable/>} />
               <Route path='/ticketPayment/:trip_id' element ={<TicketPayment/>} />
               <Route path="/autonomia" element={<Autonomia />} />
+              <Route path="/afinaciones" element={<Afinaciones />} />
+              <Route path="/registros-afinaciones" element={<AfinacionesHistory />} />
               <Route path="/estatus-unidades" element={<EstatusUnidades />} />
               <Route path="*" element={<Navigate to="/home" replace />} /> 
             

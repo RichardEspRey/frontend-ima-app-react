@@ -118,6 +118,11 @@ export const menuItemsConfig = [
         route: "/autonomia",
         rolesPermitidos: ["admin", "dev", "Angeles", "Candy"],
       },
+      {
+        name: "Afinaciones",
+        route: "/afinaciones",
+        rolesPermitidos: ["admin", "dev", "Angeles", "Candy"],
+      },
     ],
   },
 
