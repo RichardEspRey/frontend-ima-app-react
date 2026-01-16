@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Box, Typography, Grid, Stack, TextField, Button, Paper, CircularProgress, InputLabel } from '@mui/material'; 
+import { Box, Typography, Grid, Stack, TextField, Button, Paper, CircularProgress, InputLabel } from '@mui/material';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import Swal from 'sweetalert2';
@@ -8,8 +8,8 @@ import { format } from 'date-fns';
 // 🚨 IMPORTAMOS LOS COMPONENTES ESTANDARIZADOS Y MODALES
 import SelectWrapper from '../components/SelectWrapper';
 import StageInput from '../components/StageInput';
-import ModalArchivo from './ModalArchivo'; 
-import ModalCajaExterna from '../components/ModalCajaExterna'; 
+import ModalArchivo from './ModalArchivo';
+import ModalCajaExterna from '../components/ModalCajaExterna';
 
 // IMPORTACIONES DE HOOKS (Mantenidas)
 import useFetchActiveDrivers from '../hooks/useFetchActiveDrivers';
@@ -41,9 +41,20 @@ const initialEtapaStateBase = {
     documentos: { ...initialNormalTripDocs }, comments: '', time_of_delivery: ''
 };
 
-
-const TripFormNew = ({ tripNumber, onSuccess }) => {
+const TripFormNew = ({
+    tripNumber,
+    countryCode,
+    tripYear,
+    isTransnational,
+    isContinuation,
+    transnationalNumber,
+    movementNumber,
+    onSuccess
+}) => {
     const apiHost = import.meta.env.VITE_API_HOST;
+    const tripYear2Digits = String(tripYear).slice(-2);
+
+
 
     const { activeDrivers, loading: loadingDrivers, error: errorDrivers } = useFetchActiveDrivers();
     const { activeTrucks, loading: loadingTrucks, error: errorTrucks } = useFetchActiveTrucks();
@@ -52,8 +63,8 @@ const TripFormNew = ({ tripNumber, onSuccess }) => {
     const { activeCompanies, loading: loadingCompanies, error: errorCompanies } = useFetchCompanies();
     const { activeWarehouses, loading: loadingWarehouses, error: errorWarehouses } = useFetchWarehouses();
 
-    const [trailerType, setTrailerType] = useState('interna'); 
-    const [tripMode, setTripMode] = useState('individual'); 
+    const [trailerType, setTrailerType] = useState('interna');
+    const [tripMode, setTripMode] = useState('individual');
     const [isCreatingCompany, setIsCreatingCompany] = useState(false);
     const [isCreatingWarehouse, setIsCreatingWarehouse] = useState(false);
 
@@ -75,7 +86,7 @@ const TripFormNew = ({ tripNumber, onSuccess }) => {
         caja_externa_id: ''
     });
 
-    const initialEtapaState = useMemo(() => ({...initialEtapaStateBase}), []);
+    const initialEtapaState = useMemo(() => ({ ...initialEtapaStateBase }), []);
     const [etapas, setEtapas] = useState([initialEtapaState]);
 
     const handleTrailerTypeChange = (type) => {
@@ -211,7 +222,7 @@ const TripFormNew = ({ tripNumber, onSuccess }) => {
         if (stageIndex !== null && etapas[stageIndex]) {
             return etapas[stageIndex].documentos[docType] || null;
         } else {
-            return formData[docType] || null; 
+            return formData[docType] || null;
         }
     };
 
@@ -229,7 +240,7 @@ const TripFormNew = ({ tripNumber, onSuccess }) => {
         setEtapas(prevEtapas => [
             ...prevEtapas,
             {
-                ...initialEtapaStateBase, 
+                ...initialEtapaStateBase,
                 stage_number: prevEtapas.length + 1,
                 stageType: tipoEtapa,
                 documentos: initialDocs
@@ -276,7 +287,7 @@ const TripFormNew = ({ tripNumber, onSuccess }) => {
                 return;
             }
         }
-        
+
         let timerInterval;
         const start = Date.now();
 
@@ -304,7 +315,22 @@ const TripFormNew = ({ tripNumber, onSuccess }) => {
         dataToSend.append('truck_id', formData.truck_id);
         dataToSend.append('caja_id', formData.caja_id || '');
         dataToSend.append('caja_externa_id', formData.caja_externa_id || '');
+        dataToSend.append('country_code', countryCode);
+        dataToSend.append('trip_year', tripYear2Digits);
+        dataToSend.append('is_transnational', isTransnational ? 1 : 0);
 
+        if (isTransnational) {
+            if (isContinuation) {
+                dataToSend.append('transnational_number', transnationalNumber);
+                dataToSend.append('movement_number', movementNumber);
+            } else {
+                dataToSend.append('transnational_number', '');
+                dataToSend.append('movement_number', 1);
+            }
+        } else {
+            dataToSend.append('transnational_number', '');
+            dataToSend.append('movement_number', '');
+        }
 
         // 1. Preparar JSON de etapas y añadir archivos al FormData
         const etapasParaJson = etapas.map(etapa => ({
@@ -328,9 +354,9 @@ const TripFormNew = ({ tripNumber, onSuccess }) => {
             estatus: 'In Transit',
             comments: etapa.comments || '',
             time_of_delivery: etapa.time_of_delivery || '',
-            
+
             documentos: Object.entries(etapa.documentos).reduce((acc, [key, value]) => {
-                if (value) { 
+                if (value) {
                     acc[key] = {
                         fileName: value.fileName || '',
                         vencimiento: value.vencimiento || null
@@ -356,7 +382,7 @@ const TripFormNew = ({ tripNumber, onSuccess }) => {
 
         // Enviar a la API
         try {
-            const apiUrl = `${apiHost}/new_trips.php`; 
+            const apiUrl = `${apiHost}/new_trips.php`;
             const response = await fetch(apiUrl, {
                 method: 'POST',
                 body: dataToSend,
@@ -436,7 +462,7 @@ const TripFormNew = ({ tripNumber, onSuccess }) => {
             onSuccess();
         }
     }
-    
+
 
     return (
         // 🚨 La etiqueta form envuelve todo el contenido
@@ -581,7 +607,7 @@ const TripFormNew = ({ tripNumber, onSuccess }) => {
                             <Grid item xs={12} md={4}>
                                 <TextField fullWidth size="small" label="CI Number:" value={etapa.ci_number} onChange={(e) => handleEtapaChange(index, 'ci_number', e.target.value)} />
                             </Grid>
-                            
+
                             {/* Fila 2: Bodegas Origen/Destino */}
                             <Grid item xs={12} md={6}>
                                 <SelectWrapper
@@ -605,7 +631,7 @@ const TripFormNew = ({ tripNumber, onSuccess }) => {
                                     formatCreateLabel={(inputValue) => `Crear bodega: "${inputValue}"`}
                                 />
                             </Grid>
-                            
+
                             {/* Fila 3: Origen/Destino (Ciudad/Zip) */}
                             <Grid item xs={12} md={3}>
                                 <TextField fullWidth size="small" label="Origin City/State:" value={etapa.origin} onChange={(e) => handleEtapaChange(index, 'origin', e.target.value)} />
@@ -619,7 +645,7 @@ const TripFormNew = ({ tripNumber, onSuccess }) => {
                             <Grid item xs={12} md={3}>
                                 <TextField fullWidth size="small" label="Zip Code Destination:" value={etapa.zip_code_destination} onChange={(e) => handleEtapaChange(index, 'zip_code_destination', e.target.value)} />
                             </Grid>
-                            
+
                             {/* Fila 4: Fechas */}
                             <Grid item xs={12} md={3}>
                                 <InputLabel sx={{ fontWeight: 600, mb: 0.5, fontSize: '0.9rem' }}>Loading Date:</InputLabel>
@@ -638,7 +664,7 @@ const TripFormNew = ({ tripNumber, onSuccess }) => {
                             <Grid item xs={12} md={3}>
                                 <TextField fullWidth size="small" label="Cita Entrega (Hora):" value={etapa.time_of_delivery || ''} onChange={(e) => handleEtapaChange(index, 'time_of_delivery', e.target.value)} />
                             </Grid>
-                            
+
                             {/* Fila 5: Rates / Millas */}
                             <Grid item xs={12} md={3}>
                                 <TextField fullWidth size="small" type="number" label="Rate Tarifa:" value={etapa.rate_tarifa} onChange={(e) => handleEtapaChange(index, 'rate_tarifa', e.target.value)} />
@@ -652,7 +678,7 @@ const TripFormNew = ({ tripNumber, onSuccess }) => {
                             <Grid item xs={12} md={3}>
                                 <TextField fullWidth size="small" multiline rows={3} label="Comments:" value={etapa.comments} onChange={(e) => handleEtapaChange(index, 'comments', e.target.value)} />
                             </Grid>
-                            
+
                             {/* Fila 6: Documentos */}
                             <Grid item xs={12}>
                                 <Typography variant="subtitle1" fontWeight={600} sx={{ mt: 2, mb: 1, borderTop: '1px dashed #ccc', pt: 1 }}>
@@ -707,7 +733,7 @@ const TripFormNew = ({ tripNumber, onSuccess }) => {
                     mostrarFechaVencimiento={mostrarFechaVencimientoModal}
                 />
             )}
-             {IsModalCajaExternaOpen && (
+            {IsModalCajaExternaOpen && (
                 <ModalCajaExterna
                     isOpen={IsModalCajaExternaOpen}
                     onClose={() => setIsModalCajaExternaOpen(false)}

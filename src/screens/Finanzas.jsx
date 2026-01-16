@@ -92,20 +92,17 @@ const Finanzas = () => {
   const filteredAndSorted = useMemo(() => {
     let result = [...trips];
 
-    // 1. Filtro Pestaña
     if (tabValue === 0) {
         result = result.filter(t => t.status_trip !== STATUS_PAID);
     } else {
         result = result.filter(t => t.status_trip === STATUS_PAID);
     }
 
-    // 2. Buscador
     if (search.trim()) {
       const q = search.trim().toLowerCase();
       result = result.filter(t => (t.trip_number || '').toLowerCase().includes(q));
     }
 
-    // 3. Filtro Dropdown
     if (statusFilter !== 'All') {
       result = result.filter(t => t.status_trip === Number(statusFilter));
     }
@@ -196,13 +193,11 @@ const Finanzas = () => {
   return (
     <Paper sx={{ m: 2, p: 3, minHeight: '85vh' }}>
       
-      {/* 1. Header Principal */}
       <Box sx={{ mb: 3 }}>
         <Typography variant="h4" fontWeight={800} color="text.primary">Administrador de Finanzas</Typography>
         <Typography variant="body2" color="text.secondary">Gestión de cobros y pagos de viajes</Typography>
       </Box>
 
-      {/* 2. Pestañas de Navegación */}
       <Paper elevation={0} variant="outlined" sx={{ mb: 4, borderRadius: 2, overflow: 'hidden' }}>
         <Tabs 
             value={tabValue} 
@@ -217,7 +212,6 @@ const Finanzas = () => {
         </Tabs>
       </Paper>
 
-      {/* 3. Sección de Resumen (KPIs) - Solo visible en Pendientes */}
       {!loading && tabValue === 0 && (
         <Box sx={{ mb: 4 }}>
              <Typography variant="subtitle2" textTransform="uppercase" fontWeight={700} color="text.secondary" mb={2}>
@@ -227,7 +221,6 @@ const Finanzas = () => {
         </Box>
       )}
 
-      {/* 4. Barra de Herramientas (Filtros y Acciones) */}
       <Paper elevation={0} sx={{ p: 2, mb: 3, bgcolor: '#f5f5f5', borderRadius: 2, border: '1px solid #e0e0e0' }}>
         <Grid container spacing={2} alignItems="center">
             {/* Buscador */}
@@ -245,7 +238,6 @@ const Finanzas = () => {
                 />
             </Grid>
 
-            {/* Filtro Dropdown */}
             <Grid item xs={12} md={4}>
                 <TextField
                     select
@@ -271,7 +263,6 @@ const Finanzas = () => {
                 </TextField>
             </Grid>
 
-            {/* Botón Guardar (Alineado a la derecha) */}
             <Grid item xs={12} md={4} display="flex" justifyContent="flex-end">
                 <Tooltip title={dirtyCount ? `Guardar ${dirtyCount} cambios` : 'No hay cambios pendientes'}>
                     <span>
@@ -293,7 +284,6 @@ const Finanzas = () => {
         </Grid>
       </Paper>
 
-      {/* 5. Tabla de Resultados */}
       <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 2 }}>
         <Table stickyHeader size="small">
           <TableHead>

@@ -133,7 +133,6 @@ const TripAdmin = () => {
     // ** LÓGICA DE FILTRADO Y ORDENAMIENTO **
     const filteredAndSortedTrips = useMemo(() => {
 
-        // Convertir filtros a minúsculas
         const tripFilterValue = filterTrip.trim().toLowerCase();
         const driverLower = filterDriver.trim().toLowerCase();
         const truckLower = filterTruck.trim().toLowerCase();
@@ -145,17 +144,13 @@ const TripAdmin = () => {
 
         const filtered = trips.filter(trip => {
 
-            // 1. FILTRO POR PESTAÑA (Lógica Principal)
             const isCompleted = trip.status === 'Completed' || trip.status === 'Cancelled';
             
-            // Si estamos en tab 0 (Activos), ocultar completados/cancelados
             if (tabValue === 0 && isCompleted) return false;
             
-            // Si estamos en tab 1 (Completados), ocultar activos (In Transit, In Coming, Almost Over)
             if (tabValue === 1 && !isCompleted) return false;
 
 
-            // 2. Filtro de Rango de Fechas
             let tripCreationDate = null;
             if (trip.creation_date) { try { tripCreationDate = dayjs(trip.creation_date); if (!tripCreationDate.isValid()) { tripCreationDate = null; } } catch (e) { } }
             const start = startDate ? dayjs(startDate).startOf('day') : null;
@@ -163,7 +158,6 @@ const TripAdmin = () => {
 
             const withinDateRange = ((!start || (tripCreationDate && tripCreationDate.isSameOrAfter(start))) && (!end || (tripCreationDate && tripCreationDate.isSameOrBefore(end))));
 
-            // 3. Filtros de Campos Principales
             const matchTrip = !tripFilterValue || (String(trip.trip_number || '').trim().toLowerCase().includes(tripFilterValue));
             const driverNombre = (trip.driver_nombre || '').trim().toLowerCase();
             const driverSecondNombre = (trip.driver_second_nombre || '').trim().toLowerCase();
@@ -171,13 +165,11 @@ const TripAdmin = () => {
             const matchTruck = !truckLower || ((trip.truck_unidad || '').trim().toLowerCase().includes(truckLower));
             const matchTrailer = !trailerLower || ((trip.caja_no_caja || '').trim().toLowerCase().includes(trailerLower) || (trip.caja_externa_no_caja || '').trim().toLowerCase().includes(trailerLower));
 
-            // 4. Filtros de Etapas
             const etapas = trip.etapas || [];
             const matchCompany = !companyLower || etapas.some(e => (e.nombre_compania || '').trim().toLowerCase().includes(companyLower));
             const matchOrigin = !originLower || etapas.some(e => (e.origin || '').trim().toLowerCase().includes(originLower));
             const matchDestination = !destinationLower || etapas.some(e => (e.destination || '').trim().toLowerCase().includes(destinationLower));
 
-            // 5. Travel Direction
             let matchDirection = true;
             if (directionValue) {
                 const isLocationFiltered = originLower || destinationLower;
@@ -199,7 +191,6 @@ const TripAdmin = () => {
         });
 
         return filtered.sort((a, b) => {
-            // Ordenamiento por estatus personalizado para cada tab
             const statusOrder = (status) => {
                 if (status === 'In Coming') return 1;
                 if (status === 'In Transit') return 2;
@@ -217,18 +208,17 @@ const TripAdmin = () => {
             const dateA = a.creation_date ? dayjs(a.creation_date) : dayjs('1900-01-01');
             const dateB = b.creation_date ? dayjs(b.creation_date) : dayjs('1900-01-01');
 
-            if (dateA.isValid() && dateB.isValid()) return dateB.diff(dateA); // Más reciente primero
+            if (dateA.isValid() && dateB.isValid()) return dateB.diff(dateA); 
             
             return (a.trip_number || '').localeCompare(b.trip_number || '');
         });
     }, [
-        trips, tabValue, // Agregamos tabValue a las dependencias
+        trips, tabValue, 
         filterTrip, filterDriver, filterTruck, filterTrailer,
         filterCompany, filterOrigin, filterDestination, filterDirection,
         startDate, endDate
     ]);
 
-    // ... (Handlers existentes) ...
     const handleEditTrip = (tripId) => {
         if (!tripId) return;
         navigate(`/edit-trip/${tripId}`);
@@ -310,7 +300,7 @@ const TripAdmin = () => {
 
             if (response.ok && result.status === 'success') {
                 Swal.fire('¡Éxito!', 'Viaje reactivado correctamente.', 'success');
-                fetchTrips(); // Al recargar, el viaje tendrá status activo y cambiará de tab automáticamente
+                fetchTrips(); 
             } else {
                 throw new Error(result.error || result.message);
             }
@@ -329,7 +319,6 @@ const TripAdmin = () => {
                 Administrador de Viajes
             </Typography>
 
-            {/* PESTAÑAS */}
             <Paper elevation={1} sx={{ mb: 2 }}>
                 <Tabs 
                     value={tabValue} 
@@ -354,7 +343,6 @@ const TripAdmin = () => {
                 </Button>
             </Box>
 
-            {/* FILTROS (Igual que antes) */}
             <Collapse in={showFilters} timeout="auto" unmountOnExit>
                 <Paper sx={{ p: 2, mb: 3 }}>
                     <Typography variant="h6" gutterBottom>Filtros de Búsqueda</Typography>
@@ -420,7 +408,7 @@ const TripAdmin = () => {
                             <TableCell sx={{ fontWeight: 'bold' }}>Return Date</TableCell>
                             <TableCell sx={{ fontWeight: 'bold' }}>Actions</TableCell>
                             <TableCell sx={{ fontWeight: 'bold' }}>Resumen</TableCell>
-                            {isAdmin && tabValue === 1 && ( // Columna extra solo si es admin y está en completados
+                            {isAdmin && tabValue === 1 && ( 
                                 <TableCell sx={{ fontWeight: 'bold' }}>Admin</TableCell>
                             )}
                         </TableRow>
@@ -439,7 +427,7 @@ const TripAdmin = () => {
                                     <TripRow
                                         key={trip.trip_id}
                                         trip={trip}
-                                        isCompletedTab={tabValue === 1} // Propiedad clave para saber en qué pestaña estamos
+                                        isCompletedTab={tabValue === 1} 
                                         onEdit={handleEditTrip}
                                         onFinalize={handleFinalizeTrip}
                                         onAlmostOver={handleAlmostOverTrip}

@@ -86,7 +86,6 @@ const PaymentDrivers = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(25);
   
-  // Estado de Pestañas (0: Pendientes, 1: Pagados)
   const [tabValue, setTabValue] = useState(0);
 
   const fetchPayments = useCallback(async () => {
@@ -168,16 +167,12 @@ const PaymentDrivers = () => {
   const filtered = useMemo(() => {
     let result = trips;
 
-    // 1. Filtro por Pestaña
     if (tabValue === 0) {
-        // Pendientes: Estatus diferente de "1" (Pagado) -> Muestra "0" y "2"
         result = result.filter(t => String(t.status_payment) !== "1");
     } else {
-        // Pagados: Estatus igual a "1"
         result = result.filter(t => String(t.status_payment) === "1");
     }
 
-    // 2. Filtro de Búsqueda
     const q = search.trim().toLowerCase();
     if (q) {
         result = result.filter((t) => (t.trip_number || "").toLowerCase().includes(q) || (t.nombre || "").toLowerCase().includes(q));
@@ -326,7 +321,6 @@ const PaymentDrivers = () => {
                           </span>
                         </Tooltip>
 
-                        {/* Solo mostramos el botón de pagar si estamos en la pestaña de pendientes y está autorizado */}
                         {tabValue === 0 && (
                             <Tooltip title={!isAutorizado ? "Requiere Autorización" : "Finalizar Pago"}>
                                 <span>
