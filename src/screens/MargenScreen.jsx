@@ -28,9 +28,10 @@ const MargenScreen = () => {
       
       const totalTarifa = Number(t.tarifa_pagada || 0); 
       const totalDiesel = Number(t.diesel || 0);
-      const totalGastos = Number(t.gastos || 0); 
+      
+      // const totalGastos = Number(t.gastos || 0); 
 
-      const totalCost = totalDiesel + totalGastos + driverPay;
+      const totalCost = totalDiesel + driverPay; 
       const totalMargin = totalTarifa - totalCost;
       
       return {
@@ -38,7 +39,7 @@ const MargenScreen = () => {
         trip_id: Number(t.trip_id),
         tarifa_pagada: totalTarifa,
         diesel: totalDiesel,
-        expenses: totalGastos,
+        // expenses: totalGastos, // Ya no se muestra
         driver_pay: driverPay,
         totalCost,
         totalMargin,
@@ -56,7 +57,6 @@ const MargenScreen = () => {
         const json = await res.json();
         
         if (json.status === 'success' && Array.isArray(json.data)) {
-            console.log(json.data)
             setTrips(json.data); 
         } else {
              setTrips([]); 
@@ -115,13 +115,12 @@ const MargenScreen = () => {
 
       <Paper elevation={1}>
         <TableContainer component={Paper} variant="outlined" sx={{ overflowX: 'auto' }}>
-          <Table stickyHeader size="small" sx={{ minWidth: 1000 }}>
+          <Table stickyHeader size="small" sx={{ minWidth: 800 }}>
             <TableHead>
               <TableRow>
                 <TableCell sx={{ fontWeight: 600 }}>Trip #</TableCell>
                 <TableCell sx={{ fontWeight: 600, textAlign: 'right' }}>Total Tarifa</TableCell>
                 <TableCell sx={{ fontWeight: 600, textAlign: 'right' }}>Costo Diesel</TableCell>
-                <TableCell sx={{ fontWeight: 600, textAlign: 'right' }}>Otros Gastos</TableCell>
                 <TableCell sx={{ fontWeight: 600, textAlign: 'right' }}>Pago Driver</TableCell>
                 <TableCell sx={{ fontWeight: 700, textAlign: 'right', bgcolor: '#f0f0f0' }}>Margen Total (USD)</TableCell>
               </TableRow>
@@ -136,7 +135,7 @@ const MargenScreen = () => {
               ))}
               {filtered.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={6} align="center"> 
+                    <TableCell colSpan={5} align="center"> 
                       <Typography color="text.secondary" sx={{ py: 3 }}>No hay viajes que mostrar.</Typography>
                     </TableCell>
                   </TableRow>
