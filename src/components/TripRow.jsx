@@ -13,7 +13,6 @@ import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import localizedFormat from 'dayjs/plugin/localizedFormat';
 
-// Iconos para acciones dentro del dropdown
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import HourglassBottomIcon from '@mui/icons-material/HourglassBottom';
 
@@ -22,11 +21,10 @@ dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
 dayjs.extend(localizedFormat);
 dayjs.locale('es');
-// ... (Configuración de locale dayjs se mantiene igual) ...
 
 export const TripRow = ({
     trip,
-    isCompletedTab, // Nueva prop para saber el contexto
+    isCompletedTab, 
     onEdit,
     onFinalize,
     onAlmostOver,
@@ -79,7 +77,6 @@ export const TripRow = ({
                 </TableCell>
                 <TableCell component="th" scope="row"><Box sx={{ whiteSpace: 'nowrap' }}>{trip.trip_number}</Box></TableCell>
                 
-                {/* Driver */}
                 <TableCell>
                     {trip.driver_second_nombre ? (
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
@@ -116,23 +113,22 @@ export const TripRow = ({
 
                 <TableCell sx={{ whiteSpace: 'nowrap' }} title={returnDateTitle}>{returnDateForDisplay}</TableCell>
 
-                {/* ACCIONES PRINCIPALES */}
                 <TableCell>
                     <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 0.5 }}>
                         <Button size="small" variant="outlined" onClick={() => onEdit(trip.trip_id)}>
                             {isCompletedTab ? 'Ver' : 'Editar'}
                         </Button>
-                        {/* NOTA: Los botones Almost Over y Finalizar se movieron al collapse si es activo */}
                     </Box>
                 </TableCell>
 
-                <TableCell>
-                    <Button size="small" variant="contained" color="secondary" onClick={() => onSummary(trip.trip_id)}>
-                        Resumen
-                    </Button>
-                </TableCell>
+                {isCompletedTab && (
+                    <TableCell>
+                        <Button size="small" variant="contained" color="secondary" onClick={() => onSummary(trip.trip_id)}>
+                            Resumen
+                        </Button>
+                    </TableCell>
+                )}
 
-                {/* Reactivar solo en tab completados y si es admin */}
                 {isAdmin && isCompletedTab && (
                     <TableCell>
                         <Button size="small" variant="outlined" color="warning" onClick={() => onReactivate(trip.trip_id, trip.trip_number)}>
@@ -142,13 +138,11 @@ export const TripRow = ({
                 )}
             </TableRow>
 
-            {/* FILA EXPANDIDA */}
             <TableRow>
                 <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={11}>
                     <Collapse in={open} timeout="auto" unmountOnExit>
                         <Box sx={{ margin: 1, padding: 1, border: '1px solid rgba(224, 224, 224, 1)', borderRadius: '4px' }}>
                             
-                            {/* --- BARRA DE ACCIONES PARA VIAJES ACTIVOS --- */}
                             {!isCompletedTab && (
                                 <Paper elevation={0} sx={{ p: 2, mb: 2, bgcolor: '#f1f8e9', border: '1px solid #c5e1a5', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                     <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#33691e' }}>
@@ -182,7 +176,6 @@ export const TripRow = ({
                                 Detalles de Etapas y Documentos
                             </Typography>
 
-                            {/* Renderizado de Etapas (Igual que antes) */}
                             {Array.isArray(trip.etapas) && trip.etapas.length > 0 ? (
                                 <Grid container spacing={2} sx={{ fontSize: '0.85rem' }}>
                                     {trip.etapas.map((etapa) => {

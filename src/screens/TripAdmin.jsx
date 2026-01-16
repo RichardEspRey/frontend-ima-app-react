@@ -127,7 +127,7 @@ const TripAdmin = () => {
 
     const handleTabChange = (event, newValue) => {
         setTabValue(newValue);
-        setPage(0); // Resetear paginación al cambiar de pestaña
+        setPage(0); 
     };
 
     // ** LÓGICA DE FILTRADO Y ORDENAMIENTO **
@@ -300,7 +300,7 @@ const TripAdmin = () => {
 
             if (response.ok && result.status === 'success') {
                 Swal.fire('¡Éxito!', 'Viaje reactivado correctamente.', 'success');
-                fetchTrips(); 
+                fetchTrips(); // Al recargar, el viaje tendrá status activo y cambiará de tab automáticamente
             } else {
                 throw new Error(result.error || result.message);
             }
@@ -407,7 +407,11 @@ const TripAdmin = () => {
                             <TableCell sx={{ fontWeight: 'bold' }}>Status</TableCell>
                             <TableCell sx={{ fontWeight: 'bold' }}>Return Date</TableCell>
                             <TableCell sx={{ fontWeight: 'bold' }}>Actions</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold' }}>Resumen</TableCell>
+                            
+                            {tabValue === 1 && (
+                                <TableCell sx={{ fontWeight: 'bold' }}>Resumen</TableCell>
+                            )}
+
                             {isAdmin && tabValue === 1 && ( 
                                 <TableCell sx={{ fontWeight: 'bold' }}>Admin</TableCell>
                             )}
@@ -427,7 +431,7 @@ const TripAdmin = () => {
                                     <TripRow
                                         key={trip.trip_id}
                                         trip={trip}
-                                        isCompletedTab={tabValue === 1} 
+                                        isCompletedTab={tabValue === 1} // Propiedad clave
                                         onEdit={handleEditTrip}
                                         onFinalize={handleFinalizeTrip}
                                         onAlmostOver={handleAlmostOverTrip}
