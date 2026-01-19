@@ -3,16 +3,18 @@ import {
   Box, Paper, Typography, Table, TableBody, TableCell,
   TableContainer, TableHead, TableRow, Button, CircularProgress, 
   Stack, LinearProgress, Dialog, DialogTitle, DialogContent, 
-  DialogActions, TextField, InputAdornment, Chip, Divider
+  DialogActions, TextField, InputAdornment, Chip, IconButton, Tooltip
 } from "@mui/material";
 import RefreshIcon from '@mui/icons-material/Refresh';
 import BuildCircleIcon from '@mui/icons-material/BuildCircle';
 import HistoryIcon from '@mui/icons-material/History';
+import SettingsIcon from '@mui/icons-material/Settings'; // Icono de engranaje
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom"; 
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
+// Helper para formato de números
 const numberFmt = (n) => new Intl.NumberFormat('en-US').format(Number(n).toFixed(0));
 
 export default function Afinaciones() {
@@ -22,10 +24,15 @@ export default function Afinaciones() {
   const [trucksStatus, setTrucksStatus] = useState([]);
   const [loading, setLoading] = useState(true);
   
-  // Modal State
+  // Modal Reinicio
   const [openModal, setOpenModal] = useState(false);
   const [selectedTruck, setSelectedTruck] = useState(null);
   const [oilPercentage, setOilPercentage] = useState('');
+  
+  // Modal Ajuste Manual (Nuevo)
+  const [openManualModal, setOpenManualModal] = useState(false);
+  const [manualMiles, setManualMiles] = useState('');
+
   const [saving, setSaving] = useState(false);
 
   // --- Fetch Data ---
@@ -50,7 +57,7 @@ export default function Afinaciones() {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  // --- Handlers ---
+  // --- Handlers Reinicio ---
   const handleOpenReset = (truck) => {
     setSelectedTruck(truck);
     setOilPercentage(''); 
@@ -74,7 +81,7 @@ export default function Afinaciones() {
         const json = await res.json();
 
         if (json.status === 'success') {
-            Swal.fire('Reiniciado', 'El contador de millas se ha reiniciado.', 'success');
+            Swal.fire('Reiniciado', 'El contador se ha reiniciado y guardado en historial.', 'success');
             setOpenModal(false);
             fetchData(); 
         } else {
@@ -85,6 +92,43 @@ export default function Afinaciones() {
     } finally {
         setSaving(false);
     }
+  };
+
+  // --- Handlers Ajuste Manual (Nuevos) ---
+  const handleOpenManual = (truck) => {
+      setSelectedTruck(truck);
+      // Pre-llenar con el valor actual para que sea fácil editar
+      setManualMiles(Math.round(truck.millas_acumuladas));
+      setOpenManualModal(true);
+  };
+
+  const handleConfirmManualUpdate = async () => {
+      if (manualMiles === '' || isNaN(manualMiles) || manualMiles < 0) {
+          return Swal.fire('Atención', 'Ingresa un millaje válido', 'warning');
+      }
+
+      setSaving(true);
+      try {
+          const fd = new FormData();
+          fd.append('op', 'update_manual_mileage');
+          fd.append('truck_id', selectedTruck.truck_id);
+          fd.append('nuevo_total', manualMiles);
+
+          const res = await fetch(`${apiHost}/afinaciones.php`, { method: 'POST', body: fd });
+          const json = await res.json();
+
+          if (json.status === 'success') {
+              Swal.fire('Ajustado', 'Millas actualizadas correctamente.', 'success');
+              setOpenManualModal(false);
+              fetchData();
+          } else {
+              Swal.fire('Error', json.message, 'error');
+          }
+      } catch (e) {
+          Swal.fire('Error', e.message, 'error');
+      } finally {
+          setSaving(false);
+      }
   };
 
   // --- Render Helpers ---
@@ -103,9 +147,10 @@ export default function Afinaciones() {
       
       <Stack direction="row" alignItems="center" justifyContent="space-between" mb={4}>
         <Stack direction="row" alignItems="center" spacing={2}>
+            <BuildCircleIcon fontSize="large" color="primary" />
             <Box>
                 <Typography variant="h4" fontWeight={800}>Control de Afinaciones</Typography>
-                <Typography variant="body2" color="text.secondary">Monitoreo de cambio de aceite</Typography>
+                <Typography variant="body2" color="text.secondary">Monitoreo de cambio de aceite (Límite 15,000 mi)</Typography>
             </Box>
         </Stack>
         
@@ -118,6 +163,7 @@ export default function Afinaciones() {
         </Button>
       </Stack>
 
+      {/* TABLA DE MONITOREO */}
       <Paper elevation={3} sx={{ borderRadius: 3, overflow: 'hidden', mb: 5 }}>
         <Box sx={{ p: 2, bgcolor: '#e3f2fd', borderBottom: '1px solid #bbdefb' }}>
             <Typography variant="h6" fontWeight={700} color="primary.main">
@@ -130,7 +176,8 @@ export default function Afinaciones() {
                     <TableRow>
                         <TableCell sx={{ fontWeight: 700 }}>Camión</TableCell>
                         <TableCell sx={{ fontWeight: 700, width: '50%' }}>Millas Acumuladas (Prácticas)</TableCell>
-                        <TableCell align="center" sx={{ fontWeight: 700 }}>Acción</TableCell>
+                        <TableCell align="center" sx={{ fontWeight: 700 }}>Reiniciar</TableCell>
+                        <TableCell align="center" sx={{ fontWeight: 700 }}>Ajustar</TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
@@ -173,27 +220,36 @@ export default function Afinaciones() {
                                         onClick={() => handleOpenReset(truck)}
                                         sx={{ textTransform: 'none', borderRadius: 2 }}
                                     >
-                                        Reiniciar Contador
+                                        Reiniciar
                                     </Button>
+                                </TableCell>
+                                {/* Nueva columna de Ajuste */}
+                                <TableCell align="center">
+                                    <Tooltip title="Ajuste Manual de Millas">
+                                        <IconButton onClick={() => handleOpenManual(truck)} color="default">
+                                            <SettingsIcon />
+                                        </IconButton>
+                                    </Tooltip>
                                 </TableCell>
                             </TableRow>
                         );
                     })}
                     {trucksStatus.length === 0 && (
-                        <TableRow><TableCell colSpan={3} align="center">No hay camiones activos</TableCell></TableRow>
+                        <TableRow><TableCell colSpan={4} align="center">No hay camiones activos</TableCell></TableRow>
                     )}
                 </TableBody>
             </Table>
         </TableContainer>
       </Paper>
 
+      {/* MODAL 1: REINICIO (RESET) */}
       <Dialog open={openModal} onClose={() => !saving && setOpenModal(false)} maxWidth="xs" fullWidth>
         <DialogTitle sx={{ fontWeight: 700 }}>
             Reiniciar Contador - {selectedTruck?.unidad}
         </DialogTitle>
         <DialogContent>
             <Typography variant="body2" color="text.secondary" paragraph sx={{ mt: 1 }}>
-                Al confirmar, se guardará el registro actual de <b>{selectedTruck && numberFmt(selectedTruck.millas_acumuladas)} millas</b> y el contador volverá a cero para este camión.
+                Al confirmar, se guardará el registro actual de <b>{selectedTruck && numberFmt(selectedTruck.millas_acumuladas)} millas</b> y el contador volverá a cero.
             </Typography>
             
             <TextField
@@ -222,6 +278,45 @@ export default function Afinaciones() {
                 startIcon={saving ? <CircularProgress size={20} color="inherit"/> : <RefreshIcon />}
             >
                 {saving ? 'Guardando...' : 'Confirmar Reinicio'}
+            </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* MODAL 2: AJUSTE MANUAL (OFFSET) */}
+      <Dialog open={openManualModal} onClose={() => !saving && setOpenManualModal(false)} maxWidth="xs" fullWidth>
+        <DialogTitle sx={{ fontWeight: 700 }}>
+            Ajuste Manual - {selectedTruck?.unidad}
+        </DialogTitle>
+        <DialogContent>
+            <Typography variant="body2" color="text.secondary" paragraph sx={{ mt: 1 }}>
+                Modifica el total de millas acumuladas actual. Útil para correcciones o desfases.
+            </Typography>
+            
+            <TextField
+                autoFocus
+                label="Nuevo Total de Millas"
+                type="number"
+                fullWidth
+                variant="outlined"
+                value={manualMiles}
+                onChange={(e) => setManualMiles(e.target.value)}
+                InputProps={{
+                    endAdornment: <InputAdornment position="end">mi</InputAdornment>,
+                }}
+                disabled={saving}
+                sx={{ mt: 2 }}
+            />
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+            <Button onClick={() => setOpenManualModal(false)} disabled={saving} color="inherit">Cancelar</Button>
+            <Button 
+                onClick={handleConfirmManualUpdate} 
+                variant="contained" 
+                color="warning" 
+                disabled={saving}
+                startIcon={saving ? <CircularProgress size={20} color="inherit"/> : <SettingsIcon />}
+            >
+                {saving ? 'Guardando...' : 'Aplicar Ajuste'}
             </Button>
         </DialogActions>
       </Dialog>
