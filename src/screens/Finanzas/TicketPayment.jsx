@@ -16,6 +16,8 @@ import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import PersonIcon from '@mui/icons-material/Person';
 import RouteIcon from '@mui/icons-material/Route';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 
 import GastosModal from "../../components/GastosModal";
 
@@ -30,7 +32,9 @@ const TicketPayment = () => {
   const [info, setInfo] = useState(null);
   const [stages, setStages] = useState([]);
   const [gastos, setGastos] = useState(0);
-  const [avance, setAvance] = useState(0);
+  const [avances, setAvances] = useState({ a1: 0, a2: 0, a3: 0 });
+  const [visibleAdvances, setVisibleAdvances] = useState(1);
+
   const [ajustes, setAjustes] = useState({});
   const [openGastosModal, setOpenGastosModal] = useState(false);
   const [customRate, setCustomRate] = useState(0);
@@ -60,7 +64,17 @@ const TicketPayment = () => {
         setAjustes(savedAjustes);
 
         if (json.data.saved_data) {
-            setAvance(Number(json.data.saved_data.anticipo || 0));
+            const valA1 = Number(json.data.saved_data.anticipo_1 || 0);
+            const valA2 = Number(json.data.saved_data.anticipo_2 || 0);
+            const valA3 = Number(json.data.saved_data.anticipo_3 || 0);
+
+            setAvances({ a1: valA1, a2: valA2, a3: valA3 });
+            
+            let count = 1;
+            if (valA3 > 0) count = 3;
+            else if (valA2 > 0) count = 2;
+            setVisibleAdvances(count);
+
             setGastos(Number(json.data.saved_data.gastos_aplicados || 0));
         } 
 
@@ -77,16 +91,32 @@ const TicketPayment = () => {
 
   useEffect(() => { fetchTicket(); }, [fetchTicket]);
 
+  const handleAvanceChange = (key, value) => {
+      setAvances(prev => ({ ...prev, [key]: value }));
+  };
+
+  const addNextAdvance = () => {
+      if (visibleAdvances < 3) {
+          setVisibleAdvances(prev => prev + 1);
+      }
+  };
+
+  const removeAdvance = (key, levelToSet) => {
+      handleAvanceChange(key, 0); 
+      setVisibleAdvances(levelToSet);
+  };
+
   // === CÁLCULOS DINÁMICOS ===
   const totalMillasAjustadas = stages.reduce((acc, s) => {
     const adj = ajustes[s.stage_number] ?? 0;
-    // Millas originales - Ajuste
     return acc + (Number(s.millas_pcmiller) - adj);
   }, 0);
 
+  const totalAvances = Number(avances.a1 || 0) + Number(avances.a2 || 0) + Number(avances.a3 || 0);
+
   const totalPagar =
     Number((Number(customRate) * totalMillasAjustadas).toFixed(2)) -
-    Number(avance || 0) -
+    totalAvances -
     Number(gastos || 0);
 
   // === ENVÍO DE DATOS ===
@@ -95,9 +125,10 @@ const TicketPayment = () => {
         title: '¿Autorizar Pago?',
         html: `
             <div style="text-align:left; font-size: 0.9em;">
-                <p>Tarifa aplicada: <b>$${Number(customRate).toFixed(2)}</b></p>
+                <p>Tarifa: <b>$${Number(customRate).toFixed(2)}</b></p>
                 <p>Millas Finales: <b>${totalMillasAjustadas}</b></p>
-                <p>Deducciones: <b>$${(Number(avance) + Number(gastos)).toFixed(2)}</b></p>
+                <p>Total Anticipos: <b>$${totalAvances.toFixed(2)}</b></p>
+                <p>Gastos: <b>$${Number(gastos).toFixed(2)}</b></p>
             </div>
             <h3 style="margin-top:10px; color:#2e7d32">Total: $${totalPagar.toFixed(2)}</h3>
         `,
@@ -114,7 +145,11 @@ const TicketPayment = () => {
                 fd.append("driver_id", info.driver_id);
                 fd.append("amount", totalPagar);
                 fd.append("rate_per_mile", customRate);
-                fd.append("anticipo", avance);
+                
+                fd.append("anticipo_1", avances.a1);
+                fd.append("anticipo_2", avances.a2);
+                fd.append("anticipo_3", avances.a3);
+
                 fd.append("gastos", gastos);
                 fd.append("ajustes", JSON.stringify(ajustes));
           
@@ -150,12 +185,22 @@ const TicketPayment = () => {
     const ajustesCols = element.querySelectorAll(".col-ajuste");
     const inputsRate = element.querySelectorAll(".input-rate");
     const textRate = element.querySelectorAll(".text-rate");
+    
+    const inputsAvance = element.querySelectorAll(".input-avance");
+    const textAvance = element.querySelectorAll(".text-avance");
+    const botonesAdd = element.querySelectorAll(".btn-add-avance"); 
+
     const botones = element.querySelectorAll("button, .MuiIconButton-root");
 
     ajustesCols.forEach(col => (col.style.display = "none"));
     botones.forEach(btn => (btn.style.display = "none"));
+    botonesAdd.forEach(btn => (btn.style.display = "none"));
+    
     inputsRate.forEach(el => el.style.display = 'none');
     textRate.forEach(el => el.style.display = 'block');
+
+    inputsAvance.forEach(el => el.style.display = 'none');
+    textAvance.forEach(el => el.style.display = 'block');
 
     element.style.padding = "20px";
 
@@ -169,10 +214,14 @@ const TicketPayment = () => {
     pdf.addImage(imgData, "PNG", 10, 10, pdfWidth, pdfHeight);
     pdf.save(`Ticket_Pago_${info?.trip_number || trip_id}.pdf`);
 
+    // Restaurar
     ajustesCols.forEach(col => (col.style.display = ""));
     botones.forEach(btn => (btn.style.display = ""));
+    botonesAdd.forEach(btn => (btn.style.display = "flex")); 
     inputsRate.forEach(el => el.style.display = 'block');
     textRate.forEach(el => el.style.display = 'none');
+    inputsAvance.forEach(el => el.style.display = 'block');
+    textAvance.forEach(el => el.style.display = 'none');
     element.style.padding = "";
   };
 
@@ -240,7 +289,7 @@ const TicketPayment = () => {
             <Grid item xs={12} md={4}>
                  <Card variant="outlined" sx={{ height: '100%', borderColor: 'primary.light', bgcolor: '#e3f2fd' }}>
                     <CardContent>
-                        <Typography variant="caption" textTransform="uppercase" fontWeight={700} color="primary.main">Tarifa por Milla (Editable)</Typography>
+                        <Typography variant="caption" textTransform="uppercase" fontWeight={700} color="primary.main">Tarifa por Milla</Typography>
                         
                         <Box className="input-rate" mt={1}>
                             <TextField 
@@ -327,18 +376,74 @@ const TicketPayment = () => {
         <Grid container spacing={4}>
             <Grid item xs={12} md={6}>
                 <Typography variant="subtitle2" textTransform="uppercase" color="text.secondary" mb={2}>Deducciones y Gastos</Typography>
+                
                 <Stack spacing={2}>
-                    <TextField
-                        fullWidth
-                        size="small"
-                        label="Anticipo / Avance"
-                        type="number"
-                        value={avance}
-                        onChange={(e) => setAvance(e.target.value)}
-                        InputProps={{
-                            startAdornment: <InputAdornment position="start">$</InputAdornment>,
-                        }}
-                    />
+                    <Box sx={{ border: '1px dashed #ccc', p: 2, borderRadius: 1 }}>
+                        <Typography variant="caption" fontWeight={700} color="primary" gutterBottom>Anticipos / Avances</Typography>
+                        
+                        <Stack spacing={1} className="input-avance">
+                            <TextField 
+                                fullWidth size="small" 
+                                label="Avance 1" 
+                                type="number" 
+                                value={avances.a1} 
+                                onChange={(e) => handleAvanceChange('a1', e.target.value)} 
+                                InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }} 
+                            />
+
+                            {visibleAdvances >= 2 && (
+                                <Stack direction="row" spacing={1}>
+                                    <TextField 
+                                        fullWidth size="small" 
+                                        label="Avance 2" 
+                                        type="number" 
+                                        value={avances.a2} 
+                                        onChange={(e) => handleAvanceChange('a2', e.target.value)} 
+                                        InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }} 
+                                    />
+                                    <IconButton size="small" color="error" onClick={() => removeAdvance('a2', 1)}>
+                                        <DeleteOutlineIcon />
+                                    </IconButton>
+                                </Stack>
+                            )}
+
+                            {visibleAdvances >= 3 && (
+                                <Stack direction="row" spacing={1}>
+                                    <TextField 
+                                        fullWidth size="small" 
+                                        label="Avance 3" 
+                                        type="number" 
+                                        value={avances.a3} 
+                                        onChange={(e) => handleAvanceChange('a3', e.target.value)} 
+                                        InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }} 
+                                    />
+                                    <IconButton size="small" color="error" onClick={() => removeAdvance('a3', 2)}>
+                                        <DeleteOutlineIcon />
+                                    </IconButton>
+                                </Stack>
+                            )}
+
+                            {visibleAdvances < 3 && (
+                                <Button 
+                                    size="small" 
+                                    startIcon={<AddCircleOutlineIcon />} 
+                                    onClick={addNextAdvance}
+                                    sx={{ textTransform: 'none', justifyContent: 'flex-start', color: 'primary.main' }}
+                                    className="btn-add-avance"
+                                >
+                                    Agregar otro anticipo
+                                </Button>
+                            )}
+                        </Stack>
+
+                        <Box className="text-avance" style={{display:'none'}}>
+                            {avances.a1 > 0 && <Typography variant="body2">Avance 1: -${Number(avances.a1).toFixed(2)}</Typography>}
+                            {avances.a2 > 0 && <Typography variant="body2">Avance 2: -${Number(avances.a2).toFixed(2)}</Typography>}
+                            {avances.a3 > 0 && <Typography variant="body2">Avance 3: -${Number(avances.a3).toFixed(2)}</Typography>}
+                            {totalAvances === 0 && <Typography variant="body2" fontStyle="italic">Sin anticipos</Typography>}
+                        </Box>
+                    </Box>
+
                     <Stack direction="row" spacing={1}>
                         <TextField
                             fullWidth
@@ -389,6 +494,21 @@ const TicketPayment = () => {
                                 ${(Number(customRate) * totalMillasAjustadas).toFixed(2)}
                              </Typography>
                         </Stack>
+                        
+                        {/* Resumen de Anticipos en Total */}
+                        <Stack direction="row" justifyContent="space-between">
+                             <Typography variant="body2" color="rgba(255,255,255,0.7)">Total Anticipos:</Typography>
+                             <Typography variant="body1" color="error.light">
+                                -${totalAvances.toFixed(2)}
+                             </Typography>
+                        </Stack>
+                        <Stack direction="row" justifyContent="space-between">
+                             <Typography variant="body2" color="rgba(255,255,255,0.7)">Otros Gastos:</Typography>
+                             <Typography variant="body1" color="error.light">
+                                -${Number(gastos).toFixed(2)}
+                             </Typography>
+                        </Stack>
+
                         <Divider sx={{ borderColor: 'rgba(255,255,255,0.2)', my: 1 }} />
                         <Stack direction="row" justifyContent="space-between" alignItems="center">
                             <Typography variant="h6" fontWeight={400}>Total a Pagar:</Typography>
