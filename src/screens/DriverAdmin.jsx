@@ -115,13 +115,13 @@ const DriverAdmin = () => {
       mensaje = `VENCIDO: ${fecha.toLocaleDateString('es-MX')}`;
     }
     else if (diffInDays <= 30) {
-      IconComponent = ErrorIcon;
+      IconComponent = WarningIcon;
       color = 'error';
     }
-    else if (diffInDays <= 60) {
-      IconComponent = WarningIcon;
-      color = 'warning';
-    }
+    // else if (diffInDays <= 60) {
+    //   IconComponent = WarningIcon;
+    //   color = 'warning';
+    // }
     
     return (
         <Box sx={{ display: 'flex', justifyContent: 'center' }}>
@@ -198,12 +198,10 @@ const DriverAdmin = () => {
   
   return (
     <Box sx={{ p: 3 }}>
-      {/* Título Principal */}
       <Typography variant="h4" component="h1" fontWeight={700} gutterBottom sx={{ mb: 3 }}>
         Drivers Administrator
       </Typography>
 
-      {/* Toolbar */}
       <Stack direction="row" spacing={2} sx={{ mb: 3 }}>
         <TextField
           label="Search by name"
@@ -216,7 +214,6 @@ const DriverAdmin = () => {
           }}
         />
 
-        {/* Status Select (Migrado a MUI) */}
         <FormControl sx={{ minWidth: 120 }} size="small">
           <InputLabel>Status</InputLabel>
           <Select
@@ -234,7 +231,6 @@ const DriverAdmin = () => {
 
       {/* Tabla Principal */}
       <Paper sx={{ width: '100%', mb: 2 }}>
-        {/* Usamos TableContainer para forzar el scroll horizontal si es necesario */}
         <TableContainer sx={{ overflowX: 'auto' }}> 
           <Table size="small" stickyHeader sx={{ minWidth: 1000 }}> 
             <TableHead>
@@ -242,7 +238,6 @@ const DriverAdmin = () => {
                 <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>No of employee</TableCell>
                 <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>Name</TableCell>
                 <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>Entry Date</TableCell>
-                {/* 🚨 Encabezados de Documentos */}
                 <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap', textAlign: 'center' }}>APTO</TableCell>
                 <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap', textAlign: 'center' }}>I-94</TableCell>
                 <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap', textAlign: 'center' }}>VISA</TableCell>
@@ -257,13 +252,11 @@ const DriverAdmin = () => {
                   <TableCell>{driver.name}</TableCell>
                   <TableCell>{driver.fecha}</TableCell>
                   
-                  {/* CELDAS DE ICONOS */}
                   <TableCell>{getIconByFecha(driver.APTO_fecha, driver.id, driver.APTO_URL, driver.APTO_tipo || 'APTO')}</TableCell>
                   <TableCell>{getIconByFecha(driver.I94_fecha, driver.id, driver.I94_URL, driver.I94_tipo || 'I94')}</TableCell>
                   <TableCell>{getIconByFecha(driver.VISA_fecha, driver.id, driver.VISA_URL, driver.VISA_tipo || 'VISA')}</TableCell>
                   <TableCell>{getIconByFecha(driver.Licencia_fecha, driver.id, driver.Licencia_URL, driver.Licencia_tipo || 'LIC')}</TableCell>
                   
-                  {/* CONSOLIDACIÓN DE ACCIONES */}
                   <TableCell sx={{ whiteSpace: 'nowrap' }}>
                     <Stack direction="row" spacing={1} justifyContent="center">
                       <Button
@@ -285,7 +278,6 @@ const DriverAdmin = () => {
                   </TableCell>
                 </TableRow>
               ))}
-              {/* Fila para cuando no hay resultados */}
               {filteredDrivers.length === 0 && (
                 <TableRow>
                     <TableCell colSpan={8} align="center">
