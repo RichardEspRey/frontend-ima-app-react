@@ -34,9 +34,9 @@ const MargenScreen = () => {
       const totalCost = totalDiesel + driverPay; 
       const totalMargin = totalTarifa - totalCost;
       
-      // Determinar si está 100% pagado (semáforo)
-      // Si unpaid_stages es 0, es VERDE. Si es > 0, es ROJO.
       const isFullyPaid = Number(t.unpaid_stages || 0) === 0;
+
+      const isDieselOk = Number(t.diesel_alerts || 0) === 0;
 
       return {
         ...t,
@@ -46,7 +46,8 @@ const MargenScreen = () => {
         driver_pay: driverPay,
         totalCost,
         totalMargin,
-        isFullyPaid, // Pasamos la bandera a la fila
+        isFullyPaid,
+        isDieselOk
       };
     });
   }, [trips]);

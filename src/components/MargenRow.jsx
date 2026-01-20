@@ -11,19 +11,16 @@ export const MargenRow = ({ trip }) => {
     
     const currentMargin = trip.totalMargin;
     const isMarginPositive = currentMargin >= 0;
-    
-    // Semáforo de Cobranza (Viene calculado desde MargenScreen)
     const isPaid = trip.isFullyPaid;
+    const isDieselOk = trip.isDieselOk;
 
     return (
         <TableRow hover>
             
             <TableCell sx={{ fontWeight: 500 }}>{trip.trip_number}</TableCell>
             
-            {/* Columna Total Tarifa con Semáforo */}
             <TableCell align="right">
                 <Stack direction="row" alignItems="center" justifyContent="flex-end" spacing={1}>
-                    {/* Tooltip opcional para explicar el icono */}
                     <Tooltip title={isPaid ? "Viaje Cobrado (Pagado)" : "Pendiente de Cobro"}>
                         {isPaid ? (
                             <CheckCircleIcon color="success" fontSize="small" />
@@ -35,7 +32,18 @@ export const MargenRow = ({ trip }) => {
                 </Stack>
             </TableCell>
             
-            <TableCell align="right">{money(trip.diesel)}</TableCell>
+            <TableCell align="right">
+                <Stack direction="row" alignItems="center" justifyContent="flex-end" spacing={1}>
+                    <Tooltip title={isDieselOk ? "Información Completa" : "Falta Estado o Fleet One"}>
+                        {isDieselOk ? (
+                            <CheckCircleIcon color="success" fontSize="small" />
+                        ) : (
+                            <CancelIcon color="error" fontSize="small" />
+                        )}
+                    </Tooltip>
+                    <span>{money(trip.diesel)}</span>
+                </Stack>
+            </TableCell>
 
             <TableCell align="right">{money(trip.driver_pay)}</TableCell>
             
