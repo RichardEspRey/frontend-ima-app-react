@@ -1,4 +1,4 @@
-import { TableCell, TableRow, Stack, Tooltip } from '@mui/material';
+import { TableCell, TableRow, Stack, Tooltip, Chip } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 
@@ -12,17 +12,17 @@ export const MargenRow = ({ trip }) => {
     const currentMargin = trip.totalMargin;
     const isMarginPositive = currentMargin >= 0;
     
-    // Semáforos
-    const isPaid = trip.isFullyPaid; // Cobranza
-    const isDieselOk = trip.isDieselOk; // Diesel
-    const isDriverPaid = trip.isDriverPaid; // Pago Driver (Nuevo)
+    const isPaid = trip.isFullyPaid; 
+    const isDieselOk = trip.isDieselOk; 
+    const isDriverPaid = trip.isDriverPaid; 
+
+    const isCompleted = trip.isCompleted;
 
     return (
         <TableRow hover>
             
             <TableCell sx={{ fontWeight: 500 }}>{trip.trip_number}</TableCell>
             
-            {/* Columna Total Tarifa (Cobranza) */}
             <TableCell align="right">
                 <Stack direction="row" alignItems="center" justifyContent="flex-end" spacing={1}>
                     <Tooltip title={isPaid ? "Viaje Cobrado (Pagado)" : "Pendiente de Cobro"}>
@@ -36,7 +36,6 @@ export const MargenRow = ({ trip }) => {
                 </Stack>
             </TableCell>
             
-            {/* Columna Costo Diesel */}
             <TableCell align="right">
                 <Stack direction="row" alignItems="center" justifyContent="flex-end" spacing={1}>
                     <Tooltip title={isDieselOk ? "Información Completa" : "Falta Estado o Fleet One"}>
@@ -50,7 +49,6 @@ export const MargenRow = ({ trip }) => {
                 </Stack>
             </TableCell>
 
-            {/* Columna Pago Driver (NUEVO SEMÁFORO) */}
             <TableCell align="right">
                 <Stack direction="row" alignItems="center" justifyContent="flex-end" spacing={1}>
                     <Tooltip title={isDriverPaid ? "Chofer Pagado" : "Pago Pendiente / Autorizado"}>
@@ -63,7 +61,17 @@ export const MargenRow = ({ trip }) => {
                     <span>{money(trip.driver_pay)}</span>
                 </Stack>
             </TableCell>
-            
+
+            <TableCell align="center">
+                <Chip 
+                    label={isCompleted ? "Completado" : "Pendiente"} 
+                    color={isCompleted ? "success" : "warning"} 
+                    size="small" 
+                    variant={isCompleted ? "filled" : "outlined"}
+                    sx={{ fontWeight: 700, minWidth: 90 }}
+                />
+            </TableCell>
+
             <TableCell 
                 align="right" 
                 sx={{ fontWeight: 700, color: isMarginPositive ? '#2e7d32' : '#d32f2f', bgcolor: '#f5f5f5' }}
