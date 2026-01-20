@@ -11,14 +11,18 @@ export const MargenRow = ({ trip }) => {
     
     const currentMargin = trip.totalMargin;
     const isMarginPositive = currentMargin >= 0;
-    const isPaid = trip.isFullyPaid;
-    const isDieselOk = trip.isDieselOk;
+    
+    // Semáforos
+    const isPaid = trip.isFullyPaid; // Cobranza
+    const isDieselOk = trip.isDieselOk; // Diesel
+    const isDriverPaid = trip.isDriverPaid; // Pago Driver (Nuevo)
 
     return (
         <TableRow hover>
             
             <TableCell sx={{ fontWeight: 500 }}>{trip.trip_number}</TableCell>
             
+            {/* Columna Total Tarifa (Cobranza) */}
             <TableCell align="right">
                 <Stack direction="row" alignItems="center" justifyContent="flex-end" spacing={1}>
                     <Tooltip title={isPaid ? "Viaje Cobrado (Pagado)" : "Pendiente de Cobro"}>
@@ -32,6 +36,7 @@ export const MargenRow = ({ trip }) => {
                 </Stack>
             </TableCell>
             
+            {/* Columna Costo Diesel */}
             <TableCell align="right">
                 <Stack direction="row" alignItems="center" justifyContent="flex-end" spacing={1}>
                     <Tooltip title={isDieselOk ? "Información Completa" : "Falta Estado o Fleet One"}>
@@ -45,7 +50,19 @@ export const MargenRow = ({ trip }) => {
                 </Stack>
             </TableCell>
 
-            <TableCell align="right">{money(trip.driver_pay)}</TableCell>
+            {/* Columna Pago Driver (NUEVO SEMÁFORO) */}
+            <TableCell align="right">
+                <Stack direction="row" alignItems="center" justifyContent="flex-end" spacing={1}>
+                    <Tooltip title={isDriverPaid ? "Chofer Pagado" : "Pago Pendiente / Autorizado"}>
+                        {isDriverPaid ? (
+                            <CheckCircleIcon color="success" fontSize="small" />
+                        ) : (
+                            <CancelIcon color="error" fontSize="small" />
+                        )}
+                    </Tooltip>
+                    <span>{money(trip.driver_pay)}</span>
+                </Stack>
+            </TableCell>
             
             <TableCell 
                 align="right" 

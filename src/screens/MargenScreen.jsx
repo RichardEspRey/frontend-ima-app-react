@@ -38,6 +38,8 @@ const MargenScreen = () => {
 
       const isDieselOk = Number(t.diesel_alerts || 0) === 0;
 
+      const isDriverPaid = Number(t.driver_payment_status || 0) === 1;
+
       return {
         ...t,
         trip_id: Number(t.trip_id),
@@ -47,7 +49,8 @@ const MargenScreen = () => {
         totalCost,
         totalMargin,
         isFullyPaid,
-        isDieselOk
+        isDieselOk,
+        isDriverPaid
       };
     });
   }, [trips]);
