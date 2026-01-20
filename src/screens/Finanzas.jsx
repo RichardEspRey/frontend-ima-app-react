@@ -54,6 +54,7 @@ const Finanzas = () => {
               payment_method: (s.metodo_pago ?? '').trim(),
               paid_rate: s.tarifa_pagada != null ? String(Number(String(s.tarifa_pagada).replace(',', '.'))) : '',
               status: s.status != null ? Number(s.status) : 0, 
+              invoice_number: s.invoice_number ?? '',
               moneda: s.moneda ?? 'USD', 
               _dirty: false, 
             })) : [];
