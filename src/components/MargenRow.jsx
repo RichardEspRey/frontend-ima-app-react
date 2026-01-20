@@ -1,4 +1,6 @@
-import { TableCell, TableRow } from '@mui/material';
+import { TableCell, TableRow, Stack, Tooltip } from '@mui/material';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
 
 // Helpers 
 const money = (v) =>
@@ -9,13 +11,29 @@ export const MargenRow = ({ trip }) => {
     
     const currentMargin = trip.totalMargin;
     const isMarginPositive = currentMargin >= 0;
+    
+    // Semáforo de Cobranza (Viene calculado desde MargenScreen)
+    const isPaid = trip.isFullyPaid;
 
     return (
         <TableRow hover>
             
             <TableCell sx={{ fontWeight: 500 }}>{trip.trip_number}</TableCell>
             
-            <TableCell align="right">{money(trip.tarifa_pagada)}</TableCell>
+            {/* Columna Total Tarifa con Semáforo */}
+            <TableCell align="right">
+                <Stack direction="row" alignItems="center" justifyContent="flex-end" spacing={1}>
+                    {/* Tooltip opcional para explicar el icono */}
+                    <Tooltip title={isPaid ? "Viaje Cobrado (Pagado)" : "Pendiente de Cobro"}>
+                        {isPaid ? (
+                            <CheckCircleIcon color="success" fontSize="small" />
+                        ) : (
+                            <CancelIcon color="error" fontSize="small" />
+                        )}
+                    </Tooltip>
+                    <span>{money(trip.tarifa_pagada)}</span>
+                </Stack>
+            </TableCell>
             
             <TableCell align="right">{money(trip.diesel)}</TableCell>
 

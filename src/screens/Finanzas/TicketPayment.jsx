@@ -107,12 +107,16 @@ const TicketPayment = () => {
   };
 
   // === CÁLCULOS DINÁMICOS ===
-  const totalMillasAjustadas = stages.reduce((acc, s) => {
+  const totalMillasAjustadas = Number(stages.reduce((acc, s) => {
     const adj = ajustes[s.stage_number] ?? 0;
     return acc + (Number(s.millas_pcmiller) - adj);
-  }, 0);
+  }, 0).toFixed(2));
 
-  const totalAvances = Number(avances.a1 || 0) + Number(avances.a2 || 0) + Number(avances.a3 || 0);
+  const totalAvances = Number((
+      Number(avances.a1 || 0) + 
+      Number(avances.a2 || 0) + 
+      Number(avances.a3 || 0)
+  ).toFixed(2));
 
   const totalPagar =
     Number((Number(customRate) * totalMillasAjustadas).toFixed(2)) -
@@ -351,7 +355,7 @@ const TicketPayment = () => {
                         sx={{ height: 20, fontSize: '0.7rem' }}
                     />
                   </TableCell>
-                  <TableCell align="right" sx={{ fontFamily: 'monospace' }}>{s.millas_pcmiller}</TableCell>
+                  <TableCell align="right" sx={{ fontFamily: 'monospace' }}>{Number(s.millas_pcmiller).toFixed(2)}</TableCell>
                   
                   <TableCell align="center" className="col-ajuste">
                     <TextField
@@ -364,7 +368,7 @@ const TicketPayment = () => {
                     />
                   </TableCell>
 
-                  <TableCell align="right" sx={{ fontWeight: 700 }}>{finalMillas}</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 700 }}>{finalMillas.toFixed(2)}</TableCell>
                 </TableRow>
               );
             })}
@@ -484,7 +488,7 @@ const TicketPayment = () => {
                     <Stack spacing={1}>
                         <Stack direction="row" justifyContent="space-between">
                             <Typography variant="body2" color="rgba(255,255,255,0.7)">Millas Totales (Ajustadas):</Typography>
-                            <Typography variant="body1" fontWeight={600}>{totalMillasAjustadas} mi</Typography>
+                            <Typography variant="body1" fontWeight={600}>{totalMillasAjustadas.toFixed(2)} mi</Typography>
                         </Stack>
                         <Stack direction="row" justifyContent="space-between">
                              <Typography variant="body2" color="rgba(255,255,255,0.7)">
