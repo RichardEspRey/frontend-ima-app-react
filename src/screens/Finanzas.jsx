@@ -9,6 +9,7 @@ import FilterListIcon from '@mui/icons-material/FilterList';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import SearchIcon from '@mui/icons-material/Search';
+import ReceiptIcon from '@mui/icons-material/Receipt'; 
 import Swal from 'sweetalert2';
 
 import { TripFinanceRow } from '../components/TripFinanceRow';
@@ -23,8 +24,11 @@ const STATUS_PAID = 3;
 const Finanzas = () => {
   const [trips, setTrips] = useState([]);
   const [loading, setLoading] = useState(true);
+  
   const [search, setSearch] = useState('');
+  const [invoiceSearch, setInvoiceSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('All'); 
+  
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [openMap, setOpenMap] = useState({});
@@ -90,6 +94,7 @@ const Finanzas = () => {
     setPage(0);
   };
 
+  // --- LÓGICA DE FILTRADO ---
   const filteredAndSorted = useMemo(() => {
     let result = [...trips];
 
@@ -101,13 +106,23 @@ const Finanzas = () => {
 
     if (search.trim()) {
       const q = search.trim().toLowerCase();
-      result = result.filter(t => (t.trip_number || '').toLowerCase().includes(q));
+      result = result.filter(t => String(t.trip_number || '').toLowerCase() === q);
+    }
+
+    if (invoiceSearch.trim()) {
+        const qInv = invoiceSearch.trim().toLowerCase();
+        result = result.filter(t => 
+            Array.isArray(t.stages) && t.stages.some(s => 
+                String(s.invoice_number || '').toLowerCase().includes(qInv)
+            )
+        );
     }
 
     if (statusFilter !== 'All') {
       result = result.filter(t => t.status_trip === Number(statusFilter));
     }
 
+    // Ordenamiento
     result.sort((a, b) => {
       const statusA = a.status_trip ?? 0;
       const statusB = b.status_trip ?? 0;
@@ -115,7 +130,7 @@ const Finanzas = () => {
     });
 
     return result;
-  }, [trips, search, statusFilter, tabValue]);
+  }, [trips, search, invoiceSearch, statusFilter, tabValue]);
 
   const pageTrips = filteredAndSorted.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
   const dirtyCount = useMemo(() => collectDirtyStages(trips).length, [trips]);
@@ -224,12 +239,13 @@ const Finanzas = () => {
 
       <Paper elevation={0} sx={{ p: 2, mb: 3, bgcolor: '#f5f5f5', borderRadius: 2, border: '1px solid #e0e0e0' }}>
         <Grid container spacing={2} alignItems="center">
-            {/* Buscador */}
-            <Grid item xs={12} md={4}>
+            
+            <Grid item xs={12} md={3}>
                 <TextField 
                     fullWidth
                     size="small" 
-                    placeholder="Buscar por Trip #" 
+                    label="Buscar Trip # (Exacto)"
+                    placeholder="Ej. 101" 
                     value={search} 
                     onChange={(e) => { setSearch(e.target.value); setPage(0); }} 
                     InputProps={{
@@ -239,7 +255,22 @@ const Finanzas = () => {
                 />
             </Grid>
 
-            <Grid item xs={12} md={4}>
+            <Grid item xs={12} md={3}>
+                <TextField 
+                    fullWidth
+                    size="small" 
+                    label="Buscar Invoice"
+                    placeholder="Ej. INV-2023" 
+                    value={invoiceSearch} 
+                    onChange={(e) => { setInvoiceSearch(e.target.value); setPage(0); }} 
+                    InputProps={{
+                        startAdornment: <ReceiptIcon fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />,
+                        sx: { bgcolor: 'white' }
+                    }}
+                />
+            </Grid>
+
+            <Grid item xs={12} md={3}>
                 <TextField
                     select
                     fullWidth
@@ -264,7 +295,8 @@ const Finanzas = () => {
                 </TextField>
             </Grid>
 
-            <Grid item xs={12} md={4} display="flex" justifyContent="flex-end">
+            {/* Botón Guardar */}
+            <Grid item xs={12} md={3} display="flex" justifyContent="flex-end">
                 <Tooltip title={dirtyCount ? `Guardar ${dirtyCount} cambios` : 'No hay cambios pendientes'}>
                     <span>
                         <Badge badgeContent={dirtyCount} color="error" overlap="circular">
@@ -276,7 +308,7 @@ const Finanzas = () => {
                             size="large"
                             sx={{ px: 4, fontWeight: 700, boxShadow: 2 }}
                         >
-                            Guardar Cambios
+                            Guardar
                         </Button>
                         </Badge>
                     </span>
