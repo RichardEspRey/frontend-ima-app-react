@@ -6,7 +6,7 @@ import { AuthContext } from '../auth/AuthContext';
 import { menuItemsConfig } from '../config/menuConfig';
 import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
-import { Collapse, Box, Stack, Tooltip } from '@mui/material'; // Agregamos componentes MUI
+import { Collapse, Box, Stack, Tooltip } from '@mui/material'; 
 import iconUpdate from '../assets/images/icons/update.png'
 import { UpdateContext } from '../App';
 import { 
@@ -15,9 +15,8 @@ import {
 } from 'react-icons/md'; 
 import { GrMapLocation } from "react-icons/gr";
 
-// Nuevos íconos para notificaciones
-import ErrorIcon from '@mui/icons-material/Error'; // Rojo (Vencido)
-import WarningIcon from '@mui/icons-material/Warning'; // Amarillo (Por vencer)
+import ErrorIcon from '@mui/icons-material/Error'; // Rojo 
+import WarningIcon from '@mui/icons-material/Warning'; // Amarillo 
 
 import logo from '../assets/images/logo_white.png';
 
@@ -52,7 +51,6 @@ const Sidebar = () => {
   const [progress, setProgress] = useState(0);
   const { updateDisponible } = useContext(UpdateContext);
   
-  // Estado actualizado para soportar objetos { red: 0, yellow: 0 }
   const [notificaciones, setNotificaciones] = useState({
     IMA: { red: 0, yellow: 0 },
     Conductores: { red: 0, yellow: 0 },
@@ -166,27 +164,29 @@ const Sidebar = () => {
 
         // LOGICA DE NOTIFICACIONES (SEMAFORIZACIÓN)
         
-        // 1. IMA: Tenemos datos reales de Vencidos y Por Vencer del SP
-        // Faltantes (missing) los sumamos a rojos (vencidos)
+        // 1. IMA
         const imaFaltantes = parseInt(u.documentos_faltantes_ima || 0);
         const imaVencidos = parseInt(u.ima_vencidos || 0);
         const imaPorVencer = parseInt(u.ima_por_vencer || 0);
 
-        // 2. Conductores y Camiones: Por ahora solo tenemos "Faltantes".
-        // Los asignamos a ROJO. Amarillo será 0 hasta que actualices esos módulos.
-        const driverRed = parseInt(u.documentos_faltantes_driver || 0);
+        // 2. Conductores (NUEVO)
+        const driverFaltantes = parseInt(u.documentos_faltantes_driver || 0);
+        const driverVencidos = parseInt(u.driver_vencidos || 0);
+        const driverPorVencer = parseInt(u.driver_por_vencer || 0);
+
+        // 3. Camiones (Pendiente de actualizar SP de Camiones)
         const truckRed = parseInt(u.documentos_faltantes_truck || 0);
         const trailerRed = parseInt(u.documentos_faltantes_trailer || 0);
 
         setNotificaciones((prev) => ({
           ...prev,
           IMA: { 
-              red: imaFaltantes + imaVencidos, 
+              red: imaVencidos, 
               yellow: imaPorVencer 
           },
           Conductores: { 
-              red: driverRed, 
-              yellow: 0 
+              red: driverVencidos, 
+              yellow: driverPorVencer 
           }, 
           Camiones: { 
               red: truckRed + trailerRed, 
@@ -207,14 +207,11 @@ const Sidebar = () => {
 
   useEffect(() => {
     fetchdocs();
-    // Opcional: Polling cada 5 minutos para refrescar estatus
     const interval = setInterval(fetchdocs, 300000); 
     return () => clearInterval(interval);
   }, []);
 
-  // Componente para renderizar los badges rojos y amarillos
   const NotificationBadges = ({ counts }) => {
-      // Si counts es un número simple (legado), lo convertimos
       const { red, yellow } = (typeof counts === 'number') ? { red: counts, yellow: 0 } : counts;
 
       if (!red && !yellow) return null;
@@ -228,18 +225,18 @@ const Sidebar = () => {
                           bgcolor: '#d32f2f', color: '#fff', borderRadius: '12px', 
                           px: 0.8, py: 0.2, minWidth: '20px', height: '20px', fontSize: '0.75rem', fontWeight: 'bold'
                       }}>
-                          <ErrorIcon sx={{ fontSize: '14px', mr: 0.5 }} /> {red}
+                          {red}
                       </Box>
                   </Tooltip>
               )}
               {yellow > 0 && (
-                  <Tooltip title={`${yellow} Por Vencer (30 días)`}>
+                  <Tooltip title={`${yellow} Por Vencer`}>
                       <Box sx={{ 
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                           bgcolor: '#ed6c02', color: '#fff', borderRadius: '12px', 
                           px: 0.8, py: 0.2, minWidth: '20px', height: '20px', fontSize: '0.75rem', fontWeight: 'bold'
                       }}>
-                          <WarningIcon sx={{ fontSize: '14px', mr: 0.5 }} /> {yellow}
+                           {yellow}
                       </Box>
                   </Tooltip>
               )}
@@ -258,8 +255,6 @@ const Sidebar = () => {
           const hasSubs = !!(item.subItems && item.subItems.length > 0);
           const isOpen = expandedMenu === item.name; 
           const IconComponent = iconMap[item.name];
-
-          // Obtenemos los contadores para este item
           const notifData = notificaciones[item.name];
 
           return (
@@ -275,7 +270,6 @@ const Sidebar = () => {
                     <span className="menu-text-content">{item.name}</span>
                 </div>
 
-                {/* Renderizado de Badges (Semaforo) */}
                 {notifData && <NotificationBadges counts={notifData} />}
 
                 {hasSubs && (
@@ -299,7 +293,6 @@ const Sidebar = () => {
                             <span className="submenu-dot" /> 
                             {subItem.name}
                         </div>
-                        {/* Badges para Submenús (Camiones / Cajas) */}
                         {subnotificaciones[subItem.name] && (
                             <NotificationBadges counts={subnotificaciones[subItem.name]} />
                         )}

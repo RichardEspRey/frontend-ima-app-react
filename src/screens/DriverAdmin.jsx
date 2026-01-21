@@ -52,6 +52,8 @@ const DriverAdmin = () => {
 
         const data = await response.json();
 
+        console.log(data)
+
         if (data.status === 'success' && data.Users) {
           const formatted = data.Users.map(user => ({
             id: user.driver_id.toString(),
