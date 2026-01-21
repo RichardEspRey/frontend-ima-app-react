@@ -15,9 +15,6 @@ import {
 } from 'react-icons/md'; 
 import { GrMapLocation } from "react-icons/gr";
 
-import ErrorIcon from '@mui/icons-material/Error'; // Rojo 
-import WarningIcon from '@mui/icons-material/Warning'; // Amarillo 
-
 import logo from '../assets/images/logo_white.png';
 
 const iconMap = {
@@ -164,17 +161,14 @@ const Sidebar = () => {
 
         // LOGICA DE NOTIFICACIONES (SEMAFORIZACIÓN)
         
-        // 1. IMA
         const imaFaltantes = parseInt(u.documentos_faltantes_ima || 0);
         const imaVencidos = parseInt(u.ima_vencidos || 0);
         const imaPorVencer = parseInt(u.ima_por_vencer || 0);
 
-        // 2. Conductores (NUEVO)
         const driverFaltantes = parseInt(u.documentos_faltantes_driver || 0);
         const driverVencidos = parseInt(u.driver_vencidos || 0);
         const driverPorVencer = parseInt(u.driver_por_vencer || 0);
 
-        // 3. Camiones (Pendiente de actualizar SP de Camiones)
         const truckRed = parseInt(u.documentos_faltantes_truck || 0);
         const trailerRed = parseInt(u.documentos_faltantes_trailer || 0);
 
