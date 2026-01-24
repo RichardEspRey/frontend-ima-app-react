@@ -11,6 +11,7 @@ import TableViewIcon from '@mui/icons-material/TableView';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance'; 
 import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange'; 
 import TimelineIcon from '@mui/icons-material/Timeline'; 
+import BuildIcon from '@mui/icons-material/Build'; 
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -50,6 +51,9 @@ export default function Reports() {
   const [financesLoading, setFinancesLoading] = useState(true);
   const [rtsData, setRtsData] = useState([]);
   const [rtsLoading, setRtsLoading] = useState(true);
+
+  const [maintData, setMaintData] = useState([]);
+  const [maintLoading, setMaintLoading] = useState(true);
 
   const fetchChart = useCallback(async () => {
     setChartLoading(true);
@@ -140,12 +144,32 @@ export default function Reports() {
     finally { setRtsLoading(false); }
   }, []);
 
+  const fetchMaintenance = useCallback(async () => {
+    setMaintLoading(true);
+    try {
+        const fd = new FormData();
+        fd.append('op', 'chart_maintenance_costs');
+        const res = await fetch(`${apiHost}/charts.php`, { method: 'POST', body: fd });
+        const json = await res.json();
+        if (json.status === 'success' && Array.isArray(json.data)) {
+            const mapped = json.data.map(item => ({
+                periodo: item.periodo,
+                label: toMonthLabel(item.periodo),
+                total: Number(item.total)
+            }));
+            setMaintData(mapped);
+        } else { setMaintData([]); }
+    } catch (e) { setMaintData([]); } 
+    finally { setMaintLoading(false); }
+  }, []);
+
   useEffect(() => {
     fetchChart();
     fetchTable();
     fetchFinances();
     fetchRTS();
-  }, [fetchChart, fetchTable, fetchFinances, fetchRTS]);
+    fetchMaintenance(); 
+  }, [fetchChart, fetchTable, fetchFinances, fetchRTS, fetchMaintenance]);
 
   useEffect(() => {
       fetchDieselCost();
@@ -247,26 +271,54 @@ export default function Reports() {
             {costLoading ? (
                 <Stack alignItems="center" justifyContent="center" height={350}>
                     <CircularProgress color="warning" />
-                    <Typography variant="caption" mt={2}>Calculando dispersión...</Typography>
                 </Stack>
             ) : costData.length === 0 ? (
                 <Stack alignItems="center" justifyContent="center" height={350}>
                     <TimelineIcon sx={{ fontSize: 60, color: '#e0e0e0', mb: 2 }} />
-                    <Typography color="text.secondary">No hay datos con precio Fleet One para este periodo</Typography>
+                    <Typography color="text.secondary">No hay datos de precio Fleet One</Typography>
                 </Stack>
             ) : (
                 <ScatterChart
-                    series={[
-                        {
-                            label: 'Costo Promedio',
-                            data: costData.map(d => ({ x: d.x, y: d.y, id: d.id })),
-                            color: '#ff5722',
-                        },
-                    ]}
+                    series={[{
+                        label: 'Costo Promedio',
+                        data: costData.map(d => ({ x: d.x, y: d.y, id: d.id })),
+                        color: '#ff5722',
+                    }]}
                     xAxis={[{ label: 'Volumen Total (Galones)', min: 0 }]}
                     yAxis={[{ label: 'Precio por Galón ($)', min: 0 }]}
                     {...chartSetting}
                     tooltip={{ trigger: 'item' }}
+                />
+            )}
+        </Box>
+      </Paper>
+
+      <Paper elevation={0} variant="outlined" sx={{ p: 4, borderRadius: 4, mb: 5, bgcolor: '#fff' }}>
+        <Stack direction="row" alignItems="center" spacing={1} mb={3}>
+            <Box sx={{ width: 4, height: 24, bgcolor: '#607d8b', borderRadius: 1 }} />
+            <BuildIcon sx={{ color: '#607d8b' }} />
+            <Typography variant="h6" fontWeight={700}>Gastos de Mantenimiento Acumulados</Typography>
+        </Stack>
+        
+        <Box sx={{ width: '100%', minHeight: 400 }}>
+            {maintLoading ? (
+                <Stack alignItems="center" justifyContent="center" height={350}>
+                    <CircularProgress color="inherit" />
+                </Stack>
+            ) : maintData.length === 0 ? (
+                <Stack alignItems="center" justifyContent="center" height={350}>
+                    <BuildIcon sx={{ fontSize: 60, color: '#e0e0e0', mb: 2 }} />
+                    <Typography color="text.secondary">No hay registros de mantenimiento</Typography>
+                </Stack>
+            ) : (
+                <BarChart
+                    dataset={maintData}
+                    xAxis={[{ dataKey: 'label', label: 'Mes', scaleType: 'band' }]}
+                    series={[
+                        { dataKey: 'total', label: 'Total Mantenimiento', valueFormatter, color: '#607d8b' }, 
+                    ]}
+                    {...chartSetting}
+                    borderRadius={4}
                 />
             )}
         </Box>
