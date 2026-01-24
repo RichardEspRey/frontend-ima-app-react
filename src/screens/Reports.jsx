@@ -1,17 +1,14 @@
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import {
-  Box, Paper, Typography, Stack, ToggleButton, ToggleButtonGroup,
+  Box, Paper, Typography, Stack,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, 
-  CircularProgress, Grid, Card, CardContent, Avatar, Divider, Container
+  CircularProgress, Card, CardContent, Avatar, Container
 } from "@mui/material";
 import { BarChart } from '@mui/x-charts/BarChart';
 
-import LocalGasStationIcon from '@mui/icons-material/LocalGasStation';
-import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
-import ShowChartIcon from '@mui/icons-material/ShowChart';
 import TableViewIcon from '@mui/icons-material/TableView';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance'; 
-import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange'; // Icono para RTS
+import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange'; 
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -33,54 +30,7 @@ const toMonthLabel = (mKey) => {
   return new Date(y, m - 1, 1).toLocaleDateString('es-MX', { year: 'numeric', month: 'short' });
 };
 
-function getISOWeek(date) {
-  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
-  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-  const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
-  return { year: d.getUTCFullYear(), week: weekNo };
-}
-
-function toWeekKey(iso) {
-  if (!iso) return '—';
-  const d = new Date(iso);
-  if (isNaN(d.getTime())) return '—';
-  const { year, week } = getISOWeek(d);
-  return `${year}-W${String(week).padStart(2, '0')}`;
-}
-
-// === COMPONENTE KPI CARD ===
-const KPICard = ({ title, value, icon, color, subLabel }) => (
-  <Card 
-    elevation={0} 
-    sx={{ 
-      height: '100%', 
-      border: '1px solid #e0e0e0', 
-      borderRadius: 3,
-      transition: 'transform 0.2s',
-      '&:hover': { transform: 'translateY(-4px)', boxShadow: 4 }
-    }}
-  >
-    <CardContent sx={{ display: 'flex', alignItems: 'center', p: 3 }}>
-      <Avatar sx={{ bgcolor: `${color}15`, color: color, width: 56, height: 56, mr: 2.5 }}>
-        {icon}
-      </Avatar>
-      <Box>
-        <Typography variant="caption" fontWeight={700} color="text.secondary" textTransform="uppercase" letterSpacing={0.5}>
-          {title}
-        </Typography>
-        <Typography variant="h4" fontWeight={800} color="text.primary" sx={{ my: 0.5 }}>
-          {value}
-        </Typography>
-        {subLabel && (
-            <Typography variant="body2" color="text.secondary" fontWeight={500}>
-                {subLabel}
-            </Typography>
-        )}
-      </Box>
-    </CardContent>
-  </Card>
-);
+// ... (funciones de semana eliminadas o ignoradas ya que no se usarán) ...
 
 export default function Reports() {
   
@@ -89,7 +39,7 @@ export default function Reports() {
   const [chartLoading, setChartLoading] = useState(true);
   const [tableRows, setTableRows] = useState([]);
   const [tableLoading, setTableLoading] = useState(true);
-  const [groupBy, setGroupBy] = useState('day'); 
+  // const [groupBy, setGroupBy] = useState('day'); // <--- ELIMINADO
 
   // -- STATES FINANZAS GLOBAL --
   const [financesData, setFinancesData] = useState([]);
@@ -195,32 +145,38 @@ export default function Reports() {
       monto: Number(r.monto ?? 0),
       galones: Number(r.galones ?? 0),
       fleetone: Number(r.fleetone ?? 0),
-      week: toWeekKey(r.fecha),
+      // week: toWeekKey(r.fecha), // Ya no necesitamos semanas
       month: toMonthKey(r.fecha),
     }));
   }, [rows]);
 
+  // MODIFICADO: Lógica forzada a MES
   const datasetDiesel = useMemo(() => {
-    if (groupBy === 'day') return [...base].sort((a, b) => a.day.localeCompare(b.day));
-    const key = groupBy === 'week' ? 'week' : 'month';
+    const key = 'month';
     const acc = {};
+    
     for (const r of base) {
       const k = r[key] || '—';
+      // Inicializamos si no existe
       if (!acc[k]) acc[k] = { [key]: k, label: k, monto: 0, galones: 0, fleetone: 0 };
+      
+      // Sumamos valores
       acc[k].monto += r.monto;
       acc[k].galones += r.galones;
       acc[k].fleetone += r.fleetone;
     }
-    const out = Object.values(acc).sort((a, b) => a.label.localeCompare(b.label));
-    if (groupBy === 'month') out.forEach(o => o.label = toMonthLabel(o.month));
-    return out;
-  }, [base, groupBy]);
 
-  const xAxisDiesel = useMemo(() => {
-    if (groupBy === 'day')   return [{ dataKey: 'day',   label: 'Día', scaleType: 'band' }];
-    if (groupBy === 'week')  return [{ dataKey: 'week',  label: 'Semana', scaleType: 'band' }];
-    return [{ dataKey: 'label', label: 'Mes', scaleType: 'band' }];
-  }, [groupBy]);
+    // Convertimos a array y ordenamos por la llave (YYYY-MM) para orden cronológico correcto
+    const out = Object.values(acc).sort((a, b) => a.label.localeCompare(b.label));
+    
+    // Formateamos la etiqueta para que se vea bonita (Ene 2024, etc)
+    out.forEach(o => o.label = toMonthLabel(o.month));
+    
+    return out;
+  }, [base]);
+
+  // MODIFICADO: Eje X fijo a Mes
+  const xAxisDiesel = [{ dataKey: 'label', label: 'Mes', scaleType: 'band' }];
 
   const tableBase = useMemo(() => {
     return (tableRows || []).map((r) => {
@@ -233,9 +189,6 @@ export default function Reports() {
     });
   }, [tableRows]);
 
-  // --- TOTALS ---
-  const totalMonto = useMemo(() => rows.reduce((acc, curr) => acc + (Number(curr.monto) || 0), 0), [rows]);
-  const totalFleetone = useMemo(() => rows.reduce((acc, curr) => acc + (Number(curr.fleetone) || 0), 0), [rows]);
   const totalGalones = useMemo(() => tableBase.reduce((acc, r) => acc + (Number(r.galones) || 0), 0), [tableBase]);
 
   const tableFirstColTitle = (tableRows?.[0] && (('anio' in tableRows[0]) || ('mes' in tableRows[0]))) ? 'Mes' : 'Fecha';
@@ -243,59 +196,18 @@ export default function Reports() {
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
       
+      {/* HEADER SIMPLIFICADO: Sin selectores */}
       <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems="center" mb={4} spacing={2}>
         <Box>
             <Typography variant="h4" fontWeight={800} sx={{ letterSpacing: '-0.5px' }}>
                 Reportes Financieros
             </Typography>
             <Typography variant="body1" color="text.secondary">
-                Análisis de consumo, costos y facturación.
+                Análisis de consumo, costos y facturación mensual.
             </Typography>
         </Box>
-        <Paper elevation={0} variant="outlined" sx={{ p: 0.5, borderRadius: 3, bgcolor: '#f9fafb' }}>
-            <ToggleButtonGroup
-                value={groupBy}
-                exclusive
-                onChange={(_, v) => v && setGroupBy(v)}
-                size="small"
-                sx={{ '& .MuiToggleButton-root': { border: 'none', borderRadius: 2, px: 2, fontWeight: 600 } }}
-            >
-                <ToggleButton value="day">Día</ToggleButton>
-                <ToggleButton value="week">Semana</ToggleButton>
-                <ToggleButton value="month">Mes</ToggleButton>
-            </ToggleButtonGroup>
-        </Paper>
+        {/* Selector eliminado */}
       </Stack>
-
-      <Grid container spacing={3} mb={5}>
-        <Grid item xs={12} md={4}>
-            <KPICard 
-                title="Gasto Diésel Total" 
-                value={`$${valueFormatter(totalMonto)}`} 
-                icon={<AttachMoneyIcon fontSize="large" />} 
-                color="#3C48E1" 
-                subLabel="Total acumulado"
-            />
-        </Grid>
-        <Grid item xs={12} md={4}>
-            <KPICard 
-                title="Gasto FleetOne" 
-                value={`$${valueFormatter(totalFleetone)}`} 
-                icon={<ShowChartIcon fontSize="large" />} 
-                color="#00C853" 
-                subLabel="Pago electrónico"
-            />
-        </Grid>
-        <Grid item xs={12} md={4}>
-            <KPICard 
-                title="Consumo Diésel" 
-                value={`${valueFormatter(totalGalones)}`} 
-                icon={<LocalGasStationIcon fontSize="large" />} 
-                color="#FF6D00" 
-                subLabel="Galones consumidos"
-            />
-        </Grid>
-      </Grid>
 
       <Paper elevation={0} variant="outlined" sx={{ p: 4, borderRadius: 4, mb: 5, bgcolor: '#fff' }}>
         <Stack direction="row" alignItems="center" spacing={1} mb={3}>
@@ -352,8 +264,8 @@ export default function Reports() {
                     dataset={rtsData}
                     xAxis={[{ dataKey: 'label', label: 'Mes de Entrega', scaleType: 'band' }]}
                     series={[
-                        { dataKey: 'rate', label: 'RTS Tarifa', valueFormatter, color: '#8e24aa' }, // Morado
-                        { dataKey: 'paid', label: 'RTS Pagado', valueFormatter, color: '#ff9800' }, // Naranja
+                        { dataKey: 'rate', label: 'RTS Tarifa', valueFormatter, color: '#8e24aa' }, 
+                        { dataKey: 'paid', label: 'RTS Pagado', valueFormatter, color: '#ff9800' }, 
                     ]}
                     {...chartSetting}
                     slotProps={{ legend: { direction: 'row', position: { vertical: 'top', horizontal: 'middle' }, padding: -5 } }}
