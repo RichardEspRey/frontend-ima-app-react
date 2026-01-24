@@ -2,19 +2,24 @@ import React, { useEffect, useMemo, useState, useCallback } from "react";
 import {
   Box, Paper, Typography, Stack,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, 
-  CircularProgress, Card, CardContent, Avatar, Container
+  CircularProgress, Container, ToggleButton, ToggleButtonGroup
 } from "@mui/material";
 import { BarChart } from '@mui/x-charts/BarChart';
+import { ScatterChart } from '@mui/x-charts/ScatterChart'; 
 
 import TableViewIcon from '@mui/icons-material/TableView';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance'; 
 import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange'; 
+import TimelineIcon from '@mui/icons-material/Timeline'; 
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
 const valueFormatter = (v) =>
   new Intl.NumberFormat('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
     .format(Number(v || 0));
+
+const money = (v) =>
+  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(Number(v || 0));
 
 const chartSetting = {
   height: 350, 
@@ -30,26 +35,22 @@ const toMonthLabel = (mKey) => {
   return new Date(y, m - 1, 1).toLocaleDateString('es-MX', { year: 'numeric', month: 'short' });
 };
 
-// ... (funciones de semana eliminadas o ignoradas ya que no se usarán) ...
-
 export default function Reports() {
   
-  // -- STATES DIESEL --
   const [rows, setRows] = useState([]);
   const [chartLoading, setChartLoading] = useState(true);
   const [tableRows, setTableRows] = useState([]);
   const [tableLoading, setTableLoading] = useState(true);
-  // const [groupBy, setGroupBy] = useState('day'); // <--- ELIMINADO
 
-  // -- STATES FINANZAS GLOBAL --
+  const [costData, setCostData] = useState([]);
+  const [costLoading, setCostLoading] = useState(true);
+  const [costPeriod, setCostPeriod] = useState('month'); 
+
   const [financesData, setFinancesData] = useState([]);
   const [financesLoading, setFinancesLoading] = useState(true);
-
-  // -- STATES FINANZAS RTS --
   const [rtsData, setRtsData] = useState([]);
   const [rtsLoading, setRtsLoading] = useState(true);
 
-  // --- FETCH DIESEL ---
   const fetchChart = useCallback(async () => {
     setChartLoading(true);
     try {
@@ -76,7 +77,29 @@ export default function Reports() {
     finally { setTableLoading(false); }
   }, []);
 
-  // --- FETCH FINANZAS GLOBAL ---
+  const fetchDieselCost = useCallback(async () => {
+    setCostLoading(true);
+    try {
+        const fd = new FormData();
+        fd.append('op', 'chart_diesel_cost');
+        fd.append('period', costPeriod); 
+        
+        const res = await fetch(`${apiHost}/charts.php`, { method: 'POST', body: fd });
+        const json = await res.json();
+        
+        if (json.status === 'success' && Array.isArray(json.data)) {
+            setCostData(json.data);
+        } else {
+            setCostData([]);
+        }
+    } catch (e) {
+        console.error("Error fetching cost data", e);
+        setCostData([]);
+    } finally {
+        setCostLoading(false);
+    }
+  }, [costPeriod]); 
+
   const fetchFinances = useCallback(async () => {
     setFinancesLoading(true);
     try {
@@ -92,18 +115,11 @@ export default function Reports() {
                 paid: Number(item.total_paid)
             }));
             setFinancesData(mapped);
-        } else {
-            setFinancesData([]);
-        }
-    } catch (e) {
-        console.error("Error fetching finances", e);
-        setFinancesData([]);
-    } finally {
-        setFinancesLoading(false);
-    }
+        } else { setFinancesData([]); }
+    } catch (e) { setFinancesData([]); } 
+    finally { setFinancesLoading(false); }
   }, []);
 
-  // --- FETCH FINANZAS RTS ---
   const fetchRTS = useCallback(async () => {
     setRtsLoading(true);
     try {
@@ -119,15 +135,9 @@ export default function Reports() {
                 paid: Number(item.total_paid)
             }));
             setRtsData(mapped);
-        } else {
-            setRtsData([]);
-        }
-    } catch (e) {
-        console.error("Error fetching RTS finances", e);
-        setRtsData([]);
-    } finally {
-        setRtsLoading(false);
-    }
+        } else { setRtsData([]); }
+    } catch (e) { setRtsData([]); } 
+    finally { setRtsLoading(false); }
   }, []);
 
   useEffect(() => {
@@ -137,66 +147,66 @@ export default function Reports() {
     fetchRTS();
   }, [fetchChart, fetchTable, fetchFinances, fetchRTS]);
 
-  // --- DATA PROCESSING DIESEL ---
+  useEffect(() => {
+      fetchDieselCost();
+  }, [fetchDieselCost]); 
+
   const base = useMemo(() => {
     return rows.map(r => ({
-      day: toDayLabel(r.fecha),
       fecha: r.fecha,
       monto: Number(r.monto ?? 0),
       galones: Number(r.galones ?? 0),
       fleetone: Number(r.fleetone ?? 0),
-      // week: toWeekKey(r.fecha), // Ya no necesitamos semanas
       month: toMonthKey(r.fecha),
     }));
   }, [rows]);
 
-  // MODIFICADO: Lógica forzada a MES
   const datasetDiesel = useMemo(() => {
-    const key = 'month';
     const acc = {};
-    
     for (const r of base) {
-      const k = r[key] || '—';
-      // Inicializamos si no existe
-      if (!acc[k]) acc[k] = { [key]: k, label: k, monto: 0, galones: 0, fleetone: 0 };
-      
-      // Sumamos valores
+      const k = r.month || '—';
+      if (!acc[k]) acc[k] = { month: k, label: k, monto: 0, fleetone: 0 };
       acc[k].monto += r.monto;
-      acc[k].galones += r.galones;
       acc[k].fleetone += r.fleetone;
     }
-
-    // Convertimos a array y ordenamos por la llave (YYYY-MM) para orden cronológico correcto
     const out = Object.values(acc).sort((a, b) => a.label.localeCompare(b.label));
-    
-    // Formateamos la etiqueta para que se vea bonita (Ene 2024, etc)
     out.forEach(o => o.label = toMonthLabel(o.month));
-    
     return out;
   }, [base]);
 
-  // MODIFICADO: Eje X fijo a Mes
   const xAxisDiesel = [{ dataKey: 'label', label: 'Mes', scaleType: 'band' }];
 
   const tableBase = useMemo(() => {
     return (tableRows || []).map((r) => {
-      if (r.fecha) return { label: toDayLabel(r.fecha), galones: Number(r.galones ?? r.total_galones ?? 0) };
-      const y = String(r.anio ?? r.year ?? '').trim();
-      const mRaw = String(r.mes ?? r.month ?? '').trim();
+      const y = String(r.anio ?? '').trim();
+      const mRaw = String(r.mes ?? '').trim();
       const m = mRaw.padStart(2, '0');
       const key = y && m ? `${y}-${m}` : '—';
-      return { label: toMonthLabel(key), galones: Number(r.total_galones ?? r.galones ?? 0) };
+      
+      return { 
+          label: toMonthLabel(key), 
+          galones: Number(r.total_galones ?? 0),
+          avg_cost: Number(r.avg_cost ?? 0) 
+      };
     });
   }, [tableRows]);
 
-  const totalGalones = useMemo(() => tableBase.reduce((acc, r) => acc + (Number(r.galones) || 0), 0), [tableBase]);
+  const totalGalones = useMemo(() => tableBase.reduce((acc, r) => acc + r.galones, 0), [tableBase]);
+  
+  const globalAvgCost = useMemo(() => {
+      const validRows = tableBase.filter(r => r.avg_cost > 0);
+      if (validRows.length === 0) return 0;
+      const sum = validRows.reduce((acc, r) => acc + r.avg_cost, 0);
+      return sum / validRows.length;
+  }, [tableBase]);
 
-  const tableFirstColTitle = (tableRows?.[0] && (('anio' in tableRows[0]) || ('mes' in tableRows[0]))) ? 'Mes' : 'Fecha';
+
+  const handlePeriodChange = (event, newPeriod) => {
+    if (newPeriod !== null) setCostPeriod(newPeriod);
+  };
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
-      
-      {/* HEADER SIMPLIFICADO: Sin selectores */}
       <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems="center" mb={4} spacing={2}>
         <Box>
             <Typography variant="h4" fontWeight={800} sx={{ letterSpacing: '-0.5px' }}>
@@ -206,8 +216,61 @@ export default function Reports() {
                 Análisis de consumo, costos y facturación mensual.
             </Typography>
         </Box>
-        {/* Selector eliminado */}
       </Stack>
+
+      <Paper elevation={0} variant="outlined" sx={{ p: 4, borderRadius: 4, mb: 5, bgcolor: '#fff' }}>
+        <Stack direction="row" justifyContent="space-between" alignItems="flex-start" mb={3} flexWrap="wrap" gap={2}>
+            <Stack direction="row" alignItems="center" spacing={1}>
+                <Box sx={{ width: 4, height: 24, bgcolor: '#ff5722', borderRadius: 1 }} />
+                <Box>
+                    <Typography variant="h6" fontWeight={700}>Costo de Diesel por Galón</Typography>
+                    <Typography variant="caption" color="text.secondary">
+                        Dispersión: Eje X (Volumen) vs Eje Y (Precio Unitario)
+                    </Typography>
+                </Box>
+            </Stack>
+            
+            <ToggleButtonGroup
+                value={costPeriod}
+                exclusive
+                onChange={handlePeriodChange}
+                size="small"
+                sx={{ '& .MuiToggleButton-root': { fontWeight: 600, textTransform: 'none', px: 2 } }}
+            >
+                <ToggleButton value="day">Día</ToggleButton>
+                <ToggleButton value="week">Semana</ToggleButton>
+                <ToggleButton value="month">Mes</ToggleButton>
+            </ToggleButtonGroup>
+        </Stack>
+        
+        <Box sx={{ width: '100%', minHeight: 400 }}>
+            {costLoading ? (
+                <Stack alignItems="center" justifyContent="center" height={350}>
+                    <CircularProgress color="warning" />
+                    <Typography variant="caption" mt={2}>Calculando dispersión...</Typography>
+                </Stack>
+            ) : costData.length === 0 ? (
+                <Stack alignItems="center" justifyContent="center" height={350}>
+                    <TimelineIcon sx={{ fontSize: 60, color: '#e0e0e0', mb: 2 }} />
+                    <Typography color="text.secondary">No hay datos con precio Fleet One para este periodo</Typography>
+                </Stack>
+            ) : (
+                <ScatterChart
+                    series={[
+                        {
+                            label: 'Costo Promedio',
+                            data: costData.map(d => ({ x: d.x, y: d.y, id: d.id })),
+                            color: '#ff5722',
+                        },
+                    ]}
+                    xAxis={[{ label: 'Volumen Total (Galones)', min: 0 }]}
+                    yAxis={[{ label: 'Precio por Galón ($)', min: 0 }]}
+                    {...chartSetting}
+                    tooltip={{ trigger: 'item' }}
+                />
+            )}
+        </Box>
+      </Paper>
 
       <Paper elevation={0} variant="outlined" sx={{ p: 4, borderRadius: 4, mb: 5, bgcolor: '#fff' }}>
         <Stack direction="row" alignItems="center" spacing={1} mb={3}>
@@ -219,12 +282,6 @@ export default function Reports() {
             {financesLoading ? (
                 <Stack alignItems="center" justifyContent="center" height={350}>
                     <CircularProgress color="secondary" />
-                    <Typography variant="caption" mt={2}>Calculando finanzas...</Typography>
-                </Stack>
-            ) : financesData.length === 0 ? (
-                <Stack alignItems="center" justifyContent="center" height={350}>
-                    <AccountBalanceIcon sx={{ fontSize: 60, color: '#e0e0e0', mb: 2 }} />
-                    <Typography color="text.secondary">No hay datos financieros para mostrar</Typography>
                 </Stack>
             ) : (
                 <BarChart
@@ -235,7 +292,6 @@ export default function Reports() {
                         { dataKey: 'paid', label: 'Total Pagado', valueFormatter, color: '#ed6c02' }, 
                     ]}
                     {...chartSetting}
-                    slotProps={{ legend: { direction: 'row', position: { vertical: 'top', horizontal: 'middle' }, padding: -5 } }}
                     borderRadius={4}
                 />
             )}
@@ -245,21 +301,10 @@ export default function Reports() {
       <Paper elevation={0} variant="outlined" sx={{ p: 4, borderRadius: 4, mb: 5, bgcolor: '#fff' }}>
         <Stack direction="row" alignItems="center" spacing={1} mb={3}>
             <Box sx={{ width: 4, height: 24, bgcolor: '#e91e63', borderRadius: 1 }} />
-            <Typography variant="h6" fontWeight={700}>Facturación RTS (Solo stages RTS)</Typography>
+            <Typography variant="h6" fontWeight={700}>Facturación RTS</Typography>
         </Stack>
-        
         <Box sx={{ width: '100%', minHeight: 400 }}>
-            {rtsLoading ? (
-                <Stack alignItems="center" justifyContent="center" height={350}>
-                    <CircularProgress color="secondary" />
-                    <Typography variant="caption" mt={2}>Filtrando RTS...</Typography>
-                </Stack>
-            ) : rtsData.length === 0 ? (
-                <Stack alignItems="center" justifyContent="center" height={350}>
-                    <CurrencyExchangeIcon sx={{ fontSize: 60, color: '#e0e0e0', mb: 2 }} />
-                    <Typography color="text.secondary">No hay registros con método de pago "RTS"</Typography>
-                </Stack>
-            ) : (
+            {rtsLoading ? <CircularProgress /> : (
                 <BarChart
                     dataset={rtsData}
                     xAxis={[{ dataKey: 'label', label: 'Mes de Entrega', scaleType: 'band' }]}
@@ -268,7 +313,6 @@ export default function Reports() {
                         { dataKey: 'paid', label: 'RTS Pagado', valueFormatter, color: '#ff9800' }, 
                     ]}
                     {...chartSetting}
-                    slotProps={{ legend: { direction: 'row', position: { vertical: 'top', horizontal: 'middle' }, padding: -5 } }}
                     borderRadius={4}
                 />
             )}
@@ -282,12 +326,7 @@ export default function Reports() {
         </Stack>
         
         <Box sx={{ width: '100%', minHeight: 400 }}>
-            {chartLoading ? (
-                <Stack alignItems="center" justifyContent="center" height={350}>
-                    <CircularProgress />
-                    <Typography variant="caption" mt={2}>Cargando...</Typography>
-                </Stack>
-            ) : (
+            {chartLoading ? <CircularProgress /> : (
                 <BarChart
                     dataset={datasetDiesel}
                     xAxis={xAxisDiesel}
@@ -296,7 +335,6 @@ export default function Reports() {
                         { dataKey: 'fleetone', label: 'FleetOne ($)', valueFormatter, color: '#00C853' },
                     ]}
                     {...chartSetting}
-                    slotProps={{ legend: { direction: 'row', position: { vertical: 'top', horizontal: 'middle' }, padding: -5 } }}
                     borderRadius={4}
                 />
             )}
@@ -318,31 +356,30 @@ export default function Reports() {
                 <Table stickyHeader>
                     <TableHead>
                         <TableRow>
-                            <TableCell sx={{ fontWeight: 700, fontSize: '0.95rem', bgcolor: '#fff' }}>{tableFirstColTitle}</TableCell>
+                            <TableCell sx={{ fontWeight: 700, fontSize: '0.95rem', bgcolor: '#fff' }}>Mes</TableCell>
                             <TableCell align="right" sx={{ fontWeight: 700, fontSize: '0.95rem', bgcolor: '#fff' }}>Consumo (Gal)</TableCell>
-                            <TableCell align="right" sx={{ fontWeight: 700, fontSize: '0.95rem', bgcolor: '#fff' }}>% del Total</TableCell>
+                            <TableCell align="right" sx={{ fontWeight: 700, fontSize: '0.95rem', bgcolor: '#fff' }}>Costo Promedio ($/gal)</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {tableBase.map((r, idx) => {
-                            const percent = totalGalones > 0 ? (r.galones / totalGalones) * 100 : 0;
-                            return (
-                                <TableRow key={`${r.label}-${idx}`} hover>
-                                    <TableCell sx={{ fontWeight: 500, color: 'text.secondary' }}>{r.label}</TableCell>
-                                    <TableCell align="right" sx={{ fontWeight: 600 }}>{valueFormatter(r.galones)}</TableCell>
-                                    <TableCell align="right" sx={{ color: 'text.secondary', fontSize: '0.85rem' }}>
-                                        {percent < 0.1 ? '< 0.1%' : `${percent.toFixed(1)}%`}
-                                    </TableCell>
-                                </TableRow>
-                            );
-                        })}
+                        {tableBase.map((r, idx) => (
+                            <TableRow key={`${r.label}-${idx}`} hover>
+                                <TableCell sx={{ fontWeight: 500, color: 'text.secondary' }}>{r.label}</TableCell>
+                                <TableCell align="right" sx={{ fontWeight: 600 }}>{valueFormatter(r.galones)}</TableCell>
+                                <TableCell align="right" sx={{ color: 'text.primary', fontSize: '0.9rem', fontWeight: 700 }}>
+                                    {money(r.avg_cost)}
+                                </TableCell>
+                            </TableRow>
+                        ))}
                         {tableBase.length > 0 && (
                             <TableRow sx={{ bgcolor: '#f5f5f5' }}>
                                 <TableCell sx={{ fontWeight: 800 }}>TOTAL GLOBAL</TableCell>
                                 <TableCell align="right" sx={{ fontWeight: 800, color: 'primary.main', fontSize: '1.1rem' }}>
                                     {valueFormatter(totalGalones)}
                                 </TableCell>
-                                <TableCell align="right" sx={{ fontWeight: 800 }}>100%</TableCell>
+                                <TableCell align="right" sx={{ fontWeight: 800 }}>
+                                    ~ {money(globalAvgCost)}
+                                </TableCell>
                             </TableRow>
                         )}
                     </TableBody>
