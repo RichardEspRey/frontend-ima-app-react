@@ -1,17 +1,28 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Box, Typography, Grid, Stack, TextField, Button, Paper, CircularProgress, InputLabel } from '@mui/material';
+import React, { useState, useMemo } from 'react';
+import { 
+    Box, Typography, Grid, Stack, TextField, Button, Paper, 
+    CircularProgress, Divider, IconButton, Chip 
+} from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import UploadFileIcon from '@mui/icons-material/UploadFile';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import SaveIcon from '@mui/icons-material/Save';
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import PlaceIcon from '@mui/icons-material/Place';
+import FlagIcon from '@mui/icons-material/Flag';
+
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import Swal from 'sweetalert2';
-import { format } from 'date-fns';
+import Select from 'react-select';
+import CreatableSelect from 'react-select/creatable';
+import { format } from 'date-fns'; 
 
-// 🚨 IMPORTAMOS LOS COMPONENTES ESTANDARIZADOS Y MODALES
-import SelectWrapper from '../components/SelectWrapper';
-import StageInput from '../components/StageInput';
+// Modales
 import ModalArchivo from './ModalArchivo';
 import ModalCajaExterna from '../components/ModalCajaExterna';
 
-// IMPORTACIONES DE HOOKS (Mantenidas)
+// Hooks
 import useFetchActiveDrivers from '../hooks/useFetchActiveDrivers';
 import useFetchActiveTrucks from '../hooks/useFetchActiveTrucks';
 import useFetchActiveTrailers from '../hooks/useFetchActiveTrailers';
@@ -19,729 +30,328 @@ import useFetchActiveExternalTrailers from '../hooks/useFetchActiveExternalTrail
 import useFetchCompanies from '../hooks/useFetchCompanies';
 import useFetchWarehouses from '../hooks/useFetchWarehouses';
 
+const apiHost = import.meta.env.VITE_API_HOST;
 
-const initialBorderCrossingDocs = {
-    ima_invoice: null, carta_porte: null, ci: null, entry: null,
-    manifiesto: null, bl: null, orden_retiro: null, bl_firmado: null,
+const selectStyles = {
+    control: (base) => ({
+        ...base, height: '56px', minHeight: '56px', borderRadius: '4px',
+        borderColor: 'rgba(0, 0, 0, 0.23)', '&:hover': { borderColor: 'rgba(0, 0, 0, 0.87)' }
+    }),
+    menu: (base) => ({ ...base, zIndex: 9999 })
 };
 
-const initialNormalTripDocs = {
-    ima_invoice: null, ci: null,
-    bl: null, bl_firmado: null,
-};
+// Estados iniciales
+const initialNormalTripDocs = { ima_invoice: null, ci: null, bl: null, bl_firmado: null };
 
-// Estado inicial de la etapa para reset
 const initialEtapaStateBase = {
-    stage_number: 1,
-    stageType: 'normalTrip',
-    origin: '', destination: '', zip_code_origin: '', zip_code_destination: '',
-    loading_date: null, delivery_date: null, company_id: '', travel_direction: '',
-    warehouse_origin_id: '', warehouse_destination_id: '', ci_number: '',
-    rate_tarifa: '', millas_pcmiller: '', millas_pcmiller_practicas: '',
-    documentos: { ...initialNormalTripDocs }, comments: '', time_of_delivery: ''
+    stage_number: 1, company_id: null, origin: '', zip_code_origin: '', loading_date: new Date(),
+    warehouse_origin_id: null, destination: '', zip_code_destination: '', delivery_date: new Date(),
+    warehouse_destination_id: null, travel_direction: '', ci_number: '', invoice_number: '',
+    rate_tarifa: '', millas_pcmiller: '', millas_pcmiller_practicas: '', comments: '',
+    documentos: { ...initialNormalTripDocs }, time_of_delivery: '', stops_in_transit: []
 };
 
-const TripFormNew = ({
-    tripNumber,
-    countryCode,
-    tripYear,
-    isTransnational,
-    isContinuation,
-    transnationalNumber,
-    movementNumber,
-    onSuccess
-}) => {
-    const apiHost = import.meta.env.VITE_API_HOST;
-    const tripYear2Digits = String(tripYear).slice(-2);
+const TripFormNew = ({ tripNumber, countryCode, tripYear, isTransnational, isContinuation, transnationalNumber, movementNumber, onSuccess }) => {
+    
+    // Hooks
+    const { drivers, loading: lDrivers } = useFetchActiveDrivers();
+    const { trucks, loading: lTrucks } = useFetchActiveTrucks();
+    const { trailers, loading: lTrailers } = useFetchActiveTrailers();
+    const { externalTrailers, loading: lExt, refreshTrailers } = useFetchActiveExternalTrailers();
+    const { companies, loading: lComp, createCompany } = useFetchCompanies();
+    const { warehouses, loading: lWare, createWarehouse } = useFetchWarehouses();
 
+    // States
+    const [driver1, setDriver1] = useState(null);
+    const [driver2, setDriver2] = useState(null);
+    const [truck, setTruck] = useState(null);
+    const [caja, setCaja] = useState(null);
+    const [cajaExterna, setCajaExterna] = useState(null);
+    const [tipoCaja, setTipoCaja] = useState('internal');
+    const [etapas, setEtapas] = useState([{ ...initialEtapaStateBase, stageType: 'normalTrip' }]);
+    const [loadingSave, setLoadingSave] = useState(false);
 
-
-    const { activeDrivers, loading: loadingDrivers, error: errorDrivers } = useFetchActiveDrivers();
-    const { activeTrucks, loading: loadingTrucks, error: errorTrucks } = useFetchActiveTrucks();
-    const { activeTrailers, loading: loadingCajas, error: errorCajas } = useFetchActiveTrailers();
-    const { activeExternalTrailers, loading: loadingCajasExternas, error: errorCajasExternas, refetch: refetchExternalTrailers } = useFetchActiveExternalTrailers();
-    const { activeCompanies, loading: loadingCompanies, error: errorCompanies } = useFetchCompanies();
-    const { activeWarehouses, loading: loadingWarehouses, error: errorWarehouses } = useFetchWarehouses();
-
-    const [trailerType, setTrailerType] = useState('interna');
-    const [tripMode, setTripMode] = useState('individual');
-    const [isCreatingCompany, setIsCreatingCompany] = useState(false);
-    const [isCreatingWarehouse, setIsCreatingWarehouse] = useState(false);
-
-    const [companyOptions, setCompanyOptions] = useState([]);
-    const [warehouseOptions, setWarehouseOptions] = useState([]);
-
+    // Modales
     const [modalAbierto, setModalAbierto] = useState(false);
+    const [modalTarget, setModalTarget] = useState({ stageIndex: null, docType: null, stopIndex: null });
+    const [mostrarFechaVencimientoModal, setMostrarFechaVencimientoModal] = useState(false);
     const [IsModalCajaExternaOpen, setIsModalCajaExternaOpen] = useState(false);
-    const [modalTarget, setModalTarget] = useState({ stageIndex: null, docType: null });
-    const [mostrarFechaVencimientoModal, setMostrarFechaVencimientoModal] = useState(true);
 
+    // Memos para opciones 
+    const driverOptions = useMemo(() => (drivers || []).map(d => ({ value: d.driver_id, label: d.nombre })), [drivers]);
+    const truckOptions = useMemo(() => (trucks || []).map(t => ({ value: t.truck_id, label: t.unidad })), [trucks]);
+    const trailerOptions = useMemo(() => (trailers || []).map(t => ({ value: t.trailer_id, label: `${t.no_economico} (${t.placas})` })), [trailers]);
+    const externalTrailerOptions = useMemo(() => (externalTrailers || []).map(t => ({ value: t.id, label: `${t.numero_caja} - ${t.nombre_dueno}` })), [externalTrailers]);
+    const companyOptions = useMemo(() => (companies || []).map(c => ({ value: c.company_id, label: c.name })), [companies]);
+    const warehouseOptions = useMemo(() => (warehouses || []).map(w => ({ value: w.warehouse_id, label: w.name })), [warehouses]);
 
-    const [formData, setFormData] = useState({
-        trip_number: tripNumber || '',
-        driver_id: '',
-        driver_id_second: '',
-        truck_id: '',
-        caja_id: '',
-        caja_externa_id: ''
-    });
-
-    const initialEtapaState = useMemo(() => ({ ...initialEtapaStateBase }), []);
-    const [etapas, setEtapas] = useState([initialEtapaState]);
-
-    const handleTrailerTypeChange = (type) => {
-        setTrailerType(type);
-        if (type === 'interna') {
-            setFormData(prev => ({ ...prev, caja_externa_id: '' }));
-        } else {
-            setFormData(prev => ({ ...prev, caja_id: '' }));
-        }
+    // Handlers Etapas
+    const addStage = (type) => setEtapas(p => [...p, { ...initialEtapaStateBase, stage_number: p.length + 1, stageType: type }]);
+    
+    const removeStage = (i) => {
+        if (etapas.length === 1) return Swal.fire("Aviso", "Mínimo una etapa requerida", "info");
+        setEtapas(p => p.filter((_, idx) => idx !== i).map((e, idx) => ({ ...e, stage_number: idx + 1 })));
     };
+    
+    const updateStage = (i, f, v) => setEtapas(p => { const c = [...p]; c[i] = { ...c[i], [f]: v }; return c; });
 
-    const handleTripModeChange = (mode) => {
-        setTripMode(mode);
-        if (mode === 'individual') {
-            setFormData(prev => ({ ...prev, driver_id_second: '' }));
-        }
-    };
+    // Handlers Paradas
+    const addStop = (i) => setEtapas(p => { const c = [...p]; c[i].stops_in_transit = [...(c[i].stops_in_transit||[]), { location: '', time_of_delivery: '', bl_firmado_doc: null }]; return c; });
+    const removeStop = (i, si) => setEtapas(p => { const c = [...p]; c[i].stops_in_transit = c[i].stops_in_transit.filter((_, idx) => idx !== si); return c; });
+    const updateStop = (i, si, f, v) => setEtapas(p => { const c = [...p]; c[i].stops_in_transit[si][f] = v; return c; });
 
-    // ** LÓGICA DE OPCIONES **
-    useEffect(() => {
-        if (activeCompanies) {
-            setCompanyOptions(activeCompanies.map(c => ({ value: c.company_id, label: c.nombre_compania })));
-        }
-    }, [activeCompanies]);
-
-    useEffect(() => {
-        if (activeWarehouses) {
-            setWarehouseOptions(activeWarehouses.map(w => ({ value: w.warehouse_id, label: w.nombre_almacen })));
-        }
-    }, [activeWarehouses]);
-
-    useEffect(() => {
-        setFormData(prevFormData => ({
-            ...prevFormData,
-            trip_number: tripNumber || '',
-        }));
-    }, [tripNumber]);
-
-
-    // ** CREACIÓN DE ENTIDADES **
-    const handleCreateCompany = async (inputValue, stageIndex) => {
-        setIsCreatingCompany(true);
-        const newCompanyFormData = new FormData();
-        newCompanyFormData.append('op', 'CreateCompany');
-        newCompanyFormData.append('nombre_compania', inputValue);
-
-        try {
-            const response = await fetch(`${apiHost}/companies.php`, { method: 'POST', body: newCompanyFormData });
-            const result = await response.json();
-
-            if (result.status === "success" && result.company && result.company.company_id) {
-                const newOption = { value: result.company.company_id, label: result.company.nombre_compania };
-                setCompanyOptions(prevOptions => [...prevOptions, newOption]);
-                handleEtapaChange(stageIndex, 'company_id', newOption.value);
-                Swal.fire('¡Éxito!', `Compañía "${inputValue}" creada y seleccionada.`, 'success');
-            } else {
-                Swal.fire('Error', `No se pudo crear la compañía: ${result.message || 'Error desconocido del servidor.'}`, 'error');
-            }
-        } catch (error) {
-            console.error("Error creando compañía:", error);
-            Swal.fire('Error', 'Error de conexión al crear la compañía.', 'error');
-        } finally {
-            setIsCreatingCompany(false);
-        }
-    };
-
-    const handleCreateWarehouse = async (inputValue, stageIndex, warehouseFieldKey) => {
-        setIsCreatingWarehouse(true);
-        const newWarehouseFormData = new FormData();
-        newWarehouseFormData.append('op', 'CreateWarehouse');
-        newWarehouseFormData.append('nombre_almacen', inputValue);
-
-        try {
-            const response = await fetch(`${apiHost}/warehouses.php`, { method: 'POST', body: newWarehouseFormData });
-            const result = await response.json();
-
-            if (result.status === "success" && result.warehouse && result.warehouse.warehouse_id) {
-                const newOption = { value: result.warehouse.warehouse_id, label: result.warehouse.nombre_almacen };
-                setWarehouseOptions(prevOptions => [...prevOptions, newOption]);
-                handleEtapaChange(stageIndex, warehouseFieldKey, newOption.value);
-                Swal.fire('¡Éxito!', `Bodega "${inputValue}" creada y seleccionada.`, 'success');
-            } else {
-                Swal.fire('Error', `No se pudo crear la bodega: ${result.message || 'Error desconocido del servidor.'}`, 'error');
-            }
-        } catch (error) {
-            console.error("Error creando bodega:", error);
-            Swal.fire('Error', 'Error de conexión al crear la bodega.', 'error');
-        } finally {
-            setIsCreatingWarehouse(false);
-        }
-    };
-
-    // ** MANEJO DE ESTADOS **
-    const setForm = (name, value) => {
-        setFormData(prevData => ({
-            ...prevData,
-            [name]: value,
-        }));
-    };
-
-    const handleEtapaChange = (index, field, value) => {
-        setEtapas(prevEtapas => {
-            const updatedEtapas = [...prevEtapas];
-            const updatedEtapa = { ...updatedEtapas[index] };
-            updatedEtapa[field] = value;
-            updatedEtapas[index] = updatedEtapa;
-            return updatedEtapas;
-        });
-    };
-
-    const handleGuardarDocumentoEtapa = (data) => {
-        const { stageIndex, docType } = modalTarget;
-        if (stageIndex === null || !docType) return;
-        setEtapas(prevEtapas => {
-            const updatedEtapas = [...prevEtapas];
-            const updatedEtapa = {
-                ...updatedEtapas[stageIndex],
-                documentos: {
-                    ...updatedEtapas[stageIndex].documentos,
-                    [docType]: data
-                }
-            };
-            updatedEtapas[stageIndex] = updatedEtapa;
-            return updatedEtapas;
+    // Docs
+    const openDocModal = (si, dt, spi = null) => { setModalTarget({ stageIndex: si, docType: dt, stopIndex: spi }); setMostrarFechaVencimientoModal(false); setModalAbierto(true); };
+    
+    const saveDoc = (data) => {
+        const { stageIndex, docType, stopIndex } = modalTarget;
+        setEtapas(p => {
+            const c = [...p];
+            if (stopIndex !== null) c[stageIndex].stops_in_transit[stopIndex][docType] = data;
+            else c[stageIndex].documentos = { ...c[stageIndex].documentos, [docType]: data };
+            return c;
         });
         setModalAbierto(false);
-        setModalTarget({ stageIndex: null, docType: null });
+    };
+    
+    const getDocValue = () => {
+        const { stageIndex, docType, stopIndex } = modalTarget;
+        if (stageIndex === null) return null;
+        return stopIndex !== null ? etapas[stageIndex].stops_in_transit[stopIndex]?.[docType] : etapas[stageIndex].documentos?.[docType];
     };
 
-    const getCurrentDocValueForModal = () => {
-        const { stageIndex, docType } = modalTarget;
-        if (docType === null) return null;
-        if (stageIndex !== null && etapas[stageIndex]) {
-            return etapas[stageIndex].documentos[docType] || null;
-        } else {
-            return formData[docType] || null;
-        }
+    // Caja Externa
+    const saveExtCaja = async (newId) => {
+        await refreshTrailers();
+        const found = externalTrailers.find(t => t.id === newId);
+        setCajaExterna(found ? { value: newId, label: `${found.numero_caja} - ${found.nombre_dueno}` } : { value: newId, label: 'Nueva Caja' });
+        setIsModalCajaExternaOpen(false);
     };
 
-    const agregarNuevaEtapa = (tipoEtapa) => {
-        let initialDocs;
+    // Submit
+    const handleSubmit = async () => {
+        if (!tripNumber || !driver1 || !truck) return Swal.fire("Error", "Faltan datos de recursos", "error");
+        if (tipoCaja === 'internal' && !caja) return Swal.fire("Error", "Falta caja interna", "error");
+        if (tipoCaja === 'external' && !cajaExterna) return Swal.fire("Error", "Falta caja externa", "error");
 
-        if (tipoEtapa === 'normalTrip') {
-            initialDocs = { ...initialNormalTripDocs };
-        } else if (tipoEtapa === 'borderCrossing') {
-            initialDocs = { ...initialBorderCrossingDocs };
-        } else {
-            initialDocs = {};
-        }
-
-        setEtapas(prevEtapas => [
-            ...prevEtapas,
-            {
-                ...initialEtapaStateBase,
-                stage_number: prevEtapas.length + 1,
-                stageType: tipoEtapa,
-                documentos: initialDocs
-            }
-        ]);
-    };
-
-    const eliminarEtapa = (index) => {
-        if (etapas.length <= 1) { Swal.fire('Info', 'Debe haber al menos una etapa.', 'info'); return; }
-        Swal.fire({
-            title: `¿Eliminar Etapa ${etapas[index].stage_number}?`, icon: 'warning',
-            showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Sí, eliminar'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                setEtapas(prev => prev.filter((_, i) => i !== index).map((e, i) => ({ ...e, stage_number: i + 1 })));
-            }
-        });
-    };
-
-    const abrirModalDocs = (docType, stageIndex = null) => {
-        setModalTarget({ stageIndex, docType });
-        setModalAbierto(true);
-
-        if (['ima_invoice', 'carta_porte', 'ci', 'entry', 'manifiesto', 'bl', 'orden_retiro', 'bl_firmado'].includes(docType)) {
-            setMostrarFechaVencimientoModal(false);
-        } else {
-            setMostrarFechaVencimientoModal(true);
-        }
-    };
-
-    // ** HANDLER DE GUARDADO **
-    const handleSubmit = async (event) => {
-        event.preventDefault();
-
-        // Validaciones básicas (se mantienen)
-        if (!formData.driver_id || !formData.truck_id) {
-            Swal.fire('Campos incompletos', 'Por favor, seleccione Driver y Truck.', 'warning');
-            return;
-        }
-        for (let i = 0; i < etapas.length; i++) {
-            const etapa = etapas[i];
-            if (!etapa.company_id || !etapa.travel_direction || !etapa.warehouse_origin_id || !etapa.warehouse_destination_id || !etapa.origin || !etapa.destination) {
-                Swal.fire('Campos incompletos', `Por favor, complete los campos obligatorios (Company, Direction, Warehouses, Origin, Destination) de la Etapa ${etapa.stage_number}.`, 'warning');
-                return;
-            }
-        }
-
-        let timerInterval;
-        const start = Date.now();
-
-        Swal.fire({
-            title: 'Procesando…',
-            html: 'Tiempo transcurrido: <b>0</b> ms',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-                const b = Swal.getPopup().querySelector('b');
-                timerInterval = setInterval(() => {
-                    if (b) b.textContent = `${Date.now() - start}`;
-                }, 100);
-            },
-            willClose: () => clearInterval(timerInterval),
-        });
-
-        const dataToSend = new FormData();
-        dataToSend.append('op', 'Alta');
-
-        // Datos principales del viaje
-        dataToSend.append('trip_number', formData.trip_number);
-        dataToSend.append('driver_id', formData.driver_id);
-        dataToSend.append('driver_id_second', formData.driver_id_second || '');
-        dataToSend.append('truck_id', formData.truck_id);
-        dataToSend.append('caja_id', formData.caja_id || '');
-        dataToSend.append('caja_externa_id', formData.caja_externa_id || '');
-        dataToSend.append('country_code', countryCode);
-        dataToSend.append('trip_year', tripYear2Digits);
-        dataToSend.append('is_transnational', isTransnational ? 1 : 0);
-
-        if (isTransnational) {
-            if (isContinuation) {
-                dataToSend.append('transnational_number', transnationalNumber);
-                dataToSend.append('movement_number', movementNumber);
-            } else {
-                dataToSend.append('transnational_number', '');
-                dataToSend.append('movement_number', 1);
-            }
-        } else {
-            dataToSend.append('transnational_number', '');
-            dataToSend.append('movement_number', '');
-        }
-
-        // 1. Preparar JSON de etapas y añadir archivos al FormData
-        const etapasParaJson = etapas.map(etapa => ({
-            stage_number: etapa.stage_number,
-            stageType: etapa.stageType,
-            origin: etapa.origin,
-            destination: etapa.destination,
-            zip_code_origin: etapa.zip_code_origin,
-            zip_code_destination: etapa.zip_code_destination,
-
-            loading_date: etapa.loading_date ? format(etapa.loading_date, 'yyyy-MM-dd') : null,
-            delivery_date: etapa.delivery_date ? format(etapa.delivery_date, 'yyyy-MM-dd') : null,
-            company_id: etapa.company_id,
-            travel_direction: etapa.travel_direction,
-            warehouse_origin_id: etapa.warehouse_origin_id,
-            warehouse_destination_id: etapa.warehouse_destination_id,
-            ci_number: etapa.ci_number,
-            rate_tarifa: etapa.rate_tarifa,
-            millas_pcmiller: etapa.millas_pcmiller,
-            millas_pcmiller_practicas: etapa.millas_pcmiller_practicas,
-            estatus: 'In Transit',
-            comments: etapa.comments || '',
-            time_of_delivery: etapa.time_of_delivery || '',
-
-            documentos: Object.entries(etapa.documentos).reduce((acc, [key, value]) => {
-                if (value) {
-                    acc[key] = {
-                        fileName: value.fileName || '',
-                        vencimiento: value.vencimiento || null
-                    };
-                } else {
-                    acc[key] = null;
-                }
-                return acc;
-            }, {})
-        }));
-        dataToSend.append('etapas', JSON.stringify(etapasParaJson));
-
-        // 2. Añadir los archivos de CADA etapa al FormData
-        etapas.forEach((etapa, index) => {
-            Object.entries(etapa.documentos).forEach(([docType, docData]) => {
-                if (docData && docData.file instanceof File) {
-                    const fieldName = `etapa_${index}_${docType}_file`;
-                    dataToSend.append(fieldName, docData.file, docData.fileName);
-                }
-            });
-        });
-
-
-        // Enviar a la API
+        setLoadingSave(true);
         try {
-            const apiUrl = `${apiHost}/new_tripsv2.php`;
-            const response = await fetch(apiUrl, {
-                method: 'POST',
-                body: dataToSend,
-            });
+            const fullTripId = `${countryCode}${tripYear.toString().slice(-2)}-${tripNumber}`;
+            const fd = new FormData();
+            fd.append('op', 'create_trip_complete');
+            fd.append('trip_number', fullTripId);
+            fd.append('pais', countryCode);
+            fd.append('anio', tripYear);
+            fd.append('driver_id', driver1);
+            if (driver2) fd.append('driver2_id', driver2);
+            fd.append('truck_id', truck);
+            fd.append(tipoCaja === 'internal' ? 'trailer_id' : 'external_trailer_id', tipoCaja === 'internal' ? caja : (cajaExterna.value || cajaExterna));
+            
+            if (isTransnational) {
+                fd.append('is_transnational', 1);
+                if (isContinuation) fd.append('transnational_trip_id', transnationalNumber);
+                if (movementNumber) fd.append('movement_number', movementNumber);
+            }
 
-            const result = await response.json();
+            etapas.forEach((etapa, idx) => {
+                const prefix = `etapas[${idx}]`;
+                fd.append(`${prefix}[stageType]`, etapa.stageType);
+                fd.append(`${prefix}[stage_number]`, etapa.stage_number);
+                fd.append(`${prefix}[company_id]`, etapa.company_id || '');
+                fd.append(`${prefix}[travel_direction]`, etapa.travel_direction || '');
+                fd.append(`${prefix}[ci_number]`, etapa.ci_number || '');
+                fd.append(`${prefix}[origin]`, etapa.origin || '');
+                fd.append(`${prefix}[zip_code_origin]`, etapa.zip_code_origin || '');
+                fd.append(`${prefix}[warehouse_origin_id]`, etapa.warehouse_origin_id || '');
+                fd.append(`${prefix}[loading_date]`, etapa.loading_date ? format(etapa.loading_date, 'yyyy-MM-dd') : '');
+                fd.append(`${prefix}[destination]`, etapa.destination || '');
+                fd.append(`${prefix}[zip_code_destination]`, etapa.zip_code_destination || '');
+                fd.append(`${prefix}[warehouse_destination_id]`, etapa.warehouse_destination_id || '');
+                fd.append(`${prefix}[delivery_date]`, etapa.delivery_date ? format(etapa.delivery_date, 'yyyy-MM-dd') : '');
+                fd.append(`${prefix}[millas_pcmiller]`, etapa.millas_pcmiller || '');
+                fd.append(`${prefix}[millas_pcmiller_practicas]`, etapa.millas_pcmiller_practicas || '');
+                fd.append(`${prefix}[comments]`, etapa.comments || '');
 
-            if (response.ok && result.status === "success") {
-                Swal.close();
-                Swal.fire({
-                    icon: 'success', title: '¡Éxito!',
-                    text: result.message || 'Viaje y etapas guardados correctamente.',
-                    timer: 2500, showConfirmButton: false
-                });
-
-                if (onSuccess) {
-                    onSuccess();
+                if (etapa.documentos) {
+                    Object.keys(etapa.documentos).forEach(key => {
+                        if (etapa.documentos[key]?.file) fd.append(`${prefix}[docs][${key}]`, etapa.documentos[key].file);
+                    });
                 }
-            } else {
-                Swal.close();
-                Swal.fire({
-                    icon: 'error', title: 'Error al Guardar',
-                    text: result.error || result.message || 'No se pudo guardar la información. Verifica los datos e intenta de nuevo.',
-                });
-            }
-        } catch (error) {
-            console.error('Error en fetch o procesando respuesta (Alta):', error);
-            Swal.close();
-            Swal.fire({
-                icon: 'error', title: 'Error de Conexión',
-                text: `No se pudo comunicar con el servidor. ${error.message}`,
+                if (etapa.stops_in_transit) {
+                    etapa.stops_in_transit.forEach((s, si) => {
+                        fd.append(`${prefix}[stops][${si}][location]`, s.location || '');
+                        fd.append(`${prefix}[stops][${si}][time_of_delivery]`, s.time_of_delivery || '');
+                        if (s.bl_firmado_doc?.file) fd.append(`${prefix}[stops][${si}][bl_firmado_doc]`, s.bl_firmado_doc.file);
+                    });
+                }
             });
+
+            const res = await fetch(`${apiHost}/trips.php`, { method: "POST", body: fd });
+            const data = await res.json();
+            if (data.status === "success") {
+                Swal.fire("¡Éxito!", `Viaje ${fullTripId} creado`, "success");
+                onSuccess();
+            } else throw new Error(data.message || "Error desconocido");
+        } catch (e) {
+            Swal.fire("Error", e.message, "error");
+        } finally {
+            setLoadingSave(false);
         }
     };
 
-    const handleSaveExternalCaja = async (cajaData) => {
-
-
-        const dataToSend = new FormData();
-        dataToSend.append('op', 'Alta');
-
-        Object.entries(cajaData).forEach(([key, value]) => {
-            dataToSend.append(key, value);
-        });
-
-        try {
-            const endpoint = `${apiHost}/caja_externa.php`;
-            const response = await fetch(endpoint, {
-                method: 'POST',
-                body: dataToSend,
-            });
-
-            const result = await response.json();
-
-            if (result.status === 'success' && result.caja) {
-                Swal.fire('¡Éxito!', 'Caja externa registrada y asignada al viaje.', 'success');
-
-                setForm('caja_externa_id', result.caja.caja_externa_id);
-                setForm('caja_id', '');
-
-                refetchExternalTrailers();
-
-                setIsModalCajaExternaOpen(false);
-
-            } else {
-                Swal.fire('Error', `No se pudo registrar la caja: ${result.message || 'Error desconocido del servidor.'}`, 'error');
-            }
-
-        } catch (error) {
-            console.error('Error en la llamada fetch:', error);
-            Swal.fire('Error de Conexión', `No se pudo comunicar con el servidor: ${error.message}`, 'error');
-        }
-    };
-
-    const resetform = () => {
-        if (onSuccess) {
-            onSuccess();
-        }
-    }
-
+    const DocButton = ({ label, doc, onClick }) => (
+        <Paper variant="outlined" sx={{ p: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderColor: doc ? 'success.main' : 'divider' }}>
+            <Box sx={{ overflow: 'hidden', mr: 1 }}>
+                <Typography variant="caption" fontWeight={700} display="block" color="text.secondary">{label}</Typography>
+                <Typography variant="caption" noWrap display="block" color={doc ? 'text.primary' : 'text.disabled'}>
+                    {doc ? (doc.fileName || doc.name) : 'Sin archivo'}
+                </Typography>
+            </Box>
+            <IconButton size="small" color={doc ? "success" : "primary"} onClick={onClick}><UploadFileIcon fontSize="small" /></IconButton>
+        </Paper>
+    );
 
     return (
-        // 🚨 La etiqueta form envuelve todo el contenido
-        <form onSubmit={handleSubmit}>
-
-            <Stack direction="row" justifyContent="flex-end" spacing={2} sx={{ mb: 3 }}>
-                <Button variant="outlined" color="error" onClick={resetform}>Cancelar</Button>
-                <Button variant="contained" color="primary" type="submit">Guardar Viaje</Button>
-            </Stack>
-
-            {/* SECCIÓN DE INFORMACIÓN GENERAL */}
-            <Paper elevation={1} sx={{ p: 4, mb: 4, border: '1px solid #ccc' }}>
-                <Typography variant="h5" fontWeight={600} gutterBottom sx={{ borderBottom: '1px solid #eee', pb: 1, mb: 3 }}>
-                    Información General
+        <Box pb={10}>
+            <Paper elevation={3} sx={{ p: 3, mb: 4, borderRadius: 2, borderTop: '4px solid #1976d2' }}>
+                <Typography variant="h6" fontWeight={700} gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <LocalShippingIcon color="primary" /> Recursos del Viaje
                 </Typography>
-
-                <Grid container spacing={4}>
-                    {/* Columna 1: Driver Principal / Segundo Driver / Truck */}
-                    <Grid item xs={12} md={4}>
-                        <SelectWrapper
-                            label="Driver Principal:"
-                            isCreatable={false}
-                            value={activeDrivers.find(d => d.driver_id === formData.driver_id) ? { value: formData.driver_id, label: activeDrivers.find(d => d.driver_id === formData.driver_id).nombre } : null}
-                            onChange={(selected) => setForm('driver_id', selected ? selected.value : '')}
-                            options={activeDrivers.map(driver => ({ value: driver.driver_id, label: driver.nombre }))}
-                            placeholder="Seleccionar Driver"
-                            isLoading={loadingDrivers}
-                            isDisabled={loadingDrivers || !!errorDrivers}
-                        />
-                        {tripMode === 'team' && (
-                            <SelectWrapper
-                                label="Segundo Driver:"
-                                isCreatable={false}
-                                value={activeDrivers.find(d => d.driver_id === formData.driver_id_second) ? { value: formData.driver_id_second, label: activeDrivers.find(d => d.driver_id === formData.driver_id_second).nombre } : null}
-                                onChange={(selected) => setForm('driver_id_second', selected ? selected.value : '')}
-                                options={activeDrivers.filter(d => d.driver_id !== formData.driver_id).map(driver => ({ value: driver.driver_id, label: driver.nombre }))}
-                                placeholder="Seleccionar 2do Driver"
-                                isLoading={loadingDrivers}
-                                isDisabled={loadingDrivers || !!errorDrivers}
-                            />
-                        )}
-                        <SelectWrapper
-                            label="Truck:"
-                            isCreatable={false}
-                            value={activeTrucks.find(t => t.truck_id === formData.truck_id) ? { value: formData.truck_id, label: activeTrucks.find(t => t.truck_id === formData.truck_id).unidad } : null}
-                            onChange={(selected) => setForm('truck_id', selected ? selected.value : '')}
-                            options={activeTrucks.map(truck => ({ value: truck.truck_id, label: truck.unidad }))}
-                            placeholder="Seleccionar Truck"
-                            isLoading={loadingTrucks}
-                            isDisabled={loadingTrucks || !!errorTrucks}
-                        />
+                <Divider sx={{ mb: 3 }} />
+                <Grid container spacing={3}>
+                    <Grid item xs={12} md={6}>
+                        <Typography variant="subtitle2">Conductor Principal</Typography>
+                        <Select options={driverOptions} value={driverOptions.find(o => o.value === driver1)} onChange={o => setDriver1(o?.value)} isLoading={lDrivers} styles={selectStyles} placeholder="Seleccionar..." />
                     </Grid>
-
-                    {/* Columna 2: Tipo de Viaje / Selector de Modo */}
-                    <Grid item xs={12} md={4}>
-                        <InputLabel sx={{ fontWeight: 600, mb: 0.5, color: 'text.primary' }}>Tipo de Viaje:</InputLabel>
-                        <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
-                            <Button variant={tripMode === 'individual' ? 'contained' : 'outlined'} size="small" onClick={() => handleTripModeChange('individual')}>Viaje Individual</Button>
-                            <Button variant={tripMode === 'team' ? 'contained' : 'outlined'} size="small" onClick={() => handleTripModeChange('team')}>Viaje en Equipo</Button>
-                        </Stack>
+                    <Grid item xs={12} md={6}>
+                        <Typography variant="subtitle2">Conductor Secundario (Opcional)</Typography>
+                        <Select options={driverOptions} value={driverOptions.find(o => o.value === driver2)} onChange={o => setDriver2(o?.value)} isLoading={lDrivers} isClearable styles={selectStyles} placeholder="Seleccionar..." />
                     </Grid>
-
-                    {/* Columna 3: Tipo de Trailer / Selector de Caja */}
                     <Grid item xs={12} md={4}>
-                        <InputLabel sx={{ fontWeight: 600, mb: 0.5, color: 'text.primary' }}>Tipo de Trailer:</InputLabel>
-                        <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
-                            <Button variant={trailerType === 'interna' ? 'contained' : 'outlined'} size="small" onClick={() => handleTrailerTypeChange('interna')}>Caja Interna</Button>
-                            <Button variant={trailerType === 'externa' ? 'contained' : 'outlined'} size="small" onClick={() => handleTrailerTypeChange('externa')}>Caja Externa</Button>
-                        </Stack>
-
-                        {trailerType === 'interna' && (
-                            <SelectWrapper
-                                label="Trailer (Caja Interna):"
-                                isCreatable={false}
-                                value={activeTrailers.find(c => c.caja_id === formData.caja_id) ? { value: formData.caja_id, label: activeTrailers.find(c => c.caja_id === formData.caja_id).no_caja } : null}
-                                onChange={(selected) => setForm('caja_id', selected ? selected.value : '')}
-                                options={activeTrailers.map(caja => ({ value: caja.caja_id, label: caja.no_caja }))}
-                                placeholder="Seleccionar Trailer"
-                                isLoading={loadingCajas} isDisabled={loadingCajas || !!errorCajas}
-                            />
-                        )}
-                        {trailerType === 'externa' && (
-                            <Stack direction="row" spacing={1} alignItems="flex-end">
-                                <Box sx={{ flexGrow: 1 }}>
-                                    <SelectWrapper
-                                        label="Trailer (Caja Externa):"
-                                        isCreatable={false}
-                                        value={activeExternalTrailers.find(c => c.caja_externa_id === formData.caja_externa_id) ? { value: formData.caja_externa_id, label: activeExternalTrailers.find(c => c.caja_externa_id === formData.caja_externa_id).no_caja } : null}
-                                        onChange={(selected) => setForm('caja_externa_id', selected ? selected.value : '')}
-                                        options={activeExternalTrailers.map(caja => ({ value: caja.caja_externa_id, label: caja.no_caja }))}
-                                        placeholder="Seleccionar Trailer"
-                                        isLoading={loadingCajasExternas}
-                                        isDisabled={loadingCajasExternas || !!errorCajasExternas}
-                                    />
-                                </Box>
-                                <Button variant="contained" color="primary" size="small" sx={{ height: '40px', minWidth: '40px', p: 0 }} onClick={() => setIsModalCajaExternaOpen(true)} title="Registrar Nueva Caja Externa">+</Button>
-                            </Stack>
-                        )}
+                        <Typography variant="subtitle2">Camión</Typography>
+                        <Select options={truckOptions} value={truckOptions.find(o => o.value === truck)} onChange={o => setTruck(o?.value)} isLoading={lTrucks} styles={selectStyles} placeholder="Seleccionar..." />
+                    </Grid>
+                    <Grid item xs={12} md={8}>
+                        <Grid container spacing={2}>
+                            <Grid item xs={12} sm={4}>
+                                <Typography variant="subtitle2">Tipo de Caja</Typography>
+                                <Select options={[{value:'internal',label:'Interna'},{value:'external',label:'Externa'}]} value={{value:tipoCaja,label:tipoCaja==='internal'?'Interna':'Externa'}} onChange={o=>{setTipoCaja(o.value);setCaja(null);setCajaExterna(null);}} styles={selectStyles} />
+                            </Grid>
+                            <Grid item xs={12} sm={8}>
+                                <Typography variant="subtitle2">Seleccionar Caja</Typography>
+                                {tipoCaja === 'internal' ? (
+                                    <Select options={trailerOptions} value={trailerOptions.find(o => o.value === caja)} onChange={o => setCaja(o?.value)} isLoading={lTrailers} styles={selectStyles} placeholder="Buscar caja..." />
+                                ) : (
+                                    <CreatableSelect options={externalTrailerOptions} value={cajaExterna} onChange={o => setCajaExterna(o)} onCreateOption={() => setIsModalCajaExternaOpen(true)} isLoading={lExt} styles={selectStyles} placeholder="Buscar o Crear..." />
+                                )}
+                            </Grid>
+                        </Grid>
                     </Grid>
                 </Grid>
             </Paper>
 
-            {/* Sección de Etapas */}
-            <Box sx={{ mb: 4 }}>
-                <Typography variant="h5" fontWeight={700} gutterBottom sx={{ borderBottom: '1px solid #eee', pb: 1, mb: 3 }}>
-                    Detalles de Etapas
-                </Typography>
-
-                {etapas.map((etapa, index) => (
-                    <Paper key={index} elevation={1} sx={{ p: 4, mb: 4, border: '1px solid #ccc' }}>
-                        <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
-                            <Typography variant="h6" fontWeight={600}>
-                                {`Etapa ${etapa.stage_number} (${etapa.stageType === 'borderCrossing' ? 'Cruce Fronterizo' : 'Viaje Normal'})`}
-                            </Typography>
-                            {etapas.length > 1 && (
-                                <Button type="button" variant="outlined" color="error" size="small" onClick={() => eliminarEtapa(index)} title="Eliminar Etapa">Eliminar Etapa</Button>
-                            )}
-                        </Stack>
-
-                        <Grid container spacing={3}>
-                            {/* Fila 1: Compañía, Dirección, CI */}
-                            <Grid item xs={12} md={4}>
-                                <SelectWrapper
-                                    label="Company:" isCreatable
-                                    value={companyOptions.find(c => c.value === etapa.company_id) || null}
-                                    onChange={(selected) => handleEtapaChange(index, 'company_id', selected ? selected.value : '')}
-                                    onCreateOption={(inputValue) => handleCreateCompany(inputValue, index)}
-                                    options={companyOptions} placeholder="Seleccionar o Crear Compañía"
-                                    isLoading={loadingCompanies || isCreatingCompany}
-                                    formatCreateLabel={(inputValue) => `Crear compañía: "${inputValue}"`}
-                                />
-                            </Grid>
-                            <Grid item xs={12} md={4}>
-                                <SelectWrapper
-                                    label="Travel Direction:" isCreatable={false}
-                                    value={etapa.travel_direction ? { value: etapa.travel_direction, label: etapa.travel_direction } : null}
-                                    onChange={(selected) => handleEtapaChange(index, 'travel_direction', selected ? selected.value : '')}
-                                    options={[{ value: 'Going Up', label: 'Going Up' }, { value: 'Going Down', label: 'Going Down' }]}
-                                    placeholder="Seleccionar Dirección"
-                                />
-                            </Grid>
-                            <Grid item xs={12} md={4}>
-                                <TextField fullWidth size="small" label="CI Number:" value={etapa.ci_number} onChange={(e) => handleEtapaChange(index, 'ci_number', e.target.value)} />
-                            </Grid>
-
-                            {/* Fila 2: Bodegas Origen/Destino */}
-                            <Grid item xs={12} md={6}>
-                                <SelectWrapper
-                                    label="Origin Warehouse:" isCreatable
-                                    value={warehouseOptions.find(w => w.value === etapa.warehouse_origin_id) || null}
-                                    onChange={(selected) => handleEtapaChange(index, 'warehouse_origin_id', selected ? selected.value : '')}
-                                    onCreateOption={(inputValue) => handleCreateWarehouse(inputValue, index, 'warehouse_origin_id')}
-                                    options={warehouseOptions} placeholder="Seleccionar o Crear Bodega Origen"
-                                    isLoading={loadingWarehouses || isCreatingWarehouse}
-                                    formatCreateLabel={(inputValue) => `Crear bodega: "${inputValue}"`}
-                                />
-                            </Grid>
-                            <Grid item xs={12} md={6}>
-                                <SelectWrapper
-                                    label="Destination Warehouse:" isCreatable
-                                    value={warehouseOptions.find(w => w.value === etapa.warehouse_destination_id) || null}
-                                    onChange={(selected) => handleEtapaChange(index, 'warehouse_destination_id', selected ? selected.value : '')}
-                                    onCreateOption={(inputValue) => handleCreateWarehouse(inputValue, index, 'warehouse_destination_id')}
-                                    options={warehouseOptions} placeholder="Seleccionar o Crear Bodega Destino"
-                                    isLoading={loadingWarehouses || isCreatingWarehouse}
-                                    formatCreateLabel={(inputValue) => `Crear bodega: "${inputValue}"`}
-                                />
-                            </Grid>
-
-                            {/* Fila 3: Origen/Destino (Ciudad/Zip) */}
-                            <Grid item xs={12} md={3}>
-                                <TextField fullWidth size="small" label="Origin City/State:" value={etapa.origin} onChange={(e) => handleEtapaChange(index, 'origin', e.target.value)} />
-                            </Grid>
-                            <Grid item xs={12} md={3}>
-                                <TextField fullWidth size="small" label="Destination City/State:" value={etapa.destination} onChange={(e) => handleEtapaChange(index, 'destination', e.target.value)} />
-                            </Grid>
-                            <Grid item xs={12} md={3}>
-                                <TextField fullWidth size="small" label="Zip Code Origin:" value={etapa.zip_code_origin} onChange={(e) => handleEtapaChange(index, 'zip_code_origin', e.target.value)} />
-                            </Grid>
-                            <Grid item xs={12} md={3}>
-                                <TextField fullWidth size="small" label="Zip Code Destination:" value={etapa.zip_code_destination} onChange={(e) => handleEtapaChange(index, 'zip_code_destination', e.target.value)} />
-                            </Grid>
-
-                            {/* Fila 4: Fechas */}
-                            <Grid item xs={12} md={3}>
-                                <InputLabel sx={{ fontWeight: 600, mb: 0.5, fontSize: '0.9rem' }}>Loading Date:</InputLabel>
-                                <DatePicker
-                                    selected={etapa.loading_date} onChange={(date) => handleEtapaChange(index, 'loading_date', date)}
-                                    dateFormat="dd/MM/yyyy" placeholderText="Fecha Carga" className="form-input date-picker-full-width" isClearable
-                                />
-                            </Grid>
-                            <Grid item xs={12} md={3}>
-                                <InputLabel sx={{ fontWeight: 600, mb: 0.5, fontSize: '0.9rem' }}>Delivery Date:</InputLabel>
-                                <DatePicker
-                                    selected={etapa.delivery_date} onChange={(date) => handleEtapaChange(index, 'delivery_date', date)}
-                                    dateFormat="dd/MM/yyyy" placeholderText="Fecha Entrega" className="form-input date-picker-full-width" isClearable
-                                />
-                            </Grid>
-                            <Grid item xs={12} md={3}>
-                                <TextField fullWidth size="small" label="Cita Entrega (Hora):" value={etapa.time_of_delivery || ''} onChange={(e) => handleEtapaChange(index, 'time_of_delivery', e.target.value)} />
-                            </Grid>
-
-                            {/* Fila 5: Rates / Millas */}
-                            <Grid item xs={12} md={3}>
-                                <TextField fullWidth size="small" type="number" label="Rate Tarifa:" value={etapa.rate_tarifa} onChange={(e) => handleEtapaChange(index, 'rate_tarifa', e.target.value)} />
-                            </Grid>
-                            <Grid item xs={12} md={3}>
-                                <TextField fullWidth size="small" type="number" label="Millas PC Miller Cortas:" value={etapa.millas_pcmiller} onChange={(e) => handleEtapaChange(index, 'millas_pcmiller', e.target.value)} />
-                            </Grid>
-                            <Grid item xs={12} md={3}>
-                                <TextField fullWidth size="small" type="number" label="Millas PC Miller Practicas:" value={etapa.millas_pcmiller_practicas} onChange={(e) => handleEtapaChange(index, 'millas_pcmiller_practicas', e.target.value)} />
-                            </Grid>
-                            <Grid item xs={12} md={3}>
-                                <TextField fullWidth size="small" multiline rows={3} label="Comments:" value={etapa.comments} onChange={(e) => handleEtapaChange(index, 'comments', e.target.value)} />
-                            </Grid>
-
-                            {/* Fila 6: Documentos */}
-                            <Grid item xs={12}>
-                                <Typography variant="subtitle1" fontWeight={600} sx={{ mt: 2, mb: 1, borderTop: '1px dashed #ccc', pt: 1 }}>
-                                    Documentos de Etapa
-                                </Typography>
-                            </Grid>
-
-                            <Grid item xs={12}>
-                                <Stack direction="row" spacing={3} sx={{ flexWrap: 'wrap' }}>
-                                    {/* Mapeo de Documentos NormalTrip/BorderCrossing */}
-                                    {etapa.stageType === 'normalTrip' && (
-                                        <>
-                                            <StageInput label="IMA Invoice" docType="ima_invoice" stageIndex={index} documentos={etapa.documentos} abrirModal={abrirModalDocs} />
-                                            <StageInput label="CI" docType="ci" stageIndex={index} documentos={etapa.documentos} abrirModal={abrirModalDocs} />
-                                            <StageInput label="BL" docType="bl" stageIndex={index} documentos={etapa.documentos} abrirModal={abrirModalDocs} />
-                                            <StageInput label="BL Firmado" docType="bl_firmado" stageIndex={index} documentos={etapa.documentos} abrirModal={abrirModalDocs} />
-                                        </>
-                                    )}
-                                    {etapa.stageType === 'borderCrossing' && (
-                                        <>
-                                            <StageInput label="IMA Invoice" docType="ima_invoice" stageIndex={index} documentos={etapa.documentos} abrirModal={abrirModalDocs} />
-                                            <StageInput label="Carta Porte" docType="carta_porte" stageIndex={index} documentos={etapa.documentos} abrirModal={abrirModalDocs} />
-                                            <StageInput label="CI" docType="ci" stageIndex={index} documentos={etapa.documentos} abrirModal={abrirModalDocs} />
-                                            <StageInput label="Entry" docType="entry" stageIndex={index} documentos={etapa.documentos} abrirModal={abrirModalDocs} />
-                                            <StageInput label="Manifiesto" docType="manifiesto" stageIndex={index} documentos={etapa.documentos} abrirModal={abrirModalDocs} />
-                                            <StageInput label="BL" docType="bl" stageIndex={index} documentos={etapa.documentos} abrirModal={abrirModalDocs} />
-                                            <StageInput label="Orden Retiro" docType="orden_retiro" stageIndex={index} documentos={etapa.documentos} abrirModal={abrirModalDocs} />
-                                            <StageInput label="BL Firmado" docType="bl_firmado" stageIndex={index} documentos={etapa.documentos} abrirModal={abrirModalDocs} />
-                                        </>
-                                    )}
+            <Typography variant="h6" fontWeight={700} gutterBottom sx={{ mt: 4, mb: 2 }}>Itinerario</Typography>
+            <Stack spacing={3}>
+                {etapas.map((etapa, idx) => {
+                    const isEmpty = etapa.stageType === 'emptyMileage';
+                    return (
+                        <Paper key={idx} elevation={2} sx={{ overflow: 'hidden', borderLeft: `6px solid ${isEmpty ? '#757575' : '#1976d2'}` }}>
+                            <Box sx={{ bgcolor: isEmpty ? '#eeeeee' : '#e3f2fd', px: 2, py: 1.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <Stack direction="row" spacing={1} alignItems="center">
+                                    <Chip label={`#${idx+1}`} size="small" sx={{ bgcolor: isEmpty ? '#757575' : '#1976d2', color: 'white', fontWeight: 'bold' }} />
+                                    <Typography variant="subtitle1" fontWeight={700}>{isEmpty ? 'Etapa Vacía' : 'Viaje Normal'}</Typography>
                                 </Stack>
-                            </Grid>
-                        </Grid>
-                    </Paper>
-                ))}
-            </Box>
+                                <Box>
+                                    {!isEmpty && <Button size="small" startIcon={<AddCircleOutlineIcon/>} onClick={() => addStop(idx)} sx={{ mr: 1 }}>Parada</Button>}
+                                    <IconButton size="small" color="error" onClick={() => removeStage(idx)}><DeleteIcon/></IconButton>
+                                </Box>
+                            </Box>
+                            <Box sx={{ p: 3 }}>
+                                {isEmpty ? (
+                                    <Grid container spacing={3}>
+                                        <Grid item xs={12} sm={4}><TextField fullWidth label="Millas PC*Miler" type="number" value={etapa.millas_pcmiller} onChange={e => updateStage(idx, 'millas_pcmiller', e.target.value)} /></Grid>
+                                        <Grid item xs={12} sm={4}><TextField fullWidth label="Millas Prácticas" type="number" value={etapa.millas_pcmiller_practicas} onChange={e => updateStage(idx, 'millas_pcmiller_practicas', e.target.value)} /></Grid>
+                                        <Grid item xs={12} sm={4}><TextField fullWidth label="Comentarios" multiline value={etapa.comments} onChange={e => updateStage(idx, 'comments', e.target.value)} /></Grid>
+                                    </Grid>
+                                ) : (
+                                    <Grid container spacing={3}>
+                                        <Grid item xs={12} md={4}><Typography variant="caption" fontWeight={700}>Compañía</Typography><CreatableSelect options={companyOptions} value={companyOptions.find(o=>o.value===etapa.company_id)} onChange={o=>updateStage(idx,'company_id',o?.value)} onCreateOption={v=>createCompany(v).then(id=>updateStage(idx,'company_id',id))} isLoading={lComp} styles={selectStyles}/></Grid>
+                                        <Grid item xs={12} md={4}><Typography variant="caption" fontWeight={700}>Dirección</Typography><Select options={[{value:'Going Up',label:'Going Up'},{value:'Going Down',label:'Going Down'}]} value={{value:etapa.travel_direction,label:etapa.travel_direction||'Seleccionar...'}} onChange={o=>updateStage(idx,'travel_direction',o?.value)} styles={selectStyles}/></Grid>
+                                        <Grid item xs={12} md={4}><Typography variant="caption" fontWeight={700}>CI Number</Typography><TextField fullWidth value={etapa.ci_number} onChange={e=>updateStage(idx,'ci_number',e.target.value)} InputProps={{sx:{height:56}}}/></Grid>
+                                        
+                                        <Grid item xs={12} md={6}>
+                                            <Paper variant="outlined" sx={{ p: 2 }}>
+                                                <Typography variant="subtitle2" color="primary" sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}><PlaceIcon fontSize="small"/> ORIGEN</Typography>
+                                                <Stack spacing={2}>
+                                                    <Box><Typography variant="caption">Bodega</Typography><CreatableSelect options={warehouseOptions} value={warehouseOptions.find(o=>o.value===etapa.warehouse_origin_id)} onChange={o=>updateStage(idx,'warehouse_origin_id',o?.value)} onCreateOption={v=>createWarehouse(v).then(id=>updateStage(idx,'warehouse_origin_id',id))} isLoading={lWare} styles={selectStyles}/></Box>
+                                                    <Stack direction="row" spacing={1}><TextField label="Ciudad" fullWidth size="small" value={etapa.origin} onChange={e=>updateStage(idx,'origin',e.target.value)}/><TextField label="Zip" size="small" sx={{width:100}} value={etapa.zip_code_origin} onChange={e=>updateStage(idx,'zip_code_origin',e.target.value)}/></Stack>
+                                                    <TextField label="Fecha Carga" type="date" InputLabelProps={{shrink:true}} size="small" fullWidth value={etapa.loading_date ? format(etapa.loading_date, 'yyyy-MM-dd') : ''} onChange={e => updateStage(idx, 'loading_date', e.target.value ? new Date(e.target.value+'T12:00:00') : null)} />
+                                                </Stack>
+                                            </Paper>
+                                        </Grid>
+                                        <Grid item xs={12} md={6}>
+                                            <Paper variant="outlined" sx={{ p: 2 }}>
+                                                <Typography variant="subtitle2" color="error" sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}><FlagIcon fontSize="small"/> DESTINO</Typography>
+                                                <Stack spacing={2}>
+                                                    <Box><Typography variant="caption">Bodega</Typography><CreatableSelect options={warehouseOptions} value={warehouseOptions.find(o=>o.value===etapa.warehouse_destination_id)} onChange={o=>updateStage(idx,'warehouse_destination_id',o?.value)} onCreateOption={v=>createWarehouse(v).then(id=>updateStage(idx,'warehouse_destination_id',id))} isLoading={lWare} styles={selectStyles}/></Box>
+                                                    <Stack direction="row" spacing={1}><TextField label="Ciudad" fullWidth size="small" value={etapa.destination} onChange={e=>updateStage(idx,'destination',e.target.value)}/><TextField label="Zip" size="small" sx={{width:100}} value={etapa.zip_code_destination} onChange={e=>updateStage(idx,'zip_code_destination',e.target.value)}/></Stack>
+                                                    <TextField label="Fecha Entrega" type="date" InputLabelProps={{shrink:true}} size="small" fullWidth value={etapa.delivery_date ? format(etapa.delivery_date, 'yyyy-MM-dd') : ''} onChange={e => updateStage(idx, 'delivery_date', e.target.value ? new Date(e.target.value+'T12:00:00') : null)} />
+                                                </Stack>
+                                            </Paper>
+                                        </Grid>
 
-            <Box sx={{ display: 'flex', gap: 2, mt: 3, pb: 2 }}>
-                <Button type="button" variant="outlined" size="small" onClick={() => agregarNuevaEtapa('borderCrossing')}>+ Añadir Etapa Cruce</Button>
-                <Button type="button" variant="outlined" size="small" onClick={() => agregarNuevaEtapa('normalTrip')}>+ Añadir Etapa Normal</Button>
-            </Box>
+                                        {/* Paradas */}
+                                        {etapa.stops_in_transit?.length > 0 && (
+                                            <Grid item xs={12}>
+                                                <Paper sx={{ p: 2, bgcolor: '#fff8e1', border: '1px dashed #ffb74d' }}>
+                                                    <Typography variant="subtitle2" color="warning.dark">Paradas</Typography>
+                                                    {etapa.stops_in_transit.map((stop, si) => (
+                                                        <Grid container spacing={1} key={si} alignItems="center" sx={{ mt: 1 }}>
+                                                            <Grid item xs={5}><TextField label="Ubicación" size="small" fullWidth value={stop.location} onChange={e=>updateStop(idx,si,'location',e.target.value)}/></Grid>
+                                                            <Grid item xs={3}><TextField label="Hora" type="time" size="small" fullWidth InputLabelProps={{shrink:true}} value={stop.time_of_delivery} onChange={e=>updateStop(idx,si,'time_of_delivery',e.target.value)}/></Grid>
+                                                            <Grid item xs={3}><DocButton label="BL Parada" doc={stop.bl_firmado_doc} onClick={()=>openDocModal(idx,'bl_firmado_doc',si)}/></Grid>
+                                                            <Grid item xs={1}><IconButton size="small" color="error" onClick={()=>removeStop(idx,si)}><DeleteIcon/></IconButton></Grid>
+                                                        </Grid>
+                                                    ))}
+                                                </Paper>
+                                            </Grid>
+                                        )}
 
+                                        <Grid item xs={12}><Divider/></Grid>
+                                        <Grid item xs={12}>
+                                            <Typography variant="subtitle2" fontWeight={700}>Documentación</Typography>
+                                            <Grid container spacing={2} sx={{ mt: 1 }}>
+                                                {['ima_invoice','ci','bl','bl_firmado'].map(docKey => (
+                                                    <Grid item xs={6} sm={3} key={docKey}>
+                                                        <DocButton label={docKey.toUpperCase().replace('_', ' ')} doc={etapa.documentos[docKey]} onClick={()=>openDocModal(idx, docKey)} />
+                                                    </Grid>
+                                                ))}
+                                            </Grid>
+                                        </Grid>
+                                    </Grid>
+                                )}
+                            </Box>
+                        </Paper>
+                    );
+                })}
+            </Stack>
 
-            {/* Modal de Documentos y Modal de Caja Externa */}
-            {modalAbierto && (
-                <ModalArchivo
-                    isOpen={modalAbierto}
-                    onClose={() => { setModalAbierto(false); setModalTarget({ stageIndex: null, docType: null }); }}
-                    onSave={handleGuardarDocumentoEtapa}
-                    nombreCampo={modalTarget.docType}
-                    valorActual={getCurrentDocValueForModal()}
-                    mostrarFechaVencimiento={mostrarFechaVencimientoModal}
-                />
-            )}
-            {IsModalCajaExternaOpen && (
-                <ModalCajaExterna
-                    isOpen={IsModalCajaExternaOpen}
-                    onClose={() => setIsModalCajaExternaOpen(false)}
-                    onSave={handleSaveExternalCaja}
-                />
+            <Stack direction="row" spacing={2} justifyContent="center" sx={{ mt: 4 }}>
+                <Button variant="contained" onClick={() => addStage('normalTrip')} startIcon={<AddCircleOutlineIcon/>}>Agregar Viaje</Button>
+                <Button variant="outlined" color="secondary" onClick={() => addStage('emptyMileage')} startIcon={<AddCircleOutlineIcon/>}>Agregar Vacía</Button>
+            </Stack>
 
-            )}
-        </form>
+            <Paper elevation={10} sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, p: 2, zIndex: 1000, textAlign: 'right', bgcolor: '#fff' }}>
+                <Box sx={{ maxWidth: '1600px', mx: 'auto' }}>
+                    <Button variant="contained" size="large" color="success" startIcon={loadingSave ? <CircularProgress size={24} color="inherit"/> : <SaveIcon />} onClick={handleSubmit} disabled={loadingSave} sx={{ px: 6 }}>
+                        {loadingSave ? "Guardando..." : "GUARDAR VIAJE"}
+                    </Button>
+                </Box>
+            </Paper>
+
+            {modalAbierto && <ModalArchivo isOpen={modalAbierto} onClose={() => { setModalAbierto(false); setModalTarget({ stageIndex: null, docType: null }); }} onSave={saveDoc} nombreCampo={modalTarget.docType} valorActual={getDocValue()} mostrarFechaVencimiento={mostrarFechaVencimientoModal} />}
+            {IsModalCajaExternaOpen && <ModalCajaExterna isOpen={IsModalCajaExternaOpen} onClose={() => setIsModalCajaExternaOpen(false)} onSave={saveExtCaja} />}
+        </Box>
     );
 };
 

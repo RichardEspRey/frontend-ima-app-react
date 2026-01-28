@@ -121,22 +121,22 @@ const TruckAdmin = () => {
         const diffInDays = Math.floor((fecha - hoy) / (1000 * 60 * 60 * 24));
 
         let IconComponent = CheckCircleIcon;
-        let color = 'success'; // Verde: > 90 días
+        let color = 'success'; // Verde: > 30 días
         let mensaje = `Vencimiento: ${fecha.toLocaleDateString('es-MX')}`;
 
-        if (diffInDays < 0) { // Vencido
+        if (diffInDays < 0) {
             IconComponent = ErrorIcon;
-            color = 'error'; // Rojo
+            color = 'error'; 
             mensaje = `VENCIDO: ${fecha.toLocaleDateString('es-MX')}`;
         }
-        else if (diffInDays <= 30) { // Menos de 30 días
-            IconComponent = ErrorIcon;
-            color = 'error'; // Rojo
-        }
-        else if (diffInDays <= 90) { // 30-90 días
+        else if (diffInDays <= 30) { 
             IconComponent = WarningIcon;
-            color = 'warning'; // Amarillo
+            color = 'warning';
         }
+        // else if (diffInDays <= 90) { 
+        //     IconComponent = WarningIcon;
+        //     color = 'warning'; 
+        // }
         
         return (
             <Box sx={{ display: 'flex', justifyContent: 'center' }}>
@@ -304,7 +304,6 @@ const TruckAdmin = () => {
                   <TableCell>{getIconByFecha(t.Inspecion_humos_Fecha, t.truck_id, t.Inspecion_humos_URL, 'Humos')}</TableCell>
                   <TableCell>{getIconByFecha(t.seguro_Fecha, t.truck_id, t.seguro_URL, 'Seguro')}</TableCell>
 
-                  {/* CONSOLIDACIÓN DE ACCIONES */}
                   <TableCell sx={{ whiteSpace: 'nowrap' }}>
                     <Stack direction="row" spacing={1} justifyContent="center"> 
                       <Button
@@ -326,7 +325,6 @@ const TruckAdmin = () => {
                   </TableCell>
                 </TableRow>
               ))}
-              {/* Fila para cuando no hay resultados */}
               {filteredTrailers.length === 0 && (
                 <TableRow>
                     <TableCell colSpan={14} align="center">
@@ -338,7 +336,6 @@ const TruckAdmin = () => {
           </Table>
         </TableContainer>
         
-        {/* Paginación MUI */}
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', p: 1 }}>
             <Typography variant="body2" sx={{ mr: 2 }}>
                 {`Filas por página: ${rowsPerPage}`}
