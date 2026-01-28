@@ -368,7 +368,7 @@ const BorderCrossingFormNew = ({
             Swal.fire('Campos incompletos', 'Por favor, seleccione Driver y Truck.', 'warning');
             return;
         }
-
+/*
         for (let i = 0; i < etapas.length; i++) {
             const etapa = etapas[i];
             if (
@@ -386,7 +386,7 @@ const BorderCrossingFormNew = ({
                 );
                 return;
             }
-        }
+        }*/
 
         const dataToSend = new FormData();
         dataToSend.append('op', 'Alta');
@@ -456,7 +456,7 @@ const BorderCrossingFormNew = ({
         });
 
         try {
-            const response = await fetch(`${apiHost}/API/new_tripsv2.php`, {
+            const response = await fetch(`http://localhost/API/new_tripsv2.php`, {
                 method: 'POST',
                 body: dataToSend
             });

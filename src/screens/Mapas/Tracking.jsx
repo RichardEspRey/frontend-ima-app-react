@@ -80,7 +80,7 @@ export default function Tracking() {
     }
 
     try {
-      const res = await fetch("http://imaexpressllc.com/API/Tracking.php");
+      const res = await fetch("http://localhost/API/Tracking.php");
       const data = await res.json();
 
       if (data.status === "success") {

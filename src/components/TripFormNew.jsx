@@ -382,7 +382,7 @@ const TripFormNew = ({
 
         // Enviar a la API
         try {
-            const apiUrl = `${apiHost}/new_trips.php`;
+            const apiUrl = `${apiHost}/new_tripsv2.php`;
             const response = await fetch(apiUrl, {
                 method: 'POST',
                 body: dataToSend,

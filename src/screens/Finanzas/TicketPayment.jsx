@@ -129,7 +129,7 @@ const TicketPayment = () => {
 
   const totalPagar =
     Number(((info?.valor_milla ?? 0) * totalMillasAjustadas).toFixed(2)) -
-    Number(avance || 0) -
+    Number(avance || 0) +
     Number(gastos || 0);
 
   const handlePrint = async () => {
