@@ -27,26 +27,30 @@ const DocumentCard = ({ docKey, documento, getIconByFecha, abrirModalConDocument
         >
             <Box>
                 <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
+                    {/* Título del Documento (Font Weight Estandarizado) */}
                     <Typography variant="body1" fontWeight={700} sx={{ color: '#333' }}>
                         {docLabel}
                     </Typography>
                 </Stack>
                 
+                {/* Icono de Estatus y Escudo de Alerta */}
                 <Box sx={{ mt: 1, minHeight: '35px' }}>
                     {StatusIconComponent}
                 </Box>
             </Box>
 
             <Stack direction="column" justifyContent="flex-start" alignItems="flex-start" sx={{ mt: 2 }}>
+                {/* Fecha de Vencimiento */}
                 <Typography variant="caption" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>
                     {vencimiento}
                 </Typography>
                 
+                {/* Botón de Acción (Ahora solo dice 'Ver' o 'Subir', quitamos 'Editar') */}
                 <Button 
                     variant="contained" 
                     size="small" 
                     onClick={() => abrirModalConDocumento(docKey)}
-                    color={doc?.vencimiento ? 'info' : 'success'} 
+                    color={doc?.vencimiento ? 'info' : 'success'} // Color de info/neutral
                     sx={{ ml: 1, minWidth: '80px' }}
                 >
                     {doc?.vencimiento ? 'Ver' : 'Subir'}

@@ -16,9 +16,9 @@ useEffect(() => {
     setArchivo(null);
 
     if (valorActual?.url) {
-      setPreviewUrl(valorActual.url); 
+      setPreviewUrl(valorActual.url); // ✅ si ya hay un documento, se precarga
     } else {
-      setPreviewUrl(null); 
+      setPreviewUrl(null); // solo limpiar si no hay nada
     }
 
     setFechaVencimiento(

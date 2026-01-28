@@ -3,7 +3,8 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import './css/ModalArchivo.css';
 
-const ModalArchivo = ({ isOpen, onClose, onSave, title = "Subir/Editar Archivo", saveButtonText = "Guardar", valorActual, mostrarFechaVencimiento = true, accept = "application/pdf" }) => {
+const ModalArchivo = ({ isOpen, onClose, onSave, title = "Subir/Editar Archivo",     
+  saveButtonText = "Guardar", valorActual, mostrarFechaVencimiento = true, accept = "application/pdf" }) => {
 
   const [archivo, setArchivo] = useState(null);
   const [fechaVencimiento, setFechaVencimiento] = useState(new Date());

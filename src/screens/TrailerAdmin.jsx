@@ -101,13 +101,13 @@ const TrailerAdmin = () => {
       mensaje = `VENCIDO: ${fecha.toLocaleDateString('es-MX')}`;
     }
     else if (diffInDays <= 30) { // Menos de 30 días
+      IconComponent = ErrorIcon;
+      color = 'error'; // Rojo
+    }
+    else if (diffInDays <= 90) { // 30-90 días
       IconComponent = WarningIcon;
       color = 'warning'; // Amarillo
     }
-    // else if (diffInDays <= 90) { // 30-90 días
-    //   IconComponent = WarningIcon;
-    //   color = 'warning'; // Amarillo
-    // }
     
     return (
         <Box sx={{ display: 'flex', justifyContent: 'center' }}>

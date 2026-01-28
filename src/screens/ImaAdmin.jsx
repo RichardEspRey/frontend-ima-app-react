@@ -14,6 +14,7 @@ import { Tooltip } from 'react-tooltip';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 
+// 🚨 IMPORTAMOS EL NUEVO COMPONENTE
 import DocumentCard from '../components/DocumentCard';
 
 
@@ -24,6 +25,7 @@ const ImaAdmin = () => {
   const [documentos, setDocumentos] = useState({});
   const [loading, setLoading] = useState(true); 
   
+  // Eliminamos estados de paginación/búsqueda innecesarios
   const documentKeys = useMemo(() => ['MC', 'W9', 'IFTA', '2290', 'Permiso_KYU', 'UCR', 'SCAC', 'CAAT'], []);
 
 
@@ -91,7 +93,7 @@ const ImaAdmin = () => {
         const doc = documentos[campo];
         const fechaStr = doc?.vencimiento;
         const url = doc?.url;
-        const iconStyle = { fontSize: 32 }; 
+        const iconStyle = { fontSize: 32 }; // Tamaño uniforme
 
         if (!fechaStr) {
             return (
@@ -111,18 +113,18 @@ const ImaAdmin = () => {
         let mensaje = `Vencimiento: ${fecha.toLocaleDateString('es-MX')}`;
 
         if (diffInDays < 0) {
-            IconComponent = ErrorIcon;
+            IconComponent = ErrorIcon; // Vencido
             color = 'error';
             mensaje = `VENCIDO: ${fecha.toLocaleDateString('es-MX')}`;
         }
         else if (diffInDays <= 30) {
-            IconComponent = ErrorIcon;
+            IconComponent = ErrorIcon; // Rojo (Menos de 30 días)
+            color = 'error';
+        }
+        else if (diffInDays <= 90) {
+            IconComponent = WarningIcon; // Amarillo (30-90 días)
             color = 'warning';
         }
-        // else if (diffInDays <= 90) {
-        //     IconComponent = WarningIcon; // Amarillo (30-90 días)
-        //     color = 'warning';
-        // }
 
         return (
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
