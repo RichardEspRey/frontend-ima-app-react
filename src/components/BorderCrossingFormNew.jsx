@@ -38,7 +38,18 @@ const selectStyles = {
 };
 
 
-const BorderCrossingFormNew = ({ tripNumber, onSuccess }) => {
+const BorderCrossingFormNew = ({
+    tripNumber,
+    onSuccess,
+
+    // 👇 NUEVOS PROPS DESDE EL PADRE
+    countryCode,
+    tripYear,
+    isTransnational,
+    isContinuation,
+    transnationalNumber,
+    movementNumber
+}) => {
 
     const apiHost = import.meta.env.VITE_API_HOST;
     const { activeDrivers, loading: loadingDrivers, error: errorDrivers } = useFetchActiveDrivers();
@@ -348,85 +359,111 @@ const BorderCrossingFormNew = ({ tripNumber, onSuccess }) => {
 
     const handleSubmit = async (event) => {
         event.preventDefault();
+        const tripYear2Digits = String(tripYear).slice(-2);
+        const formattedReturnDate = formData.return_date
+            ? format(formData.return_date, 'yyyy-MM-dd')
+            : null;
+
         if (!formData.driver_id || !formData.truck_id) {
             Swal.fire('Campos incompletos', 'Por favor, seleccione Driver y Truck.', 'warning');
             return;
         }
-        // Validar campos obligatorios de cada etapa
+/*
         for (let i = 0; i < etapas.length; i++) {
             const etapa = etapas[i];
-            if (!etapa.company_id || !etapa.travel_direction || !etapa.warehouse_origin_id || !etapa.warehouse_destination_id || !etapa.origin || !etapa.destination) {
-                Swal.fire('Campos incompletos', `Por favor, complete los campos obligatorios (Company, Direction, Warehouses, Origin, Destination) de la Etapa ${etapa.stage_number}.`, 'warning');
+            if (
+                !etapa.company_id ||
+                !etapa.travel_direction ||
+                !etapa.warehouse_origin_id ||
+                !etapa.warehouse_destination_id ||
+                !etapa.origin ||
+                !etapa.destination
+            ) {
+                Swal.fire(
+                    'Campos incompletos',
+                    `Por favor, complete los campos obligatorios de la Etapa ${etapa.stage_number}.`,
+                    'warning'
+                );
                 return;
             }
-        }
-
+        }*/
 
         const dataToSend = new FormData();
         dataToSend.append('op', 'Alta');
         dataToSend.append('trip_number', formData.trip_number);
         dataToSend.append('driver_id', formData.driver_id);
-        dataToSend.append('driver_id_second', formData.driver_id_second || ''); // Enviar segundo driver
+        dataToSend.append('driver_id_second', formData.driver_id_second || '');
         dataToSend.append('truck_id', formData.truck_id);
         dataToSend.append('caja_id', formData.caja_id || '');
         dataToSend.append('caja_externa_id', formData.caja_externa_id || '');
+        if (formattedReturnDate) {
+            dataToSend.append('return_date', formattedReturnDate);
+        } else {
+            dataToSend.append('return_date', '');
+        }
 
-        dataToSend.append('return_date', formData.return_date || '');
+        dataToSend.append('country_code', countryCode);
+        dataToSend.append('trip_year', tripYear2Digits);
 
-        // Procesar y añadir etapas (como JSON) y sus archivos
+        dataToSend.append('is_transnational', isTransnational ? 1 : 0);
 
+        if (isTransnational) {
+            if (isContinuation) {
+                dataToSend.append('transnational_number', transnationalNumber);
+                dataToSend.append('movement_number', movementNumber);
+            } else {
+                dataToSend.append('transnational_number', '');
+                dataToSend.append('movement_number', 1);
+            }
+        } else {
+            dataToSend.append('transnational_number', '');
+            dataToSend.append('movement_number', '');
+        }
+
+        // ======================================================
+        // ETAPAS
+        // ======================================================
         const etapasParaJson = etapas.map(etapa => ({
             ...etapa,
-            // Format dates to YYYY-MM-DD BEFORE stringify
             loading_date: etapa.loading_date ? format(etapa.loading_date, 'yyyy-MM-dd') : null,
             delivery_date: etapa.delivery_date ? format(etapa.delivery_date, 'yyyy-MM-dd') : null,
-            // Set the status based on ci_number for borderCrossing stages
-            estatus: etapa.stageType === 'borderCrossing' && etapa.ci_number && etapa.ci_number.trim() !== ''
-                ? 'In Transit'
-                : (etapa.stageType === 'borderCrossing' ? 'In Coming' : 'In Transit'), // Default to 'In Transit' for normal trips
+            estatus:
+                etapa.stageType === 'borderCrossing' && etapa.ci_number?.trim()
+                    ? 'In Transit'
+                    : etapa.stageType === 'borderCrossing'
+                        ? 'In Coming'
+                        : 'In Transit',
             documentos: Object.entries(etapa.documentos).reduce((acc, [key, value]) => {
-                if (value) { // If there is data for this document type
-                    acc[key] = {
-                        fileName: value.fileName || '',
-                        vencimiento: value.vencimiento || null
-                    };
-                } else {
-                    acc[key] = null;
-                }
+                acc[key] = value
+                    ? { fileName: value.fileName || '', vencimiento: value.vencimiento || null }
+                    : null;
                 return acc;
             }, {})
         }));
 
-
-
-
-
         dataToSend.append('etapas', JSON.stringify(etapasParaJson));
-        // documentos de CADA etapa a FormData
+
         etapas.forEach((etapa, index) => {
             Object.entries(etapa.documentos).forEach(([docType, docData]) => {
-                if (docData && docData.file instanceof File) {
-                    const fieldName = `etapa_${index}_${docType}_file`;
-                    dataToSend.append(fieldName, docData.file, docData.fileName);
+                if (docData?.file instanceof File) {
+                    dataToSend.append(
+                        `etapa_${index}_${docType}_file`,
+                        docData.file,
+                        docData.fileName
+                    );
                 }
             });
         });
 
-
-        console.log("--- FormData a enviar ---");
-        for (let [key, value] of dataToSend.entries()) {
-            console.log(`${key}:`, value);
-        }
-        console.log("--- Fin FormData ---");
         try {
-            const apiUrl = `${apiHost}/new_trips.php`;
-            const response = await fetch(apiUrl, {
+            const response = await fetch(`${apiHost}/new_tripsv2.php`, {
                 method: 'POST',
-                body: dataToSend,
+                body: dataToSend
             });
+
             const result = await response.json();
-            console.log("Respuesta del servidor:", result);
-            if (response.ok && result.status === "success") {
+
+            if (response.ok && result.status === 'success') {
                 Swal.fire({
                     icon: 'success',
                     title: '¡Éxito!',
@@ -434,29 +471,19 @@ const BorderCrossingFormNew = ({ tripNumber, onSuccess }) => {
                     timer: 2500,
                     showConfirmButton: false
                 });
-                if (onSuccess) {
-                    onSuccess();
-                }
-                resetForm(); // Llamar a resetForm para limpiar todo
+
+                onSuccess?.();
+                resetForm();
             } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error al Guardar',
-                    text: result.error || result.message || 'No se pudo guardar la información. Verifica los datos e intenta de nuevo.',
-                });
-
+                Swal.fire('Error', result.message || 'Error al guardar', 'error');
             }
+
         } catch (error) {
-            console.error('Error en fetch o procesando respuesta:', error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error de Conexión',
-                text: 'No se pudo comunicar con el servidor. Verifica tu conexión o contacta al administrador. Detalles: ' + error.message,
-            });
-
+            Swal.fire('Error', error.message, 'error');
         }
-
     };
+
+
 
     const handleSaveExternalCaja = async (cajaData) => {
         const dataToSend = new FormData();
@@ -527,7 +554,7 @@ const BorderCrossingFormNew = ({ tripNumber, onSuccess }) => {
 
 
     return (
-        <form  className="card-container">
+        <form onSubmit={handleSubmit} className="card-container">
             {/* <style>{`
                 .trip-mode-selector, .trailer-type-selector {
                     display: flex;

@@ -1,5 +1,13 @@
-import React, { useMemo, useRef, useState } from "react";
-import styles from "../screens/css/Orden.module.css";
+import React, { useMemo, useRef, useState, useEffect } from "react";
+import { 
+  Box, Container, Grid, Paper, Typography, TextField, Button, 
+  MenuItem, Divider, FormControlLabel, Switch, IconButton, 
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip,
+  CircularProgress, Stack, InputAdornment
+} from "@mui/material";
+import DeleteIcon from '@mui/icons-material/Delete';
+import SaveIcon from '@mui/icons-material/Save';
+import AddCircleIcon from '@mui/icons-material/AddCircle';
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 import Select from "react-select";
@@ -10,709 +18,397 @@ import useFetchRepairTypes from "../hooks/service_order/useFetchRepairTypes";
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
-/* === Trucks === */
-const useFetchTrucks = () => {
-    const [trucks, setTrucks] = React.useState([]);
-    React.useEffect(() => {
-        const fetchTrucks = async () => {
-            const formData = new FormData();
-            formData.append("op", "getTrucks");
-            try {
-                const res = await fetch(`${apiHost}/service_order.php`, {
-                    method: "POST",
-                    body: formData,
-                });
-                const json = await res.json();
-                if (json.status === "success") setTrucks(json.data || []);
-            } catch (e) {
-                console.error("Error fetching trucks:", e);
-            }
-        };
-        fetchTrucks();
-    }, []);
-    return { trucks };
+const customSelectStyles = {
+  control: (provided) => ({
+    ...provided, height: 56, borderRadius: 4, borderColor: 'rgba(0, 0, 0, 0.23)',
+    '&:hover': { borderColor: 'rgba(0, 0, 0, 0.87)' }
+  }),
+  menu: (provided) => ({ ...provided, zIndex: 9999 })
 };
 
-/* === Money fmt === */
-const money = (v) =>
-    new Intl.NumberFormat("es-MX", { style: "currency", currency: "USD" }).format(
-        Number(v || 0)
-    );
+const money = (v) => new Intl.NumberFormat("es-MX", { style: "currency", currency: "USD" }).format(Number(v || 0));
 
 export default function ServiceOrderScreen() {
     const navigate = useNavigate();
 
-    // ---------- Datos remotos ----------
-    const { trucks } = useFetchTrucks();
+    // --- Hooks ---
     const { inventoryItems, loading: itemsLoading } = useFetchInventoryItems();
-    const { repairTypes, loadingRepairTypes, refetchRepairTypes } = useFetchRepairTypes();
-    const [itemSeleccionado, setItemSeleccionado] = useState(null); // {value,label,costo_unidad}
+    const { repairTypes, refetchRepairTypes } = useFetchRepairTypes(); 
+    const [trucks, setTrucks] = useState([]);
+
+    // Cargar Camiones
+    useEffect(() => {
+        const fetchTrucks = async () => {
+            const formData = new FormData();
+            formData.append("op", "getTrucks");
+            try {
+                const res = await fetch(`${apiHost}/service_order.php`, { method: "POST", body: formData });
+                const json = await res.json();
+                if (json.status === "success") setTrucks(json.data || []);
+            } catch (e) { console.error(e); }
+        };
+        fetchTrucks();
+    }, []);
+
+    // --- Estados Generales ---
+    const [selectedTruck, setSelectedTruck] = useState(null);
+    const [dateForm, setDateForm] = useState(new Date().toISOString().slice(0, 10));
+    const [tipoCambioOrden, setTipoCambioOrden] = useState("");
+    
+    // --- Estados Builder (Servicio actual) ---
+    const [tipoMantenimiento, setTipoMantenimiento] = useState("Correctivo");
+    const [origenServicio, setOrigenServicio] = useState("Interno");
+    const [tipoReparacion, setTipoReparacion] = useState(null);
+    const [costoMO, setCostoMO] = useState("");
+    const [usarItems, setUsarItems] = useState(false);
+
+    // Items Builder
+    const [itemSeleccionado, setItemSeleccionado] = useState(null);
     const [cant, setCant] = useState(1);
     const [pendItems, setPendItems] = useState([]);
-
-    const stockSelected = useMemo(
-        () => Number(itemSeleccionado?.cantidad_stock || 0),
-        [itemSeleccionado]
-    );
-
-    const handleCantidadChange = (e) => {
-        const raw = e.target.value;
-        // permitir borrar el campo
-        if (raw === "") { setCant(""); return; }
-
-        const n = Number(raw);
-        if (!Number.isFinite(n) || n <= 0) { setCant(""); return; }
-
-        if (stockSelected && n > stockSelected) {
-            Swal.fire({
-                icon: "warning",
-                title: "Cantidad excedida",
-                text: "No se puede colocar una cantidad mayor a la disponible en stock",
-            });
-            setCant(""); // limpiar input
-            return;
-        }
-        setCant(n);
-    };
-
-    const onChangeItem = (opt) => {
-        setItemSeleccionado(opt);
-        setCant(""); // reset cantidad al cambiar de artículo
-    };
-
-
-    // Mapea trucks a react-select (tolerante a diferentes llaves)
-    const truckOptions = useMemo(
-        () =>
-            (trucks || []).map((t) => ({
-                value: t.value ?? t.id ?? t.truck_id ?? String(t.unidad ?? t.nombre ?? t.id),
-                label:
-                    t.label ??
-                    t.unidad ??
-                    t.nombre ??
-                    String(t.value ?? t.id ?? t.truck_id ?? ""),
-            })),
-        [trucks]
-    );
-
-    // Mapea inventario a react-select con costo_unidad numérico
-    const invOptions = useMemo(
-        () =>
-            (inventoryItems || []).map((it) => ({
-                value: it.value ?? it.id ?? it.item_id,
-                label: it.label ?? it.nombre ?? it.descripcion ?? "",
-                costo_unidad: parseFloat(it.costo_unidad ?? it.costoUnitario ?? 0) || 0,
-                cantidad_stock: parseInt(it.cantidad_stock ?? it.stock ?? 0, 10) || 0,
-                id_subcategoria: it.id_subcategoria ?? null,
-            })),
-        [inventoryItems]
-    );
-
-
-    // ---------- Orden (encabezado) ----------
-    const [selectedTruck, setSelectedTruck] = useState(null); // react-select option
-    const [dateForm, setDateForm] = useState(() =>
-        new Date().toISOString().slice(0, 10)
-    );
-    const [orden, setOrden] = useState({ truck: null, fecha: null });
-    const [tipoCambioOrden, setTipoCambioOrden] = useState("");
-    const seleccionarOrden = () => {
-        if (!selectedTruck?.value || !dateForm) {
-            alert("Selecciona camión y fecha");
-            return;
-        }
-        setOrden({ truck: String(selectedTruck.value), fecha: dateForm });
-    };
-
-    // ---------- Constructor de servicio ----------
-    const [tipoMantenimiento, setTipoMantenimiento] = useState(null); // {value,label}
-    const [tipoReparacion, setTipoReparacion] = useState(null); // {value,label} (creatable)
-    const [svc, setSvc] = useState({
-        tipoCambio: "",
-        costoMO: "",
-        usarItems: false,
-    });
-
-    // Items del servicio en construcción
-
-
-    const addItemToPending = (tipo /* 'consumible' | 'refaccion' */) => {
-        if (!svc.usarItems) return;
-        const cantidad = Number(cant);
-        if (!itemSeleccionado?.value || !cantidad || cantidad <= 0) {
-            Swal.fire({ icon: "warning", title: "Falta información", text: "Selecciona un artículo y una cantidad válida." });
-            return;
-        }
-        const costoUnitario = Number(itemSeleccionado.costo_unidad || 0);
-
-        // 🔒 Validar contra stock
-        const stock = Number(itemSeleccionado.cantidad_stock || 0);
-        if (stock && cantidad > stock) {
-            Swal.fire({
-                icon: "warning",
-                title: "Cantidad excedida",
-                text: "No se puede colocar una cantidad mayor a la disponible en stock",
-            });
-            setCant("");
-            return;
-        }
-
-        const nuevo = {
-            uid: Date.now().toString() + Math.random(),
-            inventarioId: String(itemSeleccionado.value),
-            descripcion: itemSeleccionado.label,
-            tipo, // 'consumible' | 'refaccion'
-            cantidad,
-            costoUnitario,
-            subtotal: cantidad * costoUnitario,
-        };
-        setPendItems((prev) => [...prev, nuevo]);
-    };
-
-
-    const removePendingItem = (uid) =>
-        setPendItems((prev) => prev.filter((i) => i.uid !== uid));
-
-    // ---------- Lista de servicios agregados ----------
+    
+    // Lista de Servicios (Ticket)
+    const [services, setServices] = useState([]);
+    const [saving, setSaving] = useState(false);
     const seq = useRef(1);
-    const [services, setServices] = useState([]); // [{id, mantenimiento:{value,label}, reparacion:{value,label}, tipoCambio, costoMO, items:[] }]
 
-    const agregarServicio = () => {
-        if (!orden.truck || !orden.fecha) {
-            alert("Primero selecciona camión y fecha de la orden.");
-            return;
-        }
-        if (!tipoMantenimiento?.value || !tipoReparacion?.value) {
-            alert("Selecciona tipo de mantenimiento y tipo de reparación.");
-            return;
-        }
-        if (svc.usarItems && pendItems.length === 0) {
-            alert("Activaste refacciones/consumibles: agrega al menos un artículo.");
-            return;
-        }
+    // --- Memos ---
+    const truckOptions = useMemo(() => trucks.map(t => ({ value: t.value, label: t.label })), [trucks]);
+    const invOptions = useMemo(() => inventoryItems.map(it => ({
+        value: it.value, label: it.label,
+        costo_unidad: parseFloat(it.costo_unidad || 0),
+        cantidad_stock: parseInt(it.cantidad_stock || 0, 10),
+    })), [inventoryItems]);
 
-        const nuevo = {
-            id: seq.current++,
-            mantenimiento: {
-                value: tipoMantenimiento.value,
-                label: tipoMantenimiento.label,
-            },
-            reparacion: {
-                value: tipoReparacion.value,
-                label: tipoReparacion.label,
-            },
-            tipoCambio: svc.tipoCambio || "",
-            costoMO: Number(svc.costoMO || 0),
-            items: svc.usarItems ? [...pendItems] : [],
-        };
+    const stockSelected = itemSeleccionado?.cantidad_stock || 0;
 
-        setServices((prev) => [...prev, nuevo]);
-
-        // Reset builder de servicio
-        setTipoMantenimiento(null);
-        setTipoReparacion(null);
-        setSvc({ tipoCambio: "", costoMO: "", usarItems: false });
-        setPendItems([]);
+    // --- Handlers ---
+    const addItemToPending = (tipo) => {
+        if (!itemSeleccionado || !cant || cant <= 0) return;
+        setPendItems(prev => [...prev, {
+            uid: Date.now() + Math.random(),
+            item_id: itemSeleccionado.value,
+            descripcion: itemSeleccionado.label,
+            tipo, 
+            cantidad: Number(cant),
+            costo_unitario: itemSeleccionado.costo_unidad,
+            subtotal: Number(cant) * itemSeleccionado.costo_unidad
+        }]);
         setItemSeleccionado(null);
         setCant(1);
     };
 
-    const quitarServicio = (id) =>
-        setServices((prev) => prev.filter((s) => s.id !== id));
+    const agregarServicio = () => {
+        if (!selectedTruck) return Swal.fire("Falta camión", "Selecciona un camión primero", "warning");
+        if (!tipoReparacion) return Swal.fire("Falta reparación", "Selecciona el tipo de reparación", "warning");
+        
+        setServices(prev => [...prev, {
+            id: seq.current++,
+            tipo_mantenimiento: tipoMantenimiento,
+            origen_servicio: origenServicio,
+            tipo_reparacion_label: tipoReparacion.label,
+            costo_mano_obra: Number(costoMO || 0),
+            items: usarItems ? [...pendItems] : []
+        }]);
+        
+        setTipoReparacion(null);
+        setCostoMO("");
+        setPendItems([]);
+        setUsarItems(false);
+    };
 
-    // ---------- Totales (de toda la orden) ----------
-    const subtotalItems = useMemo(
-        () =>
-            services.reduce(
-                (acc, s) => acc + s.items.reduce((a, i) => a + i.subtotal, 0),
-                0
-            ),
-        [services]
-    );
-    const totalMO = useMemo(
-        () => services.reduce((a, s) => a + Number(s.costoMO || 0), 0),
-        [services]
-    );
-    const totalGeneral = subtotalItems + totalMO;
+    const handleCreateRepair = (val) => setTipoReparacion({label: val, value: val});
 
-    // ---------- Guardar orden ----------
-    // arriba, con tus otros states:
-    const [saving, setSaving] = useState(false);
+    const totalGeneral = useMemo(() => services.reduce((acc, s) => {
+        const itemsTotal = s.items.reduce((a, i) => a + i.subtotal, 0);
+        return acc + itemsTotal + s.costo_mano_obra;
+    }, 0), [services]);
 
-    // ---------- Guardar orden ----------
     const enviarOrden = async () => {
-        if (!orden.truck || !orden.fecha || services.length === 0) {
-            Swal.fire({
-                icon: "warning",
-                title: "Faltan datos",
-                text: "Selecciona camión/fecha y agrega al menos un servicio.",
-            });
-            return;
-        }
-    const tipoCambioNum = tipoCambioOrden === "" ? null : Number(tipoCambioOrden);
-        // Construir payload que tu API 'AltaOrden' espera
+        if (services.length === 0) return Swal.fire("Sin servicios", "Agrega al menos un servicio", "warning");
+        setSaving(true);
+        
         const payload = {
-            truck_id: orden.truck,
-            fecha: orden.fecha,
-            tipo_cambio: tipoCambioNum,
-            servicios: services.map((s) => ({
-                // tu backend usa label si está, o id; le mandamos ambos formatos seguros
-                tipo_mantenimiento_label: s.mantenimiento?.label ?? String(s.mantenimiento?.value ?? ""),
-                tipo_reparacion_label: s.reparacion?.label ?? String(s.reparacion?.value ?? ""),
-                tipo_cambio: s.tipoCambio || null,
-                costo_mano_obra: Number(s.costoMO || 0),
-                items: (s.items || []).map((i) => ({
-                    item_id: i.inventarioId,
-                    tipo: i.tipo, // 'consumible' | 'refaccion'
-                    cantidad: Number(i.cantidad),
-                    costo_unitario: Number(i.costoUnitario || 0),
-                })),
-            })),
+            truck_id: selectedTruck.value,
+            fecha: dateForm,
+            tipo_cambio: tipoCambioOrden,
+            servicios: services
         };
 
-        const form = new FormData();
-        form.append("op", "AltaOrden"); 
-        form.append("truck_id", payload.truck_id);
-        form.append("fecha", payload.fecha);
-        form.append("tipo_cambio", payload.tipo_cambio != null ? String(payload.tipo_cambio) : "");
-        form.append("servicios", JSON.stringify(payload.servicios));
+        const fd = new FormData();
+        fd.append("op", "AltaOrden");
+        fd.append("truck_id", payload.truck_id);
+        fd.append("fecha", payload.fecha);
+        if(payload.tipo_cambio) fd.append("tipo_cambio", payload.tipo_cambio);
+        fd.append("servicios", JSON.stringify(payload.servicios));
 
         try {
-            setSaving(true);
-            Swal.fire({
-                title: "Guardando orden...",
-                allowOutsideClick: false,
-                didOpen: () => Swal.showLoading(),
-            });
-
-            const res = await fetch(`${apiHost}/service_order.php`, {
-                method: "POST",
-                body: form,
-            });
-
-            const json = await res.json().catch(() => null);
-
-            if (!res.ok || !json || json.status !== "success") {
-                const msg =
-                    (json && json.message) ||
-                    `Error HTTP ${res.status} al guardar la orden.`;
-                throw new Error(msg);
+            const res = await fetch(`${apiHost}/service_order.php`, { method: "POST", body: fd });
+            const json = await res.json();
+            if (json.status === "success") {
+                Swal.fire("¡Orden Creada!", `Folio: ${json.id_orden}`, "success");
+                navigate('/admin-service-order');
+            } else {
+                throw new Error(json.message);
             }
-
-            Swal.fire({
-                icon: "success",
-                title: "Orden creada",
-                text: `ID de la orden: ${json.id_orden}`,
-            });
-
-            // (Opcional) limpiar estados del formulario
-            setOrden({ truck: null, fecha: null });
-            setSelectedTruck(null);
-            setServices([]);
-            setPendItems([]);
-            setItemSeleccionado(null);
-            setCant(1);
-            setSvc({ tipoCambio: "", costoMO: "", usarItems: false });
-            setTipoMantenimiento(null);
-            setTipoReparacion(null);
-            setTipoCambioOrden("");
-
-            navigate('/admin-service-order');
         } catch (e) {
-            console.error(e);
-            Swal.fire({
-                icon: "error",
-                title: "No se pudo guardar",
-                text: String(e.message || e),
-            });
+            Swal.fire("Error", e.message, "error");
         } finally {
             setSaving(false);
         }
     };
 
-
-    //Crear nuevo tipo de reparacion
-    const handleCreateRepairType = async (inputValue) => {
-        Swal.fire({
-            title: `Creando "${inputValue}"...`,
-            didOpen: () => { Swal.showLoading(); },
-            allowOutsideClick: false
-        });
-
-        const formData = new FormData();
-        formData.append('op', 'createRepairType');
-        formData.append('nombre_reparacion', inputValue);
-
-        try {
-            const response = await fetch(`${apiHost}/service_order.php`, { method: 'POST', body: formData });
-            const result = await response.json();
-
-            if (result.status === 'success') {
-                await refetchRepairTypes();
-                setTipoReparacion(result.data);
-
-
-                Swal.fire({
-                    icon: 'success',
-                    title: '¡Creado!',
-                    text: `"${inputValue}" ha sido añadido a la lista.`,
-                    showConfirmButton: false, // No necesitamos un botón de OK
-                    timer: 1500 // Se cerrará automáticamente después de 1.5 segundos
-                });
-                // =========================
-
-            } else {
-                throw new Error(result.message);
-            }
-        } catch (error) {
-            Swal.fire('Error', error.message, 'error');
-        }
-    };
-
     return (
-        <div className={styles.column2}>
-            <h1 className={styles.title}>Orden de Servicio</h1>
+        <Container maxWidth="xl" sx={{ py: 4 }}>
+            <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Box>
+                    <Typography variant="h4" fontWeight={700} color="text.primary">Nueva Orden de Servicio</Typography>
+                    <Typography variant="body2" color="text.secondary">Registro inicial de mantenimiento</Typography>
+                </Box>
+                <Button variant="outlined" color="inherit" onClick={() => navigate('/admin-service-order')}>
+                    Cancelar
+                </Button>
+            </Box>
 
-            <div className="grid grid-cols-12 gap-5 max-w-7xl mx-auto">
-                {/* Columna izquierda */}
-                <div className={styles.titulos}>
-                    {/* Datos generales */}
-                    <div className="bg-white rounded-2xl shadow p-4">
-                        <div className="flex items-center justify-between mb-3">
-                            <h2 className="text-lg font-semibold">Datos Generales de la Orden</h2>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            <p className="text-sm text-gray-500 mt-3 md:col-span-2">
-                                Seleccionados: <strong>Camión {orden.truck || "N/A"}</strong> —{" "}
-                                <strong>Fecha: {orden.fecha || "sin fecha"}</strong>
-                            </p>
-
-                            <div className={styles.column}>
-                                <label className="block text-sm font-medium mb-1">Camión</label>
-                                <Select
-                                    options={truckOptions}
-                                    value={selectedTruck}
-                                    onChange={setSelectedTruck}
-                                    placeholder="Selecciona un camión..."
-                                    isClearable
+            <Grid container spacing={3}>
+                <Grid item xs={12} lg={8}>
+                    
+                    <Paper sx={{ p: 3, mb: 3, borderRadius: 2 }} elevation={2}>
+                        <Typography variant="h6" gutterBottom fontWeight={600} color="primary">Datos Generales</Typography>
+                        <Grid container spacing={2}>
+                            <Grid item xs={12} md={4}>
+                                <Typography variant="caption" fontWeight={600}>Camión</Typography>
+                                <Select 
+                                    options={truckOptions} 
+                                    value={selectedTruck} 
+                                    onChange={setSelectedTruck} 
+                                    placeholder="Seleccionar..." 
+                                    styles={customSelectStyles}
                                 />
-                            </div>
-
-                            <div className={styles.column}>
-                                <label className="block text-sm font-medium mb-1">Fecha</label>
-                                <input
-                                    type="date"
-                                    className={styles.input}
-                                    value={dateForm}
-                                    onChange={(e) => setDateForm(e.target.value)}
+                            </Grid>
+                            <Grid item xs={12} md={4}>
+                                <Typography variant="caption" fontWeight={600}>Fecha</Typography>
+                                <TextField 
+                                    type="date" 
+                                    fullWidth 
+                                    value={dateForm} 
+                                    onChange={e => setDateForm(e.target.value)} 
                                 />
-                            </div>
+                            </Grid>
+                            <Grid item xs={12} md={4}>
+                                <Typography variant="caption" fontWeight={600}>Tipo Cambio (Opcional)</Typography>
+                                <TextField 
+                                    type="number" 
+                                    fullWidth 
+                                    placeholder="Ej. 18.50"
+                                    value={tipoCambioOrden} 
+                                    onChange={e => setTipoCambioOrden(e.target.value)} 
+                                    InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }}
+                                />
+                            </Grid>
+                        </Grid>
+                    </Paper>
 
-                            <div className="md:col-span-2">
-                                <button
-                                    className="px-4 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700"
-                                    onClick={seleccionarOrden}
+                    <Paper sx={{ p: 3, borderRadius: 2 }} elevation={2}>
+                        <Typography variant="h6" fontWeight={600} gutterBottom color="primary">
+                            Agregar Servicio
+                        </Typography>
+                        
+                        <Grid container spacing={2} sx={{ mt: 0 }} alignItems="end">
+                            <Grid item xs={12} md={4}>
+                                <TextField 
+                                    select label="Tipo Mantenimiento" fullWidth 
+                                    value={tipoMantenimiento} onChange={e => setTipoMantenimiento(e.target.value)}
                                 >
-                                    Seleccionar
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+                                    <MenuItem value="Correctivo">Correctivo</MenuItem>
+                                    <MenuItem value="Preventivo">Preventivo</MenuItem>
+                                </TextField>
+                            </Grid>
+                            
+                            <Grid item xs={12} md={4}>
+                                <TextField 
+                                    select label="Origen Mantenimiento" fullWidth 
+                                    value={origenServicio} onChange={e => setOrigenServicio(e.target.value)}
+                                >
+                                    <MenuItem value="Interno">Interno</MenuItem>
+                                    <MenuItem value="Externo">Externo</MenuItem>
+                                </TextField>
+                            </Grid>
 
-                    {/* Form de servicio */}
-                    <div className="bg-white rounded-2xl shadow p-4">
-                        <h3 className="text-base font-semibold mb-3">Agregar Detalle de Servicio</h3>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            <div className={styles.column}>
-                                <label className="block text-sm font-medium mb-1">
-                                    Tipo de Mantenimiento
-                                </label>
-                                <Select
-                                    options={[
-                                        { value: "Correctivo", label: "Correctivo" },
-                                        { value: "Preventivo", label: "Preventivo" },
-                                    ]}
-                                    value={tipoMantenimiento}
-                                    onChange={setTipoMantenimiento}
-                                    placeholder="Selecciona..."
+                            <Grid item xs={12} md={4}>
+                                <TextField 
+                                    label="Costo Mano Obra" type="number" fullWidth 
+                                    value={costoMO} onChange={e => setCostoMO(e.target.value)}
+                                    InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }} 
                                 />
-                            </div>
+                            </Grid>
 
-                            <div className={styles.column}>
-                                <label className="block text-sm font-medium mb-1">
-                                    Tipo de Reparación
-                                </label>
+                            <Grid item xs={12}>
+                                <Typography variant="caption" fontWeight={600}>Tipo de Reparación</Typography>
                                 <CreatableSelect
                                     isClearable
-                                    onChange={setTipoReparacion}
-                                    onCreateOption={handleCreateRepairType}
                                     options={repairTypes}
                                     value={tipoReparacion}
+                                    onChange={setTipoReparacion}
+                                    onCreateOption={handleCreateRepair}
                                     placeholder="Selecciona o escribe para crear..."
-                                    formatCreateLabel={(v) => `Crear nuevo: "${v}"`}
+                                    styles={customSelectStyles}
                                 />
-                            </div>
+                            </Grid>
+                        </Grid>
 
-                            <div className={styles.column}>
-                                <label className="block text-sm font-medium mb-1">
-                                    Tipo de Cambio (si aplica)
-                                </label>
-                                <input
-                                    type="number"
-                                    step="0.01"
-                                    min="0"
-                                    inputMode="decimal"
-                                    className={styles.input}
-                                    placeholder="0.00"
-                                    value={tipoCambioOrden}
-                                    onChange={(e) => setTipoCambioOrden(e.target.value)}
-                                />
-                            </div>
+                        <Divider sx={{ my: 3 }} />
 
-                            <div className={styles.column}>
-                                <label className="block text-sm font-medium mb-1">
-                                    Costo de Mano de Obra
-                                </label>
-                                <input
-                                    type="number"
-                                    className={styles.input}
-                                    placeholder="0"
-                                    value={svc.costoMO}
-                                    onChange={(e) => setSvc((s) => ({ ...s, costoMO: e.target.value }))}
-                                />
-                            </div>
-                        </div>
+                        <FormControlLabel
+                            control={<Switch checked={usarItems} onChange={e => setUsarItems(e.target.checked)} />}
+                            label={<Typography fontWeight={600}>Agregar Refacciones</Typography>}
+                        />
 
-                        <div className="mt-3 flex items-center gap-3">
-                            <label className="inline-flex items-center gap-2">
-                                <input
-                                    className={styles.check}
-                                    type="checkbox"
-                                    checked={svc.usarItems}
-                                    onChange={(e) =>
-                                        setSvc((s) => ({ ...s, usarItems: e.target.checked }))
-                                    }
-                                />
-                                <span className={styles.span}>¿Utiliza refacción/consumible?</span>
-                            </label>
-                        </div>
+                        {usarItems && (
+                            <Box sx={{ mt: 2, p: 2, bgcolor: '#f5f5f5', borderRadius: 2 }}>
+                                <Grid container spacing={2} alignItems="flex-end">
+                                    <Grid item xs={12} md={6}>
+                                        <Typography variant="caption">Artículo</Typography>
+                                        <Select 
+                                            options={invOptions} 
+                                            value={itemSeleccionado} 
+                                            onChange={setItemSeleccionado} 
+                                            placeholder="Buscar en inventario..." 
+                                            isLoading={itemsLoading}
+                                            styles={customSelectStyles}
+                                        />
+                                        <Typography variant="caption" color="text.secondary">Stock: {stockSelected}</Typography>
+                                    </Grid>
+                                    <Grid item xs={6} md={2}>
+                                        <TextField label="Cant." type="number" size="small" fullWidth value={cant} onChange={e => setCant(e.target.value)} />
+                                    </Grid>
+                                    <Grid item xs={6} md={4}>
+                                        <Stack direction="row" spacing={1}>
+                                            <Button variant="outlined" fullWidth onClick={() => addItemToPending('consumible')}>Consumible</Button>
+                                            <Button variant="contained" fullWidth onClick={() => addItemToPending('refaccion')}>Refacción</Button>
+                                        </Stack>
+                                    </Grid>
+                                </Grid>
 
-                        {svc.usarItems && (
-                            <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3">
-                                <div>
-                                    <label className="block text-sm font-medium mb-1">Artículo (inventario)</label>
-                                    <Select
-                                        options={invOptions}
-                                        value={itemSeleccionado}
-                                        onChange={onChangeItem}
-                                        isLoading={itemsLoading}
-                                        placeholder="Busca un artículo del inventario..."
-                                        isClearable
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium mb-1">Stock disponible</label>
-                                    <input
-                                        type="number"
-                                        className={styles.input}
-                                        value={stockSelected}
-                                        readOnly
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium mb-1">Cantidad</label>
-                                    <input
-                                        type="number"
-                                        min={1}
-                                        max={stockSelected || undefined}
-                                        className={styles.input}
-                                        value={cant}
-                                        onChange={handleCantidadChange}
-                                        disabled={!itemSeleccionado || stockSelected <= 0}
-                                        placeholder={itemSeleccionado ? "Cantidad" : "Selecciona un artículo primero"}
-                                    />
-                                </div>
-
-                                <div className="md:col-span-3 flex items-end gap-2">
-                                    <button
-                                        className="flex-1 px-3 py-2 rounded-xl border hover:bg-gray-50"
-                                        onClick={() => addItemToPending("consumible")}
-                                        disabled={!itemSeleccionado || !cant}
-                                    >
-                                        Agregar como Consumible
-                                    </button>
-                                    <button
-                                        className={styles.butonAdd}
-                                        onClick={() => addItemToPending("refaccion")}
-                                        disabled={!itemSeleccionado || !cant}
-                                    >
-                                        Agregar como Refacción
-                                    </button>
-                                </div>
-                            </div>
-                        )}
-
-
-                        {svc.usarItems && (
-                            <div className="mt-4">
-                                <h4 className="font-semibold mb-2">Items agregados a este servicio</h4>
-                                {pendItems.length === 0 ? (
-                                    <p className="text-sm text-gray-500">Aún no hay artículos.</p>
-                                ) : (
-                                    <div className="overflow-x-auto">
-                                        <table className="min-w-full text-sm">
-                                            <thead>
-                                                <tr className="text-left border-b">
-                                                    <th className="py-2 pr-2">Tipo</th>
-                                                    <th className="py-2 pr-2">Descripción</th>
-                                                    <th className="py-2 pr-2 text-center">Cant.</th>
-                                                    <th className="py-2 pr-2 text-right">Costo</th>
-                                                    <th className="py-2 pr-2 text-right">Subtotal</th>
-                                                    <th className="py-2 pr-2">Acciones</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {pendItems.map((it) => (
-                                                    <tr key={it.uid} className="border-b last:border-b-0">
-                                                        <td className="py-2 pr-2">{it.tipo}</td>
-                                                        <td className="py-2 pr-2">{it.descripcion}</td>
-                                                        <td className="py-2 pr-2 text-center">{it.cantidad}</td>
-                                                        <td className="py-2 pr-2 text-right">
-                                                            {money(it.costoUnitario)}
-                                                        </td>
-                                                        <td className="py-2 pr-2 text-right">
-                                                            {money(it.subtotal)}
-                                                        </td>
-                                                        <td className="py-2 pr-2">
-                                                            <button
-                                                                className="text-red-600 hover:underline"
-                                                                onClick={() => removePendingItem(it.uid)}
-                                                            >
-                                                                Quitar
-                                                            </button>
-                                                        </td>
-                                                    </tr>
+                                {pendItems.length > 0 && (
+                                    <TableContainer component={Paper} sx={{ mt: 2 }} variant="outlined">
+                                        <Table size="small">
+                                            <TableHead>
+                                                <TableRow sx={{ bgcolor: '#eee' }}>
+                                                    <TableCell>Desc</TableCell>
+                                                    <TableCell>Tipo</TableCell>
+                                                    <TableCell align="right">Cant</TableCell>
+                                                    <TableCell align="right">$$</TableCell>
+                                                    <TableCell align="center">X</TableCell>
+                                                </TableRow>
+                                            </TableHead>
+                                            <TableBody>
+                                                {pendItems.map(it => (
+                                                    <TableRow key={it.uid}>
+                                                        <TableCell>{it.descripcion}</TableCell>
+                                                        <TableCell><Chip label={it.tipo} size="small" /></TableCell>
+                                                        <TableCell align="right">{it.cantidad}</TableCell>
+                                                        <TableCell align="right">{money(it.subtotal)}</TableCell>
+                                                        <TableCell align="center">
+                                                            <IconButton size="small" color="error" onClick={() => setPendItems(p => p.filter(x => x.uid !== it.uid))}>
+                                                                <DeleteIcon fontSize="small" />
+                                                            </IconButton>
+                                                        </TableCell>
+                                                    </TableRow>
                                                 ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
+                                            </TableBody>
+                                        </Table>
+                                    </TableContainer>
                                 )}
-                            </div>
+                            </Box>
                         )}
 
-                        <div className="mt-4 flex justify-end">
-                            <button
-                                className="px-4 py-2 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700"
+                        <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
+                            <Button 
+                                variant="contained" 
+                                color="success" 
+                                size="large" 
+                                startIcon={<AddCircleIcon />} 
                                 onClick={agregarServicio}
                             >
-                                Agregar servicio
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                                Agregar a la Orden
+                            </Button>
+                        </Box>
+                    </Paper>
+                </Grid>
 
-                {/* Columna derecha: Resumen & servicios */}
-                <div className="col-span-12 lg:col-span-4 space-y-5">
-                    <div className={styles.contenido}>
-                        <h3 className="text-lg font-semibold mb-2">Resumen de la Orden</h3>
-                        <div className="text-sm space-y-1">
-                            <div>
-                                <span className="font-medium">Camión:</span>{" "}
-                                {orden.truck || "N/A"}
-                            </div>
-                            <div>
-                                <span className="font-medium">Fecha:</span>{" "}
-                                {orden.fecha || "—"}
-                            </div>
-                            <div>
-                                <span className="font-medium">Total:</span>{" "}
-                                {money(totalGeneral)}
-                            </div>
-                        </div>
-                    </div>
+                <Grid item xs={12} lg={4}>
+                    <Paper sx={{ p: 3, borderRadius: 2, position: 'sticky', top: 20 }} elevation={4}>
+                        <Typography variant="h6" fontWeight={700} gutterBottom>Detalle de Orden</Typography>
+                        <Divider sx={{ mb: 2 }} />
 
-                    <div>
-                        <h3 className="text-lg font-semibold mb-2">Servicios agregados</h3>
-                        {services.length === 0 ? (
-                            <p className="text-sm text-gray-500">No hay servicios.</p>
-                        ) : (
-                            <div className="space-y-3">
-                                {services.map((s, idx) => (
-                                    <div key={s.id} className={styles.contenido}>
-                                        <div className="flex justify-between items-start gap-2 mb-1">
-                                            <div>
-                                                <div className="font-bold">Servicio {idx + 1}</div>
-                                                <div className="text-sm text-gray-600">
-                                                    {s.mantenimiento.label} / {s.reparacion.label}
-                                                </div>
-                                            </div>
-                                            <button
-                                                className="text-red-600 text-sm hover:underline"
-                                                onClick={() => quitarServicio(s.id)}
+                        <Box sx={{ maxHeight: '60vh', overflowY: 'auto', pr: 1 }}>
+                            {services.length === 0 ? (
+                                <Typography color="text.secondary" fontStyle="italic" align="center" py={4}>
+                                    No hay servicios agregados.
+                                </Typography>
+                            ) : (
+                                <Stack spacing={2}>
+                                    {services.map((s, idx) => (
+                                        <Paper key={s.id} variant="outlined" sx={{ p: 2, position: 'relative', bgcolor: '#fafafa' }}>
+                                            <IconButton 
+                                                size="small" 
+                                                color="error" 
+                                                sx={{ position: 'absolute', top: 5, right: 5 }} 
+                                                onClick={() => setServices(prev => prev.filter(x => x.id !== s.id))}
                                             >
-                                                Quitar
-                                            </button>
-                                        </div>
+                                                <DeleteIcon fontSize="small" />
+                                            </IconButton>
+                                            
+                                            <Typography variant="subtitle2" fontWeight={700}>Servicio #{idx + 1}</Typography>
+                                            <Typography variant="body2" sx={{ mt: 0.5 }}>
+                                                {s.tipo_mantenimiento} — <b>{s.origen_servicio}</b>
+                                            </Typography>
+                                            <Typography variant="body2" color="text.secondary" fontWeight={500}>
+                                                {s.tipo_reparacion_label}
+                                            </Typography>
+                                            
+                                            <Stack direction="row" justifyContent="space-between" mt={1}>
+                                                <Typography variant="caption">Mano de Obra:</Typography>
+                                                <Typography variant="caption" fontWeight={600}>{money(s.costo_mano_obra)}</Typography>
+                                            </Stack>
+                                            
+                                            {s.items.length > 0 && (
+                                                <Box mt={1} pt={1} borderTop="1px dashed #ccc">
+                                                    <Typography variant="caption" color="text.secondary">
+                                                        {s.items.length} Refacciones/Consumibles
+                                                    </Typography>
+                                                </Box>
+                                            )}
+                                        </Paper>
+                                    ))}
+                                </Stack>
+                            )}
+                        </Box>
 
-                                        <div className="text-sm">
-                                            <div>
-                                                <span className="font-medium">MO:</span>{" "}
-                                                {money(s.costoMO)}
-                                            </div>
-                                        </div>
-
-                                        {s.items.length > 0 && (
-                                            <div className="mt-2 text-sm">
-                                                <div className="font-medium mb-1">Items:</div>
-                                                <ul className="list-disc pl-5 space-y-1">
-                                                    {s.items.map((i) => (
-                                                        <li key={i.uid}>
-                                                            <span className="uppercase text-xs tracking-wide bg-gray-100 px-2 py-0.5 rounded mr-2">
-                                                                {i.tipo}
-                                                            </span>
-                                                            {i.descripcion} × {i.cantidad} — {money(i.subtotal)}
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            </div>
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-
-                        <hr className="my-3" />
-                        <div>
-                            <div className="flex justify-between text-sm">
-                                <span className="text-gray-600">Subtotal Refacciones:</span>
-                                <span className="font-semibold">{money(subtotalItems)}</span>
-                            </div>
-                            <div className="flex justify-between text-sm mt-2">
-                                <span className="text-gray-600">Mano de Obra:</span>
-                                <span className="font-semibold">{money(totalMO)}</span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                                <span className="text-lg font-semibold">Total General:</span>
-                                <span className="text-xl font-bold text-blue-600">
+                        <Box sx={{ mt: 3, pt: 2, borderTop: '2px solid #eee' }}>
+                            <Stack direction="row" justifyContent="space-between" alignItems="center">
+                                <Typography variant="h6">Total General:</Typography>
+                                <Typography variant="h4" fontWeight={800} color="primary.main">
                                     {money(totalGeneral)}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
+                                </Typography>
+                            </Stack>
+                        </Box>
 
-                    <button
-                        className={styles.butonGuardar}
-                        onClick={enviarOrden}
-                        disabled={saving}
-                    >
-                        {saving ? "Guardando..." : "Guardar orden de servicio"}
-                    </button>
-                </div>
-            </div>
-        </div>
+                        <Button 
+                            fullWidth 
+                            variant="contained" 
+                            size="large"
+                            sx={{ mt: 3, py: 1.5, fontSize: '1.1rem', fontWeight: 700 }}
+                            disabled={saving || services.length === 0}
+                            onClick={enviarOrden}
+                            startIcon={saving ? <CircularProgress size={24} color="inherit" /> : <SaveIcon />}
+                        >
+                            {saving ? "Guardando..." : "Guardar Orden"}
+                        </Button>
+                    </Paper>
+                </Grid>
+            </Grid>
+        </Container>
     );
 }
