@@ -43,41 +43,41 @@ const DriverAdmin = () => {
 
     // ** FETCH DE DATOS **
     const fetchDrivers = useCallback(async () => {
-        try {
-            const response = await fetch(`${apiHost}/drivers.php`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-              body: 'op=getAll',
-            });
-
-        const data = await response.json();
-
-        console.log(data)
-
-        if (data.status === 'success' && data.Users) {
-          const formatted = data.Users.map(user => ({
-            id: user.driver_id.toString(),
-            name: user.nombre || 'Sin nombre',
-            fecha: user.fecha_ingreso || 'Sin fecha',
-            APTO_tipo: user.APTO_tipo || '',
-            APTO_fecha: user.APTO_fecha || '',
-            APTO_URL: user.APTO_URL || '',
-            I94_tipo: user.I94_tipo || '',
-            I94_fecha: user.I94_fecha || '',
-            I94_URL: user.I94_URL || '',
-            VISA_tipo: user.VISA_tipo || '',
-            VISA_fecha: user.VISA_fecha || '',
-            VISA_URL: user.VISA_URL || '',
-            Licencia_tipo: user.Licencia_tipo || '',
-            Licencia_fecha: user.Licencia_fecha || '',
-            Licencia_URL: user.Licencia_URL || '',
-          }));
-          setDrivers(formatted);
-        }
-      } catch (error) {
-        console.error('Error al obtener los conductores:', error);
-      }
+  try {
+    const response = await fetch(`${apiHost}/drivers.php`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: 'op=getAll',
     });
+
+    const data = await response.json();
+
+    if (data.status === 'success' && data.Users) {
+      const formatted = data.Users.map(user => ({
+        id: user.driver_id.toString(),
+        name: user.nombre || 'Sin nombre',
+        fecha: user.fecha_ingreso || 'Sin fecha',
+        APTO_tipo: user.APTO_tipo || '',
+        APTO_fecha: user.APTO_fecha || '',
+        APTO_URL: user.APTO_URL || '',
+        I94_tipo: user.I94_tipo || '',
+        I94_fecha: user.I94_fecha || '',
+        I94_URL: user.I94_URL || '',
+        VISA_tipo: user.VISA_tipo || '',
+        VISA_fecha: user.VISA_fecha || '',
+        VISA_URL: user.VISA_URL || '',
+        Licencia_tipo: user.Licencia_tipo || '',
+        Licencia_fecha: user.Licencia_fecha || '',
+        Licencia_URL: user.Licencia_URL || '',
+      }));
+
+      setDrivers(formatted);
+    }
+  } catch (error) {
+    console.error('Error al obtener los conductores:', error);
+  }
+}, [apiHost]); // 👈 dependencia correcta
+
 
 
     useEffect(() => {
