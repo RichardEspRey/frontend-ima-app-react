@@ -456,7 +456,7 @@ const BorderCrossingFormNew = ({
         });
 
         try {
-            const response = await fetch(`http://localhost/API/new_tripsv2.php`, {
+            const response = await fetch(`${apiHost}/new_tripsv2.php`, {
                 method: 'POST',
                 body: dataToSend
             });
