@@ -6,7 +6,7 @@ import { AuthContext } from '../auth/AuthContext';
 import { menuItemsConfig } from '../config/menuConfig';
 import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
-import { Collapse } from '@mui/material';
+import { Collapse, Box, Stack, Tooltip } from '@mui/material'; 
 import iconUpdate from '../assets/images/icons/update.png'
 import { UpdateContext } from '../App';
 import { 
@@ -17,20 +17,19 @@ import { GrMapLocation } from "react-icons/gr";
 
 import logo from '../assets/images/logo_white.png';
 
-
 const iconMap = {
-    'Inicio': MdDashboard,       //Inicio
-    'IMA': MdAssignment,         // Documentación
-    'Conductores': MdCarRental,   // Conductor
-    'Camiones': MdDirectionsBus,  // Camión/Trailer
-    'Gastos': MdLocalGasStation,  // Gasto/Diesel
-    'Mantenimientos': MdList,     // Lista/Mantenimiento
-    'Viajes': MdLocalShipping,    // Camión de carga
-    'Finanzas': MdAttachMoney,    // Dinero
-    'Reports': MdBarChart,       // Gráficos/Reporte
-    'Mapa': GrMapLocation,              //Mapa
-    'Gestor de Acceso': MdList,   // Lista/Gestor de Acceso
-    'Estatus de Unidades': MdTrendingUp, // Estatus de Unidades
+    'Inicio': MdDashboard,
+    'IMA': MdAssignment,
+    'Conductores': MdCarRental,
+    'Camiones': MdDirectionsBus,
+    'Gastos': MdLocalGasStation,
+    'Mantenimientos': MdList,
+    'Viajes': MdLocalShipping,
+    'Finanzas': MdAttachMoney,
+    'Reports': MdBarChart,
+    'Mapa': GrMapLocation,
+    'Gestor de Acceso': MdList,
+    'Estatus de Unidades': MdTrendingUp,
 };
 
 const ADMIN_EMAILS_ACCESS = ['1', 'israel_21027', 'angelica_21020'];
@@ -40,7 +39,6 @@ const MANAGEMENT_ITEM = {
     rolesPermitidos: ['admin'] 
 };
 
-
 const menuItems = [
   ...menuItemsConfig.slice(0),
   MANAGEMENT_ITEM, 
@@ -49,26 +47,23 @@ const menuItems = [
 const Sidebar = () => {
   const [progress, setProgress] = useState(0);
   const { updateDisponible } = useContext(UpdateContext);
+  
   const [notificaciones, setNotificaciones] = useState({
-    IMA: 0,
-    Conductores: 0,
-    Camiones: 0,
-    Trailers: 0,
+    IMA: { red: 0, yellow: 0 },
+    Conductores: { red: 0, yellow: 0 },
+    Camiones: { red: 0, yellow: 0 },
+    Trailers: { red: 0, yellow: 0 },
   });
 
   const [subnotificaciones, setsubnotificaciones] = useState({
-    'Administrador de camiones': 0,
-    'Administrador de cajas': 0,
+    'Administrador de camiones': { red: 0, yellow: 0 },
+    'Administrador de cajas': { red: 0, yellow: 0 },
   });
 
   const apiHost = import.meta.env.VITE_API_HOST;
   const { user, logout, userPermissions } = useContext(AuthContext);
-
-  // const [userPermissions, setUserPermissions] = useState({});
-
   const [tipoUsuario, setTipoUsuario] = useState('');
 
-  //obtener credenciales del usuario
   useEffect(() => {
     const storedType = localStorage.getItem('type') || '';
     setTipoUsuario((user?.tipo_usuario || storedType || '').trim());
@@ -76,14 +71,11 @@ const Sidebar = () => {
 
   const userEmail = user?.email?.trim().toLowerCase() || localStorage.getItem('userEmail')?.trim().toLowerCase() || '';
 
-  //obtener barra de progreso descarga
   useEffect(() => {
     window.electron?.onUpdateProgress((percent) => {
-      console.log('Progreso de descarga:', percent);
       setProgress(percent);
     });
   }, []);
-
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -91,7 +83,6 @@ const Sidebar = () => {
   const expandedMenu = useSelector((state) => state.menu.expandedMenu);
   const selectedSubMenu = useSelector((state) => state.menu.selectedSubMenu);
 
-  // Comparador por rol (case-insensitive)
   const roleAllowed = useCallback(
     (roles) => {
       if (!roles || roles.length === 0) return true;
@@ -101,93 +92,34 @@ const Sidebar = () => {
     [tipoUsuario]
   );
 
-  // FUNCIÓN PARA FILTRAR POR PERMISOS DINÁMICOS
   const isSectionAllowed = useCallback((item, visibleSubs = true) => {
       if (item.name === MANAGEMENT_ITEM.name) {
           return roleAllowed(item.rolesPermitidos) && ADMIN_EMAILS_ACCESS.includes(userEmail); 
       }
-
       const dynamicPermission = userPermissions[item.name];
-      
-      if (dynamicPermission !== undefined) {
-          return dynamicPermission;
-      }
-      
-      if (item.subItems && item.subItems.length > 0) {
-          return visibleSubs;
-      }
-
+      if (dynamicPermission !== undefined) return dynamicPermission;
+      if (item.subItems && item.subItems.length > 0) return visibleSubs;
       return roleAllowed(item.rolesPermitidos);
-
   }, [roleAllowed, userEmail, userPermissions]);
 
-  // Filtrado SOLO por roles:
   const filterMenuByAccess = useCallback((items) => {
       return items.reduce((acc, item) => {
-          
           if (Array.isArray(item.subItems) && item.subItems.length > 0) {
               const visibleSubs = item.subItems.filter((subItem) => {
                   const dynamicSubPermission = userPermissions[subItem.name]; 
-
-                  if (dynamicSubPermission !== undefined) {
-                      return dynamicSubPermission;
-                  }
-                  
-                  // const subRoles = subItem.rolesPermitidos ?? item.rolesPermitidos;
-                  // return roleAllowed(subRoles);
+                  if (dynamicSubPermission !== undefined) return dynamicSubPermission;
                   return false
               });
-
-              //const canSeeSection = isSectionAllowed(item, visibleSubs.length > 0);
-
               if (visibleSubs.length > 0) {
                 acc.push({ ...item, subItems: visibleSubs });
               }
-            
             return acc;
           }
-
           const canSeeSection = isSectionAllowed(item);
-
-          if (canSeeSection) {
-              acc.push(item);
-          }
+          if (canSeeSection) acc.push(item);
           return acc;
       }, []);
   }, [isSectionAllowed, roleAllowed, userPermissions]);
-
-    // NUEVA FUNCIÓN PARA OBTENER PERMISOS
-  //   const fetchUserPermissions = useCallback(async () => {
-  //       const userId = user?.id || localStorage.getItem('userID');
-  //       if (!userId) return;
-
-  //       const formData = new FormData();
-  //       formData.append('op', 'getUserPermissions');
-  //       formData.append('user_id', userId);
-
-  //       try {
-  //           const response = await fetch(`${apiHost}/AccessManager.php`, {
-  //               method: 'POST',
-  //               body: formData,
-  //           });
-
-  //           const data = await response.json();
-
-  //           if (data.status === 'success') {
-  //               setUserPermissions(data.permissions);
-  //           } else {
-  //               console.error("Error al obtener permisos:", data.message);
-  //               setUserPermissions({});
-  //           }
-  //       } catch (error) {
-  //           console.error('Error de conexión al obtener permisos:', error);
-  //           setUserPermissions({});
-  //       }
-  //   }, [apiHost, user?.id]);
-
-  // useEffect(() => {
-  //   fetchUserPermissions();
-  // }, [fetchUserPermissions]);
 
   const menuFiltrado = useMemo(() => filterMenuByAccess(menuItems), [filterMenuByAccess]);
 
@@ -201,9 +133,7 @@ const Sidebar = () => {
   const toggleSubMenu = useCallback((menuName, hasVisibleSubs) => {
     if (!hasVisibleSubs) return;
     dispatch(setExpandedMenu(expandedMenu === menuName ? null : menuName));
-    if (expandedMenu === menuName) {
-      dispatch(setSelectedSubMenu(null));
-    }
+    if (expandedMenu === menuName) dispatch(setSelectedSubMenu(null));
   }, [dispatch, expandedMenu]);
 
   const handleSubMenuSelect = useCallback((route) => {
@@ -227,27 +157,86 @@ const Sidebar = () => {
       const data = await response.json();
 
       if (data.status === 'success') {
+        const u = data.Users[0];
+
+        // LOGICA DE NOTIFICACIONES (SEMAFORIZACIÓN)
+        
+        const imaFaltantes = parseInt(u.documentos_faltantes_ima || 0);
+        const imaVencidos = parseInt(u.ima_vencidos || 0);
+        const imaPorVencer = parseInt(u.ima_por_vencer || 0);
+
+        const driverFaltantes = parseInt(u.documentos_faltantes_driver || 0);
+        const driverVencidos = parseInt(u.driver_vencidos || 0);
+        const driverPorVencer = parseInt(u.driver_por_vencer || 0);
+
+        const truckRed = parseInt(u.documentos_faltantes_truck || 0);
+        const trailerRed = parseInt(u.documentos_faltantes_trailer || 0);
+
         setNotificaciones((prev) => ({
           ...prev,
-          IMA: data.Users[0].documentos_faltantes_ima || 0,
-          Conductores: data.Users[0].documentos_faltantes_driver || 0,
-          Camiones: (parseInt(data.Users[0].documentos_faltantes_trailer) || 0) + (parseInt(data.Users[0].documentos_faltantes_truck) || 0),
+          IMA: { 
+              red: imaVencidos, 
+              yellow: imaPorVencer 
+          },
+          Conductores: { 
+              red: driverVencidos, 
+              yellow: driverPorVencer 
+          }, 
+          Camiones: { 
+              red: truckRed + trailerRed, 
+              yellow: 0 
+          },
         }));
 
         setsubnotificaciones((prev) => ({
           ...prev,
-          'Administrador de camiones': data.Users[0].documentos_faltantes_truck || 0,
-          'Administrador de cajas': data.Users[0].documentos_faltantes_trailer || 0,
+          'Administrador de camiones': { red: truckRed, yellow: 0 },
+          'Administrador de cajas': { red: trailerRed, yellow: 0 },
         }));
       }
     } catch (error) {
-      console.error('Error al obtener los documentos:', error);
+      console.error('Error al obtener notificaciones:', error);
     }
   };
 
   useEffect(() => {
     fetchdocs();
+    const interval = setInterval(fetchdocs, 300000); 
+    return () => clearInterval(interval);
   }, []);
+
+  const NotificationBadges = ({ counts }) => {
+      const { red, yellow } = (typeof counts === 'number') ? { red: counts, yellow: 0 } : counts;
+
+      if (!red && !yellow) return null;
+
+      return (
+          <Stack direction="row" spacing={0.5} alignItems="center" sx={{ marginLeft: 'auto', paddingLeft: '8px' }}>
+              {red > 0 && (
+                  <Tooltip title={`${red} Vencidos / Faltantes`}>
+                      <Box sx={{ 
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          bgcolor: '#d32f2f', color: '#fff', borderRadius: '12px', 
+                          px: 0.8, py: 0.2, minWidth: '20px', height: '20px', fontSize: '0.75rem', fontWeight: 'bold'
+                      }}>
+                          {red}
+                      </Box>
+                  </Tooltip>
+              )}
+              {yellow > 0 && (
+                  <Tooltip title={`${yellow} Por Vencer`}>
+                      <Box sx={{ 
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          bgcolor: '#ed6c02', color: '#fff', borderRadius: '12px', 
+                          px: 0.8, py: 0.2, minWidth: '20px', height: '20px', fontSize: '0.75rem', fontWeight: 'bold'
+                      }}>
+                           {yellow}
+                      </Box>
+                  </Tooltip>
+              )}
+          </Stack>
+      );
+  };
 
   return (
     <div className="sidebar-container">
@@ -260,6 +249,7 @@ const Sidebar = () => {
           const hasSubs = !!(item.subItems && item.subItems.length > 0);
           const isOpen = expandedMenu === item.name; 
           const IconComponent = iconMap[item.name];
+          const notifData = notificaciones[item.name];
 
           return (
             <div key={item.name} className="menu-section">
@@ -267,20 +257,18 @@ const Sidebar = () => {
                 className={`menu-item ${activeMenu === item.route && !hasSubs ? 'active-item' : ''} ${hasSubs ? 'has-submenu' : ''}`}
                 onClick={() => hasSubs ? toggleSubMenu(item.name, hasSubs) : (item.route && handleNavigate(item.route))}
                 disabled={!hasSubs && !item.route}
+                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
               >
-                {IconComponent && <IconComponent className="menu-icon" />}
-                
-                <span className="menu-text-content">
-                  {item.name}
-                  {notificaciones[item.name] > 0 && (
-                    <span className="notification-badge">{notificaciones[item.name]}</span>
-                  )}
-                </span>
+                <div style={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
+                    {IconComponent && <IconComponent className="menu-icon" />}
+                    <span className="menu-text-content">{item.name}</span>
+                </div>
+
+                {notifData && <NotificationBadges counts={notifData} />}
+
                 {hasSubs && (
-                  <span className="arrow-icon-wrapper">
-                    {isOpen
-                      ? <FaChevronUp />
-                      : <FaChevronDown />}
+                  <span className="arrow-icon-wrapper" style={{ marginLeft: '8px' }}>
+                    {isOpen ? <FaChevronUp /> : <FaChevronDown />}
                   </span>
                 )}
               </button>
@@ -293,11 +281,14 @@ const Sidebar = () => {
                         key={subItem.name}
                         className={`submenu-item ${selectedSubMenu === subItem.route ? 'active-submenu' : ''}`}
                         onClick={() => handleSubMenuSelect(subItem.route)}
+                        style={{ display: 'flex', justifyContent: 'space-between', paddingRight: '15px' }}
                       >
-                        <span className="submenu-dot" /> 
-                        {subItem.name}
-                        {subnotificaciones[subItem.name] > 0 && (
-                          <span className="notification-badge">{subnotificaciones[subItem.name]}</span>
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                            <span className="submenu-dot" /> 
+                            {subItem.name}
+                        </div>
+                        {subnotificaciones[subItem.name] && (
+                            <NotificationBadges counts={subnotificaciones[subItem.name]} />
                         )}
                       </button>
                     ))}
@@ -336,8 +327,6 @@ const Sidebar = () => {
           </div>
         </div>
       )}
-
-
 
       <button className="logout-button" onClick={handleLogout}>
         <MdExitToApp className="menu-icon" />
