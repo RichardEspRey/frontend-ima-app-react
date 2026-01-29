@@ -181,6 +181,7 @@ const ExpenseScreen = () => {
         apiFormData.append('op', 'Alta');
 
         try {
+            //const res = await fetch(`${apiHost}/save_expense.php`, { method: 'POST', body: apiFormData });
             const res = await fetch(`${apiHost}/save_expense.php`, { method: 'POST', body: apiFormData });
             const result = await res.json();
             
