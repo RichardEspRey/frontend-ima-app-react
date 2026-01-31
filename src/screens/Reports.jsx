@@ -5,7 +5,7 @@ import {
   CircularProgress, Container, ToggleButton, ToggleButtonGroup
 } from "@mui/material";
 import { BarChart } from '@mui/x-charts/BarChart';
-import { ScatterChart } from '@mui/x-charts/ScatterChart'; 
+import { LineChart } from '@mui/x-charts/LineChart'; 
 
 import TableViewIcon from '@mui/icons-material/TableView';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance'; 
@@ -249,7 +249,7 @@ export default function Reports() {
                 <Box>
                     <Typography variant="h6" fontWeight={700}>Costo de Diesel por Galón</Typography>
                     <Typography variant="caption" color="text.secondary">
-                        Dispersión: Eje X (Volumen) vs Eje Y (Precio Unitario)
+                        Tendencia de precio unitario: Eje X (Tiempo) vs Eje Y (Precio/Galón)
                     </Typography>
                 </Box>
             </Stack>
@@ -278,16 +278,28 @@ export default function Reports() {
                     <Typography color="text.secondary">No hay datos de precio Fleet One</Typography>
                 </Stack>
             ) : (
-                <ScatterChart
-                    series={[{
-                        label: 'Costo Promedio',
-                        data: costData.map(d => ({ x: d.x, y: d.y, id: d.id })),
-                        color: '#ff5722',
+                <LineChart
+                    dataset={costData}
+                    xAxis={[{ 
+                        dataKey: 'id', 
+                        label: 'Periodo', 
+                        scaleType: 'point' 
                     }]}
-                    xAxis={[{ label: 'Volumen Total (Galones)', min: 0 }]}
-                    yAxis={[{ label: 'Precio por Galón ($)', min: 0 }]}
+                    series={[
+                        { 
+                            dataKey: 'y', 
+                            label: 'Precio Promedio ($/gal)', 
+                            color: '#ff5722',
+                            valueFormatter: (v) => `$${Number(v).toFixed(2)}`,
+                            showMark: true,
+                            curve: 'linear' 
+                        },
+                    ]}
+                    yAxis={[{ 
+                        label: 'Precio por Galón ($)', 
+                        min: 0 
+                    }]}
                     {...chartSetting}
-                    tooltip={{ trigger: 'item' }}
                 />
             )}
         </Box>
