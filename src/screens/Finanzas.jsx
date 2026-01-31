@@ -10,6 +10,7 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import SearchIcon from '@mui/icons-material/Search';
 import ReceiptIcon from '@mui/icons-material/Receipt'; 
+import BusinessIcon from '@mui/icons-material/Business';
 import Swal from 'sweetalert2';
 
 import { TripFinanceRow } from '../components/TripFinanceRow';
@@ -28,6 +29,7 @@ const Finanzas = () => {
   const [search, setSearch] = useState('');
   const [invoiceSearch, setInvoiceSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('All'); 
+  const [companySearch, setCompanySearch] = useState('');
   
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -43,6 +45,7 @@ const Finanzas = () => {
       fd.append('op', 'All_finanzas');
       const res = await fetch(`${apiHost}/formularios.php`, { method: 'POST', body: fd });
       const json = await res.json();
+      console.log(json)
 
       if (json.status === 'success' && Array.isArray(json.data)) {
         const norm = json.data.map(t => {
@@ -60,6 +63,7 @@ const Finanzas = () => {
               status: s.status != null ? Number(s.status) : 0, 
               invoice_number: s.invoice_number ?? '',
               moneda: s.moneda ?? 'USD', 
+              company_name: s.company_name ?? '',
               _dirty: false, 
             })) : [];
 
@@ -118,6 +122,15 @@ const Finanzas = () => {
         );
     }
 
+    if (companySearch.trim()) {
+        const qComp = companySearch.trim().toLowerCase();
+        result = result.filter(t => 
+            Array.isArray(t.stages) && t.stages.some(s => 
+                String(s.company_name || '').toLowerCase().includes(qComp)
+            )
+        );
+    }
+
     if (statusFilter !== 'All') {
       result = result.filter(t => t.status_trip === Number(statusFilter));
     }
@@ -130,7 +143,7 @@ const Finanzas = () => {
     });
 
     return result;
-  }, [trips, search, invoiceSearch, statusFilter, tabValue]);
+  }, [trips, search, invoiceSearch, companySearch,statusFilter, tabValue]);
 
   const pageTrips = filteredAndSorted.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
   const dirtyCount = useMemo(() => collectDirtyStages(trips).length, [trips]);
@@ -265,6 +278,21 @@ const Finanzas = () => {
                     onChange={(e) => { setInvoiceSearch(e.target.value); setPage(0); }} 
                     InputProps={{
                         startAdornment: <ReceiptIcon fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />,
+                        sx: { bgcolor: 'white' }
+                    }}
+                />
+            </Grid>
+
+            <Grid item xs={12} md={3}>
+                <TextField 
+                    fullWidth
+                    size="small" 
+                    label="Buscar Compañía"
+                    placeholder="Ej. TLS, 7 Star..." 
+                    value={companySearch} 
+                    onChange={(e) => { setCompanySearch(e.target.value); setPage(0); }} 
+                    InputProps={{
+                        startAdornment: <BusinessIcon fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />,
                         sx: { bgcolor: 'white' }
                     }}
                 />

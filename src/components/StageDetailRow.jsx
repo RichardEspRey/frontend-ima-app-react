@@ -55,6 +55,7 @@ export const StageDetailRow = ({ trip_id, stage, handleStageFieldChange }) => {
             <TableCell sx={{ fontWeight: 500 }}>
                 {stage.invoice_number ? stage.invoice_number : <em>-</em>}
             </TableCell>
+            <TableCell>{stage.company_name || <em>-</em>}</TableCell>
             {/* <TableCell>{stage.stage_number}</TableCell> */}
             <TableCell>{stage.origin || <em>-</em>}</TableCell>
             <TableCell>{stage.destination || <em>-</em>}</TableCell>
