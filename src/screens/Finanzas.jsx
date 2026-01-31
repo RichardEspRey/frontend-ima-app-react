@@ -2,7 +2,8 @@ import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
   TablePagination, TextField, Box, Typography, CircularProgress, Button, Badge, 
-  Tooltip, Stack, MenuItem, Tabs, Tab, Grid, Divider
+  Tooltip, Stack, MenuItem, Tabs, Tab, Grid, Divider,
+  Autocomplete
 } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 import FilterListIcon from '@mui/icons-material/FilterList';
@@ -30,6 +31,7 @@ const Finanzas = () => {
   const [invoiceSearch, setInvoiceSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('All'); 
   const [companySearch, setCompanySearch] = useState('');
+  const [companiesList, setCompaniesList] = useState([]);
   
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -37,6 +39,20 @@ const Finanzas = () => {
   const [saving, setSaving] = useState(false);
 
   const [tabValue, setTabValue] = useState(0);
+
+  const fetchCompanies = useCallback(async () => {
+    try {
+        const fd = new FormData();
+        fd.append('op', 'get_all_companies');
+        const res = await fetch(`${apiHost}/formularios.php`, { method: 'POST', body: fd });
+        const json = await res.json();
+        if (json.status === 'success') {
+            setCompaniesList(json.data);
+        }
+    } catch (e) {
+        console.error("Error fetching companies", e);
+    }
+  }, []);
 
   const fetchFinanzas = useCallback(async () => {
     setLoading(true);
@@ -91,7 +107,10 @@ const Finanzas = () => {
     }
   }, []);
 
-  useEffect(() => { fetchFinanzas(); }, [fetchFinanzas]);
+  useEffect(() => { 
+    fetchFinanzas(); 
+    fetchCompanies();
+  }, [fetchFinanzas, fetchCompanies]);
 
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
@@ -122,7 +141,7 @@ const Finanzas = () => {
         );
     }
 
-    if (companySearch.trim()) {
+    if (companySearch && companySearch.trim()) {
         const qComp = companySearch.trim().toLowerCase();
         result = result.filter(t => 
             Array.isArray(t.stages) && t.stages.some(s => 
@@ -253,7 +272,7 @@ const Finanzas = () => {
       <Paper elevation={0} sx={{ p: 2, mb: 3, bgcolor: '#f5f5f5', borderRadius: 2, border: '1px solid #e0e0e0' }}>
         <Grid container spacing={2} alignItems="center">
             
-            <Grid item xs={12} md={3}>
+            <Grid item xs={12} md={2}>
                 <TextField 
                     fullWidth
                     size="small" 
@@ -283,18 +302,34 @@ const Finanzas = () => {
                 />
             </Grid>
 
-            <Grid item xs={12} md={3}>
-                <TextField 
+            <Grid item xs={12} md={4}>
+                <Autocomplete
                     fullWidth
-                    size="small" 
-                    label="Buscar Compañía"
-                    placeholder="Ej. TLS, 7 Star..." 
-                    value={companySearch} 
-                    onChange={(e) => { setCompanySearch(e.target.value); setPage(0); }} 
-                    InputProps={{
-                        startAdornment: <BusinessIcon fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />,
-                        sx: { bgcolor: 'white' }
+                    options={companiesList}
+                    getOptionLabel={(option) => option.nombre_compania || ''}
+                    onChange={(event, newValue) => {
+                        setCompanySearch(newValue ? newValue.nombre_compania : '');
+                        setPage(0);
                     }}
+                    renderInput={(params) => (
+                        <TextField 
+                            {...params} 
+                            label="Buscar Compañía" 
+                            placeholder="Seleccionar..." 
+                            size="small"
+                            sx={{ bgcolor: 'white' }}
+                            InputProps={{
+                                ...params.InputProps,
+                                startAdornment: (
+                                    <>
+                                        <BusinessIcon fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />
+                                        {params.InputProps.startAdornment}
+                                    </>
+                                )
+                            }}
+                        />
+                    )}
+                    noOptionsText="No se encontraron compañías"
                 />
             </Grid>
 
