@@ -80,6 +80,8 @@ const Finanzas = () => {
               invoice_number: s.invoice_number ?? '',
               moneda: s.moneda ?? 'USD', 
               company_name: s.company_name ?? '',
+              fecha_inicio_cobro: s.fecha_inicio_cobro, 
+              fecha_pago_final: s.fecha_pago_final,
               _dirty: false, 
             })) : [];
 

@@ -89,6 +89,7 @@ export const TripFinanceRow = ({ trip, isOpen, onToggle, onStageChange }) => {
                     <TableCell sx={{ fontWeight: 600 }}>Tarifa (rate)</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Método de pago</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Tarifa pagada</TableCell>
+                    <TableCell sx={{ fontWeight: 600, textAlign: 'center' }}>Días Crédito</TableCell>
                     
                     {canViewDeficit && (
                         <TableCell sx={{ fontWeight: 600, color: '#d32f2f' }}>% Déficit</TableCell>

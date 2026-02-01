@@ -1,7 +1,8 @@
 import React, { useContext } from 'react';
-import { TableCell, TableRow, TextField, Select, MenuItem, InputAdornment, Box, Typography } from '@mui/material';
+import { TableCell, TableRow, TextField, Select, MenuItem, InputAdornment, Box, Typography, Chip } from '@mui/material';
 import { PAYMENT_METHODS, STATUS_OPTIONS } from '../constants/finances';
 import { AuthContext } from '../auth/AuthContext';
+import AccessTimeIcon from '@mui/icons-material/AccessTime'; 
 
 // Helpers 
 const money = (v) =>
@@ -22,13 +23,43 @@ const renderStatusValue = (val) => {
 export const StageDetailRow = ({ trip_id, stage, handleStageFieldChange }) => {
     const { user } = useContext(AuthContext);
 
-    // Lógica de Permisos
     const ROLES_PERMITIDOS = ['admin', 'dev'];
     const userRole = (user?.tipo_usuario || '').toLowerCase();
     const canViewDeficit = ROLES_PERMITIDOS.includes(userRole);
 
-    const isPagada = Number(stage.status) === 3; 
+    const statusVal = Number(stage.status);
+    const isPagada = statusVal === 3; 
     
+    let daysCounter = '-';
+    let daysColor = 'default';
+
+    if (statusVal !== 0 && stage.fecha_inicio_cobro) {
+        const startDateStr = String(stage.fecha_inicio_cobro).replace(' ', 'T');
+        const start = new Date(startDateStr);
+        
+        let end;
+        if (isPagada && stage.fecha_pago_final) {
+            const endDateStr = String(stage.fecha_pago_final).replace(' ', 'T');
+            end = new Date(endDateStr);
+        } else {
+            end = new Date(); 
+        }
+
+        const diffTime = Math.abs(end - start);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+        
+        daysCounter = `${diffDays} días`;
+
+        if (isPagada) {
+            daysColor = 'success';
+        } else {
+            if (diffDays > 45) daysColor = 'error'; 
+            else if (diffDays > 30) daysColor = 'warning'; 
+            else daysColor = 'primary'; 
+        }
+    }
+    // ---------------------------------
+
     let deficitContent = '-';
     let deficitColor = 'text.secondary';
 
@@ -51,12 +82,10 @@ export const StageDetailRow = ({ trip_id, stage, handleStageFieldChange }) => {
 
     return (
         <TableRow hover selected={!!stage._dirty} sx={{ bgcolor: stage._dirty ? '#fff3e0' : 'transparent' }}> 
-            {/* <TableCell sx={{ fontWeight: 500 }}>{stage.trip_stage_id}</TableCell> */}
             <TableCell sx={{ fontWeight: 500 }}>
                 {stage.invoice_number ? stage.invoice_number : <em>-</em>}
             </TableCell>
             <TableCell>{stage.company_name || <em>-</em>}</TableCell>
-            {/* <TableCell>{stage.stage_number}</TableCell> */}
             <TableCell>{stage.origin || <em>-</em>}</TableCell>
             <TableCell>{stage.destination || <em>-</em>}</TableCell>
             
@@ -97,6 +126,22 @@ export const StageDetailRow = ({ trip_id, stage, handleStageFieldChange }) => {
                     }}
                 />
             </TableCell>
+
+            <TableCell align="center">
+                {daysCounter !== '-' ? (
+                    <Chip 
+                        icon={!isPagada ? <AccessTimeIcon fontSize="small"/> : null}
+                        label={daysCounter} 
+                        size="small" 
+                        color={daysColor} 
+                        variant={isPagada ? "filled" : "outlined"}
+                        sx={{ fontWeight: 'bold' }}
+                    />
+                ) : (
+                    <Typography variant="caption" color="text.secondary">—</Typography>
+                )}
+            </TableCell>
+            {/* ------------------------------------- */}
 
             {canViewDeficit && (
                 <TableCell sx={{ fontWeight: 700 }}>
