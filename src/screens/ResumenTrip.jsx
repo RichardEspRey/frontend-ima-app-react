@@ -4,11 +4,13 @@ import {
   Grid, Card, CardContent,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Button
-} from '@mui/material'; 
+} from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+ 
 
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -32,6 +34,7 @@ const fmtDateOnly = (d) => (d ? new Date(d).toLocaleDateString('es-MX') : '—')
 const fmtTime = (t) => (t ? t.slice(0, 5) : null);
 
 export default function ResumenTrip() {
+  const navigate = useNavigate();
   const { tripId } = useParams();
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -122,6 +125,16 @@ export default function ResumenTrip() {
 
   return (
     <Paper sx={{ p: 2, m: 2 }}>
+      <Box sx={{ mb: 2 }} className="no-print">
+        <Button 
+          variant="outlined" 
+          startIcon={<ArrowBackIcon />} 
+          onClick={() => navigate(-1)}
+          color="inherit"
+        >
+          Volver a TripAdmin
+        </Button>
+      </Box>
       <div ref={printRef}>
         <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
           <Typography variant="h6" fontWeight={700}>{header.trip_number || '—'}</Typography>
