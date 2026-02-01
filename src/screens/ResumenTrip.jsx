@@ -47,6 +47,8 @@ export default function ResumenTrip() {
       const res = await fetch(`${apiHost}/trips.php`, { method: 'POST', body: fd });
       const json = await res.json();
 
+      console.log(json)
+
       if (json.status === 'success' && json.data) {
         setSummary(json.data);
       } else {
@@ -201,7 +203,7 @@ export default function ResumenTrip() {
                     <TableCell>{fmtDate(r.fecha)}</TableCell>
                     <TableCell>{r.odometro || '—'}</TableCell>
                     <TableCell>{Number(r.galones ?? 0).toFixed(2)} gal</TableCell>
-                    <TableCell>{money(r.fleetone || 0, 'USD')}</TableCell>
+                    <TableCell>{money(r.monto || 0, 'USD')}</TableCell>
                     <TableCell>{r.nombre || '—'}</TableCell>
                   </TableRow>
                 ))}
