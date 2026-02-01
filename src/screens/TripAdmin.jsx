@@ -38,7 +38,10 @@ const TripAdmin = () => {
     const [error, setError] = useState(null);
 
     // ** ESTADO PARA LAS PESTAÑAS **
-    const [tabValue, setTabValue] = useState(1); 
+    // 0: In Coming (Por Iniciar)
+    // 1: Activos (In Transit / Almost Over)
+    // 2: Completados (Completed / Cancelled)
+    const [tabValue, setTabValue] = useState(1); // Iniciamos en 1 (Activos) por conveniencia
 
     // ** ESTADOS PARA LOS FILTROS PRINCIPALES **
     const [filterTrip, setFilterTrip] = useState('');
@@ -75,7 +78,6 @@ const TripAdmin = () => {
             let result;
             try {
                 result = JSON.parse(responseText);
-                console.log(result)
             }
             catch (e) {
                 console.error("Error parseando JSON:", e, "Respuesta recibida:", responseText);
@@ -145,21 +147,16 @@ const TripAdmin = () => {
 
         const filtered = trips.filter(trip => {
 
-            // --- LÓGICA DE PESTAÑAS (TABS) ---
             const status = trip.status;
             
             if (tabValue === 0) {
-                // Pestaña 1: In Coming
                 if (status !== 'In Coming') return false;
             } else if (tabValue === 1) {
-                // Pestaña 2: Activos (En Ruta)
                 if (status !== 'In Transit' && status !== 'Almost Over') return false;
             } else if (tabValue === 2) {
-                // Pestaña 3: Completados
                 if (status !== 'Completed' && status !== 'Cancelled') return false;
             }
 
-            // --- FILTROS DE FECHA ---
             let tripCreationDate = null;
             if (trip.creation_date) { try { tripCreationDate = dayjs(trip.creation_date); if (!tripCreationDate.isValid()) { tripCreationDate = null; } } catch (e) { } }
             const start = startDate ? dayjs(startDate).startOf('day') : null;
@@ -167,7 +164,6 @@ const TripAdmin = () => {
 
             const withinDateRange = ((!start || (tripCreationDate && tripCreationDate.isSameOrAfter(start))) && (!end || (tripCreationDate && tripCreationDate.isSameOrBefore(end))));
 
-            // --- FILTROS DE TEXTO ---
             const matchTrip = !tripFilterValue || (String(trip.trip_number || '').trim().toLowerCase().includes(tripFilterValue));
             const driverNombre = (trip.driver_nombre || '').trim().toLowerCase();
             const driverSecondNombre = (trip.driver_second_nombre || '').trim().toLowerCase();
@@ -325,7 +321,6 @@ const TripAdmin = () => {
     const userType = localStorage.getItem('type');
     const isAdmin = userType === 'admin';
 
-    // Texto para el mensaje de tabla vacía según el tab
     const getEmptyMessage = () => {
         if (tabValue === 0) return 'Por Iniciar';
         if (tabValue === 1) return 'Activos';
@@ -338,7 +333,6 @@ const TripAdmin = () => {
                 Administrador de Viajes
             </Typography>
 
-            {/* --- NUEVO SELECTOR DE PESTAÑAS (Compacto y Elegante) --- */}
             <Paper 
                 elevation={0} 
                 sx={{ 
@@ -353,13 +347,13 @@ const TripAdmin = () => {
                     textColor="primary"
                     indicatorColor="primary"
                     sx={{
-                        minHeight: '40px', // Altura reducida
+                        minHeight: '40px',
                         '& .MuiTab-root': {
-                            minHeight: '40px', // Altura reducida de cada tab
-                            textTransform: 'none', // Texto normal (no mayúsculas forzadas)
+                            minHeight: '40px',
+                            textTransform: 'none', 
                             fontWeight: 600,
                             fontSize: '0.95rem',
-                            px: 3 // Padding horizontal controlado
+                            px: 3
                         }
                     }}
                 >
@@ -369,7 +363,6 @@ const TripAdmin = () => {
                 </Tabs>
             </Paper>
 
-            {/* --- BARRA DE FILTROS --- */}
             <Box sx={{ mb: 2 }}>
                 <Button
                     variant="outlined"
@@ -472,6 +465,7 @@ const TripAdmin = () => {
                                     <TripRow
                                         key={trip.trip_id}
                                         trip={trip}
+                                        isCompletedTab={tabValue === 2} // Importante: Ahora es tabValue === 2
                                         onEdit={handleEditTrip}
                                         onFinalize={handleFinalizeTrip}
                                         onAlmostOver={handleAlmostOverTrip}
