@@ -37,7 +37,6 @@ export default function ResumenTrip() {
   const [loading, setLoading] = useState(true);
   const printRef = useRef();
   const [driverPayManual, setDriverPayManual] = useState('');
-  // Carga desde tu API: trips.php con op=trip_summary
   const fetchSummary = async (id) => {
     setLoading(true);
     try {
@@ -88,14 +87,11 @@ export default function ResumenTrip() {
   const pageW = pdf.internal.pageSize.getWidth();   // 210 mm en A4
   const pageH = pdf.internal.pageSize.getHeight();  // 297 mm en A4
 
-  // Márgenes deseados (ajusta a gusto)
   const margin = { top: 5, right: 8, bottom: 0, left: 8 };
 
-  // Escalamos la imagen al ancho disponible (página - márgenes laterales)
   const imgW = pageW - margin.left - margin.right;
   const imgH = (imgW / canvas.width) * canvas.height;
 
-  // Dibuja la imagen con padding/margen izquierdo
   pdf.addImage(imgData, 'JPEG', margin.left, margin.top, imgW, imgH);
 
   pdf.output('dataurlnewwindow', {
@@ -121,21 +117,16 @@ export default function ResumenTrip() {
 
   return (
     <Paper sx={{ p: 2, m: 2 }}>
-      {/* CONTENEDOR CAPTURABLE */}
       <div ref={printRef}>
-        {/* Encabezado del trip */}
         <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
           <Typography variant="h6" fontWeight={700}>{header.trip_number || '—'}</Typography>
           <Typography color="text.secondary">{header.nombre || '—'}</Typography>
-          {/* Puedes mostrar la fecha de creación como chip */}
           <Chip label={fmtDate(header.creation_date)} />
-          {/* Mapea el status a un color simple */}
           <Chip color="warning" label={header.status || '—'} />
           <Box flex={1} />
         
         </Stack>
 
-        {/* Detalles de Etapas */}
         <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 1 }}>
           Detalles de Etapas y Documentos
         </Typography>

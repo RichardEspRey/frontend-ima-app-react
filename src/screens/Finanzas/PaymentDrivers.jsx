@@ -97,6 +97,8 @@ const PaymentDrivers = () => {
       const res = await fetch(`${apiHost}/formularios.php`, { method: "POST", body: fd });
       const json = await res.json();
 
+      console.log(json)
+
       if (json.status === "success" && Array.isArray(json.data)) {
         const norm = json.data.map((t) => ({
           trip_id: Number(t.trip_id),
@@ -107,7 +109,7 @@ const PaymentDrivers = () => {
           total_millas_cortas: Number(t.total_millas_cortas ?? 0),
           status_payment: t.status_payment,
           Pago_driver: t.Pago_driver ? Number(t.Pago_driver) : 0,
-          status_trip: t.status
+          status_trip: t.status_txt
         }));
         setTrips(norm);
       } else {
@@ -276,8 +278,10 @@ const PaymentDrivers = () => {
                 const isAutorizado = String(t.status_payment) === "2";
                 // const isPagado = String(t.status_payment) === "1";
 
+                const uniqueKey = `${t.trip_id}-${t.driver_id}`;
+
                 return (
-                  <TableRow key={t.trip_id} hover>
+                  <TableRow key={uniqueKey} hover>
                     <TableCell>
                         <Typography fontWeight={700} color="primary" variant="body2">#{t.trip_number}</Typography>
                     </TableCell>

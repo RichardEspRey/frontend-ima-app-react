@@ -38,10 +38,7 @@ const TripAdmin = () => {
     const [error, setError] = useState(null);
 
     // ** ESTADO PARA LAS PESTAÑAS **
-    // 0: In Coming (Por Iniciar)
-    // 1: Activos (In Transit / Almost Over)
-    // 2: Completados (Completed / Cancelled)
-    const [tabValue, setTabValue] = useState(1); // Iniciamos en 1 (Activos) por conveniencia
+    const [tabValue, setTabValue] = useState(1); 
 
     // ** ESTADOS PARA LOS FILTROS PRINCIPALES **
     const [filterTrip, setFilterTrip] = useState('');
@@ -78,6 +75,7 @@ const TripAdmin = () => {
             let result;
             try {
                 result = JSON.parse(responseText);
+                console.log(result)
             }
             catch (e) {
                 console.error("Error parseando JSON:", e, "Respuesta recibida:", responseText);
@@ -449,7 +447,6 @@ const TripAdmin = () => {
                             <TableCell sx={{ fontWeight: 'bold' }}>Return Date</TableCell>
                             <TableCell sx={{ fontWeight: 'bold' }}>Actions</TableCell>
                             
-                            {/* Mostrar Admin/Resumen solo en la pestaña de Finalizados (tab 2) */}
                             {tabValue === 2 && (
                                 <TableCell sx={{ fontWeight: 'bold' }}>Resumen</TableCell>
                             )}
@@ -475,7 +472,6 @@ const TripAdmin = () => {
                                     <TripRow
                                         key={trip.trip_id}
                                         trip={trip}
-                                        isCompletedTab={tabValue === 2} // Importante: Ahora es tabValue === 2
                                         onEdit={handleEditTrip}
                                         onFinalize={handleFinalizeTrip}
                                         onAlmostOver={handleAlmostOverTrip}
