@@ -145,6 +145,24 @@ export const menuItemsConfig = [
         route: "/admin-trips",
         rolesPermitidos: ["admin", "Blanca", "Candy", "Mia"],
       },
+      {
+        name: "Ver Pestaña Incoming",
+        route: null,
+        hideInSidebar: true,
+        rolesPermitidos: ["admin", "Blanca", "Candy"],
+      },
+      {
+        name: "Ver Pestaña En Ruta",
+        route: null,
+        hideInSidebar: true,
+        rolesPermitidos: ["admin", "Blanca", "Candy"],
+      },
+      {
+        name: "Ver Pestaña Completados",
+        route: null,
+        hideInSidebar: true,
+        rolesPermitidos: ["admin", "Blanca", "Candy"],
+      },
     ],
   },
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useContext } from 'react';
 import {
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
     Button, TablePagination, TextField, Box, Typography, CircularProgress, Alert,
@@ -8,7 +8,7 @@ import {
 import FilterListIcon from '@mui/icons-material/FilterList';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import ScheduleIcon from '@mui/icons-material/Schedule'; // Icono para In Coming
+import ScheduleIcon from '@mui/icons-material/Schedule'; 
 
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -25,6 +25,7 @@ import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 
 import { TripRow } from '../components/TripRow';
+import { AuthContext } from '../auth/AuthContext';
 
 const DIRECTION_OPTIONS = [
     { value: 'All', label: 'Todas las Direcciones' },
@@ -32,16 +33,40 @@ const DIRECTION_OPTIONS = [
     { value: 'Going Down', label: 'Going Down' }
 ];
 
+const TABS_CONFIG = [
+    { id: 0, label: "In Coming", permission: "Ver Pestaña Incoming" },
+    { id: 1, label: "En Ruta", permission: "Ver Pestaña En Ruta" },
+    { id: 2, label: "Finalizados", permission: "Ver Pestaña Completados" }
+];
+
 const TripAdmin = () => {
+    const { userPermissions } = useContext(AuthContext);
     const [trips, setTrips] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // ** ESTADO PARA LAS PESTAÑAS **
-    // 0: In Coming (Por Iniciar)
-    // 1: Activos (In Transit / Almost Over)
-    // 2: Completados (Completed / Cancelled)
-    const [tabValue, setTabValue] = useState(1); // Iniciamos en 1 (Activos) por conveniencia
+    const allowedTabs = useMemo(() => {
+        if (!userPermissions) return []; 
+        
+        return TABS_CONFIG.filter(tab => userPermissions[tab.permission] === true);
+    }, [userPermissions]);
+
+    // const [tabValue, setTabValue] = useState(1); 
+
+    const [tabValue, setTabValue] = useState(() => {
+        return 1; 
+    });
+
+    useEffect(() => {
+        if (allowedTabs.length > 0) {
+            const isAllowed = allowedTabs.some(t => t.id === tabValue);
+            
+            if (!isAllowed) {
+                const hasEnRuta = allowedTabs.find(t => t.id === 1);
+                setTabValue(hasEnRuta ? 1 : allowedTabs[0].id);
+            }
+        }
+    }, [allowedTabs, tabValue]);
 
     // ** ESTADOS PARA LOS FILTROS PRINCIPALES **
     const [filterTrip, setFilterTrip] = useState('');
@@ -327,6 +352,19 @@ const TripAdmin = () => {
         return 'Finalizados';
     };
 
+    if (allowedTabs.length === 0) {
+        return (
+            <div className="trip-admin">
+                 <Typography variant="h4" component="h1" fontWeight={700} gutterBottom sx={{ mb: 3 }}>
+                    Administrador de Viajes
+                </Typography>
+                <Alert severity="warning">
+                    No tienes permisos para visualizar ninguna categoría de viajes. Contacta a tu administrador.
+                </Alert>
+            </div>
+        );
+    }
+
     return (
         <div className="trip-admin">
             <Typography variant="h4" component="h1" fontWeight={700} gutterBottom sx={{ mb: 3 }}>
@@ -357,9 +395,9 @@ const TripAdmin = () => {
                         }
                     }}
                 >
-                    <Tab label="In Coming" />
-                    <Tab label="En Ruta" />
-                    <Tab label="Finalizados" />
+                    {allowedTabs.map(tab => (
+                        <Tab key={tab.id} label={tab.label} value={tab.id} />
+                    ))}
                 </Tabs>
             </Paper>
 

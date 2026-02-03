@@ -2,14 +2,12 @@ import { useState, useEffect, useContext, useCallback } from 'react';
 import { AuthContext } from '../auth/AuthContext';
 import { menuItemsConfig } from '../config/menuConfig';
 import UserTable from '../components/UserTable';
-import PermissionModal from '../components/PermissionModal';
+import PermissionDrawer from '../components/PermissionDrawer'; // <--- CAMBIO AQUÍ
 import { 
-    Container, Typography, Box, Paper, CircularProgress, 
-    Alert, Switch, FormControlLabel,
-    Snackbar, Card,
-    Accordion, AccordionSummary, AccordionDetails, Grid, Tooltip
+    Container, Typography, Box, CircularProgress, 
+    Alert, Snackbar
 } from '@mui/material';
-import { Settings as SettingsIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
+import { Settings as SettingsIcon } from '@mui/icons-material';
 
 const getSectionsToManage = () => {
   return menuItemsConfig;
@@ -26,7 +24,7 @@ const ProfileAccessManager = () => {
     const [users, setUsers] = useState([]);
     const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
     
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isDrawerOpen, setIsDrawerOpen] = useState(false); 
     const [selectedUser, setSelectedUser] = useState(null);
 
     const sectionsToManage = getSectionsToManage();
@@ -68,7 +66,6 @@ const ProfileAccessManager = () => {
         const updatedUsers = users.map(u => {
             if (u.id === userId) {
                 userUpdated = true;
-                // Crear una nueva copia del objeto de permisos
                 const newPermissions = { ...u.permissions, [sectionName]: canView };
                 return { ...u, permissions: newPermissions };
             }
@@ -78,10 +75,8 @@ const ProfileAccessManager = () => {
         setUsers(updatedUsers);
 
         if (userUpdated && selectedUser && selectedUser.id === userId) {
-            // Encontrar el usuario actualizado dentro del nuevo arreglo `updatedUsers`
             const updatedUserInModal = updatedUsers.find(u => u.id === userId);
             if (updatedUserInModal) {
-                // Actualizar el estado `selectedUser` para forzar la re-renderización del modal
                 setSelectedUser(updatedUserInModal); 
             }
         }
@@ -101,26 +96,26 @@ const ProfileAccessManager = () => {
             const data = await response.json();
 
             if (data.status === 'success') {
-                setSnackbar({ open: true, message: `Permiso de ${sectionName} actualizado.`, severity: 'success' });
+                setSnackbar({ open: true, message: `Permiso actualizado correctamente.`, severity: 'success' });
             } else {
                 setSnackbar({ open: true, message: data.message || 'Error al guardar el permiso.', severity: 'error' });
-                fetchUsers(); // Revertir cambio si falla
+                fetchUsers(); 
             }
         } catch (err) {
             console.error(err);
             setSnackbar({ open: true, message: 'Error de conexión al actualizar.', severity: 'error' });
-            fetchUsers(); // Revertir cambio si falla
+            fetchUsers(); 
         }
     };
 
-    // Funciones para gestionar el modal
-    const handleOpenModal = (userToEdit) => {
+    // Funciones para gestionar el Drawer
+    const handleOpenDrawer = (userToEdit) => {
         setSelectedUser(userToEdit);
-        setIsModalOpen(true);
+        setIsDrawerOpen(true);
     };
 
-    const handleCloseModal = () => {
-        setIsModalOpen(false);
+    const handleCloseDrawer = () => {
+        setIsDrawerOpen(false);
         setSelectedUser(null);
     };
 
@@ -128,7 +123,6 @@ const ProfileAccessManager = () => {
         setSnackbar({ ...snackbar, open: false });
     };
 
-    // Validación de acceso
     if (!user || user.tipo_usuario.toLowerCase() !== 'admin' || !ADMIN_EMAILS_ACCESS.includes(user.email)) {
         return (
             <Container maxWidth="lg" sx={{ mt: 4 }}>
@@ -153,22 +147,22 @@ const ProfileAccessManager = () => {
                     Gestor de Perfiles y Accesos
                 </Typography>
                 <Typography variant="body1" color="text.secondary">
-                    Administra los accesos al menú y submenús para todos los usuarios.
+                    Administra los accesos al menú y submenús (pestañas) para todos los usuarios.
                 </Typography>
             </Box>
 
             {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
             
-            {/* VISTA MAESTRA CON BÚSQUEDA Y PAGINACIÓN */}
+            {/* VISTA MAESTRA */}
             <UserTable 
                 users={users} 
-                onEditUser={handleOpenModal} 
+                onEditUser={handleOpenDrawer} // <--- Pasamos la nueva función
             />
 
-            {/* MODAL DE EDICIÓN DE PERMISOS */}
-            <PermissionModal
-                open={isModalOpen}
-                handleClose={handleCloseModal}
+            {/* NUEVO DRAWER (Panel Lateral) */}
+            <PermissionDrawer
+                open={isDrawerOpen}
+                handleClose={handleCloseDrawer}
                 user={selectedUser}
                 sectionsToManage={sectionsToManage}
                 handlePermissionChange={handlePermissionChange}
