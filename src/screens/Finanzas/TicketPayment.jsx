@@ -3,7 +3,7 @@ import {
   Box, Paper, Typography, Table, TableHead, TableBody, TableRow, TableCell,
   TextField, Divider, Button, Grid, Stack, Chip, Card, CardContent, InputAdornment, IconButton, Tooltip
 } from "@mui/material";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import Swal from "sweetalert2";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
@@ -25,6 +25,7 @@ const apiHost = import.meta.env.VITE_API_HOST;
 
 const TicketPayment = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { trip_id } = useParams();
   const printRef = useRef(null);
 
@@ -44,6 +45,10 @@ const TicketPayment = () => {
       const fd = new FormData();
       fd.append("op", "get_ticket_pago");
       fd.append("trip_id", trip_id);
+
+      if (location.state?.driver_id) {
+        fd.append("driver_id", location.state.driver_id);
+      }
 
       const res = await fetch(`${apiHost}/formularios.php`, { method: "POST", body: fd });
       const json = await res.json();

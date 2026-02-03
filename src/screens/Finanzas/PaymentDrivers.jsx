@@ -331,7 +331,7 @@ const PaymentDrivers = () => {
                               <IconButton
                                   size="small"
                                   color="primary"
-                                  onClick={() => navigate(`/ticketPayment/${t.trip_id}`)}
+                                  onClick={() => navigate(`/ticketPayment/${t.trip_id}`, { state: { driver_id: t.driver_id } })}
                                   sx={{ border: '1px solid #e0e0e0' }}
                               >
                                   <VisibilityIcon fontSize="small" />
