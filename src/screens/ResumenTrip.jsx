@@ -288,11 +288,11 @@ export default function ResumenTrip() {
                   <TableCell sx={{ color: '#2e7d32' }}>Dato de la Base de datos</TableCell>
                 </TableRow>
 
-                <TableRow sx={{ bgcolor: '#f1f8e9' }}>
+                {/* <TableRow sx={{ bgcolor: '#f1f8e9' }}>
                    <TableCell sx={{ fontWeight: 700 }}>Utilidad Estimada</TableCell>
                    <TableCell sx={{ fontWeight: 700, fontSize: '1.1rem' }}>{money(totals.total, 'USD')}</TableCell>
                    <TableCell>Calculado</TableCell>
-                </TableRow>
+                </TableRow> */}
                 
               </TableBody>
             </Table>
