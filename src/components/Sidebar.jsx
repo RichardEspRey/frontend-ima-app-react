@@ -104,17 +104,24 @@ const Sidebar = () => {
 
   const filterMenuByAccess = useCallback((items) => {
       return items.reduce((acc, item) => {
+          if (item.hideInSidebar) return acc;
+
           if (Array.isArray(item.subItems) && item.subItems.length > 0) {
               const visibleSubs = item.subItems.filter((subItem) => {
+                  if (subItem.hideInSidebar) return false;
+
                   const dynamicSubPermission = userPermissions[subItem.name]; 
                   if (dynamicSubPermission !== undefined) return dynamicSubPermission;
-                  return false
+                  
+                  return roleAllowed(subItem.rolesPermitidos);
               });
+
               if (visibleSubs.length > 0) {
                 acc.push({ ...item, subItems: visibleSubs });
               }
             return acc;
           }
+
           const canSeeSection = isSectionAllowed(item);
           if (canSeeSection) acc.push(item);
           return acc;
