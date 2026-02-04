@@ -1,194 +1,258 @@
 import { useEffect, useState, useCallback } from "react";
-import { Box, Typography, Paper, TextField, Stack, Button, Tabs, Tab } from '@mui/material';
+import {
+    Box,
+    Typography,
+    Paper,
+    TextField,
+    Stack,
+    Button,
+    Tabs,
+    Tab,
+    MenuItem,
+    Checkbox,
+    FormControlLabel
+} from "@mui/material";
 
-import BorderCrossingFormNew from '../components/BorderCrossingFormNew';
-import TripFormNew from '../components/TripFormNew';
+import BorderCrossingFormNew from "../components/BorderCrossingFormNew";
+import TripFormNew from "../components/TripFormNew";
 
 const TripScreenNew = () => {
+    // =========================
+    // Estados base
+    // =========================
+    const apiHost = import.meta.env.VITE_API_HOST;
+    const currentYear = new Date().getFullYear();
 
-    const [pais, setPais] = useState('');
-    const [anio, setAnio] = useState(new Date().getFullYear());
+    const [pais, setPais] = useState("");
+    const [anio, setAnio] = useState(currentYear);
+    const [tripNumber, setTripNumber] = useState("");
+
+    // Transnacional
     const [viajeTransnacional, setViajeTransnacional] = useState(false);
+    const [isContinuation, setIsContinuation] = useState(false);
+    const [transnationalTrips, setTransnationalTrips] = useState([]);
+    const [selectedTransnational, setSelectedTransnational] = useState("");
+    const [movementNumber, setMovementNumber] = useState("");
 
-    const [transTripNumber, setTransTripNumber] = useState('');
-    const [transPais, setTransPais] = useState('');
-    const [movimiento, setMovimiento] = useState('');
-
-    const [activeForm, setActiveForm] = useState(0); // 0 = Border Crossing, 1 = Trip
-    const [tripNumber, setTripNumber] = useState('');
-
-    // 1. Añade el estado para la key
+    // Tabs
+    const [activeForm, setActiveForm] = useState(0);
     const [formKey, setFormKey] = useState(1);
 
-    // Mapeamos el índice de la Tab al nombre del formulario (para pasar las props)
-    const formMap = { 0: 'borderCrossing', 1: 'trip' };
+    // =========================
+    // Helpers
+    // =========================
+    const tripYear2Digits = anio.toString().slice(-2);
 
+    const oppositeCountry = pais === "MX" ? "US" : pais === "US" ? "MX" : "";
 
-    // ** HANDLERS DE ESTADO **
-
-    // Handler para cambiar la pestaña
-    const handleChangeTab = (event, newValue) => {
-        setActiveForm(newValue);
-    };
-
-    const handleTripNumberChange = (event) => {
-        setTripNumber(event.target.value);
-    };
-
-     const handleMovimientoChange = (event) => {
-        setMovimiento(event.target.value);
-    };
-
+    // =========================
+    // Obtener siguiente número de viaje
+    // =========================
     useEffect(() => {
-        if (viajeTransnacional && tripNumber) {
-            setTransTripNumber(`${tripNumber}-H`);
-           
-        } else {
-            setTransTripNumber('');
+        if (!pais || !anio) return;
 
-            setTransPais('');
-        }
-    }, [viajeTransnacional, tripNumber]);
+        const formData = new FormData();
+        formData.append("op", "get_next_trip_number");
+        formData.append("country_code", pais);
+        formData.append("trip_year", tripYear2Digits);
 
-    // ** HANDLER DE ÉXITO (Lógica central de reinicio) **
+        fetch(`${apiHost}/new_tripsv2.php`, {
+            method: "POST",
+            body: formData
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === "success") {
+                    setTripNumber(data.next_trip_number);
+                }
+            })
+            .catch(() => setTripNumber(""));
+    }, [pais, anio]);
+
+    // =========================
+    // Obtener viajes transnacionales (continuación)
+    // =========================
+    useEffect(() => {
+        if (!isContinuation || !oppositeCountry || !anio) return;
+
+        const formData = new FormData();
+        formData.append("op", "get_transnational_trips");
+        formData.append("country_code", oppositeCountry);
+        formData.append("trip_year", tripYear2Digits);
+
+        fetch(`${apiHost}/new_tripsv2.php`, {
+            method: "POST",
+            body: formData
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === "success") {
+                    setTransnationalTrips(data.data || []);
+                }
+            });
+    }, [isContinuation, oppositeCountry, anio]);
+
+    // =========================
+    // Reset al guardar
+    // =========================
     const handleFormSuccess = useCallback(() => {
-        console.log("El formulario hijo guardó con éxito. Reiniciando desde el padre.");
+        setTripNumber("");
+        setViajeTransnacional(false);
+        setIsContinuation(false);
+        setSelectedTransnational("");
+        setMovementNumber("");
+        setFormKey(prev => prev + 1);
+    }, []);
 
-        // 1. Limpia el campo de tripNumber en este componente (el padre)
-        setTripNumber('');
-
-        // 2. Cambia la key. Esto fuerza a React a desmontar y volver a montar el
-        // componente hijo, reseteando todo su estado interno.
-        setFormKey(prevKey => prevKey + 1);
-    }, []); // Usamos useCallback para estabilizar la función
-
-
+    // =========================
+    // Render
+    // =========================
     return (
         <Box sx={{ p: 3 }}>
-
-            {/* Título Principal */}
-            <Typography variant="h4" component="h1" fontWeight={700} gutterBottom sx={{ mb: 3 }}>
+            <Typography variant="h4" fontWeight={700} gutterBottom>
                 Alta de Viajes / Etapas
             </Typography>
 
-            {/* Contenedor Superior (Input de Trip Number y Tabs) */}
-            <Paper elevation={1} sx={{ p: 3, mb: 3, border: '1px solid #ccc' }}>
+            {/* CABECERA */}
+            <Paper elevation={1} sx={{ p: 3, mb: 3, border: "1px solid #ccc" }}>
+                <Tabs
+                    value={activeForm}
+                    onChange={(_, v) => setActiveForm(v)}
+                    sx={{ mb: 3 }}
+                >
+                    <Tab label="Border Crossing" />
+                    <Tab label="Trip / Other Stage" />
+                </Tabs>
 
-                <Stack direction="row" spacing={4} alignItems="center">
-
-
-
-                    {/* Tabs de Selección de Formulario */}
-                    <Tabs
-                        value={activeForm}
-                        onChange={handleChangeTab}
-                        aria-label="Formulario Activo"
-                        textColor="primary"
-                        indicatorColor="primary"
-                    >
-                        <Tab label="Border Crossing" id="tab-0" aria-controls="panel-0" />
-                        <Tab label="Trip / Other Stage" id="tab-1" aria-controls="panel-1" />
-                    </Tabs>
-
-
-
-                </Stack>
-                <Stack spacing={2}>
+                <Stack spacing={3}>
+                    {/* Inputs base */}
                     <Stack direction="row" spacing={2}>
-                        <TextField
-                            label="Número de viaje"
-                            value={tripNumber}
-                            onChange={handleTripNumberChange}
-                            size="small"
-                        />
-
                         <TextField
                             label="País"
                             select
-                            SelectProps={{ native: true }}
-                            value={pais}
-                            onChange={(e) => setPais(e.target.value)}
                             size="small"
+                            value={pais}
+                            onChange={e => setPais(e.target.value)}
+                            sx={{ minWidth: 120 }}
                         >
-                            <option value=""></option>
-                            <option value="MX">MX</option>
-                            <option value="USA">USA</option>
+                            <MenuItem value="MX">MX</MenuItem>
+                            <MenuItem value="US">US</MenuItem>
                         </TextField>
 
                         <TextField
                             label="Año"
-                            type="number"
-                            value={anio}
-                            onChange={(e) => setAnio(e.target.value)}
+                            select
                             size="small"
+                            value={anio}
+                            onChange={e => setAnio(Number(e.target.value))}
+                            sx={{ minWidth: 160 }}
+                        >
+                            <MenuItem value={currentYear}>{currentYear}</MenuItem>
+                            <MenuItem value={currentYear - 1}>{currentYear - 1}</MenuItem>
+                            <MenuItem value={currentYear + 1}>{currentYear + 1}</MenuItem>
+                        </TextField>
+
+                        <TextField
+                            label="Número de viaje"
+                            value={tripNumber}
+                            size="small"
+                            disabled
+                            sx={{ width: 150 }}
                         />
                     </Stack>
 
-                    <Box>
-                        <label>
-                            <input
-                                type="checkbox"
-                                checked={viajeTransnacional}
-                                onChange={(e) => setViajeTransnacional(e.target.checked)}
-                            />
-                            &nbsp; Viaje transnacional
-                        </label>
-                    </Box>
+                    {/* Checks */}
+                    <Stack direction="row" spacing={4}>
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    checked={viajeTransnacional}
+                                    onChange={e => {
+                                        setViajeTransnacional(e.target.checked);
+                                        if (!e.target.checked) setIsContinuation(false);
+                                    }}
+                                />
+                            }
+                            label="Viaje transnacional"
+                        />
 
-                    {viajeTransnacional && (
+                        {viajeTransnacional && (
+                            <FormControlLabel
+                                control={
+                                    <Checkbox
+                                        checked={isContinuation}
+                                        onChange={e => setIsContinuation(e.target.checked)}
+                                    />
+                                }
+                                label="Continuación"
+                            />
+                        )}
+                    </Stack>
+
+                    {/* Continuación */}
+                    {viajeTransnacional && isContinuation && (
                         <Stack direction="row" spacing={2}>
                             <TextField
-                                label="Número de viaje (transnacional)"
-                                value={transTripNumber}
-                                disabled
-                                size="small"
-                            />
-
-                            <TextField
-                                label="País"
+                                label="Viaje transnacional"
                                 select
-                                SelectProps={{ native: true }}
-                                value={transPais}
-                                onChange={(e) => setTransPais(e.target.value)}
                                 size="small"
+                                value={selectedTransnational}
+                                onChange={e => setSelectedTransnational(e.target.value)}
+                                sx={{ minWidth: 220 }}
                             >
-                                <option value=""></option>
-                                <option value="MX">MX</option>
-                                <option value="USA">USA</option>
+                                {transnationalTrips.map(t => (
+                                    <MenuItem
+                                        key={t.transnational_number}
+                                        value={t.transnational_number}
+                                    >
+                                        {`${t.trip_number}-${t.country_code}-${t.transnational_number}T${t.movement_number}-${t.trip_year}`}
+                                    </MenuItem>
+                                ))}
                             </TextField>
 
                             <TextField
                                 label="Movimiento"
-                                value={movimiento}
-                                onChange={handleMovimientoChange}
                                 size="small"
+                                value={movementNumber}
+                                onChange={e => setMovementNumber(e.target.value)}
+                                sx={{ width: 120 }}
                             />
                         </Stack>
                     )}
                 </Stack>
-
             </Paper>
 
-            {/* Contenedor del Formulario Activo */}
-            <Paper elevation={1} sx={{ p: 3, border: '1px solid #ccc' }}>
-                <Box>
-                    {activeForm === 0 && (
-                        <BorderCrossingFormNew
-                            // Usamos la key para forzar el reseteo
-                            key={formKey}
-                            tripNumber={tripNumber}
-                            onSuccess={handleFormSuccess}
-                        />
-                    )}
-                    {activeForm === 1 && (
-                        <TripFormNew
-                            // Usamos una key diferente para que no colisione
-                            key={formKey + 1000}
-                            tripNumber={tripNumber}
-                            onSuccess={handleFormSuccess}
-                        />
-                    )}
-                </Box>
+            {/* FORMULARIOS */}
+            <Paper elevation={1} sx={{ p: 3, border: "1px solid #ccc" }}>
+                {activeForm === 0 && (
+                    <BorderCrossingFormNew
+                        key={formKey}
+                        tripNumber={tripNumber}
+                        onSuccess={handleFormSuccess}
+
+                        countryCode={pais}
+                        tripYear={anio}
+                        isTransnational={viajeTransnacional}
+                        isContinuation={isContinuation}
+                        transnationalNumber={selectedTransnational}
+                        movementNumber={movementNumber}
+                    />
+
+                )}
+
+                {activeForm === 1 && (
+                    <TripFormNew
+                        key={formKey + 1000}
+                        tripNumber={tripNumber}
+                        countryCode={pais}
+                        tripYear={anio}
+                        isTransnational={viajeTransnacional}
+                        isContinuation={isContinuation}
+                        transnationalNumber={selectedTransnational}
+                        movementNumber={movementNumber}
+                        onSuccess={handleFormSuccess}
+                    />
+                )}
             </Paper>
         </Box>
     );

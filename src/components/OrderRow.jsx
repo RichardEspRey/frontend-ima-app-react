@@ -20,7 +20,6 @@ const getStatusChipColor = (status) => {
     return 'default';
 };
 
-/* === Componente Fila: OrderRow === */
 export const OrderRow = ({ order, onEdit, onEditDetail }) => {
     const [open, setOpen] = useState(false);
     const servicios = order?.servicios ?? [];
@@ -84,7 +83,6 @@ export const OrderRow = ({ order, onEdit, onEditDetail }) => {
                 </TableCell>
             </TableRow>
 
-            {/* Collapse con cards de servicios */}
             <TableRow>
                 <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={11}>
                     <Collapse in={open} timeout="auto" unmountOnExit>

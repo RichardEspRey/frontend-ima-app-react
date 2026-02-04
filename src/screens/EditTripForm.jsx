@@ -366,7 +366,7 @@ const EditTripForm = () => {
                     fdInv.append('invoices', JSON.stringify(invoicesPayload));
 
                     await fetch(`${apiHost}/update_invoices.php`, { method: 'POST', body: fdInv });
-                    
+
                 } catch (invErr) {
                     console.warn("Error guardando invoices:", invErr);
                 }

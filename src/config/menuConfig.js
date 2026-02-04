@@ -118,6 +118,11 @@ export const menuItemsConfig = [
         route: "/autonomia",
         rolesPermitidos: ["admin", "dev", "Angeles", "Candy"],
       },
+      {
+        name: "Afinaciones",
+        route: "/afinaciones",
+        rolesPermitidos: ["admin", "dev", "Angeles", "Candy"],
+      },
     ],
   },
 
@@ -125,13 +130,13 @@ export const menuItemsConfig = [
     name: "Viajes",
     rolesPermitidos: ["dev", "admin", "Candy", "Blanca"],
     subItems: [
+      // {
+      //   name: "Nuevo Viaje",
+      //   route: "/trips",
+      //   rolesPermitidos: ["admin", "Blanca"],
+      // },
       {
         name: "Nuevo Viaje",
-        route: "/trips",
-        rolesPermitidos: ["admin", "Blanca"],
-      },
-      {
-        name: "Nuevo Viaje New",
         route: "/trips-new",
         rolesPermitidos: ["dev"],
       },
@@ -139,6 +144,24 @@ export const menuItemsConfig = [
         name: "Administrador de viajes",
         route: "/admin-trips",
         rolesPermitidos: ["admin", "Blanca", "Candy", "Mia"],
+      },
+      {
+        name: "Ver Pestaña Incoming",
+        route: null,
+        hideInSidebar: true,
+        rolesPermitidos: ["admin", "Blanca", "Candy"],
+      },
+      {
+        name: "Ver Pestaña En Ruta",
+        route: null,
+        hideInSidebar: true,
+        rolesPermitidos: ["admin", "Blanca", "Candy"],
+      },
+      {
+        name: "Ver Pestaña Completados",
+        route: null,
+        hideInSidebar: true,
+        rolesPermitidos: ["admin", "Blanca", "Candy"],
       },
     ],
   },

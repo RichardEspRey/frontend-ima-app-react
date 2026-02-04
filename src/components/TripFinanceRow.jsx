@@ -83,11 +83,13 @@ export const TripFinanceRow = ({ trip, isOpen, onToggle, onStageChange }) => {
                 <TableHead>
                   <TableRow>
                     <TableCell sx={{ fontWeight: 600 }}>Invoice Number</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Company</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Origen</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Destino</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Tarifa (rate)</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Método de pago</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Tarifa pagada</TableCell>
+                    <TableCell sx={{ fontWeight: 600, textAlign: 'center' }}>Días Crédito</TableCell>
                     
                     {canViewDeficit && (
                         <TableCell sx={{ fontWeight: 600, color: '#d32f2f' }}>% Déficit</TableCell>

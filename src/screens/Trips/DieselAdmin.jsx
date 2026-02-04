@@ -29,7 +29,7 @@ const DieselAdmin = () => {
   const [page, setPage] = useState(location.state?.page || 0);
   const [rowsPerPage, setRowsPerPage] = useState(location.state?.rowsPerPage || 15);
 
-  // ** LÓGICA DE FETCH OPTIMIZADA (Backend hace el trabajo) **
+  // ** LÓGICA DE FETCH **
   const fetchDiesel = useCallback(async () => {
     setLoading(true);
     try {
