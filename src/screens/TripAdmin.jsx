@@ -279,32 +279,58 @@ const TripAdmin = () => {
 
     const handleReactivateTrip = async (tripId, tripNumber) => {
         if (!tripId) return;
-        const confirmation = await Swal.fire({
-            title: '¿Reactivar viaje?',
-            text: `El viaje #${tripNumber} será reactivado y pasará a la lista de activos.`,
-            icon: 'warning',
+        
+        // Mostrar opciones para reactivar el viaje
+        const result = await Swal.fire({
+            title: 'Reactivar Viaje',
+            text: `Selecciona el tipo de reactivación para el viaje #${tripNumber}`,
+            icon: 'question',
+            showDenyButton: true,
             showCancelButton: true,
-            confirmButtonText: 'Sí, reactivar',
-            cancelButtonText: 'Cancelar'
+            confirmButtonText: 'Administrativos',
+            denyButtonText: 'Operadores',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#3085d6',
+            denyButtonColor: '#d33',
         });
 
-        if (!confirmation.isConfirmed) return;
+        // Si el usuario cancela
+        if (result.isDismissed) return;
+
+        // Determinar qué tipo de reactivación se seleccionó
+        let reactivationType = '';
+        if (result.isConfirmed) {
+            reactivationType = 'admin';
+        } else if (result.isDenied) {
+            reactivationType = 'operadores';
+        }
+
+        // Si por alguna razón no hay tipo, salir
+        if (!reactivationType) return;
 
         try {
             const apiUrl = `${apiHost}/new_trips.php`;
             const formData = new FormData();
             formData.append('op', 'activate_trip');
             formData.append('trip_id', tripId);
+            formData.append('type', reactivationType);
+            
             const response = await fetch(apiUrl, { method: 'POST', body: formData });
-            const result = await response.json();
+            const responseResult = await response.json();
 
-            if (response.ok && result.status === 'success') {
-                Swal.fire('¡Éxito!', 'Viaje reactivado correctamente.', 'success');
+            if (response.ok && responseResult.status === 'success') {
+                Swal.fire(
+                    '¡Éxito!', 
+                    `Viaje reactivado correctamente como ${reactivationType === 'admin' ? 'Administrativos' : 'Operadores'}.`, 
+                    'success'
+                );
                 fetchTrips(); // Al recargar, el viaje tendrá status activo y cambiará de tab automáticamente
             } else {
-                throw new Error(result.error || result.message);
+                throw new Error(responseResult.error || responseResult.message);
             }
-        } catch (err) { Swal.fire('Error', err.message, 'error'); }
+        } catch (err) { 
+            Swal.fire('Error', err.message, 'error'); 
+        }
     };
 
     if (loading) { return (<Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}> <CircularProgress /> <Typography ml={2}>Cargando...</Typography> </Box>); }
