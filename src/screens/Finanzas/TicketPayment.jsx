@@ -125,7 +125,7 @@ const TicketPayment = () => {
 
   const totalPagar =
     Number((Number(customRate) * totalMillasAjustadas).toFixed(2)) -
-    totalAvances -
+    totalAvances +
     Number(gastos || 0);
 
   // === ENVÍO DE DATOS ===
