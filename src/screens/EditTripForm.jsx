@@ -15,8 +15,12 @@ import ModalArchivo from '../components/ModalArchivo';
 import ModalCajaExterna from '../components/ModalCajaExterna';
 import GeneralTripInfo from '../components/trip-form/GeneralTripInfo';
 import StageCard from '../components/trip-form/StageCard';
-import { initialBorderCrossingDocs, initialNormalTripDocs } from '../utils/tripFormConstants';
-import './css/EditTripForm.css'; 
+import { initialBorderCrossingDocs, initialNormalTripDocs, NORMAL_TRIP_DOCS_BY_COUNTRY } from '../utils/tripFormConstants';
+
+
+
+import './css/EditTripForm.css';
+
 
 const EditTripForm = () => {
     const apiHost = import.meta.env.VITE_API_HOST;
@@ -30,13 +34,25 @@ const EditTripForm = () => {
     const [isCreatingCompany, setIsCreatingCompany] = useState(false);
     const [isCreatingWarehouse, setIsCreatingWarehouse] = useState(false);
     const [tripMode, setTripMode] = useState('individual');
-    
+
     const [formData, setFormData] = useState({
         trip_number: '', driver_id: '', driver_id_second: '', driver_nombre: '', driver_second_nombre: '', truck_id: '', caja_id: '',
-        caja_externa_id: '', caja_no_caja: '', caja_externa_no_caja: '', return_date: null, status: ''
+        caja_externa_id: '', caja_no_caja: '', caja_externa_no_caja: '', return_date: null, status: '',    country_code: '' 
     });
     const [etapas, setEtapas] = useState([]);
     const [trailerType, setTrailerType] = useState('interna');
+
+    const getDocsByStageAndCountry = (stageType, country) => {
+        if (stageType === 'borderCrossing') {
+            return { ...initialBorderCrossingDocs };
+        }
+
+        if (stageType === 'normalTrip') {
+            return { ...(NORMAL_TRIP_DOCS_BY_COUNTRY[country] || {}) };
+        }
+
+        return {};
+    };
 
     // Modals
     const [modalAbierto, setModalAbierto] = useState(false);
@@ -67,7 +83,7 @@ const EditTripForm = () => {
                 if (res.ok && result.status === "success" && result.trip) {
                     setInitialTripData(result);
                     const trip = result.trip;
-                    
+
                     setFormData({
                         trip_number: trip.trip_number || '',
                         driver_id: trip.driver_id || '',
@@ -82,6 +98,7 @@ const EditTripForm = () => {
                         caja_externa_no_caja: trip.caja_externa_no_caja || '',
                         return_date: trip.return_date ? parseISO(trip.return_date) : null,
                         status: trip.status || 'In Transit',
+                        country_code: trip.country_code || ''
                     });
 
                     setTripMode(trip.driver_id_second ? 'team' : 'individual');
@@ -90,8 +107,8 @@ const EditTripForm = () => {
                     // Procesar Etapas
                     const processedEtapas = result.etapas.map(etapa => {
                         const type = etapa.stageType || 'normalTrip';
-                        let baseDocs = type === 'normalTrip' ? { ...initialNormalTripDocs } : 
-                                       type === 'borderCrossing' ? { ...initialBorderCrossingDocs } : {};
+                        let baseDocs = getDocsByStageAndCountry(type, trip.country_code);
+
 
                         if (Array.isArray(etapa.documentos_adjuntos)) {
                             etapa.documentos_adjuntos.forEach(doc => {
@@ -121,7 +138,7 @@ const EditTripForm = () => {
                         return {
                             ...etapa,
                             stageType: type,
-                            invoice_number: etapa.invoice_number || '', 
+                            invoice_number: etapa.invoice_number || '',
                             loading_date: etapa.loading_date ? parseISO(etapa.loading_date) : null,
                             delivery_date: etapa.delivery_date ? parseISO(etapa.delivery_date) : null,
                             documentos: baseDocs,
@@ -133,7 +150,7 @@ const EditTripForm = () => {
                     setEtapas(processedEtapas);
 
                 } else { throw new Error(result.message || 'Error al cargar viaje'); }
-            } catch (err) { setError(err.message); Swal.fire('Error', err.message, 'error'); } 
+            } catch (err) { setError(err.message); Swal.fire('Error', err.message, 'error'); }
             finally { setLoading(false); }
         };
         fetchTripDetails();
@@ -181,7 +198,7 @@ const EditTripForm = () => {
             fd.append(fieldKey.includes('company') ? 'nombre_compania' : 'nombre_almacen', inputValue);
             const res = await fetch(`${apiHost}/${endpoint}`, { method: 'POST', body: fd });
             const result = await res.json();
-            
+
             if (result.status === "success") {
                 const entity = result.company || result.warehouse;
                 const id = entity.company_id || entity.warehouse_id;
@@ -192,7 +209,7 @@ const EditTripForm = () => {
                 Swal.fire('Éxito', `Creado: ${label}`, 'success');
                 return { value: id, label: label };
             } else { throw new Error(result.message); }
-        } catch (e) { Swal.fire('Error', e.message, 'error'); } 
+        } catch (e) { Swal.fire('Error', e.message, 'error'); }
         finally { setter(false); }
     };
 
@@ -229,8 +246,8 @@ const EditTripForm = () => {
     const getCurrentDocValueForModal = () => {
         const { stageIndex, docType, stopIndex } = modalTarget;
         if (stageIndex === null || !etapas[stageIndex]) return null;
-        return stopIndex !== null 
-            ? etapas[stageIndex].stops_in_transit?.[stopIndex]?.[docType] 
+        return stopIndex !== null
+            ? etapas[stageIndex].stops_in_transit?.[stopIndex]?.[docType]
             : etapas[stageIndex].documentos[docType];
     };
 
@@ -247,7 +264,7 @@ const EditTripForm = () => {
 
     const eliminarParadaEnRuta = (stageIdx, stopIdx) => {
         Swal.fire({ title: '¿Eliminar Parada?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Sí', cancelButtonText: 'No' }).then(r => {
-            if(r.isConfirmed) {
+            if (r.isConfirmed) {
                 setEtapas(prev => {
                     const copy = [...prev];
                     copy[stageIdx].stops_in_transit = copy[stageIdx].stops_in_transit.filter((_, i) => i !== stopIdx);
@@ -258,10 +275,11 @@ const EditTripForm = () => {
     };
 
     const agregarNuevaEtapa = (type) => {
-        const baseDocs = type === 'normalTrip' ? { ...initialNormalTripDocs } : type === 'borderCrossing' ? { ...initialBorderCrossingDocs } : {};
+        const baseDocs = getDocsByStageAndCountry(type, formData.country_code);
+
         const newStage = {
             trip_stage_id: `new-stage-${Date.now()}`, stageType: type,
-            invoice_number: '', 
+            invoice_number: '',
             origin: '', destination: '', estatus: type === 'borderCrossing' ? 'In Coming' : 'In Transit',
             documentos: baseDocs, stops_in_transit: [], comments: '',
             loading_date: null, delivery_date: null
@@ -270,29 +288,29 @@ const EditTripForm = () => {
     };
 
     const eliminarEtapa = (index) => {
-        if(etapas.length <= 1) return Swal.fire('Error', 'Debe haber al menos una etapa', 'warning');
+        if (etapas.length <= 1) return Swal.fire('Error', 'Debe haber al menos una etapa', 'warning');
         Swal.fire({ title: '¿Eliminar Etapa?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Sí', cancelButtonText: 'No' }).then(r => {
-            if(r.isConfirmed) setEtapas(prev => prev.filter((_, i) => i !== index).map((e, i) => ({ ...e, stage_number: i + 1 })));
+            if (r.isConfirmed) setEtapas(prev => prev.filter((_, i) => i !== index).map((e, i) => ({ ...e, stage_number: i + 1 })));
         });
     };
 
     // --- SAVE LOGIC ---
     const handleSaveChanges = async () => {
         if (!formData.driver_id || !formData.truck_id) return Swal.fire('Error', 'Driver y Truck obligatorios', 'warning');
-        
+
         const fd = new FormData();
         fd.append('op', 'Update');
         fd.append('trip_id', tripId);
         fd.append('trip_number', formData.trip_number || '');
         fd.append('return_date', formData.return_date ? format(formData.return_date, 'yyyy-MM-dd') : '');
-        
+
         Object.entries(formData).forEach(([k, v]) => {
             if (!['status', 'trip_number', 'return_date'].includes(k)) fd.append(k, v || '');
         });
 
         // Construcción del JSON de Etapas
         const etapasJson = etapas.map(etapa => {
-             const docsMeta = Object.entries(etapa.documentos).map(([tipo, data]) => ({
+            const docsMeta = Object.entries(etapa.documentos).map(([tipo, data]) => ({
                 tipo_documento: tipo,
                 document_id: data?.document_id,
                 fileName: data?.fileName,
@@ -303,10 +321,10 @@ const EditTripForm = () => {
             const stopsJson = (etapa.stops_in_transit || []).map((stop, i) => ({
                 stop_id: String(stop.stop_id).startsWith('new') ? null : stop.stop_id,
                 location: stop.location, stop_order: i + 1, time_of_delivery: stop.time_of_delivery,
-                bl_firmado_doc: stop.bl_firmado_doc ? { 
-                    document_id: stop.bl_firmado_doc.document_id, 
-                    fileName: stop.bl_firmado_doc.fileName, 
-                    hasNewFile: stop.bl_firmado_doc.hasNewFile 
+                bl_firmado_doc: stop.bl_firmado_doc ? {
+                    document_id: stop.bl_firmado_doc.document_id,
+                    fileName: stop.bl_firmado_doc.fileName,
+                    hasNewFile: stop.bl_firmado_doc.hasNewFile
                 } : null
             }));
 
@@ -351,9 +369,9 @@ const EditTripForm = () => {
         try {
             const res = await fetch(`${apiHost}/new_trips.php`, { method: 'POST', body: fd });
             const result = await res.json();
-            
+
             if (result.status === 'success') {
-                
+
                 try {
                     const invoicesPayload = etapas.map(e => ({
                         stage_number: e.stage_number,
@@ -381,11 +399,11 @@ const EditTripForm = () => {
     const handleSaveExternalCaja = async (cajaData) => {
         const fd = new FormData();
         fd.append('op', 'Alta');
-        Object.entries(cajaData).forEach(([k,v]) => fd.append(k,v));
+        Object.entries(cajaData).forEach(([k, v]) => fd.append(k, v));
         try {
             const res = await fetch(`${apiHost}/caja_externa.php`, { method: 'POST', body: fd });
             const r = await res.json();
-            if(r.status === 'success') {
+            if (r.status === 'success') {
                 handleFormChange('caja_externa_id', r.caja.caja_externa_id);
                 handleFormChange('caja_externa_no_caja', r.caja.no_caja);
                 handleFormChange('caja_id', '');
@@ -393,7 +411,7 @@ const EditTripForm = () => {
                 setIsModalCajaExternaOpen(false);
                 Swal.fire('Éxito', 'Caja creada', 'success');
             } else { throw new Error(r.message); }
-        } catch(e) { Swal.fire('Error', e.message, 'error'); }
+        } catch (e) { Swal.fire('Error', e.message, 'error'); }
     };
 
     // --- RENDER HELPERS ---
@@ -422,7 +440,7 @@ const EditTripForm = () => {
                 </Stack>
             </Paper>
 
-            <GeneralTripInfo 
+            <GeneralTripInfo
                 formData={formData}
                 handleFormChange={handleFormChange}
                 tripMode={tripMode}
@@ -436,9 +454,9 @@ const EditTripForm = () => {
             />
 
             <Typography variant="h6" sx={{ mb: 2, mt: 4, fontWeight: 600 }}>Itinerario (Etapas)</Typography>
-            
+
             {etapas.map((etapa, idx) => (
-                <StageCard 
+                <StageCard
                     key={etapa.trip_stage_id || `new-stage-${idx}`}
                     etapa={etapa}
                     index={idx}

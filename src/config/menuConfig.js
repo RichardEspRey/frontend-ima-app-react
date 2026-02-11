@@ -130,11 +130,11 @@ export const menuItemsConfig = [
     name: "Viajes",
     rolesPermitidos: ["dev", "admin", "Candy", "Blanca"],
     subItems: [
-      // {
-      //   name: "Nuevo Viaje",
-      //   route: "/trips",
-      //   rolesPermitidos: ["admin", "Blanca"],
-      // },
+      {
+        name: "Crear viaje",
+        route: "/CrearViaje",
+        rolesPermitidos: ["admin"],
+      },
       {
         name: "Nuevo Viaje",
         route: "/trips-new",
@@ -146,7 +146,13 @@ export const menuItemsConfig = [
         rolesPermitidos: ["admin", "Blanca", "Candy", "Mia"],
       },
       {
-        name: "Ver Pestaña Incoming",
+        name: "Ver Pestaña Upcoming",
+        route: null,
+        hideInSidebar: true,
+        rolesPermitidos: ["admin", "Blanca", "Candy"],
+      },
+        {
+        name: "Ver Pestaña Despacho",
         route: null,
         hideInSidebar: true,
         rolesPermitidos: ["admin", "Blanca", "Candy"],

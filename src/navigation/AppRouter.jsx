@@ -52,6 +52,7 @@ import Autonomia from '../screens/Autonomia.jsx';
 import EstatusUnidades from '../screens/EstatusUnidades.jsx';
 import Afinaciones from '../screens/Afinaciones.jsx';
 import AfinacionesHistory from '../screens/AfinacionesHistory.jsx';
+import CrearViaje from '../screens/Dispatch/CrearViaje.jsx';
 
 const AppRouter = () => {
   const { user, loading } = useContext(AuthContext);
@@ -115,6 +116,7 @@ const AppRouter = () => {
               <Route path="/afinaciones" element={<Afinaciones />} />
               <Route path="/registros-afinaciones" element={<AfinacionesHistory />} />
               <Route path="/estatus-unidades" element={<EstatusUnidades />} />
+              <Route path="/CrearViaje" element={<CrearViaje />} />
               <Route path="*" element={<Navigate to="/home" replace />} /> 
             
             </Route>
