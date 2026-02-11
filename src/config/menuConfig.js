@@ -166,6 +166,8 @@ export const menuItemsConfig = [
     ],
   },
 
+  { name: "Safety", route: "/safety", rolesPermitidos: ["admin"] },
+
   {
     name: "Finanzas",
     rolesPermitidos: ["admin"],

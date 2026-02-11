@@ -52,6 +52,7 @@ import Autonomia from '../screens/Autonomia.jsx';
 import EstatusUnidades from '../screens/EstatusUnidades.jsx';
 import Afinaciones from '../screens/Afinaciones.jsx';
 import AfinacionesHistory from '../screens/AfinacionesHistory.jsx';
+import Safety from '../screens/Safety.jsx';
 
 const AppRouter = () => {
   const { user, loading } = useContext(AuthContext);
@@ -105,7 +106,8 @@ const AppRouter = () => {
               <Route path="/ResumenTrip/:tripId" element={<ResumenTrip />} />
               <Route path="/access-manager" element={<ProfileAccessManager />} />
               <Route path="/ResiduoTrip" element={<ResiduoTrip />} />  
-              <Route path="/reports" element={<Reports />} />  
+              <Route path="/reports" element={<Reports />} />
+              <Route path="/safety" element={<Safety />} />  
               <Route path="/tracking" element={<Tracking />} />  
               <Route path="/margen" element={<MargenScreen />} />  
               <Route path="/paymentDrivers" element ={<PaymentDrivers />} />
