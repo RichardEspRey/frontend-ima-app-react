@@ -16,6 +16,25 @@ export const initialNormalTripDocs = {
   bl_firmado: null,
 };
 
+export const NORMAL_TRIP_DOCS_BY_COUNTRY = {
+  US: {
+    ima_invoice: null,
+    doda: null,
+    ci: null,
+    entry: null,
+    manifiesto: null,
+    bl: null,
+    bl_firmado: null,
+    orden_retiro: null,
+    DTOPS: null,
+  },
+  MX: {
+    carta_porte: null,
+    fianza: null,
+  }
+};
+
+
 export const selectStyles = {
   control: (provided) => ({
     ...provided,
