@@ -133,7 +133,6 @@ export default function Safety() {
                 <Typography variant="h4" fontWeight={800} sx={{ letterSpacing: '-0.5px' }}>
                     Safety & Cumplimiento
                 </Typography>
-                
             </Stack>
             <Typography variant="body1" color="text.secondary">
                 Control de documentos para viajes completados.
@@ -141,10 +140,32 @@ export default function Safety() {
         </Box>
       </Stack>
 
-      <Paper elevation={0} variant="outlined" sx={{ mb: 3, bgcolor: '#f8f9fa', borderRadius: 2 }}>
-        <Tabs value={tabValue} onChange={(e, val) => { setTabValue(val); setPage(0); }} indicatorColor="primary" textColor="primary" variant="fullWidth">
-            <Tab icon={<PendingActionsIcon />} label="Pendientes de Documentación" iconPosition="start" sx={{ fontWeight: 600, py: 2.5 }} />
-            <Tab icon={<CheckCircleIcon />} label="Cumplimiento Completo" iconPosition="start" sx={{ fontWeight: 600, py: 2.5 }} />
+      <Paper 
+        elevation={0} 
+        sx={{ 
+            mb: 3, 
+            bgcolor: 'transparent',
+            borderBottom: '1px solid #e0e0e0' 
+        }}
+      >
+        <Tabs 
+            value={tabValue} 
+            onChange={(e, val) => { setTabValue(val); setPage(0); }} 
+            textColor="primary"
+            indicatorColor="primary"
+            sx={{
+                minHeight: '40px',
+                '& .MuiTab-root': {
+                    minHeight: '40px',
+                    textTransform: 'none', 
+                    fontWeight: 600,
+                    fontSize: '0.95rem',
+                    px: 3
+                }
+            }}
+        >
+            <Tab label="Pendientes de Documentación" />
+            <Tab label="Cumplimiento Completo" />
         </Tabs>
       </Paper>
 
@@ -166,7 +187,7 @@ export default function Safety() {
           <Table stickyHeader size="small">
             <TableHead>
               <TableRow>
-                <TableCell sx={{ fontWeight: 800, bgcolor: '#fff', py: 1.5, width: '10%' }}>Trip #</TableCell>
+                <TableCell sx={{ fontWeight: 800, bgcolor: '#fff', py: 1.5, width: '15%' }}>Trip #</TableCell>
                 <TableCell sx={{ fontWeight: 800, bgcolor: '#fff', py: 1.5 }}>
                     Libro Electrónico
                     {tabValue === 0 && missingCounts.libro > 0 && (
@@ -201,7 +222,14 @@ export default function Safety() {
                     pageData.map((row) => (
                         <TableRow key={row.trip_id} hover>
                             <TableCell>
-                                <Typography fontWeight={800} color="primary.main">#{row.trip_number}</Typography>
+                                <Typography fontWeight={800} color="primary.main" variant="body2">
+                                    {row.trip_number}
+                                </Typography>
+                                {row.driver_nombre && (
+                                    <Typography variant="caption" display="block" color="text.secondary">
+                                        {row.driver_nombre}
+                                    </Typography>
+                                )}
                             </TableCell>
 
                             <TableCell>
@@ -236,7 +264,7 @@ export default function Safety() {
             </TableBody>
           </Table>
         </TableContainer>
-
+        
         <TablePagination
             rowsPerPageOptions={[25, 50, 100]}
             component="div"
