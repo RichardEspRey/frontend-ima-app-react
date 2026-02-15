@@ -432,6 +432,22 @@ const EditTripForm = () => {
             <Paper sx={{ p: 2, mb: 3, position: 'sticky', top: 10, zIndex: 100, display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: 3 }}>
                 <Box>
                     <Typography variant="h5" fontWeight={700}>Editar Viaje #{formData.trip_number || tripId}</Typography>
+                    
+                    <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 0.5 }}>
+                        <Typography variant="body1" fontWeight={600} color="primary.main">
+                            {formData.driver_nombre || 'Sin Conductor Asignado'}
+                        </Typography>
+                        
+                        {formData.truck_unidad && (
+                            <>
+                                <Typography variant="body2" color="text.disabled">•</Typography>
+                                <Typography variant="body1" fontWeight={500} color="text.secondary">
+                                    Unidad {formData.truck_unidad}
+                                </Typography>
+                            </>
+                        )}
+                    </Stack>
+
                     <Typography variant="caption" color="textSecondary">Estado: {formData.status}</Typography>
                 </Box>
                 <Stack direction="row" spacing={2}>
