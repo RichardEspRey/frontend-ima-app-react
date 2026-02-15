@@ -97,7 +97,7 @@ const StageCard = ({
                                 value={etapa.millas_pcmiller_practicas} onChange={(e) => handleStageChange(index, 'millas_pcmiller_practicas', e.target.value)} disabled={isFormDisabled} />
                         </Grid>
                         <Grid item xs={12}>
-                            <TextField fullWidth label="Comentarios" multiline rows={2} size="small"
+                            <TextField fullWidth label="Comentarios" multiline minRows={4} size="small"
                                 value={etapa.comments} onChange={(e) => handleStageChange(index, 'comments', e.target.value)} disabled={isFormDisabled} />
                         </Grid>
                     </Grid>
@@ -202,8 +202,10 @@ const StageCard = ({
                                     value={etapa.millas_pcmiller_practicas} onChange={(e) => handleStageChange(index, 'millas_pcmiller_practicas', e.target.value)} disabled={isFormDisabled} />
                             </Grid>
                             <Grid item xs={12}>
-                                <TextField fullWidth label="Comentarios" multiline rows={2} size="small"
-                                    value={etapa.comments} onChange={(e) => handleStageChange(index, 'comments', e.target.value)} disabled={isFormDisabled} />
+                                <TextField fullWidth label="Comentarios" multiline size="small"
+                                    value={etapa.comments} onChange={(e) => handleStageChange(index, 'comments', e.target.value)} disabled={isFormDisabled}  
+                                    minRows={4}
+                                />
                             </Grid>
                         </Grid>
 
