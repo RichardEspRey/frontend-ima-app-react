@@ -34,7 +34,7 @@ const DIRECTION_OPTIONS = [
 ];
 
 const TABS_CONFIG = [
-    { id: 0, label: "Up Coming", permission: "Ver Pestaña Incoming" },
+    { id: 0, label: "Up Coming", permission: "Ver Pestaña Upcoming" },
     { id: 1, label: "Despacho", permission: "Ver Pestaña Despacho" },
     { id: 2, label: "En Ruta", permission: "Ver Pestaña En Ruta" },
     { id: 3, label: "Finalizados", permission: "Ver Pestaña Completados" }
