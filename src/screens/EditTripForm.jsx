@@ -446,6 +446,15 @@ const EditTripForm = () => {
                                 </Typography>
                             </>
                         )}
+
+                        {(formData.caja_no_caja || formData.caja_externa_no_caja) && (
+                            <>
+                                <Typography variant="body2" color="text.disabled">•</Typography>
+                                <Typography variant="body1" fontWeight={500} color="text.secondary">
+                                    Caja {formData.caja_no_caja || formData.caja_externa_no_caja}
+                                </Typography>
+                            </>
+                        )}
                     </Stack>
 
                     <Typography variant="caption" color="textSecondary">Estado: {formData.status}</Typography>
