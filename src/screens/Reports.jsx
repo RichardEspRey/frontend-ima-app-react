@@ -3,7 +3,7 @@ import {
   Box, Paper, Typography, Stack,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, 
   CircularProgress, Container, ToggleButton, ToggleButtonGroup, Grid,
-  FormControl, InputLabel, Select, MenuItem // <--- Nuevos imports
+  FormControl, InputLabel, Select, MenuItem
 } from "@mui/material";
 import { BarChart } from '@mui/x-charts/BarChart';
 import { LineChart } from '@mui/x-charts/LineChart'; 
@@ -11,7 +11,7 @@ import { LineChart } from '@mui/x-charts/LineChart';
 import TableViewIcon from '@mui/icons-material/TableView';
 import TimelineIcon from '@mui/icons-material/Timeline'; 
 import BuildIcon from '@mui/icons-material/Build'; 
-import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'; // Icono para el selector
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -270,7 +270,6 @@ export default function Reports() {
 
       <Stack spacing={4}> 
 
-        {/* --- SECCIÓN 1: MANTENIMIENTO --- */}
         <Paper elevation={0} variant="outlined" sx={{ p: 4, borderRadius: 4, bgcolor: '#fff' }}>
             <Stack direction="row" alignItems="center" spacing={1} mb={3}>
                 <Box sx={{ width: 4, height: 24, bgcolor: '#607d8b', borderRadius: 1 }} />
@@ -297,147 +296,124 @@ export default function Reports() {
             </Box>
         </Paper>
 
-        {/* --- SECCIÓN 2: FINANZAS --- */}
-        <Box>
-            <Typography variant="subtitle2" color="text.secondary" fontWeight={700} gutterBottom textTransform="uppercase" sx={{ ml: 1, mb: 2 }}>
-                Facturación
-            </Typography>
-            <Grid container spacing={3}>
-                <Grid item xs={12} md={6}>
-                    <Paper elevation={0} variant="outlined" sx={{ p: 4, borderRadius: 4, height: '100%', bgcolor: '#fff', display: 'flex', flexDirection: 'column' }}>
-                        <Stack direction="row" alignItems="center" spacing={1} mb={3}>
-                            <Box sx={{ width: 4, height: 24, bgcolor: '#9c27b0', borderRadius: 1 }} />
-                            <Typography variant="h6" fontWeight={700}>Facturación vs Cobranza (Global)</Typography>
-                        </Stack>
-                        <Box sx={{ width: '100%', flexGrow: 1, minHeight: 350 }}>
-                            {financesLoading ? (
-                                <Stack alignItems="center" justifyContent="center" height="100%"><CircularProgress color="secondary" /></Stack>
-                            ) : (
-                                <BarChart
-                                    dataset={sliceData(financesData)} // <--- FILTRO APLICADO
-                                    xAxis={[{ dataKey: 'label', label: 'Mes de Entrega', scaleType: 'band' }]}
-                                    series={[
-                                        { dataKey: 'rate', label: 'Total Tarifa (Rate)', valueFormatter, color: '#1976d2' }, 
-                                        { dataKey: 'paid', label: 'Total Pagado', valueFormatter, color: '#ed6c02' }, 
-                                    ]}
-                                    {...chartSetting}
-                                    height={350}
-                                    borderRadius={4}
-                                />
-                            )}
-                        </Box>
-                    </Paper>
-                </Grid>
+        <Paper elevation={0} variant="outlined" sx={{ p: 4, borderRadius: 4, bgcolor: '#fff' }}>
+            <Stack direction="row" alignItems="center" spacing={1} mb={3}>
+                <Box sx={{ width: 4, height: 24, bgcolor: '#9c27b0', borderRadius: 1 }} />
+                {/* <AttachMoneyIcon sx={{ color: '#9c27b0' }} /> */}
+                <Typography variant="h6" fontWeight={700}>Facturación vs Cobranza (Global)</Typography>
+            </Stack>
+            <Box sx={{ width: '100%', minHeight: 400 }}>
+                {financesLoading ? (
+                    <Stack alignItems="center" justifyContent="center" height={350}><CircularProgress color="secondary" /></Stack>
+                ) : (
+                    <BarChart
+                        dataset={sliceData(financesData)}
+                        xAxis={[{ dataKey: 'label', label: 'Mes de Entrega', scaleType: 'band' }]}
+                        series={[
+                            { dataKey: 'rate', label: 'Total Tarifa (Rate)', valueFormatter, color: '#1976d2' }, 
+                            { dataKey: 'paid', label: 'Total Pagado', valueFormatter, color: '#ed6c02' }, 
+                        ]}
+                        {...chartSetting}
+                        borderRadius={4}
+                        slotProps={{ legend: { hidden: false } }} 
+                    />
+                )}
+            </Box>
+        </Paper>
 
-                <Grid item xs={12} md={6}>
-                    <Paper elevation={0} variant="outlined" sx={{ p: 4, borderRadius: 4, height: '100%', bgcolor: '#fff', display: 'flex', flexDirection: 'column' }}>
-                        <Stack direction="row" alignItems="center" spacing={1} mb={3}>
-                            <Box sx={{ width: 4, height: 24, bgcolor: '#e91e63', borderRadius: 1 }} />
-                            <Typography variant="h6" fontWeight={700}>Facturación RTS</Typography>
-                        </Stack>
-                        <Box sx={{ width: '100%', flexGrow: 1, minHeight: 350 }}>
-                            {rtsLoading ? <Stack alignItems="center" justifyContent="center" height="100%"><CircularProgress /></Stack> : (
-                                <BarChart
-                                    dataset={sliceData(rtsData)} // <--- FILTRO APLICADO
-                                    xAxis={[{ dataKey: 'label', label: 'Mes de Entrega', scaleType: 'band' }]}
-                                    series={[
-                                        { dataKey: 'rate', label: 'RTS Tarifa', valueFormatter, color: '#8e24aa' }, 
-                                        { dataKey: 'paid', label: 'RTS Pagado', valueFormatter, color: '#ff9800' }, 
-                                    ]}
-                                    {...chartSetting}
-                                    height={350}
-                                    borderRadius={4}
-                                />
-                            )}
-                        </Box>
-                    </Paper>
-                </Grid>
-            </Grid>
-        </Box>
+        <Paper elevation={0} variant="outlined" sx={{ p: 4, borderRadius: 4, bgcolor: '#fff' }}>
+            <Stack direction="row" alignItems="center" spacing={1} mb={3}>
+                <Box sx={{ width: 4, height: 24, bgcolor: '#e91e63', borderRadius: 1 }} />
+                {/* <AttachMoneyIcon sx={{ color: '#e91e63' }} /> */}
+                <Typography variant="h6" fontWeight={700}>Facturación RTS</Typography>
+            </Stack>
+            <Box sx={{ width: '100%', minHeight: 400 }}>
+                {rtsLoading ? <Stack alignItems="center" justifyContent="center" height={350}><CircularProgress /></Stack> : (
+                    <BarChart
+                        dataset={sliceData(rtsData)}
+                        xAxis={[{ dataKey: 'label', label: 'Mes de Entrega', scaleType: 'band' }]}
+                        series={[
+                            { dataKey: 'rate', label: 'RTS Tarifa', valueFormatter, color: '#8e24aa' }, 
+                            { dataKey: 'paid', label: 'RTS Pagado', valueFormatter, color: '#ff9800' }, 
+                        ]}
+                        {...chartSetting}
+                        borderRadius={4}
+                    />
+                )}
+            </Box>
+        </Paper>
+        
+        <Paper elevation={0} variant="outlined" sx={{ p: 4, borderRadius: 4, bgcolor: '#fff' }}>
+            <Stack direction="row" justifyContent="space-between" alignItems="center" mb={3} flexWrap="wrap" gap={2}>
+                <Stack direction="row" alignItems="center" spacing={1}>
+                    <Box sx={{ width: 4, height: 24, bgcolor: '#ff5722', borderRadius: 1 }} />
+                    {/* <LocalGasStationIcon sx={{ color: '#ff5722' }} /> */}
+                    <Box>
+                        <Typography variant="h6" fontWeight={700}>Costo de Diesel por Galón</Typography>
+                    </Box>
+                </Stack>
+                <ToggleButtonGroup
+                    value={costPeriod}
+                    exclusive
+                    onChange={handlePeriodChange}
+                    size="small"
+                    sx={{ '& .MuiToggleButton-root': { fontWeight: 600, textTransform: 'none', px: 2 } }}
+                >
+                    <ToggleButton value="day">Día</ToggleButton>
+                    <ToggleButton value="week">Semana</ToggleButton>
+                    <ToggleButton value="month">Mes</ToggleButton>
+                </ToggleButtonGroup>
+            </Stack>
+            
+            <Box sx={{ width: '100%', minHeight: 400 }}>
+                {costLoading ? (
+                    <Stack alignItems="center" justifyContent="center" height={350}><CircularProgress color="warning" /></Stack>
+                ) : costData.length === 0 ? (
+                    <Stack alignItems="center" justifyContent="center" height={350}>
+                        <TimelineIcon sx={{ fontSize: 60, color: '#e0e0e0', mb: 2 }} />
+                        <Typography color="text.secondary">No hay datos</Typography>
+                    </Stack>
+                ) : (
+                    <LineChart
+                        dataset={costData}
+                        xAxis={[{ dataKey: 'id', label: 'Periodo', scaleType: 'point' }]}
+                        series={[{ 
+                                dataKey: 'y', 
+                                label: 'Precio Promedio ($/gal)', 
+                                color: '#ff5722',
+                                valueFormatter: (v) => `$${Number(v).toFixed(2)}`,
+                                showMark: true,
+                                curve: 'linear' 
+                        }]}
+                        yAxis={[{ label: 'Precio por Galón ($)', min: 0 }]}
+                        {...chartSetting}
+                    />
+                )}
+            </Box>
+        </Paper>
 
-        {/* --- SECCIÓN 3: DIESEL (Sin cambios en filtro, usan su propio selector si aplica, o se dejan fijos) --- */}
-        <Box>
-            <Typography variant="subtitle2" color="text.secondary" fontWeight={700} gutterBottom textTransform="uppercase" sx={{ ml: 1, mb: 2 }}>
-                Métricas de Combustible
-            </Typography>
-            <Grid container spacing={3}>
-                <Grid item xs={12} md={6}>
-                    <Paper elevation={0} variant="outlined" sx={{ p: 4, borderRadius: 4, height: '100%', bgcolor: '#fff', display: 'flex', flexDirection: 'column' }}>
-                        <Stack direction="row" justifyContent="space-between" alignItems="flex-start" mb={3} flexWrap="wrap" gap={2}>
-                            <Stack direction="row" alignItems="center" spacing={1}>
-                                <Box sx={{ width: 4, height: 24, bgcolor: '#ff5722', borderRadius: 1 }} />
-                                <Box>
-                                    <Typography variant="h6" fontWeight={700}>Costo de Diesel por Galón</Typography>
-                                    <Typography variant="caption" color="text.secondary">Tendencia de precio unitario</Typography>
-                                </Box>
-                            </Stack>
-                            <ToggleButtonGroup
-                                value={costPeriod}
-                                exclusive
-                                onChange={handlePeriodChange}
-                                size="small"
-                                sx={{ '& .MuiToggleButton-root': { fontWeight: 600, textTransform: 'none', px: 2 } }}
-                            >
-                                <ToggleButton value="day">Día</ToggleButton>
-                                <ToggleButton value="week">Semana</ToggleButton>
-                                <ToggleButton value="month">Mes</ToggleButton>
-                            </ToggleButtonGroup>
-                        </Stack>
-                        
-                        <Box sx={{ width: '100%', flexGrow: 1, minHeight: 350 }}>
-                            {costLoading ? (
-                                <Stack alignItems="center" justifyContent="center" height="100%"><CircularProgress color="warning" /></Stack>
-                            ) : costData.length === 0 ? (
-                                <Stack alignItems="center" justifyContent="center" height="100%">
-                                    <TimelineIcon sx={{ fontSize: 60, color: '#e0e0e0', mb: 2 }} />
-                                    <Typography color="text.secondary">No hay datos</Typography>
-                                </Stack>
-                            ) : (
-                                <LineChart
-                                    dataset={costData}
-                                    xAxis={[{ dataKey: 'id', label: 'Periodo', scaleType: 'point' }]}
-                                    series={[{ 
-                                            dataKey: 'y', 
-                                            label: 'Precio Promedio ($/gal)', 
-                                            color: '#ff5722',
-                                            valueFormatter: (v) => `$${Number(v).toFixed(2)}`,
-                                            showMark: true,
-                                            curve: 'linear' 
-                                    }]}
-                                    yAxis={[{ label: 'Precio por Galón ($)', min: 0 }]}
-                                    {...chartSetting}
-                                    height={350}
-                                />
-                            )}
-                        </Box>
-                    </Paper>
-                </Grid>
-
-                <Grid item xs={12} md={6}>
-                    <Paper elevation={0} variant="outlined" sx={{ p: 4, borderRadius: 4, height: '100%', bgcolor: '#fff', display: 'flex', flexDirection: 'column' }}>
-                        <Stack direction="row" alignItems="center" spacing={1} mb={3}>
-                            <Box sx={{ width: 4, height: 24, bgcolor: 'primary.main', borderRadius: 1 }} />
-                            <Typography variant="h6" fontWeight={700}>Evolución de Costos de Diésel</Typography>
-                        </Stack>
-                        <Box sx={{ width: '100%', flexGrow: 1, minHeight: 350 }}>
-                            {chartLoading ? <Stack alignItems="center" justifyContent="center" height="100%"><CircularProgress /></Stack> : (
-                                <BarChart
-                                    dataset={datasetDiesel} // Este se deja completo o se podría filtrar también si lo deseas
-                                    xAxis={xAxisDiesel}
-                                    series={[
-                                        { dataKey: 'monto', label: 'Monto ($)', valueFormatter, color: '#3C48E1' },
-                                        { dataKey: 'fleetone', label: 'FleetOne ($)', valueFormatter, color: '#00C853' },
-                                    ]}
-                                    {...chartSetting}
-                                    height={350}
-                                    borderRadius={4}
-                                />
-                            )}
-                        </Box>
-                    </Paper>
-                </Grid>
-            </Grid>
-        </Box>
+        <Paper elevation={0} variant="outlined" sx={{ p: 4, borderRadius: 4, bgcolor: '#fff' }}>
+            <Stack direction="row" alignItems="center" spacing={1} mb={3}>
+                <Box sx={{ width: 4, height: 24, bgcolor: 'primary.main', borderRadius: 1 }} />
+                {/* <TrendingUpIcon color="primary" /> */}
+                <Typography variant="h6" fontWeight={700}>Evolución de Costos de Diésel</Typography>
+            </Stack>
+            <Box sx={{ width: '100%', minHeight: 400 }}>
+                {chartLoading ? <Stack alignItems="center" justifyContent="center" height={350}><CircularProgress /></Stack> : (
+                    <BarChart
+                        dataset={datasetDiesel}
+                        xAxis={xAxisDiesel}
+                        series={[
+                            { dataKey: 'monto', label: 'Monto ($)', valueFormatter, color: '#3C48E1' },
+                            { dataKey: 'fleetone', label: 'FleetOne ($)', valueFormatter, color: '#00C853' },
+                        ]}
+                        {...chartSetting}
+                        borderRadius={4}
+                    />
+                )}
+            </Box>
+        </Paper>
+        
 
         {/* --- SECCIÓN 4: TABLA --- */}
         <Paper elevation={0} variant="outlined" sx={{ borderRadius: 4, overflow: 'hidden' }}>
