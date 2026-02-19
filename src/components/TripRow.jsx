@@ -18,6 +18,7 @@ import HourglassBottomIcon from '@mui/icons-material/HourglassBottom';
 import BusinessIcon from '@mui/icons-material/Business';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import RoomIcon from '@mui/icons-material/Room';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
 
 import WarningIcon from '@mui/icons-material/Warning';
 
@@ -108,6 +109,11 @@ export const TripRow = ({
 
   // ✅ NUEVO: colSpan para el collapse (si no lo pasas, se queda el 11 de tu código original)
   const collapseColSpan = typeof colSpanOverride === 'number' ? colSpanOverride : 11;
+
+  const formatTime = (timeStr) => {
+      if (!timeStr) return '';
+      return timeStr.substring(0, 5); 
+  };
 
   return (
     <>
@@ -343,24 +349,31 @@ export const TripRow = ({
                                 <Typography variant="subtitle2" color="text.secondary" sx={{ fontSize: '0.75rem', textTransform: 'uppercase' }}>
                                   Etapa {etapa.stage_number} • {etapa.travel_direction}
                                 </Typography>
-                                <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: 0.5 }}>
+                                <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: 0.5, flexWrap:'wrap' }}>
                                   <BusinessIcon fontSize="small" color="action" />
                                   <Typography variant="subtitle1" fontWeight={700} sx={{ lineHeight: 1.2 }}>
                                     {etapa.nombre_compania || 'Compañía sin nombre'}
                                   </Typography>
+                                  {etapa.ci_number && (
+                                    <Chip 
+                                        label={`CI: ${etapa.ci_number}`} 
+                                        size="small" 
+                                        sx={{ height: 20, fontSize:'0.7rem', fontWeight: 'bold' }} 
+                                    />
+                                  )}
                                 </Stack>
                               </Box>
 
                               <Divider />
 
                               <Box>
-                                <Stack direction="row" alignItems="flex-start" spacing={1}>
-                                  <RoomIcon fontSize="small" color="primary" sx={{ mt: 0.3 }} />
-                                  <Box>
-                                    <Typography variant="body2" fontWeight={600}>{etapa.origin}</Typography>
-                                    <Typography variant="caption" color="text.secondary">Hacia</Typography>
-                                    <Typography variant="body2" fontWeight={600}>{etapa.destination}</Typography>
-                                  </Box>
+                                <Stack direction="row" alignItems="center" spacing={1}>
+                                  <RoomIcon fontSize="small" color="primary" />
+                                  <Typography variant="body2" fontWeight={600} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                    {etapa.origin} 
+                                    <span style={{color:'#999'}}>➝</span> 
+                                    {etapa.destination}
+                                  </Typography>
                                 </Stack>
                               </Box>
 
@@ -370,28 +383,55 @@ export const TripRow = ({
                                   <Stack direction="row" alignItems="center" spacing={0.5}>
                                     <CalendarTodayIcon sx={{ fontSize: 14, color: '#757575' }} />
                                     <Typography variant="body2">
-                                      {etapa.loading_date ? dayjs(etapa.loading_date).format("DD/MMM") : '--'}
+                                      {etapa.loading_date ? dayjs(etapa.loading_date).format("DD/MM/YY") : '--'}
                                     </Typography>
                                   </Stack>
                                 </Grid>
                                 <Grid item xs={6}>
-                                  <Typography variant="caption" color="text.secondary" display="block">Fecha Entrega</Typography>
-                                  <Stack direction="row" alignItems="center" spacing={0.5}>
-                                    <CalendarTodayIcon sx={{ fontSize: 14, color: '#757575' }} />
-                                    <Typography variant="body2">
-                                      {etapa.delivery_date ? dayjs(etapa.delivery_date).format("DD/MMM") : '--'}
-                                    </Typography>
+                                  <Typography variant="caption" color="text.secondary" display="block">
+                                    Fecha Entrega
+                                  </Typography>
+                                  
+                                  <Stack direction="row" alignItems="center" spacing={1.5}>
+                                    
+                                    <Stack direction="row" alignItems="center" spacing={0.5}>
+                                      <CalendarTodayIcon sx={{ fontSize: 14, color: '#757575' }} />
+                                      <Typography variant="body2" fontWeight={500}>
+                                        {etapa.delivery_date ? dayjs(etapa.delivery_date).format("DD/MM/YY") : '--'}
+                                      </Typography>
+                                    </Stack>
+
+                                    {etapa.time_of_delivery && (
+                                      <Stack 
+                                        direction="row" 
+                                        alignItems="center" 
+                                        spacing={0.5} 
+                                        sx={{ 
+                                            bgcolor: '#f1f8ff',      
+                                            color: '#0288d1',        
+                                            border: '1px solid #b3e5fc', 
+                                            borderRadius: 1,
+                                            px: 0.8,                 
+                                            py: 0.2                  
+                                        }}
+                                      >
+                                        <AccessTimeIcon sx={{ fontSize: 12 }} />
+                                        <Typography variant="caption" fontWeight={700} sx={{ lineHeight: 1 }}>
+                                          {formatTime(etapa.time_of_delivery)}
+                                        </Typography>
+                                      </Stack>
+                                    )}
                                   </Stack>
                                 </Grid>
                               </Grid>
 
-                              {etapa.ci_number && (
+                              {/* {etapa.ci_number && (
                                 <Box sx={{ bgcolor: '#f5f5f5', p: 0.5, borderRadius: 1, textAlign: 'center' }}>
                                   <Typography variant="caption" fontWeight={600} color="text.primary">
                                     CI: {etapa.ci_number}
                                   </Typography>
                                 </Box>
-                              )}
+                              )} */}
 
                               {etapa.comments && (
                                 <Typography variant="caption" sx={{ fontStyle: 'italic', color: '#666', borderLeft: '2px solid #ccc', pl: 1 }}>
@@ -404,7 +444,38 @@ export const TripRow = ({
                                   <Typography variant="caption" fontWeight={700} color="text.primary">Paradas Adicionales:</Typography>
                                   <ul style={{ margin: '4px 0 0 0', paddingLeft: '20px', fontSize: '0.8rem' }}>
                                     {etapa.stops_in_transit.map((stop, i) => (
-                                      <li key={i}>{stop.location}</li>
+                                      <li key={i} style={{ marginBottom: 4 }}>
+                                        <span style={{ marginRight: 6 }}>{stop.location}</span>
+
+                                        {stop.time_of_delivery && (
+                                            <Chip
+                                                icon={<AccessTimeIcon sx={{ fontSize: '12px !important' }} />}
+                                                label={formatTime(stop.time_of_delivery)}
+                                                size="small"
+                                                sx={{ 
+                                                    height: 20, 
+                                                    fontSize: '0.7rem', 
+                                                    bgcolor: '#f5f5f5', 
+                                                    border: '1px solid #e0e0e0',
+                                                    mr: 0.5
+                                                }}
+                                            />
+                                        )}
+
+                                        {stop.bl_firmado_doc && (
+                                            <Chip
+                                                label="BL"
+                                                size="small"
+                                                component="a"
+                                                href={getDocumentUrl(stop.bl_firmado_doc.path_servidor_real || stop.bl_firmado_doc.nombre_archivo)}
+                                                target="_blank"
+                                                clickable
+                                                color="primary"
+                                                variant="outlined"
+                                                sx={{ height: 20, fontSize: '0.7rem', cursor: 'pointer' }}
+                                            />
+                                        )}
+                                      </li>
                                     ))}
                                   </ul>
                                 </Box>

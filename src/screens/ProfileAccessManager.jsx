@@ -2,7 +2,7 @@ import { useState, useEffect, useContext, useCallback } from 'react';
 import { AuthContext } from '../auth/AuthContext';
 import { menuItemsConfig } from '../config/menuConfig';
 import UserTable from '../components/UserTable';
-import PermissionDrawer from '../components/PermissionDrawer'; // <--- CAMBIO AQUÍ
+import PermissionDrawer from '../components/PermissionDrawer'; 
 import { 
     Container, Typography, Box, CircularProgress, 
     Alert, Snackbar

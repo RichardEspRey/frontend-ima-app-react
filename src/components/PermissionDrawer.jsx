@@ -160,7 +160,6 @@ const PermissionDrawer = ({ open, handleClose, user, sectionsToManage, handlePer
                                                         </ListItemIcon>
                                                         <ListItemText 
                                                             primary={subItem.name} 
-                                                            // Si no tiene ruta, asumimos que es una Pestaña/Control interno
                                                             secondary={!subItem.route ? "Control de Pestaña/Vista" : "Sub-menú de navegación"}
                                                             primaryTypographyProps={{ variant: 'body2' }}
                                                             secondaryTypographyProps={{ variant: 'caption', color: !subItem.route ? 'secondary' : 'textSecondary' }}
