@@ -1012,3 +1012,6 @@ const BorderCrossingFormNew = ({
 };
 
 export default BorderCrossingFormNew;
+
+
+//componente para la actual forma de enviar viajes

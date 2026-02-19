@@ -51,7 +51,7 @@ const initialEtapaStateBase = {
     documentos: { ...initialNormalTripDocs }, time_of_delivery: '', stops_in_transit: []
 };
 
-const BorderCrossingFormNew2 = ({ tripNumber, countryCode, tripYear, isTransnational, isContinuation, transnationalNumber, movementNumber, onSuccess }) => {
+const BorderCrossingFormNew2 = ({ tripNumber, countryCode, tripYear, isTransnational, isContinuation, transnationalNumber, movementNumber, onSuccess, etapas: etapasProp, setEtapas: setEtapasProp, formData: formDataProp, setFormData: setFormDataProp, onSaveOverride }) => {
 
     // Hooks
     const { activeDrivers, loading: loadingDrivers, error: errorDrivers } = useFetchActiveDrivers();
@@ -62,7 +62,7 @@ const BorderCrossingFormNew2 = ({ tripNumber, countryCode, tripYear, isTransnati
     const { activeWarehouses, loading: loadingWarehouses, error: errorWarehouses } = useFetchWarehouses();
 
     // States
-    
+
     const [cajaExterna, setCajaExterna] = useState(null);
     const [tipoCaja, setTipoCaja] = useState('internal');
     const [etapas, setEtapas] = useState([{ ...initialEtapaStateBase, stageType: 'borderCrossing' }]);
@@ -95,7 +95,24 @@ const BorderCrossingFormNew2 = ({ tripNumber, countryCode, tripYear, isTransnati
             [name]: value,
         }));
     };
+    useEffect(() => {
+        if (activeCompanies) {
+            setCompanyOptions(activeCompanies.map(c => ({ value: c.company_id, label: c.nombre_compania })));
+        }
+    }, [activeCompanies]);
 
+    useEffect(() => {
+        if (activeWarehouses) {
+            setWarehouseOptions(activeWarehouses.map(w => ({ value: w.warehouse_id, label: w.nombre_almacen })));
+        }
+    }, [activeWarehouses]);
+
+    useEffect(() => {
+        setFormData(prevFormData => ({
+            ...prevFormData,
+            trip_number: tripNumber || '',
+        }));
+    }, [tripNumber]);
     // Handlers Etapas
     const addStage = (type) => setEtapas(p => [...p, { ...initialEtapaStateBase, stage_number: p.length + 1, stageType: type }]);
 
@@ -162,117 +179,122 @@ const BorderCrossingFormNew2 = ({ tripNumber, countryCode, tripYear, isTransnati
 
     // Submit
     const handleSubmit = async (e) => {
-    e.preventDefault();
+        e?.preventDefault();
+        if (onSaveOverride) { onSaveOverride(); return; }
 
-    // 🔐 Validaciones mínimas (igual que base)
-    if (!formData.driver_id || !formData.truck_id) {
-        Swal.fire('Campos incompletos', 'Seleccione Driver y Truck', 'warning');
-        return;
-    }
-
-    for (let i = 0; i < etapas.length; i++) {
-        const etapa = etapas[i];
-        if (!etapa.company_id || !etapa.destination || !etapa.warehouse_destination_id) {
-            Swal.fire(
-                'Campos incompletos',
-                `Complete los datos obligatorios de la etapa ${i + 1}`,
-                'warning'
-            );
-            return;
-        }
-    }
-
-    Swal.fire({
-        title: 'Guardando viaje...',
-        allowOutsideClick: false,
-        didOpen: () => Swal.showLoading()
-    });
-
-    const fd = new FormData();
-    fd.append('op', 'Alta');
-
-    // 🔹 Datos principales (IGUAL QUE BASE)
-    fd.append('trip_number', formData.trip_number);
-    fd.append('driver_id', formData.driver_id);
-    fd.append('driver_id_second', formData.driver_id_second || '');
-    fd.append('truck_id', formData.truck_id);
-    fd.append('caja_id', trailerType === 'interna' ? formData.caja_id : '');
-    fd.append('caja_externa_id', trailerType === 'externa' ? formData.caja_externa_id : '');
-    fd.append('country_code', countryCode);
-    fd.append('trip_year', String(tripYear).slice(-2));
-    fd.append('is_transnational', isTransnational ? 1 : 0);
-
-    if (isTransnational) {
-        fd.append('transnational_number', isContinuation ? transnationalNumber : '');
-        fd.append('movement_number', isContinuation ? movementNumber : 1);
-    } else {
-        fd.append('transnational_number', '');
-        fd.append('movement_number', '');
-    }
-
-    // 🔹 Etapas → JSON (MISMA FORMA QUE BASE)
-    const etapasJson = etapas.map((etapa) => ({
-        stage_number: etapa.stage_number,
-        stageType: etapa.stageType,
-        origin: etapa.origin,
-        destination: etapa.destination,
-        zip_code_origin: etapa.zip_code_origin,
-        zip_code_destination: etapa.zip_code_destination,
-        loading_date: etapa.loading_date ? format(etapa.loading_date, 'yyyy-MM-dd') : null,
-        delivery_date: etapa.delivery_date ? format(etapa.delivery_date, 'yyyy-MM-dd') : null,
-        company_id: etapa.company_id,
-        travel_direction: etapa.travel_direction,
-        warehouse_origin_id: etapa.warehouse_origin_id,
-        warehouse_destination_id: etapa.warehouse_destination_id,
-        ci_number: etapa.ci_number,
-        rate_tarifa: etapa.rate_tarifa,
-        millas_pcmiller: etapa.millas_pcmiller,
-        millas_pcmiller_practicas: etapa.millas_pcmiller_practicas,
-        estatus: 'In Transit',
-        comments: etapa.comments || '',
-        time_of_delivery: etapa.time_of_delivery || '',
-        documentos: Object.entries(etapa.documentos).reduce((acc, [key, value]) => {
-            acc[key] = value
-                ? { fileName: value.fileName || '', vencimiento: value.vencimiento || null }
-                : null;
-            return acc;
-        }, {})
-    }));
-
-    fd.append('etapas', JSON.stringify(etapasJson));
-
-    // 🔹 Archivos por etapa (MISMA NOMENCLATURA)
-    etapas.forEach((etapa, idx) => {
-        Object.entries(etapa.documentos).forEach(([docType, docData]) => {
-            if (docData?.file instanceof File) {
-                fd.append(
-                    `etapa_${idx}_${docType}_file`,
-                    docData.file,
-                    docData.fileName
+        for (let i = 0; i < etapas.length; i++) {
+            const etapa = etapas[i];
+            if (!etapa.company_id || !etapa.destination || !etapa.warehouse_destination_id) {
+                Swal.fire(
+                    'Campos incompletos',
+                    `Complete los datos obligatorios de la etapa ${i + 1}`,
+                    'warning'
                 );
+                return;
             }
-        });
-    });
-
-    // 🔹 Envío
-    try {
-        const res = await fetch(`${apiHost}/new_tripsv2.php`, {
-            method: 'POST',
-            body: fd
-        });
-
-        const result = await res.json();
-
-        if (res.ok && result.status === 'success') {
-            Swal.fire('¡Éxito!', 'Viaje guardado correctamente', 'success');
-            onSuccess?.();
-        } else {
-            throw new Error(result.message || 'Error al guardar');
         }
-    } catch (err) {
-        Swal.fire('Error', err.message, 'error');
-    }
-};
+
+        Swal.fire({
+            title: 'Guardando viaje...',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+
+        const fd = new FormData();
+        fd.append('op', 'Alta');
+
+        // 🔹 Datos principales (IGUAL QUE BASE)
+        fd.append('trip_number', formData.trip_number);
+
+        fd.append('driver_id', formData.driver_id || null);
+        fd.append('driver_id_second', formData.driver_id_second || null);
+        fd.append('truck_id', formData.truck_id || null);
+        fd.append(
+            'caja_id',
+            trailerType === 'interna' ? (formData.caja_id || null) : null
+        );
+        fd.append(
+            'caja_externa_id',
+            trailerType === 'externa' ? (formData.caja_externa_id || null) : null
+        );
+
+
+
+        fd.append('country_code', countryCode);
+        fd.append('trip_year', String(tripYear).slice(-2));
+        fd.append('is_transnational', isTransnational ? 1 : 0);
+
+        if (isTransnational) {
+            fd.append('transnational_number', isContinuation ? transnationalNumber : '');
+            fd.append('movement_number', isContinuation ? movementNumber : 1);
+        } else {
+            fd.append('transnational_number', '');
+            fd.append('movement_number', '');
+        }
+
+        // 🔹 Etapas → JSON (MISMA FORMA QUE BASE)
+        const etapasJson = etapas.map((etapa) => ({
+            stage_number: etapa.stage_number,
+            stageType: etapa.stageType,
+            origin: etapa.origin,
+            destination: etapa.destination,
+            zip_code_origin: etapa.zip_code_origin,
+            zip_code_destination: etapa.zip_code_destination,
+            loading_date: etapa.loading_date ? format(etapa.loading_date, 'yyyy-MM-dd') : null,
+            delivery_date: etapa.delivery_date ? format(etapa.delivery_date, 'yyyy-MM-dd') : null,
+            company_id: etapa.company_id,
+            travel_direction: etapa.travel_direction,
+            warehouse_origin_id: etapa.warehouse_origin_id,
+            warehouse_destination_id: etapa.warehouse_destination_id,
+            ci_number: etapa.ci_number,
+            rate_tarifa: etapa.rate_tarifa,
+            millas_pcmiller: etapa.millas_pcmiller,
+            millas_pcmiller_practicas: etapa.millas_pcmiller_practicas,
+            estatus: 'In Transit',
+            comments: etapa.comments || '',
+            time_of_delivery: etapa.time_of_delivery || '',
+            documentos: Object.entries(etapa.documentos).reduce((acc, [key, value]) => {
+                acc[key] = value
+                    ? { fileName: value.fileName || '', vencimiento: value.vencimiento || null }
+                    : null;
+                return acc;
+            }, {})
+        }));
+
+        fd.append('etapas', JSON.stringify(etapasJson));
+
+        // 🔹 Archivos por etapa (MISMA NOMENCLATURA)
+        etapas.forEach((etapa, idx) => {
+            Object.entries(etapa.documentos).forEach(([docType, docData]) => {
+                if (docData?.file instanceof File) {
+                    fd.append(
+                        `etapa_${idx}_${docType}_file`,
+                        docData.file,
+                        docData.fileName
+                    );
+                }
+            });
+        });
+
+        // 🔹 Envío
+        try {
+            const res = await fetch(`${apiHost}/new_tripsv2.php`, {
+                method: 'POST',
+                body: fd
+            });
+
+            const result = await res.json();
+
+            if (res.ok && result.status === 'success') {
+                Swal.fire('¡Éxito!', 'Viaje guardado correctamente', 'success');
+                onSuccess?.();
+            } else {
+                throw new Error(result.message || 'Error al guardar');
+            }
+        } catch (err) {
+            Swal.fire('Error', err.message, 'error');
+        }
+    };
 
 
     const handleTripModeChange = (mode) => {
@@ -281,7 +303,6 @@ const BorderCrossingFormNew2 = ({ tripNumber, countryCode, tripYear, isTransnati
             setFormData(prev => ({ ...prev, driver_id_second: '' }));
         }
     };
-    
     const handleCreateCompany = async (inputValue, stageIndex) => {
         setIsCreatingCompany(true);
         const fd = new FormData();
@@ -539,7 +560,7 @@ const BorderCrossingFormNew2 = ({ tripNumber, countryCode, tripYear, isTransnati
                                         <Grid item xs={12}>
                                             <Typography variant="subtitle2" fontWeight={700}>Documentación</Typography>
                                             <Grid container spacing={2} sx={{ mt: 1 }}>
-                                                    {['doda', 'entry', 'manifiesto', 'bl', 'orden_de_retiro'].map(docKey => (
+                                                 {['doda', 'entry', 'manifiesto', 'bl', 'orden_de_retiro','DTOPS'].map(docKey => (
                                                     <Grid item xs={6} sm={3} key={docKey}>
                                                         <DocButton label={docKey.toUpperCase().replace('_', ' ')} doc={etapa.documentos[docKey]} onClick={() => openDocModal(index, docKey)} />
                                                     </Grid>
@@ -559,9 +580,9 @@ const BorderCrossingFormNew2 = ({ tripNumber, countryCode, tripYear, isTransnati
                 <Button variant="outlined" color="secondary" onClick={() => addStage('emptyMileage')} startIcon={<AddCircleOutlineIcon />}>Agregar Vacía</Button>
             </Stack>
 
-            <Paper elevation={10} sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, p: 2, zIndex: 1000, textAlign: 'right', bgcolor: '#fff' }}>
+            <Paper elevation={10} sx={{ position: 'fixed', bottom: 0, left: '250px', right: 0, p: 2, zIndex: 1000, textAlign: 'right', bgcolor: '#fff' }}>
                 <Box sx={{ maxWidth: '1600px', mx: 'auto' }}>
-                    <Button variant="contained" size="large" color="success" startIcon={loadingSave ? <CircularProgress size={24} color="inherit" /> : <SaveIcon />} onClick={handleSubmit} disabled={loadingSave} sx={{ px: 6 }}>
+                    <Button variant="contained" size="large" color="success" startIcon={loadingSave ? <CircularProgress size={24} color="inherit" /> : <SaveIcon />} onClick={onSaveOverride ?? handleSubmit} disabled={loadingSave} sx={{ px: 6 }}>
                         {loadingSave ? "Guardando..." : "GUARDAR VIAJE"}
                     </Button>
                 </Box>
@@ -578,5 +599,4 @@ export default BorderCrossingFormNew2;
 
 
 
-
-
+//componente para la la nueva forma de enviar un viaje

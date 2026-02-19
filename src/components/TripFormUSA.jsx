@@ -51,7 +51,7 @@ const initialEtapaStateBase = {
     documentos: { ...initialNormalTripDocs }, time_of_delivery: '', stops_in_transit: []
 };
 
-const TripFormUSA = ({ tripNumber, countryCode, tripYear, isTransnational, isContinuation, transnationalNumber, movementNumber, onSuccess }) => {
+const TripFormUSA = ({ tripNumber, countryCode, tripYear, isTransnational, isContinuation, transnationalNumber, movementNumber, onSuccess, etapas: etapasProp, setEtapas: setEtapasProp, formData: formDataProp, setFormData: setFormDataProp, onSaveOverride }) => {
 
     // Hooks
     const { activeDrivers, loading: loadingDrivers, error: errorDrivers } = useFetchActiveDrivers();
@@ -62,29 +62,28 @@ const TripFormUSA = ({ tripNumber, countryCode, tripYear, isTransnational, isCon
     const { activeWarehouses, loading: loadingWarehouses, error: errorWarehouses } = useFetchWarehouses();
 
     // States
-    const [driver1, setDriver1] = useState(null);
-    const [driver2, setDriver2] = useState(null);
-    const [truck, setTruck] = useState(null);
-    const [caja, setCaja] = useState(null);
+
     const [cajaExterna, setCajaExterna] = useState(null);
     const [tipoCaja, setTipoCaja] = useState('internal');
-    const [etapas, setEtapas] = useState([{ ...initialEtapaStateBase, stageType: 'normalTrip' }]);
+    const [etapasLocal, setEtapasLocal] = useState([{ ...initialEtapaStateBase, stageType: 'normalTrip' }]);
+    const etapas = etapasProp ?? etapasLocal;
+    const setEtapas = setEtapasProp ?? setEtapasLocal;
     const [loadingSave, setLoadingSave] = useState(false);
-    const [tripMode, setTripMode] = useState('individual');
+    const [tripMode, setTripMode] = useState(() => formDataProp?.driver_id_second ? 'team' : 'individual');
     // Modales
     const [modalAbierto, setModalAbierto] = useState(false);
     const [modalTarget, setModalTarget] = useState({ stageIndex: null, docType: null, stopIndex: null });
     const [mostrarFechaVencimientoModal, setMostrarFechaVencimientoModal] = useState(false);
     const [IsModalCajaExternaOpen, setIsModalCajaExternaOpen] = useState(false);
 
-    // Memos para opciones 
+    // Memos para opciones
     const [isCreatingCompany, setIsCreatingCompany] = useState(false);
     const [isCreatingWarehouse, setIsCreatingWarehouse] = useState(false);
-    const [trailerType, setTrailerType] = useState('interna');
+    const [trailerType, setTrailerType] = useState(() => formDataProp?.caja_externa_id ? 'externa' : 'interna');
     const [companyOptions, setCompanyOptions] = useState([]);
     const [warehouseOptions, setWarehouseOptions] = useState([]);
 
-    const [formData, setFormData] = useState({
+    const [formDataLocal, setFormDataLocal] = useState({
         trip_number: tripNumber || '',
         driver_id: '',
         driver_id_second: '',
@@ -92,26 +91,45 @@ const TripFormUSA = ({ tripNumber, countryCode, tripYear, isTransnational, isCon
         caja_id: '',
         caja_externa_id: ''
     });
+    const formData = formDataProp ?? formDataLocal;
+    const setFormData = setFormDataProp ?? setFormDataLocal;
     const setForm = (name, value) => {
         setFormData(prevData => ({
             ...prevData,
             [name]: value,
         }));
     };
+    useEffect(() => {
+        if (activeCompanies) {
+            setCompanyOptions(activeCompanies.map(c => ({ value: c.company_id, label: c.nombre_compania })));
+        }
+    }, [activeCompanies]);
 
+    useEffect(() => {
+        if (activeWarehouses) {
+            setWarehouseOptions(activeWarehouses.map(w => ({ value: w.warehouse_id, label: w.nombre_almacen })));
+        }
+    }, [activeWarehouses]);
+
+    useEffect(() => {
+        setFormData(prevFormData => ({
+            ...prevFormData,
+            trip_number: tripNumber || '',
+        }));
+    }, [tripNumber]);
     // Handlers Etapas
     const addStage = (type) => setEtapas(p => [...p, { ...initialEtapaStateBase, stage_number: p.length + 1, stageType: type }]);
 
     const removeStage = (i) => {
         if (etapas.length === 1) return Swal.fire("Aviso", "Mínimo una etapa requerida", "info");
-        setEtapas(p => p.filter((_, idx) => idx !== i).map((e, idx) => ({ ...e, stage_number: idx + 1 })));
+        setEtapas(p => p.filter((_, index) => index !== i).map((e, index) => ({ ...e, stage_number: index + 1 })));
     };
 
     const updateStage = (i, f, v) => setEtapas(p => { const c = [...p]; c[i] = { ...c[i], [f]: v }; return c; });
 
     // Handlers Paradas
     const addStop = (i) => setEtapas(p => { const c = [...p]; c[i].stops_in_transit = [...(c[i].stops_in_transit || []), { location: '', time_of_delivery: '', bl_firmado_doc: null }]; return c; });
-    const removeStop = (i, si) => setEtapas(p => { const c = [...p]; c[i].stops_in_transit = c[i].stops_in_transit.filter((_, idx) => idx !== si); return c; });
+    const removeStop = (i, si) => setEtapas(p => { const c = [...p]; c[i].stops_in_transit = c[i].stops_in_transit.filter((_, index) => index !== si); return c; });
     const updateStop = (i, si, f, v) => setEtapas(p => { const c = [...p]; c[i].stops_in_transit[si][f] = v; return c; });
 
     // Docs
@@ -137,7 +155,7 @@ const TripFormUSA = ({ tripNumber, countryCode, tripYear, isTransnational, isCon
     // Caja Externa
     const saveExtCaja = async (newId) => {
         await refreshTrailers();
-        const found = externalTrailers.find(t => t.id === newId);
+        const found = activeExternalTrailers.find(t => t.id === newId);
         setCajaExterna(found ? { value: newId, label: `${found.numero_caja} - ${found.nombre_dueno}` } : { value: newId, label: 'Nueva Caja' });
         setIsModalCajaExternaOpen(false);
     };
@@ -152,83 +170,201 @@ const TripFormUSA = ({ tripNumber, countryCode, tripYear, isTransnational, isCon
         }
     };
 
+    const handleEtapaChange = (index, field, value) => {
+        setEtapas(prevEtapas => {
+            const updatedEtapas = [...prevEtapas];
+            const updatedEtapa = { ...updatedEtapas[index] };
+            updatedEtapa[field] = value;
+            updatedEtapas[index] = updatedEtapa;
+            return updatedEtapas;
+        });
+    };
+
 
     // Submit
-    const handleSubmit = async () => {
-        if (!tripNumber || !driver1 || !truck) return Swal.fire("Error", "Faltan datos de recursos", "error");
-        if (tipoCaja === 'internal' && !caja) return Swal.fire("Error", "Falta caja interna", "error");
-        if (tipoCaja === 'external' && !cajaExterna) return Swal.fire("Error", "Falta caja externa", "error");
+    const handleSubmit = async (e) => {
+        e?.preventDefault();
+        if (onSaveOverride) { onSaveOverride(); return; }
 
-        setLoadingSave(true);
-        try {
-            const fullTripId = `${countryCode}${tripYear.toString().slice(-2)}-${tripNumber}`;
-            const fd = new FormData();
-            fd.append('op', 'create_trip_complete');
-            fd.append('trip_number', fullTripId);
-            fd.append('pais', countryCode);
-            fd.append('anio', tripYear);
-            fd.append('driver_id', driver1);
-            if (driver2) fd.append('driver2_id', driver2);
-            fd.append('truck_id', truck);
-            fd.append(tipoCaja === 'internal' ? 'trailer_id' : 'external_trailer_id', tipoCaja === 'internal' ? caja : (cajaExterna.value || cajaExterna));
-
-            if (isTransnational) {
-                fd.append('is_transnational', 1);
-                if (isContinuation) fd.append('transnational_trip_id', transnationalNumber);
-                if (movementNumber) fd.append('movement_number', movementNumber);
+        for (let i = 0; i < etapas.length; i++) {
+            const etapa = etapas[i];
+            if (!etapa.company_id || !etapa.destination || !etapa.warehouse_destination_id) {
+                Swal.fire(
+                    'Campos incompletos',
+                    `Complete los datos obligatorios de la etapa ${i + 1}`,
+                    'warning'
+                );
+                return;
             }
+        }
 
-            etapas.forEach((etapa, idx) => {
-                const prefix = `etapas[${idx}]`;
-                fd.append(`${prefix}[stageType]`, etapa.stageType);
-                fd.append(`${prefix}[stage_number]`, etapa.stage_number);
-                fd.append(`${prefix}[company_id]`, etapa.company_id || '');
-                fd.append(`${prefix}[travel_direction]`, etapa.travel_direction || '');
-                fd.append(`${prefix}[ci_number]`, etapa.ci_number || '');
-                fd.append(`${prefix}[origin]`, etapa.origin || '');
-                fd.append(`${prefix}[zip_code_origin]`, etapa.zip_code_origin || '');
-                fd.append(`${prefix}[warehouse_origin_id]`, etapa.warehouse_origin_id || '');
-                fd.append(`${prefix}[loading_date]`, etapa.loading_date ? format(etapa.loading_date, 'yyyy-MM-dd') : '');
-                fd.append(`${prefix}[destination]`, etapa.destination || '');
-                fd.append(`${prefix}[zip_code_destination]`, etapa.zip_code_destination || '');
-                fd.append(`${prefix}[warehouse_destination_id]`, etapa.warehouse_destination_id || '');
-                fd.append(`${prefix}[delivery_date]`, etapa.delivery_date ? format(etapa.delivery_date, 'yyyy-MM-dd') : '');
-                fd.append(`${prefix}[millas_pcmiller]`, etapa.millas_pcmiller || '');
-                fd.append(`${prefix}[millas_pcmiller_practicas]`, etapa.millas_pcmiller_practicas || '');
-                fd.append(`${prefix}[comments]`, etapa.comments || '');
+        Swal.fire({
+            title: 'Guardando viaje...',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
 
-                if (etapa.documentos) {
-                    Object.keys(etapa.documentos).forEach(key => {
-                        if (etapa.documentos[key]?.file) fd.append(`${prefix}[docs][${key}]`, etapa.documentos[key].file);
-                    });
-                }
-                if (etapa.stops_in_transit) {
-                    etapa.stops_in_transit.forEach((s, si) => {
-                        fd.append(`${prefix}[stops][${si}][location]`, s.location || '');
-                        fd.append(`${prefix}[stops][${si}][time_of_delivery]`, s.time_of_delivery || '');
-                        if (s.bl_firmado_doc?.file) fd.append(`${prefix}[stops][${si}][bl_firmado_doc]`, s.bl_firmado_doc.file);
-                    });
+        const fd = new FormData();
+        fd.append('op', 'Alta');
+
+        // 🔹 Datos principales (IGUAL QUE BASE)
+        fd.append('trip_number', formData.trip_number);
+
+        fd.append('driver_id', formData.driver_id || null);
+        fd.append('driver_id_second', formData.driver_id_second || null);
+        fd.append('truck_id', formData.truck_id || null);
+        fd.append(
+            'caja_id',
+            trailerType === 'interna' ? (formData.caja_id || null) : null
+        );
+        fd.append(
+            'caja_externa_id',
+            trailerType === 'externa' ? (formData.caja_externa_id || null) : null
+        );
+
+
+
+        fd.append('country_code', countryCode);
+        fd.append('trip_year', String(tripYear).slice(-2));
+        fd.append('is_transnational', isTransnational ? 1 : 0);
+
+        if (isTransnational) {
+            fd.append('transnational_number', isContinuation ? transnationalNumber : '');
+            fd.append('movement_number', isContinuation ? movementNumber : 1);
+        } else {
+            fd.append('transnational_number', '');
+            fd.append('movement_number', '');
+        }
+
+        // 🔹 Etapas → JSON (MISMA FORMA QUE BASE)
+        const etapasJson = etapas.map((etapa) => ({
+            stage_number: etapa.stage_number,
+            stageType: etapa.stageType,
+            origin: etapa.origin,
+            destination: etapa.destination,
+            zip_code_origin: etapa.zip_code_origin,
+            zip_code_destination: etapa.zip_code_destination,
+            loading_date: etapa.loading_date ? format(etapa.loading_date, 'yyyy-MM-dd') : null,
+            delivery_date: etapa.delivery_date ? format(etapa.delivery_date, 'yyyy-MM-dd') : null,
+            company_id: etapa.company_id,
+            travel_direction: etapa.travel_direction,
+            warehouse_origin_id: etapa.warehouse_origin_id,
+            warehouse_destination_id: etapa.warehouse_destination_id,
+            ci_number: etapa.ci_number,
+            rate_tarifa: etapa.rate_tarifa,
+            millas_pcmiller: etapa.millas_pcmiller,
+            millas_pcmiller_practicas: etapa.millas_pcmiller_practicas,
+            estatus: 'In Transit',
+            comments: etapa.comments || '',
+            time_of_delivery: etapa.time_of_delivery || '',
+            documentos: Object.entries(etapa.documentos).reduce((acc, [key, value]) => {
+                acc[key] = value
+                    ? { fileName: value.fileName || '', vencimiento: value.vencimiento || null }
+                    : null;
+                return acc;
+            }, {})
+        }));
+
+        fd.append('etapas', JSON.stringify(etapasJson));
+
+        // 🔹 Archivos por etapa (MISMA NOMENCLATURA)
+        etapas.forEach((etapa, idx) => {
+            Object.entries(etapa.documentos).forEach(([docType, docData]) => {
+                if (docData?.file instanceof File) {
+                    fd.append(
+                        `etapa_${idx}_${docType}_file`,
+                        docData.file,
+                        docData.fileName
+                    );
                 }
             });
+        });
 
-            const res = await fetch(`${apiHost}/trips.php`, { method: "POST", body: fd });
-            const data = await res.json();
-            if (data.status === "success") {
-                Swal.fire("¡Éxito!", `Viaje ${fullTripId} creado`, "success");
-                onSuccess();
-            } else throw new Error(data.message || "Error desconocido");
-        } catch (e) {
-            Swal.fire("Error", e.message, "error");
-        } finally {
-            setLoadingSave(false);
+        // 🔹 Envío
+        try {
+            const res = await fetch(`${apiHost}/new_tripsv2.php`, {
+                method: 'POST',
+                body: fd
+            });
+
+            const result = await res.json();
+
+            if (res.ok && result.status === 'success') {
+                Swal.fire('¡Éxito!', 'Viaje guardado correctamente', 'success');
+                onSuccess?.();
+            } else {
+                throw new Error(result.message || 'Error al guardar');
+            }
+        } catch (err) {
+            Swal.fire('Error', err.message, 'error');
         }
     };
- const handleTripModeChange = (mode) => {
+
+
+    const handleTripModeChange = (mode) => {
         setTripMode(mode);
         if (mode === 'individual') {
             setFormData(prev => ({ ...prev, driver_id_second: '' }));
         }
     };
+    const handleCreateCompany = async (inputValue, stageIndex) => {
+        setIsCreatingCompany(true);
+        const fd = new FormData();
+        fd.append('op', 'CreateCompany');
+        fd.append('nombre_compania', inputValue);
+
+        try {
+            const res = await fetch(`${apiHost}/companies.php`, {
+                method: 'POST',
+                body: fd
+            });
+            const result = await res.json();
+
+            if (result.status === 'success') {
+                const newOption = {
+                    value: result.company.company_id,
+                    label: result.company.nombre_compania
+                };
+                setCompanyOptions(p => [...p, newOption]);
+                handleEtapaChange(stageIndex, 'company_id', newOption.value);
+                Swal.fire('Éxito', 'Compañía creada', 'success');
+            }
+        } catch (e) {
+            Swal.fire('Error', 'No se pudo crear compañía', 'error');
+        } finally {
+            setIsCreatingCompany(false);
+        }
+    };
+    const handleCreateWarehouse = async (inputValue, stageIndex, fieldKey) => {
+        setIsCreatingWarehouse(true);
+        const fd = new FormData();
+        fd.append('op', 'CreateWarehouse');
+        fd.append('nombre_almacen', inputValue);
+
+        try {
+            const res = await fetch(`${apiHost}/warehouses.php`, {
+                method: 'POST',
+                body: fd
+            });
+            const result = await res.json();
+
+            if (result.status === 'success') {
+                const newOption = {
+                    value: result.warehouse.warehouse_id,
+                    label: result.warehouse.nombre_almacen
+                };
+                setWarehouseOptions(p => [...p, newOption]);
+                handleEtapaChange(stageIndex, fieldKey, newOption.value);
+                Swal.fire('Éxito', 'Bodega creada', 'success');
+            }
+        } catch (e) {
+            Swal.fire('Error', 'No se pudo crear bodega', 'error');
+        } finally {
+            setIsCreatingWarehouse(false);
+        }
+    };
+
+
     useEffect(() => {
         if (activeCompanies) {
             setCompanyOptions(activeCompanies.map(c => ({ value: c.company_id, label: c.nombre_compania })));
@@ -267,7 +403,13 @@ const TripFormUSA = ({ tripNumber, countryCode, tripYear, isTransnational, isCon
                         <SelectWrapper
                             label="Driver Principal:"
                             isCreatable={false}
-                            value={activeDrivers.find(d => d.driver_id === formData.driver_id) ? { value: formData.driver_id, label: activeDrivers.find(d => d.driver_id === formData.driver_id).nombre } : null}
+                            value={
+                                formData.driver_id
+                                    ? (activeDrivers.find(d => d.driver_id === formData.driver_id)
+                                        ? { value: formData.driver_id, label: activeDrivers.find(d => d.driver_id === formData.driver_id).nombre }
+                                        : { value: formData.driver_id, label: formData.driver_nombre || formData.driver_id })
+                                    : null
+                            }
                             onChange={(selected) => setForm('driver_id', selected ? selected.value : '')}
                             options={activeDrivers.map(driver => ({ value: driver.driver_id, label: driver.nombre }))}
                             placeholder="Seleccionar Driver"
@@ -278,7 +420,13 @@ const TripFormUSA = ({ tripNumber, countryCode, tripYear, isTransnational, isCon
                             <SelectWrapper
                                 label="Segundo Driver:"
                                 isCreatable={false}
-                                value={activeDrivers.find(d => d.driver_id === formData.driver_id_second) ? { value: formData.driver_id_second, label: activeDrivers.find(d => d.driver_id === formData.driver_id_second).nombre } : null}
+                                value={
+                                    formData.driver_id_second
+                                        ? (activeDrivers.find(d => d.driver_id === formData.driver_id_second)
+                                            ? { value: formData.driver_id_second, label: activeDrivers.find(d => d.driver_id === formData.driver_id_second).nombre }
+                                            : { value: formData.driver_id_second, label: formData.driver_second_nombre || formData.driver_id_second })
+                                        : null
+                                }
                                 onChange={(selected) => setForm('driver_id_second', selected ? selected.value : '')}
                                 options={activeDrivers.filter(d => d.driver_id !== formData.driver_id).map(driver => ({ value: driver.driver_id, label: driver.nombre }))}
                                 placeholder="Seleccionar 2do Driver"
@@ -300,7 +448,13 @@ const TripFormUSA = ({ tripNumber, countryCode, tripYear, isTransnational, isCon
                         <SelectWrapper
                             label="Truck:"
                             isCreatable={false}
-                            value={activeTrucks.find(t => t.truck_id === formData.truck_id) ? { value: formData.truck_id, label: activeTrucks.find(t => t.truck_id === formData.truck_id).unidad } : null}
+                            value={
+                                formData.truck_id
+                                    ? (activeTrucks.find(t => t.truck_id === formData.truck_id)
+                                        ? { value: formData.truck_id, label: activeTrucks.find(t => t.truck_id === formData.truck_id).unidad }
+                                        : { value: formData.truck_id, label: formData.truck_unidad || formData.truck_id })
+                                    : null
+                            }
                             onChange={(selected) => setForm('truck_id', selected ? selected.value : '')}
                             options={activeTrucks.map(truck => ({ value: truck.truck_id, label: truck.unidad }))}
                             placeholder="Seleccionar Truck"
@@ -320,7 +474,13 @@ const TripFormUSA = ({ tripNumber, countryCode, tripYear, isTransnational, isCon
                                 <SelectWrapper
                                     label="Trailer (Caja Interna):"
                                     isCreatable={false}
-                                    value={activeTrailers.find(c => c.caja_id === formData.caja_id) ? { value: formData.caja_id, label: activeTrailers.find(c => c.caja_id === formData.caja_id).no_caja } : null}
+                                    value={
+                                        formData.caja_id
+                                            ? (activeTrailers.find(c => c.caja_id === formData.caja_id)
+                                                ? { value: formData.caja_id, label: activeTrailers.find(c => c.caja_id === formData.caja_id).no_caja }
+                                                : { value: formData.caja_id, label: formData.caja_no_caja || formData.caja_id })
+                                            : null
+                                    }
                                     onChange={(selected) => setForm('caja_id', selected ? selected.value : '')}
                                     options={activeTrailers.map(caja => ({ value: caja.caja_id, label: caja.no_caja }))}
                                     placeholder="Seleccionar Trailer"
@@ -333,7 +493,13 @@ const TripFormUSA = ({ tripNumber, countryCode, tripYear, isTransnational, isCon
                                         <SelectWrapper
                                             label="Trailer (Caja Externa):"
                                             isCreatable={false}
-                                            value={activeExternalTrailers.find(c => c.caja_externa_id === formData.caja_externa_id) ? { value: formData.caja_externa_id, label: activeExternalTrailers.find(c => c.caja_externa_id === formData.caja_externa_id).no_caja } : null}
+                                            value={
+                                                formData.caja_externa_id
+                                                    ? (activeExternalTrailers.find(c => c.caja_externa_id === formData.caja_externa_id)
+                                                        ? { value: formData.caja_externa_id, label: activeExternalTrailers.find(c => c.caja_externa_id === formData.caja_externa_id).no_caja }
+                                                        : { value: formData.caja_externa_id, label: formData.caja_externa_no_caja || formData.caja_externa_id })
+                                                    : null
+                                            }
                                             onChange={(selected) => setForm('caja_externa_id', selected ? selected.value : '')}
                                             options={activeExternalTrailers.map(caja => ({ value: caja.caja_externa_id, label: caja.no_caja }))}
                                             placeholder="Seleccionar Trailer"
@@ -351,26 +517,26 @@ const TripFormUSA = ({ tripNumber, countryCode, tripYear, isTransnational, isCon
 
             <Typography variant="h6" fontWeight={700} gutterBottom sx={{ mt: 4, mb: 2 }}>Informacion del viaje</Typography>
             <Stack spacing={3}>
-                {etapas.map((etapa, idx) => {
+                {etapas.map((etapa, index) => {
                     const isEmpty = etapa.stageType === 'emptyMileage';
                     return (
-                        <Paper key={idx} elevation={2} sx={{ overflow: 'hidden', borderLeft: `6px solid ${isEmpty ? '#757575' : '#1976d2'}` }}>
+                        <Paper key={index} elevation={2} sx={{ overflow: 'hidden', borderLeft: `6px solid ${isEmpty ? '#757575' : '#1976d2'}` }}>
                             <Box sx={{ bgcolor: isEmpty ? '#eeeeee' : '#e3f2fd', px: 2, py: 1.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <Stack direction="row" spacing={1} alignItems="center">
-                                    <Chip label={`#${idx + 1}`} size="small" sx={{ bgcolor: isEmpty ? '#757575' : '#1976d2', color: 'white', fontWeight: 'bold' }} />
+                                    <Chip label={`#${index + 1}`} size="small" sx={{ bgcolor: isEmpty ? '#757575' : '#1976d2', color: 'white', fontWeight: 'bold' }} />
                                     <Typography variant="subtitle1" fontWeight={700}>{isEmpty ? 'Etapa Vacía' : 'Viaje Normal'}</Typography>
                                 </Stack>
                                 <Box>
-                                    {!isEmpty && <Button size="small" startIcon={<AddCircleOutlineIcon />} onClick={() => addStop(idx)} sx={{ mr: 1 }}>Parada</Button>}
-                                    <IconButton size="small" color="error" onClick={() => removeStage(idx)}><DeleteIcon /></IconButton>
+                                    {!isEmpty && <Button size="small" startIcon={<AddCircleOutlineIcon />} onClick={() => addStop(index)} sx={{ mr: 1 }}>Parada</Button>}
+                                    <IconButton size="small" color="error" onClick={() => removeStage(index)}><DeleteIcon /></IconButton>
                                 </Box>
                             </Box>
                             <Box sx={{ p: 3 }}>
                                 {isEmpty ? (
                                     <Grid container spacing={3}>
-                                        <Grid item xs={12} sm={4}><TextField fullWidth label="Millas PC*Miler" type="number" value={etapa.millas_pcmiller} onChange={e => updateStage(idx, 'millas_pcmiller', e.target.value)} /></Grid>
-                                        <Grid item xs={12} sm={4}><TextField fullWidth label="Millas Prácticas" type="number" value={etapa.millas_pcmiller_practicas} onChange={e => updateStage(idx, 'millas_pcmiller_practicas', e.target.value)} /></Grid>
-                                        <Grid item xs={12} sm={4}><TextField fullWidth label="Comentarios" multiline value={etapa.comments} onChange={e => updateStage(idx, 'comments', e.target.value)} /></Grid>
+                                        <Grid item xs={12} sm={4}><TextField fullWidth label="Millas PC*Miler" type="number" value={etapa.millas_pcmiller} onChange={e => updateStage(index, 'millas_pcmiller', e.target.value)} /></Grid>
+                                        <Grid item xs={12} sm={4}><TextField fullWidth label="Millas Prácticas" type="number" value={etapa.millas_pcmiller_practicas} onChange={e => updateStage(index, 'millas_pcmiller_practicas', e.target.value)} /></Grid>
+                                        <Grid item xs={12} sm={4}><TextField fullWidth label="Comentarios" multiline value={etapa.comments} onChange={e => updateStage(index, 'comments', e.target.value)} /></Grid>
                                     </Grid>
                                 ) : (
                                     <Grid container spacing={3}>
@@ -401,8 +567,8 @@ const TripFormUSA = ({ tripNumber, countryCode, tripYear, isTransnational, isCon
                                                             formatCreateLabel={(inputValue) => `Crear bodega: "${inputValue}"`}
                                                         />
                                                     </Box>
-                                                    <Stack direction="row" spacing={1}><TextField label="Ciudad" fullWidth size="small" value={etapa.destination} onChange={e => updateStage(idx, 'destination', e.target.value)} /><TextField label="Zip" size="small" sx={{ width: 100 }} value={etapa.zip_code_destination} onChange={e => updateStage(idx, 'zip_code_destination', e.target.value)} /></Stack>
-                                                    <TextField label="Fecha Entrega" type="date" InputLabelProps={{ shrink: true }} size="small" fullWidth value={etapa.delivery_date ? format(etapa.delivery_date, 'yyyy-MM-dd') : ''} onChange={e => updateStage(idx, 'delivery_date', e.target.value ? new Date(e.target.value + 'T12:00:00') : null)} />
+                                                    <Stack direction="row" spacing={1}><TextField label="Ciudad" fullWidth size="small" value={etapa.destination} onChange={e => updateStage(index, 'destination', e.target.value)} /><TextField label="Zip" size="small" sx={{ width: 100 }} value={etapa.zip_code_destination} onChange={e => updateStage(index, 'zip_code_destination', e.target.value)} /></Stack>
+                                                    <TextField label="Fecha Entrega" type="date" InputLabelProps={{ shrink: true }} size="small" fullWidth value={etapa.delivery_date ? format(etapa.delivery_date, 'yyyy-MM-dd') : ''} onChange={e => updateStage(index, 'delivery_date', e.target.value ? new Date(e.target.value + 'T12:00:00') : null)} />
                                                 </Stack>
                                             </Paper>
                                         </Grid>
@@ -414,10 +580,10 @@ const TripFormUSA = ({ tripNumber, countryCode, tripYear, isTransnational, isCon
                                                     <Typography variant="subtitle2" color="warning.dark">Paradas</Typography>
                                                     {etapa.stops_in_transit.map((stop, si) => (
                                                         <Grid container spacing={1} key={si} alignItems="center" sx={{ mt: 1 }}>
-                                                            <Grid item xs={5}><TextField label="Ubicación" size="small" fullWidth value={stop.location} onChange={e => updateStop(idx, si, 'location', e.target.value)} /></Grid>
-                                                            <Grid item xs={3}><TextField label="Hora" type="time" size="small" fullWidth InputLabelProps={{ shrink: true }} value={stop.time_of_delivery} onChange={e => updateStop(idx, si, 'time_of_delivery', e.target.value)} /></Grid>
-                                                            <Grid item xs={3}><DocButton label="BL Parada" doc={stop.bl_firmado_doc} onClick={() => openDocModal(idx, 'bl_firmado_doc', si)} /></Grid>
-                                                            <Grid item xs={1}><IconButton size="small" color="error" onClick={() => removeStop(idx, si)}><DeleteIcon /></IconButton></Grid>
+                                                            <Grid item xs={5}><TextField label="Ubicación" size="small" fullWidth value={stop.location} onChange={e => updateStop(index, si, 'location', e.target.value)} /></Grid>
+                                                            <Grid item xs={3}><TextField label="Hora" type="time" size="small" fullWidth InputLabelProps={{ shrink: true }} value={stop.time_of_delivery} onChange={e => updateStop(index, si, 'time_of_delivery', e.target.value)} /></Grid>
+                                                            <Grid item xs={3}><DocButton label="BL Parada" doc={stop.bl_firmado_doc} onClick={() => openDocModal(index, 'bl_firmado_doc', si)} /></Grid>
+                                                            <Grid item xs={1}><IconButton size="small" color="error" onClick={() => removeStop(index, si)}><DeleteIcon /></IconButton></Grid>
                                                         </Grid>
                                                     ))}
                                                 </Paper>
@@ -428,9 +594,9 @@ const TripFormUSA = ({ tripNumber, countryCode, tripYear, isTransnational, isCon
                                         <Grid item xs={12}>
                                             <Typography variant="subtitle2" fontWeight={700}>Documentación</Typography>
                                             <Grid container spacing={2} sx={{ mt: 1 }}>
-                                                    {['doda','entry', 'manifiesto', 'bl', 'orden_de_retiro','DTOPS'].map(docKey => (
+                                                {['ima_invoice', 'ci', 'bl', 'bl_firmado'].map(docKey => (
                                                     <Grid item xs={6} sm={3} key={docKey}>
-                                                        <DocButton label={docKey.toUpperCase().replace('_', ' ')} doc={etapa.documentos[docKey]} onClick={() => openDocModal(idx, docKey)} />
+                                                        <DocButton label={docKey.toUpperCase().replace('_', ' ')} doc={etapa.documentos[docKey]} onClick={() => openDocModal(index, docKey)} />
                                                     </Grid>
                                                 ))}
                                             </Grid>
@@ -448,9 +614,9 @@ const TripFormUSA = ({ tripNumber, countryCode, tripYear, isTransnational, isCon
                 <Button variant="outlined" color="secondary" onClick={() => addStage('emptyMileage')} startIcon={<AddCircleOutlineIcon />}>Agregar Vacía</Button>
             </Stack>
 
-            <Paper elevation={10} sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, p: 2, zIndex: 1000, textAlign: 'right', bgcolor: '#fff' }}>
+            <Paper elevation={10} sx={{ position: 'fixed', bottom: 0, left: '250px', right: 0, p: 2, zIndex: 1000, textAlign: 'right', bgcolor: '#fff' }}>
                 <Box sx={{ maxWidth: '1600px', mx: 'auto' }}>
-                    <Button variant="contained" size="large" color="success" startIcon={loadingSave ? <CircularProgress size={24} color="inherit" /> : <SaveIcon />} onClick={handleSubmit} disabled={loadingSave} sx={{ px: 6 }}>
+                    <Button variant="contained" size="large" color="success" startIcon={loadingSave ? <CircularProgress size={24} color="inherit" /> : <SaveIcon />} onClick={onSaveOverride ?? handleSubmit} disabled={loadingSave} sx={{ px: 6 }}>
                         {loadingSave ? "Guardando..." : "GUARDAR VIAJE"}
                     </Button>
                 </Box>
@@ -468,3 +634,4 @@ export default TripFormUSA;
 
 
 
+   

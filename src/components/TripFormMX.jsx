@@ -51,7 +51,7 @@ const initialEtapaStateBase = {
     documentos: { ...initialNormalTripDocs }, time_of_delivery: '', stops_in_transit: []
 };
 
-const TripFormMX = ({ tripNumber, countryCode, tripYear, isTransnational, isContinuation, transnationalNumber, movementNumber, onSuccess }) => {
+const TripFormMX = ({ tripNumber, countryCode, tripYear, isTransnational, isContinuation, transnationalNumber, movementNumber, onSuccess, etapas: etapasProp, setEtapas: setEtapasProp, formData: formDataProp, setFormData: setFormDataProp, onSaveOverride }) => {
 
     // Hooks
     const { activeDrivers, loading: loadingDrivers, error: errorDrivers } = useFetchActiveDrivers();
@@ -62,26 +62,28 @@ const TripFormMX = ({ tripNumber, countryCode, tripYear, isTransnational, isCont
     const { activeWarehouses, loading: loadingWarehouses, error: errorWarehouses } = useFetchWarehouses();
 
     // States
-    
+
     const [cajaExterna, setCajaExterna] = useState(null);
     const [tipoCaja, setTipoCaja] = useState('internal');
-    const [etapas, setEtapas] = useState([{ ...initialEtapaStateBase, stageType: 'normalTrip' }]);
+    const [etapasLocal, setEtapasLocal] = useState([{ ...initialEtapaStateBase, stageType: 'normalTrip' }]);
+    const etapas = etapasProp ?? etapasLocal;
+    const setEtapas = setEtapasProp ?? setEtapasLocal;
     const [loadingSave, setLoadingSave] = useState(false);
-    const [tripMode, setTripMode] = useState('individual');
+    const [tripMode, setTripMode] = useState(() => formDataProp?.driver_id_second ? 'team' : 'individual');
     // Modales
     const [modalAbierto, setModalAbierto] = useState(false);
     const [modalTarget, setModalTarget] = useState({ stageIndex: null, docType: null, stopIndex: null });
     const [mostrarFechaVencimientoModal, setMostrarFechaVencimientoModal] = useState(false);
     const [IsModalCajaExternaOpen, setIsModalCajaExternaOpen] = useState(false);
 
-    // Memos para opciones 
+    // Memos para opciones
     const [isCreatingCompany, setIsCreatingCompany] = useState(false);
     const [isCreatingWarehouse, setIsCreatingWarehouse] = useState(false);
-    const [trailerType, setTrailerType] = useState('interna');
+    const [trailerType, setTrailerType] = useState(() => formDataProp?.caja_externa_id ? 'externa' : 'interna');
     const [companyOptions, setCompanyOptions] = useState([]);
     const [warehouseOptions, setWarehouseOptions] = useState([]);
 
-    const [formData, setFormData] = useState({
+    const [formDataLocal, setFormDataLocal] = useState({
         trip_number: tripNumber || '',
         driver_id: '',
         driver_id_second: '',
@@ -89,13 +91,32 @@ const TripFormMX = ({ tripNumber, countryCode, tripYear, isTransnational, isCont
         caja_id: '',
         caja_externa_id: ''
     });
+    const formData = formDataProp ?? formDataLocal;
+    const setFormData = setFormDataProp ?? setFormDataLocal;
     const setForm = (name, value) => {
         setFormData(prevData => ({
             ...prevData,
             [name]: value,
         }));
     };
+    useEffect(() => {
+        if (activeCompanies) {
+            setCompanyOptions(activeCompanies.map(c => ({ value: c.company_id, label: c.nombre_compania })));
+        }
+    }, [activeCompanies]);
 
+    useEffect(() => {
+        if (activeWarehouses) {
+            setWarehouseOptions(activeWarehouses.map(w => ({ value: w.warehouse_id, label: w.nombre_almacen })));
+        }
+    }, [activeWarehouses]);
+
+    useEffect(() => {
+        setFormData(prevFormData => ({
+            ...prevFormData,
+            trip_number: tripNumber || '',
+        }));
+    }, [tripNumber]);
     // Handlers Etapas
     const addStage = (type) => setEtapas(p => [...p, { ...initialEtapaStateBase, stage_number: p.length + 1, stageType: type }]);
 
@@ -162,117 +183,139 @@ const TripFormMX = ({ tripNumber, countryCode, tripYear, isTransnational, isCont
 
     // Submit
     const handleSubmit = async (e) => {
-    e.preventDefault();
+        e?.preventDefault();
+        if (onSaveOverride) { onSaveOverride(); return; }
 
-    // 🔐 Validaciones mínimas (igual que base)
-    if (!formData.driver_id || !formData.truck_id) {
-        Swal.fire('Campos incompletos', 'Seleccione Driver y Truck', 'warning');
-        return;
-    }
-
-    for (let i = 0; i < etapas.length; i++) {
-        const etapa = etapas[i];
-        if (!etapa.company_id || !etapa.destination || !etapa.warehouse_destination_id) {
-            Swal.fire(
-                'Campos incompletos',
-                `Complete los datos obligatorios de la etapa ${i + 1}`,
-                'warning'
-            );
-            return;
-        }
-    }
-
-    Swal.fire({
-        title: 'Guardando viaje...',
-        allowOutsideClick: false,
-        didOpen: () => Swal.showLoading()
-    });
-
-    const fd = new FormData();
-    fd.append('op', 'Alta');
-
-    // 🔹 Datos principales (IGUAL QUE BASE)
-    fd.append('trip_number', formData.trip_number);
-    fd.append('driver_id', formData.driver_id);
-    fd.append('driver_id_second', formData.driver_id_second || '');
-    fd.append('truck_id', formData.truck_id);
-    fd.append('caja_id', trailerType === 'interna' ? formData.caja_id : '');
-    fd.append('caja_externa_id', trailerType === 'externa' ? formData.caja_externa_id : '');
-    fd.append('country_code', countryCode);
-    fd.append('trip_year', String(tripYear).slice(-2));
-    fd.append('is_transnational', isTransnational ? 1 : 0);
-
-    if (isTransnational) {
-        fd.append('transnational_number', isContinuation ? transnationalNumber : '');
-        fd.append('movement_number', isContinuation ? movementNumber : 1);
-    } else {
-        fd.append('transnational_number', '');
-        fd.append('movement_number', '');
-    }
-
-    // 🔹 Etapas → JSON (MISMA FORMA QUE BASE)
-    const etapasJson = etapas.map((etapa) => ({
-        stage_number: etapa.stage_number,
-        stageType: etapa.stageType,
-        origin: etapa.origin,
-        destination: etapa.destination,
-        zip_code_origin: etapa.zip_code_origin,
-        zip_code_destination: etapa.zip_code_destination,
-        loading_date: etapa.loading_date ? format(etapa.loading_date, 'yyyy-MM-dd') : null,
-        delivery_date: etapa.delivery_date ? format(etapa.delivery_date, 'yyyy-MM-dd') : null,
-        company_id: etapa.company_id,
-        travel_direction: etapa.travel_direction,
-        warehouse_origin_id: etapa.warehouse_origin_id,
-        warehouse_destination_id: etapa.warehouse_destination_id,
-        ci_number: etapa.ci_number,
-        rate_tarifa: etapa.rate_tarifa,
-        millas_pcmiller: etapa.millas_pcmiller,
-        millas_pcmiller_practicas: etapa.millas_pcmiller_practicas,
-        estatus: 'In Transit',
-        comments: etapa.comments || '',
-        time_of_delivery: etapa.time_of_delivery || '',
-        documentos: Object.entries(etapa.documentos).reduce((acc, [key, value]) => {
-            acc[key] = value
-                ? { fileName: value.fileName || '', vencimiento: value.vencimiento || null }
-                : null;
-            return acc;
-        }, {})
-    }));
-
-    fd.append('etapas', JSON.stringify(etapasJson));
-
-    // 🔹 Archivos por etapa (MISMA NOMENCLATURA)
-    etapas.forEach((etapa, idx) => {
-        Object.entries(etapa.documentos).forEach(([docType, docData]) => {
-            if (docData?.file instanceof File) {
-                fd.append(
-                    `etapa_${idx}_${docType}_file`,
-                    docData.file,
-                    docData.fileName
+        for (let i = 0; i < etapas.length; i++) {
+            const etapa = etapas[i];
+            if (!etapa.company_id || !etapa.destination || !etapa.warehouse_destination_id) {
+                Swal.fire(
+                    'Campos incompletos',
+                    `Complete los datos obligatorios de la etapa ${i + 1}`,
+                    'warning'
                 );
+                return;
             }
-        });
-    });
-
-    // 🔹 Envío
-    try {
-        const res = await fetch(`${apiHost}/new_tripsv2.php`, {
-            method: 'POST',
-            body: fd
-        });
-
-        const result = await res.json();
-
-        if (res.ok && result.status === 'success') {
-            Swal.fire('¡Éxito!', 'Viaje guardado correctamente', 'success');
-            onSuccess?.();
-        } else {
-            throw new Error(result.message || 'Error al guardar');
         }
-    } catch (err) {
-        Swal.fire('Error', err.message, 'error');
-    }
-};
+
+        Swal.fire({
+            title: 'Guardando viaje...',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+
+        const fd = new FormData();
+        fd.append('op', 'Alta');
+
+        // 🔹 Datos principales (IGUAL QUE BASE)
+        fd.append('trip_number', formData.trip_number);
+
+        fd.append('driver_id', formData.driver_id || null);
+        fd.append('driver_id_second', formData.driver_id_second || null);
+        fd.append('truck_id', formData.truck_id || null);
+        fd.append(
+            'caja_id',
+            trailerType === 'interna' ? (formData.caja_id || null) : null
+        );
+        fd.append(
+            'caja_externa_id',
+            trailerType === 'externa' ? (formData.caja_externa_id || null) : null
+        );
+
+
+
+        fd.append('country_code', countryCode);
+        fd.append('trip_year', String(tripYear).slice(-2));
+        fd.append('is_transnational', isTransnational ? 1 : 0);
+
+        if (isTransnational) {
+            fd.append('transnational_number', isContinuation ? transnationalNumber : '');
+            fd.append('movement_number', isContinuation ? movementNumber : 1);
+        } else {
+            fd.append('transnational_number', '');
+            fd.append('movement_number', '');
+        }
+
+        // 🔹 Etapas → JSON (MISMA FORMA QUE BASE)
+        const etapasJson = etapas.map((etapa) => ({
+            stage_number: etapa.stage_number,
+            stageType: etapa.stageType,
+            origin: etapa.origin,
+            destination: etapa.destination,
+            zip_code_origin: etapa.zip_code_origin,
+            zip_code_destination: etapa.zip_code_destination,
+            loading_date: etapa.loading_date ? format(etapa.loading_date, 'yyyy-MM-dd') : null,
+            delivery_date: etapa.delivery_date ? format(etapa.delivery_date, 'yyyy-MM-dd') : null,
+            company_id: etapa.company_id,
+            travel_direction: etapa.travel_direction,
+            warehouse_origin_id: etapa.warehouse_origin_id,
+            warehouse_destination_id: etapa.warehouse_destination_id,
+            ci_number: etapa.ci_number,
+            rate_tarifa: etapa.rate_tarifa,
+            millas_pcmiller: etapa.millas_pcmiller,
+            millas_pcmiller_practicas: etapa.millas_pcmiller_practicas,
+            estatus: 'In Transit',
+            comments: etapa.comments || '',
+            time_of_delivery: etapa.time_of_delivery || '',
+            documentos: Object.entries(etapa.documentos).reduce((acc, [key, value]) => {
+                acc[key] = value
+                    ? { fileName: value.fileName || '', vencimiento: value.vencimiento || null }
+                    : null;
+                return acc;
+            }, {}),
+            stops_in_transit: (etapa.stops_in_transit || []).map((stop) => ({
+                location: stop.location || '',
+                time_of_delivery: stop.time_of_delivery || '',
+                bl_firmado_doc: stop.bl_firmado_doc
+                    ? { fileName: stop.bl_firmado_doc.fileName || '' }
+                    : null
+            }))
+        }));
+
+        fd.append('etapas', JSON.stringify(etapasJson));
+
+        // 🔹 Archivos por etapa (MISMA NOMENCLATURA)
+        etapas.forEach((etapa, idx) => {
+            Object.entries(etapa.documentos).forEach(([docType, docData]) => {
+                if (docData?.file instanceof File) {
+                    fd.append(
+                        `etapa_${idx}_${docType}_file`,
+                        docData.file,
+                        docData.fileName
+                    );
+                }
+            });
+            // Archivos de paradas
+            (etapa.stops_in_transit || []).forEach((stop, si) => {
+                if (stop.bl_firmado_doc?.file instanceof File) {
+                    fd.append(
+                        `etapa_${idx}_stop_${si}_bl_firmado_file`,
+                        stop.bl_firmado_doc.file,
+                        stop.bl_firmado_doc.fileName
+                    );
+                }
+            });
+        });
+
+        // 🔹 Envío
+        try {
+            const res = await fetch(`${apiHost}/new_tripsv2.php`, {
+                method: 'POST',
+                body: fd
+            });
+
+            const result = await res.json();
+
+            if (res.ok && result.status === 'success') {
+                Swal.fire('¡Éxito!', 'Viaje guardado correctamente', 'success');
+                onSuccess?.();
+            } else {
+                throw new Error(result.message || 'Error al guardar');
+            }
+        } catch (err) {
+            Swal.fire('Error', err.message, 'error');
+        }
+    };
 
 
     const handleTripModeChange = (mode) => {
@@ -377,7 +420,13 @@ const TripFormMX = ({ tripNumber, countryCode, tripYear, isTransnational, isCont
                         <SelectWrapper
                             label="Driver Principal:"
                             isCreatable={false}
-                            value={activeDrivers.find(d => d.driver_id === formData.driver_id) ? { value: formData.driver_id, label: activeDrivers.find(d => d.driver_id === formData.driver_id).nombre } : null}
+                            value={
+                                formData.driver_id
+                                    ? (activeDrivers.find(d => d.driver_id === formData.driver_id)
+                                        ? { value: formData.driver_id, label: activeDrivers.find(d => d.driver_id === formData.driver_id).nombre }
+                                        : { value: formData.driver_id, label: formData.driver_nombre || formData.driver_id })
+                                    : null
+                            }
                             onChange={(selected) => setForm('driver_id', selected ? selected.value : '')}
                             options={activeDrivers.map(driver => ({ value: driver.driver_id, label: driver.nombre }))}
                             placeholder="Seleccionar Driver"
@@ -388,7 +437,13 @@ const TripFormMX = ({ tripNumber, countryCode, tripYear, isTransnational, isCont
                             <SelectWrapper
                                 label="Segundo Driver:"
                                 isCreatable={false}
-                                value={activeDrivers.find(d => d.driver_id === formData.driver_id_second) ? { value: formData.driver_id_second, label: activeDrivers.find(d => d.driver_id === formData.driver_id_second).nombre } : null}
+                                value={
+                                    formData.driver_id_second
+                                        ? (activeDrivers.find(d => d.driver_id === formData.driver_id_second)
+                                            ? { value: formData.driver_id_second, label: activeDrivers.find(d => d.driver_id === formData.driver_id_second).nombre }
+                                            : { value: formData.driver_id_second, label: formData.driver_second_nombre || formData.driver_id_second })
+                                        : null
+                                }
                                 onChange={(selected) => setForm('driver_id_second', selected ? selected.value : '')}
                                 options={activeDrivers.filter(d => d.driver_id !== formData.driver_id).map(driver => ({ value: driver.driver_id, label: driver.nombre }))}
                                 placeholder="Seleccionar 2do Driver"
@@ -410,7 +465,13 @@ const TripFormMX = ({ tripNumber, countryCode, tripYear, isTransnational, isCont
                         <SelectWrapper
                             label="Truck:"
                             isCreatable={false}
-                            value={activeTrucks.find(t => t.truck_id === formData.truck_id) ? { value: formData.truck_id, label: activeTrucks.find(t => t.truck_id === formData.truck_id).unidad } : null}
+                            value={
+                                formData.truck_id
+                                    ? (activeTrucks.find(t => t.truck_id === formData.truck_id)
+                                        ? { value: formData.truck_id, label: activeTrucks.find(t => t.truck_id === formData.truck_id).unidad }
+                                        : { value: formData.truck_id, label: formData.truck_unidad || formData.truck_id })
+                                    : null
+                            }
                             onChange={(selected) => setForm('truck_id', selected ? selected.value : '')}
                             options={activeTrucks.map(truck => ({ value: truck.truck_id, label: truck.unidad }))}
                             placeholder="Seleccionar Truck"
@@ -430,7 +491,13 @@ const TripFormMX = ({ tripNumber, countryCode, tripYear, isTransnational, isCont
                                 <SelectWrapper
                                     label="Trailer (Caja Interna):"
                                     isCreatable={false}
-                                    value={activeTrailers.find(c => c.caja_id === formData.caja_id) ? { value: formData.caja_id, label: activeTrailers.find(c => c.caja_id === formData.caja_id).no_caja } : null}
+                                    value={
+                                        formData.caja_id
+                                            ? (activeTrailers.find(c => c.caja_id === formData.caja_id)
+                                                ? { value: formData.caja_id, label: activeTrailers.find(c => c.caja_id === formData.caja_id).no_caja }
+                                                : { value: formData.caja_id, label: formData.caja_no_caja || formData.caja_id })
+                                            : null
+                                    }
                                     onChange={(selected) => setForm('caja_id', selected ? selected.value : '')}
                                     options={activeTrailers.map(caja => ({ value: caja.caja_id, label: caja.no_caja }))}
                                     placeholder="Seleccionar Trailer"
@@ -443,7 +510,13 @@ const TripFormMX = ({ tripNumber, countryCode, tripYear, isTransnational, isCont
                                         <SelectWrapper
                                             label="Trailer (Caja Externa):"
                                             isCreatable={false}
-                                            value={activeExternalTrailers.find(c => c.caja_externa_id === formData.caja_externa_id) ? { value: formData.caja_externa_id, label: activeExternalTrailers.find(c => c.caja_externa_id === formData.caja_externa_id).no_caja } : null}
+                                            value={
+                                                formData.caja_externa_id
+                                                    ? (activeExternalTrailers.find(c => c.caja_externa_id === formData.caja_externa_id)
+                                                        ? { value: formData.caja_externa_id, label: activeExternalTrailers.find(c => c.caja_externa_id === formData.caja_externa_id).no_caja }
+                                                        : { value: formData.caja_externa_id, label: formData.caja_externa_no_caja || formData.caja_externa_id })
+                                                    : null
+                                            }
                                             onChange={(selected) => setForm('caja_externa_id', selected ? selected.value : '')}
                                             options={activeExternalTrailers.map(caja => ({ value: caja.caja_externa_id, label: caja.no_caja }))}
                                             placeholder="Seleccionar Trailer"
@@ -558,16 +631,28 @@ const TripFormMX = ({ tripNumber, countryCode, tripYear, isTransnational, isCont
                 <Button variant="outlined" color="secondary" onClick={() => addStage('emptyMileage')} startIcon={<AddCircleOutlineIcon />}>Agregar Vacía</Button>
             </Stack>
 
-            <Paper elevation={10} sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, p: 2, zIndex: 1000, textAlign: 'right', bgcolor: '#fff' }}>
+            <Paper elevation={10} sx={{ position: 'fixed', bottom: 0, left: '250px', right: 0, p: 2, zIndex: 1000, textAlign: 'right', bgcolor: '#fff' }}>
                 <Box sx={{ maxWidth: '1600px', mx: 'auto' }}>
-                    <Button variant="contained" size="large" color="success" startIcon={loadingSave ? <CircularProgress size={24} color="inherit" /> : <SaveIcon />} onClick={handleSubmit} disabled={loadingSave} sx={{ px: 6 }}>
+                    <Button variant="contained" size="large" color="success" startIcon={loadingSave ? <CircularProgress size={24} color="inherit" /> : <SaveIcon />} onClick={onSaveOverride ?? handleSubmit} disabled={loadingSave} sx={{ px: 6 }}>
                         {loadingSave ? "Guardando..." : "GUARDAR VIAJE"}
                     </Button>
                 </Box>
             </Paper>
 
-            {modalAbierto && <ModalArchivo isOpen={modalAbierto} onClose={() => { setModalAbierto(false); setModalTarget({ stageIndex: null, docType: null }); }} onSave={saveDoc} nombreCampo={modalTarget.docType} valorActual={getDocValue()} mostrarFechaVencimiento={mostrarFechaVencimientoModal} />}
-            {IsModalCajaExternaOpen && <ModalCajaExterna isOpen={IsModalCajaExternaOpen} onClose={() => setIsModalCajaExternaOpen(false)} onSave={saveExtCaja} />}
+            {modalAbierto && 
+            <ModalArchivo 
+            isOpen={modalAbierto} 
+            onClose={() => { setModalAbierto(false); setModalTarget({ stageIndex: null, docType: null }); }} 
+            onSave={saveDoc} 
+            nombreCampo={modalTarget.docType} 
+            valorActual={getDocValue()} 
+            mostrarFechaVencimiento={mostrarFechaVencimientoModal} />}
+
+            {IsModalCajaExternaOpen && 
+            <ModalCajaExterna 
+            isOpen={IsModalCajaExternaOpen} 
+            onClose={() => setIsModalCajaExternaOpen(false)} 
+            onSave={saveExtCaja} />}
         </Box>
     );
 };

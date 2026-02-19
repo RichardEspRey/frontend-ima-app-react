@@ -34,7 +34,7 @@ const DIRECTION_OPTIONS = [
 ];
 
 const TABS_CONFIG = [
-    { id: 0, label: "Up Coming", permission: "Ver Pestaña Incoming" },
+    { id: 0, label: "Up Coming", permission: "Ver Pestaña Upcoming" },
     { id: 1, label: "Despacho", permission: "Ver Pestaña Despacho" },
     { id: 2, label: "En Ruta", permission: "Ver Pestaña En Ruta" },
     { id: 3, label: "Finalizados", permission: "Ver Pestaña Completados" }
@@ -257,8 +257,16 @@ const TripAdmin = () => {
 
     const handleEditTrip = (tripId) => {
         if (!tripId) return;
-        navigate(`/edit-trip/${tripId}`);
+
+        if (tabValue === 0) {
+            // Up Coming → nuevo componente
+            navigate(`/edit-trip-upcoming/${tripId}`);
+        } else {
+            // Despacho, En Ruta y Finalizados → editor actual
+            navigate(`/edit-trip/${tripId}`);
+        }
     };
+
 
     const handleAlmostOverTrip = async (tripId, tripNumber) => {
         if (!tripId) return;
