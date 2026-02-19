@@ -453,7 +453,7 @@ const EditUpComing = () => {
         if (deletedIds.length) fd.append("deleted_stage_ids", JSON.stringify(deletedIds));
 
         try {
-            const res = await fetch(`http://localhost/API/new_trips.php`, { method: "POST", body: fd });
+            const res = await fetch(`${apiHost}/new_trips.php`, { method: "POST", body: fd });
             const result = await res.json();
 
             if (result.status === "success") {
@@ -468,7 +468,7 @@ const EditUpComing = () => {
                     fdInv.append("trip_id", tripId);
                     fdInv.append("invoices", JSON.stringify(invoicesPayload));
 
-                    await fetch(`http://localhost/API/update_invoices.php`, { method: "POST", body: fdInv });
+                    await fetch(`${apiHost}/update_invoices.php`, { method: "POST", body: fdInv });
                 } catch (invErr) {
                     console.warn("Error guardando invoices:", invErr);
                 }

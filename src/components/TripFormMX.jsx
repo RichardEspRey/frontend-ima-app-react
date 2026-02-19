@@ -135,16 +135,27 @@ const TripFormMX = ({ tripNumber, countryCode, tripYear, isTransnational, isCont
     // Docs
     const openDocModal = (si, dt, spi = null) => { setModalTarget({ stageIndex: si, docType: dt, stopIndex: spi }); setMostrarFechaVencimientoModal(false); setModalAbierto(true); };
 
-    const saveDoc = (data) => {
-        const { stageIndex, docType, stopIndex } = modalTarget;
-        setEtapas(p => {
-            const c = [...p];
-            if (stopIndex !== null) c[stageIndex].stops_in_transit[stopIndex][docType] = data;
-            else c[stageIndex].documentos = { ...c[stageIndex].documentos, [docType]: data };
-            return c;
-        });
-        setModalAbierto(false);
-    };
+   const handleGuardarDocumentoEtapa = (data) => {
+    const { stageIndex, docType } = modalTarget;
+    if (stageIndex === null || !docType) return;
+    setEtapas(prevEtapas => {
+        const updatedEtapas = [...prevEtapas];
+        const updatedEtapa = {
+            ...updatedEtapas[stageIndex],
+            documentos: {
+                ...updatedEtapas[stageIndex].documentos,
+                [docType]: {
+                    ...updatedEtapas[stageIndex].documentos[docType], // ← preserve document_id, serverPath, etc.
+                    ...data                                            // ← override with new file, fileName, hasNewFile, vencimiento
+                }
+            }
+        };
+        updatedEtapas[stageIndex] = updatedEtapa;
+        return updatedEtapas;
+    });
+    setModalAbierto(false);
+    setModalTarget({ stageIndex: null, docType: null });
+};
 
     const getDocValue = () => {
         const { stageIndex, docType, stopIndex } = modalTarget;
@@ -643,7 +654,7 @@ const TripFormMX = ({ tripNumber, countryCode, tripYear, isTransnational, isCont
             <ModalArchivo 
             isOpen={modalAbierto} 
             onClose={() => { setModalAbierto(false); setModalTarget({ stageIndex: null, docType: null }); }} 
-            onSave={saveDoc} 
+            onSave={handleGuardarDocumentoEtapa} 
             nombreCampo={modalTarget.docType} 
             valorActual={getDocValue()} 
             mostrarFechaVencimiento={mostrarFechaVencimientoModal} />}

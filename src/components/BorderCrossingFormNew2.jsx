@@ -132,15 +132,34 @@ const BorderCrossingFormNew2 = ({ tripNumber, countryCode, tripYear, isTransnati
     const openDocModal = (si, dt, spi = null) => { setModalTarget({ stageIndex: si, docType: dt, stopIndex: spi }); setMostrarFechaVencimientoModal(false); setModalAbierto(true); };
 
     const saveDoc = (data) => {
-        const { stageIndex, docType, stopIndex } = modalTarget;
-        setEtapas(p => {
-            const c = [...p];
-            if (stopIndex !== null) c[stageIndex].stops_in_transit[stopIndex][docType] = data;
-            else c[stageIndex].documentos = { ...c[stageIndex].documentos, [docType]: data };
-            return c;
-        });
-        setModalAbierto(false);
-    };
+    const { stageIndex, docType, stopIndex } = modalTarget;
+    setEtapas(p => {
+        const c = [...p];
+        if (stopIndex !== null) {
+            c[stageIndex] = {
+                ...c[stageIndex],
+                stops_in_transit: c[stageIndex].stops_in_transit.map((stop, si) =>
+                    si === stopIndex
+                        ? { ...stop, [docType]: { ...stop[docType], ...data } }
+                        : stop
+                )
+            };
+        } else {
+            c[stageIndex] = {
+                ...c[stageIndex],
+                documentos: {
+                    ...c[stageIndex].documentos,
+                    [docType]: {
+                        ...c[stageIndex].documentos[docType], // preserve document_id, serverPath, etc.
+                        ...data
+                    }
+                }
+            };
+        }
+        return c;
+    });
+    setModalAbierto(false);
+};
 
     const getDocValue = () => {
         const { stageIndex, docType, stopIndex } = modalTarget;
