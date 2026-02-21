@@ -1,12 +1,13 @@
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   Box, Paper, Typography, Table, TableHead, TableBody, TableRow, TableCell,
   TextField, Divider, Button, Grid, Stack, Chip, Card, CardContent, InputAdornment, IconButton, Tooltip
 } from "@mui/material";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import Swal from "sweetalert2";
-import html2canvas from "html2canvas";
+
 import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 import PrintIcon from '@mui/icons-material/Print';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -27,7 +28,6 @@ const TicketPayment = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { trip_id } = useParams();
-  const printRef = useRef(null);
 
   const [loading, setLoading] = useState(true);
   const [info, setInfo] = useState(null);
@@ -111,7 +111,7 @@ const TicketPayment = () => {
     } finally {
       setLoading(false);
     }
-  }, [apiHost, trip_id]);
+  }, [apiHost, trip_id, location.state]);
 
   useEffect(() => { fetchTicket(); }, [fetchTicket]);
 
@@ -130,7 +130,6 @@ const TicketPayment = () => {
       setVisibleAdvances(levelToSet);
   };
 
-  // === CÁLCULOS DINÁMICOS ===
   const totalMillasAjustadas = Number(stages.reduce((acc, s) => {
     const adj = ajustes[s.stage_number] ?? 0;
     return acc + (Number(s.millas_pcmiller) - adj);
@@ -147,7 +146,6 @@ const TicketPayment = () => {
     totalAvances +
     Number(gastos || 0);
 
-  // === ENVÍO DE DATOS ===
   const AutorizarPago = async () => {
     Swal.fire({
         title: '¿Autorizar Pago?',
@@ -207,50 +205,110 @@ const TicketPayment = () => {
     return next?.origin || "N/A";
   };
 
-  const handlePrint = async () => {
-    const element = printRef.current;
+  const handlePrint = () => {
+    const doc = new jsPDF();
+
+    doc.setFontSize(22);
+    doc.setTextColor(25, 118, 210); 
+    doc.text("TICKET DE PAGO", 14, 22);
+
+    doc.setFontSize(10);
+    doc.setTextColor(100, 100, 100);
+    doc.text(`Trip #: ${info?.trip_number || trip_id}`, 14, 30);
+    doc.text(`ID Transacción: ${trip_id}`, 14, 35);
+    doc.text(`Fecha de emisión: ${new Date().toLocaleDateString('es-MX')}`, 14, 40);
+
+    doc.setDrawColor(200, 200, 200);
+    doc.line(14, 45, 196, 45);
+
+    doc.setFontSize(11);
+    doc.setTextColor(50, 50, 50);
+    doc.text("CONDUCTOR:", 14, 55);
+    doc.setFont(undefined, 'bold');
+    doc.text(`${info?.driver_name || 'N/A'}`, 45, 55);
     
-    const ajustesCols = element.querySelectorAll(".col-ajuste");
-    const inputsRate = element.querySelectorAll(".input-rate");
-    const textRate = element.querySelectorAll(".text-rate");
+    doc.setFont(undefined, 'normal');
+    doc.text("UNIDAD:", 130, 55);
+    doc.setFont(undefined, 'bold');
+    doc.text(`${info?.unidad || 'N/A'}`, 150, 55);
+
+    doc.setFont(undefined, 'normal');
+    doc.text("TARIFA X MILLA:", 14, 63);
+    doc.setFont(undefined, 'bold');
+    doc.text(`$${Number(customRate).toFixed(4)}`, 48, 63);
+
+    const tableData = stages.map((s, i) => {
+        const ajuste = ajustes[s.stage_number] ?? 0;
+        const finalMillas = Number(s.millas_pcmiller) - ajuste;
+        const isEmtpy = s.stageType === "emptyMileage";
+        const destinoReal = getDestino(s, i);
+        
+        const destinoTexto = `${s.zip_code_destination || 'N/A'} - ${destinoReal}`;
+        const tipoTexto = isEmtpy ? "Vacía" : "Normal";
+        
+        return [
+            destinoTexto,
+            tipoTexto,
+            ajuste > 0 ? `-${ajuste}` : "-", 
+            finalMillas.toFixed(2)
+        ];
+    });
+
+    autoTable(doc, {
+        startY: 75,
+        head: [['Destino (Zip / Ciudad)', 'Tipo Etapa', 'Ajuste (-)', 'Millas']],
+        body: tableData,
+        theme: 'striped',
+        headStyles: { fillColor: [38, 50, 56], textColor: 255, fontStyle: 'bold' },
+        styles: { fontSize: 10, cellPadding: 4 },
+        columnStyles: {
+            2: { halign: 'center', textColor: [211, 47, 47] }, 
+            3: { halign: 'right', fontStyle: 'bold' } 
+        }
+    });
+
+    const finalY = doc.lastAutoTable.finalY || 75;
+
+    doc.setFontSize(14);
+    doc.setTextColor(38, 50, 56);
+    doc.text("RESUMEN FINANCIERO", 14, finalY + 15);
+    doc.line(14, finalY + 18, 196, finalY + 18);
+
+    let sumY = finalY + 28;
+    doc.setFontSize(11);
+    doc.setFont(undefined, 'normal');
+
+    const printRightAligned = (label, value, yPos, isBold = false) => {
+        doc.setFont(undefined, isBold ? 'bold' : 'normal');
+        doc.text(label, 120, yPos);
+        const valueWidth = doc.getTextWidth(value);
+        doc.text(value, 196 - valueWidth, yPos);
+    };
+
+    printRightAligned("Millas Totales (Ajustadas):", `${totalMillasAjustadas.toFixed(2)} mi`, sumY, true); sumY += 8;
+    printRightAligned(`Subtotal ($${Number(customRate).toFixed(2)}/mi):`, `$${(Number(customRate) * totalMillasAjustadas).toFixed(2)}`, sumY); sumY += 8;
     
-    const inputsAvance = element.querySelectorAll(".input-avance");
-    const textAvance = element.querySelectorAll(".text-avance");
-    const botonesAdd = element.querySelectorAll(".btn-add-avance"); 
-
-    const botones = element.querySelectorAll("button, .MuiIconButton-root");
-
-    ajustesCols.forEach(col => (col.style.display = "none"));
-    botones.forEach(btn => (btn.style.display = "none"));
-    botonesAdd.forEach(btn => (btn.style.display = "none"));
+    if (Number(gastos) > 0) {
+        printRightAligned("Otros Gastos (Reembolso):", `+$${Number(gastos).toFixed(2)}`, sumY); sumY += 8;
+    }
     
-    inputsRate.forEach(el => el.style.display = 'none');
-    textRate.forEach(el => el.style.display = 'block');
-
-    inputsAvance.forEach(el => el.style.display = 'none');
-    textAvance.forEach(el => el.style.display = 'block');
-
-    element.style.padding = "20px";
-
-    const canvas = await html2canvas(element, { scale: 2, backgroundColor: "#ffffff" });
-    const imgData = canvas.toDataURL("image/png");
+    if (avances.a1 > 0) { printRightAligned("Anticipo 1:", `-$${Number(avances.a1).toFixed(2)}`, sumY); sumY += 6; }
+    if (avances.a2 > 0) { printRightAligned("Anticipo 2:", `-$${Number(avances.a2).toFixed(2)}`, sumY); sumY += 6; }
+    if (avances.a3 > 0) { printRightAligned("Anticipo 3:", `-$${Number(avances.a3).toFixed(2)}`, sumY); sumY += 6; }
     
-    const pdf = new jsPDF("p", "mm", "letter");
-    const pdfWidth = pdf.internal.pageSize.getWidth() - 20;
-    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+    if (totalAvances > 0) {
+        doc.setTextColor(211, 47, 47); 
+        printRightAligned("Total Anticipos:", `-$${totalAvances.toFixed(2)}`, sumY, true); sumY += 10;
+        doc.setTextColor(38, 50, 56); 
+    } else {
+        sumY += 4;
+    }
 
-    pdf.addImage(imgData, "PNG", 10, 10, pdfWidth, pdfHeight);
-    pdf.save(`Ticket_Pago_${info?.trip_number || trip_id}.pdf`);
+    doc.setFontSize(16);
+    doc.setTextColor(46, 125, 50); 
+    printRightAligned("TOTAL A PAGAR:", `$${isNaN(totalPagar) ? "0.00" : totalPagar.toFixed(2)}`, sumY, true);
 
-    // Restaurar
-    ajustesCols.forEach(col => (col.style.display = ""));
-    botones.forEach(btn => (btn.style.display = ""));
-    botonesAdd.forEach(btn => (btn.style.display = "flex")); 
-    inputsRate.forEach(el => el.style.display = 'block');
-    textRate.forEach(el => el.style.display = 'none');
-    inputsAvance.forEach(el => el.style.display = 'block');
-    textAvance.forEach(el => el.style.display = 'none');
-    element.style.padding = "";
+    doc.save(`Ticket_Pago_${info?.trip_number || trip_id}.pdf`);
   };
 
   if (loading) return <Box p={5} textAlign="center"><Typography>Cargando información del ticket...</Typography></Box>;
@@ -272,7 +330,7 @@ const TicketPayment = () => {
         </Stack>
       </Stack>
 
-      <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }} ref={printRef}>
+      <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
         
         <Stack direction="row" justifyContent="space-between" alignItems="flex-start" mb={3} pb={2} borderBottom="1px solid #eee">
             <Box>
@@ -319,7 +377,7 @@ const TicketPayment = () => {
                     <CardContent>
                         <Typography variant="caption" textTransform="uppercase" fontWeight={700} color="primary.main">Tarifa por Milla</Typography>
                         
-                        <Box className="input-rate" mt={1}>
+                        <Box mt={1}>
                             <TextField 
                                 value={customRate}
                                 onChange={(e) => setCustomRate(e.target.value)}
@@ -332,11 +390,6 @@ const TicketPayment = () => {
                                 }}
                             />
                         </Box>
-
-                        <Typography className="text-rate" variant="h4" fontWeight={700} color="primary.main" style={{display: 'none'}}>
-                            ${Number(customRate).toFixed(4)}
-                        </Typography>
-
                     </CardContent>
                  </Card>
             </Grid>
@@ -349,7 +402,7 @@ const TicketPayment = () => {
               <TableCell sx={{ fontWeight: 700 }}>Destino (Zip / Ciudad)</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>Tipo Etapa</TableCell>
               <TableCell align="right" sx={{ fontWeight: 700 }}>Millas Orig.</TableCell>
-              <TableCell align="center" sx={{ fontWeight: 700 }} className="col-ajuste">Ajuste (-)</TableCell>
+              <TableCell align="center" sx={{ fontWeight: 700 }}>Ajuste (-)</TableCell>
               <TableCell align="right" sx={{ fontWeight: 700 }}>Millas Finales</TableCell>
             </TableRow>
           </TableHead>
@@ -378,7 +431,7 @@ const TicketPayment = () => {
                   </TableCell>
                   <TableCell align="right" sx={{ fontFamily: 'monospace' }}>{Number(s.millas_pcmiller).toFixed(2)}</TableCell>
                   
-                  <TableCell align="center" className="col-ajuste">
+                  <TableCell align="center">
                     <TextField
                       size="small"
                       type="number"
@@ -406,7 +459,7 @@ const TicketPayment = () => {
                     <Box sx={{ border: '1px dashed #ccc', p: 2, borderRadius: 1 }}>
                         <Typography variant="caption" fontWeight={700} color="primary" gutterBottom>Anticipos / Avances</Typography>
                         
-                        <Stack spacing={1} className="input-avance">
+                        <Stack spacing={1}>
                             <TextField 
                                 fullWidth size="small" 
                                 label="Avance 1" 
@@ -454,19 +507,11 @@ const TicketPayment = () => {
                                     startIcon={<AddCircleOutlineIcon />} 
                                     onClick={addNextAdvance}
                                     sx={{ textTransform: 'none', justifyContent: 'flex-start', color: 'primary.main' }}
-                                    className="btn-add-avance"
                                 >
                                     Agregar otro anticipo
                                 </Button>
                             )}
                         </Stack>
-
-                        <Box className="text-avance" style={{display:'none'}}>
-                            {avances.a1 > 0 && <Typography variant="body2">Avance 1: -${Number(avances.a1).toFixed(2)}</Typography>}
-                            {avances.a2 > 0 && <Typography variant="body2">Avance 2: -${Number(avances.a2).toFixed(2)}</Typography>}
-                            {avances.a3 > 0 && <Typography variant="body2">Avance 3: -${Number(avances.a3).toFixed(2)}</Typography>}
-                            {totalAvances === 0 && <Typography variant="body2" fontStyle="italic">Sin anticipos</Typography>}
-                        </Box>
                     </Box>
 
                     <Stack direction="row" spacing={1}>
@@ -486,7 +531,6 @@ const TicketPayment = () => {
                                 color="primary" 
                                 onClick={() => setOpenGastosModal(true)} 
                                 sx={{ border: '1px solid #ddd', borderRadius: 1 }}
-                                className="col-final"
                             >
                                 <ReceiptLongIcon />
                             </IconButton>
@@ -508,7 +552,7 @@ const TicketPayment = () => {
                 >
                     <Stack spacing={1}>
                         <Stack direction="row" justifyContent="space-between">
-                            <Typography variant="body2" color="rgba(255,255,255,0.7)">Millas Totales:</Typography>
+                            <Typography variant="body2" color="rgba(255,255,255,0.7)">Millas Totales (Ajustadas):</Typography>
                             <Typography variant="body1" fontWeight={600}>{totalMillasAjustadas.toFixed(2)} mi</Typography>
                         </Stack>
                         <Stack direction="row" justifyContent="space-between">
@@ -520,11 +564,10 @@ const TicketPayment = () => {
                              </Typography>
                         </Stack>
                         
-                        {/* Resumen de Anticipos en Total */}
                         <Stack direction="row" justifyContent="space-between">
                              <Typography variant="body2" color="rgba(255,255,255,0.7)">Otros Gastos:</Typography>
                              <Typography variant="body1">
-                                ${Number(gastos).toFixed(2)}
+                                +${Number(gastos).toFixed(2)}
                              </Typography>
                         </Stack>
                         <Stack direction="row" justifyContent="space-between">
@@ -534,7 +577,6 @@ const TicketPayment = () => {
                              </Typography>
                         </Stack>
                         
-
                         <Divider sx={{ borderColor: 'rgba(255,255,255,0.2)', my: 1 }} />
                         <Stack direction="row" justifyContent="space-between" alignItems="center">
                             <Typography variant="h6" fontWeight={400}>Total a Pagar:</Typography>
@@ -548,11 +590,13 @@ const TicketPayment = () => {
         </Grid>
       </Paper>
 
-      <GastosModal
-        open={openGastosModal}
-        onClose={() => setOpenGastosModal(false)}
-        tripId={trip_id}
-      />
+      {openGastosModal && (
+        <GastosModal
+            open={openGastosModal}
+            onClose={() => setOpenGastosModal(false)}
+            tripId={trip_id}
+        />
+      )}
     </Box>
   );
 };
