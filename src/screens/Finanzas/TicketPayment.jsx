@@ -508,7 +508,7 @@ const TicketPayment = () => {
                 >
                     <Stack spacing={1}>
                         <Stack direction="row" justifyContent="space-between">
-                            <Typography variant="body2" color="rgba(255,255,255,0.7)">Millas Totales (Ajustadas):</Typography>
+                            <Typography variant="body2" color="rgba(255,255,255,0.7)">Millas Totales:</Typography>
                             <Typography variant="body1" fontWeight={600}>{totalMillasAjustadas.toFixed(2)} mi</Typography>
                         </Stack>
                         <Stack direction="row" justifyContent="space-between">
