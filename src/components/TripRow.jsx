@@ -485,7 +485,7 @@ export const TripRow = ({
 
                                         {stop.bl_firmado_doc && (
                                             <Chip
-                                                label="BL"
+                                                label="BL Firmado"
                                                 size="small"
                                                 component="a"
                                                 href={getDocumentUrl(stop.bl_firmado_doc.path_servidor_real || stop.bl_firmado_doc.nombre_archivo)}
