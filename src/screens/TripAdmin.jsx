@@ -258,8 +258,16 @@ const TripAdmin = () => {
 
     const handleEditTrip = (tripId) => {
         if (!tripId) return;
-        navigate(`/edit-trip/${tripId}`);
+
+        if (tabValue === 0) {
+            // Up Coming → nuevo componente
+            navigate(`/edit-trip-upcoming/${tripId}`);
+        } else {
+            // Despacho, En Ruta y Finalizados → editor actual
+            navigate(`/edit-trip/${tripId}`);
+        }
     };
+
 
     const handleAlmostOverTrip = async (tripId, tripNumber) => {
         if (!tripId) return;

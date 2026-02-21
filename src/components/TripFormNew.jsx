@@ -746,3 +746,5 @@ const TripFormNew = ({
 };
 
 export default TripFormNew;
+
+//componente de la actual forma de enviar viajes

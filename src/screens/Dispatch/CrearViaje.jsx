@@ -54,6 +54,11 @@ const CrearViaje = () => {
   // =========================
   const tripYear2Digits = anio.toString().slice(-2);
   const oppositeCountry = pais === "MX" ? "US" : pais === "US" ? "MX" : "";
+  useEffect(() => {
+    if (pais === "MX") {
+      setActiveForm(0);
+    }
+  }, [pais]);
 
   // =========================
   // Obtener siguiente número de viaje (igual que TripScreenNew)
@@ -293,7 +298,11 @@ const CrearViaje = () => {
       {/* Tabs */}
       <Paper sx={{ mb: 3 }}>
         <Tabs value={activeForm} onChange={handleTabChange}>
-          <Tab label="Cruce Fronterizo (Transfer)" />
+          {/* Solo mostrar Cruce si es US */}
+          {pais === "US" && (
+            <Tab label="Cruce Fronterizo (Transfer)" />
+          )}
+
           <Tab label="Viaje Normal (Carretera)" />
         </Tabs>
       </Paper>
@@ -302,7 +311,7 @@ const CrearViaje = () => {
       <Box>
         {!pais && <Alert severity="info">Selecciona un país para comenzar.</Alert>}
 
-        {pais && activeForm === 0 && (
+        {pais === "US" && activeForm === 0 && (
           <BorderCrossingFormNew2
             key={`bc-${formKey}`}
             tripNumber={tripNumber}
@@ -316,33 +325,37 @@ const CrearViaje = () => {
           />
         )}
 
-        {pais && activeForm === 1 && (
-          pais === "MX" ? (
-            <TripFormMX
-              key={`tn-${formKey}`}
-              tripNumber={tripNumber}
-              countryCode={pais}
-              tripYear={anio}
-              isTransnational={viajeTransnacional}
-              isContinuation={isContinuation}
-              transnationalNumber={selectedTransnational}
-              movementNumber={movementNumber}
-              onSuccess={handleFormSuccess}
-            />
-          ) : (
-            <TripFormUSA
-              key={`tn-${formKey}`}
-              tripNumber={tripNumber}
-              countryCode={pais}
-              tripYear={anio}
-              isTransnational={viajeTransnacional}
-              isContinuation={isContinuation}
-              transnationalNumber={selectedTransnational}
-              movementNumber={movementNumber}
-              onSuccess={handleFormSuccess}
-            />
-          )
-        )}
+        {pais && (
+          (pais === "US" && activeForm === 1) ||
+          (pais === "MX" && activeForm === 0)
+        ) && (
+            pais === "MX" ? (
+              <TripFormMX
+                key={`tn-${formKey}`}
+                tripNumber={tripNumber}
+                countryCode={pais}
+                tripYear={anio}
+                isTransnational={viajeTransnacional}
+                isContinuation={isContinuation}
+                transnationalNumber={selectedTransnational}
+                movementNumber={movementNumber}
+                onSuccess={handleFormSuccess}
+              />
+            ) : (
+              <TripFormUSA
+                key={`tn-${formKey}`}
+                tripNumber={tripNumber}
+                countryCode={pais}
+                tripYear={anio}
+                isTransnational={viajeTransnacional}
+                isContinuation={isContinuation}
+                transnationalNumber={selectedTransnational}
+                movementNumber={movementNumber}
+                onSuccess={handleFormSuccess}
+              />
+            )
+          )}
+
       </Box>
     </Container>
   );

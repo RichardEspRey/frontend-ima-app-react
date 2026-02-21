@@ -49,6 +49,7 @@ const ModalArchivo = ({ isOpen, onClose, onSave, title = "Subir/Editar Archivo",
       const dataToSave = {
         file: archivo,
         fileName: archivo.name,
+        hasNewFile: true,
       };
       if (mostrarFechaVencimiento && fechaVencimiento) {
         dataToSave.vencimiento = fechaVencimiento.toISOString().split('T')[0];

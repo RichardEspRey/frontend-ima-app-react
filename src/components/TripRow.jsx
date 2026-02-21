@@ -269,7 +269,7 @@ export const TripRow = ({
           <Collapse in={open} timeout="auto" unmountOnExit>
             <Box sx={{ margin: 1, padding: 2, border: '1px solid #e0e0e0', borderRadius: 2, bgcolor: '#fafafa' }}>
 
-              {!isCompletedTab && (
+              {!isUpcomingTab && !isDespachoTab && (
                 <Paper elevation={0} sx={{ p: 2, mb: 2, bgcolor: '#fff', border: '1px solid #ddd', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderRadius: 2 }}>
                   <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#424242' }}>
                     Acciones Rápidas:
@@ -300,6 +300,7 @@ export const TripRow = ({
                   </Stack>
                 </Paper>
               )}
+
 
               <Typography variant="h6" gutterBottom component="div" sx={{ fontSize: '1rem', fontWeight: 700, color: '#1976d2', mb: 2 }}>
                 Detalles de Etapas y Logística
