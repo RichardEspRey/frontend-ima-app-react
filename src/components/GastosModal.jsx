@@ -53,7 +53,7 @@ const GastosModal = ({ open, onClose, tripId }) => {
       if (json.status === "success") {
         setGastos(json.id);
       } else {
-        Swal.fire("Sin datos", "No hay gastos registrados para este viaje.", "info");
+        setGastos([]);
       }
 
     } catch (err) {

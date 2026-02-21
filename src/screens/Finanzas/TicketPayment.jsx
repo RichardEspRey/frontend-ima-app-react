@@ -514,6 +514,7 @@ const TicketPayment = () => {
                                 -${totalAvances.toFixed(2)}
                              </Typography>
                         </Stack>
+                        
 
                         <Divider sx={{ borderColor: 'rgba(255,255,255,0.2)', my: 1 }} />
                         <Stack direction="row" justifyContent="space-between" alignItems="center">
