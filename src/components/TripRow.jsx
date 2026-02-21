@@ -443,7 +443,19 @@ export const TripRow = ({
                               )} */}
 
                               {etapa.comments && (
-                                <Typography variant="caption" sx={{ fontStyle: 'italic', color: '#666', borderLeft: '2px solid #ccc', pl: 1 }}>
+                                <Typography 
+                                  variant="caption" 
+                                  sx={{ 
+                                    fontStyle: 'italic', 
+                                    color: '#666', 
+                                    borderLeft: '2px solid #ccc', 
+                                    pl: 1,
+                                    display: 'block',
+                                    maxWidth: '45ch',
+                                    wordWrap: 'break-word',
+                                    whiteSpace: 'pre-wrap'
+                                  }}
+                                >
                                   "{etapa.comments}"
                                 </Typography>
                               )}
