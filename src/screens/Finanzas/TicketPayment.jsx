@@ -503,15 +503,15 @@ const TicketPayment = () => {
                         
                         {/* Resumen de Anticipos en Total */}
                         <Stack direction="row" justifyContent="space-between">
-                             <Typography variant="body2" color="rgba(255,255,255,0.7)">Total Anticipos:</Typography>
-                             <Typography variant="body1" color="error.light">
-                                -${totalAvances.toFixed(2)}
+                             <Typography variant="body2" color="rgba(255,255,255,0.7)">Otros Gastos:</Typography>
+                             <Typography variant="body1">
+                                ${Number(gastos).toFixed(2)}
                              </Typography>
                         </Stack>
                         <Stack direction="row" justifyContent="space-between">
-                             <Typography variant="body2" color="rgba(255,255,255,0.7)">Otros Gastos:</Typography>
+                             <Typography variant="body2" color="rgba(255,255,255,0.7)">Total Anticipos:</Typography>
                              <Typography variant="body1" color="error.light">
-                                -${Number(gastos).toFixed(2)}
+                                -${totalAvances.toFixed(2)}
                              </Typography>
                         </Stack>
 
