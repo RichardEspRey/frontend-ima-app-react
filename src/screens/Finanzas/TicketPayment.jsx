@@ -315,12 +315,9 @@ const TicketPayment = () => {
                         </Box>
 
                         <Typography className="text-rate" variant="h4" fontWeight={700} color="primary.main" style={{display: 'none'}}>
-                            ${Number(customRate).toFixed(2)}
+                            ${Number(customRate).toFixed(4)}
                         </Typography>
 
-                        <Typography variant="body2" color="text.secondary" mt={1}>
-                            Total Recorrido: {info.total_millas_cortas} mi
-                        </Typography>
                     </CardContent>
                  </Card>
             </Grid>

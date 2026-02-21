@@ -147,7 +147,7 @@ const Inspeccion_final = () => {
 
       const data = await response.json();
     
-      if (data.status === 'success') {
+      if (data.status === 'success' || data.status === 'successU') {
          Swal.fire('Éxito', 'Inspección finalizada correctamente.', 'success');
          fetchSummary();
       } else {
