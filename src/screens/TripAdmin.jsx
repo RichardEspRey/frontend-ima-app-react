@@ -6,9 +6,6 @@ import {
 } from '@mui/material';
 
 import FilterListIcon from '@mui/icons-material/FilterList';
-import LocalShippingIcon from '@mui/icons-material/LocalShipping';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import ScheduleIcon from '@mui/icons-material/Schedule';
 
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';

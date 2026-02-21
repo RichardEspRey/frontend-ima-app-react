@@ -366,64 +366,73 @@ export const TripRow = ({
 
                               <Divider />
 
-                              <Box>
-                                <Stack direction="row" alignItems="center" spacing={1}>
-                                  <RoomIcon fontSize="small" color="primary" />
-                                  <Typography variant="body2" fontWeight={600} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                    {etapa.origin} 
-                                    <span style={{color:'#999'}}>➝</span> 
-                                    {etapa.destination}
-                                  </Typography>
-                                </Stack>
-                              </Box>
-
-                              <Grid container spacing={1}>
-                                <Grid item xs={6}>
-                                  <Typography variant="caption" color="text.secondary" display="block">Fecha Carga</Typography>
-                                  <Stack direction="row" alignItems="center" spacing={0.5}>
-                                    <CalendarTodayIcon sx={{ fontSize: 14, color: '#757575' }} />
-                                    <Typography variant="body2">
-                                      {etapa.loading_date ? dayjs(etapa.loading_date).format("DD/MM/YY") : '--'}
+                              <Stack direction="row" alignItems="flex-start" spacing={1} sx={{ mt: 1 }}>
+                                <RoomIcon fontSize="small" color="primary" sx={{ mt: 0.2 }} />
+                                
+                                <Grid container spacing={1} alignItems="flex-start">
+                                  <Grid item xs={5} sx={{ display: 'flex', flexDirection: 'column' }}>
+                                    <Typography variant="body2" fontWeight={600} sx={{ lineHeight: 1.2 }}>
+                                      {etapa.origin}
                                     </Typography>
-                                  </Stack>
-                                </Grid>
-                                <Grid item xs={6}>
-                                  <Typography variant="caption" color="text.secondary" display="block">
-                                    Fecha Entrega
-                                  </Typography>
-                                  
-                                  <Stack direction="row" alignItems="center" spacing={1.5}>
-                                    
-                                    <Stack direction="row" alignItems="center" spacing={0.5}>
-                                      <CalendarTodayIcon sx={{ fontSize: 14, color: '#757575' }} />
-                                      <Typography variant="body2" fontWeight={500}>
-                                        {etapa.delivery_date ? dayjs(etapa.delivery_date).format("DD/MM/YY") : '--'}
-                                      </Typography>
-                                    </Stack>
-
-                                    {etapa.time_of_delivery && (
-                                      <Stack 
-                                        direction="row" 
-                                        alignItems="center" 
-                                        spacing={0.5} 
-                                        sx={{ 
-                                            bgcolor: '#f1f8ff',      
-                                            color: '#0288d1',        
-                                            border: '1px solid #b3e5fc', 
-                                            borderRadius: 1,
-                                            px: 0.8,                 
-                                            py: 0.2                  
-                                        }}
-                                      >
-                                        <AccessTimeIcon sx={{ fontSize: 12 }} />
-                                        <Typography variant="caption" fontWeight={700} sx={{ lineHeight: 1 }}>
-                                          {formatTime(etapa.time_of_delivery)}
+                                    <Box sx={{ mt: 0.8 }}>
+                                        <Typography variant="caption" color="text.secondary" display="block" sx={{ fontSize: '0.65rem', textTransform: 'uppercase' }}>
+                                          Fecha Carga
                                         </Typography>
-                                      </Stack>
-                                    )}
-                                  </Stack>
+                                        <Stack direction="row" alignItems="center" spacing={0.5}>
+                                          <CalendarTodayIcon sx={{ fontSize: 12, color: '#757575' }} />
+                                          <Typography variant="caption" fontWeight={500}>
+                                            {etapa.loading_date ? dayjs(etapa.loading_date).format("DD/MM/YY") : '--'}
+                                          </Typography>
+                                        </Stack>
+                                    </Box>
+                                  </Grid>
+
+                                  <Grid item xs={2} sx={{ display: 'flex', justifyContent: 'center', pt: 0.5 }}>
+                                    <span style={{ color: '#999', fontSize: '1.2rem', lineHeight: 1 }}>➝</span>
+                                  </Grid>
+
+                                  <Grid item xs={5} sx={{ display: 'flex', flexDirection: 'column' }}>
+                                    <Typography variant="body2" fontWeight={600} sx={{ lineHeight: 1.2 }}>
+                                      {etapa.destination}
+                                    </Typography>
+                                    <Box sx={{ mt: 0.8 }}>
+                                        <Typography variant="caption" color="text.secondary" display="block" sx={{ fontSize: '0.65rem', textTransform: 'uppercase' }}>
+                                          Fecha Entrega
+                                        </Typography>
+                                        
+                                        <Stack direction="row" alignItems="center" spacing={1} flexWrap="wrap" useFlexGap sx={{ mt: 0.2 }}>
+                                          <Stack direction="row" alignItems="center" spacing={0.5}>
+                                            <CalendarTodayIcon sx={{ fontSize: 12, color: '#757575' }} />
+                                            <Typography variant="caption" fontWeight={500}>
+                                              {etapa.delivery_date ? dayjs(etapa.delivery_date).format("DD/MM/YY") : '--'}
+                                            </Typography>
+                                          </Stack>
+                                          
+                                          {etapa.time_of_delivery && (
+                                            <Stack 
+                                              direction="row" 
+                                              alignItems="center" 
+                                              spacing={0.5} 
+                                              sx={{ 
+                                                  bgcolor: '#f1f8ff',      
+                                                  color: '#0288d1',        
+                                                  border: '1px solid #b3e5fc', 
+                                                  borderRadius: 1,
+                                                  px: 0.6,                 
+                                                  py: 0.1                  
+                                              }}
+                                            >
+                                              <AccessTimeIcon sx={{ fontSize: 11 }} />
+                                              <Typography variant="caption" fontWeight={700} sx={{ lineHeight: 1, fontSize: '0.7rem' }}>
+                                                {formatTime(etapa.time_of_delivery)}
+                                              </Typography>
+                                            </Stack>
+                                          )}
+                                        </Stack>
+                                    </Box>
+                                  </Grid>
                                 </Grid>
-                              </Grid>
+                              </Stack>
 
                               {/* {etapa.ci_number && (
                                 <Box sx={{ bgcolor: '#f5f5f5', p: 0.5, borderRadius: 1, textAlign: 'center' }}>
