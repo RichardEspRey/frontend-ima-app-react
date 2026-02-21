@@ -228,7 +228,7 @@ const StageCard = ({
                                     ))}
 
                                     {/* Si es borderCrossing mostramos la cita */}
-                                    {etapa.stageType === 'borderCrossing' && (
+                                    {(etapa.stageType === 'borderCrossing'|| etapa.stageType === 'normalTrip') && (
                                         <Grid item xs={12} sm={4} md={3}>
                                             <TextField
                                                 fullWidth
