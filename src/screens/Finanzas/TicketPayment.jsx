@@ -68,6 +68,23 @@ const TicketPayment = () => {
         }
         setAjustes(savedAjustes);
 
+        let gastosCalculados = 0;
+        try {
+            const fdGastos = new FormData();
+            fdGastos.append("op", "get_registers_gasto");
+            fdGastos.append("trip_id", trip_id);
+            const resGastos = await fetch(`${apiHost}/formularios.php`, { method: "POST", body: fdGastos });
+            const jsonGastos = await resGastos.json();
+            
+            // Si hay éxito y viene el arreglo "id" (que es donde el modal guarda los gastos)
+            if (jsonGastos.status === "success" && Array.isArray(jsonGastos.id)) {
+                gastosCalculados = jsonGastos.id.reduce((sum, g) => sum + Number(g.monto || 0), 0);
+            }
+        } catch (err) {
+            console.error("Error al precargar gastos:", err);
+        }
+        // --------------------------------------------------------------------------
+
         if (json.data.saved_data) {
             const valA1 = Number(json.data.saved_data.anticipo_1 || 0);
             const valA2 = Number(json.data.saved_data.anticipo_2 || 0);
@@ -80,8 +97,14 @@ const TicketPayment = () => {
             else if (valA2 > 0) count = 2;
             setVisibleAdvances(count);
 
-            setGastos(Number(json.data.saved_data.gastos_aplicados || 0));
-        } 
+            const savedGastos = Number(json.data.saved_data.gastos_aplicados || 0);
+            
+            // Si el ticket ya tenía gastos guardados mayores a 0 los respeta, si no, usa los recién calculados
+            setGastos(savedGastos > 0 ? savedGastos : gastosCalculados);
+        } else {
+            // Si el ticket es nuevo, pone los gastos calculados por defecto
+            setGastos(gastosCalculados);
+        }
 
       } else {
         Swal.fire("Error", "No se pudieron cargar los datos del ticket.", "error");
