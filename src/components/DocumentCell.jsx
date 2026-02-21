@@ -5,6 +5,7 @@ import {
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
 export const DocumentCell = ({ isUploaded, docName, onUpload, onView }) => {
     return (
