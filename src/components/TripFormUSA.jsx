@@ -136,34 +136,34 @@ const TripFormUSA = ({ tripNumber, countryCode, tripYear, isTransnational, isCon
     const openDocModal = (si, dt, spi = null) => { setModalTarget({ stageIndex: si, docType: dt, stopIndex: spi }); setMostrarFechaVencimientoModal(false); setModalAbierto(true); };
 
     const saveDoc = (data) => {
-    const { stageIndex, docType, stopIndex } = modalTarget;
-    setEtapas(p => {
-        const c = [...p];
-        if (stopIndex !== null) {
-            c[stageIndex] = {
-                ...c[stageIndex],
-                stops_in_transit: c[stageIndex].stops_in_transit.map((stop, si) =>
-                    si === stopIndex
-                        ? { ...stop, [docType]: { ...stop[docType], ...data } }
-                        : stop
-                )
-            };
-        } else {
-            c[stageIndex] = {
-                ...c[stageIndex],
-                documentos: {
-                    ...c[stageIndex].documentos,
-                    [docType]: {
-                        ...c[stageIndex].documentos[docType], // preserve document_id, serverPath, etc.
-                        ...data
+        const { stageIndex, docType, stopIndex } = modalTarget;
+        setEtapas(p => {
+            const c = [...p];
+            if (stopIndex !== null) {
+                c[stageIndex] = {
+                    ...c[stageIndex],
+                    stops_in_transit: c[stageIndex].stops_in_transit.map((stop, si) =>
+                        si === stopIndex
+                            ? { ...stop, [docType]: { ...stop[docType], ...data } }
+                            : stop
+                    )
+                };
+            } else {
+                c[stageIndex] = {
+                    ...c[stageIndex],
+                    documentos: {
+                        ...c[stageIndex].documentos,
+                        [docType]: {
+                            ...c[stageIndex].documentos[docType], // preserve document_id, serverPath, etc.
+                            ...data
+                        }
                     }
-                }
-            };
-        }
-        return c;
-    });
-    setModalAbierto(false);
-};
+                };
+            }
+            return c;
+        });
+        setModalAbierto(false);
+    };
 
     const getDocValue = () => {
         const { stageIndex, docType, stopIndex } = modalTarget;
@@ -172,12 +172,45 @@ const TripFormUSA = ({ tripNumber, countryCode, tripYear, isTransnational, isCon
     };
 
     // Caja Externa
-    const saveExtCaja = async (newId) => {
-        await refreshTrailers();
-        const found = activeExternalTrailers.find(t => t.id === newId);
-        setCajaExterna(found ? { value: newId, label: `${found.numero_caja} - ${found.nombre_dueno}` } : { value: newId, label: 'Nueva Caja' });
-        setIsModalCajaExternaOpen(false);
+    const handleSaveExternalCaja = async (cajaData) => {
+
+
+        const dataToSend = new FormData();
+        dataToSend.append('op', 'Alta');
+
+        Object.entries(cajaData).forEach(([key, value]) => {
+            dataToSend.append(key, value);
+        });
+
+        try {
+            const endpoint = `${apiHost}/caja_externa.php`;
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                body: dataToSend,
+            });
+
+            const result = await response.json();
+
+            if (result.status === 'success' && result.caja) {
+                Swal.fire('¡Éxito!', 'Caja externa registrada y asignada al viaje.', 'success');
+
+                setForm('caja_externa_id', result.caja.caja_externa_id);
+                setForm('caja_id', '');
+
+                refetchExternalTrailers();
+
+                setIsModalCajaExternaOpen(false);
+
+            } else {
+                Swal.fire('Error', `No se pudo registrar la caja: ${result.message || 'Error desconocido del servidor.'}`, 'error');
+            }
+
+        } catch (error) {
+            console.error('Error en la llamada fetch:', error);
+            Swal.fire('Error de Conexión', `No se pudo comunicar con el servidor: ${error.message}`, 'error');
+        }
     };
+
 
 
     const handleTrailerTypeChange = (type) => {
@@ -273,7 +306,7 @@ const TripFormUSA = ({ tripNumber, countryCode, tripYear, isTransnational, isCon
             rate_tarifa: etapa.rate_tarifa,
             millas_pcmiller: etapa.millas_pcmiller,
             millas_pcmiller_practicas: etapa.millas_pcmiller_practicas,
-            estatus: 'In Transit',
+            estatus: 'Up Coming',
             comments: etapa.comments || '',
             time_of_delivery: etapa.time_of_delivery || '',
             documentos: Object.entries(etapa.documentos).reduce((acc, [key, value]) => {
@@ -653,4 +686,3 @@ export default TripFormUSA;
 
 
 
-   
