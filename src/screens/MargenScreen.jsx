@@ -27,7 +27,7 @@ const MargenScreen = () => {
     return trips.map(t => {
       const driverPay = Number(t.driver_pay || 0); 
       
-      const isFullyPaid = Number(t.unpaid_stages || 0) === 0 || t.status === 'Completed';
+      const isFullyPaid = Number(t.unpaid_stages || 0) === 0;
       
       const totalTarifa = isFullyPaid ? Number(t.rate_tarifa || 0) : Number(t.tarifa_pagada || 0); 
 
