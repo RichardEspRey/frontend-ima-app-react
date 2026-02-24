@@ -203,21 +203,19 @@ const TicketPayment = () => {
         return [
             `${s.zip_code_destination || 'N/A'} - ${destinoReal}`,
             isEmtpy ? "Vacía" : "Normal",
-            ajuste > 0 ? `-${ajuste}` : "-", 
             finalMillas.toFixed(2)
         ];
     });
 
     autoTable(doc, {
         startY: 75,
-        head: [['Destino (Zip / Ciudad)', 'Tipo Etapa', 'Ajuste (-)', 'Millas']],
+        head: [['Destino (Zip / Ciudad)', 'Tipo Etapa', 'Millas']],
         body: tableData,
         theme: 'striped',
         headStyles: { fillColor: [38, 50, 56], textColor: 255, fontStyle: 'bold' },
         styles: { fontSize: 10, cellPadding: 4 },
         columnStyles: {
-            2: { halign: 'center', textColor: [211, 47, 47] }, 
-            3: { halign: 'right', fontStyle: 'bold' } 
+            2: { halign: 'right', fontStyle: 'bold' } 
         }
     });
 
@@ -239,9 +237,14 @@ const TicketPayment = () => {
         doc.text(value, 196 - valueWidth, yPos);
     };
 
-    printRightAligned("Millas Totales (Ajustadas):", `${totalMillasAjustadas.toFixed(2)} mi`, sumY, true); sumY += 8;
+    printRightAligned("Millas Totales:", `${totalMillasAjustadas.toFixed(2)} mi`, sumY, true); sumY += 8;
+    
     printRightAligned(`Subtotal ($${Number(customRate).toFixed(2)}/mi):`, `$${(Number(customRate) * totalMillasAjustadas).toFixed(2)}`, sumY); sumY += 8;
-    if (Number(gastos) > 0) { printRightAligned("Otros Gastos (Reembolso):", `+$${Number(gastos).toFixed(2)}`, sumY); sumY += 8; }
+    
+    if (Number(gastos) > 0) { 
+        printRightAligned("Otros Gastos (Reembolso):", `+$${Number(gastos).toFixed(2)}`, sumY); sumY += 8; 
+    }
+    
     if (avances.a1 > 0) { printRightAligned("Anticipo 1:", `-$${Number(avances.a1).toFixed(2)}`, sumY); sumY += 6; }
     if (avances.a2 > 0) { printRightAligned("Anticipo 2:", `-$${Number(avances.a2).toFixed(2)}`, sumY); sumY += 6; }
     if (avances.a3 > 0) { printRightAligned("Anticipo 3:", `-$${Number(avances.a3).toFixed(2)}`, sumY); sumY += 6; }
@@ -255,6 +258,7 @@ const TicketPayment = () => {
     doc.setFontSize(16);
     doc.setTextColor(46, 125, 50); 
     printRightAligned("TOTAL A PAGAR:", `$${isNaN(totalPagar) ? "0.00" : totalPagar.toFixed(2)}`, sumY, true);
+    
     doc.save(`Ticket_Pago_${info?.trip_number || trip_id}.pdf`);
   };
 
