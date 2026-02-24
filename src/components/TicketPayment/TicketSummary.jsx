@@ -14,7 +14,7 @@ const TicketSummary = ({ totalMillasAjustadas, customRate, gastos, totalAvances,
             </Stack>
             <Stack direction="row" justifyContent="space-between">
                   <Typography variant="body2" color="rgba(255,255,255,0.7)">Otros Gastos:</Typography>
-                  <Typography variant="body1">+${Number(gastos).toFixed(2)}</Typography>
+                  <Typography variant="body1">${Number(gastos).toFixed(2)}</Typography>
             </Stack>
             <Stack direction="row" justifyContent="space-between">
                   <Typography variant="body2" color="rgba(255,255,255,0.7)">Total Anticipos:</Typography>
