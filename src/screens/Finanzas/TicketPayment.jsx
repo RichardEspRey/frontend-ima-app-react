@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { Box, Paper, Typography, Divider, Grid, Stack, Chip } from "@mui/material";
+import { Box, Paper, Typography, Divider, Grid, Stack, Chip, TextField } from "@mui/material";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import Swal from "sweetalert2";
 
@@ -32,6 +32,8 @@ const TicketPayment = () => {
   const [ajustes, setAjustes] = useState({});
   const [openGastosModal, setOpenGastosModal] = useState(false);
   const [customRate, setCustomRate] = useState(0);
+
+  const [comentarios, setComentarios] = useState("");
 
   const fetchTicket = useCallback(async () => {
     try {
@@ -80,6 +82,8 @@ const TicketPayment = () => {
             if (valA3 > 0) count = 3;
             else if (valA2 > 0) count = 2;
             setVisibleAdvances(count);
+
+            setComentarios(json.data.saved_data.comentarios || ""); 
 
             const savedGastos = Number(json.data.saved_data.gastos_aplicados || 0);
             setGastos(savedGastos > 0 ? savedGastos : gastosCalculados);
@@ -148,6 +152,7 @@ const TicketPayment = () => {
                 fd.append("anticipo_3", avances.a3);
                 fd.append("gastos", gastos);
                 fd.append("ajustes", JSON.stringify(ajustes));
+                fd.append("comentarios", comentarios);
           
                 const res = await fetch(`${apiHost}/formularios.php`, { method: "POST", body: fd });
                 const json = await res.json();
@@ -316,13 +321,61 @@ const TicketPayment = () => {
             </Grid>
 
             <Grid item xs={12} md={6}>
-                <TicketSummary 
-                    totalMillasAjustadas={totalMillasAjustadas}
-                    customRate={customRate}
-                    gastos={gastos}
-                    totalAvances={totalAvances}
-                    totalPagar={totalPagar}
-                />
+                <Grid container spacing={3}> 
+
+                    <Grid item xs={12} sm={6}>
+                        <TicketSummary 
+                            totalMillasAjustadas={totalMillasAjustadas}
+                            customRate={customRate}
+                            gastos={gastos}
+                            totalAvances={totalAvances}
+                            totalPagar={totalPagar}
+                        />
+                    </Grid>
+                    
+                    <Grid item xs={12} sm={6}>
+                        <Paper 
+                            elevation={0} 
+                            sx={{ 
+                                p: 2, 
+                                height: '100%', 
+                                bgcolor: '#f8f9fa', 
+                                border: '1px dashed #cfd8dc', 
+                                borderRadius: 2,
+                                display: 'flex',
+                                flexDirection: 'column'
+                            }}
+                        >
+                            <Typography 
+                                variant="caption" 
+                                fontWeight={700} 
+                                color="primary.main" 
+                                gutterBottom 
+                                sx={{ textTransform: 'uppercase', mb: 1.5, display: 'block' }}
+                            >
+                                Notas / Comentarios Internos
+                            </Typography>
+                            
+                            <TextField
+                                fullWidth
+                                multiline
+                                minRows={6} 
+                                placeholder="Escriba sus comentarios"
+                                value={comentarios}
+                                onChange={(e) => setComentarios(e.target.value)}
+                                variant="outlined"
+                                sx={{ 
+                                    flexGrow: 1, 
+                                    bgcolor: '#fff',
+                                    '& .MuiOutlinedInput-root': {
+                                        borderRadius: 1.5,
+                                    }
+                                }}
+                            />
+                        </Paper>
+                    </Grid>
+                    
+                </Grid>
             </Grid>
         </Grid>
       </Paper>
