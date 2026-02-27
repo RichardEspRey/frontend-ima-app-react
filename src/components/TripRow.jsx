@@ -48,6 +48,7 @@ export const TripRow = ({
   onSalida,                           // handler opcional
   colSpanOverride,                    // para que el collapse no se rompa si cambian columnas
   isUpcomingTab = false,
+  isEnRutaTab = false,
   onDelete,
 
 }) => {
@@ -255,7 +256,7 @@ export const TripRow = ({
           </TableCell>
         )}
 
-        {isAdmin && isCompletedTab && (
+        {isAdmin && (isCompletedTab || isEnRutaTab) && (
           <TableCell>
             <Button size="small" variant="outlined" color="warning" onClick={() => onReactivate(trip.trip_id, trip.trip_number)}>
               Reactivar

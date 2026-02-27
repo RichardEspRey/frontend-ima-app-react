@@ -322,35 +322,43 @@ const TripAdmin = () => {
         navigate(`/ResumenTrip/${tripId}`);
     };
 
-    const handleReactivateTrip = async (tripId, tripNumber) => {
+    const handleReactivateTrip = async (tripId, tripNumber, isEnRuta = false) => {
         if (!tripId) return;
 
-        // Mostrar opciones para reactivar el viaje
-        const result = await Swal.fire({
-            title: 'Reactivar Viaje',
-            text: `Selecciona el tipo de reactivación para el viaje #${tripNumber}`,
-            icon: 'question',
-            showDenyButton: true,
-            showCancelButton: true,
-            confirmButtonText: 'Administrativos',
-            denyButtonText: 'Operadores',
-            cancelButtonText: 'Cancelar',
-            confirmButtonColor: '#3085d6',
-            denyButtonColor: '#d33',
-        });
-
-        // Si el usuario cancela
-        if (result.isDismissed) return;
-
-        // Determinar qué tipo de reactivación se seleccionó
         let reactivationType = '';
-        if (result.isConfirmed) {
-            reactivationType = 'admin';
-        } else if (result.isDenied) {
+
+        if (isEnRuta) {
+            // Desde En Ruta: solo opción Operadores
+            const result = await Swal.fire({
+                title: 'Reactivar Viaje',
+                text: `El viaje #${tripNumber} será reactivado para Operadores.`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Operadores',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#d33',
+            });
+            if (!result.isConfirmed) return;
             reactivationType = 'operadores';
+        } else {
+            // Desde Finalizados: ambas opciones
+            const result = await Swal.fire({
+                title: 'Reactivar Viaje',
+                text: `Selecciona el tipo de reactivación para el viaje #${tripNumber}`,
+                icon: 'question',
+                showDenyButton: true,
+                showCancelButton: true,
+                confirmButtonText: 'Administrativos',
+                denyButtonText: 'Operadores',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#3085d6',
+                denyButtonColor: '#d33',
+            });
+            if (result.isDismissed) return;
+            if (result.isConfirmed) reactivationType = 'admin';
+            else if (result.isDenied) reactivationType = 'operadores';
         }
 
-        // Si por alguna razón no hay tipo, salir
         if (!reactivationType) return;
 
         try {
@@ -620,7 +628,7 @@ const TripAdmin = () => {
                                 <TableCell sx={{ fontWeight: 'bold' }}>Resumen</TableCell>
                             )}
 
-                            {isAdmin && tabValue === 3 && (
+                            {isAdmin && (tabValue === 3 || tabValue === 2) && (
                                 <TableCell sx={{ fontWeight: 'bold' }}>Admin</TableCell>
                             )}
                         </TableRow>
@@ -649,7 +657,7 @@ const TripAdmin = () => {
                                             onEdit={handleEditTrip}
                                             onFinalize={handleFinalizeTrip}
                                             onAlmostOver={handleAlmostOverTrip}
-                                            onReactivate={handleReactivateTrip}
+                                            onReactivate={(tripId, tripNumber) => handleReactivateTrip(tripId, tripNumber, tabValue === 2)}
                                             isAdmin={isAdmin}
                                             getDocumentUrl={getDocumentUrl}
                                             onSummary={handleSummary}
@@ -660,8 +668,8 @@ const TripAdmin = () => {
                                             onSalida={handleSalida}
                                             colSpanOverride={
                                                 showDocsColumn
-                                                    ? (tabValue === 3 && isAdmin ? 11 : 9)
-                                                    : (tabValue === 3 && isAdmin ? 11 : 9)
+                                                    ? 9
+                                                    : (tabValue === 3 && isAdmin ? 11 : (tabValue === 2 && isAdmin ? 10 : 9))
                                             }
                                             onDelete={handleDeleteTrip}
                                             isUpcomingTab={isUpcomingTab}

@@ -361,9 +361,11 @@ const EditUpComing = () => {
     // ✅ INTEGRACIÓN 2: handleSaveChanges (TU FUNCIÓN)
     // =========================
     const handleSaveChanges = async () => {
+
+        /*
         if (!formData.driver_id || !formData.truck_id) {
             return Swal.fire("Error", "Driver y Truck obligatorios", "warning");
-        }
+        }*/
 
         const fd = new FormData();
         fd.append("op", "UpdateUpcoming");
