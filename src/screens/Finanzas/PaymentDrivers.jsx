@@ -297,7 +297,7 @@ const PaymentDrivers = () => {
                 return (
                   <TableRow key={uniqueKey} hover>
                     <TableCell>
-                        <Typography fontWeight={700} color="primary" variant="body2">#{t.trip_number}</Typography>
+                        <Typography fontWeight={700} color="primary" variant="body2">{t.trip_number}</Typography>
                     </TableCell>
                     <TableCell>
                         <Stack direction="row" alignItems="center" spacing={1}>

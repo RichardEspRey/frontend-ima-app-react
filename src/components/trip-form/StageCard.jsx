@@ -215,20 +215,26 @@ const StageCard = ({
                         <Grid container spacing={2}>
                             {etapa.documentos && (
                                 <>
-                                    {Object.entries(etapa.documentos).map(([docKey, docValue]) => (
-                                        <Grid item xs={6} sm={4} md={3} key={docKey}>
-                                            <DocButton
-                                                label={docKey.replace(/_/g, ' ').toUpperCase()}
-                                                doc={docValue}
-                                                onClick={() => abrirModal(docKey, index)}
-                                                disabled={isFormDisabled}
-                                                apiHost={apiHost}
-                                            />
-                                        </Grid>
-                                    ))}
+                                    {Object.entries(etapa.documentos).map(([docKey, docValue]) => {
+                                        
+                                        const isNormalTrip = etapa.stageType === 'normalTrip';
+                                        const isAllowedInNormal = ['ima_invoice', 'bl', 'bl_firmado', 'ci'].includes(docKey);
+                                        const shouldDisable = isFormDisabled || (isNormalTrip && !isAllowedInNormal);
 
-                                    {/* Si es borderCrossing mostramos la cita */}
-                                    {etapa.stageType === 'borderCrossing' && (
+                                        return (
+                                            <Grid item xs={6} sm={4} md={3} key={docKey}>
+                                                <DocButton
+                                                    label={docKey.replace(/_/g, ' ').toUpperCase()}
+                                                    doc={docValue}
+                                                    onClick={() => abrirModal(docKey, index)}
+                                                    disabled={shouldDisable} 
+                                                    apiHost={apiHost}
+                                                />
+                                            </Grid>
+                                        );
+                                    })}
+
+                                    {(etapa.stageType === 'borderCrossing'|| etapa.stageType === 'normalTrip') && (
                                         <Grid item xs={12} sm={4} md={3}>
                                             <TextField
                                                 fullWidth
