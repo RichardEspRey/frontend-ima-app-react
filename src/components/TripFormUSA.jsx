@@ -135,34 +135,26 @@ const TripFormUSA = ({ tripNumber, countryCode, tripYear, isTransnational, isCon
     // Docs
     const openDocModal = (si, dt, spi = null) => { setModalTarget({ stageIndex: si, docType: dt, stopIndex: spi }); setMostrarFechaVencimientoModal(false); setModalAbierto(true); };
 
-    const saveDoc = (data) => {
-        const { stageIndex, docType, stopIndex } = modalTarget;
-        setEtapas(p => {
-            const c = [...p];
-            if (stopIndex !== null) {
-                c[stageIndex] = {
-                    ...c[stageIndex],
-                    stops_in_transit: c[stageIndex].stops_in_transit.map((stop, si) =>
-                        si === stopIndex
-                            ? { ...stop, [docType]: { ...stop[docType], ...data } }
-                            : stop
-                    )
-                };
-            } else {
-                c[stageIndex] = {
-                    ...c[stageIndex],
-                    documentos: {
-                        ...c[stageIndex].documentos,
-                        [docType]: {
-                            ...c[stageIndex].documentos[docType], // preserve document_id, serverPath, etc.
-                            ...data
-                        }
+    const handleGuardarDocumentoEtapa = (data) => {
+        const { stageIndex, docType } = modalTarget;
+        if (stageIndex === null || !docType) return;
+        setEtapas(prevEtapas => {
+            const updatedEtapas = [...prevEtapas];
+            const updatedEtapa = {
+                ...updatedEtapas[stageIndex],
+                documentos: {
+                    ...updatedEtapas[stageIndex].documentos,
+                    [docType]: {
+                        ...updatedEtapas[stageIndex].documentos[docType], // ← preserve document_id, serverPath, etc.
+                        ...data                                            // ← override with new file, fileName, hasNewFile, vencimiento
                     }
-                };
-            }
-            return c;
+                }
+            };
+            updatedEtapas[stageIndex] = updatedEtapa;
+            return updatedEtapas;
         });
         setModalAbierto(false);
+        setModalTarget({ stageIndex: null, docType: null });
     };
 
     const getDocValue = () => {
@@ -172,6 +164,7 @@ const TripFormUSA = ({ tripNumber, countryCode, tripYear, isTransnational, isCon
     };
 
     // Caja Externa
+    
     const handleSaveExternalCaja = async (cajaData) => {
 
 
@@ -210,8 +203,6 @@ const TripFormUSA = ({ tripNumber, countryCode, tripYear, isTransnational, isCon
             Swal.fire('Error de Conexión', `No se pudo comunicar con el servidor: ${error.message}`, 'error');
         }
     };
-
-
 
     const handleTrailerTypeChange = (type) => {
         setTrailerType(type);
@@ -314,7 +305,14 @@ const TripFormUSA = ({ tripNumber, countryCode, tripYear, isTransnational, isCon
                     ? { fileName: value.fileName || '', vencimiento: value.vencimiento || null }
                     : null;
                 return acc;
-            }, {})
+            }, {}),
+            stops_in_transit: (etapa.stops_in_transit || []).map((stop) => ({
+                location: stop.location || '',
+                time_of_delivery: stop.time_of_delivery || '',
+                bl_firmado_doc: stop.bl_firmado_doc
+                    ? { fileName: stop.bl_firmado_doc.fileName || '' }
+                    : null
+            }))
         }));
 
         fd.append('etapas', JSON.stringify(etapasJson));
@@ -327,6 +325,16 @@ const TripFormUSA = ({ tripNumber, countryCode, tripYear, isTransnational, isCon
                         `etapa_${idx}_${docType}_file`,
                         docData.file,
                         docData.fileName
+                    );
+                }
+            });
+            // Archivos de paradas
+            (etapa.stops_in_transit || []).forEach((stop, si) => {
+                if (stop.bl_firmado_doc?.file instanceof File) {
+                    fd.append(
+                        `etapa_${idx}_stop_${si}_bl_firmado_file`,
+                        stop.bl_firmado_doc.file,
+                        stop.bl_firmado_doc.fileName
                     );
                 }
             });
@@ -674,15 +682,22 @@ const TripFormUSA = ({ tripNumber, countryCode, tripYear, isTransnational, isCon
                 </Box>
             </Paper>
 
-            {modalAbierto && <ModalArchivo isOpen={modalAbierto} onClose={() => { setModalAbierto(false); setModalTarget({ stageIndex: null, docType: null }); }} onSave={saveDoc} nombreCampo={modalTarget.docType} valorActual={getDocValue()} mostrarFechaVencimiento={mostrarFechaVencimientoModal} />}
-            {IsModalCajaExternaOpen && <ModalCajaExterna isOpen={IsModalCajaExternaOpen} onClose={() => setIsModalCajaExternaOpen(false)} onSave={saveExtCaja} />}
+            {modalAbierto &&
+                <ModalArchivo
+                    isOpen={modalAbierto}
+                    onClose={() => { setModalAbierto(false); setModalTarget({ stageIndex: null, docType: null }); }}
+                    onSave={handleGuardarDocumentoEtapa}
+                    nombreCampo={modalTarget.docType}
+                    valorActual={getDocValue()}
+                    mostrarFechaVencimiento={mostrarFechaVencimientoModal} />}
+
+            {IsModalCajaExternaOpen &&
+                <ModalCajaExterna
+                    isOpen={IsModalCajaExternaOpen}
+                    onClose={() => setIsModalCajaExternaOpen(false)}
+                    onSave={handleSaveExternalCaja} />}
         </Box>
     );
 };
 
 export default TripFormUSA;
-
-
-
-
-
