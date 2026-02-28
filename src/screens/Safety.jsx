@@ -7,11 +7,7 @@ import {
 
 import Swal from "sweetalert2";
 
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-
-import SecurityIcon from '@mui/icons-material/Security';
 import SearchIcon from '@mui/icons-material/Search';
-import PendingActionsIcon from '@mui/icons-material/PendingActions';
 
 import { DocumentCell } from "../components/DocumentCell.jsx";
 
