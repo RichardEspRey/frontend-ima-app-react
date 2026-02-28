@@ -1,7 +1,7 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
-  Button, Box, Typography, CircularProgress, Stack 
+  Button, Box, Typography, CircularProgress, Stack, Tabs, Tab 
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
@@ -26,7 +26,17 @@ const Inspeccion_final = () => {
   const [openByTrip, setOpenByTrip] = useState({});          
   const [detailsByTrip, setDetailsByTrip] = useState({});    
   const [loadingByTrip, setLoadingByTrip] = useState({});     
-  const [errorByTrip, setErrorByTrip] = useState({});         
+  const [errorByTrip, setErrorByTrip] = useState({}); 
+  
+  const [tabValue, setTabValue] = useState(0);
+
+  const filteredRows = useMemo(() => {
+    if (tabValue === 0) {
+        return rows.filter(r => r.status !== 1); // Pestaña 0: Pendientes
+    } else {
+        return rows.filter(r => r.status === 1); // Pestaña 1: Completadas
+    }
+  }, [rows, tabValue]);
 
   // Helpers 
   const toFormBody = useCallback((obj) =>
@@ -166,6 +176,18 @@ const Inspeccion_final = () => {
         Inspecciones de Camiones
       </Typography>
 
+      <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
+        <Tabs 
+            value={tabValue} 
+            onChange={(e, newValue) => setTabValue(newValue)}
+            textColor="primary"
+            indicatorColor="primary"
+        >
+            <Tab label="Pendientes" sx={{ fontWeight: 600, textTransform: 'none', fontSize: '1rem' }} />
+            <Tab label="Completadas" sx={{ fontWeight: 600, textTransform: 'none', fontSize: '1rem' }} />
+        </Tabs>
+      </Box>
+
       {/* Toolbar y Estado de Carga */}
       <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
         <Button variant="contained" onClick={fetchSummary} size="small">Refrescar</Button>
@@ -195,7 +217,7 @@ const Inspeccion_final = () => {
           </TableHead>
 
           <TableBody>
-            {rows.map((row) => {
+            {filteredRows.map((row) => {
               const viajeId = row.viaje_id;
               const abierto = !!openByTrip[viajeId];
               const loading = !!loadingByTrip[viajeId];
@@ -215,10 +237,14 @@ const Inspeccion_final = () => {
                 />
               );
             })}
-             {rows.length === 0 && !loadingSummary && (
+             {filteredRows.length === 0 && !loadingSummary && (
                 <TableRow>
                     <TableCell colSpan={8} align="center">
-                        <Typography color="text.secondary" sx={{ py: 2 }}>No se encontraron inspecciones pendientes.</Typography>
+                        <Typography color="text.secondary" sx={{ py: 3 }}>
+                            {tabValue === 0 
+                                ? "No hay inspecciones pendientes en este momento." 
+                                : "No hay inspecciones completadas para mostrar."}
+                        </Typography>
                     </TableCell>
                 </TableRow>
               )}
