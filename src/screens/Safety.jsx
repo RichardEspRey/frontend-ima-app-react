@@ -19,7 +19,7 @@ export default function Safety() {
   const [tabValue, setTabValue] = useState(0);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(25);
+  const [rowsPerPage, setRowsPerPage] = useState(50);
 
   const fileInputRef = useRef(null);
   const [uploadContext, setUploadContext] = useState({ tripId: null, docType: null });
@@ -179,7 +179,7 @@ export default function Safety() {
       </Paper>
 
       <Paper elevation={0} variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden' }}>
-        <TableContainer sx={{ maxHeight: '65vh' }}>
+        <TableContainer>
           <Table stickyHeader size="small">
             <TableHead>
               <TableRow>
@@ -262,7 +262,7 @@ export default function Safety() {
         </TableContainer>
         
         <TablePagination
-            rowsPerPageOptions={[25, 50, 100]}
+            rowsPerPageOptions={[50, 100, 150]}
             component="div"
             count={filteredTrips.length}
             rowsPerPage={rowsPerPage}
