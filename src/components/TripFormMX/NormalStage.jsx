@@ -1,6 +1,7 @@
 import React from 'react';
 import { Grid, Typography, Paper, Stack, TextField, Divider, Box } from '@mui/material';
 import FlagIcon from '@mui/icons-material/Flag';
+import PlaceIcon from '@mui/icons-material/Place';
 import { format } from 'date-fns';
 import SelectWrapper from '../SelectWrapper'; 
 import StopsSection from './StopsSection';
@@ -28,6 +29,23 @@ const NormalStage = ({
                 />
             </Grid>
 
+            <Grid item xs={12} md={3}>
+                <Paper variant="outlined" sx={{ p: 2, height: '100%', bgcolor: '#f5f5f5' }}>
+                    <Typography variant="subtitle2" color="primary" sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                        <PlaceIcon fontSize="small" /> ORIGEN
+                    </Typography>
+                    <TextField 
+                        label="Hora de Salida" 
+                        type="time" 
+                        InputLabelProps={{ shrink: true }} 
+                        size="small" 
+                        fullWidth 
+                        value={etapa.time_of_departure || ''} 
+                        onChange={e => updateStage(index, 'time_of_departure', e.target.value)} 
+                    />
+                </Paper>
+            </Grid>
+
             <Grid item xs={12} md={6}>
                 <Paper variant="outlined" sx={{ p: 2 }}>
                     <Typography variant="subtitle2" color="error" sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
@@ -50,7 +68,10 @@ const NormalStage = ({
                             <TextField label="Ciudad" fullWidth size="small" value={etapa.destination} onChange={e => updateStage(index, 'destination', e.target.value)} />
                             <TextField label="Zip" size="small" sx={{ width: 100 }} value={etapa.zip_code_destination} onChange={e => updateStage(index, 'zip_code_destination', e.target.value)} />
                         </Stack>
-                        <TextField label="Fecha Entrega" type="date" InputLabelProps={{ shrink: true }} size="small" fullWidth value={etapa.delivery_date ? format(etapa.delivery_date, 'yyyy-MM-dd') : ''} onChange={e => updateStage(index, 'delivery_date', e.target.value ? new Date(e.target.value + 'T12:00:00') : null)} />
+                        <Stack direction="row" spacing={1}>
+                            <TextField label="Fecha Entrega" type="date" InputLabelProps={{ shrink: true }} size="small" fullWidth value={etapa.delivery_date ? format(etapa.delivery_date, 'yyyy-MM-dd') : ''} onChange={e => updateStage(index, 'delivery_date', e.target.value ? new Date(e.target.value + 'T12:00:00') : null)} />
+                            <TextField label="Hora Entrega" type="time" InputLabelProps={{ shrink: true }} size="small" fullWidth value={etapa.time_of_delivery || ''} onChange={e => updateStage(index, 'time_of_delivery', e.target.value)} />
+                        </Stack>
                     </Stack>
                 </Paper>
             </Grid>
