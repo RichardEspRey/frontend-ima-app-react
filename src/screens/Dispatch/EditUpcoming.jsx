@@ -29,7 +29,7 @@ import { parseISO, format } from "date-fns";
 // Componentes Hijos
 import TripFormUSA from "../../components/TripFormUSA"; // USA
 import TripFormMX from "../../components/TripFormMX"; // México
-import BorderCrossingFormNew2 from "../../components/BorderCrossingFormNew2";
+import BorderCrossingFormNew2 from "../../components/BorderCrossingFormNew2-090326";
 import { initialBorderCrossingDocs, NORMAL_TRIP_DOCS_BY_COUNTRY } from "../../utils/tripFormConstants";
 
 
