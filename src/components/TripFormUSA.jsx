@@ -26,7 +26,7 @@ const initialEtapaStateBase = {
     warehouse_origin_id: null, destination: '', zip_code_destination: '', delivery_date: new Date(),
     warehouse_destination_id: null, travel_direction: '', ci_number: '', invoice_number: '',
     rate_tarifa: '', millas_pcmiller: '', millas_pcmiller_practicas: '', comments: '',
-    documentos: { ...initialNormalTripDocs }, time_of_delivery: '', time_of_departure: '', stops_in_transit: []
+    documentos: { ...initialNormalTripDocs }, time_of_delivery: '', date_of_departure: new Date(), stops_in_transit: []
 };
 
 const TripFormUSA = ({ tripNumber, countryCode, tripYear, isTransnational, isContinuation, transnationalNumber, movementNumber, onSuccess, etapas: etapasProp, setEtapas: setEtapasProp, formData: formDataProp, setFormData: setFormDataProp, onSaveOverride }) => {
@@ -182,7 +182,7 @@ const TripFormUSA = ({ tripNumber, countryCode, tripYear, isTransnational, isCon
             loading_date: etapa.loading_date ? format(etapa.loading_date, 'yyyy-MM-dd') : null,
             delivery_date: etapa.delivery_date ? format(etapa.delivery_date, 'yyyy-MM-dd') : null,
             time_of_delivery: etapa.time_of_delivery || '', 
-            time_of_departure: etapa.time_of_departure || '',
+            date_of_departure: etapa.date_of_departure ? format(etapa.date_of_departure, 'yyyy-MM-dd') : null,
             estatus: 'Up Coming',
             documentos: Object.entries(etapa.documentos).reduce((acc, [k, v]) => { acc[k] = v ? { fileName: v.fileName || '', vencimiento: v.vencimiento || null } : null; return acc; }, {}),
             stops_in_transit: (etapa.stops_in_transit || []).map(s => ({ ...s, bl_firmado_doc: s.bl_firmado_doc ? { fileName: s.bl_firmado_doc.fileName || '' } : null }))

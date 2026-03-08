@@ -35,13 +35,13 @@ const NormalStage = ({
                         <PlaceIcon fontSize="small" /> ORIGEN
                     </Typography>
                     <TextField 
-                        label="Hora de Salida" 
-                        type="time" 
+                        label="Fecha de Salida" 
+                        type="date" 
                         InputLabelProps={{ shrink: true }} 
                         size="small" 
                         fullWidth 
-                        value={etapa.time_of_departure || ''} 
-                        onChange={e => updateStage(index, 'time_of_departure', e.target.value)} 
+                        value={etapa.date_of_departure ? format(etapa.date_of_departure, 'yyyy-MM-dd') : ''} 
+                        onChange={e => updateStage(index, 'date_of_departure', e.target.value ? new Date(e.target.value + 'T12:00:00') : null)} 
                     />
                 </Paper>
             </Grid>
