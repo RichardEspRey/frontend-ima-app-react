@@ -101,7 +101,6 @@ const TripAdmin = () => {
             let result;
             try {
                 result = JSON.parse(responseText);
-                console.log(result)
             }
             catch (e) {
                 console.error("Error parseando JSON:", e, "Respuesta recibida:", responseText);
