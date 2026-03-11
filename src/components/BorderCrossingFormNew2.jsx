@@ -51,7 +51,7 @@ const initialEtapaStateBase = {
     documentos: { ...initialNormalTripDocs }, time_of_delivery: '', stops_in_transit: []
 };
 
-const TripFormUSA = ({ tripNumber, countryCode, tripYear, isTransnational, isContinuation, transnationalNumber, movementNumber, onSuccess, etapas: etapasProp, setEtapas: setEtapasProp, formData: formDataProp, setFormData: setFormDataProp, onSaveOverride }) => {
+const BorderCrossingFormNew2 = ({ tripNumber, countryCode, tripYear, isTransnational, isContinuation, transnationalNumber, movementNumber, onSuccess, etapas: etapasProp, setEtapas: setEtapasProp, formData: formDataProp, setFormData: setFormDataProp, onSaveOverride }) => {
 
     // Hooks
     const { activeDrivers, loading: loadingDrivers, error: errorDrivers } = useFetchActiveDrivers();
@@ -65,7 +65,7 @@ const TripFormUSA = ({ tripNumber, countryCode, tripYear, isTransnational, isCon
 
     const [cajaExterna, setCajaExterna] = useState(null);
     const [tipoCaja, setTipoCaja] = useState('internal');
-    const [etapasLocal, setEtapasLocal] = useState([{ ...initialEtapaStateBase, stageType: 'bordercrossing' }]);
+    const [etapasLocal, setEtapasLocal] = useState([{ ...initialEtapaStateBase, stageType: 'borderCrossing' }]);
     const etapas = etapasProp ?? etapasLocal;
     const setEtapas = setEtapasProp ?? setEtapasLocal;
     const [loadingSave, setLoadingSave] = useState(false);
@@ -579,12 +579,16 @@ const TripFormUSA = ({ tripNumber, countryCode, tripYear, isTransnational, isCon
             <Stack spacing={3}>
                 {etapas.map((etapa, index) => {
                     const isEmpty = etapa.stageType === 'emptyMileage';
+                    const isBorderCrossing = etapa.stageType === 'borderCrossing';
+                    const borderColor = isEmpty ? '#757575' : isBorderCrossing ? '#ed6c02' : '#1976d2';
+                    const headerBg = isEmpty ? '#eeeeee' : isBorderCrossing ? '#fff3e0' : '#e3f2fd';
+                    const stageLabel = isEmpty ? 'Etapa Vacía' : isBorderCrossing ? 'BorderCrossing' : 'Viaje Normal';
                     return (
-                        <Paper key={index} elevation={2} sx={{ overflow: 'hidden', borderLeft: `6px solid ${isEmpty ? '#757575' : '#1976d2'}` }}>
-                            <Box sx={{ bgcolor: isEmpty ? '#eeeeee' : '#e3f2fd', px: 2, py: 1.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Paper key={index} elevation={2} sx={{ overflow: 'hidden', borderLeft: `6px solid ${borderColor}` }}>
+                            <Box sx={{ bgcolor: headerBg, px: 2, py: 1.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <Stack direction="row" spacing={1} alignItems="center">
-                                    <Chip label={`#${index + 1}`} size="small" sx={{ bgcolor: isEmpty ? '#757575' : '#1976d2', color: 'white', fontWeight: 'bold' }} />
-                                    <Typography variant="subtitle1" fontWeight={700}>{isEmpty ? 'Etapa Vacía' : 'Viaje Normal'}</Typography>
+                                    <Chip label={`#${index + 1}`} size="small" sx={{ bgcolor: borderColor, color: 'white', fontWeight: 'bold' }} />
+                                    <Typography variant="subtitle1" fontWeight={700}>{stageLabel}</Typography>
                                 </Stack>
                                 <Box>
                                     {!isEmpty && <Button size="small" startIcon={<AddCircleOutlineIcon />} onClick={() => addStop(index)} sx={{ mr: 1 }}>Parada</Button>}
@@ -700,7 +704,7 @@ const TripFormUSA = ({ tripNumber, countryCode, tripYear, isTransnational, isCon
     );
 };
 
-export default TripFormUSA;
+export default BorderCrossingFormNew2;
 
 
 

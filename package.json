@@ -32,6 +32,7 @@
     "jspdf": "^3.0.3",
     "jspdf-autotable": "^5.0.7",
     "leaflet": "^1.9.4",
+    "pdfjs-dist": "^5.5.207",
     "react": "^19.0.0",
     "react-datepicker": "^8.2.1",
     "react-dom": "^19.0.0",

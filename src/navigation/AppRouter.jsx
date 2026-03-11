@@ -55,6 +55,7 @@ import Afinaciones from '../screens/Afinaciones.jsx';
 import AfinacionesHistory from '../screens/AfinacionesHistory.jsx';
 import CrearViaje from '../screens/Dispatch/CrearViaje.jsx';
 import Safety from '../screens/Safety.jsx';
+import Ifta from '../screens/Safety/IFTA.jsx';
 
 const AppRouter = () => {
   const { user, loading } = useContext(AuthContext);
@@ -111,6 +112,7 @@ const AppRouter = () => {
               <Route path="/ResiduoTrip" element={<ResiduoTrip />} />  
               <Route path="/reports" element={<Reports />} />
               <Route path="/safety" element={<Safety />} />  
+              <Route path="/Ifta" element={<Ifta />} />  
               <Route path="/tracking" element={<Tracking />} />  
               <Route path="/margen" element={<MargenScreen />} />  
               <Route path="/paymentDrivers" element ={<PaymentDrivers />} />
