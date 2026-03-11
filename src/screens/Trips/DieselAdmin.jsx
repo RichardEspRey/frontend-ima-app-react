@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
     Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-    TextField, Button, Stack, CircularProgress, Badge, Tooltip, Chip, TablePagination
+    TextField, Button, Stack, CircularProgress, Badge, Tooltip, Chip, TablePagination, Tabs, Tab
 } from '@mui/material'; 
 import { useNavigate, useLocation } from 'react-router-dom';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -27,7 +27,9 @@ const DieselAdmin = () => {
   // Inicialización de estados con persistencia
   const [search, setSearch] = useState(location.state?.search || '');
   const [page, setPage] = useState(location.state?.page || 0);
-  const [rowsPerPage, setRowsPerPage] = useState(location.state?.rowsPerPage || 15);
+  const [rowsPerPage, setRowsPerPage] = useState(location.state?.rowsPerPage || 50);
+
+  const [tabValue, setTabValue] = useState(location.state?.tabValue || 0);
 
   // ** LÓGICA DE FETCH **
   const fetchDiesel = useCallback(async () => {
@@ -72,17 +74,27 @@ const DieselAdmin = () => {
 
   // ** LÓGICA DE FILTRADO **
   const filteredTrips = useMemo(() => {
+    let result = trips
+
+    if (tabValue === 0) {
+        result = result.filter(r => r.fleetone_pending_count > 0);
+    } else {
+        result = result.filter(r => r.fleetone_pending_count === 0);
+    }
     const searchLower = search.toLowerCase();
-    if (!searchLower) return trips;
-    return trips.filter(r =>
-        String(r.trip_number || '').toLowerCase().includes(searchLower) ||
-        String(r.nombre || '').toLowerCase().includes(searchLower)
-    );
-  }, [trips, search]);
+    if (searchLower) {
+        result = result.filter(r =>
+            String(r.trip_number || '').toLowerCase().includes(searchLower) ||
+            String(r.nombre || '').toLowerCase().includes(searchLower)
+        );
+    }
+
+    return result
+  }, [trips, search, tabValue]);
 
   const handleVer = (tripId) => {
     navigate(`/detalle-diesel/${tripId}`, { 
-        state: { page, search, rowsPerPage } 
+        state: { page, search, rowsPerPage, tabValue } 
     }); 
   };
 
@@ -111,6 +123,18 @@ const DieselAdmin = () => {
       <Typography variant="h4" component="h1" fontWeight={700} gutterBottom sx={{ mb: 3 }}>
         Diesel Management System
       </Typography>
+
+      <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
+        <Tabs 
+            value={tabValue} 
+            onChange={(e, newValue) => { setTabValue(newValue); setPage(0); }}
+            textColor="primary"
+            indicatorColor="primary"
+        >
+            <Tab label="Pendientes" sx={{ fontWeight: 600, textTransform: 'none', fontSize: '1rem' }} />
+            <Tab label="Completados" sx={{ fontWeight: 600, textTransform: 'none', fontSize: '1rem' }} />
+        </Tabs>
+      </Box>
 
       <Stack direction="row" spacing={2} sx={{ mb: 3 }} alignItems="center">
         <TextField
@@ -145,7 +169,11 @@ const DieselAdmin = () => {
               {slice.length === 0 ? (
                 <TableRow>
                     <TableCell colSpan={8} align="center">
-                        <Typography color="text.secondary" sx={{ py: 2 }}>No se encontraron registros de diesel.</Typography>
+                        <Typography color="text.secondary" sx={{ py: 3 }}>
+                            {tabValue === 0 
+                                ? "No hay registros con Fleet One pendientes." 
+                                : "No hay registros completados para mostrar."}
+                        </Typography>
                     </TableCell>
                 </TableRow>
               ) : (
@@ -220,7 +248,7 @@ const DieselAdmin = () => {
         </TableContainer>
         
         <TablePagination
-            rowsPerPageOptions={[15, 25, 50]}
+            rowsPerPageOptions={[50, 100, 150]}
             component="div"
             count={filteredTrips.length}
             rowsPerPage={rowsPerPage}
