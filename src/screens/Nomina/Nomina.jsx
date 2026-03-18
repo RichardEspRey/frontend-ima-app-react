@@ -62,7 +62,7 @@ export default function PagosAdministrativos() {
             <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 2 }}>
                 <Box>
                     <Typography variant="h4" fontWeight={800} gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        Pagos Administrativos
+                        Nómina Administrativa
                     </Typography>
                     <Typography variant="body1" color="text.secondary">
                         Control de nómina semanal y autorización de pagos.

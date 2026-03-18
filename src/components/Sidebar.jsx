@@ -12,7 +12,7 @@ import { UpdateContext } from '../App';
 import { 
     MdDashboard, MdCarRental, MdLocalShipping, MdDirectionsBus, MdLocalGasStation, 
     MdAttachMoney, MdExitToApp, MdList, MdAssignment, MdTrendingUp, MdBarChart, 
-    MdSecurity, MdPayments
+    MdSecurity
 } from 'react-icons/md'; 
 import { GrMapLocation } from "react-icons/gr";
 
@@ -32,7 +32,6 @@ const iconMap = {
     'Mapa': GrMapLocation,
     'Gestor de Acceso': MdList,
     'Estatus de Unidades': MdTrendingUp,
-    'Pagos Admin.': MdPayments,
 };
 
 const ADMIN_EMAILS_ACCESS = ['1', 'israel_21027', 'angelica_21020'];

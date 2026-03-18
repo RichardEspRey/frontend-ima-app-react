@@ -175,15 +175,14 @@ export const menuItemsConfig = [
   { name: "Safety", route: "/safety", rolesPermitidos: ["admin"] },
 
   {
-    name: "Pagos Admin.",
-    route: "/pagos-administrativos",
-    rolesPermitidos: ["admin"],
-  },
-
-  {
     name: "Finanzas",
     rolesPermitidos: ["admin"],
     subItems: [
+      {
+        name: "Nómina",
+        route: "/nomina",
+        rolesPermitidos: ["admin", "dev"],
+      },
       {
         name: "Pagos",
         route: "/paymentDrivers",
