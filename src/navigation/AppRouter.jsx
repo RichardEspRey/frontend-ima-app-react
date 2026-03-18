@@ -55,6 +55,9 @@ import Afinaciones from '../screens/Afinaciones.jsx';
 import AfinacionesHistory from '../screens/AfinacionesHistory.jsx';
 import CrearViaje from '../screens/Dispatch/CrearViaje.jsx';
 import Safety from '../screens/Safety.jsx';
+import PagoAdministrativos from '../screens/Administrativo/PagosAdministrativos.jsx';
+import PersonalAdmin from '../screens/Administrativo/PersonalAdmin.jsx';
+import DetallePago from '../screens/Administrativo/DetallePago.jsx';
 
 const AppRouter = () => {
   const { user, loading } = useContext(AuthContext);
@@ -121,6 +124,9 @@ const AppRouter = () => {
               <Route path="/registros-afinaciones" element={<AfinacionesHistory />} />
               <Route path="/estatus-unidades" element={<EstatusUnidades />} />
               <Route path="/CrearViaje" element={<CrearViaje />} />
+              <Route path="/pagos-administrativos" element={<PagoAdministrativos />} />
+              <Route path="/personal" element={<PersonalAdmin />} />
+              <Route path="/detalle-pago/:period_id" element={<DetallePago />} />
               <Route path="*" element={<Navigate to="/home" replace />} /> 
             
             </Route>

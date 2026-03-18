@@ -151,7 +151,7 @@ export const menuItemsConfig = [
         hideInSidebar: true,
         rolesPermitidos: ["admin", "Blanca", "Candy"],
       },
-        {
+      {
         name: "Ver Pestaña Despacho",
         route: null,
         hideInSidebar: true,
@@ -173,6 +173,12 @@ export const menuItemsConfig = [
   },
 
   { name: "Safety", route: "/safety", rolesPermitidos: ["admin"] },
+
+  {
+    name: "Pagos Admin.",
+    route: "/pagos-administrativos",
+    rolesPermitidos: ["admin"],
+  },
 
   {
     name: "Finanzas",
