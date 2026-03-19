@@ -55,6 +55,9 @@ import Afinaciones from '../screens/Afinaciones.jsx';
 import AfinacionesHistory from '../screens/AfinacionesHistory.jsx';
 import CrearViaje from '../screens/Dispatch/CrearViaje.jsx';
 import Safety from '../screens/Safety.jsx';
+import Nomina from '../screens/Nomina/Nomina.jsx';
+import PersonalAdmin from '../screens/Nomina/PersonalAdmin.jsx';
+import DetallePago from '../screens/Nomina/DetallePago.jsx';
 import Ifta from '../screens/Safety/IFTA.jsx';
 
 const AppRouter = () => {
@@ -123,6 +126,9 @@ const AppRouter = () => {
               <Route path="/registros-afinaciones" element={<AfinacionesHistory />} />
               <Route path="/estatus-unidades" element={<EstatusUnidades />} />
               <Route path="/CrearViaje" element={<CrearViaje />} />
+              <Route path="/nomina" element={<Nomina />} />
+              <Route path="/personal" element={<PersonalAdmin />} />
+              <Route path="/detalle-pago/:period_id" element={<DetallePago />} />
               <Route path="*" element={<Navigate to="/home" replace />} /> 
             
             </Route>
