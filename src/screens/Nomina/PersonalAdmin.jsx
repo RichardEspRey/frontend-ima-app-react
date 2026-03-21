@@ -64,8 +64,8 @@ export default function PersonalAdmin() {
             {/* ENCABEZADO */}
             <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 2 }}>
                 <Box>
-                    <Typography variant="h4" fontWeight={800} color="secondary.main" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <ManageAccountsIcon fontSize="large" /> Catálogo de Personal
+                    <Typography variant="h4" fontWeight={800} gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        Catálogo de Personal
                     </Typography>
                     <Typography variant="body1" color="text.secondary">Gestiona los empleados, sus sueldos y la divisa de su nómina.</Typography>
                 </Box>
@@ -75,7 +75,7 @@ export default function PersonalAdmin() {
                         variant="outlined" 
                         color="inherit" 
                         startIcon={<ArrowBackIcon />} 
-                        onClick={() => navigate('/pagos-administrativos')}
+                        onClick={() => navigate(-1)}
                         sx={{ fontWeight: 600, textTransform: 'none', bgcolor: 'white' }}
                     >
                         Volver a Pagos
