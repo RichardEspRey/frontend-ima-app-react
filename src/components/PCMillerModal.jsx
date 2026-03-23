@@ -137,23 +137,30 @@ export const PCMillerModal = ({ open, onClose, tripId, file, filename, onSave, o
 
             return () => URL.revokeObjectURL(url);
         } else if (filename) {
-            // View server file — fetch and extract
+            // View server file — load saved states from DB via get_ifta_by_trip
             setPreviewUrl(serverUrl);
             setRows([]);
             setError(null);
+            setLoading(true);
 
-            if (filename.toLowerCase().endsWith('.pdf')) {
-                setLoading(true);
-                extractStateRows(serverUrl)
-                    .then(result => {
-                        setRows(result.length > 0 ? result : [{ state: '', total: '' }]);
-                        if (result.length === 0) setError('No se extrajeron datos automáticamente. Ingréselos manualmente.');
-                    })
-                    .finally(() => setLoading(false));
-            } else {
-                setRows([{ state: '', total: '' }]);
-                setError('El archivo no es un PDF. Ingrese los datos manualmente.');
-            }
+            const fd = new FormData();
+            fd.append('op', 'get_ifta_states');
+            fd.append('trip_id', tripId);
+            fetch(`${apiHost}/IFTA.php`, { method: 'POST', body: fd })
+                .then(r => r.json())
+                .then(json => {
+                    if (json.status === 'success' && json.data.length > 0) {
+                        setRows(json.data.map(r => ({ id: r.id, state: r.state, total: r.total })));
+                    } else {
+                        setRows([{ state: '', total: '' }]);
+                        setError('No hay datos IFTA guardados para este viaje. Ingréselos manualmente.');
+                    }
+                })
+                .catch(() => {
+                    setRows([{ state: '', total: '' }]);
+                    setError('Error al cargar los datos IFTA.');
+                })
+                .finally(() => setLoading(false));
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [open, file, pendingFile, filename]);
@@ -163,7 +170,29 @@ export const PCMillerModal = ({ open, onClose, tripId, file, filename, onSave, o
     };
 
     const addRow = () => setRows(prev => [...prev, { state: '', total: '' }]);
-    const removeRow = (index) => setRows(prev => prev.filter((_, i) => i !== index));
+
+    const removeRow = async (index) => {
+        const row = rows[index];
+        // Si es un state guardado en DB, eliminarlo del servidor primero
+        if (row.id && isServerFile) {
+            try {
+                const fd = new FormData();
+                fd.append('op', 'delete_ifta_state');
+                fd.append('id', row.id);
+                fd.append('trip_id', tripId);
+                const res = await fetch(`${apiHost}/IFTA.php`, { method: 'POST', body: fd });
+                const json = await res.json();
+                if (json.status !== 'success') {
+                    setError(json.message || 'Error al eliminar el state.');
+                    return;
+                }
+            } catch {
+                setError('Error de conexión al eliminar el state.');
+                return;
+            }
+        }
+        setRows(prev => prev.filter((_, i) => i !== index));
+    };
 
     const handleNewFileSelect = (e) => {
         const f = e.target.files[0];
@@ -226,22 +255,30 @@ export const PCMillerModal = ({ open, onClose, tripId, file, filename, onSave, o
             onClose();
             return;
         }
-        // Delete from server
+        // Delete document file + IFTA states from server
         setDeleting(true);
         setError(null);
         try {
-            const fd = new FormData();
-            fd.append('op', 'delete_doc');
-            fd.append('trip_id', tripId);
-            fd.append('doc_type', 'reporte_pcmiller');
-            const res = await fetch(`${apiHost}/safety.php`, { method: 'POST', body: fd });
-            const json = await res.json();
-            if (json.status === 'success') {
-                onDeleteSuccess?.();
-                onClose();
-            } else {
-                setError(json.message || 'Error al eliminar el documento.');
+            // 1. Eliminar el archivo del documento
+            const docFd = new FormData();
+            docFd.append('op', 'delete_doc');
+            docFd.append('trip_id', tripId);
+            docFd.append('doc_type', 'reporte_pcmiller');
+            const docRes = await fetch(`${apiHost}/safety.php`, { method: 'POST', body: docFd });
+            const docJson = await docRes.json();
+            if (docJson.status !== 'success') {
+                setError(docJson.message || 'Error al eliminar el documento.');
+                return;
             }
+
+            // 2. Eliminar los registros IFTA del viaje
+            const iftaFd = new FormData();
+            iftaFd.append('op', 'delete_ifta_trip');
+            iftaFd.append('trip_id', tripId);
+            await fetch(`${apiHost}/IFTA.php`, { method: 'POST', body: iftaFd });
+
+            onDeleteSuccess?.();
+            onClose();
         } catch {
             setError('Error de conexión al eliminar.');
         } finally {
