@@ -8,7 +8,6 @@ import InfoIcon from '@mui/icons-material/Info';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
-// Colores tipo semáforo para el rendimiento
 const getPerformanceColor = (mpg) => {
     if (!mpg || mpg === 0) return 'default';
     if (mpg >= 7) return 'success'; // Bueno
@@ -31,7 +30,6 @@ export default function Autonomia() {
       
       if (json.status === 'success' && Array.isArray(json.data)) {
         setTrucks(json.data);
-        console.log(json.data)
       } else {
         setTrucks([]);
         console.warn("No data or error:", json);

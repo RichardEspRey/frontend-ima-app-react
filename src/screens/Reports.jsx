@@ -2,16 +2,16 @@ import React, { useEffect, useMemo, useState, useCallback } from "react";
 import {
   Box, Paper, Typography, Stack,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, 
-  CircularProgress, Container, ToggleButton, ToggleButtonGroup
+  CircularProgress, Container, ToggleButton, ToggleButtonGroup, Grid,
+  FormControl, InputLabel, Select, MenuItem
 } from "@mui/material";
 import { BarChart } from '@mui/x-charts/BarChart';
-import { ScatterChart } from '@mui/x-charts/ScatterChart'; 
+import { LineChart } from '@mui/x-charts/LineChart'; 
 
 import TableViewIcon from '@mui/icons-material/TableView';
-import AccountBalanceIcon from '@mui/icons-material/AccountBalance'; 
-import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange'; 
 import TimelineIcon from '@mui/icons-material/Timeline'; 
 import BuildIcon from '@mui/icons-material/Build'; 
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -38,6 +38,9 @@ const toMonthLabel = (mKey) => {
 
 export default function Reports() {
   
+  // --- ESTADO PARA EL FILTRO DE HISTORIAL (6 o 12 meses) ---
+  const [historyMonths, setHistoryMonths] = useState(12);
+
   const [rows, setRows] = useState([]);
   const [chartLoading, setChartLoading] = useState(true);
   const [tableRows, setTableRows] = useState([]);
@@ -55,6 +58,7 @@ export default function Reports() {
   const [maintData, setMaintData] = useState([]);
   const [maintLoading, setMaintLoading] = useState(true);
 
+  // --- FETCHERS ---
   const fetchChart = useCallback(async () => {
     setChartLoading(true);
     try {
@@ -90,7 +94,6 @@ export default function Reports() {
         
         const res = await fetch(`${apiHost}/charts.php`, { method: 'POST', body: fd });
         const json = await res.json();
-        
         if (json.status === 'success' && Array.isArray(json.data)) {
             setCostData(json.data);
         } else {
@@ -175,6 +178,7 @@ export default function Reports() {
       fetchDieselCost();
   }, [fetchDieselCost]); 
 
+  // --- PROCESSING ---
   const base = useMemo(() => {
     return rows.map(r => ({
       fecha: r.fecha,
@@ -206,7 +210,6 @@ export default function Reports() {
       const mRaw = String(r.mes ?? '').trim();
       const m = mRaw.padStart(2, '0');
       const key = y && m ? `${y}-${m}` : '—';
-      
       return { 
           label: toMonthLabel(key), 
           galones: Number(r.total_galones ?? 0),
@@ -216,7 +219,6 @@ export default function Reports() {
   }, [tableRows]);
 
   const totalGalones = useMemo(() => tableBase.reduce((acc, r) => acc + r.galones, 0), [tableBase]);
-  
   const globalAvgCost = useMemo(() => {
       const validRows = tableBase.filter(r => r.avg_cost > 0);
       if (validRows.length === 0) return 0;
@@ -224,9 +226,16 @@ export default function Reports() {
       return sum / validRows.length;
   }, [tableBase]);
 
-
   const handlePeriodChange = (event, newPeriod) => {
     if (newPeriod !== null) setCostPeriod(newPeriod);
+  };
+
+  // --- HELPER PARA FILTRAR EL HISTORIAL ---
+  // Toma los últimos N elementos del array (si hay menos, los toma todos)
+  const sliceData = (data) => {
+    if (!Array.isArray(data)) return [];
+    if (historyMonths === 0) return data; // Opción 'Todos' si quisieras agregarla
+    return data.slice(-historyMonths);
   };
 
   return (
@@ -240,206 +249,220 @@ export default function Reports() {
                 Análisis de consumo, costos y facturación mensual.
             </Typography>
         </Box>
+
+        {/* --- SELECTOR DE RANGO DE TIEMPO --- */}
+        <FormControl size="small" sx={{ minWidth: 200, bgcolor: 'white' }} variant="outlined">
+            <InputLabel id="history-range-label" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                 Visualizar Historial
+            </InputLabel>
+            <Select
+                labelId="history-range-label"
+                value={historyMonths}
+                label="Visualizar Historial"
+                onChange={(e) => setHistoryMonths(e.target.value)}
+                startAdornment={<CalendarMonthIcon sx={{ mr: 1, color: 'action.active', fontSize: 20 }} />}
+            >
+                <MenuItem value={6}>Últimos 6 Meses</MenuItem>
+                <MenuItem value={12}>Últimos 12 Meses</MenuItem>
+            </Select>
+        </FormControl>
       </Stack>
 
-      <Paper elevation={0} variant="outlined" sx={{ p: 4, borderRadius: 4, mb: 5, bgcolor: '#fff' }}>
-        <Stack direction="row" justifyContent="space-between" alignItems="flex-start" mb={3} flexWrap="wrap" gap={2}>
-            <Stack direction="row" alignItems="center" spacing={1}>
-                <Box sx={{ width: 4, height: 24, bgcolor: '#ff5722', borderRadius: 1 }} />
-                <Box>
-                    <Typography variant="h6" fontWeight={700}>Costo de Diesel por Galón</Typography>
-                    <Typography variant="caption" color="text.secondary">
-                        Dispersión: Eje X (Volumen) vs Eje Y (Precio Unitario)
-                    </Typography>
-                </Box>
+      <Stack spacing={4}> 
+
+        <Paper elevation={0} variant="outlined" sx={{ p: 4, borderRadius: 4, bgcolor: '#fff' }}>
+            <Stack direction="row" alignItems="center" spacing={1} mb={3}>
+                <Box sx={{ width: 4, height: 24, bgcolor: '#607d8b', borderRadius: 1 }} />
+                <BuildIcon sx={{ color: '#607d8b' }} />
+                <Typography variant="h6" fontWeight={700}>Gastos de Mantenimiento Acumulados</Typography>
+            </Stack>
+            <Box sx={{ width: '100%', minHeight: 400 }}>
+                {maintLoading ? (
+                    <Stack alignItems="center" justifyContent="center" height={350}><CircularProgress color="inherit" /></Stack>
+                ) : maintData.length === 0 ? (
+                    <Stack alignItems="center" justifyContent="center" height={350}>
+                        <BuildIcon sx={{ fontSize: 60, color: '#e0e0e0', mb: 2 }} />
+                        <Typography color="text.secondary">No hay registros de mantenimiento</Typography>
+                    </Stack>
+                ) : (
+                    <BarChart
+                        dataset={sliceData(maintData)} // <--- FILTRO APLICADO
+                        xAxis={[{ dataKey: 'label', label: 'Mes', scaleType: 'band' }]}
+                        series={[{ dataKey: 'total', label: 'Total Mantenimiento', valueFormatter, color: '#607d8b' }]}
+                        {...chartSetting}
+                        borderRadius={4}
+                    />
+                )}
+            </Box>
+        </Paper>
+
+        <Paper elevation={0} variant="outlined" sx={{ p: 4, borderRadius: 4, bgcolor: '#fff' }}>
+            <Stack direction="row" alignItems="center" spacing={1} mb={3}>
+                <Box sx={{ width: 4, height: 24, bgcolor: '#9c27b0', borderRadius: 1 }} />
+                {/* <AttachMoneyIcon sx={{ color: '#9c27b0' }} /> */}
+                <Typography variant="h6" fontWeight={700}>Facturación vs Cobranza (Global)</Typography>
+            </Stack>
+            <Box sx={{ width: '100%', minHeight: 400 }}>
+                {financesLoading ? (
+                    <Stack alignItems="center" justifyContent="center" height={350}><CircularProgress color="secondary" /></Stack>
+                ) : (
+                    <BarChart
+                        dataset={sliceData(financesData)}
+                        xAxis={[{ dataKey: 'label', label: 'Mes de Entrega', scaleType: 'band' }]}
+                        series={[
+                            { dataKey: 'rate', label: 'Total Tarifa (Rate)', valueFormatter, color: '#1976d2' }, 
+                            { dataKey: 'paid', label: 'Total Pagado', valueFormatter, color: '#ed6c02' }, 
+                        ]}
+                        {...chartSetting}
+                        borderRadius={4}
+                        slotProps={{ legend: { hidden: false } }} 
+                    />
+                )}
+            </Box>
+        </Paper>
+
+        <Paper elevation={0} variant="outlined" sx={{ p: 4, borderRadius: 4, bgcolor: '#fff' }}>
+            <Stack direction="row" alignItems="center" spacing={1} mb={3}>
+                <Box sx={{ width: 4, height: 24, bgcolor: '#e91e63', borderRadius: 1 }} />
+                {/* <AttachMoneyIcon sx={{ color: '#e91e63' }} /> */}
+                <Typography variant="h6" fontWeight={700}>Facturación RTS</Typography>
+            </Stack>
+            <Box sx={{ width: '100%', minHeight: 400 }}>
+                {rtsLoading ? <Stack alignItems="center" justifyContent="center" height={350}><CircularProgress /></Stack> : (
+                    <BarChart
+                        dataset={sliceData(rtsData)}
+                        xAxis={[{ dataKey: 'label', label: 'Mes de Entrega', scaleType: 'band' }]}
+                        series={[
+                            { dataKey: 'rate', label: 'RTS Tarifa', valueFormatter, color: '#8e24aa' }, 
+                            { dataKey: 'paid', label: 'RTS Pagado', valueFormatter, color: '#ff9800' }, 
+                        ]}
+                        {...chartSetting}
+                        borderRadius={4}
+                    />
+                )}
+            </Box>
+        </Paper>
+        
+        <Paper elevation={0} variant="outlined" sx={{ p: 4, borderRadius: 4, bgcolor: '#fff' }}>
+            <Stack direction="row" justifyContent="space-between" alignItems="center" mb={3} flexWrap="wrap" gap={2}>
+                <Stack direction="row" alignItems="center" spacing={1}>
+                    <Box sx={{ width: 4, height: 24, bgcolor: '#ff5722', borderRadius: 1 }} />
+                    {/* <LocalGasStationIcon sx={{ color: '#ff5722' }} /> */}
+                    <Box>
+                        <Typography variant="h6" fontWeight={700}>Costo de Diesel por Galón</Typography>
+                    </Box>
+                </Stack>
+                <ToggleButtonGroup
+                    value={costPeriod}
+                    exclusive
+                    onChange={handlePeriodChange}
+                    size="small"
+                    sx={{ '& .MuiToggleButton-root': { fontWeight: 600, textTransform: 'none', px: 2 } }}
+                >
+                    <ToggleButton value="day">Día</ToggleButton>
+                    <ToggleButton value="week">Semana</ToggleButton>
+                    <ToggleButton value="month">Mes</ToggleButton>
+                </ToggleButtonGroup>
             </Stack>
             
-            <ToggleButtonGroup
-                value={costPeriod}
-                exclusive
-                onChange={handlePeriodChange}
-                size="small"
-                sx={{ '& .MuiToggleButton-root': { fontWeight: 600, textTransform: 'none', px: 2 } }}
-            >
-                <ToggleButton value="day">Día</ToggleButton>
-                <ToggleButton value="week">Semana</ToggleButton>
-                <ToggleButton value="month">Mes</ToggleButton>
-            </ToggleButtonGroup>
-        </Stack>
-        
-        <Box sx={{ width: '100%', minHeight: 400 }}>
-            {costLoading ? (
-                <Stack alignItems="center" justifyContent="center" height={350}>
-                    <CircularProgress color="warning" />
-                </Stack>
-            ) : costData.length === 0 ? (
-                <Stack alignItems="center" justifyContent="center" height={350}>
-                    <TimelineIcon sx={{ fontSize: 60, color: '#e0e0e0', mb: 2 }} />
-                    <Typography color="text.secondary">No hay datos de precio Fleet One</Typography>
-                </Stack>
-            ) : (
-                <ScatterChart
-                    series={[{
-                        label: 'Costo Promedio',
-                        data: costData.map(d => ({ x: d.x, y: d.y, id: d.id })),
-                        color: '#ff5722',
-                    }]}
-                    xAxis={[{ label: 'Volumen Total (Galones)', min: 0 }]}
-                    yAxis={[{ label: 'Precio por Galón ($)', min: 0 }]}
-                    {...chartSetting}
-                    tooltip={{ trigger: 'item' }}
-                />
-            )}
-        </Box>
-      </Paper>
+            <Box sx={{ width: '100%', minHeight: 400 }}>
+                {costLoading ? (
+                    <Stack alignItems="center" justifyContent="center" height={350}><CircularProgress color="warning" /></Stack>
+                ) : costData.length === 0 ? (
+                    <Stack alignItems="center" justifyContent="center" height={350}>
+                        <TimelineIcon sx={{ fontSize: 60, color: '#e0e0e0', mb: 2 }} />
+                        <Typography color="text.secondary">No hay datos</Typography>
+                    </Stack>
+                ) : (
+                    <LineChart
+                        dataset={costData}
+                        xAxis={[{ dataKey: 'id', label: 'Periodo', scaleType: 'point' }]}
+                        series={[{ 
+                                dataKey: 'y', 
+                                label: 'Precio Promedio ($/gal)', 
+                                color: '#ff5722',
+                                valueFormatter: (v) => `$${Number(v).toFixed(2)}`,
+                                showMark: true,
+                                curve: 'linear' 
+                        }]}
+                        yAxis={[{ label: 'Precio por Galón ($)', min: 0 }]}
+                        {...chartSetting}
+                    />
+                )}
+            </Box>
+        </Paper>
 
-      <Paper elevation={0} variant="outlined" sx={{ p: 4, borderRadius: 4, mb: 5, bgcolor: '#fff' }}>
-        <Stack direction="row" alignItems="center" spacing={1} mb={3}>
-            <Box sx={{ width: 4, height: 24, bgcolor: '#607d8b', borderRadius: 1 }} />
-            <BuildIcon sx={{ color: '#607d8b' }} />
-            <Typography variant="h6" fontWeight={700}>Gastos de Mantenimiento Acumulados</Typography>
-        </Stack>
-        
-        <Box sx={{ width: '100%', minHeight: 400 }}>
-            {maintLoading ? (
-                <Stack alignItems="center" justifyContent="center" height={350}>
-                    <CircularProgress color="inherit" />
-                </Stack>
-            ) : maintData.length === 0 ? (
-                <Stack alignItems="center" justifyContent="center" height={350}>
-                    <BuildIcon sx={{ fontSize: 60, color: '#e0e0e0', mb: 2 }} />
-                    <Typography color="text.secondary">No hay registros de mantenimiento</Typography>
-                </Stack>
-            ) : (
-                <BarChart
-                    dataset={maintData}
-                    xAxis={[{ dataKey: 'label', label: 'Mes', scaleType: 'band' }]}
-                    series={[
-                        { dataKey: 'total', label: 'Total Mantenimiento', valueFormatter, color: '#607d8b' }, 
-                    ]}
-                    {...chartSetting}
-                    borderRadius={4}
-                />
-            )}
-        </Box>
-      </Paper>
-
-      <Paper elevation={0} variant="outlined" sx={{ p: 4, borderRadius: 4, mb: 5, bgcolor: '#fff' }}>
-        <Stack direction="row" alignItems="center" spacing={1} mb={3}>
-            <Box sx={{ width: 4, height: 24, bgcolor: '#9c27b0', borderRadius: 1 }} />
-            <Typography variant="h6" fontWeight={700}>Facturación vs Cobranza (Global)</Typography>
-        </Stack>
-        
-        <Box sx={{ width: '100%', minHeight: 400 }}>
-            {financesLoading ? (
-                <Stack alignItems="center" justifyContent="center" height={350}>
-                    <CircularProgress color="secondary" />
-                </Stack>
-            ) : (
-                <BarChart
-                    dataset={financesData}
-                    xAxis={[{ dataKey: 'label', label: 'Mes de Entrega', scaleType: 'band' }]}
-                    series={[
-                        { dataKey: 'rate', label: 'Total Tarifa (Rate)', valueFormatter, color: '#1976d2' }, 
-                        { dataKey: 'paid', label: 'Total Pagado', valueFormatter, color: '#ed6c02' }, 
-                    ]}
-                    {...chartSetting}
-                    borderRadius={4}
-                />
-            )}
-        </Box>
-      </Paper>
-
-      <Paper elevation={0} variant="outlined" sx={{ p: 4, borderRadius: 4, mb: 5, bgcolor: '#fff' }}>
-        <Stack direction="row" alignItems="center" spacing={1} mb={3}>
-            <Box sx={{ width: 4, height: 24, bgcolor: '#e91e63', borderRadius: 1 }} />
-            <Typography variant="h6" fontWeight={700}>Facturación RTS</Typography>
-        </Stack>
-        <Box sx={{ width: '100%', minHeight: 400 }}>
-            {rtsLoading ? <CircularProgress /> : (
-                <BarChart
-                    dataset={rtsData}
-                    xAxis={[{ dataKey: 'label', label: 'Mes de Entrega', scaleType: 'band' }]}
-                    series={[
-                        { dataKey: 'rate', label: 'RTS Tarifa', valueFormatter, color: '#8e24aa' }, 
-                        { dataKey: 'paid', label: 'RTS Pagado', valueFormatter, color: '#ff9800' }, 
-                    ]}
-                    {...chartSetting}
-                    borderRadius={4}
-                />
-            )}
-        </Box>
-      </Paper>
-
-      <Paper elevation={0} variant="outlined" sx={{ p: 4, borderRadius: 4, mb: 5, bgcolor: '#fff' }}>
-        <Stack direction="row" alignItems="center" spacing={1} mb={3}>
-            <Box sx={{ width: 4, height: 24, bgcolor: 'primary.main', borderRadius: 1 }} />
-            <Typography variant="h6" fontWeight={700}>Evolución de Costos de Diésel</Typography>
-        </Stack>
-        
-        <Box sx={{ width: '100%', minHeight: 400 }}>
-            {chartLoading ? <CircularProgress /> : (
-                <BarChart
-                    dataset={datasetDiesel}
-                    xAxis={xAxisDiesel}
-                    series={[
-                        { dataKey: 'monto', label: 'Monto ($)', valueFormatter, color: '#3C48E1' },
-                        { dataKey: 'fleetone', label: 'FleetOne ($)', valueFormatter, color: '#00C853' },
-                    ]}
-                    {...chartSetting}
-                    borderRadius={4}
-                />
-            )}
-        </Box>
-      </Paper>
-
-      <Paper elevation={0} variant="outlined" sx={{ borderRadius: 4, overflow: 'hidden' }}>
-        <Box sx={{ p: 3, bgcolor: '#fcfcfc', borderBottom: '1px solid #eee' }}>
-            <Stack direction="row" alignItems="center" spacing={1}>
-                <TableViewIcon color="action" />
-                <Typography variant="h6" fontWeight={700}>Detalle Volumetría (Diésel)</Typography>
+        <Paper elevation={0} variant="outlined" sx={{ p: 4, borderRadius: 4, bgcolor: '#fff' }}>
+            <Stack direction="row" alignItems="center" spacing={1} mb={3}>
+                <Box sx={{ width: 4, height: 24, bgcolor: 'primary.main', borderRadius: 1 }} />
+                {/* <TrendingUpIcon color="primary" /> */}
+                <Typography variant="h6" fontWeight={700}>Evolución de Costos de Diésel</Typography>
             </Stack>
-        </Box>
+            <Box sx={{ width: '100%', minHeight: 400 }}>
+                {chartLoading ? <Stack alignItems="center" justifyContent="center" height={350}><CircularProgress /></Stack> : (
+                    <BarChart
+                        dataset={datasetDiesel}
+                        xAxis={xAxisDiesel}
+                        series={[
+                            { dataKey: 'monto', label: 'Monto ($)', valueFormatter, color: '#3C48E1' },
+                            { dataKey: 'fleetone', label: 'FleetOne ($)', valueFormatter, color: '#00C853' },
+                        ]}
+                        {...chartSetting}
+                        borderRadius={4}
+                    />
+                )}
+            </Box>
+        </Paper>
+        
 
-        {tableLoading ? (
-            <Box p={5} display="flex" justifyContent="center"><CircularProgress /></Box>
-        ) : (
-            <TableContainer sx={{ maxHeight: 500 }}>
-                <Table stickyHeader>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell sx={{ fontWeight: 700, fontSize: '0.95rem', bgcolor: '#fff' }}>Mes</TableCell>
-                            <TableCell align="right" sx={{ fontWeight: 700, fontSize: '0.95rem', bgcolor: '#fff' }}>Consumo (Gal)</TableCell>
-                            <TableCell align="right" sx={{ fontWeight: 700, fontSize: '0.95rem', bgcolor: '#fff' }}>Costo Promedio ($/gal)</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {tableBase.map((r, idx) => (
-                            <TableRow key={`${r.label}-${idx}`} hover>
-                                <TableCell sx={{ fontWeight: 500, color: 'text.secondary' }}>{r.label}</TableCell>
-                                <TableCell align="right" sx={{ fontWeight: 600 }}>{valueFormatter(r.galones)}</TableCell>
-                                <TableCell align="right" sx={{ color: 'text.primary', fontSize: '0.9rem', fontWeight: 700 }}>
-                                    {money(r.avg_cost)}
-                                </TableCell>
+        {/* --- SECCIÓN 4: TABLA --- */}
+        <Paper elevation={0} variant="outlined" sx={{ borderRadius: 4, overflow: 'hidden' }}>
+            <Box sx={{ p: 3, bgcolor: '#fcfcfc', borderBottom: '1px solid #eee' }}>
+                <Stack direction="row" alignItems="center" spacing={1}>
+                    <TableViewIcon color="action" />
+                    <Typography variant="h6" fontWeight={700}>Detalle Volumetría (Diésel)</Typography>
+                </Stack>
+            </Box>
+            {tableLoading ? (
+                <Box p={5} display="flex" justifyContent="center"><CircularProgress /></Box>
+            ) : (
+                <TableContainer sx={{ maxHeight: 500 }}>
+                    <Table stickyHeader>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell sx={{ fontWeight: 700, fontSize: '0.95rem', bgcolor: '#fff' }}>Mes</TableCell>
+                                <TableCell align="right" sx={{ fontWeight: 700, fontSize: '0.95rem', bgcolor: '#fff' }}>Consumo (Gal)</TableCell>
+                                <TableCell align="right" sx={{ fontWeight: 700, fontSize: '0.95rem', bgcolor: '#fff' }}>Costo Promedio ($/gal)</TableCell>
                             </TableRow>
-                        ))}
-                        {tableBase.length > 0 && (
-                            <TableRow sx={{ bgcolor: '#f5f5f5' }}>
-                                <TableCell sx={{ fontWeight: 800 }}>TOTAL GLOBAL</TableCell>
-                                <TableCell align="right" sx={{ fontWeight: 800, color: 'primary.main', fontSize: '1.1rem' }}>
-                                    {valueFormatter(totalGalones)}
-                                </TableCell>
-                                <TableCell align="right" sx={{ fontWeight: 800 }}>
-                                    ~ {money(globalAvgCost)}
-                                </TableCell>
-                            </TableRow>
-                        )}
-                    </TableBody>
-                </Table>
-            </TableContainer>
-        )}
-      </Paper>
+                        </TableHead>
+                        <TableBody>
+                            {tableBase.map((r, idx) => (
+                                <TableRow key={`${r.label}-${idx}`} hover>
+                                    <TableCell sx={{ fontWeight: 500, color: 'text.secondary' }}>{r.label}</TableCell>
+                                    <TableCell align="right" sx={{ fontWeight: 600 }}>{valueFormatter(r.galones)}</TableCell>
+                                    <TableCell align="right" sx={{ color: 'text.primary', fontSize: '0.9rem', fontWeight: 700 }}>
+                                        {money(r.avg_cost)}
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                            {tableBase.length > 0 && (
+                                <TableRow sx={{ bgcolor: '#f5f5f5' }}>
+                                    <TableCell sx={{ fontWeight: 800 }}>TOTAL GLOBAL</TableCell>
+                                    <TableCell align="right" sx={{ fontWeight: 800, color: 'primary.main', fontSize: '1.1rem' }}>
+                                        {valueFormatter(totalGalones)}
+                                    </TableCell>
+                                    <TableCell align="right" sx={{ fontWeight: 800 }}>
+                                        ~ {money(globalAvgCost)}
+                                    </TableCell>
+                                </TableRow>
+                            )}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+            )}
+        </Paper>
 
+      </Stack>
     </Container>
   );
 }

@@ -2,7 +2,8 @@ import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
   TablePagination, TextField, Box, Typography, CircularProgress, Button, Badge, 
-  Tooltip, Stack, MenuItem, Tabs, Tab, Grid, Divider
+  Tooltip, Stack, MenuItem, Tabs, Tab, Grid, Divider,
+  Autocomplete
 } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 import FilterListIcon from '@mui/icons-material/FilterList';
@@ -10,6 +11,7 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import SearchIcon from '@mui/icons-material/Search';
 import ReceiptIcon from '@mui/icons-material/Receipt'; 
+import BusinessIcon from '@mui/icons-material/Business';
 import Swal from 'sweetalert2';
 
 import { TripFinanceRow } from '../components/TripFinanceRow';
@@ -28,6 +30,8 @@ const Finanzas = () => {
   const [search, setSearch] = useState('');
   const [invoiceSearch, setInvoiceSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('All'); 
+  const [companySearch, setCompanySearch] = useState('');
+  const [companiesList, setCompaniesList] = useState([]);
   
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -36,6 +40,20 @@ const Finanzas = () => {
 
   const [tabValue, setTabValue] = useState(0);
 
+  const fetchCompanies = useCallback(async () => {
+    try {
+        const fd = new FormData();
+        fd.append('op', 'get_all_companies');
+        const res = await fetch(`${apiHost}/formularios.php`, { method: 'POST', body: fd });
+        const json = await res.json();
+        if (json.status === 'success') {
+            setCompaniesList(json.data);
+        }
+    } catch (e) {
+        console.error("Error fetching companies", e);
+    }
+  }, []);
+
   const fetchFinanzas = useCallback(async () => {
     setLoading(true);
     try {
@@ -43,6 +61,7 @@ const Finanzas = () => {
       fd.append('op', 'All_finanzas');
       const res = await fetch(`${apiHost}/formularios.php`, { method: 'POST', body: fd });
       const json = await res.json();
+      console.log(json)
 
       if (json.status === 'success' && Array.isArray(json.data)) {
         const norm = json.data.map(t => {
@@ -60,6 +79,9 @@ const Finanzas = () => {
               status: s.status != null ? Number(s.status) : 0, 
               invoice_number: s.invoice_number ?? '',
               moneda: s.moneda ?? 'USD', 
+              company_name: s.company_name ?? '',
+              fecha_inicio_cobro: s.fecha_inicio_cobro, 
+              fecha_pago_final: s.fecha_pago_final,
               _dirty: false, 
             })) : [];
 
@@ -87,7 +109,10 @@ const Finanzas = () => {
     }
   }, []);
 
-  useEffect(() => { fetchFinanzas(); }, [fetchFinanzas]);
+  useEffect(() => { 
+    fetchFinanzas(); 
+    fetchCompanies();
+  }, [fetchFinanzas, fetchCompanies]);
 
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
@@ -118,6 +143,15 @@ const Finanzas = () => {
         );
     }
 
+    if (companySearch && companySearch.trim()) {
+        const qComp = companySearch.trim().toLowerCase();
+        result = result.filter(t => 
+            Array.isArray(t.stages) && t.stages.some(s => 
+                String(s.company_name || '').toLowerCase().includes(qComp)
+            )
+        );
+    }
+
     if (statusFilter !== 'All') {
       result = result.filter(t => t.status_trip === Number(statusFilter));
     }
@@ -130,7 +164,7 @@ const Finanzas = () => {
     });
 
     return result;
-  }, [trips, search, invoiceSearch, statusFilter, tabValue]);
+  }, [trips, search, invoiceSearch, companySearch,statusFilter, tabValue]);
 
   const pageTrips = filteredAndSorted.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
   const dirtyCount = useMemo(() => collectDirtyStages(trips).length, [trips]);
@@ -240,7 +274,7 @@ const Finanzas = () => {
       <Paper elevation={0} sx={{ p: 2, mb: 3, bgcolor: '#f5f5f5', borderRadius: 2, border: '1px solid #e0e0e0' }}>
         <Grid container spacing={2} alignItems="center">
             
-            <Grid item xs={12} md={3}>
+            <Grid item xs={12} md={2}>
                 <TextField 
                     fullWidth
                     size="small" 
@@ -267,6 +301,37 @@ const Finanzas = () => {
                         startAdornment: <ReceiptIcon fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />,
                         sx: { bgcolor: 'white' }
                     }}
+                />
+            </Grid>
+
+            <Grid item xs={12} md={4}>
+                <Autocomplete
+                    fullWidth
+                    options={companiesList}
+                    getOptionLabel={(option) => option.nombre_compania || ''}
+                    onChange={(event, newValue) => {
+                        setCompanySearch(newValue ? newValue.nombre_compania : '');
+                        setPage(0);
+                    }}
+                    renderInput={(params) => (
+                        <TextField 
+                            {...params} 
+                            label="Buscar Compañía" 
+                            placeholder="Seleccionar..." 
+                            size="small"
+                            sx={{ bgcolor: 'white' }}
+                            InputProps={{
+                                ...params.InputProps,
+                                startAdornment: (
+                                    <>
+                                        <BusinessIcon fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />
+                                        {params.InputProps.startAdornment}
+                                    </>
+                                )
+                            }}
+                        />
+                    )}
+                    noOptionsText="No se encontraron compañías"
                 />
             </Grid>
 

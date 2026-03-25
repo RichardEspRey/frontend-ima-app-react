@@ -5,37 +5,37 @@ import {
   Stack, LinearProgress, Dialog, DialogTitle, DialogContent, 
   DialogActions, TextField, InputAdornment, Chip, IconButton, Tooltip
 } from "@mui/material";
+
 import RefreshIcon from '@mui/icons-material/Refresh';
 import BuildCircleIcon from '@mui/icons-material/BuildCircle';
 import HistoryIcon from '@mui/icons-material/History';
-import SettingsIcon from '@mui/icons-material/Settings'; // Icono de engranaje
+import SettingsIcon from '@mui/icons-material/Settings'; 
+import EditIcon from '@mui/icons-material/Edit'; 
+
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom"; 
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
-// Helper para formato de números
 const numberFmt = (n) => new Intl.NumberFormat('en-US').format(Number(n).toFixed(0));
 
 export default function Afinaciones() {
   const navigate = useNavigate(); 
 
-  // --- States ---
   const [trucksStatus, setTrucksStatus] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   
-  // Modal Reinicio
   const [openModal, setOpenModal] = useState(false);
   const [selectedTruck, setSelectedTruck] = useState(null);
   const [oilPercentage, setOilPercentage] = useState('');
   
-  // Modal Ajuste Manual (Nuevo)
   const [openManualModal, setOpenManualModal] = useState(false);
   const [manualMiles, setManualMiles] = useState('');
 
-  const [saving, setSaving] = useState(false);
+  const [openLimitModal, setOpenLimitModal] = useState(false);
+  const [newLimit, setNewLimit] = useState('');
 
-  // --- Fetch Data ---
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
@@ -49,7 +49,6 @@ export default function Afinaciones() {
       }
     } catch (err) {
       console.error("Error fetching afinaciones:", err);
-      Swal.fire('Error', 'Error de conexión', 'error');
     } finally {
       setLoading(false);
     }
@@ -57,7 +56,6 @@ export default function Afinaciones() {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  // --- Handlers Reinicio ---
   const handleOpenReset = (truck) => {
     setSelectedTruck(truck);
     setOilPercentage(''); 
@@ -94,10 +92,8 @@ export default function Afinaciones() {
     }
   };
 
-  // --- Handlers Ajuste Manual (Nuevos) ---
   const handleOpenManual = (truck) => {
       setSelectedTruck(truck);
-      // Pre-llenar con el valor actual para que sea fácil editar
       setManualMiles(Math.round(truck.millas_acumuladas));
       setOpenManualModal(true);
   };
@@ -131,7 +127,41 @@ export default function Afinaciones() {
       }
   };
 
-  // --- Render Helpers ---
+  const handleOpenLimit = (truck) => {
+    setSelectedTruck(truck);
+    setNewLimit(truck.limite_afinacion || 15000); 
+    setOpenLimitModal(true);
+  };
+
+  const handleConfirmLimitUpdate = async () => {
+    if (!newLimit || isNaN(newLimit) || newLimit <= 0) {
+        return Swal.fire('Error', 'Ingresa un límite válido mayor a 0', 'warning');
+    }
+
+    setSaving(true);
+    try {
+        const fd = new FormData();
+        fd.append('op', 'update_limit');
+        fd.append('truck_id', selectedTruck.truck_id);
+        fd.append('nuevo_limite', newLimit);
+
+        const res = await fetch(`${apiHost}/afinaciones.php`, { method: 'POST', body: fd });
+        const json = await res.json();
+
+        if (json.status === 'success') {
+            Swal.fire('Actualizado', 'Nuevo límite establecido.', 'success');
+            setOpenLimitModal(false);
+            fetchData();
+        } else {
+            Swal.fire('Error', json.message, 'error');
+        }
+    } catch (e) {
+        Swal.fire('Error', e.message, 'error');
+    } finally {
+        setSaving(false);
+    }
+  };
+
   const getProgressColor = (value) => {
       if (value >= 100) return 'error';
       if (value >= 80) return 'warning';
@@ -150,7 +180,9 @@ export default function Afinaciones() {
             <BuildCircleIcon fontSize="large" color="primary" />
             <Box>
                 <Typography variant="h4" fontWeight={800}>Control de Afinaciones</Typography>
-                <Typography variant="body2" color="text.secondary">Monitoreo de cambio de aceite (Límite 15,000 mi)</Typography>
+                <Typography variant="body2" color="text.secondary">
+                    Monitoreo de cambio de aceite y mantenimiento preventivo
+                </Typography>
             </Box>
         </Stack>
         
@@ -163,7 +195,6 @@ export default function Afinaciones() {
         </Button>
       </Stack>
 
-      {/* TABLA DE MONITOREO */}
       <Paper elevation={3} sx={{ borderRadius: 3, overflow: 'hidden', mb: 5 }}>
         <Box sx={{ p: 2, bgcolor: '#e3f2fd', borderBottom: '1px solid #bbdefb' }}>
             <Typography variant="h6" fontWeight={700} color="primary.main">
@@ -175,27 +206,39 @@ export default function Afinaciones() {
                 <TableHead sx={{ bgcolor: '#f5f5f5' }}>
                     <TableRow>
                         <TableCell sx={{ fontWeight: 700 }}>Camión</TableCell>
-                        <TableCell sx={{ fontWeight: 700, width: '50%' }}>Millas Acumuladas (Prácticas)</TableCell>
+                        <TableCell sx={{ fontWeight: 700, width: '45%' }}>Estado (Millas vs Límite)</TableCell>
                         <TableCell align="center" sx={{ fontWeight: 700 }}>Reiniciar</TableCell>
-                        <TableCell align="center" sx={{ fontWeight: 700 }}>Ajustar</TableCell>
+                        <TableCell align="center" sx={{ fontWeight: 700 }}>Ajustes</TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
                     {trucksStatus.map((truck) => {
                         const millas = Number(truck.millas_acumuladas);
-                        const progress = Math.min((millas / 15000) * 100, 100);
-                        const isCritical = millas >= 15000;
+                        const limite = Number(truck.limite_afinacion) || 15000;
+                        
+                        const progress = Math.min((millas / limite) * 100, 100);
+                        const isCritical = millas >= limite;
 
                         return (
                             <TableRow key={truck.truck_id} hover>
                                 <TableCell>
                                     <Typography fontWeight={700} variant="h6">{truck.unidad}</Typography>
                                 </TableCell>
+                                
                                 <TableCell>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                                        <Typography variant="body1" fontWeight={600} sx={{ minWidth: 100 }}>
-                                            {numberFmt(millas)} mi
+                                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
+                                        <Typography variant="body1" fontWeight={600}>
+                                            {numberFmt(millas)} / {numberFmt(limite)} mi
                                         </Typography>
+                                        
+                                        <Tooltip title="Cambiar límite de afinación">
+                                            <IconButton size="small" onClick={() => handleOpenLimit(truck)} sx={{ ml: 1, p: 0.5 }}>
+                                                <EditIcon fontSize="small" color="action" />
+                                            </IconButton>
+                                        </Tooltip>
+                                    </Box>
+                                    
+                                    <Box sx={{ width: '100%', mr: 1, display: 'flex', alignItems: 'center' }}>
                                         <Box sx={{ width: '100%', mr: 1 }}>
                                             <LinearProgress 
                                                 variant="determinate" 
@@ -204,14 +247,16 @@ export default function Afinaciones() {
                                                 sx={{ height: 10, borderRadius: 5 }}
                                             />
                                         </Box>
-                                        <Typography variant="body2" color="text.secondary">
+                                        <Typography variant="caption" color="text.secondary" sx={{ minWidth: 35 }}>
                                             {progress.toFixed(0)}%
                                         </Typography>
                                     </Box>
+
                                     {isCritical && (
-                                        <Chip label="¡Requiere Afinación!" color="error" size="small" sx={{ fontWeight: 'bold' }} />
+                                        <Chip label="¡Requiere Mantenimiento!" color="error" size="small" sx={{ fontWeight: 'bold', mt: 0.5 }} />
                                     )}
                                 </TableCell>
+                                
                                 <TableCell align="center">
                                     <Button 
                                         variant="contained" 
@@ -219,11 +264,12 @@ export default function Afinaciones() {
                                         startIcon={<RefreshIcon />}
                                         onClick={() => handleOpenReset(truck)}
                                         sx={{ textTransform: 'none', borderRadius: 2 }}
+                                        size="small"
                                     >
                                         Reiniciar
                                     </Button>
                                 </TableCell>
-                                {/* Nueva columna de Ajuste */}
+                                
                                 <TableCell align="center">
                                     <Tooltip title="Ajuste Manual de Millas">
                                         <IconButton onClick={() => handleOpenManual(truck)} color="default">
@@ -242,7 +288,6 @@ export default function Afinaciones() {
         </TableContainer>
       </Paper>
 
-      {/* MODAL 1: REINICIO (RESET) */}
       <Dialog open={openModal} onClose={() => !saving && setOpenModal(false)} maxWidth="xs" fullWidth>
         <DialogTitle sx={{ fontWeight: 700 }}>
             Reiniciar Contador - {selectedTruck?.unidad}
@@ -282,7 +327,6 @@ export default function Afinaciones() {
         </DialogActions>
       </Dialog>
 
-      {/* MODAL 2: AJUSTE MANUAL (OFFSET) */}
       <Dialog open={openManualModal} onClose={() => !saving && setOpenManualModal(false)} maxWidth="xs" fullWidth>
         <DialogTitle sx={{ fontWeight: 700 }}>
             Ajuste Manual - {selectedTruck?.unidad}
@@ -317,6 +361,44 @@ export default function Afinaciones() {
                 startIcon={saving ? <CircularProgress size={20} color="inherit"/> : <SettingsIcon />}
             >
                 {saving ? 'Guardando...' : 'Aplicar Ajuste'}
+            </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={openLimitModal} onClose={() => !saving && setOpenLimitModal(false)} maxWidth="xs" fullWidth>
+        <DialogTitle sx={{ fontWeight: 700 }}>
+            Configurar Límite - {selectedTruck?.unidad}
+        </DialogTitle>
+        <DialogContent>
+            <Typography variant="body2" color="text.secondary" paragraph sx={{ mt: 1 }}>
+                Define cada cuántas millas este camión requiere mantenimiento preventivo.
+            </Typography>
+            
+            <TextField
+                autoFocus
+                label="Límite de Afinación (millas)"
+                type="number"
+                fullWidth
+                variant="outlined"
+                value={newLimit}
+                onChange={(e) => setNewLimit(e.target.value)}
+                InputProps={{
+                    endAdornment: <InputAdornment position="end">mi</InputAdornment>,
+                }}
+                disabled={saving}
+                sx={{ mt: 2 }}
+            />
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+            <Button onClick={() => setOpenLimitModal(false)} disabled={saving} color="inherit">Cancelar</Button>
+            <Button 
+                onClick={handleConfirmLimitUpdate} 
+                variant="contained" 
+                color="info" 
+                disabled={saving}
+                startIcon={saving ? <CircularProgress size={20} color="inherit"/> : <EditIcon />}
+            >
+                {saving ? 'Guardando...' : 'Guardar Límite'}
             </Button>
         </DialogActions>
       </Dialog>

@@ -97,19 +97,35 @@ const PaymentDrivers = () => {
       const res = await fetch(`${apiHost}/formularios.php`, { method: "POST", body: fd });
       const json = await res.json();
 
+      console.log(json)
+
       if (json.status === "success" && Array.isArray(json.data)) {
-        const norm = json.data.map((t) => ({
+        const rawData = json.data.map((t) => ({
           trip_id: Number(t.trip_id),
           trip_number: t.trip_number,
+          driver_id: Number(t.driver_id),
           nombre: t.nombre,
           stages_count: Number(t.stages_count ?? 0),
           total_tarifa: Number(t.total_tarifa ?? 0),
           total_millas_cortas: Number(t.total_millas_cortas ?? 0),
           status_payment: t.status_payment,
           Pago_driver: t.Pago_driver ? Number(t.Pago_driver) : 0,
-          status_trip: t.status
+          status_trip: t.status_txt
         }));
-        setTrips(norm);
+        
+        const uniqueTripsMap = new Map();
+        
+        rawData.forEach(item => {
+            const uniqueKey = `${item.trip_id}-${item.driver_id}`;
+            if (!uniqueTripsMap.has(uniqueKey)) {
+                uniqueTripsMap.set(uniqueKey, item);
+            }
+        });
+
+        const uniqueNorm = Array.from(uniqueTripsMap.values());
+
+        setTrips(uniqueNorm);
+
       } else {
         setTrips([]);
       }
@@ -276,10 +292,12 @@ const PaymentDrivers = () => {
                 const isAutorizado = String(t.status_payment) === "2";
                 // const isPagado = String(t.status_payment) === "1";
 
+                const uniqueKey = `${t.trip_id}-${t.driver_id}`;
+
                 return (
-                  <TableRow key={t.trip_id} hover>
+                  <TableRow key={uniqueKey} hover>
                     <TableCell>
-                        <Typography fontWeight={700} color="primary" variant="body2">#{t.trip_number}</Typography>
+                        <Typography fontWeight={700} color="primary" variant="body2">{t.trip_number}</Typography>
                     </TableCell>
                     <TableCell>
                         <Stack direction="row" alignItems="center" spacing={1}>
@@ -313,7 +331,7 @@ const PaymentDrivers = () => {
                               <IconButton
                                   size="small"
                                   color="primary"
-                                  onClick={() => navigate(`/ticketPayment/${t.trip_id}`)}
+                                  onClick={() => navigate(`/ticketPayment/${t.trip_id}`, { state: { driver_id: t.driver_id } })}
                                   sx={{ border: '1px solid #e0e0e0' }}
                               >
                                   <VisibilityIcon fontSize="small" />

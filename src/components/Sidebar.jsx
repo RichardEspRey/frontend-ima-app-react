@@ -11,7 +11,8 @@ import iconUpdate from '../assets/images/icons/update.png'
 import { UpdateContext } from '../App';
 import { 
     MdDashboard, MdCarRental, MdLocalShipping, MdDirectionsBus, MdLocalGasStation, 
-    MdAttachMoney, MdExitToApp, MdList, MdAssignment, MdTrendingUp, MdBarChart 
+    MdAttachMoney, MdExitToApp, MdList, MdAssignment, MdTrendingUp, MdBarChart, 
+    MdSecurity
 } from 'react-icons/md'; 
 import { GrMapLocation } from "react-icons/gr";
 
@@ -27,6 +28,7 @@ const iconMap = {
     'Viajes': MdLocalShipping,
     'Finanzas': MdAttachMoney,
     'Reports': MdBarChart,
+    'Safety': MdSecurity,
     'Mapa': GrMapLocation,
     'Gestor de Acceso': MdList,
     'Estatus de Unidades': MdTrendingUp,
@@ -104,17 +106,24 @@ const Sidebar = () => {
 
   const filterMenuByAccess = useCallback((items) => {
       return items.reduce((acc, item) => {
+          if (item.hideInSidebar) return acc;
+
           if (Array.isArray(item.subItems) && item.subItems.length > 0) {
               const visibleSubs = item.subItems.filter((subItem) => {
+                  if (subItem.hideInSidebar) return false;
+
                   const dynamicSubPermission = userPermissions[subItem.name]; 
                   if (dynamicSubPermission !== undefined) return dynamicSubPermission;
-                  return false
+                  
+                  return roleAllowed(subItem.rolesPermitidos);
               });
+
               if (visibleSubs.length > 0) {
                 acc.push({ ...item, subItems: visibleSubs });
               }
             return acc;
           }
+
           const canSeeSection = isSectionAllowed(item);
           if (canSeeSection) acc.push(item);
           return acc;

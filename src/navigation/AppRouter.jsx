@@ -21,6 +21,7 @@ import TrailerScreen from '../screens/TrailerScreen.jsx';
 import TrailerAdmin from '../screens/TrailerAdmin.jsx';
 import TrailerEdit from '../screens/TrailerEdit.jsx';
 import EditTripForm from '../screens/EditTripForm.jsx';
+import EditTripUpcoming from '../screens//Dispatch/EditUpcoming.jsx';
 import ImaScreen from '../screens/ImaScreen.jsx';
 import ImaAdmin from '../screens/ImaAdmin.jsx';
 import DieselAdmin from '../screens/Trips/DieselAdmin.jsx';
@@ -52,6 +53,13 @@ import Autonomia from '../screens/Autonomia.jsx';
 import EstatusUnidades from '../screens/EstatusUnidades.jsx';
 import Afinaciones from '../screens/Afinaciones.jsx';
 import AfinacionesHistory from '../screens/AfinacionesHistory.jsx';
+import CrearViaje from '../screens/Dispatch/CrearViaje.jsx';
+import Safety from '../screens/Safety/Safety.jsx';
+import Ifta from '../screens/Safety/IFTA.jsx';
+import Nomina from '../screens/Nomina/Nomina.jsx';
+import PersonalAdmin from '../screens/Nomina/PersonalAdmin.jsx';
+import DetallePago from '../screens/Nomina/DetallePago.jsx';
+
 
 const AppRouter = () => {
   const { user, loading } = useContext(AuthContext);
@@ -91,6 +99,7 @@ const AppRouter = () => {
               <Route path="/editor-gastos/:id/:trip_id" element={<GastosEditor />} />
               <Route path="/admin-gastos-generales" element={<AdminGastosGeneral />} />
               <Route path="/edit-trip/:tripId" element={<EditTripForm />} />
+              <Route path="/edit-trip-upcoming/:tripId" element={<EditTripUpcoming />} />
               <Route path="/edit-trailer/:trailerId" element={<TrailerEdit />} />
               <Route path="/ImaAdmin" element={<ImaAdmin />} />
               <Route path="/ImaScreen" element={<ImaScreen />} />
@@ -105,7 +114,9 @@ const AppRouter = () => {
               <Route path="/ResumenTrip/:tripId" element={<ResumenTrip />} />
               <Route path="/access-manager" element={<ProfileAccessManager />} />
               <Route path="/ResiduoTrip" element={<ResiduoTrip />} />  
-              <Route path="/reports" element={<Reports />} />  
+              <Route path="/reports" element={<Reports />} />
+              <Route path="/safety" element={<Safety />} />  
+              <Route path="/Ifta" element={<Ifta />} />  
               <Route path="/tracking" element={<Tracking />} />  
               <Route path="/margen" element={<MargenScreen />} />  
               <Route path="/paymentDrivers" element ={<PaymentDrivers />} />
@@ -115,6 +126,10 @@ const AppRouter = () => {
               <Route path="/afinaciones" element={<Afinaciones />} />
               <Route path="/registros-afinaciones" element={<AfinacionesHistory />} />
               <Route path="/estatus-unidades" element={<EstatusUnidades />} />
+              <Route path="/CrearViaje" element={<CrearViaje />} />
+              <Route path="/nomina" element={<Nomina />} />
+              <Route path="/personal" element={<PersonalAdmin />} />
+              <Route path="/detalle-pago/:period_id" element={<DetallePago />} />
               <Route path="*" element={<Navigate to="/home" replace />} /> 
             
             </Route>

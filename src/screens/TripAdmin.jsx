@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useContext } from 'react';
 import {
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
     Button, TablePagination, TextField, Box, Typography, CircularProgress, Alert,
@@ -6,8 +6,6 @@ import {
 } from '@mui/material';
 
 import FilterListIcon from '@mui/icons-material/FilterList';
-import LocalShippingIcon from '@mui/icons-material/LocalShipping';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -24,21 +22,49 @@ import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 
 import { TripRow } from '../components/TripRow';
+import { AuthContext } from '../auth/AuthContext';
 
-// Opciones para el nuevo filtro de dirección
 const DIRECTION_OPTIONS = [
     { value: 'All', label: 'Todas las Direcciones' },
     { value: 'Going Up', label: 'Going Up' },
     { value: 'Going Down', label: 'Going Down' }
 ];
 
+const TABS_CONFIG = [
+    { id: 0, label: "Up Coming", permission: "Ver Pestaña Upcoming" },
+    { id: 1, label: "Despacho", permission: "Ver Pestaña Despacho" },
+    { id: 2, label: "En Ruta", permission: "Ver Pestaña En Ruta" },
+    { id: 3, label: "Finalizados", permission: "Ver Pestaña Completados" }
+];
+
 const TripAdmin = () => {
+    const { userPermissions } = useContext(AuthContext);
     const [trips, setTrips] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // ** ESTADO PARA LAS PESTAÑAS (0: Activos, 1: Completados) **
-    const [tabValue, setTabValue] = useState(0);
+    const allowedTabs = useMemo(() => {
+        if (!userPermissions) return [];
+
+        return TABS_CONFIG.filter(tab => userPermissions[tab.permission] === true);
+    }, [userPermissions]);
+
+    // const [tabValue, setTabValue] = useState(1); 
+
+    const [tabValue, setTabValue] = useState(() => {
+        return 1;
+    });
+
+    useEffect(() => {
+        if (allowedTabs.length > 0) {
+            const isAllowed = allowedTabs.some(t => t.id === tabValue);
+
+            if (!isAllowed) {
+                const hasEnRuta = allowedTabs.find(t => t.id === 2);
+                setTabValue(hasEnRuta ? 2 : allowedTabs[0].id);
+            }
+        }
+    }, [allowedTabs, tabValue]);
 
     // ** ESTADOS PARA LOS FILTROS PRINCIPALES **
     const [filterTrip, setFilterTrip] = useState('');
@@ -67,7 +93,7 @@ const TripAdmin = () => {
         setLoading(true);
         setError(null);
         try {
-            const apiUrl = `${apiHost}/new_trips.php`;
+            const apiUrl = `${apiHost}/new_tripsv2.php`;
             const formData = new FormData();
             formData.append('op', 'getAll');
             const response = await fetch(apiUrl, { method: 'POST', body: formData });
@@ -127,7 +153,7 @@ const TripAdmin = () => {
 
     const handleTabChange = (event, newValue) => {
         setTabValue(newValue);
-        setPage(0); 
+        setPage(0);
     };
 
     // ** LÓGICA DE FILTRADO Y ORDENAMIENTO **
@@ -144,12 +170,17 @@ const TripAdmin = () => {
 
         const filtered = trips.filter(trip => {
 
-            const isCompleted = trip.status === 'Completed' || trip.status === 'Cancelled';
-            
-            if (tabValue === 0 && isCompleted) return false;
-            
-            if (tabValue === 1 && !isCompleted) return false;
+            const status = trip.status;
 
+            if (tabValue === 0) {
+                if (status !== 'Up Coming') return false;
+            } else if (tabValue === 1) {
+                if (status !== 'Up Coming') return false;
+            } else if (tabValue === 2) {
+                if (status !== 'In Transit' && status !== 'Almost Over') return false;
+            } else if (tabValue === 3) {
+                if (status !== 'Completed' && status !== 'Cancelled') return false;
+            }
 
             let tripCreationDate = null;
             if (trip.creation_date) { try { tripCreationDate = dayjs(trip.creation_date); if (!tripCreationDate.isValid()) { tripCreationDate = null; } } catch (e) { } }
@@ -165,6 +196,7 @@ const TripAdmin = () => {
             const matchTruck = !truckLower || ((trip.truck_unidad || '').trim().toLowerCase().includes(truckLower));
             const matchTrailer = !trailerLower || ((trip.caja_no_caja || '').trim().toLowerCase().includes(trailerLower) || (trip.caja_externa_no_caja || '').trim().toLowerCase().includes(trailerLower));
 
+            // --- FILTROS DE ETAPAS ---
             const etapas = trip.etapas || [];
             const matchCompany = !companyLower || etapas.some(e => (e.nombre_compania || '').trim().toLowerCase().includes(companyLower));
             const matchOrigin = !originLower || etapas.some(e => (e.origin || '').trim().toLowerCase().includes(originLower));
@@ -187,12 +219,12 @@ const TripAdmin = () => {
                 }
             }
 
-            return withinDateRange && matchTrip && matchDriver && matchTruck && matchTrailer && matchCompany && matchOrigin && matchDestination && matchDirection; 
+            return withinDateRange && matchTrip && matchDriver && matchTruck && matchTrailer && matchCompany && matchOrigin && matchDestination && matchDirection;
         });
 
         return filtered.sort((a, b) => {
             const statusOrder = (status) => {
-                if (status === 'In Coming') return 1;
+                if (status === 'Up Coming') return 1;
                 if (status === 'In Transit') return 2;
                 if (status === 'Almost Over') return 3;
                 if (status === 'Completed') return 4;
@@ -208,12 +240,13 @@ const TripAdmin = () => {
             const dateA = a.creation_date ? dayjs(a.creation_date) : dayjs('1900-01-01');
             const dateB = b.creation_date ? dayjs(b.creation_date) : dayjs('1900-01-01');
 
-            if (dateA.isValid() && dateB.isValid()) return dateB.diff(dateA); 
-            
+            // Orden descendente por fecha
+            if (dateA.isValid() && dateB.isValid()) return dateB.diff(dateA);
+
             return (a.trip_number || '').localeCompare(b.trip_number || '');
         });
     }, [
-        trips, tabValue, 
+        trips, tabValue,
         filterTrip, filterDriver, filterTruck, filterTrailer,
         filterCompany, filterOrigin, filterDestination, filterDirection,
         startDate, endDate
@@ -221,8 +254,16 @@ const TripAdmin = () => {
 
     const handleEditTrip = (tripId) => {
         if (!tripId) return;
-        navigate(`/edit-trip/${tripId}`);
+
+        if (tabValue === 0) {
+            // Up Coming → nuevo componente
+            navigate(`/edit-trip-upcoming/${tripId}`);
+        } else {
+            // Despacho, En Ruta y Finalizados → editor actual
+            navigate(`/edit-trip/${tripId}`);
+        }
     };
+
 
     const handleAlmostOverTrip = async (tripId, tripNumber) => {
         if (!tripId) return;
@@ -277,35 +318,137 @@ const TripAdmin = () => {
         navigate(`/ResumenTrip/${tripId}`);
     };
 
-    const handleReactivateTrip = async (tripId, tripNumber) => {
+    const handleReactivateTrip = async (tripId, tripNumber, isEnRuta = false) => {
         if (!tripId) return;
-        const confirmation = await Swal.fire({
-            title: '¿Reactivar viaje?',
-            text: `El viaje #${tripNumber} será reactivado y pasará a la lista de activos.`,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Sí, reactivar',
-            cancelButtonText: 'Cancelar'
-        });
 
-        if (!confirmation.isConfirmed) return;
+        let reactivationType = '';
+
+        if (isEnRuta) {
+            // Desde En Ruta: solo opción Operadores
+            const result = await Swal.fire({
+                title: 'Reactivar Viaje',
+                text: `El viaje #${tripNumber} será reactivado para Operadores.`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Operadores',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#d33',
+            });
+            if (!result.isConfirmed) return;
+            reactivationType = 'operadores';
+        } else {
+            // Desde Finalizados: ambas opciones
+            const result = await Swal.fire({
+                title: 'Reactivar Viaje',
+                text: `Selecciona el tipo de reactivación para el viaje #${tripNumber}`,
+                icon: 'question',
+                showDenyButton: true,
+                showCancelButton: true,
+                confirmButtonText: 'Administrativos',
+                denyButtonText: 'Operadores',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#3085d6',
+                denyButtonColor: '#d33',
+            });
+            if (result.isDismissed) return;
+            if (result.isConfirmed) reactivationType = 'admin';
+            else if (result.isDenied) reactivationType = 'operadores';
+        }
+
+        if (!reactivationType) return;
 
         try {
             const apiUrl = `${apiHost}/new_trips.php`;
             const formData = new FormData();
             formData.append('op', 'activate_trip');
             formData.append('trip_id', tripId);
+            formData.append('type', reactivationType);
+
+            const response = await fetch(apiUrl, { method: 'POST', body: formData });
+            const responseResult = await response.json();
+
+            if (response.ok && responseResult.status === 'success') {
+                Swal.fire(
+                    '¡Éxito!',
+                    `Viaje reactivado correctamente como ${reactivationType === 'admin' ? 'Administrativos' : 'Operadores'}.`,
+                    'success'
+                );
+                fetchTrips(); // Al recargar, el viaje tendrá status activo y cambiará de tab automáticamente
+            } else {
+                throw new Error(responseResult.error || responseResult.message);
+            }
+        } catch (err) {
+            Swal.fire('Error', err.message, 'error');
+        }
+    };
+
+    const handleSalida = async (tripId, tripNumber) => {
+        if (!tripId) return;
+
+        const confirm = await Swal.fire({
+            title: '¿Confirmar salida?',
+            text: `El viaje #${tripNumber} cambiará a "In Transit".`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, dar salida'
+        });
+
+        if (!confirm.isConfirmed) return;
+
+        try {
+            const apiUrl = `${apiHost}/new_tripsv2.php`;
+            const formData = new FormData();
+            formData.append('op', 'salida_trip');
+            formData.append('trip_id', tripId);
+
             const response = await fetch(apiUrl, { method: 'POST', body: formData });
             const result = await response.json();
 
             if (response.ok && result.status === 'success') {
-                Swal.fire('¡Éxito!', 'Viaje reactivado correctamente.', 'success');
-                fetchTrips(); // Al recargar, el viaje tendrá status activo y cambiará de tab automáticamente
+                Swal.fire('Salida registrada', result.message, 'success');
+                fetchTrips();
             } else {
-                throw new Error(result.error || result.message);
+                throw new Error(result.message || result.error);
             }
-        } catch (err) { Swal.fire('Error', err.message, 'error'); }
+        } catch (err) {
+            Swal.fire('Error', err.message, 'error');
+        }
     };
+
+    const handleDeleteTrip = async (tripId, tripNumber) => {
+        if (!tripId) return;
+
+        const confirm = await Swal.fire({
+            title: '¿Eliminar viaje?',
+            text: `El viaje #${tripNumber} será eliminado permanentemente.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, eliminar',
+            confirmButtonColor: '#d33'
+        });
+
+        if (!confirm.isConfirmed) return;
+
+        try {
+            const apiUrl = `${apiHost}/new_trips.php`;
+            const formData = new FormData();
+            formData.append('op', 'delete_trip');
+            formData.append('trip_id', tripId);
+
+            const response = await fetch(apiUrl, { method: 'POST', body: formData });
+            const result = await response.json();
+
+            if (response.ok && result.status === 'success') {
+                Swal.fire('Eliminado', result.message, 'success');
+                fetchTrips();
+            } else {
+                throw new Error(result.message || result.error);
+            }
+        } catch (err) {
+            Swal.fire('Error', err.message, 'error');
+        }
+    };
+
 
     if (loading) { return (<Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}> <CircularProgress /> <Typography ml={2}>Cargando...</Typography> </Box>); }
 
@@ -313,22 +456,78 @@ const TripAdmin = () => {
     const userType = localStorage.getItem('type');
     const isAdmin = userType === 'admin';
 
+    const getEmptyMessage = () => {
+        if (tabValue === 0) return 'Por Iniciar';
+        if (tabValue === 1) return 'Activos';
+        return 'Finalizados';
+    };
+
+    if (allowedTabs.length === 0) {
+        return (
+            <div className="trip-admin">
+                <Typography variant="h4" component="h1" fontWeight={700} gutterBottom sx={{ mb: 3 }}>
+                    Administrador de Viajes
+                </Typography>
+                <Alert severity="warning">
+                    No tienes permisos para visualizar ninguna categoría de viajes. Contacta a tu administrador.
+                </Alert>
+            </div>
+        );
+    }
+
+    const isUpcomingTab = tabValue === 0;
+    const isDespachoTab = tabValue === 1;
+    const showDocsColumn = isUpcomingTab || isDespachoTab;
+
+    //Obtener documentos faltantes desde la PRIMERA ETAPA
+    const getTripMissingDocs = (trip) => {
+        if (!Array.isArray(trip.etapas) || trip.etapas.length === 0) {
+            return { total: 0, list: [] };
+        }
+
+        const firstStage = trip.etapas[0];
+
+        return {
+            total: firstStage.documentos_faltantes ?? 0,
+            list: firstStage.documentos_faltantes_lista ?? []
+        };
+    };
+
+
+
     return (
         <div className="trip-admin">
-            <Typography variant="h4" component="h1" fontWeight={700} gutterBottom sx={{ mb: 2 }}>
+            <Typography variant="h4" component="h1" fontWeight={700} gutterBottom sx={{ mb: 3 }}>
                 Administrador de Viajes
             </Typography>
 
-            <Paper elevation={1} sx={{ mb: 2 }}>
-                <Tabs 
-                    value={tabValue} 
-                    onChange={handleTabChange} 
-                    variant="fullWidth" 
-                    indicatorColor="primary" 
+            <Paper
+                elevation={0}
+                sx={{
+                    mb: 3,
+                    bgcolor: 'transparent',
+                    borderBottom: '1px solid #e0e0e0'
+                }}
+            >
+                <Tabs
+                    value={tabValue}
+                    onChange={handleTabChange}
                     textColor="primary"
+                    indicatorColor="primary"
+                    sx={{
+                        minHeight: '40px',
+                        '& .MuiTab-root': {
+                            minHeight: '40px',
+                            textTransform: 'none',
+                            fontWeight: 600,
+                            fontSize: '0.95rem',
+                            px: 3
+                        }
+                    }}
                 >
-                    <Tab icon={<LocalShippingIcon />} label="Viajes Activos" iconPosition="start" />
-                    <Tab icon={<CheckCircleIcon />} label="Viajes Completados" iconPosition="start" />
+                    {allowedTabs.map(tab => (
+                        <Tab key={tab.id} label={tab.label} value={tab.id} />
+                    ))}
                 </Tabs>
             </Paper>
 
@@ -337,15 +536,16 @@ const TripAdmin = () => {
                     variant="outlined"
                     startIcon={<FilterListIcon />}
                     onClick={() => setShowFilters(p => !p)}
-                    sx={{ mb: 1 }}
+                    size="small"
+                    sx={{ textTransform: 'none' }}
                 >
                     {showFilters ? 'Ocultar Filtros' : 'Mostrar Filtros'}
                 </Button>
             </Box>
 
             <Collapse in={showFilters} timeout="auto" unmountOnExit>
-                <Paper sx={{ p: 2, mb: 3 }}>
-                    <Typography variant="h6" gutterBottom>Filtros de Búsqueda</Typography>
+                <Paper sx={{ p: 2, mb: 3, bgcolor: '#f9f9f9' }} variant="outlined">
+                    <Typography variant="subtitle2" gutterBottom color="text.secondary" fontWeight={600}>Filtros Avanzados</Typography>
                     <Grid container spacing={2} alignItems="center">
                         <Grid item xs={12} sm={3}>
                             <TextField label="Trip Number" size="small" fullWidth value={filterTrip} onChange={(e) => handleFilterChange(setFilterTrip, e.target.value)} placeholder="Ej: 101" />
@@ -380,12 +580,12 @@ const TripAdmin = () => {
                             <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems="center">
                                 <DatePicker selected={startDate} onChange={(date) => handleFilterChange(setStartDate, date)} selectsStart startDate={startDate} endDate={endDate} placeholderText="Fecha inicio" dateFormat="dd/MM/yyyy" className="form-input-datepicker" isClearable />
                                 <DatePicker selected={endDate} onChange={(date) => handleFilterChange(setEndDate, date)} selectsEnd startDate={startDate} endDate={endDate} minDate={startDate} placeholderText="Fecha fin" dateFormat="dd/MM/yyyy" className="form-input-datepicker" isClearable />
-                                <Button variant="outlined" onClick={() => { 
+                                <Button variant="text" onClick={() => {
                                     setFilterTrip(''); setFilterDriver(''); setFilterTruck(''); setFilterTrailer('');
                                     setFilterCompany(''); setFilterOrigin(''); setFilterDestination(''); setFilterDirection('All');
                                     setStartDate(null); setEndDate(null); setPage(0);
-                                }} size="small">Limpiar Todo</Button>
-                                <Button variant="contained" onClick={fetchTrips} disabled={loading} size="small">Refrescar</Button>
+                                }} size="small">Limpiar</Button>
+                                <Button variant="contained" onClick={fetchTrips} disabled={loading} size="small">Refrescar Tabla</Button>
                             </Stack>
                         </Grid>
                     </Grid>
@@ -394,7 +594,7 @@ const TripAdmin = () => {
 
             {error && <Alert severity="error" sx={{ my: 2 }}>Error al cargar: {error}</Alert>}
 
-            <TableContainer component={Paper} sx={{ marginTop: 2 }}>
+            <TableContainer component={Paper} sx={{ marginTop: 2 }} variant="outlined">
                 <Table stickyHeader size="small">
                     <TableHead>
                         <TableRow>
@@ -403,44 +603,78 @@ const TripAdmin = () => {
                             <TableCell sx={{ fontWeight: 'bold' }}>Driver(s)</TableCell>
                             <TableCell sx={{ fontWeight: 'bold' }}>Truck</TableCell>
                             <TableCell sx={{ fontWeight: 'bold' }}>Trailer</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold' }}>Initial Date</TableCell>
+
+                            {!showDocsColumn && (
+                                <TableCell sx={{ fontWeight: 'bold' }}>Initial Date</TableCell>
+                            )}
+
                             <TableCell sx={{ fontWeight: 'bold' }}>Status</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold' }}>Return Date</TableCell>
+
+                            {!showDocsColumn && (
+                                <TableCell sx={{ fontWeight: 'bold' }}>Return Date</TableCell>
+                            )}
+
+                            {showDocsColumn && (
+                                <TableCell sx={{ fontWeight: 'bold' }}>Documentos Faltantes</TableCell>
+                            )}
+
                             <TableCell sx={{ fontWeight: 'bold' }}>Actions</TableCell>
-                            
-                            {tabValue === 1 && (
+
+                            {tabValue === 3 && (
                                 <TableCell sx={{ fontWeight: 'bold' }}>Resumen</TableCell>
                             )}
 
-                            {isAdmin && tabValue === 1 && ( 
+                            {isAdmin && (tabValue === 3 || tabValue === 2) && (
                                 <TableCell sx={{ fontWeight: 'bold' }}>Admin</TableCell>
                             )}
                         </TableRow>
                     </TableHead>
+
                     <TableBody>
                         {filteredAndSortedTrips.length === 0 ? (
                             <TableRow>
                                 <TableCell colSpan={11} align="center">
-                                    No hay viajes en la pestaña de <b>{tabValue === 0 ? 'Activos' : 'Completados'}</b> con los filtros actuales.
+                                    <Typography variant="body2" color="text.secondary" sx={{ py: 3 }}>
+                                        No hay viajes en la sección <b>{getEmptyMessage()}</b>.
+                                    </Typography>
                                 </TableCell>
                             </TableRow>
                         ) : (
                             filteredAndSortedTrips
                                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                                .map((trip) => (
-                                    <TripRow
-                                        key={trip.trip_id}
-                                        trip={trip}
-                                        isCompletedTab={tabValue === 1} // Propiedad clave
-                                        onEdit={handleEditTrip}
-                                        onFinalize={handleFinalizeTrip}
-                                        onAlmostOver={handleAlmostOverTrip}
-                                        onReactivate={handleReactivateTrip}
-                                        isAdmin={isAdmin}
-                                        getDocumentUrl={getDocumentUrl}
-                                        onSummary={handleSummary}
-                                    />
-                                ))
+                                .map((trip) => {
+                                    const { total, list } = getTripMissingDocs(trip);
+
+                                    return (
+                                        <TripRow
+                                            key={trip.trip_id}
+                                            trip={trip}
+                                            isCompletedTab={tabValue === 3}
+                                            onEdit={handleEditTrip}
+                                            onFinalize={handleFinalizeTrip}
+                                            onAlmostOver={handleAlmostOverTrip}
+                                            onReactivate={(tripId, tripNumber) => handleReactivateTrip(tripId, tripNumber, tabValue === 2)}
+                                            isAdmin={isAdmin}
+                                            getDocumentUrl={getDocumentUrl}
+                                            onSummary={handleSummary}
+                                            showDocsColumn={showDocsColumn}
+                                            documentosFaltantes={total}
+                                            documentosFaltantesLista={list}
+                                            isDespachoTab={isDespachoTab}
+                                            onSalida={handleSalida}
+                                            colSpanOverride={
+                                                showDocsColumn
+                                                    ? 9
+                                                    : (tabValue === 3 && isAdmin ? 11 : (tabValue === 2 && isAdmin ? 10 : 9))
+                                            }
+                                            onDelete={handleDeleteTrip}
+                                            isUpcomingTab={isUpcomingTab}
+                                            isEnRutaTab={tabValue === 2}
+
+                                        />
+                                    );
+                                })
+
                         )}
                     </TableBody>
                 </Table>
@@ -454,7 +688,7 @@ const TripAdmin = () => {
                 page={page}
                 onPageChange={(event, newPage) => setPage(newPage)}
                 onRowsPerPageChange={(event) => { setRowsPerPage(parseInt(event.target.value, 10)); setPage(0); }}
-                labelRowsPerPage="Filas por página:"
+                labelRowsPerPage="Filas:"
                 labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count !== -1 ? count : `más de ${to}`}`}
             />
         </div>

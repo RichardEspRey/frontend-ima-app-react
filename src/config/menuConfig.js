@@ -130,11 +130,11 @@ export const menuItemsConfig = [
     name: "Viajes",
     rolesPermitidos: ["dev", "admin", "Candy", "Blanca"],
     subItems: [
-      // {
-      //   name: "Nuevo Viaje",
-      //   route: "/trips",
-      //   rolesPermitidos: ["admin", "Blanca"],
-      // },
+      {
+        name: "Crear viaje",
+        route: "/CrearViaje",
+        rolesPermitidos: ["admin"],
+      },
       {
         name: "Nuevo Viaje",
         route: "/trips-new",
@@ -145,6 +145,43 @@ export const menuItemsConfig = [
         route: "/admin-trips",
         rolesPermitidos: ["admin", "Blanca", "Candy", "Mia"],
       },
+      {
+        name: "Ver Pestaña Upcoming",
+        route: null,
+        hideInSidebar: true,
+        rolesPermitidos: ["admin", "Blanca", "Candy"],
+      },
+      {
+        name: "Ver Pestaña Despacho",
+        route: null,
+        hideInSidebar: true,
+        rolesPermitidos: ["admin", "Blanca", "Candy"],
+      },
+      {
+        name: "Ver Pestaña En Ruta",
+        route: null,
+        hideInSidebar: true,
+        rolesPermitidos: ["admin", "Blanca", "Candy"],
+      },
+      {
+        name: "Ver Pestaña Completados",
+        route: null,
+        hideInSidebar: true,
+        rolesPermitidos: ["admin", "Blanca", "Candy"],
+      },
+    ],
+  },
+
+  {
+    name: "Safety",
+    rolesPermitidos: ["admin"],
+    subItems: [
+      {
+        name: "General",
+        route: "/safety",
+        rolesPermitidos: ["admin", "dev"],
+      },
+      { name: "IFTA", route: "/Ifta", rolesPermitidos: ["admin"] }
     ],
   },
 
@@ -152,6 +189,11 @@ export const menuItemsConfig = [
     name: "Finanzas",
     rolesPermitidos: ["admin"],
     subItems: [
+      {
+        name: "Nómina",
+        route: "/nomina",
+        rolesPermitidos: ["admin", "dev"],
+      },
       {
         name: "Pagos",
         route: "/paymentDrivers",

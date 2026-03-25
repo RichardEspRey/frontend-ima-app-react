@@ -11,11 +11,11 @@ import { selectStyles, getDocumentUrl } from '../../utils/tripFormConstants';
 const DocButton = ({ label, doc, onClick, disabled, apiHost }) => (
     <Box sx={{ mb: 1 }}>
         <Typography variant="caption" display="block" fontWeight={500}>{label}</Typography>
-        <Button 
-            variant="outlined" 
-            size="small" 
-            startIcon={<UploadFileIcon />} 
-            onClick={onClick} 
+        <Button
+            variant="outlined"
+            size="small"
+            startIcon={<UploadFileIcon />}
+            onClick={onClick}
             disabled={disabled}
             fullWidth
             sx={{ textTransform: 'none', justifyContent: 'flex-start' }}
@@ -24,7 +24,7 @@ const DocButton = ({ label, doc, onClick, disabled, apiHost }) => (
         </Button>
         {doc && (
             <Typography variant="caption" display="block" sx={{ mt: 0.5, fontStyle: 'italic', wordBreak: 'break-all' }}>
-                <a href={getDocumentUrl(doc, apiHost)} target="_blank" rel="noopener noreferrer" style={{textDecoration:'none', color:'#1976d2'}}>
+                <a href={getDocumentUrl(doc, apiHost)} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: '#1976d2' }}>
                     {doc.fileName}
                 </a>
                 {doc.vencimiento && ` (V: ${doc.vencimiento})`}
@@ -48,7 +48,7 @@ const StageCard = ({
     loadingStates,
     apiHost
 }) => {
-    
+
     const getHeaderInfo = () => {
         switch (etapa.stageType) {
             case 'borderCrossing': return { label: 'Cruce Fronterizo', color: '#ff9800' };
@@ -69,9 +69,9 @@ const StageCard = ({
                 </Stack>
                 <Box>
                     {(etapa.stageType === 'normalTrip' || etapa.stageType === 'borderCrossing') && (
-                        <Button 
-                            startIcon={<AddCircleOutlineIcon />} 
-                            size="small" 
+                        <Button
+                            startIcon={<AddCircleOutlineIcon />}
+                            size="small"
                             onClick={() => agregarParadaEnRuta(index)}
                             disabled={isFormDisabled}
                             sx={{ mr: 1 }}
@@ -97,7 +97,7 @@ const StageCard = ({
                                 value={etapa.millas_pcmiller_practicas} onChange={(e) => handleStageChange(index, 'millas_pcmiller_practicas', e.target.value)} disabled={isFormDisabled} />
                         </Grid>
                         <Grid item xs={12}>
-                            <TextField fullWidth label="Comentarios" multiline rows={2} size="small"
+                            <TextField fullWidth label="Comentarios" multiline minRows={4} size="small"
                                 value={etapa.comments} onChange={(e) => handleStageChange(index, 'comments', e.target.value)} disabled={isFormDisabled} />
                         </Grid>
                     </Grid>
@@ -131,7 +131,7 @@ const StageCard = ({
                             </Grid>
                             <Grid item xs={12} md={4}>
                                 <TextField fullWidth label="CI Number" size="small"
-                                    value={etapa.ci_number} onChange={(e) => handleStageChange(index, 'ci_number', e.target.value)} disabled={isFormDisabled} 
+                                    value={etapa.ci_number} onChange={(e) => handleStageChange(index, 'ci_number', e.target.value)} disabled={isFormDisabled}
                                     sx={{ mt: 2.5 }} />
                             </Grid>
 
@@ -152,7 +152,7 @@ const StageCard = ({
                                 <TextField fullWidth placeholder="Zip Code Origen" size="small" margin="dense"
                                     value={etapa.zip_code_origin} onChange={(e) => handleStageChange(index, 'zip_code_origin', e.target.value)} disabled={isFormDisabled} />
                                 <Box mt={1}>
-                                    <DatePicker selected={etapa.loading_date} onChange={(date) => handleStageChange(index, 'loading_date', date)} 
+                                    <DatePicker selected={etapa.loading_date} onChange={(date) => handleStageChange(index, 'loading_date', date)}
                                         dateFormat="dd/MM/yyyy" placeholderText="Fecha Carga" className="form-input" disabled={isFormDisabled} />
                                 </Box>
                             </Grid>
@@ -174,7 +174,7 @@ const StageCard = ({
                                 <TextField fullWidth placeholder="Zip Code Destino" size="small" margin="dense"
                                     value={etapa.zip_code_destination} onChange={(e) => handleStageChange(index, 'zip_code_destination', e.target.value)} disabled={isFormDisabled} />
                                 <Box mt={1}>
-                                    <DatePicker selected={etapa.delivery_date} onChange={(date) => handleStageChange(index, 'delivery_date', date)} 
+                                    <DatePicker selected={etapa.delivery_date} onChange={(date) => handleStageChange(index, 'delivery_date', date)}
                                         dateFormat="dd/MM/yyyy" placeholderText="Fecha Entrega" className="form-input" disabled={isFormDisabled} />
                                 </Box>
                             </Grid>
@@ -184,61 +184,73 @@ const StageCard = ({
                                     value={etapa.rate_tarifa} onChange={(e) => handleStageChange(index, 'rate_tarifa', e.target.value)} disabled={isFormDisabled} />
                             </Grid>
                             <Grid item xs={6} md={3}>
-                                <TextField 
-                                    fullWidth 
-                                    label="Invoice Number" 
+                                <TextField
+                                    fullWidth
+                                    label="Invoice Number"
                                     size="small"
-                                    value={etapa.invoice_number || ''} 
-                                    onChange={(e) => handleStageChange(index, 'invoice_number', e.target.value)} 
-                                    disabled={isFormDisabled} 
+                                    value={etapa.invoice_number || ''}
+                                    onChange={(e) => handleStageChange(index, 'invoice_number', e.target.value)}
+                                    disabled={isFormDisabled}
                                 />
                             </Grid>
                             <Grid item xs={6} md={3}>
                                 <TextField fullWidth label="Millas Cortas" type="number" size="small"
                                     value={etapa.millas_pcmiller} onChange={(e) => handleStageChange(index, 'millas_pcmiller', e.target.value)} disabled={isFormDisabled} />
                             </Grid>
-                             <Grid item xs={6} md={3}>
+                            <Grid item xs={6} md={3}>
                                 <TextField fullWidth label="Millas Prácticas" type="number" size="small"
                                     value={etapa.millas_pcmiller_practicas} onChange={(e) => handleStageChange(index, 'millas_pcmiller_practicas', e.target.value)} disabled={isFormDisabled} />
                             </Grid>
-                             <Grid item xs={12}>
-                                <TextField fullWidth label="Comentarios" multiline rows={2} size="small"
-                                    value={etapa.comments} onChange={(e) => handleStageChange(index, 'comments', e.target.value)} disabled={isFormDisabled} />
+                            <Grid item xs={12}>
+                                <TextField fullWidth label="Comentarios" multiline size="small"
+                                    value={etapa.comments} onChange={(e) => handleStageChange(index, 'comments', e.target.value)} disabled={isFormDisabled}  
+                                    minRows={4}
+                                />
                             </Grid>
                         </Grid>
 
                         <Divider sx={{ my: 2 }} />
-                        
+
                         <Typography variant="subtitle2" gutterBottom>Documentación</Typography>
                         <Grid container spacing={2}>
-                            {etapa.stageType === 'borderCrossing' && (
+                            {etapa.documentos && (
                                 <>
-                                    <Grid item xs={6} sm={4} md={3}><DocButton label="IMA Invoice" doc={etapa.documentos?.ima_invoice} onClick={() => abrirModal('ima_invoice', index)} disabled={isFormDisabled} apiHost={apiHost}/></Grid>
-                                    <Grid item xs={6} sm={4} md={3}><DocButton label="CI" doc={etapa.documentos?.ci} onClick={() => abrirModal('ci', index)} disabled={isFormDisabled} apiHost={apiHost}/></Grid>
-                                    <Grid item xs={6} sm={4} md={3}><DocButton label="DODA" doc={etapa.documentos?.doda} onClick={() => abrirModal('doda', index)} disabled={isFormDisabled} apiHost={apiHost}/></Grid>
-                                    <Grid item xs={6} sm={4} md={3}><DocButton label="Entry" doc={etapa.documentos?.entry} onClick={() => abrirModal('entry', index)} disabled={isFormDisabled} apiHost={apiHost}/></Grid>
-                                    <Grid item xs={6} sm={4} md={3}><DocButton label="Manifiesto" doc={etapa.documentos?.manifiesto} onClick={() => abrirModal('manifiesto', index)} disabled={isFormDisabled} apiHost={apiHost}/></Grid>
-                                    <Grid item xs={6} sm={4} md={3}><DocButton label="BL" doc={etapa.documentos?.bl} onClick={() => abrirModal('bl', index)} disabled={isFormDisabled} apiHost={apiHost}/></Grid>
-                                    <Grid item xs={6} sm={4} md={3}><DocButton label="Orden Retiro" doc={etapa.documentos?.orden_retiro} onClick={() => abrirModal('orden_retiro', index)} disabled={isFormDisabled} apiHost={apiHost}/></Grid>
-                                    <Grid item xs={6} sm={4} md={3}><DocButton label="BL Firmado" doc={etapa.documentos?.bl_firmado} onClick={() => abrirModal('bl_firmado', index)} disabled={isFormDisabled} apiHost={apiHost}/></Grid>
-                                    <Grid item xs={12} sm={4} md={3}>
-                                        <TextField fullWidth label="Cita Entrega" type="time" size="small" InputLabelProps={{shrink:true}}
-                                            value={etapa.time_of_delivery || ''} onChange={(e) => handleStageChange(index, 'time_of_delivery', e.target.value)} disabled={isFormDisabled} />
-                                    </Grid>
+                                    {Object.entries(etapa.documentos).map(([docKey, docValue]) => {
+                                        
+                                        const isNormalTrip = etapa.stageType === 'normalTrip';
+                                        const isAllowedInNormal = ['ima_invoice', 'bl', 'bl_firmado', 'ci'].includes(docKey);
+                                        const shouldDisable = isFormDisabled || (isNormalTrip && !isAllowedInNormal);
+
+                                        return (
+                                            <Grid item xs={6} sm={4} md={3} key={docKey}>
+                                                <DocButton
+                                                    label={docKey.replace(/_/g, ' ').toUpperCase()}
+                                                    doc={docValue}
+                                                    onClick={() => abrirModal(docKey, index)}
+                                                    disabled={shouldDisable} 
+                                                    apiHost={apiHost}
+                                                />
+                                            </Grid>
+                                        );
+                                    })}
+
+                                    {(etapa.stageType === 'borderCrossing'|| etapa.stageType === 'normalTrip') && (
+                                        <Grid item xs={12} sm={4} md={3}>
+                                            <TextField
+                                                fullWidth
+                                                label="Cita Entrega"
+                                                type="time"
+                                                size="small"
+                                                InputLabelProps={{ shrink: true }}
+                                                value={etapa.time_of_delivery || ''}
+                                                onChange={(e) => handleStageChange(index, 'time_of_delivery', e.target.value)}
+                                                disabled={isFormDisabled}
+                                            />
+                                        </Grid>
+                                    )}
                                 </>
                             )}
-                            {etapa.stageType === 'normalTrip' && (
-                                <>
-                                    <Grid item xs={6} sm={4} md={3}><DocButton label="IMA Invoice" doc={etapa.documentos?.ima_invoice} onClick={() => abrirModal('ima_invoice', index)} disabled={isFormDisabled} apiHost={apiHost}/></Grid>
-                                    <Grid item xs={6} sm={4} md={3}><DocButton label="CI" doc={etapa.documentos?.ci} onClick={() => abrirModal('ci', index)} disabled={isFormDisabled} apiHost={apiHost}/></Grid>
-                                    <Grid item xs={6} sm={4} md={3}><DocButton label="BL" doc={etapa.documentos?.bl} onClick={() => abrirModal('bl', index)} disabled={isFormDisabled} apiHost={apiHost}/></Grid>
-                                    <Grid item xs={6} sm={4} md={3}><DocButton label="BL Firmado" doc={etapa.documentos?.bl_firmado} onClick={() => abrirModal('bl_firmado', index)} disabled={isFormDisabled} apiHost={apiHost}/></Grid>
-                                    <Grid item xs={12} sm={4} md={3}>
-                                        <TextField fullWidth label="Cita Entrega" type="time" size="small" InputLabelProps={{shrink:true}}
-                                            value={etapa.time_of_delivery || ''} onChange={(e) => handleStageChange(index, 'time_of_delivery', e.target.value)} disabled={isFormDisabled} />
-                                    </Grid>
-                                </>
-                            )}
+
                         </Grid>
 
                         {Array.isArray(etapa.stops_in_transit) && etapa.stops_in_transit.length > 0 && (
@@ -255,11 +267,11 @@ const StageCard = ({
                                                     value={stop.location} onChange={(e) => handleStopChange(index, stopIndex, 'location', e.target.value)} disabled={isFormDisabled} />
                                             </Grid>
                                             <Grid item xs={6} sm={3}>
-                                                <TextField fullWidth label="Hora Entrega" type="time" size="small" InputLabelProps={{shrink:true}}
+                                                <TextField fullWidth label="Hora Entrega" type="time" size="small" InputLabelProps={{ shrink: true }}
                                                     value={stop.time_of_delivery || ''} onChange={(e) => handleStopChange(index, stopIndex, 'time_of_delivery', e.target.value)} disabled={isFormDisabled} />
                                             </Grid>
                                             <Grid item xs={6} sm={3}>
-                                                 <DocButton label="BL Firmado (Parada)" doc={stop.bl_firmado_doc} onClick={() => abrirModal('bl_firmado_doc', index, stopIndex)} disabled={isFormDisabled} apiHost={apiHost}/>
+                                                <DocButton label="BL Firmado (Parada)" doc={stop.bl_firmado_doc} onClick={() => abrirModal('bl_firmado_doc', index, stopIndex)} disabled={isFormDisabled} apiHost={apiHost} />
                                             </Grid>
                                         </Grid>
                                     </Paper>

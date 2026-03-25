@@ -163,7 +163,7 @@ const DriverEditor = () => {
       if (!hayNuevoArchivo && !vencimientoCambio) continue; 
 
       const formDataFile = new FormData();
-      formDataFile.append('op', 'Update');
+      formDataFile.append('op', 'Alta');
       formDataFile.append('driver_id', idConductor);
       formDataFile.append('tipo_documento', tipo_documento);
       formDataFile.append('fecha_vencimiento', vencimiento);
