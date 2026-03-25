@@ -142,8 +142,19 @@ export const StageNormalCard = ({ etapa, getDocumentUrl }) => {
             <Box sx={{ mt: 'auto', pt: 1 }}>
               <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
                 {etapa.documentos_adjuntos.map(doc => (
-                  <Chip key={doc.document_id} label={doc.tipo_documento} size="small" component="a" href={getDocumentUrl(doc.path_servidor_real || doc.nombre_archivo)} target="_blank" clickable color="default" variant="outlined" sx={{ fontSize: '0.75rem' }} />
-                ))}
+                  <Chip 
+                      key={doc.document_id} 
+                      label={doc.tipo_documento.toUpperCase().replace(/_/g, ' ')} 
+                      size="small" 
+                      component="a" 
+                      href={getDocumentUrl(doc.path_servidor_real || doc.nombre_archivo)} 
+                      target="_blank" 
+                      clickable 
+                      color="default" 
+                      variant="outlined" 
+                      sx={{ fontSize: '0.75rem', fontWeight: 'bold' }} 
+                  />
+              ))}
               </Stack>
             </Box>
           )}
