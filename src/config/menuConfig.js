@@ -172,7 +172,18 @@ export const menuItemsConfig = [
     ],
   },
 
-  { name: "Safety", route: "/safety", rolesPermitidos: ["admin"] },
+  {
+    name: "Safety",
+    rolesPermitidos: ["admin"],
+    subItems: [
+      {
+        name: "General",
+        route: "/safety",
+        rolesPermitidos: ["admin", "dev"],
+      },
+      { name: "IFTA", route: "/Ifta", rolesPermitidos: ["admin"] }
+    ],
+  },
 
   {
     name: "Finanzas",

@@ -432,7 +432,7 @@ const TripAdmin = () => {
         try {
             const apiUrl = `${apiHost}/new_trips.php`;
             const formData = new FormData();
-            formData.append('op', 'DeleteTrip');
+            formData.append('op', 'delete_trip');
             formData.append('trip_id', tripId);
 
             const response = await fetch(apiUrl, { method: 'POST', body: formData });

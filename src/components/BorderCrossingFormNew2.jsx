@@ -43,7 +43,10 @@ const BorderCrossingFormNew2 = ({ tripNumber, countryCode, tripYear, isTransnati
     const { activeWarehouses, loading: loadingWarehouses } = useFetchWarehouses();
 
     // States
-    const [etapasLocal, setEtapasLocal] = useState([{ ...initialEtapaStateBase, stageType: 'bordercrossing' }]);
+
+    const [cajaExterna, setCajaExterna] = useState(null);
+    const [tipoCaja, setTipoCaja] = useState('internal');
+    const [etapasLocal, setEtapasLocal] = useState([{ ...initialEtapaStateBase, stageType: 'borderCrossing' }]);
     const etapas = etapasProp ?? etapasLocal;
     const setEtapas = setEtapasProp ?? setEtapasLocal;
     const [loadingSave, setLoadingSave] = useState(false);

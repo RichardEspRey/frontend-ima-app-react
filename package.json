@@ -1,12 +1,13 @@
 {
   "name": "imaappdesktopreact",
   "private": true,
-  "version": "1.1.6",
+  "version": "1.2.2",
   "type": "module",
   "main": "electron.cjs",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "copy-pdfworker": "node -e \"require('fs').copyFileSync('node_modules/pdfjs-dist/build/pdf.worker.min.mjs','public/pdf.worker.min.mjs')\"",
+    "build": "npm run copy-pdfworker && vite build",
     "docs:dev": "npx htmldocs@latest dev",
     "lint": "eslint .",
     "preview": "vite preview",
@@ -32,6 +33,7 @@
     "jspdf": "^3.0.3",
     "jspdf-autotable": "^5.0.7",
     "leaflet": "^1.9.4",
+    "pdfjs-dist": "4.4.168",
     "react": "^19.0.0",
     "react-datepicker": "^8.2.1",
     "react-dom": "^19.0.0",
