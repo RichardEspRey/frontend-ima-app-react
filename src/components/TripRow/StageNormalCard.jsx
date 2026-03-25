@@ -115,9 +115,22 @@ export const StageNormalCard = ({ etapa, getDocumentUrl }) => {
                     {stop.time_of_delivery && (
                         <Chip icon={<AccessTimeIcon sx={{ fontSize: '12px !important' }} />} label={formatTime(stop.time_of_delivery)} size="small" sx={{ height: 20, fontSize: '0.7rem', bgcolor: '#f5f5f5', border: '1px solid #e0e0e0', mr: 0.5 }} />
                     )}
-                    {stop.bl_firmado_doc && (
+                    {/* {stop.bl_firmado_doc && (
                         <Chip label="BL Firmado" size="small" component="a" href={getDocumentUrl(stop.bl_firmado_doc.path_servidor_real || stop.bl_firmado_doc.nombre_archivo)} target="_blank" clickable color="primary" variant="outlined" sx={{ height: 20, fontSize: '0.7rem', cursor: 'pointer' }} />
-                    )}
+                    )} */}
+                    {stop.bl_firmado_doc && (
+                      <Chip 
+                          icon={<InsertDriveFileIcon sx={{ fontSize: '12px !important' }} />}
+                          label="BL" 
+                          size="small" 
+                          component="a" 
+                          href={getDocumentUrl(stop.bl_firmado_doc.path_servidor_real || stop.bl_firmado_doc.nombre_archivo)} 
+                          target="_blank" 
+                          clickable 
+                          color="info" 
+                          sx={{ height: 20, fontSize: '0.7rem', cursor: 'pointer', fontWeight: 'bold' }} 
+                      />
+                  )}
                   </li>
                 ))}
               </ul>
