@@ -200,7 +200,7 @@ const DieselAdmin = () => {
               ) : (
                 slice.map((row) => ( 
                   <TableRow key={row.trip_id} hover>
-                    <TableCell sx={{ fontWeight: 500 }}>{row.trip_number}</TableCell>
+                    <TableCell sx={{ fontWeight: 500 }}>{row.nomenclatura || row.trip_number}</TableCell>
                     <TableCell>{row.fecha}</TableCell>
                     <TableCell align="right">{row.total_galones.toFixed(2)} gal</TableCell>
                     <TableCell align="right">
