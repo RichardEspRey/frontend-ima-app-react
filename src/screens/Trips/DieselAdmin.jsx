@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
     Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-    TextField, Button, Stack, CircularProgress, Badge, Tooltip, Chip, TablePagination, Tabs, Tab
+    TextField, Button, Stack, CircularProgress, Badge, Tooltip, Chip, TablePagination, Tabs, Tab, ToggleButtonGroup, ToggleButton
 } from '@mui/material'; 
 import { useNavigate, useLocation } from 'react-router-dom';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -30,6 +30,7 @@ const DieselAdmin = () => {
   const [rowsPerPage, setRowsPerPage] = useState(location.state?.rowsPerPage || 50);
 
   const [tabValue, setTabValue] = useState(location.state?.tabValue || 0);
+  const [countryFilter, setCountryFilter] = useState('All');
 
   // ** LÓGICA DE FETCH **
   const fetchDiesel = useCallback(async () => {
@@ -46,6 +47,8 @@ const DieselAdmin = () => {
         const formattedData = (data.id || []).map(item => ({
             trip_id: item.trip_id,
             trip_number: item.trip_number,
+            nomenclatura: item.nomenclatura,
+            country_code: item.country_code,
             fecha: item.fecha,
             nombre: item.nombre,
             
@@ -74,23 +77,28 @@ const DieselAdmin = () => {
 
   // ** LÓGICA DE FILTRADO **
   const filteredTrips = useMemo(() => {
-    let result = trips
+    let result = trips;
 
     if (tabValue === 0) {
         result = result.filter(r => r.fleetone_pending_count > 0);
     } else {
         result = result.filter(r => r.fleetone_pending_count === 0);
     }
+
+    if (countryFilter !== 'All') {
+        result = result.filter(r => r.country_code === countryFilter);
+    }
+
     const searchLower = search.toLowerCase();
     if (searchLower) {
         result = result.filter(r =>
-            String(r.trip_number || '').toLowerCase().includes(searchLower) ||
+            String(r.nomenclatura || r.trip_number || '').toLowerCase().includes(searchLower) ||
             String(r.nombre || '').toLowerCase().includes(searchLower)
         );
     }
 
-    return result
-  }, [trips, search, tabValue]);
+    return result;
+  }, [trips, search, tabValue, countryFilter]);
 
   const handleVer = (tripId) => {
     navigate(`/detalle-diesel/${tripId}`, { 
@@ -124,7 +132,7 @@ const DieselAdmin = () => {
         Diesel Management System
       </Typography>
 
-      <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
+      <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
         <Tabs 
             value={tabValue} 
             onChange={(e, newValue) => { setTabValue(newValue); setPage(0); }}
@@ -134,6 +142,19 @@ const DieselAdmin = () => {
             <Tab label="Pendientes" sx={{ fontWeight: 600, textTransform: 'none', fontSize: '1rem' }} />
             <Tab label="Completados" sx={{ fontWeight: 600, textTransform: 'none', fontSize: '1rem' }} />
         </Tabs>
+
+        <ToggleButtonGroup
+            value={countryFilter}
+            exclusive
+            onChange={(e, val) => { if(val) { setCountryFilter(val); setPage(0); } }}
+            size="small"
+            color="primary"
+            sx={{ mb: { xs: 1, sm: 0 } }}
+        >
+            <ToggleButton value="All" sx={{ fontWeight: 'bold', px: 3 }}>Todos</ToggleButton>
+            <ToggleButton value="US" sx={{ fontWeight: 'bold', px: 3 }}>USA</ToggleButton>
+            <ToggleButton value="MX" sx={{ fontWeight: 'bold', px: 3 }}>México</ToggleButton>
+        </ToggleButtonGroup>
       </Box>
 
       <Stack direction="row" spacing={2} sx={{ mb: 3 }} alignItems="center">
