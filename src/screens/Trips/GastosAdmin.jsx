@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
     Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-    TextField, Button, Stack, CircularProgress,
+    TextField, Button, Stack, CircularProgress, ToggleButton, ToggleButtonGroup
 } from '@mui/material'; 
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
@@ -23,6 +23,9 @@ const GastosAdmin = () => {
   const [registros, setRegistros] = useState([]);
   const [loading, setLoading] = useState(true); 
 
+  const [countryFilter, setCountryFilter] = useState('All');
+  const [search, setSearch] = useState('');
+
   // ** LÓGICA DE FETCH **
   const fetchGastos = useCallback(async () => {
     setLoading(true);
@@ -36,6 +39,8 @@ const GastosAdmin = () => {
       if (data.status === 'success') {
         const formatted = data.id.map(t => ({
           trip_number: t.trip_number,
+          nomenclatura: t.nomenclatura,
+          country_code: t.country_code,
           trip_id: t.trip_id,
           fecha: t.fecha,
           registros: t.registros,
@@ -53,18 +58,23 @@ const GastosAdmin = () => {
 
   useEffect(() => { fetchGastos(); }, [fetchGastos]);
 
-  // ** LÓGICA DE FILTRADO (Añadimos un estado de búsqueda simple para consistencia) **
-  const [search, setSearch] = useState('');
-
   const filteredRegistros = useMemo(() => {
+      let result = registros;
+
+      if (countryFilter !== 'All') {
+          result = result.filter(r => r.country_code === countryFilter);
+      }
+
       const searchLower = search.toLowerCase();
-      if (!searchLower) return registros;
-      
-      return registros.filter(r =>
-          String(r.trip_number || '').toLowerCase().includes(searchLower) ||
-          String(r.nombre || '').toLowerCase().includes(searchLower)
-      );
-  }, [registros, search]);
+      if (searchLower) {
+          result = result.filter(r =>
+              String(r.nomenclatura || r.trip_number || '').toLowerCase().includes(searchLower) ||
+              String(r.nombre || '').toLowerCase().includes(searchLower)
+          );
+      }
+
+      return result;
+  }, [registros, search, countryFilter]);
 
 
   const handleVer = (tripId) => {
@@ -83,9 +93,23 @@ const GastosAdmin = () => {
   return (
     <Box sx={{ p: 3 }}>
       {/* Título Principal */}
-      <Typography variant="h4" component="h1" fontWeight={700} gutterBottom sx={{ mb: 3 }}>
-        Travel Expense Manager
-      </Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3, flexWrap: 'wrap', gap: 2 }}>
+        <Typography variant="h4" component="h1" fontWeight={700} gutterBottom>
+            Travel Expense Manager
+        </Typography>
+
+        <ToggleButtonGroup
+            value={countryFilter}
+            exclusive
+            onChange={(e, val) => val && setCountryFilter(val)}
+            size="small"
+            color="primary"
+        >
+            <ToggleButton value="All" sx={{ fontWeight: 'bold', px: 3 }}>Todos</ToggleButton>
+            <ToggleButton value="US" sx={{ fontWeight: 'bold', px: 3 }}>USA</ToggleButton>
+            <ToggleButton value="MX" sx={{ fontWeight: 'bold', px: 3 }}>México</ToggleButton>
+        </ToggleButtonGroup>
+      </Box>
 
       {/* Toolbar con Búsqueda */}
       <Stack direction="row" spacing={2} sx={{ mb: 3 }} alignItems="center">
@@ -123,7 +147,9 @@ const GastosAdmin = () => {
               ) : (
                 filteredRegistros.map((row) => ( 
                   <TableRow key={row.trip_id} hover>
-                    <TableCell component="th" scope="row">{row.trip_number}</TableCell>
+                    <TableCell component="th" scope="row" sx={{ fontWeight: 500 }}>
+                        {row.nomenclatura || row.trip_number}
+                    </TableCell>
                     <TableCell>{row.fecha}</TableCell>
                     <TableCell align="right">{row.registros}</TableCell>
                     

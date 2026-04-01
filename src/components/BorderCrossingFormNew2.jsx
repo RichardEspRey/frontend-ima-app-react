@@ -21,7 +21,7 @@ import useFetchWarehouses from '../hooks/useFetchWarehouses';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
-const initialNormalTripDocs = { ima_invoice: null, ci: null, bl: null, bl_firmado: null };
+const initialNormalTripDocs = { ima_invoice: null, ci: null, bl: null, bl_firmado: null, qr_manifesto: null };
 
 const initialEtapaStateBase = {
     stage_number: 1, company_id: null, origin: '', zip_code_origin: '', loading_date: new Date(),

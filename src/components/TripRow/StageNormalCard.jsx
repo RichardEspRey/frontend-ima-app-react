@@ -3,6 +3,7 @@ import BusinessIcon from '@mui/icons-material/Business';
 import RoomIcon from '@mui/icons-material/Room';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import dayjs from 'dayjs';
 
 const formatTime = (timeStr) => {
@@ -115,9 +116,22 @@ export const StageNormalCard = ({ etapa, getDocumentUrl }) => {
                     {stop.time_of_delivery && (
                         <Chip icon={<AccessTimeIcon sx={{ fontSize: '12px !important' }} />} label={formatTime(stop.time_of_delivery)} size="small" sx={{ height: 20, fontSize: '0.7rem', bgcolor: '#f5f5f5', border: '1px solid #e0e0e0', mr: 0.5 }} />
                     )}
-                    {stop.bl_firmado_doc && (
+                    {/* {stop.bl_firmado_doc && (
                         <Chip label="BL Firmado" size="small" component="a" href={getDocumentUrl(stop.bl_firmado_doc.path_servidor_real || stop.bl_firmado_doc.nombre_archivo)} target="_blank" clickable color="primary" variant="outlined" sx={{ height: 20, fontSize: '0.7rem', cursor: 'pointer' }} />
-                    )}
+                    )} */}
+                    {stop.bl_firmado_doc && (
+                      <Chip 
+                          icon={<InsertDriveFileIcon sx={{ fontSize: '12px !important' }} />}
+                          label="BL" 
+                          size="small" 
+                          component="a" 
+                          href={getDocumentUrl(stop.bl_firmado_doc.path_servidor_real || stop.bl_firmado_doc.nombre_archivo)} 
+                          target="_blank" 
+                          clickable 
+                          color="info" 
+                          sx={{ height: 20, fontSize: '0.7rem', cursor: 'pointer', fontWeight: 'bold' }} 
+                      />
+                  )}
                   </li>
                 ))}
               </ul>
@@ -129,8 +143,19 @@ export const StageNormalCard = ({ etapa, getDocumentUrl }) => {
             <Box sx={{ mt: 'auto', pt: 1 }}>
               <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
                 {etapa.documentos_adjuntos.map(doc => (
-                  <Chip key={doc.document_id} label={doc.tipo_documento} size="small" component="a" href={getDocumentUrl(doc.path_servidor_real || doc.nombre_archivo)} target="_blank" clickable color="default" variant="outlined" sx={{ fontSize: '0.75rem' }} />
-                ))}
+                  <Chip 
+                      key={doc.document_id} 
+                      label={doc.tipo_documento.toUpperCase().replace(/_/g, ' ')} 
+                      size="small" 
+                      component="a" 
+                      href={getDocumentUrl(doc.path_servidor_real || doc.nombre_archivo)} 
+                      target="_blank" 
+                      clickable 
+                      color="default" 
+                      variant="outlined" 
+                      sx={{ fontSize: '0.75rem', fontWeight: 'bold' }} 
+                  />
+              ))}
               </Stack>
             </Box>
           )}

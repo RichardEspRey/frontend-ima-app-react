@@ -1,7 +1,8 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
-  Button, Box, Typography, CircularProgress, Stack, Tabs, Tab 
+  Button, Box, Typography, CircularProgress, Stack, Tabs, Tab, ToggleButtonGroup,
+  ToggleButton
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
@@ -30,13 +31,23 @@ const Inspeccion_final = () => {
   
   const [tabValue, setTabValue] = useState(0);
 
+  const [countryFilter, setCountryFilter] = useState('All');
+
   const filteredRows = useMemo(() => {
+    let result = rows;
+
     if (tabValue === 0) {
-        return rows.filter(r => r.status !== 1); // Pestaña 0: Pendientes
+        result = result.filter(r => r.status !== 1);
     } else {
-        return rows.filter(r => r.status === 1); // Pestaña 1: Completadas
+        result = result.filter(r => r.status === 1);
     }
-  }, [rows, tabValue]);
+
+    if (countryFilter !== 'All') {
+        result = result.filter(r => r.country_code === countryFilter);
+    }
+
+    return result;
+  }, [rows, tabValue, countryFilter]);
 
   // Helpers 
   const toFormBody = useCallback((obj) =>
@@ -176,7 +187,7 @@ const Inspeccion_final = () => {
         Inspecciones de Camiones
       </Typography>
 
-      <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
+      <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
         <Tabs 
             value={tabValue} 
             onChange={(e, newValue) => setTabValue(newValue)}
@@ -186,6 +197,19 @@ const Inspeccion_final = () => {
             <Tab label="Pendientes" sx={{ fontWeight: 600, textTransform: 'none', fontSize: '1rem' }} />
             <Tab label="Completadas" sx={{ fontWeight: 600, textTransform: 'none', fontSize: '1rem' }} />
         </Tabs>
+
+        <ToggleButtonGroup
+            value={countryFilter}
+            exclusive
+            onChange={(e, val) => val && setCountryFilter(val)}
+            size="small"
+            color="primary"
+            sx={{ mb: { xs: 1, sm: 0 } }}
+        >
+            <ToggleButton value="All" sx={{ fontWeight: 'bold', px: 3 }}>Todos</ToggleButton>
+            <ToggleButton value="US" sx={{ fontWeight: 'bold', px: 3 }}>USA</ToggleButton>
+            <ToggleButton value="MX" sx={{ fontWeight: 'bold', px: 3 }}>México</ToggleButton>
+        </ToggleButtonGroup>
       </Box>
 
       {/* Toolbar y Estado de Carga */}
