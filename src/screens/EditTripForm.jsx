@@ -284,7 +284,7 @@ const EditTripForm = () => {
         if (deletedIds.length) fd.append('deleted_stage_ids', JSON.stringify(deletedIds));
 
         try {
-            const res = await fetch(`${apiHost}/API/new_trips.php`, { method: 'POST', body: fd });
+            const res = await fetch(`${apiHost}/new_trips.php`, { method: 'POST', body: fd });
             const result = await res.json();
             if (result.status === 'success') {
                 try {
