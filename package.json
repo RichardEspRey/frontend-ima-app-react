@@ -45,6 +45,7 @@
     "react-select": "^5.10.1",
     "react-toastify": "^11.0.5",
     "react-tooltip": "^5.28.0",
+    "semver": "^7.7.4",
     "sweetalert2": "^11.17.2",
     "xlsx": "^0.18.5"
   },
@@ -78,8 +79,12 @@
       "target": "nsis"
     },
     "mac": {
-      "target": ["dmg", "zip"],
-      "category": "public.app-category.utilities"
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "category": "public.app-category.utilities",
+      "identity": null
     },
     "publish": [
       {
