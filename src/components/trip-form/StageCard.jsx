@@ -218,7 +218,7 @@ const StageCard = ({
                                     {Object.entries(etapa.documentos).map(([docKey, docValue]) => {
                                         
                                         const isNormalTrip = etapa.stageType === 'normalTrip';
-                                        const isAllowedInNormal = ['ima_invoice', 'bl', 'bl_firmado', 'ci'].includes(docKey);
+                                        const isAllowedInNormal = ['ima_invoice', 'bl', 'bl_firmado', 'ci', 'qr_manifesto'].includes(docKey);
                                         const shouldDisable = isFormDisabled || (isNormalTrip && !isAllowedInNormal);
 
                                         return (

@@ -88,7 +88,7 @@ const BorderCrossingStage = ({
             <Grid item xs={12}>
                 <Typography variant="subtitle2" fontWeight={700}>Documentación Aduanal</Typography>
                 <Grid container spacing={2} sx={{ mt: 1 }}>
-                    {['doda', 'entry', 'manifiesto', 'bl', 'orden_de_retiro', 'DTOPS'].map(docKey => (
+                    {['doda', 'entry', 'manifiesto', 'bl', 'orden_de_retiro', 'DTOPS', 'qr_manifesto'].map(docKey => (
                         <Grid item xs={6} sm={4} md={2} key={docKey}>
                             <DocButton label={docKey.toUpperCase().replace(/_/g, ' ')} doc={etapa.documentos[docKey]} onClick={() => openDocModal(index, docKey)} />
                         </Grid>

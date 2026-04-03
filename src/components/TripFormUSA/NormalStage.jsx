@@ -85,7 +85,7 @@ const NormalStage = ({
             <Grid item xs={12}>
                 <Typography variant="subtitle2" fontWeight={700}>Documentación</Typography>
                 <Grid container spacing={2} sx={{ mt: 1 }}>
-                    {['ima_invoice', 'ci', 'bl', 'bl_firmado'].map(docKey => (
+                    {['ima_invoice', 'ci', 'bl', 'bl_firmado', 'qr_manifesto'].map(docKey => (
                         <Grid item xs={6} sm={3} key={docKey}>
                             <DocButton label={docKey.toUpperCase().replace('_', ' ')} doc={etapa.documentos[docKey]} onClick={() => openDocModal(index, docKey)} />
                         </Grid>

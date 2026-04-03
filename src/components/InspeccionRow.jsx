@@ -46,7 +46,9 @@ export const InspeccionRow = ({ row, abierto, loading, error, det, toggleOpen, h
                     </IconButton>
                 </TableCell>
 
-                <TableCell sx={{ whiteSpace: 'nowrap', fontWeight: 500 }}>{row.trip_number}</TableCell>
+                <TableCell sx={{ whiteSpace: 'nowrap', fontWeight: 500 }}>
+                    {row.nomenclatura || row.trip_number}
+                </TableCell>
                 <TableCell sx={{ whiteSpace: 'nowrap', fontWeight: 500 }}>
                     {row.driver_nombre || row.nombre || '-'}
                 </TableCell>

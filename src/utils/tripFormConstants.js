@@ -7,7 +7,8 @@ export const initialBorderCrossingDocs = {
   bl: null,
   orden_retiro: null,
   bl_firmado: null,
-  DTOPS: null
+  DTOPS: null,
+  qr_manifesto: null,
 };
 
 export const initialNormalTripDocs = {
@@ -15,6 +16,7 @@ export const initialNormalTripDocs = {
   ci: null,
   bl: null,
   bl_firmado: null,
+  qr_manifesto: null,
 };
 
 export const NORMAL_TRIP_DOCS_BY_COUNTRY = {
@@ -26,14 +28,15 @@ export const NORMAL_TRIP_DOCS_BY_COUNTRY = {
     manifiesto: null,
     bl: null,
     bl_firmado: null,
-    orden_retiro: null
+    orden_retiro: null,
+    qr_manifesto: null,
   },
   MX: {
     carta_porte: null,
     fianza: null,
-  }
+    qr_manifesto: null,
+  },
 };
-
 
 export const selectStyles = {
   control: (provided) => ({
