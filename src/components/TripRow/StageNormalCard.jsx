@@ -122,7 +122,7 @@ export const StageNormalCard = ({ etapa, getDocumentUrl }) => {
                     {stop.bl_firmado_doc && (
                       <Chip 
                           icon={<InsertDriveFileIcon sx={{ fontSize: '12px !important' }} />}
-                          label="BL" 
+                          label="BL Firmado" 
                           size="small" 
                           component="a" 
                           href={getDocumentUrl(stop.bl_firmado_doc.path_servidor_real || stop.bl_firmado_doc.nombre_archivo)} 

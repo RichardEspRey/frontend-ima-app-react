@@ -94,7 +94,7 @@ export default function Afinaciones() {
 
   const handleOpenManual = (truck) => {
       setSelectedTruck(truck);
-      setManualMiles(Math.round(truck.millas_acumuladas));
+      setManualMiles(truck.odometro_base || ''); 
       setOpenManualModal(true);
   };
 
@@ -329,24 +329,21 @@ export default function Afinaciones() {
 
       <Dialog open={openManualModal} onClose={() => !saving && setOpenManualModal(false)} maxWidth="xs" fullWidth>
         <DialogTitle sx={{ fontWeight: 700 }}>
-            Ajuste Manual - {selectedTruck?.unidad}
+            Odómetro de Última Afinación - {selectedTruck?.unidad}
         </DialogTitle>
         <DialogContent>
             <Typography variant="body2" color="text.secondary" paragraph sx={{ mt: 1 }}>
-                Modifica el total de millas acumuladas actual. Útil para correcciones o desfases.
+                Ingresa el odómetro exacto que tenía el camión cuando se le hizo su última afinación. Este número será la base para contar las nuevas millas.
             </Typography>
             
             <TextField
                 autoFocus
-                label="Nuevo Total de Millas"
+                label="Odómetro Base (mi)"
                 type="number"
                 fullWidth
                 variant="outlined"
                 value={manualMiles}
                 onChange={(e) => setManualMiles(e.target.value)}
-                InputProps={{
-                    endAdornment: <InputAdornment position="end">mi</InputAdornment>,
-                }}
                 disabled={saving}
                 sx={{ mt: 2 }}
             />
