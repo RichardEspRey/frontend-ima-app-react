@@ -59,7 +59,8 @@ const DieselDetalle = () => {
           galones: t.galones,
           nombre: t.nombre,
           estado: t.estado,
-          fleetone: t.fleetone
+          fleetone: t.fleetone,
+          periodo: t.periodo
         }));
         setRegistros(formatted);
       }
@@ -129,6 +130,7 @@ const DieselDetalle = () => {
                 <TableCell sx={{ fontWeight: 600 }}>Driver</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>State</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>Fleet One</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Periodo</TableCell>
                 <TableCell sx={{ fontWeight: 600, textAlign: 'center' }}>Actions</TableCell>
               </TableRow>
             </TableHead>
@@ -157,7 +159,7 @@ const DieselDetalle = () => {
                       
                       <TableCell>{formatCellData(row.estado)}</TableCell>
                       <TableCell>{formatCellData(row.fleetone)}</TableCell>
-                      
+                      <TableCell align="right">{row.periodo}</TableCell>
                       <TableCell align="center">
                           <Button 
                               variant="contained" 

@@ -2,7 +2,8 @@ import { useState, useEffect, useMemo } from 'react';
 import {
     Box, Typography, Tabs, Tab, Table, TableBody, TableCell,
     TableContainer, TableHead, TableRow, Paper, Chip, TextField,
-    InputAdornment, CircularProgress, Stack, Button
+    InputAdornment, CircularProgress, Stack, Button, MenuItem, Select,
+    FormControl, InputLabel
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import FilterListIcon from '@mui/icons-material/FilterList';
@@ -81,6 +82,48 @@ export default function IFTA() {
 
     const grandTotal = useMemo(() => totals.reduce((sum, r) => sum + r.total, 0), [totals]);
 
+    // ── Tab 2: Millas por Periodo ─────────────────────────────────────────────
+    const [periodos, setPeriodos]               = useState([]);
+    const [loadingPeriodos, setLoadingPeriodos] = useState(false);
+    const [filterPeriodo, setFilterPeriodo]     = useState('');
+    const [filterPeriodoEstado, setFilterPeriodoEstado] = useState('');
+
+    const fetchPeriodos = async () => {
+        setLoadingPeriodos(true);
+        try {
+            const fd = new FormData();
+            fd.append('op', 'periodos');
+            const res  = await fetch(`${apiHost}/IFTA.php`, { method: 'POST', body: fd });
+            const json = await res.json();
+            if (json.status === 'success') setPeriodos(json.data);
+        } catch (err) {
+            console.error('IFTA fetchPeriodos:', err);
+        } finally {
+            setLoadingPeriodos(false);
+        }
+    };
+
+    useEffect(() => {
+        if (tabValue === 2) fetchPeriodos();
+    }, [tabValue]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    const periodosUnicos = useMemo(() =>
+        [...new Set(periodos.map(r => r.periodo))].sort(),
+    [periodos]);
+
+    const filteredPeriodos = useMemo(() => {
+        return periodos.filter(r => {
+            const matchPeriodo = !filterPeriodo || r.periodo === filterPeriodo;
+            const matchEstado  = !filterPeriodoEstado.trim() ||
+                r.estado.toLowerCase().includes(filterPeriodoEstado.trim().toLowerCase());
+            return matchPeriodo && matchEstado;
+        });
+    }, [periodos, filterPeriodo, filterPeriodoEstado]);
+
+    const grandTotalPeriodos = useMemo(() =>
+        filteredPeriodos.reduce((sum, r) => sum + r.total_millas, 0),
+    [filteredPeriodos]);
+
     // ── Render ────────────────────────────────────────────────────────────────
     return (
         <Box sx={{ p: 3 }}>
@@ -91,6 +134,7 @@ export default function IFTA() {
             <Tabs value={tabValue} onChange={(_, v) => setTabValue(v)} sx={{ mb: 2.5 }}>
                 <Tab label="Por Viaje" />
                 <Tab label="Totales por Estado" />
+                <Tab label="Millas por Periodo" />
             </Tabs>
 
             {/* ── TAB 0: Por Viaje ─────────────────────────────────────────── */}
@@ -277,6 +321,107 @@ export default function IFTA() {
                     )}
                 </Box>
             )}
+
+            {/* ── TAB 2: Millas por Periodo ────────────────────────────────── */}
+            {tabValue === 2 && (
+                <Box>
+                    {/* Filtros */}
+                    <Paper variant="outlined" sx={{ p: 2, mb: 2.5 }}>
+                        <Stack direction="row" alignItems="center" gap={1} mb={1.5}>
+                            <FilterListIcon fontSize="small" color="action" />
+                            <Typography variant="subtitle2" fontWeight={700}>Filtros</Typography>
+                        </Stack>
+                        <Stack direction="row" gap={2} flexWrap="wrap" alignItems="flex-end">
+                            <FormControl size="small" sx={{ width: 140 }}>
+                                <InputLabel>Periodo</InputLabel>
+                                <Select
+                                    value={filterPeriodo}
+                                    label="Periodo"
+                                    onChange={e => setFilterPeriodo(e.target.value)}
+                                >
+                                    <MenuItem value="">Todos</MenuItem>
+                                    {periodosUnicos.map(p => (
+                                        <MenuItem key={p} value={p}>{p}</MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
+                            <TextField
+                                size="small"
+                                label="Estado (ej. TX)"
+                                value={filterPeriodoEstado}
+                                onChange={e => setFilterPeriodoEstado(e.target.value)}
+                                sx={{ width: 140 }}
+                                slotProps={{ htmlInput: { maxLength: 2, style: { textTransform: 'uppercase' } } }}
+                            />
+                            <Button
+                                size="small"
+                                color="inherit"
+                                onClick={() => {
+                                    setFilterPeriodo('');
+                                    setFilterPeriodoEstado('');
+                                }}
+                            >
+                                Limpiar
+                            </Button>
+                            <Button
+                                size="small"
+                                startIcon={<RefreshIcon />}
+                                onClick={fetchPeriodos}
+                                disabled={loadingPeriodos}
+                            >
+                                Actualizar
+                            </Button>
+                        </Stack>
+                    </Paper>
+
+                    {loadingPeriodos ? (
+                        <Box display="flex" alignItems="center" gap={1.5} py={4}>
+                            <CircularProgress size={22} />
+                            <Typography color="text.secondary">Cargando millas por periodo...</Typography>
+                        </Box>
+                    ) : (
+                        <TableContainer component={Paper} variant="outlined">
+                            <Table size="small">
+                                <TableHead>
+                                    <TableRow sx={{ bgcolor: '#f5f5f5' }}>
+                                        <TableCell sx={{ fontWeight: 700 }}>Estado</TableCell>
+                                        <TableCell sx={{ fontWeight: 700 }}>Periodo</TableCell>
+                                        <TableCell sx={{ fontWeight: 700 }} align="right">Total Mi</TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {filteredPeriodos.length === 0 ? (
+                                        <TableRow>
+                                            <TableCell colSpan={3} align="center" sx={{ py: 4, color: 'text.secondary' }}>
+                                                Sin datos para los filtros aplicados.
+                                            </TableCell>
+                                        </TableRow>
+                                    ) : (
+                                        <>
+                                            {filteredPeriodos.map((row, i) => (
+                                                <TableRow key={`${row.estado}-${row.periodo}-${i}`} hover>
+                                                    <TableCell>
+                                                        <Chip label={row.estado} size="small" sx={{ fontWeight: 700, minWidth: 42 }} />
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Chip label={row.periodo} size="small" variant="outlined" color="primary" sx={{ fontWeight: 600 }} />
+                                                    </TableCell>
+                                                    <TableCell align="right">{fmt(row.total_millas)}</TableCell>
+                                                </TableRow>
+                                            ))}
+                                            <TableRow sx={{ bgcolor: '#f5f5f5' }}>
+                                                <TableCell sx={{ fontWeight: 700 }} colSpan={2}>TOTAL</TableCell>
+                                                <TableCell align="right" sx={{ fontWeight: 700 }}>{fmt(grandTotalPeriodos)}</TableCell>
+                                            </TableRow>
+                                        </>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                    )}
+                </Box>
+            )}
         </Box>
     );
 }
+

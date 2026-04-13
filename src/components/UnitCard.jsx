@@ -16,13 +16,10 @@ const UnitCard = ({ truck, onUpdate, onConfig }) => {
 
     const getStatusColor = (status) => {
         const s = (status || '').toLowerCase();
-        if (s === 'completed') return 'default'; 
-        if (s === 'almost over') return 'info'; 
+        if (s === 'completed') return 'default';
+        if (s === 'almost over') return 'info';
         if (s === 'in transit') return 'success';
-        if (s === 'in coming') return 'warning';
-        
-        if (s.includes('transit') || s.includes('route')) return 'success';
-        if (s.includes('load') || s.includes('charg')) return 'warning';
+        if (s === 'up coming') return 'warning';
         return 'primary';
     };
 
@@ -64,7 +61,7 @@ const UnitCard = ({ truck, onUpdate, onConfig }) => {
                         {truck.trip_number ? `Viaje #${truck.trip_number}` : 'Sin Viaje Activo'}
                     </Typography>
                     {truck.trip_number && (
-                        <Chip label={truck.trip_status || 'Activo'} size="small" color={getStatusColor(truck.trip_status)} sx={{ height: 18, fontSize: '0.6rem' }} />
+                        <Chip label={truck.status || 'Activo'} size="small" color={getStatusColor(truck.status)} sx={{ height: 18, fontSize: '0.6rem' }} />
                     )}
                 </Box>
             </Box>
@@ -100,14 +97,14 @@ const UnitCard = ({ truck, onUpdate, onConfig }) => {
                     <Grid item xs={6} sx={{ textAlign: 'center', borderRight: '1px solid #eee' }}>
                         <Typography variant="caption" color="text.secondary" display="block">Autonomía</Typography>
                         <Typography variant="body1" fontWeight={800} color="primary.main">
-                            {truck.promedio_mpg > 0 ? truck.promedio_mpg.toFixed(2) : '--'} 
+                            {truck.avg_mpg > 0 ? Number(truck.avg_mpg).toFixed(2) : '--'}
                             <span style={{ fontSize: '0.7em', marginLeft: 2, fontWeight: 400 }}>MPG</span>
                         </Typography>
                     </Grid>
                     <Grid item xs={6} sx={{ textAlign: 'center' }}>
                         <Typography variant="caption" color="text.secondary" display="block">Rango Est.</Typography>
                         <Typography variant="body1" fontWeight={800} color="secondary.main">
-                            {truck.promedio_mpg > 0 ? (fuel * truck.promedio_mpg).toFixed(0) : '--'} 
+                            {truck.estimated_range > 0 ? Number(truck.estimated_range).toFixed(0) : '--'}
                             <span style={{ fontSize: '0.7em', marginLeft: 2, fontWeight: 400 }}>mi</span>
                         </Typography>
                     </Grid>

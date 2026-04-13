@@ -38,7 +38,8 @@ const DieselEditor = () => {
     galones: '',
     monto: '',
     fleetone: '', 
-    trip_number: ''
+    trip_number: '',
+    periodo: ''
   });
 
   const handleInputChange = (name, value) => {
@@ -85,8 +86,9 @@ const DieselEditor = () => {
       formDataToSend.append("trip_id", formData.trip_id);
       formDataToSend.append("nombre", formData.nombre);
       
-      formDataToSend.append("estado", formData.estado); 
+      formDataToSend.append("estado", formData.estado);
       formDataToSend.append("fleetone", formData.fleetone);
+      formDataToSend.append("periodo", formData.periodo);
 
       formDataToSend.append("odometro", String(odometroNum));
       formDataToSend.append("galones", String(galonesNum));
@@ -180,7 +182,8 @@ const DieselEditor = () => {
                 nombre: row.nombre || '',
                 
                 estado: cleanValue(row.estado),
-                fleetone: cleanValue(row.fleetone)
+                fleetone: cleanValue(row.fleetone),
+                periodo: row.periodo || ''
             });
         }
         
@@ -270,6 +273,7 @@ const DieselEditor = () => {
                     <Grid item xs={12} sm={6}><TextField label="Odometer" type="number" value={formData.odometro} onChange={(e) => handleInputChange('odometro', e.target.value)} fullWidth size="small" InputProps={{ endAdornment: <InputAdornment position="end">mi</InputAdornment> }} /></Grid>
                     <Grid item xs={12} sm={6}><TextField label="Gallons" type="number" value={formData.galones} onChange={(e) => handleInputChange('galones', e.target.value)} fullWidth size="small" InputProps={{ endAdornment: <InputAdornment position="end">gal</InputAdornment> }} /></Grid>
                     <Grid item xs={12}><TextField label="Total Cost" type="number" value={formData.monto} onChange={(e) => handleInputChange('monto', e.target.value)} fullWidth size="small" InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }} /></Grid>
+                    <Grid item xs={12}><TextField label="Periodo" value={formData.periodo} onChange={(e) => handleInputChange('periodo', e.target.value)} fullWidth size="small" placeholder="Ej. Q1, Q2..." /></Grid>
                 </Grid>
             </Paper>
         </Grid>
