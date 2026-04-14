@@ -61,9 +61,16 @@ export const StageUpcomingCard = ({ etapa, getDocumentUrl }) => {
                                 <RoomIcon color="primary" />
                                 <Typography variant="h6" fontWeight={700} color="text.secondary">Origen</Typography>
                             </Stack>
-                            <Typography variant="body1" fontWeight={600} mb={2} sx={{ minHeight: '48px' }}>
-                                {etapa.origin || 'Sin origen especificado'}
-                            </Typography>
+                            <Box sx={{ minHeight: '48px', mb: 2 }}>
+                                <Typography variant="body1" fontWeight={600} lineHeight={1.2}>
+                                    {etapa.origin || 'Sin origen especificado'}
+                                </Typography>
+                                {etapa.zip_code_origin && (
+                                    <Typography variant="body2" color="text.secondary" fontWeight={500} sx={{ mt: 0.5 }}>
+                                        CP: {etapa.zip_code_origin}
+                                    </Typography>
+                                )}
+                            </Box>
                             
                             <Box sx={{ bgcolor: '#e1f5fe', p: 1.5, borderRadius: 2, display: 'flex', alignItems: 'center', gap: 1.5 }}>
                                 <CalendarMonthIcon sx={{ color: '#0288d1', fontSize: 32 }} />

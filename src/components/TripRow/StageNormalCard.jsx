@@ -45,6 +45,11 @@ export const StageNormalCard = ({ etapa, getDocumentUrl }) => {
               {/* ORIGEN */}
               <Grid item xs={5} sx={{ display: 'flex', flexDirection: 'column' }}>
                 <Typography variant="body2" fontWeight={600} sx={{ lineHeight: 1.2 }}>{etapa.origin}</Typography>
+                {etapa.zip_code_origin && (
+                    <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
+                        CP: {etapa.zip_code_origin}
+                    </Typography>
+                )}
                 <Box sx={{ mt: 0.8 }}>
                     <Typography variant="caption" color="text.secondary" display="block" sx={{ fontSize: '0.65rem', textTransform: 'uppercase' }}>
                       Fecha Salida

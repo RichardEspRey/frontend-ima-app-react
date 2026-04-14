@@ -190,12 +190,12 @@ const RoadRepairModal = ({ open, onClose, onSuccess, editData }) => {
                             {/* Subida de Invoices */}
                             <Grid item xs={12}>
                                 <Box sx={{ 
-                                    display: 'flex',             // 🚨 Fuerza a que respete el tamaño interno
-                                    flexDirection: 'column',     // 🚨 Apila los elementos de arriba a abajo
-                                    alignItems: 'center',        // 🚨 Centra todo perfectamente
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
                                     justifyContent: 'center',
-                                    width: '100%',               // 🚨 Toma todo el ancho disponible del Grid
-                                    boxSizing: 'border-box',     // 🚨 Evita que el padding rompa el tamaño
+                                    width: '100%',
+                                    boxSizing: 'border-box',
                                     border: '2px dashed #90caf9', 
                                     bgcolor: '#e3f2fd', 
                                     py: 4, px: 2, textAlign: 'center', borderRadius: 2,

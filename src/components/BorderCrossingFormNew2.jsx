@@ -65,6 +65,20 @@ const BorderCrossingFormNew2 = ({ tripNumber, countryCode, tripYear, isTransnati
     const [companyOptions, setCompanyOptions] = useState([]);
     const [warehouseOptions, setWarehouseOptions] = useState([]);
 
+    const [origenes, setOrigenes] = useState([]);
+
+    // 👇 AGREGA ESTE useEffect
+    useEffect(() => {
+        const fd = new FormData();
+        fd.append("op", "get_origenes");
+        fetch(`${apiHost}/new_tripsv2.php`, { method: "POST", body: fd })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.status === "success") setOrigenes(data.data);
+          })
+          .catch((err) => console.error("Error cargando orígenes:", err));
+    }, [apiHost]);
+
     const [formDataLocal, setFormDataLocal] = useState({
         trip_number: tripNumber || '', driver_id: '', driver_id_second: '', truck_id: '', caja_id: '', caja_externa_id: ''
     });
@@ -245,6 +259,7 @@ const BorderCrossingFormNew2 = ({ tripNumber, countryCode, tripYear, isTransnati
                         handleCreateCompany={handleCreateCompany}
                         handleCreateWarehouse={handleCreateWarehouse}
                         loadingStates={{ companies: loadingCompanies, creatingCompany: isCreatingCompany, warehouses: loadingWarehouses, creatingWarehouse: isCreatingWarehouse }}
+                        origenes={origenes}
                     />
                 ))}
             </Stack>
