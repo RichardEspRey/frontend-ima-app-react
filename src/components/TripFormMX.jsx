@@ -30,7 +30,7 @@ const initialEtapaStateBase = {
     documentos: { ...initialNormalTripDocs }, time_of_delivery: '', date_of_departure: new Date(), stops_in_transit: []
 };
 
-const TripFormMX = ({ tripNumber, countryCode, tripYear, isTransnational, isContinuation, transnationalNumber, movementNumber, onSuccess, etapas: etapasProp, setEtapas: setEtapasProp, formData: formDataProp, setFormData: setFormDataProp, onSaveOverride }) => {
+const TripFormMX = ({ tripNumber, countryCode, tripYear, isTransnational, isContinuation, transnationalNumber, movementNumber, origenId, onSuccess, etapas: etapasProp, setEtapas: setEtapasProp, formData: formDataProp, setFormData: setFormDataProp, onSaveOverride }) => {
 
     // Hooks
     const { activeDrivers, loading: loadingDrivers, error: errorDrivers } = useFetchActiveDrivers();
@@ -177,6 +177,7 @@ const TripFormMX = ({ tripNumber, countryCode, tripYear, isTransnational, isCont
         fd.append('is_transnational', isTransnational ? 1 : 0);
         fd.append('transnational_number', isTransnational && isContinuation ? transnationalNumber : '');
         fd.append('movement_number', isTransnational && isContinuation ? movementNumber : (isTransnational ? 1 : ''));
+        fd.append('origen_id', origenId || '');
 
         const etapasJson = etapas.map(etapa => ({
             ...etapa,

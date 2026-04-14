@@ -11,6 +11,10 @@ import BuildCircleIcon from '@mui/icons-material/BuildCircle';
 import HistoryIcon from '@mui/icons-material/History';
 import SettingsIcon from '@mui/icons-material/Settings'; 
 import EditIcon from '@mui/icons-material/Edit'; 
+// Nuevos iconos para auditoría e historial
+import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
+import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
+import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom"; 
@@ -35,6 +39,17 @@ export default function Afinaciones() {
 
   const [openLimitModal, setOpenLimitModal] = useState(false);
   const [newLimit, setNewLimit] = useState('');
+
+  // === NUEVOS ESTADOS PARA AUDITORÍA ===
+  const [openPhotoModal, setOpenPhotoModal] = useState(false);
+  const [currentPhoto, setCurrentPhoto] = useState('');
+
+  const [openCorrectModal, setOpenCorrectModal] = useState(false);
+  const [correctMiles, setCorrectMiles] = useState('');
+
+  // === NUEVOS ESTADOS PARA HISTORIAL 15 ===
+  const [openHistoryModal, setOpenHistoryModal] = useState(false);
+  const [historyRecords, setHistoryRecords] = useState([]);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -162,6 +177,56 @@ export default function Afinaciones() {
     }
   };
 
+  // === NUEVAS FUNCIONES DE AUDITORÍA E HISTORIAL ===
+  const handleOpenPhoto = (url) => {
+      const imageUrl = url.startsWith('http') ? url : `http://imaexpressllc.com/API/${url}`;
+      setCurrentPhoto(imageUrl);
+      setOpenPhotoModal(true);
+  };
+
+  const handleOpenCorrectOdometer = (truckObj) => {
+      if (!truckObj.id_diesel) return Swal.fire('Info', 'No hay registros de diésel para este camión aún.', 'info');
+      setSelectedTruck(truckObj);
+      setCorrectMiles(truckObj.ultimo_odometro_registrado || truckObj.odometro || '');
+      setOpenCorrectModal(true);
+  };
+
+  const handleConfirmCorrection = async () => {
+      if (!correctMiles || isNaN(correctMiles) || correctMiles < 0) {
+          return Swal.fire('Error', 'Ingresa un odómetro válido', 'warning');
+      }
+
+      setSaving(true);
+      try {
+          const fd = new FormData();
+          fd.append('op', 'correct_odometer');
+          fd.append('diesel_id', selectedTruck.id_diesel);
+          fd.append('nuevo_odometro', correctMiles);
+
+          const res = await fetch(`${apiHost}/afinaciones.php`, { method: 'POST', body: fd });
+          const json = await res.json();
+
+          if (json.status === 'success') {
+              Swal.fire('Corregido', 'El registro de diésel ha sido actualizado correctamente.', 'success');
+              setOpenCorrectModal(false);
+              setOpenHistoryModal(false); // Cierra historial si estaba abierto
+              fetchData();
+          } else {
+              Swal.fire('Error', json.message, 'error');
+          }
+      } catch (e) {
+          Swal.fire('Error', e.message, 'error');
+      } finally {
+          setSaving(false);
+      }
+  };
+
+  const handleOpenHistory = (truck) => {
+      setSelectedTruck(truck);
+      setHistoryRecords(truck.ultimos_registros || []);
+      setOpenHistoryModal(true);
+  };
+
   const getProgressColor = (value) => {
       if (value >= 100) return 'error';
       if (value >= 80) return 'warning';
@@ -206,7 +271,9 @@ export default function Afinaciones() {
                 <TableHead sx={{ bgcolor: '#f5f5f5' }}>
                     <TableRow>
                         <TableCell sx={{ fontWeight: 700 }}>Camión</TableCell>
-                        <TableCell sx={{ fontWeight: 700, width: '45%' }}>Estado (Millas vs Límite)</TableCell>
+                        <TableCell sx={{ fontWeight: 700, width: '35%' }}>Estado (Millas vs Límite)</TableCell>
+                        <TableCell align="center" sx={{ fontWeight: 700 }}>Auditoría (App)</TableCell>
+                        <TableCell align="center" sx={{ fontWeight: 700 }}>Historial (15)</TableCell>
                         <TableCell align="center" sx={{ fontWeight: 700 }}>Reiniciar</TableCell>
                         <TableCell align="center" sx={{ fontWeight: 700 }}>Ajustes</TableCell>
                     </TableRow>
@@ -256,6 +323,52 @@ export default function Afinaciones() {
                                         <Chip label="¡Requiere Mantenimiento!" color="error" size="small" sx={{ fontWeight: 'bold', mt: 0.5 }} />
                                     )}
                                 </TableCell>
+
+                                {/* --- NUEVA COLUMNA DE AUDITORÍA --- */}
+                                <TableCell align="center">
+                                    <Box sx={{ p: 1, border: '1px dashed #ccc', borderRadius: 2, display: 'inline-block' }}>
+                                        <Typography variant="caption" color="text.secondary">Captura chofer:</Typography>
+                                        <Typography variant="body1" fontWeight={700}>
+                                            {truck.ultimo_odometro_registrado ? `${numberFmt(truck.ultimo_odometro_registrado)} mi` : 'N/A'}
+                                        </Typography>
+                                        <Stack direction="row" spacing={1} mt={0.5} justifyContent="center">
+                                            <Tooltip title="Ver Foto del Tablero">
+                                                <span>
+                                                    <IconButton 
+                                                        size="small" 
+                                                        color="info" 
+                                                        onClick={() => handleOpenPhoto(truck.ticket_url)}
+                                                        disabled={!truck.ticket_url}
+                                                    >
+                                                        <PhotoCameraIcon fontSize="small" />
+                                                    </IconButton>
+                                                </span>
+                                            </Tooltip>
+                                            <Tooltip title="Corregir Error de Dedo">
+                                                <IconButton 
+                                                    size="small" 
+                                                    color="warning" 
+                                                    onClick={() => handleOpenCorrectOdometer(truck)}
+                                                >
+                                                    <EditIcon fontSize="small" />
+                                                </IconButton>
+                                            </Tooltip>
+                                        </Stack>
+                                    </Box>
+                                </TableCell>
+
+                                {/* --- NUEVA COLUMNA DE HISTORIAL --- */}
+                                <TableCell align="center">
+                                    <Button 
+                                        variant="outlined" 
+                                        size="small" 
+                                        startIcon={<FormatListBulletedIcon />}
+                                        onClick={() => handleOpenHistory(truck)}
+                                        sx={{ textTransform: 'none', borderRadius: 2 }}
+                                    >
+                                        Ver 15
+                                    </Button>
+                                </TableCell>
                                 
                                 <TableCell align="center">
                                     <Button 
@@ -281,7 +394,7 @@ export default function Afinaciones() {
                         );
                     })}
                     {trucksStatus.length === 0 && (
-                        <TableRow><TableCell colSpan={4} align="center">No hay camiones activos</TableCell></TableRow>
+                        <TableRow><TableCell colSpan={6} align="center">No hay camiones activos</TableCell></TableRow>
                     )}
                 </TableBody>
             </Table>
@@ -397,6 +510,104 @@ export default function Afinaciones() {
             >
                 {saving ? 'Guardando...' : 'Guardar Límite'}
             </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* --- NUEVO MODAL: FOTO DEL TABLERO --- */}
+      <Dialog open={openPhotoModal} onClose={() => setOpenPhotoModal(false)} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ fontWeight: 700 }}>Evidencia de Odómetro</DialogTitle>
+        <DialogContent sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+            {currentPhoto ? (
+                <img src={currentPhoto} alt="Odómetro" style={{ maxWidth: '100%', maxHeight: '60vh', borderRadius: 8 }} />
+            ) : (
+                <Typography color="text.secondary">No hay imagen disponible.</Typography>
+            )}
+        </DialogContent>
+        <DialogActions>
+            <Button onClick={() => setOpenPhotoModal(false)} color="inherit">Cerrar</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* --- NUEVO MODAL: CORREGIR ODÓMETRO --- */}
+      <Dialog open={openCorrectModal} onClose={() => !saving && setOpenCorrectModal(false)} maxWidth="xs" fullWidth>
+        <DialogTitle sx={{ fontWeight: 700 }}>Corregir Lectura - {selectedTruck?.unidad}</DialogTitle>
+        <DialogContent>
+            <Typography variant="body2" color="text.secondary" paragraph sx={{ mt: 1 }}>
+                Si el operador escribió mal el odómetro en la app, ingresa aquí el número correcto que aparece en la foto del tablero.
+            </Typography>
+            <TextField 
+                autoFocus 
+                label="Odómetro Correcto (mi)" 
+                type="number" 
+                fullWidth 
+                variant="outlined" 
+                value={correctMiles} 
+                onChange={(e) => setCorrectMiles(e.target.value)} 
+                disabled={saving} 
+                sx={{ mt: 2 }} 
+            />
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+            <Button onClick={() => setOpenCorrectModal(false)} disabled={saving} color="inherit">Cancelar</Button>
+            <Button 
+                onClick={handleConfirmCorrection} 
+                variant="contained" 
+                color="warning" 
+                disabled={saving} 
+                startIcon={saving ? <CircularProgress size={20} color="inherit"/> : <VerifiedUserIcon />}
+            >
+                {saving ? 'Guardando...' : 'Aplicar Corrección'}
+            </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* --- NUEVO MODAL: HISTORIAL DE LOS ÚLTIMOS 15 --- */}
+      <Dialog open={openHistoryModal} onClose={() => setOpenHistoryModal(false)} maxWidth="md" fullWidth>
+        <DialogTitle sx={{ fontWeight: 700, bgcolor: '#f5f5f5' }}>
+            Últimos 15 Registros - Unidad {selectedTruck?.unidad}
+        </DialogTitle>
+        <DialogContent dividers sx={{ p: 0 }}>
+            <Table size="small" stickyHeader>
+                <TableHead>
+                    <TableRow>
+                        <TableCell sx={{ fontWeight: 'bold' }}>Viaje</TableCell>
+                        <TableCell sx={{ fontWeight: 'bold' }}>Fecha</TableCell>
+                        <TableCell sx={{ fontWeight: 'bold' }}>Odómetro</TableCell>
+                        <TableCell align="center" sx={{ fontWeight: 'bold' }}>Evidencia (Foto)</TableCell>
+                        <TableCell align="center" sx={{ fontWeight: 'bold' }}>Corregir</TableCell>
+                    </TableRow>
+                </TableHead>
+                <TableBody>
+                    {historyRecords.length === 0 ? (
+                        <TableRow><TableCell colSpan={5} align="center">No hay registros recientes</TableCell></TableRow>
+                    ) : (
+                        historyRecords.map(rec => (
+                            <TableRow key={rec.id_diesel} hover>
+                                <TableCell>{rec.trip_number || 'N/A'}</TableCell>
+                                <TableCell>{rec.fecha}</TableCell>
+                                <TableCell sx={{ fontWeight: 'bold' }}>{numberFmt(rec.odometro)} mi</TableCell>
+                                <TableCell align="center">
+                                    <IconButton size="small" color="info" onClick={() => handleOpenPhoto(rec.ticket_url)} disabled={!rec.ticket_url}>
+                                        <PhotoCameraIcon />
+                                    </IconButton>
+                                </TableCell>
+                                <TableCell align="center">
+                                    <IconButton size="small" color="warning" onClick={() => handleOpenCorrectOdometer({ 
+                                        unidad: selectedTruck.unidad, 
+                                        id_diesel: rec.id_diesel, 
+                                        odometro: rec.odometro 
+                                    })}>
+                                        <EditIcon />
+                                    </IconButton>
+                                </TableCell>
+                            </TableRow>
+                        ))
+                    )}
+                </TableBody>
+            </Table>
+        </DialogContent>
+        <DialogActions>
+            <Button onClick={() => setOpenHistoryModal(false)} color="inherit">Cerrar</Button>
         </DialogActions>
       </Dialog>
 
