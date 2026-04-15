@@ -10,14 +10,12 @@ import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import FmdGoodOutlinedIcon from '@mui/icons-material/FmdGoodOutlined';
 import dayjs from 'dayjs';
 
-// Helper para formatear hora
 const formatTime = (timeStr) => {
     if (!timeStr) return '';
     return timeStr.substring(0, 5);
 };
 
 export const StageUpcomingCard = ({ etapa, getDocumentUrl }) => {
-    // Lógica de fechas priorizada
     const departureDate = etapa.date_of_departure
         ? dayjs(etapa.date_of_departure).format("DD/MM/YYYY")
         : (etapa.loading_date
@@ -25,25 +23,50 @@ export const StageUpcomingCard = ({ etapa, getDocumentUrl }) => {
             : (etapa.creation_date ? dayjs(etapa.creation_date).format("DD/MM/YY") : '--'));
 
     const deliveryDate = etapa.delivery_date ? dayjs(etapa.delivery_date).format("DD/MM/YY") : '--';
-
     const tieneParadas = Array.isArray(etapa.stops_in_transit) && etapa.stops_in_transit.length > 0;
+
+    // 1. Separamos SOLO el BL Firmado
+    const mainBLDocs = Array.isArray(etapa.documentos_adjuntos)
+        ? etapa.documentos_adjuntos.filter(d => d.tipo_documento.toLowerCase() === 'bl_firmado')
+        : [];
+
+    const otrosDocumentos = Array.isArray(etapa.documentos_adjuntos)
+        ? etapa.documentos_adjuntos.filter(d => d.tipo_documento.toLowerCase() !== 'bl_firmado')
+        : [];
 
     return (
         <Paper elevation={2} sx={{ borderRadius: 3, overflow: 'hidden', border: '1px solid #e0e0e0', mb: 1 }}>
+            
             {/* ENCABEZADO DE LA ETAPA */}
-            <Box sx={{ bgcolor: '#f0f4f8', px: 3, py: 1.5, borderBottom: '1px solid #e0e0e0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Stack direction="row" alignItems="center" spacing={2}>
+            <Box sx={{ bgcolor: '#f0f4f8', px: 3, py: 1.5, borderBottom: '1px solid #e0e0e0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
+                <Stack direction="row" alignItems="center" spacing={2} flexWrap="wrap" useFlexGap>
                     <Chip 
                         label={`Etapa ${etapa.stage_number}${etapa.travel_direction ? ` • ${etapa.travel_direction}` : ''}`} 
                         size="small" 
                         color={etapa.travel_direction === 'Going Up' ? 'success' : (etapa.travel_direction === 'Going Down' ? 'warning' : 'default')} 
                         sx={{ fontWeight: 'bold' }} 
                     />
-                    <Stack direction="row" alignItems="center" spacing={1}>
+                    <Stack direction="row" alignItems="center" spacing={1} flexWrap="wrap" useFlexGap>
                         <BusinessIcon color="action" />
                         <Typography variant="subtitle1" fontWeight={700} color="text.primary">
                             {etapa.nombre_compania || 'Compañía sin nombre'}
                         </Typography>
+
+                        {/* 🚨 AQUÍ RESALTAMOS SOLO EL BL FIRMADO 🚨 */}
+                        {mainBLDocs.map(doc => (
+                            <Chip 
+                                key={doc.document_id}
+                                icon={<InsertDriveFileIcon sx={{ fontSize: '14px !important', color: '#fff' }} />}
+                                label="BL Firmado" 
+                                size="small" 
+                                component="a" 
+                                href={getDocumentUrl(doc.path_servidor_real || doc.nombre_archivo)} 
+                                target="_blank" 
+                                clickable 
+                                color="info" 
+                                sx={{ height: 24, fontSize: '0.75rem', fontWeight: 'bold', px: 1 }} 
+                            />
+                        ))}
                     </Stack>
                 </Stack>
                 {etapa.ci_number && (
@@ -53,7 +76,6 @@ export const StageUpcomingCard = ({ etapa, getDocumentUrl }) => {
 
             <Box sx={{ p: 3, pb: tieneParadas ? 1 : 3 }}> 
                 <Grid container spacing={2} alignItems="center">
-                    
                     {/* ORIGEN Y FECHA SALIDA */}
                     <Grid item xs={12} md={5}>
                         <Paper variant="outlined" sx={{ p: 2, bgcolor: '#fafafa', borderRadius: 2, borderLeft: '4px solid #0288d1' }}>
@@ -61,16 +83,9 @@ export const StageUpcomingCard = ({ etapa, getDocumentUrl }) => {
                                 <RoomIcon color="primary" />
                                 <Typography variant="h6" fontWeight={700} color="text.secondary">Origen</Typography>
                             </Stack>
-                            <Box sx={{ minHeight: '48px', mb: 2 }}>
-                                <Typography variant="body1" fontWeight={600} lineHeight={1.2}>
-                                    {etapa.origin || 'Sin origen especificado'}
-                                </Typography>
-                                {etapa.zip_code_origin && (
-                                    <Typography variant="body2" color="text.secondary" fontWeight={500} sx={{ mt: 0.5 }}>
-                                        CP: {etapa.zip_code_origin}
-                                    </Typography>
-                                )}
-                            </Box>
+                            <Typography variant="body1" fontWeight={600} mb={2} sx={{ minHeight: '48px' }}>
+                                {etapa.origin || 'Sin origen especificado'}
+                            </Typography>
                             
                             <Box sx={{ bgcolor: '#e1f5fe', p: 1.5, borderRadius: 2, display: 'flex', alignItems: 'center', gap: 1.5 }}>
                                 <CalendarMonthIcon sx={{ color: '#0288d1', fontSize: 32 }} />
@@ -151,12 +166,12 @@ export const StageUpcomingCard = ({ etapa, getDocumentUrl }) => {
                                     {stop.bl_firmado_doc && (
                                         <Chip 
                                             icon={<InsertDriveFileIcon style={{ fontSize: '14px', color: '#fff' }} />}
-                                            label="BL" // 🚨 Cambio de label de "BL Firmado" a "BL"
+                                            label="BL" 
                                             component="a" 
                                             href={getDocumentUrl(stop.bl_firmado_doc.path_servidor_real || stop.bl_firmado_doc.nombre_archivo)} 
                                             target="_blank" 
                                             clickable 
-                                            color="info" // Color distinto para diferenciar de los docs principales
+                                            color="info" 
                                             size="small"
                                             sx={{ height: 24, fontSize: '0.75rem', fontWeight: 'bold', px: 1 }} 
                                         />
@@ -176,9 +191,11 @@ export const StageUpcomingCard = ({ etapa, getDocumentUrl }) => {
                         <Typography variant="subtitle2" fontWeight={700} color="text.secondary" mb={1} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                             <InsertDriveFileIcon fontSize="small" /> Documentos de la Etapa:
                         </Typography>
-                        {Array.isArray(etapa.documentos_adjuntos) && etapa.documentos_adjuntos.length > 0 ? (
+                        
+                        {/* Renderizamos solo los "otros documentos" (Incluye el BL normal) */}
+                        {otrosDocumentos.length > 0 ? (
                             <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                                {etapa.documentos_adjuntos.map(doc => (
+                                {otrosDocumentos.map(doc => (
                                     <Chip
                                         key={doc.document_id}
                                         icon={<InsertDriveFileIcon style={{ color: '#fff' }} />}
@@ -194,7 +211,7 @@ export const StageUpcomingCard = ({ etapa, getDocumentUrl }) => {
                             </Stack>
                         ) : (
                             <Typography variant="body2" color="text.disabled" fontStyle="italic">
-                                Aún no se han subido documentos para esta etapa.
+                                Aún no se han subido documentos adicionales.
                             </Typography>
                         )}
                     </Grid>
