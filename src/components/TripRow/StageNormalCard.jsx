@@ -12,6 +12,16 @@ const formatTime = (timeStr) => {
 };
 
 export const StageNormalCard = ({ etapa, getDocumentUrl }) => {
+
+  // 1. Separamos SOLO el BL Firmado
+  const mainBLDocs = Array.isArray(etapa.documentos_adjuntos)
+    ? etapa.documentos_adjuntos.filter(d => d.tipo_documento.toLowerCase() === 'bl_firmado')
+    : [];
+
+  const otrosDocumentos = Array.isArray(etapa.documentos_adjuntos)
+    ? etapa.documentos_adjuntos.filter(d => d.tipo_documento.toLowerCase() !== 'bl_firmado')
+    : [];
+
   return (
     <Grid item xs={12} sm={6} md={4}>
       <Paper elevation={0} sx={{ border: '1px solid #e0e0e0', p: 2, height: '100%', borderRadius: 2, position: 'relative', overflow: 'hidden' }}>
@@ -30,9 +40,26 @@ export const StageNormalCard = ({ etapa, getDocumentUrl }) => {
               <Typography variant="subtitle1" fontWeight={700} sx={{ lineHeight: 1.2 }}>
                 {etapa.nombre_compania || 'Compañía sin nombre'}
               </Typography>
+              
               {etapa.ci_number && (
                 <Chip label={`CI: ${etapa.ci_number}`} size="small" sx={{ height: 20, fontSize:'0.7rem', fontWeight: 'bold' }} />
               )}
+
+              {/* 🚨 AQUÍ RESALTAMOS SOLO EL BL FIRMADO 🚨 */}
+              {mainBLDocs.map(doc => (
+                  <Chip 
+                      key={doc.document_id}
+                      icon={<InsertDriveFileIcon sx={{ fontSize: '12px !important' }} />}
+                      label="BL Firmado" 
+                      size="small" 
+                      component="a" 
+                      href={getDocumentUrl(doc.path_servidor_real || doc.nombre_archivo)} 
+                      target="_blank" 
+                      clickable 
+                      color="info" 
+                      sx={{ height: 20, fontSize: '0.7rem', cursor: 'pointer', fontWeight: 'bold' }} 
+                  />
+              ))}
             </Stack>
           </Box>
 
@@ -116,13 +143,10 @@ export const StageNormalCard = ({ etapa, getDocumentUrl }) => {
                     {stop.time_of_delivery && (
                         <Chip icon={<AccessTimeIcon sx={{ fontSize: '12px !important' }} />} label={formatTime(stop.time_of_delivery)} size="small" sx={{ height: 20, fontSize: '0.7rem', bgcolor: '#f5f5f5', border: '1px solid #e0e0e0', mr: 0.5 }} />
                     )}
-                    {/* {stop.bl_firmado_doc && (
-                        <Chip label="BL Firmado" size="small" component="a" href={getDocumentUrl(stop.bl_firmado_doc.path_servidor_real || stop.bl_firmado_doc.nombre_archivo)} target="_blank" clickable color="primary" variant="outlined" sx={{ height: 20, fontSize: '0.7rem', cursor: 'pointer' }} />
-                    )} */}
                     {stop.bl_firmado_doc && (
                       <Chip 
                           icon={<InsertDriveFileIcon sx={{ fontSize: '12px !important' }} />}
-                          label="BL" 
+                          label="BL Firmado" 
                           size="small" 
                           component="a" 
                           href={getDocumentUrl(stop.bl_firmado_doc.path_servidor_real || stop.bl_firmado_doc.nombre_archivo)} 
@@ -138,11 +162,11 @@ export const StageNormalCard = ({ etapa, getDocumentUrl }) => {
             </Box>
           )}
 
-          {/* DOCUMENTOS ADJUNTOS */}
-          {Array.isArray(etapa.documentos_adjuntos) && etapa.documentos_adjuntos.length > 0 && (
+          {/* DOCUMENTOS ADJUNTOS (Incluye el BL normal) */}
+          {otrosDocumentos.length > 0 && (
             <Box sx={{ mt: 'auto', pt: 1 }}>
               <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                {etapa.documentos_adjuntos.map(doc => (
+                {otrosDocumentos.map(doc => (
                   <Chip 
                       key={doc.document_id} 
                       label={doc.tipo_documento.toUpperCase().replace(/_/g, ' ')} 

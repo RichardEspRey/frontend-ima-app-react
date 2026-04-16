@@ -8,6 +8,9 @@ import {
 import SearchIcon from '@mui/icons-material/Search';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -87,6 +90,7 @@ export default function IFTA() {
     const [loadingPeriodos, setLoadingPeriodos] = useState(false);
     const [filterPeriodo, setFilterPeriodo]     = useState('');
     const [filterPeriodoEstado, setFilterPeriodoEstado] = useState('');
+    const [filterYear, setFilterYear] = useState('');
 
     const fetchPeriodos = async () => {
         setLoadingPeriodos(true);
@@ -116,13 +120,54 @@ export default function IFTA() {
             const matchPeriodo = !filterPeriodo || r.periodo === filterPeriodo;
             const matchEstado  = !filterPeriodoEstado.trim() ||
                 r.estado.toLowerCase().includes(filterPeriodoEstado.trim().toLowerCase());
-            return matchPeriodo && matchEstado;
+            const matchYear = !filterYear || r.trip_year === filterYear;   
+            return matchPeriodo && matchEstado && matchYear;
         });
-    }, [periodos, filterPeriodo, filterPeriodoEstado]);
+    }, [periodos, filterPeriodo, filterPeriodoEstado, filterYear]);
 
     const grandTotalPeriodos = useMemo(() =>
         filteredPeriodos.reduce((sum, r) => sum + r.total_millas, 0),
     [filteredPeriodos]);
+
+    const printPDF = () => {
+        const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'letter' });
+        const margin = 40;
+        const pageW = doc.internal.pageSize.getWidth();
+
+        doc.setFontSize(16);
+        doc.setFont('helvetica', 'bold');
+        doc.text('IFTA — Registros', pageW / 2, margin, { align: 'center' });
+
+        const rows = filteredPeriodos.map(r => [
+            r.estado,
+            r.periodo,
+            r.trip_year ?? '—',
+            fmt(r.total_millas),
+        ]);
+        rows.push(['TOTAL', '', '', fmt(grandTotalPeriodos)]);
+
+        autoTable(doc, {
+            startY: margin + 24,
+            margin: { left: margin, right: margin, top: margin, bottom: margin },
+            head: [['Estado', 'Periodo', 'Año', 'Total Mi']],
+            body: rows,
+            styles: { fontSize: 9, cellPadding: 5 },
+            headStyles: { fillColor: [245, 245, 245], textColor: 0, fontStyle: 'bold' },
+            didParseCell: (data) => {
+                if (data.column.index === 3) {
+                    data.cell.styles.halign = 'right';
+                }
+                if (data.row.index === rows.length - 1 && data.section === 'body') {
+                    data.cell.styles.fontStyle = 'bold';
+                    data.cell.styles.fillColor = [245, 245, 245];
+                }
+            },
+            pageBreak: 'auto',
+            rowPageBreak: 'avoid',
+        });
+
+        doc.save('IFTA_Registros.pdf');
+    };
 
     // ── Render ────────────────────────────────────────────────────────────────
     return (
@@ -353,12 +398,21 @@ export default function IFTA() {
                                 sx={{ width: 140 }}
                                 slotProps={{ htmlInput: { maxLength: 2, style: { textTransform: 'uppercase' } } }}
                             />
+                            <TextField
+                                size="small"
+                                label="Año"
+                                value={filterYear}
+                                onChange={e => setFilterYear(e.target.value)}
+                                sx={{ width: 100 }}
+                                slotProps={{ htmlInput: { maxLength: 4 } }}
+                            />
                             <Button
                                 size="small"
                                 color="inherit"
                                 onClick={() => {
                                     setFilterPeriodo('');
                                     setFilterPeriodoEstado('');
+                                    setFilterYear('');
                                 }}
                             >
                                 Limpiar
@@ -370,6 +424,15 @@ export default function IFTA() {
                                 disabled={loadingPeriodos}
                             >
                                 Actualizar
+                            </Button>
+                            <Button
+                                size="small"
+                                variant="outlined"
+                                startIcon={<PictureAsPdfIcon />}
+                                onClick={printPDF}
+                                disabled={filteredPeriodos.length === 0}
+                            >
+                                Imprimir PDF
                             </Button>
                         </Stack>
                     </Paper>
@@ -386,7 +449,8 @@ export default function IFTA() {
                                     <TableRow sx={{ bgcolor: '#f5f5f5' }}>
                                         <TableCell sx={{ fontWeight: 700 }}>Estado</TableCell>
                                         <TableCell sx={{ fontWeight: 700 }}>Periodo</TableCell>
-                                        <TableCell sx={{ fontWeight: 700 }} align="right">Total Mi</TableCell>
+                                        <TableCell sx={{ fontWeight: 700 }}>Año</TableCell>
+                                        <TableCell sx={{ fontWeight: 700, textAlign: 'right' }}>Total Mi</TableCell>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
@@ -399,18 +463,21 @@ export default function IFTA() {
                                     ) : (
                                         <>
                                             {filteredPeriodos.map((row, i) => (
-                                                <TableRow key={`${row.estado}-${row.periodo}-${i}`} hover>
+                                                <TableRow key={`${row.estado}-${row.periodo}-${row.trip_year}-${i}`} hover>
                                                     <TableCell>
                                                         <Chip label={row.estado} size="small" sx={{ fontWeight: 700, minWidth: 42 }} />
                                                     </TableCell>
                                                     <TableCell>
                                                         <Chip label={row.periodo} size="small" variant="outlined" color="primary" sx={{ fontWeight: 600 }} />
                                                     </TableCell>
+                                                    <TableCell>
+                                                        <Chip label={row.trip_year} size="small" variant="outlined" color="primary" sx={{ fontWeight: 600 }} />
+                                                    </TableCell>
                                                     <TableCell align="right">{fmt(row.total_millas)}</TableCell>
                                                 </TableRow>
                                             ))}
                                             <TableRow sx={{ bgcolor: '#f5f5f5' }}>
-                                                <TableCell sx={{ fontWeight: 700 }} colSpan={2}>TOTAL</TableCell>
+                                                <TableCell sx={{ fontWeight: 700 }} colSpan={3}>TOTAL</TableCell>
                                                 <TableCell align="right" sx={{ fontWeight: 700 }}>{fmt(grandTotalPeriodos)}</TableCell>
                                             </TableRow>
                                         </>
