@@ -59,7 +59,7 @@ import Ifta from '../screens/Safety/IFTA.jsx';
 import Nomina from '../screens/Nomina/Nomina.jsx';
 import PersonalAdmin from '../screens/Nomina/PersonalAdmin.jsx';
 import DetallePago from '../screens/Nomina/DetallePago.jsx';
-
+import RoadRepairsAdmin from '../screens/RoadRepairsAdmin.jsx';
 
 const AppRouter = () => {
   const { user, loading } = useContext(AuthContext);
@@ -130,6 +130,7 @@ const AppRouter = () => {
               <Route path="/nomina" element={<Nomina />} />
               <Route path="/personal" element={<PersonalAdmin />} />
               <Route path="/detalle-pago/:period_id" element={<DetallePago />} />
+              <Route path="/road-repairs" element={<RoadRepairsAdmin />} />
               <Route path="*" element={<Navigate to="/home" replace />} /> 
             
             </Route>

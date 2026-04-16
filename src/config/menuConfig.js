@@ -123,6 +123,11 @@ export const menuItemsConfig = [
         route: "/afinaciones",
         rolesPermitidos: ["admin", "dev", "Angeles", "Candy"],
       },
+      {
+        name: "Reparaciones en ruta",
+        route: "/road-repairs",
+        rolesPermitidos: ["admin", "Angeles", "Candy"],
+      },
     ],
   },
 
@@ -181,7 +186,7 @@ export const menuItemsConfig = [
         route: "/safety",
         rolesPermitidos: ["admin", "dev"],
       },
-      { name: "IFTA", route: "/Ifta", rolesPermitidos: ["admin"] }
+      { name: "IFTA", route: "/Ifta", rolesPermitidos: ["admin"] },
     ],
   },
 

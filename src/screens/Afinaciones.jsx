@@ -1,40 +1,28 @@
 import React, { useEffect, useState, useCallback } from "react";
-import {
-  Box, Paper, Typography, Table, TableBody, TableCell,
-  TableContainer, TableHead, TableRow, Button, CircularProgress, 
-  Stack, LinearProgress, Dialog, DialogTitle, DialogContent, 
-  DialogActions, TextField, InputAdornment, Chip, IconButton, Tooltip
-} from "@mui/material";
-
-import RefreshIcon from '@mui/icons-material/Refresh';
+import { Box, Paper, Typography, Button, CircularProgress, Stack } from "@mui/material";
 import BuildCircleIcon from '@mui/icons-material/BuildCircle';
 import HistoryIcon from '@mui/icons-material/History';
-import SettingsIcon from '@mui/icons-material/Settings'; 
-import EditIcon from '@mui/icons-material/Edit'; 
-
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom"; 
 
-const apiHost = import.meta.env.VITE_API_HOST;
+import { AfinacionesTable } from "../components/Afinaciones/AfinacionesTable";
+import { 
+    ResetModal, ManualUpdateModal, LimitModal, 
+    CorrectOdometerModal, HistoryModal, PhotoModal 
+} from "../components/Afinaciones/AfinacionesModals";
 
-const numberFmt = (n) => new Intl.NumberFormat('en-US').format(Number(n).toFixed(0));
+const apiHost = import.meta.env.VITE_API_HOST;
 
 export default function Afinaciones() {
   const navigate = useNavigate(); 
-
   const [trucksStatus, setTrucksStatus] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   
-  const [openModal, setOpenModal] = useState(false);
-  const [selectedTruck, setSelectedTruck] = useState(null);
-  const [oilPercentage, setOilPercentage] = useState('');
-  
-  const [openManualModal, setOpenManualModal] = useState(false);
-  const [manualMiles, setManualMiles] = useState('');
+  const [modalConfig, setModalConfig] = useState({ type: null, truck: null });
 
-  const [openLimitModal, setOpenLimitModal] = useState(false);
-  const [newLimit, setNewLimit] = useState('');
+  const closeModal = () => !saving && setModalConfig({ type: null, truck: null });
+  const openModal = (type, truck) => setModalConfig({ type, truck });
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -43,114 +31,26 @@ export default function Afinaciones() {
       fdStatus.append('op', 'get_maintenance_status');
       const resStatus = await fetch(`${apiHost}/afinaciones.php`, { method: 'POST', body: fdStatus });
       const jsonStatus = await resStatus.json();
-      
-      if (jsonStatus.status === 'success') {
-        setTrucksStatus(jsonStatus.data);
-      }
-    } catch (err) {
-      console.error("Error fetching afinaciones:", err);
-    } finally {
-      setLoading(false);
-    }
+      if (jsonStatus.status === 'success') setTrucksStatus(jsonStatus.data);
+    } catch (err) { console.error(err); } finally { setLoading(false); }
   }, []);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  const handleOpenReset = (truck) => {
-    setSelectedTruck(truck);
-    setOilPercentage(''); 
-    setOpenModal(true);
-  };
-
-  const handleConfirmReset = async () => {
-    if (!oilPercentage || isNaN(oilPercentage) || oilPercentage < 0 || oilPercentage > 100) {
-        return Swal.fire('Atención', 'Ingresa un porcentaje de aceite válido (0-100)', 'warning');
-    }
-
+  // --- MANEJADORES DE API ---
+  const handleApiRequest = async (op, dataPayload, successMessage) => {
     setSaving(true);
     try {
         const fd = new FormData();
-        fd.append('op', 'reset_counter');
-        fd.append('truck_id', selectedTruck.truck_id);
-        fd.append('millas_acumuladas', selectedTruck.millas_acumuladas);
-        fd.append('porcentaje_aceite', oilPercentage);
+        fd.append('op', op);
+        Object.entries(dataPayload).forEach(([k, v]) => fd.append(k, v));
 
         const res = await fetch(`${apiHost}/afinaciones.php`, { method: 'POST', body: fd });
         const json = await res.json();
 
         if (json.status === 'success') {
-            Swal.fire('Reiniciado', 'El contador se ha reiniciado y guardado en historial.', 'success');
-            setOpenModal(false);
-            fetchData(); 
-        } else {
-            Swal.fire('Error', json.message, 'error');
-        }
-    } catch (e) {
-        Swal.fire('Error', e.message, 'error');
-    } finally {
-        setSaving(false);
-    }
-  };
-
-  const handleOpenManual = (truck) => {
-      setSelectedTruck(truck);
-      setManualMiles(Math.round(truck.millas_acumuladas));
-      setOpenManualModal(true);
-  };
-
-  const handleConfirmManualUpdate = async () => {
-      if (manualMiles === '' || isNaN(manualMiles) || manualMiles < 0) {
-          return Swal.fire('Atención', 'Ingresa un millaje válido', 'warning');
-      }
-
-      setSaving(true);
-      try {
-          const fd = new FormData();
-          fd.append('op', 'update_manual_mileage');
-          fd.append('truck_id', selectedTruck.truck_id);
-          fd.append('nuevo_total', manualMiles);
-
-          const res = await fetch(`${apiHost}/afinaciones.php`, { method: 'POST', body: fd });
-          const json = await res.json();
-
-          if (json.status === 'success') {
-              Swal.fire('Ajustado', 'Millas actualizadas correctamente.', 'success');
-              setOpenManualModal(false);
-              fetchData();
-          } else {
-              Swal.fire('Error', json.message, 'error');
-          }
-      } catch (e) {
-          Swal.fire('Error', e.message, 'error');
-      } finally {
-          setSaving(false);
-      }
-  };
-
-  const handleOpenLimit = (truck) => {
-    setSelectedTruck(truck);
-    setNewLimit(truck.limite_afinacion || 15000); 
-    setOpenLimitModal(true);
-  };
-
-  const handleConfirmLimitUpdate = async () => {
-    if (!newLimit || isNaN(newLimit) || newLimit <= 0) {
-        return Swal.fire('Error', 'Ingresa un límite válido mayor a 0', 'warning');
-    }
-
-    setSaving(true);
-    try {
-        const fd = new FormData();
-        fd.append('op', 'update_limit');
-        fd.append('truck_id', selectedTruck.truck_id);
-        fd.append('nuevo_limite', newLimit);
-
-        const res = await fetch(`${apiHost}/afinaciones.php`, { method: 'POST', body: fd });
-        const json = await res.json();
-
-        if (json.status === 'success') {
-            Swal.fire('Actualizado', 'Nuevo límite establecido.', 'success');
-            setOpenLimitModal(false);
+            Swal.fire('Éxito', successMessage, 'success');
+            closeModal();
             fetchData();
         } else {
             Swal.fire('Error', json.message, 'error');
@@ -162,15 +62,28 @@ export default function Afinaciones() {
     }
   };
 
-  const getProgressColor = (value) => {
-      if (value >= 100) return 'error';
-      if (value >= 80) return 'warning';
-      return 'success';
+  const onConfirmReset = (oilPercentage) => {
+      if (!oilPercentage || isNaN(oilPercentage) || oilPercentage < 0 || oilPercentage > 100) return Swal.fire('Atención', 'Porcentaje inválido (0-100)', 'warning');
+      handleApiRequest('reset_counter', { truck_id: modalConfig.truck.truck_id, millas_acumuladas: modalConfig.truck.millas_acumuladas, porcentaje_aceite: oilPercentage }, 'El contador se ha reiniciado.');
   };
 
-  if (loading && trucksStatus.length === 0) {
-      return <Box p={5} display="flex" justifyContent="center"><CircularProgress /></Box>;
-  }
+  const onConfirmManual = (manualMiles) => {
+      if (manualMiles === '' || isNaN(manualMiles) || manualMiles < 0) return Swal.fire('Atención', 'Ingresa un millaje válido', 'warning');
+      handleApiRequest('update_manual_mileage', { truck_id: modalConfig.truck.truck_id, nuevo_total: manualMiles }, 'Millas actualizadas.');
+  };
+
+  const onConfirmLimit = (newLimit) => {
+      if (!newLimit || isNaN(newLimit) || newLimit <= 0) return Swal.fire('Error', 'Ingresa un límite válido mayor a 0', 'warning');
+      handleApiRequest('update_limit', { truck_id: modalConfig.truck.truck_id, nuevo_limite: newLimit }, 'Nuevo límite establecido.');
+  };
+
+  const onConfirmCorrection = (correctMiles) => {
+      if (!correctMiles || isNaN(correctMiles) || correctMiles < 0) return Swal.fire('Error', 'Ingresa un odómetro válido', 'warning');
+      if (!modalConfig.truck.id_diesel) return Swal.fire('Info', 'No hay registros para este camión aún.', 'info');
+      handleApiRequest('correct_odometer', { diesel_id: modalConfig.truck.id_diesel, nuevo_odometro: correctMiles }, 'Odómetro corregido.');
+  };
+
+  if (loading && trucksStatus.length === 0) return <Box p={5} display="flex" justifyContent="center"><CircularProgress /></Box>;
 
   return (
     <Box sx={{ p: 3, maxWidth: 1400, margin: '0 auto' }}>
@@ -180,228 +93,36 @@ export default function Afinaciones() {
             <BuildCircleIcon fontSize="large" color="primary" />
             <Box>
                 <Typography variant="h4" fontWeight={800}>Control de Afinaciones</Typography>
-                <Typography variant="body2" color="text.secondary">
-                    Monitoreo de cambio de aceite y mantenimiento preventivo
-                </Typography>
+                <Typography variant="body2" color="text.secondary">Monitoreo de cambio de aceite y mantenimiento preventivo</Typography>
             </Box>
         </Stack>
-        
-        <Button 
-            variant="outlined" 
-            startIcon={<HistoryIcon />} 
-            onClick={() => navigate('/registros-afinaciones')}
-        >
-            Ver Historial
-        </Button>
+        <Button variant="outlined" startIcon={<HistoryIcon />} onClick={() => navigate('/registros-afinaciones')}>Ver Historial</Button>
       </Stack>
 
       <Paper elevation={3} sx={{ borderRadius: 3, overflow: 'hidden', mb: 5 }}>
         <Box sx={{ p: 2, bgcolor: '#e3f2fd', borderBottom: '1px solid #bbdefb' }}>
-            <Typography variant="h6" fontWeight={700} color="primary.main">
-                Estatus Actual de Flota
-            </Typography>
+            <Typography variant="h6" fontWeight={700} color="primary.main">Estatus Actual de Flota</Typography>
         </Box>
-        <TableContainer>
-            <Table>
-                <TableHead sx={{ bgcolor: '#f5f5f5' }}>
-                    <TableRow>
-                        <TableCell sx={{ fontWeight: 700 }}>Camión</TableCell>
-                        <TableCell sx={{ fontWeight: 700, width: '45%' }}>Estado (Millas vs Límite)</TableCell>
-                        <TableCell align="center" sx={{ fontWeight: 700 }}>Reiniciar</TableCell>
-                        <TableCell align="center" sx={{ fontWeight: 700 }}>Ajustes</TableCell>
-                    </TableRow>
-                </TableHead>
-                <TableBody>
-                    {trucksStatus.map((truck) => {
-                        const millas = Number(truck.millas_acumuladas);
-                        const limite = Number(truck.limite_afinacion) || 15000;
-                        
-                        const progress = Math.min((millas / limite) * 100, 100);
-                        const isCritical = millas >= limite;
-
-                        return (
-                            <TableRow key={truck.truck_id} hover>
-                                <TableCell>
-                                    <Typography fontWeight={700} variant="h6">{truck.unidad}</Typography>
-                                </TableCell>
-                                
-                                <TableCell>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
-                                        <Typography variant="body1" fontWeight={600}>
-                                            {numberFmt(millas)} / {numberFmt(limite)} mi
-                                        </Typography>
-                                        
-                                        <Tooltip title="Cambiar límite de afinación">
-                                            <IconButton size="small" onClick={() => handleOpenLimit(truck)} sx={{ ml: 1, p: 0.5 }}>
-                                                <EditIcon fontSize="small" color="action" />
-                                            </IconButton>
-                                        </Tooltip>
-                                    </Box>
-                                    
-                                    <Box sx={{ width: '100%', mr: 1, display: 'flex', alignItems: 'center' }}>
-                                        <Box sx={{ width: '100%', mr: 1 }}>
-                                            <LinearProgress 
-                                                variant="determinate" 
-                                                value={progress} 
-                                                color={getProgressColor(progress)}
-                                                sx={{ height: 10, borderRadius: 5 }}
-                                            />
-                                        </Box>
-                                        <Typography variant="caption" color="text.secondary" sx={{ minWidth: 35 }}>
-                                            {progress.toFixed(0)}%
-                                        </Typography>
-                                    </Box>
-
-                                    {isCritical && (
-                                        <Chip label="¡Requiere Mantenimiento!" color="error" size="small" sx={{ fontWeight: 'bold', mt: 0.5 }} />
-                                    )}
-                                </TableCell>
-                                
-                                <TableCell align="center">
-                                    <Button 
-                                        variant="contained" 
-                                        color={isCritical ? "error" : "primary"}
-                                        startIcon={<RefreshIcon />}
-                                        onClick={() => handleOpenReset(truck)}
-                                        sx={{ textTransform: 'none', borderRadius: 2 }}
-                                        size="small"
-                                    >
-                                        Reiniciar
-                                    </Button>
-                                </TableCell>
-                                
-                                <TableCell align="center">
-                                    <Tooltip title="Ajuste Manual de Millas">
-                                        <IconButton onClick={() => handleOpenManual(truck)} color="default">
-                                            <SettingsIcon />
-                                        </IconButton>
-                                    </Tooltip>
-                                </TableCell>
-                            </TableRow>
-                        );
-                    })}
-                    {trucksStatus.length === 0 && (
-                        <TableRow><TableCell colSpan={4} align="center">No hay camiones activos</TableCell></TableRow>
-                    )}
-                </TableBody>
-            </Table>
-        </TableContainer>
+        
+        <AfinacionesTable trucksStatus={trucksStatus} onOpenModal={openModal} />
       </Paper>
 
-      <Dialog open={openModal} onClose={() => !saving && setOpenModal(false)} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ fontWeight: 700 }}>
-            Reiniciar Contador - {selectedTruck?.unidad}
-        </DialogTitle>
-        <DialogContent>
-            <Typography variant="body2" color="text.secondary" paragraph sx={{ mt: 1 }}>
-                Al confirmar, se guardará el registro actual de <b>{selectedTruck && numberFmt(selectedTruck.millas_acumuladas)} millas</b> y el contador volverá a cero.
-            </Typography>
-            
-            <TextField
-                autoFocus
-                label="% Vida de Aceite Restante"
-                type="number"
-                fullWidth
-                variant="outlined"
-                value={oilPercentage}
-                onChange={(e) => setOilPercentage(e.target.value)}
-                InputProps={{
-                    endAdornment: <InputAdornment position="end">%</InputAdornment>,
-                    inputProps: { min: 0, max: 100 }
-                }}
-                disabled={saving}
-                sx={{ mt: 2 }}
-            />
-        </DialogContent>
-        <DialogActions sx={{ p: 2 }}>
-            <Button onClick={() => setOpenModal(false)} disabled={saving} color="inherit">Cancelar</Button>
-            <Button 
-                onClick={handleConfirmReset} 
-                variant="contained" 
-                color="primary" 
-                disabled={saving}
-                startIcon={saving ? <CircularProgress size={20} color="inherit"/> : <RefreshIcon />}
-            >
-                {saving ? 'Guardando...' : 'Confirmar Reinicio'}
-            </Button>
-        </DialogActions>
-      </Dialog>
+      <ResetModal open={modalConfig.type === 'reset'} onClose={closeModal} onConfirm={onConfirmReset} saving={saving} truck={modalConfig.truck} />
 
-      <Dialog open={openManualModal} onClose={() => !saving && setOpenManualModal(false)} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ fontWeight: 700 }}>
-            Ajuste Manual - {selectedTruck?.unidad}
-        </DialogTitle>
-        <DialogContent>
-            <Typography variant="body2" color="text.secondary" paragraph sx={{ mt: 1 }}>
-                Modifica el total de millas acumuladas actual. Útil para correcciones o desfases.
-            </Typography>
-            
-            <TextField
-                autoFocus
-                label="Nuevo Total de Millas"
-                type="number"
-                fullWidth
-                variant="outlined"
-                value={manualMiles}
-                onChange={(e) => setManualMiles(e.target.value)}
-                InputProps={{
-                    endAdornment: <InputAdornment position="end">mi</InputAdornment>,
-                }}
-                disabled={saving}
-                sx={{ mt: 2 }}
-            />
-        </DialogContent>
-        <DialogActions sx={{ p: 2 }}>
-            <Button onClick={() => setOpenManualModal(false)} disabled={saving} color="inherit">Cancelar</Button>
-            <Button 
-                onClick={handleConfirmManualUpdate} 
-                variant="contained" 
-                color="warning" 
-                disabled={saving}
-                startIcon={saving ? <CircularProgress size={20} color="inherit"/> : <SettingsIcon />}
-            >
-                {saving ? 'Guardando...' : 'Aplicar Ajuste'}
-            </Button>
-        </DialogActions>
-      </Dialog>
+      <ManualUpdateModal open={modalConfig.type === 'manual'} onClose={closeModal} onConfirm={onConfirmManual} saving={saving} truck={modalConfig.truck} />
 
-      <Dialog open={openLimitModal} onClose={() => !saving && setOpenLimitModal(false)} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ fontWeight: 700 }}>
-            Configurar Límite - {selectedTruck?.unidad}
-        </DialogTitle>
-        <DialogContent>
-            <Typography variant="body2" color="text.secondary" paragraph sx={{ mt: 1 }}>
-                Define cada cuántas millas este camión requiere mantenimiento preventivo.
-            </Typography>
-            
-            <TextField
-                autoFocus
-                label="Límite de Afinación (millas)"
-                type="number"
-                fullWidth
-                variant="outlined"
-                value={newLimit}
-                onChange={(e) => setNewLimit(e.target.value)}
-                InputProps={{
-                    endAdornment: <InputAdornment position="end">mi</InputAdornment>,
-                }}
-                disabled={saving}
-                sx={{ mt: 2 }}
-            />
-        </DialogContent>
-        <DialogActions sx={{ p: 2 }}>
-            <Button onClick={() => setOpenLimitModal(false)} disabled={saving} color="inherit">Cancelar</Button>
-            <Button 
-                onClick={handleConfirmLimitUpdate} 
-                variant="contained" 
-                color="info" 
-                disabled={saving}
-                startIcon={saving ? <CircularProgress size={20} color="inherit"/> : <EditIcon />}
-            >
-                {saving ? 'Guardando...' : 'Guardar Límite'}
-            </Button>
-        </DialogActions>
-      </Dialog>
+      <LimitModal open={modalConfig.type === 'limit'} onClose={closeModal} onConfirm={onConfirmLimit} saving={saving} truck={modalConfig.truck} />
+      
+      <CorrectOdometerModal open={modalConfig.type === 'correct'} onClose={closeModal} onConfirm={onConfirmCorrection} saving={saving} truck={modalConfig.truck} />
+      
+      <HistoryModal 
+          open={modalConfig.type === 'history'} 
+          onClose={closeModal} 
+          truck={modalConfig.truck} 
+          onOpenPhoto={(url) => openModal('photo', url)} // En este caso le pasamos la URL como data
+          onOpenCorrect={(truckData) => openModal('correct', truckData)} 
+      />
+      <PhotoModal open={modalConfig.type === 'photo'} onClose={closeModal} photoUrl={modalConfig.truck} />
 
     </Box>
   );
