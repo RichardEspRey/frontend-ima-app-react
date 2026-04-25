@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { AuthProvider } from './auth/AuthContext';
-import AppRouter from './navigation/AppRouter';
+import AppRouter from './app/AppRouter';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import notiSound from '../src/assets/sounds/Update2.mp3';

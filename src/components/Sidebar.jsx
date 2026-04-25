@@ -1,7 +1,7 @@
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import './css/Sidebar.css';
 import { useDispatch, useSelector } from 'react-redux';
-import { setActiveMenu, setExpandedMenu, setSelectedSubMenu } from '../redux/menuSlice';
+import { setActiveMenu, setExpandedMenu, setSelectedSubMenu } from '../app/menuSlice';
 import { AuthContext } from '../auth/AuthContext';
 import { menuItemsConfig } from '../config/menuConfig';
 import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
