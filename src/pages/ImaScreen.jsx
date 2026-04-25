@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Box, Typography, Button, Grid, Paper, Stack, InputLabel, CircularProgress } from '@mui/material'; 
 import './css/ConductoresScreen.css'; 
 import 'react-datepicker/dist/react-datepicker.css';
-import ModalArchivo from '../components/ModalArchivoEditor.jsx'; 
+import ModalArchivo from '../core/ui/ModalArchivoEditor.jsx'; 
 import Swal from 'sweetalert2';
 
 

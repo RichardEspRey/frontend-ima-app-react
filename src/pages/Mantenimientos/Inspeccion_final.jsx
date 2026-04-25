@@ -7,7 +7,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 
-import { InspeccionRow } from '../../components/InspeccionRow'; 
+import { InspeccionRow } from '../../features/safety/components/InspeccionRow.jsx'; 
 
 
 const OPS = {

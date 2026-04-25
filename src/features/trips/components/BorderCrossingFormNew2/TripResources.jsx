@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Typography, Grid, Stack, Button, Paper, Divider, InputLabel } from '@mui/material';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
-import SelectWrapper from '../SelectWrapper';
+import SelectWrapper from '../../../../core/ui/SelectWrapper.jsx';
 
 const TripResources = ({ 
     formData, setForm, 

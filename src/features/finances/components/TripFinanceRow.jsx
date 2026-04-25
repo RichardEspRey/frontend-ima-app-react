@@ -5,10 +5,10 @@ import {
 } from '@mui/material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import { STATUS_OPTIONS } from '../core/constants/finances';
+import { STATUS_OPTIONS } from '../../../core/constants/finances';
 import { StageDetailRow } from './StageDetailRow'; 
-import { money, countCriticalStages } from '../core/utils/financeHelpers';
-import { AuthContext } from '../auth/AuthContext';
+import { money, countCriticalStages } from '../../../core/utils/financeHelpers';
+import { AuthContext } from '../../../core/auth/AuthContext';
 
 const StatusChip = ({ value }) => {
   const meta = STATUS_OPTIONS.find(o => o.value === Number(value));

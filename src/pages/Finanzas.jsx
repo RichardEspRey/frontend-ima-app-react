@@ -14,8 +14,8 @@ import ReceiptIcon from '@mui/icons-material/Receipt';
 import BusinessIcon from '@mui/icons-material/Business';
 import Swal from 'sweetalert2';
 
-import { TripFinanceRow } from '../components/TripFinanceRow';
-import { AlertSummaryCards } from '../components/AlertSummaryCards';
+import { TripFinanceRow } from '../features/finances/components/TripFinanceRow';
+import { AlertSummaryCards } from '../core/ui/AlertSummaryCards';
 import { getTripStatusSummary, validateStage, buildPayloadItem, collectDirtyStages } from '../core/utils/financeHelpers';
 import { STATUS_OPTIONS } from '../core/constants/finances'; 
 

@@ -9,12 +9,12 @@ import WarningIcon from '@mui/icons-material/Warning';
 import ErrorIcon from '@mui/icons-material/Error';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 
-import ModalArchivo from '../components/ModalArchivoEditor.jsx';
+import ModalArchivo from '../core/ui/ModalArchivoEditor.jsx';
 import { Tooltip } from 'react-tooltip';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 
-import DocumentCard from '../components/DocumentCard';
+import DocumentCard from '../core/ui/DocumentCard.jsx';
 
 
 const ImaAdmin = () => {

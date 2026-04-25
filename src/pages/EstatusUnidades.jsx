@@ -5,8 +5,8 @@ import {
 import FilterListIcon from '@mui/icons-material/FilterList';
 import Swal from 'sweetalert2';
 
-import UnitCard from "../components/UnitCard";
-import TankConfigModal from "../components/TankConfigModal";
+import UnitCard from "../features/vehicles/components/UnitCard";
+import TankConfigModal from "../features/vehicles/components/TankConfigModal";
 
 const apiHost = import.meta.env.VITE_API_HOST;
 

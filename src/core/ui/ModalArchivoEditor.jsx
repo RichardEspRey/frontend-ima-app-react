@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import './css/ModalArchivo.css';
+import './ModalArchivo.css';
 import Swal from 'sweetalert2';
 
 const ModalArchivoEditor = ({ isOpen, onClose, onSave, nombreCampo, valorActual, endpoint,tipo, mostrarFechaVencimiento = true }) => {

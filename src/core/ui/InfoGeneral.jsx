@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import './css/ModalArchivo.css';
+import './ModalArchivo.css';
 
 const InfoGeneral = ({ isOpen, onClose, onSave, nombreCampo, valorActual }) => {
   const [archivo, setArchivo] = useState(null);

@@ -1,9 +1,9 @@
 import { useState, useCallback } from 'react';
 import { Box, Paper, Typography, Grid, Stack, TextField, Button, CircularProgress } from '@mui/material'; 
 import 'react-datepicker/dist/react-datepicker.css';
-import ModalArchivo from '../components/ModalArchivo.jsx'; 
+import ModalArchivo from '../core/ui/ModalArchivo.jsx'; 
 import Swal from 'sweetalert2';
-import TruckInput from '../components/TruckInput';
+import TruckInput from '../features/vehicles/components/TruckInput.jsx';
 
 
 const TruckScreen = () => {

@@ -5,11 +5,11 @@ import HistoryIcon from '@mui/icons-material/History';
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom"; 
 
-import { AfinacionesTable } from "../components/Afinaciones/AfinacionesTable";
+import { AfinacionesTable } from "../features/safety/components/Afinaciones/AfinacionesTable";
 import { 
     ResetModal, ManualUpdateModal, LimitModal, 
     CorrectOdometerModal, HistoryModal, PhotoModal 
-} from "../components/Afinaciones/AfinacionesModals";
+} from "../features/safety/components/Afinaciones/AfinacionesModals";
 
 const apiHost = import.meta.env.VITE_API_HOST;
 

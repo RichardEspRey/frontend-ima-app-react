@@ -11,9 +11,9 @@ import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import NumbersIcon from "@mui/icons-material/Numbers";
 
 // Componentes Hijos
-import TripFormUSA from "../../components/TripFormUSA"; 
-import TripFormMX from "../../components/TripFormMX"; 
-import BorderCrossingFormNew2 from "../../components/BorderCrossingFormNew2";
+import TripFormUSA from "../../features/trips/components/TripFormUSA"; 
+import TripFormMX from "../../features/trips/components/TripFormMX"; 
+import BorderCrossingFormNew2 from "../../features/trips/components/BorderCrossingFormNew2";
 
 const CrearViaje = () => {
   const apiHost = import.meta.env.VITE_API_HOST;

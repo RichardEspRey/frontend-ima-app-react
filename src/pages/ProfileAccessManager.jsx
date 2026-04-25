@@ -1,8 +1,8 @@
 import { useState, useEffect, useContext, useCallback } from 'react';
-import { AuthContext } from '../auth/AuthContext';
+import { AuthContext } from '../core/auth/AuthContext';
 import { menuItemsConfig } from '../core/config/menuConfig';
-import UserTable from '../components/UserTable';
-import PermissionDrawer from '../components/PermissionDrawer'; 
+import UserTable from '../features/drivers/components/UserTable';
+import PermissionDrawer from '../features/drivers/components/PermissionDrawer'; 
 import { 
     Container, Typography, Box, CircularProgress, 
     Alert, Snackbar

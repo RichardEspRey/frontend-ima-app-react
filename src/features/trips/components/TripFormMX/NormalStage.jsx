@@ -3,7 +3,7 @@ import { Grid, Typography, Paper, Stack, TextField, Divider, Box, Autocomplete }
 import FlagIcon from '@mui/icons-material/Flag';
 import PlaceIcon from '@mui/icons-material/Place';
 import { format } from 'date-fns';
-import SelectWrapper from '../SelectWrapper'; 
+import SelectWrapper from '../../../../core/ui/SelectWrapper.jsx'; 
 import StopsSection from './StopsSection';
 import DocButton from './DocButton';
 

@@ -10,13 +10,13 @@ import useFetchActiveTrailers from '../core/hooks/useFetchActiveTrailers';
 import useFetchActiveExternalTrailers from '../core/hooks/useFetchActiveExternalTrailers';
 import useFetchCompanies from '../core/hooks/useFetchCompanies';
 import useFetchWarehouses from '../core/hooks/useFetchWarehouses';
-import GeneralTripInfo from '../components/trip-form/GeneralTripInfo';
+import GeneralTripInfo from '../features/trips/components/trip-form/GeneralTripInfo';
 import { initialBorderCrossingDocs, NORMAL_TRIP_DOCS_BY_COUNTRY } from '../core/utils/tripFormConstants';
 import './css/EditTripForm.css';
 
-import EditTripHeader from '../components/EditTripForm/EditTripHeader';
-import StageList from '../components/EditTripForm/StageList';
-import ModalsContainer from '../components/EditTripForm/ModalsContainer';
+import EditTripHeader from '../features/trips/components/EditTripForm/EditTripHeader';
+import StageList from '../features/trips/components/EditTripForm/StageList';
+import ModalsContainer from '../features/trips/components/EditTripForm/ModalsContainer';
 
 const EditTripForm = () => {
     const apiHost = import.meta.env.VITE_API_HOST;

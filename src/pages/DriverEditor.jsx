@@ -4,8 +4,8 @@ import { Box, Paper, Typography, Grid, Stack, TextField, Button, InputLabel, Cir
 
 // import './css/ConductoresScreen.css'; 
 import 'react-datepicker/dist/react-datepicker.css';
-import ModalArchivo from '../components/ModalArchivo.jsx'; 
-import DriverInput from '../components/DriverInput';
+import ModalArchivo from '../core/ui/ModalArchivo.jsx'; 
+import DriverInput from '../features/drivers/components/DriverInput.jsx';
 import Swal from 'sweetalert2';
 
 

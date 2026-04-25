@@ -8,9 +8,9 @@ import {
 import Swal from "sweetalert2";
 import SearchIcon from '@mui/icons-material/Search';
 
-import { DocumentCell } from "../../components/DocumentCell.jsx";
-import { PCMillerModal } from "../../components/PCMillerModal.jsx";
-import { DocPreviewModal } from "../../components/DocPreviewModal.jsx";
+import { DocumentCell } from "../../core/ui/DocumentCell.jsx";
+import { PCMillerModal } from "../../features/safety/components/PCMillerModal.jsx";
+import { DocPreviewModal } from "../../core/ui/DocPreviewModal.jsx";
 
 const apiHost = import.meta.env.VITE_API_HOST;
 

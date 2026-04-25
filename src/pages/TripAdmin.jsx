@@ -21,8 +21,8 @@ import './css/TripAdmin.css';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 
-import { TripRow } from '../components/TripRow';
-import { AuthContext } from '../auth/AuthContext';
+import { TripRow } from '../features/trips/components/TripRow';
+import { AuthContext } from '../core/auth/AuthContext';
 
 const DIRECTION_OPTIONS = [
     { value: 'All', label: 'Todas las Direcciones' },

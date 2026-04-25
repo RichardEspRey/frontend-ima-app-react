@@ -4,7 +4,7 @@ import {
     TableHead, TableRow, IconButton, CircularProgress
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
-import RoadRepairModal from '../components/RoadRepairModal';
+import RoadRepairModal from '../features/safety/components/RoadRepairModal';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 

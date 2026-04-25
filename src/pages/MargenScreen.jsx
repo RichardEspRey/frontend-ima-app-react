@@ -6,7 +6,7 @@ import {
 } from '@mui/material';
 import Swal from 'sweetalert2';
 
-import { MargenRow } from '../components/MargenRow'; 
+import { MargenRow } from '../features/finances/components/MargenRow.jsx'; 
 
 const apiHost = import.meta.env.VITE_API_HOST;
 

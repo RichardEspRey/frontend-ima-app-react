@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import './css/ModalArchivo.css';
+import './ModalArchivo.css';
 
 const ModalArchivo = ({ isOpen, onClose, onSave, title = "Subir/Editar Archivo", saveButtonText = "Guardar", valorActual, mostrarFechaVencimiento = true, accept = "application/pdf" }) => {
 

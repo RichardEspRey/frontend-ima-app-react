@@ -1,12 +1,12 @@
 import React, { useContext } from 'react';
 import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
-import { AuthContext } from '../auth/AuthContext';
+import { AuthContext } from '../core/auth/AuthContext';
 import { Provider } from 'react-redux';
 import store from './store';
 
 import LoginScreen from '../pages/Login/Login.jsx';
-import DashboardLayout from '../layouts/DashboardLayout';
+import DashboardLayout from '../core/ui/layouts/DashboardLayout';
 import HomeScreen from '../pages/Reports.jsx';
 import DriverAdmin from '../pages/DriverAdmin.jsx';
 import DriverEditor from '../pages/DriverEditor.jsx';

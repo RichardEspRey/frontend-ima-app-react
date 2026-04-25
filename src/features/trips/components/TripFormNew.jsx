@@ -6,18 +6,18 @@ import Swal from 'sweetalert2';
 import { format } from 'date-fns';
 
 // 🚨 IMPORTAMOS LOS COMPONENTES ESTANDARIZADOS Y MODALES
-import SelectWrapper from '../components/SelectWrapper';
-import StageInput from '../components/StageInput';
-import ModalArchivo from './ModalArchivo';
-import ModalCajaExterna from '../components/ModalCajaExterna';
+import SelectWrapper from '../../../core/ui/SelectWrapper.jsx';
+import StageInput from '../../../core/ui/StageInput.jsx';
+import ModalArchivo from '../../../core/ui/ModalArchivo.jsx';
+import ModalCajaExterna from '../../vehicles/components/ModalCajaExterna.jsx';
 
 // IMPORTACIONES DE HOOKS (Mantenidas)
-import useFetchActiveDrivers from '../core/hooks/useFetchActiveDrivers';
-import useFetchActiveTrucks from '../core/hooks/useFetchActiveTrucks';
-import useFetchActiveTrailers from '../core/hooks/useFetchActiveTrailers';
-import useFetchActiveExternalTrailers from '../core/hooks/useFetchActiveExternalTrailers';
-import useFetchCompanies from '../core/hooks/useFetchCompanies';
-import useFetchWarehouses from '../core/hooks/useFetchWarehouses';
+import useFetchActiveDrivers from '../../../core/hooks/useFetchActiveDrivers';
+import useFetchActiveTrucks from '../../../core/hooks/useFetchActiveTrucks';
+import useFetchActiveTrailers from '../../../core/hooks/useFetchActiveTrailers';
+import useFetchActiveExternalTrailers from '../../../core/hooks/useFetchActiveExternalTrailers';
+import useFetchCompanies from '../../../core/hooks/useFetchCompanies';
+import useFetchWarehouses from '../../../core/hooks/useFetchWarehouses';
 
 
 const initialBorderCrossingDocs = {

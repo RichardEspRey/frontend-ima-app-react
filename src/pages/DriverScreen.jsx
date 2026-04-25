@@ -1,10 +1,10 @@
 import React, { useState, useCallback } from 'react';
 import { Box, Paper, Typography, Grid, Stack, TextField, Button, InputLabel, CircularProgress } from '@mui/material'; 
 import 'react-datepicker/dist/react-datepicker.css';
-import ModalArchivo from '../components/ModalArchivo.jsx'; 
+import ModalArchivo from '../core/ui/ModalArchivo.jsx'; 
 import Swal from 'sweetalert2';
 import DatePicker from 'react-datepicker'; 
-import DriverInput from '../components/DriverInput';
+import DriverInput from '../features/drivers/components/DriverInput.jsx';
 
 
 const DriverScreen = () => {

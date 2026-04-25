@@ -2,10 +2,10 @@ import React, { useState, useCallback } from 'react';
 import { Box, Paper, Typography, Grid, Stack, TextField, Button, CircularProgress } from '@mui/material'; 
 // 🚨 ELIMINAMOS la importación del CSS nativo
 import 'react-datepicker/dist/react-datepicker.css';
-import ModalArchivo from '../components/ModalArchivo.jsx'; 
+import ModalArchivo from '../core/ui/ModalArchivo.jsx'; 
 import Swal from 'sweetalert2';
 // 🚨 Importamos el componente TruckInput (lo usaremos para Cajas/Trailers)
-import TruckInput from '../components/TruckInput'; 
+import TruckInput from '../features/vehicles/components/TruckInput.jsx'; 
 
 
 const TrailerScreen = () => {

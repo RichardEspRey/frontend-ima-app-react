@@ -8,12 +8,12 @@ import autoTable from "jspdf-autotable";
 import RouteIcon from '@mui/icons-material/Route';
 
 // Componentes modulares
-import TicketHeader from "../../components/TicketPayment/TicketHeader";
-import TicketInfoCards from "../../components/TicketPayment/TicketInfoCards";
-import TicketStagesTable from "../../components/TicketPayment/TicketStagesTable";
-import TicketDeductions from "../../components/TicketPayment/TicketDeductions";
-import TicketSummary from "../../components/TicketPayment/TicketSummary";
-import GastosModal from "../../components/GastosModal";
+import TicketHeader from "../../features/finances/components/TicketPayment/TicketHeader";
+import TicketInfoCards from "../../features/finances/components/TicketPayment/TicketInfoCards";
+import TicketStagesTable from "../../features/finances/components/TicketPayment/TicketStagesTable";
+import TicketDeductions from "../../features/finances/components/TicketPayment/TicketDeductions";
+import TicketSummary from "../../features/finances/components/TicketPayment/TicketSummary";
+import GastosModal from "../../features/finances/components/GastosModal.jsx";
 
 const apiHost = import.meta.env.VITE_API_HOST;
 

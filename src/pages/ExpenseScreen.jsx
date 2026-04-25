@@ -11,7 +11,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import Swal from 'sweetalert2';
 import Select from 'react-select';
 
-import ModalArchivo from '../components/ModalArchivo';
+import ModalArchivo from '../core/ui/ModalArchivo.jsx';
 
 import useFetchInventoryItems from '../core/hooks/expense_hooks/useFetchInventoryItems';
 import useFetchSubcategories from '../core/hooks/expense_hooks/useFetchSubcategories';

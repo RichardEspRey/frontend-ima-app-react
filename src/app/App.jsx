@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { AuthProvider } from './auth/AuthContext';
-import AppRouter from './app/AppRouter';
+import { AuthProvider } from '../core/auth/AuthContext';
+import AppRouter from './AppRouter';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import notiSound from '../src/assets/sounds/Update2.mp3';
+import notiSound from '../assets/sounds/Update2.mp3';
 
 // Contexto temporal para pasar si hay update
 export const UpdateContext = React.createContext();

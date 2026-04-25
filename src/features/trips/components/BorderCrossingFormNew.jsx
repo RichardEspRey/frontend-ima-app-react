@@ -1,19 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import ModalArchivo from './ModalArchivo';
-import './css/BorderCrossingForm.css';
-import useFetchActiveDrivers from '../core/hooks/useFetchActiveDrivers';//hook para obtner los drivers
-import useFetchActiveTrucks from '../core/hooks/useFetchActiveTrucks';//hook para obtener los trucks
-import useFetchActiveTrailers from '../core/hooks/useFetchActiveTrailers'; //hook para obtener las cajas externas
-import useFetchActiveExternalTrailers from '../core/hooks/useFetchActiveExternalTrailers';
-import useFetchCompanies from '../core/hooks/useFetchCompanies'; //hook para obtener los companies
-import useFetchWarehouses from '../core/hooks/useFetchWarehouses'; //hook para obtener los warehouses
+import ModalArchivo from '../../../core/ui/ModalArchivo.jsx';
+import './BorderCrossingForm.css';
+import useFetchActiveDrivers from '../../../core/hooks/useFetchActiveDrivers';//hook para obtner los drivers
+import useFetchActiveTrucks from '../../../core/hooks/useFetchActiveTrucks';//hook para obtener los trucks
+import useFetchActiveTrailers from '../../../core/hooks/useFetchActiveTrailers'; //hook para obtener las cajas externas
+import useFetchActiveExternalTrailers from '../../../core/hooks/useFetchActiveExternalTrailers';
+import useFetchCompanies from '../../../core/hooks/useFetchCompanies'; //hook para obtener los companies
+import useFetchWarehouses from '../../../core/hooks/useFetchWarehouses'; //hook para obtener los warehouses
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import CreatableSelect from 'react-select/creatable';
 import Select from 'react-select';
 import Swal from 'sweetalert2';
 import { format } from 'date-fns';
-import ModalCajaExterna from './ModalCajaExterna';
+import ModalCajaExterna from '../../vehicles/components/ModalCajaExterna.jsx';
 
 
 const initialBorderCrossingDocs = {

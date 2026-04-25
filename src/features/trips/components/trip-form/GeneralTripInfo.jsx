@@ -3,7 +3,7 @@ import { Box, Paper, Typography, Grid, ToggleButton, ToggleButtonGroup, TextFiel
 import Select from 'react-select';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { selectStyles } from '../../core/utils/tripFormConstants'; 
+import { selectStyles } from '../../../../core/utils/tripFormConstants'; 
 
 const GeneralTripInfo = ({
     formData,

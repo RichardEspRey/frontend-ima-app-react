@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import Swal from 'sweetalert2';
-import './css/ModalCajaExterna.css';
+import './ModalCajaExterna.css';
 
 const ModalCajaExterna = ({ isOpen, onClose, onSave }) => {
     const [noCaja, setNoCaja] = useState('');

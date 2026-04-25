@@ -1,6 +1,6 @@
 // src/components/Header.jsx
 import React, { useState, useEffect } from "react";
-import "./css/Header.css";
+import "./Header.css";
 
 const Header = () => {
   const [userName, setUserName] = useState("");

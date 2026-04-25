@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import ModalArchivo from './ModalArchivo';
-import './css/TripForm.css';
-import useFetchActiveDrivers from '../core/hooks/useFetchActiveDrivers';
-import useFetchActiveTrucks from '../core/hooks/useFetchActiveTrucks';
-import useFetchActiveTrailers from '../core/hooks/useFetchActiveTrailers';
-import useFetchActiveExternalTrailers from '../core/hooks/useFetchActiveExternalTrailers';
-import useFetchCompanies from '../core/hooks/useFetchCompanies';
-import useFetchWarehouses from '../core/hooks/useFetchWarehouses';
+import ModalArchivo from '../../../core/ui/ModalArchivo.jsx';
+import './TripForm.css';
+import useFetchActiveDrivers from '../../../core/hooks/useFetchActiveDrivers';
+import useFetchActiveTrucks from '../../../core/hooks/useFetchActiveTrucks';
+import useFetchActiveTrailers from '../../../core/hooks/useFetchActiveTrailers';
+import useFetchActiveExternalTrailers from '../../../core/hooks/useFetchActiveExternalTrailers';
+import useFetchCompanies from '../../../core/hooks/useFetchCompanies';
+import useFetchWarehouses from '../../../core/hooks/useFetchWarehouses';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import CreatableSelect from 'react-select/creatable';
 import Select from 'react-select';
 import Swal from 'sweetalert2';
 import { format } from 'date-fns';
+import ModalCajaExterna from '../../vehicles/components/ModalCajaExterna.jsx';
 
 const initialBorderCrossingDocs = {
     ima_invoice: null, carta_porte: null, ci: null, entry: null,

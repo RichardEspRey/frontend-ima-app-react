@@ -6,7 +6,7 @@ import UploadFileIcon from '@mui/icons-material/UploadFile';
 import Select from 'react-select';
 import CreatableSelect from 'react-select/creatable';
 import DatePicker from 'react-datepicker';
-import { selectStyles, getDocumentUrl } from '../../core/utils/tripFormConstants';
+import { selectStyles, getDocumentUrl } from '../../../../core/utils/tripFormConstants';
 
 const DocButton = ({ label, doc, onClick, disabled, apiHost }) => (
     <Box sx={{ mb: 1 }}>

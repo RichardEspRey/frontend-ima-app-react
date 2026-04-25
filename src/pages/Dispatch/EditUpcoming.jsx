@@ -5,8 +5,8 @@ import Swal from "sweetalert2";
 import { parseISO, format } from "date-fns";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
-import TripConfigPanel from "../../components/EditUpcoming/TripConfigPanel";
-import TripFormRenderer from "../../components/EditUpcoming/TripFormRenderer";
+import TripConfigPanel from "../../features/trips/components/EditUpcoming/TripConfigPanel";
+import TripFormRenderer from "../../features/trips/components/EditUpcoming/TripFormRenderer";
 
 import { initialBorderCrossingDocs, NORMAL_TRIP_DOCS_BY_COUNTRY } from "../../core/utils/tripFormConstants";
 

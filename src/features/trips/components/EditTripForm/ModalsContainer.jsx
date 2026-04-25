@@ -1,5 +1,5 @@
-import ModalArchivo from '../ModalArchivo';
-import ModalCajaExterna from '../ModalCajaExterna';
+import ModalArchivo from '../../../../core/ui/ModalArchivo.jsx';
+import ModalCajaExterna from '../../../vehicles/components/ModalCajaExterna.jsx';
 
 const ModalsContainer = ({
     modalAbierto, setModalAbierto, setModalTarget, handleGuardarDocumento, modalTarget, 

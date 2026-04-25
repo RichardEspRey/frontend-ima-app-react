@@ -13,8 +13,8 @@ import {
     FormControlLabel
 } from "@mui/material";
 
-import BorderCrossingFormNew from "../components/BorderCrossingFormNew";
-import TripFormNew from "../components/TripFormNew";
+import BorderCrossingFormNew from "../features/trips/components/BorderCrossingFormNew";
+import TripFormNew from "../features/trips/components/TripFormNew";
 
 const TripScreenNew = () => {
     // =========================

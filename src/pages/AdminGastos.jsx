@@ -7,7 +7,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 
 // Importamos el componente extraído
-import GastoRow from '../components/GastoRow'; // Asegúrate que la ruta sea correcta
+import GastoRow from '../features/finances/components/GastoRow.jsx';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 

@@ -7,16 +7,16 @@ import { format } from 'date-fns';
 
 import TripResources from './TripFormMX/TripResources';
 import TripStageItem from './TripFormMX/TripStageItem';
-import ModalArchivo from './ModalArchivo'; 
-import ModalCajaExterna from './ModalCajaExterna'; 
+import ModalArchivo from '../../../core/ui/ModalArchivo.jsx'; 
+import ModalCajaExterna from '../../vehicles/components/ModalCajaExterna.jsx'; 
 
 // Hooks
-import useFetchActiveDrivers from '../core/hooks/useFetchActiveDrivers';
-import useFetchActiveTrucks from '../core/hooks/useFetchActiveTrucks';
-import useFetchActiveTrailers from '../core/hooks/useFetchActiveTrailers';
-import useFetchActiveExternalTrailers from '../core/hooks/useFetchActiveExternalTrailers';
-import useFetchCompanies from '../core/hooks/useFetchCompanies';
-import useFetchWarehouses from '../core/hooks/useFetchWarehouses';
+import useFetchActiveDrivers from '../../../core/hooks/useFetchActiveDrivers';
+import useFetchActiveTrucks from '../../../core/hooks/useFetchActiveTrucks';
+import useFetchActiveTrailers from '../../../core/hooks/useFetchActiveTrailers';
+import useFetchActiveExternalTrailers from '../../../core/hooks/useFetchActiveExternalTrailers';
+import useFetchCompanies from '../../../core/hooks/useFetchCompanies';
+import useFetchWarehouses from '../../../core/hooks/useFetchWarehouses';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 

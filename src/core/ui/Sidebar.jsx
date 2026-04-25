@@ -1,14 +1,14 @@
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import './css/Sidebar.css';
+import './Sidebar.css';
 import { useDispatch, useSelector } from 'react-redux';
-import { setActiveMenu, setExpandedMenu, setSelectedSubMenu } from '../app/menuSlice';
+import { setActiveMenu, setExpandedMenu, setSelectedSubMenu } from '../../app/menuSlice';
 import { AuthContext } from '../auth/AuthContext';
-import { menuItemsConfig } from '../core/config/menuConfig';
+import { menuItemsConfig } from '../config/menuConfig';
 import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { Collapse, Box, Stack, Tooltip } from '@mui/material'; 
-import iconUpdate from '../assets/images/icons/update.png'
-import { UpdateContext } from '../App';
+import iconUpdate from '../../assets/images/icons/update.png'
+import { UpdateContext } from '../../app/App';
 import { 
     MdDashboard, MdCarRental, MdLocalShipping, MdDirectionsBus, MdLocalGasStation, 
     MdAttachMoney, MdExitToApp, MdList, MdAssignment, MdTrendingUp, MdBarChart, 
@@ -16,7 +16,7 @@ import {
 } from 'react-icons/md'; 
 import { GrMapLocation } from "react-icons/gr";
 
-import logo from '../assets/images/logo_white.png';
+import logo from '../../assets/images/logo_white.png';
 
 const iconMap = {
     'Inicio': MdDashboard,

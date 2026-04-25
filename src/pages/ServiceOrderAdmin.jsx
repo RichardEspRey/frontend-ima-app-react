@@ -16,8 +16,8 @@ import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 
 import useFetchRepairTypes from '../core/hooks/service_order/useFetchRepairTypes.jsx';
-import EditDetailModal from '../components/EditDetailModa';
-import { OrderRow } from '../components/OrderRow';
+import EditDetailModal from '../core/ui/EditDetailModa.jsx';
+import { OrderRow } from '../features/finances/components/OrderRow.jsx';
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
