@@ -2,11 +2,15 @@ import { useState, useEffect, useMemo } from 'react';
 import {
     Box, Typography, Tabs, Tab, Table, TableBody, TableCell,
     TableContainer, TableHead, TableRow, Paper, Chip, TextField,
-    InputAdornment, CircularProgress, Stack, Button
+    InputAdornment, CircularProgress, Stack, Button, MenuItem, Select,
+    FormControl, InputLabel
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -81,6 +85,90 @@ export default function IFTA() {
 
     const grandTotal = useMemo(() => totals.reduce((sum, r) => sum + r.total, 0), [totals]);
 
+    // ── Tab 2: Millas por Periodo ─────────────────────────────────────────────
+    const [periodos, setPeriodos]               = useState([]);
+    const [loadingPeriodos, setLoadingPeriodos] = useState(false);
+    const [filterPeriodo, setFilterPeriodo]     = useState('');
+    const [filterPeriodoEstado, setFilterPeriodoEstado] = useState('');
+    const [filterYear, setFilterYear] = useState('');
+
+    const fetchPeriodos = async () => {
+        setLoadingPeriodos(true);
+        try {
+            const fd = new FormData();
+            fd.append('op', 'periodos');
+            const res  = await fetch(`${apiHost}/IFTA.php`, { method: 'POST', body: fd });
+            const json = await res.json();
+            if (json.status === 'success') setPeriodos(json.data);
+        } catch (err) {
+            console.error('IFTA fetchPeriodos:', err);
+        } finally {
+            setLoadingPeriodos(false);
+        }
+    };
+
+    useEffect(() => {
+        if (tabValue === 2) fetchPeriodos();
+    }, [tabValue]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    const periodosUnicos = useMemo(() =>
+        [...new Set(periodos.map(r => r.periodo))].sort(),
+    [periodos]);
+
+    const filteredPeriodos = useMemo(() => {
+        return periodos.filter(r => {
+            const matchPeriodo = !filterPeriodo || r.periodo === filterPeriodo;
+            const matchEstado  = !filterPeriodoEstado.trim() ||
+                r.estado.toLowerCase().includes(filterPeriodoEstado.trim().toLowerCase());
+            const matchYear = !filterYear || r.trip_year === filterYear;   
+            return matchPeriodo && matchEstado && matchYear;
+        });
+    }, [periodos, filterPeriodo, filterPeriodoEstado, filterYear]);
+
+    const grandTotalPeriodos = useMemo(() =>
+        filteredPeriodos.reduce((sum, r) => sum + r.total_millas, 0),
+    [filteredPeriodos]);
+
+    const printPDF = () => {
+        const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'letter' });
+        const margin = 40;
+        const pageW = doc.internal.pageSize.getWidth();
+
+        doc.setFontSize(16);
+        doc.setFont('helvetica', 'bold');
+        doc.text('IFTA — Registros', pageW / 2, margin, { align: 'center' });
+
+        const rows = filteredPeriodos.map(r => [
+            r.estado,
+            r.periodo,
+            r.trip_year ?? '—',
+            fmt(r.total_millas),
+        ]);
+        rows.push(['TOTAL', '', '', fmt(grandTotalPeriodos)]);
+
+        autoTable(doc, {
+            startY: margin + 24,
+            margin: { left: margin, right: margin, top: margin, bottom: margin },
+            head: [['Estado', 'Periodo', 'Año', 'Total Mi']],
+            body: rows,
+            styles: { fontSize: 9, cellPadding: 5 },
+            headStyles: { fillColor: [245, 245, 245], textColor: 0, fontStyle: 'bold' },
+            didParseCell: (data) => {
+                if (data.column.index === 3) {
+                    data.cell.styles.halign = 'right';
+                }
+                if (data.row.index === rows.length - 1 && data.section === 'body') {
+                    data.cell.styles.fontStyle = 'bold';
+                    data.cell.styles.fillColor = [245, 245, 245];
+                }
+            },
+            pageBreak: 'auto',
+            rowPageBreak: 'avoid',
+        });
+
+        doc.save('IFTA_Registros.pdf');
+    };
+
     // ── Render ────────────────────────────────────────────────────────────────
     return (
         <Box sx={{ p: 3 }}>
@@ -91,6 +179,7 @@ export default function IFTA() {
             <Tabs value={tabValue} onChange={(_, v) => setTabValue(v)} sx={{ mb: 2.5 }}>
                 <Tab label="Por Viaje" />
                 <Tab label="Totales por Estado" />
+                <Tab label="Millas por Periodo" />
             </Tabs>
 
             {/* ── TAB 0: Por Viaje ─────────────────────────────────────────── */}
@@ -277,6 +366,129 @@ export default function IFTA() {
                     )}
                 </Box>
             )}
+
+            {/* ── TAB 2: Millas por Periodo ────────────────────────────────── */}
+            {tabValue === 2 && (
+                <Box>
+                    {/* Filtros */}
+                    <Paper variant="outlined" sx={{ p: 2, mb: 2.5 }}>
+                        <Stack direction="row" alignItems="center" gap={1} mb={1.5}>
+                            <FilterListIcon fontSize="small" color="action" />
+                            <Typography variant="subtitle2" fontWeight={700}>Filtros</Typography>
+                        </Stack>
+                        <Stack direction="row" gap={2} flexWrap="wrap" alignItems="flex-end">
+                            <FormControl size="small" sx={{ width: 140 }}>
+                                <InputLabel>Periodo</InputLabel>
+                                <Select
+                                    value={filterPeriodo}
+                                    label="Periodo"
+                                    onChange={e => setFilterPeriodo(e.target.value)}
+                                >
+                                    <MenuItem value="">Todos</MenuItem>
+                                    {periodosUnicos.map(p => (
+                                        <MenuItem key={p} value={p}>{p}</MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
+                            <TextField
+                                size="small"
+                                label="Estado (ej. TX)"
+                                value={filterPeriodoEstado}
+                                onChange={e => setFilterPeriodoEstado(e.target.value)}
+                                sx={{ width: 140 }}
+                                slotProps={{ htmlInput: { maxLength: 2, style: { textTransform: 'uppercase' } } }}
+                            />
+                            <TextField
+                                size="small"
+                                label="Año"
+                                value={filterYear}
+                                onChange={e => setFilterYear(e.target.value)}
+                                sx={{ width: 100 }}
+                                slotProps={{ htmlInput: { maxLength: 4 } }}
+                            />
+                            <Button
+                                size="small"
+                                color="inherit"
+                                onClick={() => {
+                                    setFilterPeriodo('');
+                                    setFilterPeriodoEstado('');
+                                    setFilterYear('');
+                                }}
+                            >
+                                Limpiar
+                            </Button>
+                            <Button
+                                size="small"
+                                startIcon={<RefreshIcon />}
+                                onClick={fetchPeriodos}
+                                disabled={loadingPeriodos}
+                            >
+                                Actualizar
+                            </Button>
+                            <Button
+                                size="small"
+                                variant="outlined"
+                                startIcon={<PictureAsPdfIcon />}
+                                onClick={printPDF}
+                                disabled={filteredPeriodos.length === 0}
+                            >
+                                Imprimir PDF
+                            </Button>
+                        </Stack>
+                    </Paper>
+
+                    {loadingPeriodos ? (
+                        <Box display="flex" alignItems="center" gap={1.5} py={4}>
+                            <CircularProgress size={22} />
+                            <Typography color="text.secondary">Cargando millas por periodo...</Typography>
+                        </Box>
+                    ) : (
+                        <TableContainer component={Paper} variant="outlined">
+                            <Table size="small">
+                                <TableHead>
+                                    <TableRow sx={{ bgcolor: '#f5f5f5' }}>
+                                        <TableCell sx={{ fontWeight: 700 }}>Estado</TableCell>
+                                        <TableCell sx={{ fontWeight: 700 }}>Periodo</TableCell>
+                                        <TableCell sx={{ fontWeight: 700 }}>Año</TableCell>
+                                        <TableCell sx={{ fontWeight: 700, textAlign: 'right' }}>Total Mi</TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {filteredPeriodos.length === 0 ? (
+                                        <TableRow>
+                                            <TableCell colSpan={3} align="center" sx={{ py: 4, color: 'text.secondary' }}>
+                                                Sin datos para los filtros aplicados.
+                                            </TableCell>
+                                        </TableRow>
+                                    ) : (
+                                        <>
+                                            {filteredPeriodos.map((row, i) => (
+                                                <TableRow key={`${row.estado}-${row.periodo}-${row.trip_year}-${i}`} hover>
+                                                    <TableCell>
+                                                        <Chip label={row.estado} size="small" sx={{ fontWeight: 700, minWidth: 42 }} />
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Chip label={row.periodo} size="small" variant="outlined" color="primary" sx={{ fontWeight: 600 }} />
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Chip label={row.trip_year} size="small" variant="outlined" color="primary" sx={{ fontWeight: 600 }} />
+                                                    </TableCell>
+                                                    <TableCell align="right">{fmt(row.total_millas)}</TableCell>
+                                                </TableRow>
+                                            ))}
+                                            <TableRow sx={{ bgcolor: '#f5f5f5' }}>
+                                                <TableCell sx={{ fontWeight: 700 }} colSpan={3}>TOTAL</TableCell>
+                                                <TableCell align="right" sx={{ fontWeight: 700 }}>{fmt(grandTotalPeriodos)}</TableCell>
+                                            </TableRow>
+                                        </>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                    )}
+                </Box>
+            )}
         </Box>
     );
 }
+
