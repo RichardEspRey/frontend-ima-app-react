@@ -3,7 +3,7 @@ import './css/Sidebar.css';
 import { useDispatch, useSelector } from 'react-redux';
 import { setActiveMenu, setExpandedMenu, setSelectedSubMenu } from '../app/menuSlice';
 import { AuthContext } from '../auth/AuthContext';
-import { menuItemsConfig } from '../config/menuConfig';
+import { menuItemsConfig } from '../core/config/menuConfig';
 import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { Collapse, Box, Stack, Tooltip } from '@mui/material'; 

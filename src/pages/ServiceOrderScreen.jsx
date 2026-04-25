@@ -13,8 +13,8 @@ import { useNavigate } from "react-router-dom";
 import Select from "react-select";
 import CreatableSelect from "react-select/creatable";
 
-import useFetchInventoryItems from "../hooks/expense_hooks/useFetchInventoryItems";
-import useFetchRepairTypes from "../hooks/service_order/useFetchRepairTypes";
+import useFetchInventoryItems from "../core/hooks/expense_hooks/useFetchInventoryItems";
+import useFetchRepairTypes from "../core/hooks/service_order/useFetchRepairTypes";
 
 const apiHost = import.meta.env.VITE_API_HOST;
 

@@ -12,12 +12,12 @@ import ModalArchivo from './ModalArchivo';
 import ModalCajaExterna from './ModalCajaExterna'; 
 
 // Hooks
-import useFetchActiveDrivers from '../hooks/useFetchActiveDrivers';
-import useFetchActiveTrucks from '../hooks/useFetchActiveTrucks';
-import useFetchActiveTrailers from '../hooks/useFetchActiveTrailers';
-import useFetchActiveExternalTrailers from '../hooks/useFetchActiveExternalTrailers';
-import useFetchCompanies from '../hooks/useFetchCompanies';
-import useFetchWarehouses from '../hooks/useFetchWarehouses';
+import useFetchActiveDrivers from '../core/hooks/useFetchActiveDrivers';
+import useFetchActiveTrucks from '../core/hooks/useFetchActiveTrucks';
+import useFetchActiveTrailers from '../core/hooks/useFetchActiveTrailers';
+import useFetchActiveExternalTrailers from '../core/hooks/useFetchActiveExternalTrailers';
+import useFetchCompanies from '../core/hooks/useFetchCompanies';
+import useFetchWarehouses from '../core/hooks/useFetchWarehouses';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 

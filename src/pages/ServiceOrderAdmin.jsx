@@ -15,7 +15,7 @@ import dayjs from 'dayjs';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 
-import useFetchRepairTypes from '../hooks/service_order/useFetchRepairTypes.jsx';
+import useFetchRepairTypes from '../core/hooks/service_order/useFetchRepairTypes.jsx';
 import EditDetailModal from '../components/EditDetailModa';
 import { OrderRow } from '../components/OrderRow';
 

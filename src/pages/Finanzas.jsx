@@ -16,8 +16,8 @@ import Swal from 'sweetalert2';
 
 import { TripFinanceRow } from '../components/TripFinanceRow';
 import { AlertSummaryCards } from '../components/AlertSummaryCards';
-import { getTripStatusSummary, validateStage, buildPayloadItem, collectDirtyStages } from '../utils/financeHelpers';
-import { STATUS_OPTIONS } from '../constants/finances'; 
+import { getTripStatusSummary, validateStage, buildPayloadItem, collectDirtyStages } from '../core/utils/financeHelpers';
+import { STATUS_OPTIONS } from '../core/constants/finances'; 
 
 const apiHost = import.meta.env.VITE_API_HOST;
 

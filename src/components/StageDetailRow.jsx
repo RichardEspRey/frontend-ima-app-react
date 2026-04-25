@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { TableCell, TableRow, TextField, Select, MenuItem, InputAdornment, Box, Typography, Chip } from '@mui/material';
-import { PAYMENT_METHODS, STATUS_OPTIONS } from '../constants/finances';
+import { PAYMENT_METHODS, STATUS_OPTIONS } from '../core/constants/finances';
 import { AuthContext } from '../auth/AuthContext';
 import AccessTimeIcon from '@mui/icons-material/AccessTime'; 
 

@@ -8,7 +8,7 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import TripConfigPanel from "../../components/EditUpcoming/TripConfigPanel";
 import TripFormRenderer from "../../components/EditUpcoming/TripFormRenderer";
 
-import { initialBorderCrossingDocs, NORMAL_TRIP_DOCS_BY_COUNTRY } from "../../utils/tripFormConstants";
+import { initialBorderCrossingDocs, NORMAL_TRIP_DOCS_BY_COUNTRY } from "../../core/utils/tripFormConstants";
 
 const EditUpComing = () => {
     const { tripId } = useParams();

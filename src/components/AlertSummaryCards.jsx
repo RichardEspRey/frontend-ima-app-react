@@ -1,5 +1,5 @@
 import { Paper, Stack, Box, Typography, Divider } from '@mui/material';
-import { STATUS_OPTIONS } from '../constants/finances';
+import { STATUS_OPTIONS } from '../core/constants/finances';
 
 const money = (v) =>
   new Intl.NumberFormat('en-US', { 

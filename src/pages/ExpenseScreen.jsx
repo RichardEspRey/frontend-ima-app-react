@@ -13,11 +13,11 @@ import Select from 'react-select';
 
 import ModalArchivo from '../components/ModalArchivo';
 
-import useFetchInventoryItems from '../hooks/expense_hooks/useFetchInventoryItems';
-import useFetchSubcategories from '../hooks/expense_hooks/useFetchSubcategories';
-import useFetchCategories from '../hooks/expense_hooks/useFetchCategories';
-import useFetchExpenseTypes from '../hooks/expense_hooks/useFetchExpenseTypes';
-import useFetchExchangeRate from '../hooks/useFetchExchangeRate';
+import useFetchInventoryItems from '../core/hooks/expense_hooks/useFetchInventoryItems';
+import useFetchSubcategories from '../core/hooks/expense_hooks/useFetchSubcategories';
+import useFetchCategories from '../core/hooks/expense_hooks/useFetchCategories';
+import useFetchExpenseTypes from '../core/hooks/expense_hooks/useFetchExpenseTypes';
+import useFetchExchangeRate from '../core/hooks/useFetchExchangeRate';
 
 const ID_MANTENIMIENTO = "3";
 const apiHost = import.meta.env.VITE_API_HOST;

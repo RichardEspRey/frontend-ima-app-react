@@ -5,9 +5,9 @@ import {
 } from '@mui/material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import { STATUS_OPTIONS } from '../constants/finances';
+import { STATUS_OPTIONS } from '../core/constants/finances';
 import { StageDetailRow } from './StageDetailRow'; 
-import { money, countCriticalStages } from '../utils/financeHelpers';
+import { money, countCriticalStages } from '../core/utils/financeHelpers';
 import { AuthContext } from '../auth/AuthContext';
 
 const StatusChip = ({ value }) => {

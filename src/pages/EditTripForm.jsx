@@ -4,14 +4,14 @@ import Swal from 'sweetalert2';
 import { Box, Typography, CircularProgress, Alert, Container } from '@mui/material';
 import { format, parseISO } from 'date-fns';
 
-import useFetchActiveDrivers from '../hooks/useFetchActiveDrivers';
-import useFetchActiveTrucks from '../hooks/useFetchActiveTrucks';
-import useFetchActiveTrailers from '../hooks/useFetchActiveTrailers';
-import useFetchActiveExternalTrailers from '../hooks/useFetchActiveExternalTrailers';
-import useFetchCompanies from '../hooks/useFetchCompanies';
-import useFetchWarehouses from '../hooks/useFetchWarehouses';
+import useFetchActiveDrivers from '../core/hooks/useFetchActiveDrivers';
+import useFetchActiveTrucks from '../core/hooks/useFetchActiveTrucks';
+import useFetchActiveTrailers from '../core/hooks/useFetchActiveTrailers';
+import useFetchActiveExternalTrailers from '../core/hooks/useFetchActiveExternalTrailers';
+import useFetchCompanies from '../core/hooks/useFetchCompanies';
+import useFetchWarehouses from '../core/hooks/useFetchWarehouses';
 import GeneralTripInfo from '../components/trip-form/GeneralTripInfo';
-import { initialBorderCrossingDocs, NORMAL_TRIP_DOCS_BY_COUNTRY } from '../utils/tripFormConstants';
+import { initialBorderCrossingDocs, NORMAL_TRIP_DOCS_BY_COUNTRY } from '../core/utils/tripFormConstants';
 import './css/EditTripForm.css';
 
 import EditTripHeader from '../components/EditTripForm/EditTripHeader';

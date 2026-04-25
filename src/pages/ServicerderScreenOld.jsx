@@ -5,8 +5,8 @@ import CreatableSelect from 'react-select/creatable';
 
 import { useParams, useNavigate } from 'react-router-dom';
 
-import useFetchInventoryItems from '../hooks/expense_hooks/useFetchInventoryItems';
-import useFetchRepairTypes from '../hooks/service_order/useFetchRepairTypes'; 
+import useFetchInventoryItems from '../core/hooks/expense_hooks/useFetchInventoryItems';
+import useFetchRepairTypes from '../core/hooks/service_order/useFetchRepairTypes'; 
 
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
