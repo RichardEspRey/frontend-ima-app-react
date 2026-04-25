@@ -43,7 +43,7 @@ import ResumenTrip from '../pages/ResumenTrip.jsx';
 import ResiduoTrip from '../pages/Finanzas/ResiduosTrips.jsx';
 import ProfileAccessManager from '../pages/ProfileAccessManager.jsx';
 import Reports from '../pages/Reports.jsx';
-import Tracking from '../pages/Mapas/Tracking.jsx';
+import Tracking from '../pages/Tracking/Tracking.jsx';
 import { Welcome } from '../pages/Welcome.jsx';
 import MargenScreen from '../pages/MargenScreen.jsx';
 import PaymentDrivers from '../pages/Finanzas/PaymentDrivers.jsx';
