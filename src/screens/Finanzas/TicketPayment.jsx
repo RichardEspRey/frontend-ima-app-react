@@ -34,6 +34,7 @@ const TicketPayment = () => {
   const [customRate, setCustomRate] = useState(0);
 
   const [comentarios, setComentarios] = useState("");
+  const [comentariosOperador, setComentariosOperador] = useState("");
 
   const fetchTicket = useCallback(async () => {
     try {
@@ -84,6 +85,7 @@ const TicketPayment = () => {
             setVisibleAdvances(count);
 
             setComentarios(json.data.saved_data.comentarios || ""); 
+            setComentariosOperador(json.data.saved_data.comentarios_operador || "");
 
             const savedGastos = Number(json.data.saved_data.gastos_aplicados || 0);
             setGastos(savedGastos > 0 ? savedGastos : gastosCalculados);
@@ -264,6 +266,20 @@ const TicketPayment = () => {
     doc.setTextColor(46, 125, 50); 
     printRightAligned("TOTAL A PAGAR:", `$${isNaN(totalPagar) ? "0.00" : totalPagar.toFixed(2)}`, sumY, true);
     
+    if (comentariosOperador && comentariosOperador.trim() !== '') {
+        sumY += 15;
+        doc.setFontSize(11);
+        doc.setTextColor(38, 50, 56);
+        doc.setFont(undefined, 'bold');
+        doc.text("NOTAS AL OPERADOR:", 14, sumY);
+        
+        doc.setFont(undefined, 'normal');
+        doc.setFontSize(10);
+        // splitTextToSize evita que el texto se salga del ancho de la página
+        const splitComments = doc.splitTextToSize(comentariosOperador, 180);
+        doc.text(splitComments, 14, sumY + 6);
+    }
+
     doc.save(`Ticket_Pago_${info?.trip_number || trip_id}.pdf`);
   };
 
@@ -334,45 +350,40 @@ const TicketPayment = () => {
                     </Grid>
                     
                     <Grid item xs={12} sm={6}>
-                        <Paper 
-                            elevation={0} 
-                            sx={{ 
-                                p: 2, 
-                                height: '100%', 
-                                bgcolor: '#f8f9fa', 
-                                border: '1px dashed #cfd8dc', 
-                                borderRadius: 2,
-                                display: 'flex',
-                                flexDirection: 'column'
-                            }}
-                        >
-                            <Typography 
-                                variant="caption" 
-                                fontWeight={700} 
-                                color="primary.main" 
-                                gutterBottom 
-                                sx={{ textTransform: 'uppercase', mb: 1.5, display: 'block' }}
-                            >
-                                Notas / Comentarios Internos
-                            </Typography>
-                            
-                            <TextField
-                                fullWidth
-                                multiline
-                                minRows={6} 
-                                placeholder="Escriba sus comentarios"
-                                value={comentarios}
-                                onChange={(e) => setComentarios(e.target.value)}
-                                variant="outlined"
-                                sx={{ 
-                                    flexGrow: 1, 
-                                    bgcolor: '#fff',
-                                    '& .MuiOutlinedInput-root': {
-                                        borderRadius: 1.5,
-                                    }
-                                }}
-                            />
-                        </Paper>
+                        <Stack spacing={2} sx={{ height: '100%' }}>
+                            <Paper elevation={0} sx={{ p: 2, bgcolor: '#f8f9fa', border: '1px dashed #cfd8dc', borderRadius: 2 }}>
+                                <Typography variant="caption" fontWeight={700} color="text.secondary" gutterBottom sx={{ textTransform: 'uppercase', mb: 1.5, display: 'block' }}>
+                                    Notas Internas
+                                </Typography>
+                                <TextField
+                                    fullWidth
+                                    multiline
+                                    minRows={3} 
+                                    placeholder="Comentarios para administración..."
+                                    value={comentarios}
+                                    onChange={(e) => setComentarios(e.target.value)}
+                                    variant="outlined"
+                                    sx={{ bgcolor: '#fff' }}
+                                />
+                            </Paper>
+
+                            {/* Caja de Comentarios para el Operador (PDF) */}
+                            <Paper elevation={0} sx={{ p: 2, bgcolor: '#e3f2fd', border: '1px solid #90caf9', borderRadius: 2 }}>
+                                <Typography variant="caption" fontWeight={800} color="info.main" gutterBottom sx={{ textTransform: 'uppercase', mb: 1.5, display: 'block' }}>
+                                    Mensaje al Operador
+                                </Typography>
+                                <TextField
+                                    fullWidth
+                                    multiline
+                                    minRows={3} 
+                                    placeholder="Escribe algo que el operador deba leer en su ticket..."
+                                    value={comentariosOperador}
+                                    onChange={(e) => setComentariosOperador(e.target.value)}
+                                    variant="outlined"
+                                    sx={{ bgcolor: '#fff' }}
+                                />
+                            </Paper>
+                        </Stack>
                     </Grid>
                     
                 </Grid>
