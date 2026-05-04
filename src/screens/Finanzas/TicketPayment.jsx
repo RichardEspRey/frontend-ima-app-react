@@ -197,6 +197,11 @@ const TicketPayment = () => {
     doc.text(`${info?.unidad || 'N/A'}`, 150, 55);
 
     doc.setFont(undefined, 'normal');
+    doc.text("CAJA:", 130, 63); 
+    doc.setFont(undefined, 'bold');
+    doc.text(`${info?.caja || 'N/A'}`, 150, 63);
+
+    doc.setFont(undefined, 'normal');
     doc.text("TARIFA X MILLA:", 14, 63);
     doc.setFont(undefined, 'bold');
     doc.text(`$${Number(customRate).toFixed(4)}`, 48, 63);
@@ -271,7 +276,7 @@ const TicketPayment = () => {
         doc.setFontSize(11);
         doc.setTextColor(38, 50, 56);
         doc.setFont(undefined, 'bold');
-        doc.text("NOTAS AL OPERADOR:", 14, sumY);
+        doc.text("Comentarios:", 14, sumY);
         
         doc.setFont(undefined, 'normal');
         doc.setFontSize(10);
@@ -303,6 +308,7 @@ const TicketPayment = () => {
             </Box>
             <Box textAlign="right">
                 <Chip icon={<RouteIcon />} label={`Trip #${info.trip_number}`} color="primary" variant="outlined" sx={{ fontWeight: 'bold', fontSize: '1rem', px: 1 }} />
+                <Chip label={`Caja: ${info.caja || 'N/A'}`} color="default" sx={{ fontWeight: 'bold', fontSize: '0.9rem' }} />
             </Box>
         </Stack>
 
@@ -370,7 +376,7 @@ const TicketPayment = () => {
                             {/* Caja de Comentarios para el Operador (PDF) */}
                             <Paper elevation={0} sx={{ p: 2, bgcolor: '#e3f2fd', border: '1px solid #90caf9', borderRadius: 2 }}>
                                 <Typography variant="caption" fontWeight={800} color="info.main" gutterBottom sx={{ textTransform: 'uppercase', mb: 1.5, display: 'block' }}>
-                                    Mensaje al Operador
+                                    Comentarios
                                 </Typography>
                                 <TextField
                                     fullWidth

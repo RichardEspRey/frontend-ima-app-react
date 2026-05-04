@@ -28,6 +28,7 @@ function useFetchCategories() {
         const formattedCategories = data.data.map(category => ({
           value: category.value, 
           label: category.label,      
+          id_tipo_gasto: category.id_tipo_gasto 
         }));
         setMaintenanceCategories(formattedCategories);
 
