@@ -14,11 +14,9 @@ import Swal from 'sweetalert2';
 import { PhotoProvider, PhotoView } from 'react-photo-view';
 import 'react-photo-view/dist/react-photo-view.css';
 
-import useFetchInventoryItems from '../hooks/expense_hooks/useFetchInventoryItems';
 import useFetchSubcategories from '../hooks/expense_hooks/useFetchSubcategories';
 import useFetchCategories from '../hooks/expense_hooks/useFetchCategories';
 import useFetchExpenseTypes from '../hooks/expense_hooks/useFetchExpenseTypes';
-import useFetchExchangeRate from '../hooks/useFetchExchangeRate';
 
 const customSelectStyles = {
   control: (provided) => ({
@@ -27,14 +25,12 @@ const customSelectStyles = {
   menu: (provided) => ({ ...provided, zIndex: 9999 })
 };
 
-const ID_MANTENIMIENTO = "3"; 
 
 const ExpenseEdit = () => {
   const { id_gasto } = useParams();
   const navigate = useNavigate();
   const apiHost = import.meta.env.VITE_API_HOST;
 
-  // Estados Generales
   const [country, setCountry] = useState(null);
   const [expenseDate, setExpenseDate] = useState(new Date());
   const [ticketDate, setTicketDate] = useState(new Date());
@@ -46,12 +42,10 @@ const ExpenseEdit = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  // Hooks Data
   const { expenseTypes, loading: typesLoading } = useFetchExpenseTypes();
   const { maintenanceCategories, loading: catLoading } = useFetchCategories();
   const { subcategories, loading: subLoading } = useFetchSubcategories();
   
-  // Archivos
   const [files, setFiles] = useState({ facturaPdf: null, ticketJpg: null });
 
   const countries = [
@@ -59,7 +53,6 @@ const ExpenseEdit = () => {
     { value: 'US', label: 'Estados Unidos' },
   ];
 
-  // --- CARGA INICIAL ---
   useEffect(() => {
     const fetchExpense = async () => {
       try {
@@ -75,13 +68,11 @@ const ExpenseEdit = () => {
 
         const data = json.data;
         
-        // General
         setCountry(countries.find(c => c.value === data.pais) || null);
         setExpenseDate(new Date(`${data.fecha_gasto}T00:00:00`));
         if(data.fecha_ticket) setTicketDate(new Date(`${data.fecha_ticket}T00:00:00`));
         setTotalAmount(parseFloat(data.monto_total || 0).toFixed(2));
 
-        // Detalles
         if (Array.isArray(data.detalles)) {
             const mapped = data.detalles.map(d => ({
                 id: d.id_detalle_gasto,
@@ -95,7 +86,6 @@ const ExpenseEdit = () => {
             setExpenseDetails(mapped);
         }
 
-        // Archivos
         const ticket = data.tickets?.find(t => t.tipo_documento?.includes('Ticket'));
         const factura = data.tickets?.find(t => t.tipo_documento?.includes('Factura'));
         setFiles({
@@ -112,13 +102,12 @@ const ExpenseEdit = () => {
     fetchExpense();
   }, [id_gasto, apiHost]);
 
-  // --- HANDLERS ---
   const handleDetailChange = (id, field, value) => {
     setExpenseDetails(prev => prev.map(d => {
         if (d.id !== id) return d;
         const updated = { ...d, [field]: value };
         
-        if (field === 'expenseType' && String(value) !== ID_MANTENIMIENTO) {
+        if (field === 'expenseType') {
             updated.category = null;
             updated.subcategory = null;
         }
@@ -149,7 +138,6 @@ const ExpenseEdit = () => {
       setFiles(p => ({ ...p, [type]: null }));
   };
 
-  // --- SAVE ---
   const handleSubmit = async () => {
       setSaving(true);
       try {
@@ -161,15 +149,14 @@ const ExpenseEdit = () => {
         fd.append("fecha_ticket", ticketDate.toISOString().split('T')[0]);
         fd.append("monto_total", totalAmount);
         
-        // Detalles
         const detailsToSend = expenseDetails.map(d => ({
             id_detalle_gasto: String(d.id).startsWith('new') ? null : d.id,
             id_tipo_gasto: d.expenseType,
             descripcion_articulo: d.itemDescription,
             precio_unitario: d.price,
             cantidad_articulo: d.quantity,
-            id_categoria_mantenimiento: d.category,
-            id_subcategoria_mantenimiento: d.subcategory
+            id_categoria_mantenimiento: d.category || null,
+            id_subcategoria_mantenimiento: d.subcategory || null
         }));
         fd.append("detalles", JSON.stringify(detailsToSend));
         
@@ -241,14 +228,20 @@ const ExpenseEdit = () => {
                     
                     <Stack spacing={3}>
                         {expenseDetails.map((detail, index) => {
-                            const isMaint = String(detail.expenseType) === ID_MANTENIMIENTO;
-                            
+                            const relevantCategories = maintenanceCategories.filter(c => String(c.id_tipo_gasto) === String(detail.expenseType));
+                            const hasCategories = relevantCategories.length > 0;
+
                             const relevantSubs = subcategories.filter(s => s.id_categoria === detail.category);
+                            const hasSubcategories = relevantSubs.length > 0;
+
+                            let mdSelectSize = 12;
+                            if (hasCategories && hasSubcategories) mdSelectSize = 4;
+                            else if (hasCategories) mdSelectSize = 6;
 
                             return (
                                 <Paper key={detail.id} variant="outlined" sx={{ p: 2, bgcolor: '#fafafa' }}>
                                     <Grid container spacing={2} alignItems="center">
-                                        <Grid item xs={12} md={isMaint ? 4 : 12}>
+                                        <Grid item xs={12} md={mdSelectSize}>
                                             <Typography variant="caption">Type</Typography>
                                             <Select 
                                                 options={expenseTypes} 
@@ -259,30 +252,31 @@ const ExpenseEdit = () => {
                                             />
                                         </Grid>
                                         
-                                        {isMaint && (
-                                            <>
-                                                <Grid item xs={12} md={4}>
-                                                    <Typography variant="caption">Category</Typography>
-                                                    <Select 
-                                                        options={maintenanceCategories}
-                                                        value={maintenanceCategories.find(c => c.value === detail.category) || null}
-                                                        onChange={opt => handleDetailChange(detail.id, 'category', opt?.value)}
-                                                        styles={customSelectStyles}
-                                                        isLoading={catLoading}
-                                                    />
-                                                </Grid>
-                                                <Grid item xs={12} md={4}>
-                                                    <Typography variant="caption">Subcategory</Typography>
-                                                    <Select 
-                                                        options={relevantSubs}
-                                                        value={relevantSubs.find(s => s.value === detail.subcategory) || null}
-                                                        onChange={opt => handleDetailChange(detail.id, 'subcategory', opt?.value)}
-                                                        styles={customSelectStyles}
-                                                        isDisabled={!detail.category}
-                                                        isLoading={subLoading}
-                                                    />
-                                                </Grid>
-                                            </>
+                                        {hasCategories && (
+                                            <Grid item xs={12} md={mdSelectSize}>
+                                                <Typography variant="caption">Category</Typography>
+                                                <Select 
+                                                    options={relevantCategories}
+                                                    value={relevantCategories.find(c => c.value === detail.category) || null}
+                                                    onChange={opt => handleDetailChange(detail.id, 'category', opt?.value)}
+                                                    styles={customSelectStyles}
+                                                    isLoading={catLoading}
+                                                />
+                                            </Grid>
+                                        )}
+
+                                        {hasSubcategories && (
+                                            <Grid item xs={12} md={mdSelectSize}>
+                                                <Typography variant="caption">Subcategory</Typography>
+                                                <Select 
+                                                    options={relevantSubs}
+                                                    value={relevantSubs.find(s => s.value === detail.subcategory) || null}
+                                                    onChange={opt => handleDetailChange(detail.id, 'subcategory', opt?.value)}
+                                                    styles={customSelectStyles}
+                                                    isDisabled={!detail.category}
+                                                    isLoading={subLoading}
+                                                />
+                                            </Grid>
                                         )}
 
                                         <Grid item xs={12} md={6}>

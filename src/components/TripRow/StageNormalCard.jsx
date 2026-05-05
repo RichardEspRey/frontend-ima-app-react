@@ -11,7 +11,7 @@ const formatTime = (timeStr) => {
   return timeStr.substring(0, 5); 
 };
 
-export const StageNormalCard = ({ etapa, getDocumentUrl }) => {
+export const StageNormalCard = ({ etapa, getDocumentUrl, isCompleted }) => {
 
   // 1. Separamos SOLO el BL Firmado
   const mainBLDocs = Array.isArray(etapa.documentos_adjuntos)
@@ -21,6 +21,10 @@ export const StageNormalCard = ({ etapa, getDocumentUrl }) => {
   const otrosDocumentos = Array.isArray(etapa.documentos_adjuntos)
     ? etapa.documentos_adjuntos.filter(d => d.tipo_documento.toLowerCase() !== 'bl_firmado')
     : [];
+
+  const tarifa = parseFloat(etapa.rate_tarifa) || 0;
+  const millasPracticas = parseFloat(etapa.millas_pcmiller_practicas) || 0;
+  const rateFinal = millasPracticas > 0 ? (tarifa / millasPracticas) : 0;
 
   return (
     <Grid item xs={12} sm={6} md={4}>
@@ -32,9 +36,21 @@ export const StageNormalCard = ({ etapa, getDocumentUrl }) => {
 
         <Stack spacing={1.5} sx={{ pl: 1 }}>
           <Box>
-            <Typography variant="subtitle2" color="text.secondary" sx={{ fontSize: '0.75rem', textTransform: 'uppercase' }}>
-              Etapa {etapa.stage_number} • {etapa.travel_direction}
-            </Typography>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography variant="subtitle2" color="text.secondary" sx={{ fontSize: '0.75rem', textTransform: 'uppercase' }}>
+                  Etapa {etapa.stage_number} • {etapa.travel_direction}
+                </Typography>
+                
+                {isCompleted && (
+                    <Chip 
+                        label={`Rate: $${rateFinal.toFixed(2)}/mi`} 
+                        size="small" 
+                        color="success" 
+                        variant="outlined"
+                        sx={{ height: 22, fontSize: '0.75rem', fontWeight: 800, bgcolor: '#f1f8e9' }} 
+                    />
+                )}
+            </Box>
             <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: 0.5, flexWrap:'wrap' }}>
               <BusinessIcon fontSize="small" color="action" />
               <Typography variant="subtitle1" fontWeight={700} sx={{ lineHeight: 1.2 }}>
