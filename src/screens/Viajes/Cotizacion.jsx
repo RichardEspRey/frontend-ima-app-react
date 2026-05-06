@@ -318,7 +318,7 @@ export default function Cotizacion() {
     <Box sx={{ p: 3, bgcolor: "#f4f6f8", minHeight: "100vh" }}>
       {/* Title */}
       <Box sx={{ mb: 3 }}>
-        <Typography variant="h5" fontWeight={700}>Viajes Cotización</Typography>
+        <Typography variant="h5" fontWeight={700}>Cotizador de viajes</Typography>
         <Box sx={{ width: 44, height: 3, bgcolor: "primary.main", mt: 0.75, borderRadius: 1 }} />
       </Box>
 
