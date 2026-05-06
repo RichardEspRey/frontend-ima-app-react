@@ -88,11 +88,12 @@ const DieselEditor = () => {
       
       formDataToSend.append("estado", formData.estado);
       formDataToSend.append("fleetone", formData.fleetone);
-      formDataToSend.append("periodo", formData.periodo);
+
 
       formDataToSend.append("odometro", String(odometroNum));
       formDataToSend.append("galones", String(galonesNum));
       formDataToSend.append("monto", String(montoNum));
+      formDataToSend.append("periodo", formData.periodo);
 
       const response = await fetch(`${apiHost}/formularios.php`, {
         method: "POST",

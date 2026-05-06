@@ -142,6 +142,7 @@ export default function IFTA() {
             r.estado,
             r.periodo,
             r.trip_year ?? '—',
+            r.galones,
             fmt(r.total_millas),
         ]);
         rows.push(['TOTAL', '', '', fmt(grandTotalPeriodos)]);
@@ -450,6 +451,7 @@ export default function IFTA() {
                                         <TableCell sx={{ fontWeight: 700 }}>Estado</TableCell>
                                         <TableCell sx={{ fontWeight: 700 }}>Periodo</TableCell>
                                         <TableCell sx={{ fontWeight: 700 }}>Año</TableCell>
+                                        <TableCell sx={{ fontWeight: 700 }}>Total Galones</TableCell>
                                         <TableCell sx={{ fontWeight: 700, textAlign: 'right' }}>Total Mi</TableCell>
                                     </TableRow>
                                 </TableHead>
@@ -472,6 +474,9 @@ export default function IFTA() {
                                                     </TableCell>
                                                     <TableCell>
                                                         <Chip label={row.trip_year} size="small" variant="outlined" color="primary" sx={{ fontWeight: 600 }} />
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Chip label={row.galones} size="small" variant="outlined" color="primary" sx={{ fontWeight: 600 }} />
                                                     </TableCell>
                                                     <TableCell align="right">{fmt(row.total_millas)}</TableCell>
                                                 </TableRow>
