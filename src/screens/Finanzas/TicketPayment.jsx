@@ -155,6 +155,7 @@ const TicketPayment = () => {
                 fd.append("gastos", gastos);
                 fd.append("ajustes", JSON.stringify(ajustes));
                 fd.append("comentarios", comentarios);
+                fd.append("comentarios_operador", comentariosOperador);
           
                 const res = await fetch(`${apiHost}/formularios.php`, { method: "POST", body: fd });
                 const json = await res.json();
