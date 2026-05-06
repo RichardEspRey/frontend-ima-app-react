@@ -135,6 +135,11 @@ export const menuItemsConfig = [
     name: "Viajes",
     rolesPermitidos: ["dev", "admin", "Candy", "Blanca"],
     subItems: [
+       {
+        name: "Cotizador",
+        route: "/cotizador",
+        rolesPermitidos: ["admin"],
+      },
       {
         name: "Crear viaje",
         route: "/CrearViaje",
