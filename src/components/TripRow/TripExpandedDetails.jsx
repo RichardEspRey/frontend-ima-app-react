@@ -9,6 +9,9 @@ import { StageUpcomingCard } from './StageUpcomingCard';
 export const TripExpandedDetails = ({ 
     trip, isUpcomingTab, isDespachoTab, onAlmostOver, onFinalize, getDocumentUrl 
 }) => {
+
+  const isCompleted = trip.status === 'Completed';
+
   return (
     <Box sx={{ margin: 1, padding: 2, border: '1px solid #e0e0e0', borderRadius: 2, bgcolor: '#fafafa' }}>
       
@@ -47,7 +50,7 @@ export const TripExpandedDetails = ({
             if (etapa.stageType === 'emptyMileage') {
               return <StageEmptyCard key={etapa.trip_stage_id} etapa={etapa} />;
             } else {
-              return <StageNormalCard key={etapa.trip_stage_id} etapa={etapa} getDocumentUrl={getDocumentUrl} />;
+              return <StageNormalCard key={etapa.trip_stage_id} etapa={etapa} getDocumentUrl={getDocumentUrl} isCompleted={isCompleted} />;
             }
             
           })}

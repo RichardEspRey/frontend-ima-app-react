@@ -32,7 +32,7 @@ const initialEtapaStateBase = {
     date_of_departure: new Date(), stops_in_transit: []
 };
 
-const BorderCrossingFormNew2 = ({ tripNumber, countryCode, tripYear, isTransnational, isContinuation, transnationalNumber, movementNumber, onSuccess, etapas: etapasProp, setEtapas: setEtapasProp, formData: formDataProp, setFormData: setFormDataProp, onSaveOverride }) => {
+const BorderCrossingFormNew2 = ({ tripNumber, countryCode, tripYear, isTransnational, isContinuation, transnationalNumber, movementNumber, origenId, onSuccess, etapas: etapasProp, setEtapas: setEtapasProp, formData: formDataProp, setFormData: setFormDataProp, onSaveOverride }) => {
 
     // Hooks
     const { activeDrivers, loading: loadingDrivers, error: errorDrivers } = useFetchActiveDrivers();
@@ -64,6 +64,20 @@ const BorderCrossingFormNew2 = ({ tripNumber, countryCode, tripYear, isTransnati
     const [trailerType, setTrailerType] = useState(() => formDataProp?.caja_externa_id ? 'externa' : 'interna');
     const [companyOptions, setCompanyOptions] = useState([]);
     const [warehouseOptions, setWarehouseOptions] = useState([]);
+
+    const [origenes, setOrigenes] = useState([]);
+
+    // 👇 AGREGA ESTE useEffect
+    useEffect(() => {
+        const fd = new FormData();
+        fd.append("op", "get_origenes");
+        fetch(`${apiHost}/new_tripsv2.php`, { method: "POST", body: fd })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.status === "success") setOrigenes(data.data);
+          })
+          .catch((err) => console.error("Error cargando orígenes:", err));
+    }, [apiHost]);
 
     const [formDataLocal, setFormDataLocal] = useState({
         trip_number: tripNumber || '', driver_id: '', driver_id_second: '', truck_id: '', caja_id: '', caja_externa_id: ''
@@ -181,6 +195,7 @@ const BorderCrossingFormNew2 = ({ tripNumber, countryCode, tripYear, isTransnati
         fd.append('is_transnational', isTransnational ? 1 : 0);
         fd.append('transnational_number', isTransnational && isContinuation ? transnationalNumber : '');
         fd.append('movement_number', isTransnational && isContinuation ? movementNumber : (isTransnational ? 1 : ''));
+        fd.append('origen_id', origenId || '');
 
         const etapasJson = etapas.map(etapa => ({
             ...etapa,
@@ -244,6 +259,7 @@ const BorderCrossingFormNew2 = ({ tripNumber, countryCode, tripYear, isTransnati
                         handleCreateCompany={handleCreateCompany}
                         handleCreateWarehouse={handleCreateWarehouse}
                         loadingStates={{ companies: loadingCompanies, creatingCompany: isCreatingCompany, warehouses: loadingWarehouses, creatingWarehouse: isCreatingWarehouse }}
+                        origenes={origenes}
                     />
                 ))}
             </Stack>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Grid, Typography, Paper, Stack, TextField, Divider, Box } from '@mui/material';
+import { Grid, Typography, Paper, Stack, TextField, Divider, Box, Autocomplete } from '@mui/material';
 import FlagIcon from '@mui/icons-material/Flag';
 import PlaceIcon from '@mui/icons-material/Place'; 
 import { format } from 'date-fns';
@@ -12,11 +12,13 @@ const NormalStage = ({
     companyOptions, warehouseOptions, 
     handleCreateCompany, handleCreateWarehouse, 
     loadingStates, 
-    addStop, removeStop, updateStop, openDocModal 
+    addStop, removeStop, updateStop, openDocModal,
+    origenes // 🚨 NUEVA PROP: Recibe el catálogo desde el padre
 }) => {
     return (
         <Grid container spacing={3}>
-            <Grid item xs={12} md={3}>
+            {/* Compañía */}
+            <Grid item xs={12} md={4}>
                 <Typography variant="caption" fontWeight={700}>Compañía</Typography>
                 <SelectWrapper
                     label="Company:" isCreatable
@@ -29,24 +31,64 @@ const NormalStage = ({
                 />
             </Grid>
 
-            <Grid item xs={12} md={3}>
+            {/* ORIGEN */}
+            <Grid item xs={12} md={4}>
                 <Paper variant="outlined" sx={{ p: 2, height: '100%', bgcolor: '#f5f5f5' }}>
                     <Typography variant="subtitle2" color="primary" sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                         <PlaceIcon fontSize="small" /> ORIGEN
                     </Typography>
-                    <TextField 
-                        label="Fecha de Salida" 
-                        type="date" 
-                        InputLabelProps={{ shrink: true }} 
-                        size="small" 
-                        fullWidth 
-                        value={etapa.date_of_departure ? format(etapa.date_of_departure, 'yyyy-MM-dd') : ''} 
-                        onChange={e => updateStage(index, 'date_of_departure', e.target.value ? new Date(e.target.value + 'T12:00:00') : null)} 
-                    />
+                    
+                    <Stack spacing={2}>
+                        {/* 🚨 Autocomplete inteligente para Origen y Zip Code */}
+                        <Autocomplete
+                            freeSolo
+                            options={origenes || []}
+                            getOptionLabel={(option) => typeof option === 'string' ? option : option.nombre}
+                            value={etapa.origin || ''}
+                            onChange={(event, newValue) => {
+                                if (newValue && typeof newValue === 'object') {
+                                    updateStage(index, 'origin', newValue.nombre);
+                                    updateStage(index, 'zip_code_origin', newValue.zip_code);
+                                } else {
+                                    updateStage(index, 'origin', newValue || '');
+                                }
+                            }}
+                            renderInput={(params) => (
+                                <TextField 
+                                    {...params} 
+                                    label="Ciudad Origen" 
+                                    size="small" 
+                                    fullWidth 
+                                    placeholder="Ej: Laredo, TX"
+                                    onChange={(e) => updateStage(index, 'origin', e.target.value)}
+                                />
+                            )}
+                        />
+
+                        <Stack direction="row" spacing={1}>
+                            <TextField 
+                                label="Zip Code" 
+                                size="small" 
+                                sx={{ width: 110 }} 
+                                value={etapa.zip_code_origin || ''} 
+                                onChange={e => updateStage(index, 'zip_code_origin', e.target.value)} 
+                            />
+                            <TextField 
+                                label="Fecha de Salida" 
+                                type="date" 
+                                InputLabelProps={{ shrink: true }} 
+                                size="small" 
+                                fullWidth 
+                                value={etapa.date_of_departure ? format(etapa.date_of_departure, 'yyyy-MM-dd') : ''} 
+                                onChange={e => updateStage(index, 'date_of_departure', e.target.value ? new Date(e.target.value + 'T12:00:00') : null)} 
+                            />
+                        </Stack>
+                    </Stack>
                 </Paper>
             </Grid>
 
-            <Grid item xs={12} md={6}>
+            {/* DESTINO */}
+            <Grid item xs={12} md={4}>
                 <Paper variant="outlined" sx={{ p: 2, height: '100%' }}>
                     <Typography variant="subtitle2" color="error" sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                         <FlagIcon fontSize="small" /> DESTINO

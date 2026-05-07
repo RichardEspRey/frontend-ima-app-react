@@ -58,7 +58,8 @@ const DieselAdmin = () => {
             
             // Contadores de alertas
             state_pending_count: parseInt(item.state_pending_count || 0, 10),
-            fleetone_pending_count: parseInt(item.fleetone_pending_count || 0, 10)
+            fleetone_pending_count: parseInt(item.fleetone_pending_count || 0, 10),
+            periodo: item.periodo,
         }));
 
         setTrips(formattedData);
@@ -182,7 +183,7 @@ const DieselAdmin = () => {
                 
                 <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap', textAlign: 'center', width: 130 }}>State Pending</TableCell>
                 <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap', textAlign: 'center', width: 150 }}>Fleet One Pending</TableCell>
-                
+                <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap', textAlign: 'center', width: 150 }}>Periodo</TableCell>
                 <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap', textAlign: 'center' }}>Actions</TableCell>
               </TableRow>
             </TableHead>
@@ -249,7 +250,7 @@ const DieselAdmin = () => {
                             <Typography variant="caption" color="text.disabled">—</Typography>
                         )}
                     </TableCell>
-
+                    <TableCell>{row.periodo}</TableCell>
                     <TableCell align="center">
                       <Button 
                         variant="contained" 
