@@ -77,6 +77,14 @@
     "win": {
       "target": "nsis"
     },
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "icon": "assets/icon.icns",
+      "category": "public.app-category.business"
+    },
     "publish": [
       {
         "provider": "github",
