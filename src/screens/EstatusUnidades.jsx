@@ -79,12 +79,8 @@ export default function EstatusUnidades() {
 
     const filteredUnits = units.filter(unit => {
         if (statusFilter === 'All') return true;
-        const currentStatus = (unit.trip_status || '').toLowerCase();
-        const filterTarget = statusFilter.toLowerCase();
-        
         if (statusFilter === 'Sin Viaje') return !unit.trip_number;
-
-        return currentStatus === filterTarget;
+        return (unit.status || '').toLowerCase() === statusFilter.toLowerCase();
     });
 
     return (
@@ -120,7 +116,7 @@ export default function EstatusUnidades() {
                     >
                         <MenuItem value="All">Todos</MenuItem>
                         <MenuItem value="In Transit">In Transit</MenuItem>
-                        <MenuItem value="In Coming">In Coming</MenuItem>
+                        <MenuItem value="Up Coming">Up Coming</MenuItem>
                         <MenuItem value="Almost Over">Almost Over</MenuItem>
                         <MenuItem value="Completed">Completed</MenuItem>
                         <MenuItem value="Sin Viaje">Sin Viaje Asignado</MenuItem> 

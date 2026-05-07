@@ -19,7 +19,6 @@ import useFetchCategories from '../hooks/expense_hooks/useFetchCategories';
 import useFetchExpenseTypes from '../hooks/expense_hooks/useFetchExpenseTypes';
 import useFetchExchangeRate from '../hooks/useFetchExchangeRate';
 
-const ID_MANTENIMIENTO = "3";
 const apiHost = import.meta.env.VITE_API_HOST;
 
 const customSelectStyles = {
@@ -30,31 +29,22 @@ const customSelectStyles = {
 };
 
 const ExpenseScreen = () => {
-    // --- ESTADOS GENERALES ---
     const [country, setCountry] = useState(null);
     const [expenseDate, setExpenseDate] = useState(new Date());
-    const [ticketDate, setTicketDate] = useState(new Date()); // Agregado para consistencia
+    const [ticketDate, setTicketDate] = useState(new Date()); 
     const [totalAmount, setTotalAmount] = useState('0.00');
     const [originalAmount, setOriginalAmount] = useState('');
     
-    // Hooks de Lógica de Negocio
     const { exchangeRate, setExchangeRate, fetchExchangeRate } = useFetchExchangeRate();
-    
-    // Detalles del Gasto
     const [expenseDetails, setExpenseDetails] = useState([]);
     
-    // Catalogos
     const { expenseTypes, loading: typesLoading } = useFetchExpenseTypes();
     const { maintenanceCategories, loading: catLoading } = useFetchCategories();
     const { subcategories, loading: subLoading } = useFetchSubcategories();
-    const { inventoryItems, loading: itemsLoading } = useFetchInventoryItems();
 
-    // Archivos y UI
     const [modalState, setModalState] = useState({ isOpen: false, fileType: null });
     const [files, setFiles] = useState({ facturaPdf: null, ticketJpg: null });
     const [saving, setSaving] = useState(false);
-
-    // --- HANDLERS ---
 
     const resetForm = useCallback(() => {
         setCountry(null); 
@@ -90,7 +80,7 @@ const ExpenseScreen = () => {
             
             const updated = { ...d, [field]: value };
             
-            if (field === 'expenseType' && String(value) !== ID_MANTENIMIENTO) {
+            if (field === 'expenseType') {
                 updated.category = null;
                 updated.subcategory = null;
             }
@@ -112,8 +102,6 @@ const ExpenseScreen = () => {
     const handleRemoveFile = (type) => {
         setFiles(prev => ({ ...prev, [type]: null }));
     };
-
-    // --- EFECTOS  ---
 
     useEffect(() => {
         const isMX = country && country.value === 'MX';
@@ -141,7 +129,6 @@ const ExpenseScreen = () => {
         setTotalAmount(newTotal.toFixed(2));
     }, [country, originalAmount, exchangeRate, expenseDetails, fetchExchangeRate]);
 
-    // --- GUARDAR ---
     const handleSaveExpense = async (e) => {
         e.preventDefault();
         
@@ -174,15 +161,14 @@ const ExpenseScreen = () => {
             descripcion_articulo: detail.itemDescription,
             cantidad_articulo: detail.quantity,
             precio_unitario: detail.price,
-            id_categoria_mantenimiento: String(detail.expenseType) === ID_MANTENIMIENTO ? detail.category : null,
-            id_subcategoria_mantenimiento: String(detail.expenseType) === ID_MANTENIMIENTO ? detail.subcategory : null,
+            id_categoria_mantenimiento: detail.category || null,
+            id_subcategoria_mantenimiento: detail.subcategory || null,
         }));
         apiFormData.append('detailsData', JSON.stringify(detailsData));
         apiFormData.append('op', 'Alta');
 
         try {
             const res = await fetch(`${apiHost}/save_expense.php`, { method: 'POST', body: apiFormData });
-            //const res = await fetch(`http://localhost/API/save_expense.php`, { method: 'POST', body: apiFormData });
             const result = await res.json();
             
             if (result.status === 'success') {
@@ -250,7 +236,6 @@ const ExpenseScreen = () => {
                                 </div>
                             </Grid>
 
-                            {/* Fila de Montos */}
                             <Grid item xs={12} md={4}>
                                 <TextField 
                                     fullWidth label={`Original Amount (${country?.value === 'MX' ? 'MXN' : 'USD'})`} 
@@ -287,14 +272,21 @@ const ExpenseScreen = () => {
                         
                         <Stack spacing={3}>
                             {expenseDetails.map((detail) => {
-                                const isMaint = String(detail.expenseType) === ID_MANTENIMIENTO;
+                                const relevantCategories = maintenanceCategories.filter(c => String(c.id_tipo_gasto) === String(detail.expenseType));
+                                const hasCategories = relevantCategories.length > 0;
+
                                 const relevantSubs = subcategories.filter(s => s.id_categoria === detail.category);
+                                const hasSubcategories = relevantSubs.length > 0;
+
+                                let mdSelectSize = 12;
+                                if (hasCategories && hasSubcategories) mdSelectSize = 4;
+                                else if (hasCategories) mdSelectSize = 6;
 
                                 return (
                                     <Paper key={detail.id} variant="outlined" sx={{ p: 2, bgcolor: '#fafafa' }}>
                                         <Grid container spacing={2} alignItems="center">
-                                            {/* Fila 1: Tipos */}
-                                            <Grid item xs={12} md={isMaint ? 4 : 12}>
+                                            
+                                            <Grid item xs={12} md={mdSelectSize}>
                                                 <Typography variant="caption">Type</Typography>
                                                 <Select 
                                                     options={expenseTypes} 
@@ -306,32 +298,33 @@ const ExpenseScreen = () => {
                                                 />
                                             </Grid>
                                             
-                                            {isMaint && (
-                                                <>
-                                                    <Grid item xs={12} md={4}>
-                                                        <Typography variant="caption">Category</Typography>
-                                                        <Select 
-                                                            options={maintenanceCategories}
-                                                            value={maintenanceCategories.find(c => c.value === detail.category) || null}
-                                                            onChange={opt => handleDetailChange(detail.id, 'category', opt?.value)}
-                                                            styles={customSelectStyles}
-                                                            isLoading={catLoading}
-                                                            placeholder="Select Category..."
-                                                        />
-                                                    </Grid>
-                                                    <Grid item xs={12} md={4}>
-                                                        <Typography variant="caption">Subcategory</Typography>
-                                                        <Select 
-                                                            options={relevantSubs}
-                                                            value={relevantSubs.find(s => s.value === detail.subcategory) || null}
-                                                            onChange={opt => handleDetailChange(detail.id, 'subcategory', opt?.value)}
-                                                            styles={customSelectStyles}
-                                                            isDisabled={!detail.category}
-                                                            isLoading={subLoading}
-                                                            placeholder="Select Subcategory..."
-                                                        />
-                                                    </Grid>
-                                                </>
+                                            {hasCategories && (
+                                                <Grid item xs={12} md={mdSelectSize}>
+                                                    <Typography variant="caption">Category</Typography>
+                                                    <Select 
+                                                        options={relevantCategories}
+                                                        value={relevantCategories.find(c => c.value === detail.category) || null}
+                                                        onChange={opt => handleDetailChange(detail.id, 'category', opt?.value)}
+                                                        styles={customSelectStyles}
+                                                        isLoading={catLoading}
+                                                        placeholder="Select Category..."
+                                                    />
+                                                </Grid>
+                                            )}
+                                            
+                                            {hasSubcategories && (
+                                                <Grid item xs={12} md={mdSelectSize}>
+                                                    <Typography variant="caption">Subcategory</Typography>
+                                                    <Select 
+                                                        options={relevantSubs}
+                                                        value={relevantSubs.find(s => s.value === detail.subcategory) || null}
+                                                        onChange={opt => handleDetailChange(detail.id, 'subcategory', opt?.value)}
+                                                        styles={customSelectStyles}
+                                                        isDisabled={!detail.category}
+                                                        isLoading={subLoading}
+                                                        placeholder="Select Subcategory..."
+                                                    />
+                                                </Grid>
                                             )}
 
                                             <Grid item xs={12} md={6}>
