@@ -61,6 +61,7 @@ import PersonalAdmin from '../screens/Nomina/PersonalAdmin.jsx';
 import DetallePago from '../screens/Nomina/DetallePago.jsx';
 import RoadRepairsAdmin from '../screens/RoadRepairsAdmin.jsx';
 import Cotizador from '../screens/Viajes/Cotizacion.jsx';
+import ImaManager from '../screens/IMAManager.jsx';
 
 const AppRouter = () => {
   const { user, loading } = useContext(AuthContext);
@@ -134,7 +135,7 @@ const AppRouter = () => {
               <Route path="/road-repairs" element={<RoadRepairsAdmin />} />
                <Route path="/cotizador" element={<Cotizador />} />
               <Route path="*" element={<Navigate to="/home" replace />} /> 
-            
+              <Route path="/ima-manager" element={<ImaManager />} />
             </Route>
           )}
         </Routes>

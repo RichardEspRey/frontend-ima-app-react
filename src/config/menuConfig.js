@@ -10,7 +10,7 @@ export const menuItemsConfig = [
     name: "IMA",
     rolesPermitidos: ["admin"],
     subItems: [
-      {
+      /*{
         name: "Alta de documentos",
         route: "/ImaScreen",
         rolesPermitidos: ["admin"],
@@ -18,6 +18,11 @@ export const menuItemsConfig = [
       {
         name: "Administrador de documentos",
         route: "/ImaAdmin",
+        rolesPermitidos: ["admin"],
+      },*/
+      {
+        name: "Manager IMA",
+        route: "/ima-manager",
         rolesPermitidos: ["admin"],
       },
     ],
@@ -27,11 +32,11 @@ export const menuItemsConfig = [
     name: "Conductores",
     rolesPermitidos: ["admin", "Angeles"],
     subItems: [
-      {
+      /*{
         name: "Alta de conductores",
         route: "/drivers",
         rolesPermitidos: ["admin", "Angeles"],
-      },
+      },*/
       {
         name: "Administrador de conductores",
         route: "/admin-drivers",
@@ -135,7 +140,7 @@ export const menuItemsConfig = [
     name: "Viajes",
     rolesPermitidos: ["dev", "admin", "Candy", "Blanca"],
     subItems: [
-       {
+      {
         name: "Cotizador",
         route: "/cotizador",
         rolesPermitidos: ["admin"],
