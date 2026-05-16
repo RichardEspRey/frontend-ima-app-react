@@ -7,65 +7,26 @@ export const menuItemsConfig = [
     rolesPermitidos: ["dev", "admin"],
   },
   {
-    name: "IMA",
-    rolesPermitidos: ["admin"],
+    name: "IMA Manager",
+    rolesPermitidos: ["admin", "Angeles"], // El rol "Angeles" puede ver la pestaña principal
     subItems: [
-      /*{
-        name: "Alta de documentos",
-        route: "/ImaScreen",
-        rolesPermitidos: ["admin"],
-      },
       {
-        name: "Administrador de documentos",
-        route: "/ImaAdmin",
-        rolesPermitidos: ["admin"],
-      },*/
-      {
-        name: "Manager IMA",
+        name: "Documentos",
         route: "/ima-manager",
-        rolesPermitidos: ["admin"],
+        rolesPermitidos: ["admin"], // Solo el admin ve la sección de documentos corporativos
       },
-    ],
-  },
-
-  {
-    name: "Conductores",
-    rolesPermitidos: ["admin", "Angeles"],
-    subItems: [
-      /*{
-        name: "Alta de conductores",
-        route: "/drivers",
-        rolesPermitidos: ["admin", "Angeles"],
-      },*/
       {
-        name: "Administrador de conductores",
+        name: "Conductores",
         route: "/admin-drivers",
         rolesPermitidos: ["admin", "Angeles"],
       },
-    ],
-  },
-
-  {
-    name: "Camiones",
-    rolesPermitidos: ["admin", "Angeles"],
-    subItems: [
       {
-        name: "Alta de camiones",
-        route: "/trucks",
-        rolesPermitidos: ["admin", "Angeles"],
-      },
-      {
-        name: "Administrador de camiones",
+        name: "Camiones",
         route: "/admin-trucks",
         rolesPermitidos: ["admin", "Angeles"],
       },
       {
-        name: "Alta de Cajas",
-        route: "/trailers",
-        rolesPermitidos: ["admin", "Angeles"],
-      },
-      {
-        name: "Administrador de cajas",
+        name: "Cajas",
         route: "/admin-trailers",
         rolesPermitidos: ["admin", "Angeles"],
       },
