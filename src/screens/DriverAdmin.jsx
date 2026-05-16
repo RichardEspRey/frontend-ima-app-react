@@ -11,10 +11,12 @@ import ErrorIcon from '@mui/icons-material/Error';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline'; 
 import AddIcon from '@mui/icons-material/Add';
 import SettingsIcon from '@mui/icons-material/Settings';
+import ViewColumnIcon from '@mui/icons-material/ViewColumn'; // 🚨 Nuevo ícono para columnas
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import CloudUploadOutlinedIcon from '@mui/icons-material/CloudUploadOutlined';
 import FilePresentIcon from '@mui/icons-material/FilePresent';
+import CloseIcon from '@mui/icons-material/Close';
 
 import Swal from 'sweetalert2';
 
@@ -34,7 +36,11 @@ const DriverAdmin = () => {
   // Modales
   const [openConfigModal, setOpenConfigModal] = useState(false);
   const [openDriverModal, setOpenDriverModal] = useState(false);
+  const [openColumnModal, setOpenColumnModal] = useState(false); // 🚨 Modal de visibilidad de columnas
   
+  // Estado para ocultar/mostrar columnas en la tabla
+  const [hiddenColumns, setHiddenColumns] = useState([]); 
+
   // Estados para nuevo campo
   const [newField, setNewField] = useState({ label: '', categoria: 'Viaje', tipo: 'file', tiene_vencimiento: true });
   
@@ -67,6 +73,15 @@ const DriverAdmin = () => {
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
+  };
+
+  // ===============================================
+  // HANDLERS: VISIBILIDAD DE COLUMNAS (NUEVO)
+  // ===============================================
+  const toggleColumnVisibility = (key_name) => {
+      setHiddenColumns(prev => 
+          prev.includes(key_name) ? prev.filter(k => k !== key_name) : [...prev, key_name]
+      );
   };
 
   // ===============================================
@@ -196,6 +211,9 @@ const DriverAdmin = () => {
 
   const categories = [...new Set(configFields.map(f => f.categoria))];
 
+  // Filtramos las columnas que el usuario sí quiere ver en la tabla
+  const visibleConfigFields = configFields.filter(req => !hiddenColumns.includes(req.key_name));
+
   if (loading && drivers.length === 0) return <Box p={5} display="flex" justifyContent="center"><CircularProgress /></Box>;
 
   return (
@@ -219,8 +237,13 @@ const DriverAdmin = () => {
             </Typography>
         </Box>
         <Stack direction="row" spacing={2}>
+            {/* 🚨 BOTÓN DE COLUMNAS (Solo Vista) */}
+            <Button variant="outlined" color="inherit" startIcon={<ViewColumnIcon />} onClick={() => setOpenColumnModal(true)} sx={{ bgcolor: 'white' }}>
+                Columnas
+            </Button>
+            {/* 🚨 BOTÓN DE REQUISITOS (Datos Reales) */}
             <Button variant="outlined" color="inherit" startIcon={<SettingsIcon />} onClick={() => setOpenConfigModal(true)} sx={{ bgcolor: 'white' }}>
-                Configurar Columnas
+                Requisitos
             </Button>
             <Button variant="contained" disableElevation startIcon={<AddIcon />} onClick={() => openDriverEditor(null)} sx={{ bgcolor: '#0f172a', '&:hover': { bgcolor: '#334155' } }}>
                 Alta Conductor
@@ -241,8 +264,8 @@ const DriverAdmin = () => {
                 <TableCell sx={{ fontWeight: 700, color: '#475569' }}>#</TableCell>
                 <TableCell sx={{ fontWeight: 700, color: '#475569', minWidth: 150 }}>Nombre</TableCell>
                 
-                {/* 🚨 AHORA MAPEA TODAS LAS COLUMNAS DINÁMICAS (Sin filtro de categoría) 🚨 */}
-                {configFields.map(req => (
+                {/* Dibuja solo las columnas que NO están ocultas */}
+                {visibleConfigFields.map(req => (
                     <TableCell key={req.key_name} align="center" sx={{ fontWeight: 700, color: '#475569', whiteSpace: 'nowrap' }}>
                         <Tooltip title={req.label}>
                             <span>{req.label.length > 12 ? req.label.substring(0, 12) + '...' : req.label}</span>
@@ -259,7 +282,8 @@ const DriverAdmin = () => {
                     <TableCell>{driver.driver_id}</TableCell>
                     <TableCell sx={{ fontWeight: 600, color: '#0f172a' }}>{driver.nombre}</TableCell>
                     
-                    {configFields.map(req => (
+                    {/* Dibuja solo las celdas de las columnas visibles */}
+                    {visibleConfigFields.map(req => (
                         <TableCell key={req.key_name} align="center" sx={{ maxWidth: 100 }}>
                             {renderDocIcon(req, driver.docs?.[req.key_name])}
                         </TableCell>
@@ -273,7 +297,7 @@ const DriverAdmin = () => {
                 ))}
                 {filteredDrivers.length === 0 && (
                     <TableRow>
-                        <TableCell colSpan={configFields.length + 3} align="center" sx={{ py: 3 }}>
+                        <TableCell colSpan={visibleConfigFields.length + 3} align="center" sx={{ py: 3 }}>
                             <Typography color="text.secondary">No se encontraron conductores.</Typography>
                         </TableCell>
                     </TableRow>
@@ -297,14 +321,64 @@ const DriverAdmin = () => {
       </Paper>
 
       {/* ========================================================= */}
-      {/* MODAL: CONFIGURAR COLUMNAS / REQUISITOS                   */}
+      {/* MODAL 1: CONFIGURAR COLUMNAS (VISTA MEJORADA CON CHIPS)     */}
+      {/* ========================================================= */}
+      <Dialog open={openColumnModal} onClose={() => setOpenColumnModal(false)} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ fontWeight: 800, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            Mostrar Columnas
+            <IconButton onClick={() => setOpenColumnModal(false)} size="small" sx={{ color: 'text.secondary' }}>
+                <CloseIcon />
+            </IconButton>
+        </DialogTitle>
+        <DialogContent>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                Toca las etiquetas para encender o apagar las columnas en tu tabla. Los campos en azul están visibles actualmente.
+            </Typography>
+            
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
+                {configFields.map(req => {
+                    const isVisible = !hiddenColumns.includes(req.key_name);
+                    return (
+                        <Chip 
+                            key={req.key_name}
+                            label={req.label}
+                            onClick={() => toggleColumnVisibility(req.key_name)}
+                            color={isVisible ? "primary" : "default"}
+                            variant={isVisible ? "filled" : "outlined"}
+                            icon={isVisible ? <CheckCircleIcon /> : undefined}
+                            sx={{ 
+                                fontWeight: 600, 
+                                fontSize: '0.85rem',
+                                py: 1,
+                                transition: 'all 0.2s',
+                                '&:hover': { transform: 'scale(1.05)' }
+                            }}
+                        />
+                    );
+                })}
+            </Box>
+        </DialogContent>
+        <DialogActions sx={{ p: 2, bgcolor: '#f8fafc', borderTop: '1px solid #e2e8f0' }}>
+            <Button onClick={() => setOpenColumnModal(false)} variant="contained" disableElevation sx={{ bgcolor: '#0f172a' }}>
+                Aplicar Cambios
+            </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* ========================================================= */}
+      {/* MODAL 2: CONFIGURAR REQUISITOS (MODELO BASE DE DATOS)       */}
       {/* ========================================================= */}
       <Dialog open={openConfigModal} onClose={() => setOpenConfigModal(false)} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontWeight: 800 }}>Configurar Requisitos</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 800, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            Configurar Requisitos
+            <IconButton onClick={() => setOpenConfigModal(false)} size="small" sx={{ color: 'text.secondary' }}>
+                <CloseIcon />
+            </IconButton>
+        </DialogTitle>
         <DialogContent>
             <Stack spacing={3} sx={{ mt: 1 }}>
                 <Box sx={{ bgcolor: '#f8fafc', p: 2, borderRadius: 2, border: '1px solid #e2e8f0' }}>
-                    <Typography variant="subtitle2" fontWeight={700} mb={1}>Columnas Activas:</Typography>
+                    <Typography variant="subtitle2" fontWeight={700} mb={1}>Requisitos Activos (Se pedirán en el Alta):</Typography>
                     <Stack direction="row" flexWrap="wrap" gap={1}>
                         {configFields.map(f => (
                             <Chip key={f.key_name} label={f.label} onDelete={() => handleDeleteField(f.key_name, f.label)} size="small" color="primary" variant="outlined" />

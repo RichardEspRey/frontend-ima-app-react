@@ -150,14 +150,21 @@ export const HistoryModal = ({ open, onClose, truck, onOpenPhoto, onOpenCorrect 
     );
 };
 
+const resolvePhotoUrl = (photoUrl) => {
+    if (!photoUrl) return null;
+    const url = typeof photoUrl === 'string' ? photoUrl : photoUrl?.ticket_url;
+    if (!url || typeof url !== 'string') return null;
+    return url.startsWith('http') ? url : `http://imaexpressllc.com/API/${url}`;
+};
+
 // 6. Modal Foto
 export const PhotoModal = ({ open, onClose, photoUrl }) => {
-    const imageUrl = photoUrl?.startsWith('http') ? photoUrl : `http://imaexpressllc.com/API/${photoUrl}`;
+    const imageUrl = resolvePhotoUrl(photoUrl);
     return (
         <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
             <DialogTitle sx={{ fontWeight: 700 }}>Evidencia de Odómetro</DialogTitle>
             <DialogContent sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
-                {photoUrl ? <img src={imageUrl} alt="Odómetro" style={{ maxWidth: '100%', maxHeight: '60vh', borderRadius: 8 }} /> : <Typography color="text.secondary">No hay imagen disponible.</Typography>}
+                {imageUrl ? <img src={imageUrl} alt="Odómetro" style={{ maxWidth: '100%', maxHeight: '60vh', borderRadius: 8 }} /> : <Typography color="text.secondary">No hay imagen disponible.</Typography>}
             </DialogContent>
             <DialogActions><Button onClick={onClose} color="inherit">Cerrar</Button></DialogActions>
         </Dialog>

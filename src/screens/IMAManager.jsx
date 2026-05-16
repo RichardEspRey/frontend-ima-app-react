@@ -338,7 +338,77 @@ const ImaManager = () => {
 // ==========================================
 // SUB-COMPONENTE: TARJETA DOCUMENTO
 // ==========================================
+// ==========================================
+// SUB-COMPONENTE: TARJETA DOCUMENTO / DATO
+// ==========================================
 const DocumentCard = ({ req, theme, val, onEdit }) => {
+    
+    // --------------------------------------------------------
+    // 1. DISEÑO RECTANGULAR PARA INPUTS DE TEXTO (DATOS)
+    // --------------------------------------------------------
+    if (req.tipo === 'text') {
+        return (
+            <Paper 
+                elevation={0} 
+                sx={{ 
+                    p: 2, 
+                    borderRadius: 3, 
+                    border: `1px solid ${theme.border}`, 
+                    bgcolor: 'white',
+                    borderLeft: `5px solid ${theme.color}`, // Borde izquierdo distintivo
+                    display: 'flex', flexDirection: 'column', transition: 'all 0.2s ease',
+                    boxShadow: '0 2px 4px -1px rgb(0 0 0 / 0.05)',
+                    '&:hover': { transform: 'translateY(-2px)', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }
+                    // 🚨 Nota: NO le ponemos height: '100%' para que se mantenga como un rectángulo compacto
+                }}
+            >
+                {/* Encabezado del Dato */}
+                <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1.5 }}>
+                    <Stack direction="row" spacing={1} alignItems="center">
+                        <TextFieldsIcon sx={{ fontSize: 18, color: '#94a3b8' }}/>
+                        <Typography variant="subtitle2" fontWeight={800} color="#0f172a" noWrap>
+                            {req.label}
+                        </Typography>
+                    </Stack>
+                    <Tooltip title={theme.status} arrow>
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            {theme.icon}
+                        </Box>
+                    </Tooltip>
+                </Stack>
+
+                {/* Caja de Valor (Simula un input moderno) */}
+                <Box sx={{ 
+                    bgcolor: val?.valor_texto ? '#f8fafc' : '#f1f5f9', 
+                    p: 1.5, 
+                    borderRadius: 2, 
+                    border: '1px dashed', 
+                    borderColor: val?.valor_texto ? '#cbd5e1' : '#e2e8f0',
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center' 
+                }}>
+                    <Typography 
+                        variant="body2" 
+                        fontWeight={700} 
+                        color={val?.valor_texto ? "#334155" : "#94a3b8"} 
+                        noWrap 
+                        sx={{ flexGrow: 1, mr: 1 }}
+                    >
+                        {val?.valor_texto || 'No registrado'}
+                    </Typography>
+                    
+                    <Tooltip title="Editar Valor">
+                        <IconButton size="small" onClick={onEdit} sx={{ color: '#3b82f6', bgcolor: '#eff6ff', '&:hover': { bgcolor: '#dbeafe' } }}>
+                            <EditOutlinedIcon fontSize="small" />
+                        </IconButton>
+                    </Tooltip>
+                </Box>
+            </Paper>
+        );
+    }
+
+    // --------------------------------------------------------
+    // 2. DISEÑO CLÁSICO PARA DOCUMENTOS (ARCHIVOS)
+    // --------------------------------------------------------
     return (
         <Paper 
             elevation={0} 
@@ -346,8 +416,8 @@ const DocumentCard = ({ req, theme, val, onEdit }) => {
                 p: 2.5, borderRadius: 3, border: `1px solid ${theme.border}`, bgcolor: 'white',
                 position: 'relative', overflow: 'hidden', height: '100%',
                 display: 'flex', flexDirection: 'column', transition: 'all 0.2s ease',
-                boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05)',
-                '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)' }
+                boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.05)',
+                '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }
             }}
         >
             {/* Fondo decorativo superior */}
@@ -365,20 +435,12 @@ const DocumentCard = ({ req, theme, val, onEdit }) => {
             </Typography>
             
             <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2, flexGrow: 1 }}>
-                {req.tipo === 'file' ? <InsertDriveFileOutlinedIcon sx={{ fontSize: 16, color: '#94a3b8' }}/> : <TextFieldsIcon sx={{ fontSize: 16, color: '#94a3b8' }}/>}
+                <InsertDriveFileOutlinedIcon sx={{ fontSize: 16, color: '#94a3b8' }}/>
                 <Typography variant="caption" color="#64748b" fontWeight={600}>
-                    {req.tipo === 'file' ? 'Documento' : 'Dato'}
+                    Documento PDF/IMG
                     {theme.dateText && ` • Vence: ${theme.dateText}`}
                 </Typography>
             </Stack>
-
-            {req.tipo === 'text' && val?.valor_texto && (
-                <Box sx={{ bgcolor: '#f8fafc', p: 1.5, borderRadius: 2, mb: 2, border: '1px solid #e2e8f0' }}>
-                    <Typography variant="body2" fontWeight={600} color="#334155" noWrap title={val.valor_texto}>
-                        {val.valor_texto}
-                    </Typography>
-                </Box>
-            )}
 
             <Button 
                 fullWidth variant="outlined" onClick={onEdit} startIcon={<EditOutlinedIcon />}
@@ -387,7 +449,7 @@ const DocumentCard = ({ req, theme, val, onEdit }) => {
                     color: '#475569', borderColor: '#cbd5e1', '&:hover': { bgcolor: '#f8fafc', borderColor: '#94a3b8' } 
                 }}
             >
-                Gestionar
+                Gestionar Archivo
             </Button>
         </Paper>
     );
