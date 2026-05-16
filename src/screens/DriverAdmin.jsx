@@ -1,53 +1,44 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import {
-    Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-    TextField, Button, Stack, CircularProgress, MenuItem, Dialog, DialogTitle, DialogContent, 
-    DialogActions, IconButton, Chip, Tooltip, Grid, FormControlLabel, Switch, Divider, TablePagination
-} from '@mui/material';
+import { Box, Typography, TextField, Button, Stack, CircularProgress, Paper } from '@mui/material';
 
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import WarningIcon from '@mui/icons-material/Warning';
-import ErrorIcon from '@mui/icons-material/Error';
-import HelpOutlineIcon from '@mui/icons-material/HelpOutline'; 
 import AddIcon from '@mui/icons-material/Add';
 import SettingsIcon from '@mui/icons-material/Settings';
-import ViewColumnIcon from '@mui/icons-material/ViewColumn'; // 🚨 Nuevo ícono para columnas
-import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import CloudUploadOutlinedIcon from '@mui/icons-material/CloudUploadOutlined';
-import FilePresentIcon from '@mui/icons-material/FilePresent';
-import CloseIcon from '@mui/icons-material/Close';
-
+import ViewColumnIcon from '@mui/icons-material/ViewColumn'; 
 import Swal from 'sweetalert2';
+
+import DriverTable from '../components/DriverAdmin/DriverTable';
+import ColumnConfigModal from '../components/DriverAdmin/ColumnConfigModal';
+import RequirementConfigModal from '../components/DriverAdmin/RequirementConfigModal';
+import DriverMasterFormModal from '../components/DriverAdmin/DriverMasterFormModal';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 const API_ENDPOINT = 'drivers_v2.php';
 
 const DriverAdmin = () => {
+  // Estados Globales
   const [loading, setLoading] = useState(true);
   const [drivers, setDrivers] = useState([]);
   const [configFields, setConfigFields] = useState([]);
   const [search, setSearch] = useState('');
-
-  // Estados de Paginación
+  
+  // Paginación y Vistas
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-
-  // Modales
-  const [openConfigModal, setOpenConfigModal] = useState(false);
-  const [openDriverModal, setOpenDriverModal] = useState(false);
-  const [openColumnModal, setOpenColumnModal] = useState(false); // 🚨 Modal de visibilidad de columnas
-  
-  // Estado para ocultar/mostrar columnas en la tabla
   const [hiddenColumns, setHiddenColumns] = useState([]); 
 
-  // Estados para nuevo campo
-  const [newField, setNewField] = useState({ label: '', categoria: 'Viaje', tipo: 'file', tiene_vencimiento: true });
+  // Control de Modales
+  const [openConfigModal, setOpenConfigModal] = useState(false);
+  const [openDriverModal, setOpenDriverModal] = useState(false);
+  const [openColumnModal, setOpenColumnModal] = useState(false); 
   
-  // Estados para chofer
+  // Datos Activos
+  const [newField, setNewField] = useState({ label: '', categoria: 'Viaje', tipo: 'file', tiene_vencimiento: true });
   const [driverData, setDriverData] = useState({});
   const [driverDocs, setDriverDocs] = useState({});
-  
+
+  // ==========================================
+  // FETCH DE DATOS
+  // ==========================================
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
@@ -65,28 +56,13 @@ const DriverAdmin = () => {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  // ===============================================
-  // HANDLERS: PAGINACIÓN
-  // ===============================================
-  const handleChangePage = (event, newPage) => setPage(newPage);
-  
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
-
-  // ===============================================
-  // HANDLERS: VISIBILIDAD DE COLUMNAS (NUEVO)
-  // ===============================================
+  // ==========================================
+  // LÓGICA DE NEGOCIO (Controladores)
+  // ==========================================
   const toggleColumnVisibility = (key_name) => {
-      setHiddenColumns(prev => 
-          prev.includes(key_name) ? prev.filter(k => k !== key_name) : [...prev, key_name]
-      );
+      setHiddenColumns(prev => prev.includes(key_name) ? prev.filter(k => k !== key_name) : [...prev, key_name]);
   };
 
-  // ===============================================
-  // HANDLERS: CONFIGURACIÓN DINÁMICA DE CAMPOS
-  // ===============================================
   const handleCreateField = async () => {
       if (!newField.label) return Swal.fire('Oops', 'Asigna un nombre al requisito', 'warning');
       const fd = new FormData();
@@ -102,29 +78,18 @@ const DriverAdmin = () => {
 
   const handleDeleteField = async (key_name, label) => {
       const { isConfirmed } = await Swal.fire({ 
-          title: `¿Eliminar "${label}"?`, 
-          text: 'El campo se eliminará de la tabla y de los formularios de captura. Los datos guardados históricamente se conservarán por seguridad.', 
-          icon: 'warning', 
-          showCancelButton: true,
-          confirmButtonText: 'Sí, eliminar',
-          cancelButtonText: 'Cancelar',
-          confirmButtonColor: '#d33'
+          title: `¿Eliminar "${label}"?`, text: 'Se eliminará de la tabla. Históricos seguros en BD.', icon: 'warning', 
+          showCancelButton: true, confirmButtonText: 'Sí, eliminar', confirmButtonColor: '#d33'
       });
       if (!isConfirmed) return;
-      const fd = new FormData();
-      fd.append('op', 'deleteConfig');
-      fd.append('key_name', key_name);
+      const fd = new FormData(); fd.append('op', 'deleteConfig'); fd.append('key_name', key_name);
       await fetch(`${apiHost}/${API_ENDPOINT}`, { method: 'POST', body: fd });
       fetchData();
   };
 
-  // ===============================================
-  // HANDLERS: CHOFERES
-  // ===============================================
   const openDriverEditor = (driver = null) => {
       if (driver) {
-          setDriverData({ ...driver });
-          setDriverDocs({});
+          setDriverData({ ...driver }); setDriverDocs({});
       } else {
           setDriverData({ nombre: '', curp: '', rfc: '', phone_mex: '', phone_usa: '', fecha_nacimiento: '', fecha_ingreso: '', docs: {} });
           setDriverDocs({});
@@ -136,20 +101,14 @@ const DriverAdmin = () => {
       if (!driverData.nombre) return Swal.fire('Falta Nombre', 'El nombre es obligatorio.', 'warning');
       setLoading(true);
 
-      const fd = new FormData();
-      fd.append('op', 'saveDriver');
-      
+      const fd = new FormData(); fd.append('op', 'saveDriver');
       ['driver_id', 'nombre', 'fecha_nacimiento', 'fecha_ingreso', 'curp', 'rfc', 'phone_mex', 'phone_usa'].forEach(k => {
           if (driverData[k]) fd.append(k, driverData[k]);
       });
 
       configFields.forEach(req => {
-          const k = req.key_name;
-          const val = driverData.docs?.[k]; 
-          
-          if (req.tipo === 'text' && val?.valor_texto !== undefined) {
-              fd.append(`text_${k}`, val.valor_texto);
-          }
+          const k = req.key_name; const val = driverData.docs?.[k]; 
+          if (req.tipo === 'text' && val?.valor_texto !== undefined) fd.append(`text_${k}`, val.valor_texto);
           if (req.tipo === 'file') {
               if (val?.fecha_vencimiento) fd.append(`date_${k}`, val.fecha_vencimiento.split('T')[0]);
               if (driverDocs[k]) fd.append(`file_${k}`, driverDocs[k]); 
@@ -158,96 +117,41 @@ const DriverAdmin = () => {
 
       try {
           await fetch(`${apiHost}/${API_ENDPOINT}`, { method: 'POST', body: fd });
-          setOpenDriverModal(false);
-          fetchData();
-          Swal.fire('Guardado', 'Conductor y documentos actualizados.', 'success');
-      } catch(e) {
-          Swal.fire('Error', 'Problema al guardar.', 'error');
-          setLoading(false);
-      }
+          setOpenDriverModal(false); fetchData();
+          Swal.fire('Guardado', 'Conductor actualizado.', 'success');
+      } catch(e) { Swal.fire('Error', 'Problema al guardar.', 'error'); setLoading(false); }
   };
 
   const deleteDriver = async (driver_id) => {
       const { isConfirmed } = await Swal.fire({ title: '¿Eliminar Conductor?', icon: 'error', showCancelButton: true });
       if (!isConfirmed) return;
-      const fd = new FormData();
-      fd.append('op', 'deleteDriver');
-      fd.append('driver_id', driver_id);
-      await fetch(`${apiHost}/${API_ENDPOINT}`, { method: 'POST', body: fd });
-      fetchData();
+      const fd = new FormData(); fd.append('op', 'deleteDriver'); fd.append('driver_id', driver_id);
+      await fetch(`${apiHost}/${API_ENDPOINT}`, { method: 'POST', body: fd }); fetchData();
   };
 
-  // ===============================================
-  // RENDERIZADO DE ICONOS (UX SEMAFORO)
-  // ===============================================
-  const renderDocIcon = (req, val) => {
-      if (req.tipo === 'text') {
-          return val?.valor_texto ? <Typography variant="body2" fontWeight={600} color="primary" noWrap>{val.valor_texto}</Typography> : <Typography variant="body2" color="text.disabled">-</Typography>;
-      }
-
-      if (!val || (!val.url_pdf && !val.valor_texto)) {
-          return <Tooltip title="Faltante"><HelpOutlineIcon sx={{ color: '#cbd5e1' }} /></Tooltip>;
-      }
-
-      if (req.tiene_vencimiento == 1 && val.fecha_vencimiento) {
-          const diff = Math.floor((new Date(val.fecha_vencimiento) - new Date()) / (1000 * 60 * 60 * 24));
-          if (diff < 0) return <Tooltip title={`Vencido: ${val.fecha_vencimiento}`}><ErrorIcon color="error" /></Tooltip>;
-          if (diff <= 30) return <Tooltip title={`Vence pronto: ${val.fecha_vencimiento}`}><WarningIcon color="warning" /></Tooltip>;
-      }
-      
-      return (
-          <Tooltip title={val.fecha_vencimiento ? `Vigente hasta ${val.fecha_vencimiento}` : 'Archivo adjunto'}>
-              <a href={`${apiHost}/${val.url_pdf}`} target="_blank" rel="noreferrer" style={{color: 'inherit'}}>
-                  <CheckCircleIcon color="success" sx={{ '&:hover': { opacity: 0.7 } }} />
-              </a>
-          </Tooltip>
-      );
-  };
-
-  // Filtrado por buscador
-  const filteredDrivers = useMemo(() => {
-    return drivers.filter(d => d.nombre.toLowerCase().includes(search.toLowerCase()));
-  }, [drivers, search]);
-
-  const categories = [...new Set(configFields.map(f => f.categoria))];
-
-  // Filtramos las columnas que el usuario sí quiere ver en la tabla
+  // ==========================================
+  // FILTROS EN MEMORIA
+  // ==========================================
+  const filteredDrivers = useMemo(() => drivers.filter(d => d.nombre.toLowerCase().includes(search.toLowerCase())), [drivers, search]);
   const visibleConfigFields = configFields.filter(req => !hiddenColumns.includes(req.key_name));
+  const categories = [...new Set(configFields.map(f => f.categoria))];
 
   if (loading && drivers.length === 0) return <Box p={5} display="flex" justifyContent="center"><CircularProgress /></Box>;
 
   return (
     <Box sx={{ p: { xs: 2, md: 4 }, minHeight: '100vh', bgcolor: '#f8fafc' }}>
-      
-      {/* 🚨 INYECCIÓN DE CSS PARA ARREGLAR Z-INDEX DE SWEETALERT 🚨 */}
-      <style>{`
-        .swal2-container {
-          z-index: 2000 !important;
-        }
-      `}</style>
+      <style>{`.swal2-container { z-index: 2000 !important; }`}</style>
 
-      {/* HEADER */}
+      {/* HEADER Y BOTONERA */}
       <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems={{ xs: 'flex-start', md: 'center' }} mb={4} spacing={2}>
         <Box>
-            <Typography variant="h4" fontWeight={800} color="#0f172a" letterSpacing="-0.02em">
-                Gestión de Conductores
-            </Typography>
-            <Typography variant="subtitle1" color="#64748b">
-                Administración centralizada de perfiles y requisitos.
-            </Typography>
+            <Typography variant="h4" fontWeight={800} color="#0f172a" letterSpacing="-0.02em">Gestión de Conductores</Typography>
+            <Typography variant="subtitle1" color="#64748b">Administración centralizada de perfiles y requisitos.</Typography>
         </Box>
         <Stack direction="row" spacing={2}>
-            {/* 🚨 BOTÓN DE COLUMNAS (Solo Vista) */}
-            <Button variant="outlined" color="inherit" startIcon={<ViewColumnIcon />} onClick={() => setOpenColumnModal(true)} sx={{ bgcolor: 'white' }}>
-                Columnas
-            </Button>
-            {/* 🚨 BOTÓN DE REQUISITOS (Datos Reales) */}
-            <Button variant="outlined" color="inherit" startIcon={<SettingsIcon />} onClick={() => setOpenConfigModal(true)} sx={{ bgcolor: 'white' }}>
-                Requisitos
-            </Button>
-            <Button variant="contained" disableElevation startIcon={<AddIcon />} onClick={() => openDriverEditor(null)} sx={{ bgcolor: '#0f172a', '&:hover': { bgcolor: '#334155' } }}>
-                Alta Conductor
-            </Button>
+            <Button variant="outlined" color="inherit" startIcon={<ViewColumnIcon />} onClick={() => setOpenColumnModal(true)} sx={{ bgcolor: 'white' }}>Columnas</Button>
+            <Button variant="outlined" color="inherit" startIcon={<SettingsIcon />} onClick={() => setOpenConfigModal(true)} sx={{ bgcolor: 'white' }}>Requisitos</Button>
+            <Button variant="contained" disableElevation startIcon={<AddIcon />} onClick={() => openDriverEditor(null)} sx={{ bgcolor: '#0f172a', '&:hover': { bgcolor: '#334155' } }}>Alta Conductor</Button>
         </Stack>
       </Stack>
 
@@ -255,246 +159,29 @@ const DriverAdmin = () => {
           <TextField label="Buscar por nombre..." size="small" variant="outlined" value={search} onChange={(e) => { setSearch(e.target.value); setPage(0); }} sx={{ width: 300 }} />
       </Paper>
 
-      {/* TABLA DINÁMICA CON PAGINACIÓN */}
-      <Paper elevation={0} sx={{ border: '1px solid #e2e8f0', borderRadius: 3, overflow: 'hidden' }}>
-        <TableContainer sx={{ overflowX: 'auto' }}> 
-            <Table size="small">
-            <TableHead sx={{ bgcolor: '#f1f5f9' }}>
-                <TableRow>
-                <TableCell sx={{ fontWeight: 700, color: '#475569' }}>#</TableCell>
-                <TableCell sx={{ fontWeight: 700, color: '#475569', minWidth: 150 }}>Nombre</TableCell>
-                
-                {/* Dibuja solo las columnas que NO están ocultas */}
-                {visibleConfigFields.map(req => (
-                    <TableCell key={req.key_name} align="center" sx={{ fontWeight: 700, color: '#475569', whiteSpace: 'nowrap' }}>
-                        <Tooltip title={req.label}>
-                            <span>{req.label.length > 12 ? req.label.substring(0, 12) + '...' : req.label}</span>
-                        </Tooltip>
-                    </TableCell>
-                ))}
-                
-                <TableCell align="center" sx={{ fontWeight: 700, color: '#475569', minWidth: 100 }}>Acciones</TableCell>
-                </TableRow>
-            </TableHead>
-            <TableBody>
-                {filteredDrivers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(driver => (
-                <TableRow key={driver.driver_id} hover>
-                    <TableCell>{driver.driver_id}</TableCell>
-                    <TableCell sx={{ fontWeight: 600, color: '#0f172a' }}>{driver.nombre}</TableCell>
-                    
-                    {/* Dibuja solo las celdas de las columnas visibles */}
-                    {visibleConfigFields.map(req => (
-                        <TableCell key={req.key_name} align="center" sx={{ maxWidth: 100 }}>
-                            {renderDocIcon(req, driver.docs?.[req.key_name])}
-                        </TableCell>
-                    ))}
+      {/* MODULARES */}
+      <DriverTable 
+          filteredDrivers={filteredDrivers} visibleConfigFields={visibleConfigFields} 
+          page={page} setPage={setPage} rowsPerPage={rowsPerPage} setRowsPerPage={setRowsPerPage} 
+          openDriverEditor={openDriverEditor} deleteDriver={deleteDriver} 
+      />
 
-                    <TableCell align="center" sx={{ whiteSpace: 'nowrap' }}>
-                        <IconButton size="small" color="primary" onClick={() => openDriverEditor(driver)}><EditOutlinedIcon /></IconButton>
-                        <IconButton size="small" color="error" onClick={() => deleteDriver(driver.driver_id)}><DeleteOutlineIcon /></IconButton>
-                    </TableCell>
-                </TableRow>
-                ))}
-                {filteredDrivers.length === 0 && (
-                    <TableRow>
-                        <TableCell colSpan={visibleConfigFields.length + 3} align="center" sx={{ py: 3 }}>
-                            <Typography color="text.secondary">No se encontraron conductores.</Typography>
-                        </TableCell>
-                    </TableRow>
-                )}
-            </TableBody>
-            </Table>
-        </TableContainer>
-        
-        {/* Paginador de Material UI */}
-        <TablePagination
-            component="div"
-            count={filteredDrivers.length}
-            page={page}
-            onPageChange={handleChangePage}
-            rowsPerPage={rowsPerPage}
-            onRowsPerPageChange={handleChangeRowsPerPage}
-            rowsPerPageOptions={[10, 25, 50]}
-            labelRowsPerPage="Conductores por página:"
-            labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count}`}
-        />
-      </Paper>
+      <ColumnConfigModal 
+          open={openColumnModal} onClose={() => setOpenColumnModal(false)}
+          configFields={configFields} hiddenColumns={hiddenColumns} toggleColumnVisibility={toggleColumnVisibility}
+      />
 
-      {/* ========================================================= */}
-      {/* MODAL 1: CONFIGURAR COLUMNAS (VISTA MEJORADA CON CHIPS)     */}
-      {/* ========================================================= */}
-      <Dialog open={openColumnModal} onClose={() => setOpenColumnModal(false)} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontWeight: 800, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            Mostrar Columnas
-            <IconButton onClick={() => setOpenColumnModal(false)} size="small" sx={{ color: 'text.secondary' }}>
-                <CloseIcon />
-            </IconButton>
-        </DialogTitle>
-        <DialogContent>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                Toca las etiquetas para encender o apagar las columnas en tu tabla. Los campos en azul están visibles actualmente.
-            </Typography>
-            
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
-                {configFields.map(req => {
-                    const isVisible = !hiddenColumns.includes(req.key_name);
-                    return (
-                        <Chip 
-                            key={req.key_name}
-                            label={req.label}
-                            onClick={() => toggleColumnVisibility(req.key_name)}
-                            color={isVisible ? "primary" : "default"}
-                            variant={isVisible ? "filled" : "outlined"}
-                            icon={isVisible ? <CheckCircleIcon /> : undefined}
-                            sx={{ 
-                                fontWeight: 600, 
-                                fontSize: '0.85rem',
-                                py: 1,
-                                transition: 'all 0.2s',
-                                '&:hover': { transform: 'scale(1.05)' }
-                            }}
-                        />
-                    );
-                })}
-            </Box>
-        </DialogContent>
-        <DialogActions sx={{ p: 2, bgcolor: '#f8fafc', borderTop: '1px solid #e2e8f0' }}>
-            <Button onClick={() => setOpenColumnModal(false)} variant="contained" disableElevation sx={{ bgcolor: '#0f172a' }}>
-                Aplicar Cambios
-            </Button>
-        </DialogActions>
-      </Dialog>
+      <RequirementConfigModal 
+          open={openConfigModal} onClose={() => setOpenConfigModal(false)}
+          configFields={configFields} newField={newField} setNewField={setNewField} 
+          handleCreateField={handleCreateField} handleDeleteField={handleDeleteField}
+      />
 
-      {/* ========================================================= */}
-      {/* MODAL 2: CONFIGURAR REQUISITOS (MODELO BASE DE DATOS)       */}
-      {/* ========================================================= */}
-      <Dialog open={openConfigModal} onClose={() => setOpenConfigModal(false)} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontWeight: 800, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            Configurar Requisitos
-            <IconButton onClick={() => setOpenConfigModal(false)} size="small" sx={{ color: 'text.secondary' }}>
-                <CloseIcon />
-            </IconButton>
-        </DialogTitle>
-        <DialogContent>
-            <Stack spacing={3} sx={{ mt: 1 }}>
-                <Box sx={{ bgcolor: '#f8fafc', p: 2, borderRadius: 2, border: '1px solid #e2e8f0' }}>
-                    <Typography variant="subtitle2" fontWeight={700} mb={1}>Requisitos Activos (Se pedirán en el Alta):</Typography>
-                    <Stack direction="row" flexWrap="wrap" gap={1}>
-                        {configFields.map(f => (
-                            <Chip key={f.key_name} label={f.label} onDelete={() => handleDeleteField(f.key_name, f.label)} size="small" color="primary" variant="outlined" />
-                        ))}
-                    </Stack>
-                </Box>
-                <Divider />
-                <Typography variant="subtitle2" fontWeight={700}>Crear Nuevo Requisito</Typography>
-                <TextField label="Nombre del Requisito" fullWidth size="small" value={newField.label} onChange={(e) => setNewField({...newField, label: e.target.value})} />
-                <Grid container spacing={2}>
-                    <Grid item xs={6}><TextField select label="Categoría" size="small" fullWidth value={newField.categoria} onChange={(e) => setNewField({...newField, categoria: e.target.value})}><MenuItem value="Personales">Personales</MenuItem><MenuItem value="Viaje">Viaje</MenuItem><MenuItem value="Otros">Otros</MenuItem></TextField></Grid>
-                    <Grid item xs={6}><TextField select label="Tipo" size="small" fullWidth value={newField.tipo} onChange={(e) => setNewField({...newField, tipo: e.target.value})}><MenuItem value="file">Subir Archivo</MenuItem><MenuItem value="text">Input Texto Libre</MenuItem></TextField></Grid>
-                </Grid>
-                {newField.tipo === 'file' && (
-                    <FormControlLabel control={<Switch checked={newField.tiene_vencimiento} onChange={(e) => setNewField({...newField, tiene_vencimiento: e.target.checked})} />} label="Requiere Vencimiento" />
-                )}
-                <Button variant="contained" onClick={handleCreateField} disableElevation>Crear Requisito</Button>
-            </Stack>
-        </DialogContent>
-      </Dialog>
-
-      {/* ========================================================= */}
-      {/* MODAL: ALTA Y EDICIÓN DE CONDUCTOR (MASTER FORM)          */}
-      {/* ========================================================= */}
-      <Dialog open={openDriverModal} onClose={() => setOpenDriverModal(false)} maxWidth="lg" fullWidth PaperProps={{ sx: { borderRadius: 3, height: '90vh' } }}>
-        <DialogTitle sx={{ bgcolor: '#0f172a', color: 'white', fontWeight: 800 }}>
-            {driverData.driver_id ? `Editando: ${driverData.nombre}` : 'Alta de Nuevo Conductor'}
-        </DialogTitle>
-        <DialogContent sx={{ p: 0, bgcolor: '#f8fafc' }}>
-            <Box sx={{ p: 3 }}>
-                <Grid container spacing={4}>
-                    
-                    {/* INFO BASE */}
-                    <Grid item xs={12} md={4}>
-                        <Typography variant="h6" fontWeight={700} color="primary" gutterBottom>1. Datos Base</Typography>
-                        <Paper elevation={0} sx={{ p: 2, border: '1px solid #e2e8f0', borderRadius: 2 }}>
-                            <Stack spacing={2}>
-                                <TextField label="Nombre Completo" fullWidth size="small" value={driverData.nombre || ''} onChange={e => setDriverData({...driverData, nombre: e.target.value})} />
-                                <TextField label="CURP" fullWidth size="small" value={driverData.curp || ''} onChange={e => setDriverData({...driverData, curp: e.target.value})} />
-                                <TextField label="RFC" fullWidth size="small" value={driverData.rfc || ''} onChange={e => setDriverData({...driverData, rfc: e.target.value})} />
-                                <TextField label="Teléfono USA" fullWidth size="small" value={driverData.phone_usa || ''} onChange={e => setDriverData({...driverData, phone_usa: e.target.value})} />
-                                <TextField label="Teléfono MEX" fullWidth size="small" value={driverData.phone_mex || ''} onChange={e => setDriverData({...driverData, phone_mex: e.target.value})} />
-                                
-                                <Box>
-                                    <Typography variant="caption" fontWeight={600}>Fecha Nacimiento</Typography>
-                                    <TextField type="date" fullWidth size="small" value={driverData.fecha_nacimiento || ''} onChange={e => setDriverData({...driverData, fecha_nacimiento: e.target.value})} />
-                                </Box>
-                                <Box>
-                                    <Typography variant="caption" fontWeight={600}>Fecha Ingreso</Typography>
-                                    <TextField type="date" fullWidth size="small" value={driverData.fecha_ingreso || ''} onChange={e => setDriverData({...driverData, fecha_ingreso: e.target.value})} />
-                                </Box>
-                            </Stack>
-                        </Paper>
-                    </Grid>
-
-                    {/* REQUISITOS DINÁMICOS POR CATEGORÍA */}
-                    <Grid item xs={12} md={8}>
-                        <Typography variant="h6" fontWeight={700} color="primary" gutterBottom>2. Requisitos Dinámicos</Typography>
-                        <Grid container spacing={2}>
-                            {categories.map(cat => (
-                                <Grid item xs={12} sm={6} key={cat}>
-                                    <Paper elevation={0} sx={{ p: 2, border: '1px solid #e2e8f0', borderRadius: 2, height: '100%' }}>
-                                        <Typography variant="subtitle2" fontWeight={800} color="#475569" gutterBottom sx={{ borderBottom: '1px dashed #cbd5e1', pb: 1 }}>{cat.toUpperCase()}</Typography>
-                                        <Stack spacing={2} mt={2}>
-                                            {configFields.filter(f => f.categoria === cat).map(req => {
-                                                const k = req.key_name;
-                                                const currentDoc = driverData.docs?.[k] || {};
-
-                                                return (
-                                                    <Box key={k} sx={{ p: 1.5, bgcolor: '#f1f5f9', borderRadius: 2 }}>
-                                                        <Typography variant="caption" fontWeight={700} color="primary.dark">{req.label}</Typography>
-                                                        
-                                                        {req.tipo === 'text' ? (
-                                                            <TextField size="small" fullWidth placeholder="Ingresar valor" value={currentDoc.valor_texto || ''} 
-                                                                onChange={e => setDriverData({ ...driverData, docs: { ...driverData.docs, [k]: { ...currentDoc, valor_texto: e.target.value } } })} 
-                                                                sx={{ mt: 1, bgcolor: 'white' }} 
-                                                            />
-                                                        ) : (
-                                                            <Stack spacing={1} mt={1}>
-                                                                <Stack direction="row" alignItems="center" spacing={1}>
-                                                                    <Button variant="outlined" component="label" size="small" startIcon={<CloudUploadOutlinedIcon />} sx={{ bgcolor: 'white' }}>
-                                                                        Subir {driverDocs[k] ? '(1)' : ''}
-                                                                        <input type="file" hidden onChange={e => setDriverDocs({...driverDocs, [k]: e.target.files[0]})} />
-                                                                    </Button>
-                                                                    {currentDoc.url_pdf && (
-                                                                        <Tooltip title="Ver Documento">
-                                                                            <IconButton size="small" color="info" component="a" href={`${apiHost}/${currentDoc.url_pdf}`} target="_blank"><FilePresentIcon /></IconButton>
-                                                                        </Tooltip>
-                                                                    )}
-                                                                </Stack>
-                                                                {req.tiene_vencimiento == 1 && (
-                                                                    <TextField type="date" size="small" fullWidth label="Vence" InputLabelProps={{ shrink: true }}
-                                                                        value={currentDoc.fecha_vencimiento || ''} 
-                                                                        onChange={e => setDriverData({ ...driverData, docs: { ...driverData.docs, [k]: { ...currentDoc, fecha_vencimiento: e.target.value } } })} 
-                                                                        sx={{ bgcolor: 'white' }} 
-                                                                    />
-                                                                )}
-                                                            </Stack>
-                                                        )}
-                                                    </Box>
-                                                )
-                                            })}
-                                        </Stack>
-                                    </Paper>
-                                </Grid>
-                            ))}
-                        </Grid>
-                    </Grid>
-                </Grid>
-            </Box>
-        </DialogContent>
-        <DialogActions sx={{ p: 3, borderTop: '1px solid #e2e8f0', bgcolor: '#f8fafc' }}>
-            <Button onClick={() => setOpenDriverModal(false)} sx={{ fontWeight: 600, color: '#64748b' }}>Cancelar</Button>
-            <Button variant="contained" disableElevation onClick={handleSaveDriver} disabled={loading} sx={{ px: 4, py: 1, borderRadius: 2 }}>Guardar Conductor</Button>
-        </DialogActions>
-      </Dialog>
+      <DriverMasterFormModal 
+          open={openDriverModal} onClose={() => setOpenDriverModal(false)}
+          driverData={driverData} setDriverData={setDriverData} driverDocs={driverDocs} setDriverDocs={setDriverDocs}
+          configFields={configFields} categories={categories} handleSaveDriver={handleSaveDriver} loading={loading}
+      />
     </Box>
   );
 };
