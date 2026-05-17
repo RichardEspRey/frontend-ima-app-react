@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useContext } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
     Button, TablePagination, TextField, Box, Typography, CircularProgress, Alert,
@@ -22,7 +22,9 @@ import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 
 import { TripRow } from '../components/TripRow';
-import { AuthContext } from '../auth/AuthContext';
+
+// 🚨 1. IMPORTAMOS ZUSTAND EN LUGAR DE AUTHCONTEXT
+import { useAuthStore } from '../store/useAuthStore';
 
 const DIRECTION_OPTIONS = [
     { value: 'All', label: 'Todas las Direcciones' },
@@ -38,18 +40,20 @@ const TABS_CONFIG = [
 ];
 
 const TripAdmin = () => {
-    const { userPermissions } = useContext(AuthContext);
+    // 🚨 2. CONSUMIMOS LOS DATOS DESDE ZUSTAND
+    const { userPermissions, user } = useAuthStore();
+    
+    // 🚨 3. VALIDAMOS EL ADMIN DE FORMA SEGURA (Sin usar localStorage)
+    const isAdmin = user?.tipo_usuario?.toLowerCase() === 'admin';
+
     const [trips, setTrips] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     const allowedTabs = useMemo(() => {
         if (!userPermissions) return [];
-
         return TABS_CONFIG.filter(tab => userPermissions[tab.permission] === true);
     }, [userPermissions]);
-
-    // const [tabValue, setTabValue] = useState(1); 
 
     const [tabValue, setTabValue] = useState(() => {
         return 1;
@@ -58,7 +62,6 @@ const TripAdmin = () => {
     useEffect(() => {
         if (allowedTabs.length > 0) {
             const isAllowed = allowedTabs.some(t => t.id === tabValue);
-
             if (!isAllowed) {
                 const hasEnRuta = allowedTabs.find(t => t.id === 2);
                 setTabValue(hasEnRuta ? 2 : allowedTabs[0].id);
@@ -240,7 +243,6 @@ const TripAdmin = () => {
             const dateA = a.creation_date ? dayjs(a.creation_date) : dayjs('1900-01-01');
             const dateB = b.creation_date ? dayjs(b.creation_date) : dayjs('1900-01-01');
 
-            // Orden descendente por fecha
             if (dateA.isValid() && dateB.isValid()) return dateB.diff(dateA);
 
             return (a.trip_number || '').localeCompare(b.trip_number || '');
@@ -254,16 +256,12 @@ const TripAdmin = () => {
 
     const handleEditTrip = (tripId) => {
         if (!tripId) return;
-
         if (tabValue === 0) {
-            // Up Coming → nuevo componente
             navigate(`/edit-trip-upcoming/${tripId}`);
         } else {
-            // Despacho, En Ruta y Finalizados → editor actual
             navigate(`/edit-trip/${tripId}`);
         }
     };
-
 
     const handleAlmostOverTrip = async (tripId, tripNumber) => {
         if (!tripId) return;
@@ -324,7 +322,6 @@ const TripAdmin = () => {
         let reactivationType = '';
 
         if (isEnRuta) {
-            // Desde En Ruta: solo opción Operadores
             const result = await Swal.fire({
                 title: 'Reactivar Viaje',
                 text: `El viaje #${tripNumber} será reactivado para Operadores.`,
@@ -337,7 +334,6 @@ const TripAdmin = () => {
             if (!result.isConfirmed) return;
             reactivationType = 'operadores';
         } else {
-            // Desde Finalizados: ambas opciones
             const result = await Swal.fire({
                 title: 'Reactivar Viaje',
                 text: `Selecciona el tipo de reactivación para el viaje #${tripNumber}`,
@@ -373,7 +369,7 @@ const TripAdmin = () => {
                     `Viaje reactivado correctamente como ${reactivationType === 'admin' ? 'Administrativos' : 'Operadores'}.`,
                     'success'
                 );
-                fetchTrips(); // Al recargar, el viaje tendrá status activo y cambiará de tab automáticamente
+                fetchTrips(); 
             } else {
                 throw new Error(responseResult.error || responseResult.message);
             }
@@ -449,12 +445,16 @@ const TripAdmin = () => {
         }
     };
 
-
-    if (loading) { return (<Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}> <CircularProgress /> <Typography ml={2}>Cargando...</Typography> </Box>); }
+    if (loading) { 
+        return (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh', bgcolor: '#f8fafc' }}> 
+                <CircularProgress size={40} thickness={4} sx={{ color: '#0f172a' }} /> 
+                <Typography ml={2} fontWeight={600} color="text.secondary">Sincronizando viajes...</Typography> 
+            </Box>
+        ); 
+    }
 
     const isDirectionFilterDisabled = !(filterOrigin.trim() || filterDestination.trim());
-    const userType = localStorage.getItem('type');
-    const isAdmin = userType === 'admin';
 
     const getEmptyMessage = () => {
         if (tabValue === 0) return 'Por Iniciar';
@@ -464,14 +464,14 @@ const TripAdmin = () => {
 
     if (allowedTabs.length === 0) {
         return (
-            <div className="trip-admin">
-                <Typography variant="h4" component="h1" fontWeight={700} gutterBottom sx={{ mb: 3 }}>
+            <Box sx={{ p: { xs: 2, md: 4 }, minHeight: '100vh', bgcolor: '#f8fafc' }}>
+                <Typography variant="h4" fontWeight={800} color="#0f172a" gutterBottom>
                     Administrador de Viajes
                 </Typography>
-                <Alert severity="warning">
+                <Alert severity="warning" sx={{ borderRadius: 2, fontWeight: 600 }}>
                     No tienes permisos para visualizar ninguna categoría de viajes. Contacta a tu administrador.
                 </Alert>
-            </div>
+            </Box>
         );
     }
 
@@ -479,49 +479,56 @@ const TripAdmin = () => {
     const isDespachoTab = tabValue === 1;
     const showDocsColumn = isUpcomingTab || isDespachoTab;
 
-    //Obtener documentos faltantes desde la PRIMERA ETAPA
     const getTripMissingDocs = (trip) => {
         if (!Array.isArray(trip.etapas) || trip.etapas.length === 0) {
             return { total: 0, list: [] };
         }
-
         const firstStage = trip.etapas[0];
-
         return {
             total: firstStage.documentos_faltantes ?? 0,
             list: firstStage.documentos_faltantes_lista ?? []
         };
     };
 
-
-
     return (
-        <div className="trip-admin">
-            <Typography variant="h4" component="h1" fontWeight={700} gutterBottom sx={{ mb: 3 }}>
-                Administrador de Viajes
-            </Typography>
+        <Box sx={{ p: { xs: 2, md: 4 }, minHeight: '100vh', bgcolor: '#f8fafc' }}>
+            <style>{`.swal2-container { z-index: 2000 !important; }`}</style>
+            
+            {/* HEADER */}
+            <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems={{ xs: 'flex-start', md: 'center' }} mb={3} spacing={2}>
+                <Box>
+                    <Typography variant="h4" fontWeight={800} color="#0f172a" letterSpacing="-0.02em">
+                        Administrador de Viajes
+                    </Typography>
+                    <Typography variant="subtitle1" color="#64748b">
+                        Gestión y control de despachos, estatus y rutas.
+                    </Typography>
+                </Box>
+            </Stack>
 
-            <Paper
-                elevation={0}
-                sx={{
-                    mb: 3,
-                    bgcolor: 'transparent',
-                    borderBottom: '1px solid #e0e0e0'
-                }}
-            >
+            {/* PESTAÑAS (TABS) */}
+            <Paper elevation={0} sx={{ mb: 3, bgcolor: 'transparent', borderBottom: '2px solid #e2e8f0' }}>
                 <Tabs
                     value={tabValue}
                     onChange={handleTabChange}
                     textColor="primary"
                     indicatorColor="primary"
                     sx={{
-                        minHeight: '40px',
+                        minHeight: '48px',
                         '& .MuiTab-root': {
-                            minHeight: '40px',
+                            minHeight: '48px',
                             textTransform: 'none',
-                            fontWeight: 600,
+                            fontWeight: 700,
                             fontSize: '0.95rem',
-                            px: 3
+                            px: 3,
+                            color: '#64748b',
+                            '&.Mui-selected': { color: '#0f172a' }
+                        },
+                        '& .MuiTabs-indicator': {
+                            backgroundColor: '#0f172a',
+                            height: 3,
+                            borderTopLeftRadius: 3,
+                            borderTopRightRadius: 3
                         }
                     }}
                 >
@@ -531,22 +538,24 @@ const TripAdmin = () => {
                 </Tabs>
             </Paper>
 
+            {/* BOTÓN FILTROS */}
             <Box sx={{ mb: 2 }}>
                 <Button
                     variant="outlined"
                     startIcon={<FilterListIcon />}
                     onClick={() => setShowFilters(p => !p)}
                     size="small"
-                    sx={{ textTransform: 'none' }}
+                    sx={{ textTransform: 'none', fontWeight: 600, color: '#475569', borderColor: '#cbd5e1', bgcolor: 'white' }}
                 >
                     {showFilters ? 'Ocultar Filtros' : 'Mostrar Filtros'}
                 </Button>
             </Box>
 
+            {/* COLLAPSE FILTROS */}
             <Collapse in={showFilters} timeout="auto" unmountOnExit>
-                <Paper sx={{ p: 2, mb: 3, bgcolor: '#f9f9f9' }} variant="outlined">
-                    <Typography variant="subtitle2" gutterBottom color="text.secondary" fontWeight={600}>Filtros Avanzados</Typography>
-                    <Grid container spacing={2} alignItems="center">
+                <Paper sx={{ p: 3, mb: 3, bgcolor: '#ffffff', borderRadius: 3, border: '1px solid #e2e8f0' }} elevation={0}>
+                    <Typography variant="subtitle2" gutterBottom color="#0f172a" fontWeight={700}>Filtros Avanzados</Typography>
+                    <Grid container spacing={2} alignItems="center" mt={1}>
                         <Grid item xs={12} sm={3}>
                             <TextField label="Trip Number" size="small" fullWidth value={filterTrip} onChange={(e) => handleFilterChange(setFilterTrip, e.target.value)} placeholder="Ej: 101" />
                         </Grid>
@@ -577,55 +586,56 @@ const TripAdmin = () => {
                             </FormControl>
                         </Grid>
                         <Grid item xs={12}>
-                            <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems="center">
+                            <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems="center" mt={2}>
                                 <DatePicker selected={startDate} onChange={(date) => handleFilterChange(setStartDate, date)} selectsStart startDate={startDate} endDate={endDate} placeholderText="Fecha inicio" dateFormat="dd/MM/yyyy" className="form-input-datepicker" isClearable />
                                 <DatePicker selected={endDate} onChange={(date) => handleFilterChange(setEndDate, date)} selectsEnd startDate={startDate} endDate={endDate} minDate={startDate} placeholderText="Fecha fin" dateFormat="dd/MM/yyyy" className="form-input-datepicker" isClearable />
                                 <Button variant="text" onClick={() => {
                                     setFilterTrip(''); setFilterDriver(''); setFilterTruck(''); setFilterTrailer('');
                                     setFilterCompany(''); setFilterOrigin(''); setFilterDestination(''); setFilterDirection('All');
                                     setStartDate(null); setEndDate(null); setPage(0);
-                                }} size="small">Limpiar</Button>
-                                <Button variant="contained" onClick={fetchTrips} disabled={loading} size="small">Refrescar Tabla</Button>
+                                }} size="small" sx={{ fontWeight: 600 }}>Limpiar Filtros</Button>
+                                <Button variant="contained" onClick={fetchTrips} disabled={loading} size="small" disableElevation sx={{ bgcolor: '#0f172a' }}>Refrescar Tabla</Button>
                             </Stack>
                         </Grid>
                     </Grid>
                 </Paper>
             </Collapse>
 
-            {error && <Alert severity="error" sx={{ my: 2 }}>Error al cargar: {error}</Alert>}
+            {error && <Alert severity="error" sx={{ my: 2, borderRadius: 2 }}>Error al cargar: {error}</Alert>}
 
-            <TableContainer component={Paper} sx={{ marginTop: 2 }} variant="outlined">
+            {/* TABLA PRINCIPAL */}
+            <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid #e2e8f0', borderRadius: 3, overflow: 'hidden' }}>
                 <Table stickyHeader size="small">
                     <TableHead>
                         <TableRow>
-                            <TableCell />
-                            <TableCell sx={{ fontWeight: 'bold' }}>Trip</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold' }}>Driver(s)</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold' }}>Truck</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold' }}>Trailer</TableCell>
+                            <TableCell sx={{ bgcolor: '#f1f5f9' }}/>
+                            <TableCell sx={{ bgcolor: '#f1f5f9', fontWeight: 700, color: '#475569' }}>Trip</TableCell>
+                            <TableCell sx={{ bgcolor: '#f1f5f9', fontWeight: 700, color: '#475569' }}>Driver(s)</TableCell>
+                            <TableCell sx={{ bgcolor: '#f1f5f9', fontWeight: 700, color: '#475569' }}>Truck</TableCell>
+                            <TableCell sx={{ bgcolor: '#f1f5f9', fontWeight: 700, color: '#475569' }}>Trailer</TableCell>
 
                             {!showDocsColumn && (
-                                <TableCell sx={{ fontWeight: 'bold' }}>Initial Date</TableCell>
+                                <TableCell sx={{ bgcolor: '#f1f5f9', fontWeight: 700, color: '#475569' }}>Initial Date</TableCell>
                             )}
 
-                            <TableCell sx={{ fontWeight: 'bold' }}>Status</TableCell>
+                            <TableCell sx={{ bgcolor: '#f1f5f9', fontWeight: 700, color: '#475569' }}>Status</TableCell>
 
                             {!showDocsColumn && (
-                                <TableCell sx={{ fontWeight: 'bold' }}>Return Date</TableCell>
+                                <TableCell sx={{ bgcolor: '#f1f5f9', fontWeight: 700, color: '#475569' }}>Return Date</TableCell>
                             )}
 
                             {showDocsColumn && (
-                                <TableCell sx={{ fontWeight: 'bold' }}>Documentos Faltantes</TableCell>
+                                <TableCell sx={{ bgcolor: '#f1f5f9', fontWeight: 700, color: '#475569' }}>Documentos Faltantes</TableCell>
                             )}
 
-                            <TableCell sx={{ fontWeight: 'bold' }}>Actions</TableCell>
+                            <TableCell sx={{ bgcolor: '#f1f5f9', fontWeight: 700, color: '#475569', textAlign: 'center' }}>Actions</TableCell>
 
                             {tabValue === 3 && (
-                                <TableCell sx={{ fontWeight: 'bold' }}>Resumen</TableCell>
+                                <TableCell sx={{ bgcolor: '#f1f5f9', fontWeight: 700, color: '#475569', textAlign: 'center' }}>Resumen</TableCell>
                             )}
 
                             {isAdmin && (tabValue === 3 || tabValue === 2) && (
-                                <TableCell sx={{ fontWeight: 'bold' }}>Admin</TableCell>
+                                <TableCell sx={{ bgcolor: '#f1f5f9', fontWeight: 700, color: '#475569', textAlign: 'center' }}>Admin</TableCell>
                             )}
                         </TableRow>
                     </TableHead>
@@ -634,7 +644,7 @@ const TripAdmin = () => {
                         {filteredAndSortedTrips.length === 0 ? (
                             <TableRow>
                                 <TableCell colSpan={11} align="center">
-                                    <Typography variant="body2" color="text.secondary" sx={{ py: 3 }}>
+                                    <Typography variant="body2" color="text.secondary" sx={{ py: 4 }}>
                                         No hay viajes en la sección <b>{getEmptyMessage()}</b>.
                                     </Typography>
                                 </TableCell>
@@ -654,7 +664,7 @@ const TripAdmin = () => {
                                             onFinalize={handleFinalizeTrip}
                                             onAlmostOver={handleAlmostOverTrip}
                                             onReactivate={(tripId, tripNumber) => handleReactivateTrip(tripId, tripNumber, tabValue === 2)}
-                                            isAdmin={isAdmin}
+                                            isAdmin={isAdmin} // 🚨 Pasamos nuestro nuevo estado súper seguro
                                             getDocumentUrl={getDocumentUrl}
                                             onSummary={handleSummary}
                                             showDocsColumn={showDocsColumn}
@@ -670,28 +680,29 @@ const TripAdmin = () => {
                                             onDelete={handleDeleteTrip}
                                             isUpcomingTab={isUpcomingTab}
                                             isEnRutaTab={tabValue === 2}
-
                                         />
                                     );
                                 })
-
                         )}
                     </TableBody>
                 </Table>
             </TableContainer>
 
-            <TablePagination
-                rowsPerPageOptions={[25, 50, 100]}
-                component="div"
-                count={filteredAndSortedTrips.length}
-                rowsPerPage={rowsPerPage}
-                page={page}
-                onPageChange={(event, newPage) => setPage(newPage)}
-                onRowsPerPageChange={(event) => { setRowsPerPage(parseInt(event.target.value, 10)); setPage(0); }}
-                labelRowsPerPage="Filas:"
-                labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count !== -1 ? count : `más de ${to}`}`}
-            />
-        </div>
+            {/* Paginación */}
+            <Box sx={{ bgcolor: 'white', border: '1px solid #e2e8f0', borderTop: 'none', borderBottomLeftRadius: 12, borderBottomRightRadius: 12 }}>
+                <TablePagination
+                    rowsPerPageOptions={[25, 50, 100]}
+                    component="div"
+                    count={filteredAndSortedTrips.length}
+                    rowsPerPage={rowsPerPage}
+                    page={page}
+                    onPageChange={(event, newPage) => setPage(newPage)}
+                    onRowsPerPageChange={(event) => { setRowsPerPage(parseInt(event.target.value, 10)); setPage(0); }}
+                    labelRowsPerPage="Filas:"
+                    labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count !== -1 ? count : `más de ${to}`}`}
+                />
+            </Box>
+        </Box>
     );
 };
 

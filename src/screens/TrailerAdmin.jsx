@@ -11,6 +11,8 @@ import ColumnConfigModal from '../components/TrailerAdmin/ColumnConfigModal';
 import RequirementConfigModal from '../components/TrailerAdmin/RequirementConfigModal';
 import TrailerMasterFormModal from '../components/TrailerAdmin/TrailerMasterFormModal';
 
+import { useAuthStore } from '../store/useAuthStore';
+
 const apiHost = import.meta.env.VITE_API_HOST;
 const API_ENDPOINT = 'cajas_v2.php';
 
@@ -38,6 +40,9 @@ const TrailerAdmin = () => {
   const [newField, setNewField] = useState({ label: '', categoria: 'USA', tipo: 'file', tiene_vencimiento: true });
   const [trailerData, setTrailerData] = useState({});
   const [trailerDocs, setTrailerDocs] = useState({});
+
+  const { user } = useAuthStore();
+  const isAdmin = user?.tipo_usuario?.toLowerCase() === 'admin';
   
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -144,8 +149,16 @@ const TrailerAdmin = () => {
             <Typography variant="subtitle1" color="#64748b">Gestión centralizada de remolques y cumplimiento documental.</Typography>
         </Box>
         <Stack direction="row" spacing={2}>
-            <Button variant="outlined" color="inherit" startIcon={<ViewColumnIcon />} onClick={() => setOpenColumnModal(true)} sx={{ bgcolor: 'white' }}>Columnas</Button>
-            <Button variant="outlined" color="inherit" startIcon={<SettingsIcon />} onClick={() => setOpenConfigModal(true)} sx={{ bgcolor: 'white' }}>Requisitos</Button>
+            {isAdmin && (
+                <>
+                    <Button variant="outlined" color="inherit" startIcon={<ViewColumnIcon />} onClick={() => setOpenColumnModal(true)}>
+                        Columnas
+                    </Button>
+                    <Button variant="outlined" color="inherit" startIcon={<SettingsIcon />} onClick={() => setOpenConfigModal(true)}>
+                        Requisitos
+                    </Button>
+                </>
+            )}
             <Button variant="contained" disableElevation startIcon={<AddIcon />} onClick={() => openTrailerEditor(null)} sx={{ bgcolor: '#0f172a', '&:hover': { bgcolor: '#334155' } }}>Alta Caja</Button>
         </Stack>
       </Stack>

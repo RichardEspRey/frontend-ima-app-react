@@ -11,6 +11,8 @@ import ColumnConfigModal from '../components/DriverAdmin/ColumnConfigModal';
 import RequirementConfigModal from '../components/DriverAdmin/RequirementConfigModal';
 import DriverMasterFormModal from '../components/DriverAdmin/DriverMasterFormModal';
 
+import { useAuthStore } from '../store/useAuthStore';
+
 const apiHost = import.meta.env.VITE_API_HOST;
 const API_ENDPOINT = 'drivers_v2.php';
 
@@ -35,6 +37,9 @@ const DriverAdmin = () => {
   const [newField, setNewField] = useState({ label: '', categoria: 'Viaje', tipo: 'file', tiene_vencimiento: true });
   const [driverData, setDriverData] = useState({});
   const [driverDocs, setDriverDocs] = useState({});
+
+  const { user } = useAuthStore();
+  const isAdmin = user?.tipo_usuario?.toLowerCase() === 'admin';
 
   // ==========================================
   // FETCH DE DATOS
@@ -149,8 +154,16 @@ const DriverAdmin = () => {
             <Typography variant="subtitle1" color="#64748b">Administración centralizada de perfiles y requisitos.</Typography>
         </Box>
         <Stack direction="row" spacing={2}>
-            <Button variant="outlined" color="inherit" startIcon={<ViewColumnIcon />} onClick={() => setOpenColumnModal(true)} sx={{ bgcolor: 'white' }}>Columnas</Button>
-            <Button variant="outlined" color="inherit" startIcon={<SettingsIcon />} onClick={() => setOpenConfigModal(true)} sx={{ bgcolor: 'white' }}>Requisitos</Button>
+            {isAdmin && (
+                <>
+                    <Button variant="outlined" color="inherit" startIcon={<ViewColumnIcon />} onClick={() => setOpenColumnModal(true)}>
+                        Columnas
+                    </Button>
+                    <Button variant="outlined" color="inherit" startIcon={<SettingsIcon />} onClick={() => setOpenConfigModal(true)}>
+                        Requisitos
+                    </Button>
+                </>
+            )}
             <Button variant="contained" disableElevation startIcon={<AddIcon />} onClick={() => openDriverEditor(null)} sx={{ bgcolor: '#0f172a', '&:hover': { bgcolor: '#334155' } }}>Alta Conductor</Button>
         </Stack>
       </Stack>

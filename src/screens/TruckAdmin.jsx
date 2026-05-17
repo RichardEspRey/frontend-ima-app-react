@@ -11,6 +11,8 @@ import ColumnConfigModal from '../components/TruckAdmin/ColumnConfigModal';
 import RequirementConfigModal from '../components/TruckAdmin/RequirementConfigModal';
 import TruckMasterFormModal from '../components/TruckAdmin/TruckMasterFormModal';
 
+import { useAuthStore } from '../store/useAuthStore';
+
 const apiHost = import.meta.env.VITE_API_HOST;
 const API_ENDPOINT = 'trucks_v2.php';
 
@@ -38,6 +40,9 @@ const TruckAdmin = () => {
   const [newField, setNewField] = useState({ label: '', categoria: 'USA', tipo: 'file', tiene_vencimiento: true });
   const [truckData, setTruckData] = useState({});
   const [truckDocs, setTruckDocs] = useState({});
+
+  const { user } = useAuthStore();
+  const isAdmin = user?.tipo_usuario?.toLowerCase() === 'admin';
   
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -146,8 +151,16 @@ const TruckAdmin = () => {
             <Typography variant="subtitle1" color="#64748b">Gestión centralizada de unidades, permisos y registros (USA/MEX).</Typography>
         </Box>
         <Stack direction="row" spacing={2}>
-            <Button variant="outlined" color="inherit" startIcon={<ViewColumnIcon />} onClick={() => setOpenColumnModal(true)} sx={{ bgcolor: 'white' }}>Columnas</Button>
-            <Button variant="outlined" color="inherit" startIcon={<SettingsIcon />} onClick={() => setOpenConfigModal(true)} sx={{ bgcolor: 'white' }}>Requisitos</Button>
+            {isAdmin && (
+                <>
+                    <Button variant="outlined" color="inherit" startIcon={<ViewColumnIcon />} onClick={() => setOpenColumnModal(true)}>
+                        Columnas
+                    </Button>
+                    <Button variant="outlined" color="inherit" startIcon={<SettingsIcon />} onClick={() => setOpenConfigModal(true)}>
+                        Requisitos
+                    </Button>
+                </>
+            )}
             <Button variant="contained" disableElevation startIcon={<AddIcon />} onClick={() => openTruckEditor(null)} sx={{ bgcolor: '#0f172a', '&:hover': { bgcolor: '#334155' } }}>Alta Camión</Button>
         </Stack>
       </Stack>

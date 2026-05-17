@@ -39,7 +39,7 @@ const UserTable = ({ users, onEditUser }) => {
     };
 
     return (
-        <Paper elevation={3} sx={{ p: 3 }}>
+        <Paper elevation={0} sx={{ p: 3, border: '1px solid #e2e8f0', borderRadius: 3 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                 <Typography variant="h6">Lista de Usuarios ({filteredUsers.length} resultados)</Typography>
                 
