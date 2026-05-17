@@ -1,7 +1,8 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
-import { AuthContext } from '../auth/AuthContext';
+import { useAuthStore } from '../store/useAuthStore'; 
+
 import { Provider } from 'react-redux';
 import store from '../redux/store';
 
@@ -64,7 +65,7 @@ import Cotizador from '../screens/Viajes/Cotizacion.jsx';
 import ImaManager from '../screens/IMAManager.jsx';
 
 const AppRouter = () => {
-  const { user, loading } = useContext(AuthContext);
+  const { user, loading } = useAuthStore();
 
   if (loading) return null;
 

@@ -1,16 +1,16 @@
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import './Login.css';
-import { AuthContext } from '../../auth/AuthContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faLock } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate } from 'react-router-dom';
 
 import fondo from '../../assets/images/hero.jpg';
 import logo from '../../assets/images/logo.png';
+import { useAuthStore } from '../../store/useAuthStore';
 
 const Login = () => {
   const apiHost = import.meta.env.VITE_API_HOST;
-  const { login } = useContext(AuthContext);
+  const login = useAuthStore((state) => state.login);
   const navigate = useNavigate();
 
   const [usermail, setUsername] = useState('');
@@ -18,11 +18,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
-    if (!usermail || !password) {
-      alert('Por favor, ingresa usuario y contraseña.');
-      return;
-    }
-
+    if (!usermail || !password) return alert('Ingresa usuario y contraseña.');
     setLoading(true);
 
     try {
@@ -31,30 +27,19 @@ const Login = () => {
       formData.append('usermail', usermail);
       formData.append('password', password);
 
-      const response = await fetch(`${apiHost}/Auth.php`, {
-        method: 'POST',
-        body: formData,
-      });
-
-      const text = await response.text();
-      console.log("respuesta" + text);
-      const data = JSON.parse(text);
+      const response = await fetch(`${apiHost}/Auth.php`, { method: 'POST', body: formData });
+      const data = await response.json();
 
       if (data.status === 'success') {
-        console.log(data.user.type);
         await login(data.user.id, data.user.name, data.user.type, data.user.email);
-
-        if (window?.electron?.checkForUpdates) {
-          window.electron.checkForUpdates();
-        }
-
+        if (window?.electron?.checkForUpdates) window.electron.checkForUpdates();
         navigate('/home');
+      } else {
+        alert(data.message || 'Error de credenciales');
       }
     } catch (error) {
       alert('No se pudo conectar con el servidor.');
-      console.error(error);
     }
-
     setLoading(false);
   };
 

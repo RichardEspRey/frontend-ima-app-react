@@ -46,7 +46,8 @@
     "react-toastify": "^11.0.5",
     "react-tooltip": "^5.28.0",
     "sweetalert2": "^11.17.2",
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.18.5",
+    "zustand": "^5.0.13"
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",
