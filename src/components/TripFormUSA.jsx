@@ -106,15 +106,38 @@ const TripFormUSA = ({ tripNumber, countryCode, tripYear, isTransnational, isCon
         if (stageIndex === null) return null;
         return stopIndex !== null ? etapas[stageIndex].stops_in_transit[stopIndex]?.[docType] : etapas[stageIndex].documentos?.[docType];
     };
+    
     const handleGuardarDocumentoEtapa = (data) => {
-        const { stageIndex, docType } = modalTarget;
+        const { stageIndex, docType, stopIndex } = modalTarget; // Extraemos el stopIndex
         if (stageIndex === null || !docType) return;
+        
         setEtapas(prev => {
             const up = [...prev];
-            up[stageIndex] = { ...up[stageIndex], documentos: { ...up[stageIndex].documentos, [docType]: { ...up[stageIndex].documentos[docType], ...data } } };
+            
+            // Si stopIndex no es nulo, significa que el archivo ES PARA UNA PARADA
+            if (stopIndex !== null && stopIndex !== undefined) {
+                const stops = [...(up[stageIndex].stops_in_transit || [])];
+                stops[stopIndex] = { 
+                    ...stops[stopIndex], 
+                    [docType]: { ...(stops[stopIndex][docType] || {}), ...data } 
+                };
+                up[stageIndex] = { ...up[stageIndex], stops_in_transit: stops };
+            } 
+            // Si es nulo, el archivo ES PARA LA ETAPA PRINCIPAL
+            else {
+                up[stageIndex] = { 
+                    ...up[stageIndex], 
+                    documentos: { 
+                        ...up[stageIndex].documentos, 
+                        [docType]: { ...up[stageIndex].documentos[docType], ...data } 
+                    } 
+                };
+            }
             return up;
         });
-        setModalAbierto(false); setModalTarget({ stageIndex: null, docType: null });
+        
+        setModalAbierto(false); 
+        setModalTarget({ stageIndex: null, docType: null, stopIndex: null });
     };
 
     // Creaciones de Base de datos

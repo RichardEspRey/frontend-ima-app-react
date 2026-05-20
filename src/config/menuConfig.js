@@ -1,19 +1,19 @@
 export const menuItemsConfig = [
   { name: "Inicio", route: "/home", rolesPermitidos: ["admin"] },
   { name: "Mapa", route: "/tracking", rolesPermitidos: ["admin"] },
-  {
+  /*{
     name: "Estatus de Unidades",
     route: "/estatus-unidades",
     rolesPermitidos: ["dev", "admin"],
-  },
+  },*/
   {
     name: "IMA Manager",
-    rolesPermitidos: ["admin", "Angeles"], // El rol "Angeles" puede ver la pestaña principal
+    rolesPermitidos: ["admin", "Angeles"],
     subItems: [
       {
         name: "Documentos",
         route: "/ima-manager",
-        rolesPermitidos: ["admin"], // Solo el admin ve la sección de documentos corporativos
+        rolesPermitidos: ["admin"],
       },
       {
         name: "Conductores",

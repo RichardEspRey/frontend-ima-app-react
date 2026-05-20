@@ -157,7 +157,7 @@ const ProfileAccessManager = () => {
                         Gestor de Accesos
                     </Typography>
                     <Typography variant="subtitle1" color="#64748b" sx={{ mt: 0.5 }}>
-                        Administración de políticas RBAC (Role-Based Access Control) por usuario.
+                        Administración de políticas por usuario.
                     </Typography>
                 </Box>
                 <Chip label="Nivel de Seguridad: ROOT" color="error" variant="outlined" sx={{ fontWeight: 700, borderRadius: 2 }} />
