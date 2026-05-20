@@ -57,7 +57,7 @@ export default function FleetCommandCenter() {
   const [units, setUnits] = useState([]);
   const [selected, setSelected] = useState(null);
   const [search, setSearch] = useState("");
-    const [isHudExpanded, setIsHudExpanded] = useState(true);
+  const [isHudExpanded, setIsHudExpanded] = useState(true);
   
   // Estados para Telemetría y Configuración
   const [fuelDirty, setFuelDirty] = useState(false);
