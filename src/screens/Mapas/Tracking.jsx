@@ -14,6 +14,9 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import LocalGasStationIcon from '@mui/icons-material/LocalGasStation';
 import SettingsIcon from '@mui/icons-material/Settings';
 import SearchIcon from '@mui/icons-material/Search';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import CloseIcon from '@mui/icons-material/Close';
 
 import Swal from 'sweetalert2';
 import truckIcon from "../../assets/images/icons/truck.png";
@@ -54,13 +57,13 @@ export default function FleetCommandCenter() {
   const [units, setUnits] = useState([]);
   const [selected, setSelected] = useState(null);
   const [search, setSearch] = useState("");
+    const [isHudExpanded, setIsHudExpanded] = useState(true);
   
   // Estados para Telemetría y Configuración
   const [fuelDirty, setFuelDirty] = useState(false);
   const [tempFuel, setTempFuel] = useState(0);
   const [openConfig, setOpenConfig] = useState(false);
 
-  // 🚨 REF MAESTRO: Evita el problema de que el panel no se actualice con la información en tiempo real
   const stateRef = useRef({ selected, fuelDirty });
   useEffect(() => { stateRef.current = { selected, fuelDirty }; }, [selected, fuelDirty]);
 
@@ -70,8 +73,6 @@ export default function FleetCommandCenter() {
   // FETCH Y FUSIÓN DE DATOS (Inteligente)
   // ==========================================
   const fetchData = async () => {
-    let timerInterval;
-    const start = Date.now();
     if (first.current) {
       Swal.fire({
         title: 'Sincronizando Satélite y Telemetría...',
@@ -96,11 +97,9 @@ export default function FleetCommandCenter() {
         if (first.current) { Swal.close(); first.current = false; }
 
         const dbUnits = dataDb.data || [];
-        
-        // Extraemos los estados más recientes de la memoria
         const { selected: currentSelected, fuelDirty: currentFuelDirty } = stateRef.current;
 
-        // 3. Fusión de datos mejorada
+        // 3. Fusión de datos
         const mergedItems = dataGps.units.map((u, i) => {
             let dbMatch = {};
             const wialonName = String(u.nm).toLowerCase().trim();
@@ -117,7 +116,6 @@ export default function FleetCommandCenter() {
                 }
             }
             
-            // 🚨 SOLUCIÓN ADDRESS: Le pusimos múltiples paracaídas por si el GPS falla y quitamos la limitación de texto
             const locationString = u.address || u.location || u.pos?.a || (u.pos ? `Coordenadas: ${u.pos.y}, ${u.pos.x}` : "Dirección satelital resolviendo...");
 
             return {
@@ -131,7 +129,6 @@ export default function FleetCommandCenter() {
                 address: locationString, 
                 color: COLORS[i % COLORS.length],
                 
-                // Datos inyectados de Telemetría:
                 truck_id: dbMatch.truck_id || null,
                 unidad: dbMatch.unidad || (numerosEnWialon[0] || 'N/A'), 
                 placa: dbMatch.Placa_MEX || 'N/A',
@@ -146,7 +143,7 @@ export default function FleetCommandCenter() {
 
         setUnits(mergedItems);
 
-        // 🚨 SOLUCIÓN PANEL: Actualizamos el panel flotante de inmediato sin trabarse
+        // Actualizamos el panel flotante de inmediato sin trabarse
         if (currentSelected) {
             const updatedSelected = mergedItems.find(x => x.id === currentSelected.id);
             if (updatedSelected) {
@@ -170,7 +167,7 @@ export default function FleetCommandCenter() {
   }, []);
 
   // ==========================================
-  // HANDLERS DE TELEMETRÍA (GASOLINA)
+  // HANDLERS
   // ==========================================
   const handleUpdateFuel = async (truckId, currentFuel, capacity) => {
       try {
@@ -204,9 +201,6 @@ export default function FleetCommandCenter() {
       }
   };
 
-  // ==========================================
-  // RENDERIZADO Y UI
-  // ==========================================
   const filteredUnits = useMemo(() => {
       return units.filter(u => u.name.toLowerCase().includes(search.toLowerCase()));
   }, [units, search]);
@@ -215,6 +209,7 @@ export default function FleetCommandCenter() {
       setSelected(unit);
       setTempFuel(unit.current_fuel);
       setFuelDirty(false);
+      setIsHudExpanded(true); // 🚨 Siempre que se elija un camión, la tarjeta se expande
   };
 
   const getStatusColor = (status) => {
@@ -230,7 +225,7 @@ export default function FleetCommandCenter() {
     <Box sx={{ display: "flex", height: "calc(100vh - 70px)", width: "100%", overflow: 'hidden', bgcolor: '#f8fafc' }}>
 
       {/* ---------------------- SIDEBAR IZQUIERDO (FLOTA) ---------------------- */}
-      <Box sx={{ width: 380, bgcolor: "#fff", borderRight: "1px solid #e2e8f0", display: 'flex', flexDirection: 'column', zIndex: 2 }}>
+      <Box sx={{ width: { xs: 300, lg: 380 }, bgcolor: "#fff", borderRight: "1px solid #e2e8f0", display: 'flex', flexDirection: 'column', zIndex: 2 }}>
         
         <Box sx={{ p: 2, borderBottom: "1px solid #e2e8f0", bgcolor: '#0f172a', color: 'white' }}>
             <Typography variant="h6" fontWeight={800}>Centro de Comando</Typography>
@@ -266,12 +261,10 @@ export default function FleetCommandCenter() {
                                 </Typography>
                             </Stack>
                             
-                            {/* 🚨 Corrección CSS de Dirección: Ya no oculta texto largo */}
                             <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5, lineHeight: 1.2 }}>
                                 {truck.address}
                             </Typography>
                             
-                            {/* Mini-Barra de Combustible Integrada */}
                             {truck.truck_id && (
                                 <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
                                     <LocalGasStationIcon sx={{ fontSize: 14, color: fuelPercent < 20 ? '#ef4444' : '#64748b' }} />
@@ -292,7 +285,6 @@ export default function FleetCommandCenter() {
       {/* ---------------------- ÁREA PRINCIPAL (MAPA + HUD OVERLAY) ---------------------- */}
       <Box sx={{ flex: 1, position: 'relative' }}>
         
-        {/* MAPA LEAFLET */}
         <Box sx={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0, zIndex: 1 }}>
             <MapContainer center={[units[0]?.lat || 25.6866, units[0]?.lon || -100.3161]} zoom={5} style={{ height: "100%", width: "100%" }} zoomControl={false}>
             <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" />
@@ -311,113 +303,142 @@ export default function FleetCommandCenter() {
         </Box>
 
         {/* ========================================================================= */}
-        {/* HUD OVERLAY: TARJETA DE ESTADO COMPLETA (Flotando sobre el mapa)          */}
+        {/* HUD OVERLAY: TARJETA DE ESTADO COMPLETA Y COLAPSABLE                      */}
         {/* ========================================================================= */}
         {selected && (
-            <Paper elevation={6} sx={{ 
-                position: 'absolute', top: 20, right: 20, zIndex: 1000, width: 380, borderRadius: 3, overflow: 'hidden', 
-                animation: 'fade-in 0.3s ease-out', '@keyframes fade-in': { '0%': { opacity: 0, transform: 'translateY(-10px)' }, '100%': { opacity: 1, transform: 'translateY(0)' } }
-            }}>
-                {/* CABECERA */}
-                <Box sx={{ bgcolor: selected.color, p: 2, color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <Box>
-                        <Typography variant="h5" fontWeight={800}>{selected.name}</Typography>
-                        <Typography variant="caption" sx={{ opacity: 0.9 }}>Placa: {selected.placa}</Typography>
-                    </Box>
-                    {selected.truck_id && (
-                        <IconButton size="small" onClick={() => setOpenConfig(true)} sx={{ color: 'white', bgcolor: 'rgba(0,0,0,0.2)', '&:hover': { bgcolor: 'rgba(0,0,0,0.4)' } }}>
-                            <SettingsIcon fontSize="small" />
-                        </IconButton>
-                    )}
-                </Box>
-
-                <Box sx={{ p: 2 }}>
-                    
-                    {/* ESTATUS Y VIAJE */}
-                    <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2, p: 1, bgcolor: '#f8fafc', borderRadius: 2, border: '1px dashed #cbd5e1' }}>
-                        <Typography variant="caption" fontWeight={700} color="#475569">
-                            {selected.trip_number ? `Viaje Asignado: #${selected.trip_number}` : 'Unidad Libre / Sin Viaje'}
-                        </Typography>
-                        {selected.trip_number && (
-                            <Chip label={selected.status} size="small" sx={{ height: 20, fontSize: '0.65rem', fontWeight: 800, color: 'white', bgcolor: getStatusColor(selected.status) }} />
-                        )}
-                    </Stack>
-
-                    {/* DATOS SATELITALES */}
-                    <Stack spacing={1.5} sx={{ mb: 3 }}>
-                        <Stack direction="row" spacing={1.5} alignItems="flex-start">
-                            <LocationOnIcon sx={{ color: '#ef4444', fontSize: 20, mt: 0.2 }} />
-                            {/* 🚨 Corrección CSS de Dirección para el panel flotante */}
-                            <Typography variant="body2" color="#334155" fontWeight={600} lineHeight={1.3} sx={{ wordBreak: 'break-word' }}>
-                                {selected.address}
-                            </Typography>
-                        </Stack>
-                        <Stack direction="row" spacing={1.5} alignItems="center">
-                            <SpeedIcon sx={{ color: '#3b82f6', fontSize: 20 }} />
-                            <Typography variant="body2" color="#334155" fontWeight={700}>{selected.speed} km/h</Typography>
-                        </Stack>
-                        <Stack direction="row" spacing={1.5} alignItems="center">
-                            <AccessTimeIcon sx={{ color: '#94a3b8', fontSize: 20 }} />
-                            <Typography variant="caption" color="#64748b">Últ. act: {selected.timestamp ? new Date(selected.timestamp * 1000).toLocaleTimeString() : '---'}</Typography>
-                        </Stack>
-                    </Stack>
-
-                    <Divider sx={{ mb: 2 }} />
-
-                    {/* DATOS DE TELEMETRÍA (SI EXISTEN EN BD) */}
-                    {selected.truck_id ? (
+            isHudExpanded ? (
+                /* ESTADO EXPANDIDO (Tarjeta Completa) */
+                <Paper elevation={6} sx={{ 
+                    position: 'absolute', top: { xs: 10, md: 20 }, right: { xs: 10, md: 20 }, zIndex: 1000, 
+                    width: { xs: 290, sm: 320, md: 340, lg: 360 }, // 🚨 Ancho responsivo
+                    borderRadius: 3, overflow: 'hidden', 
+                    animation: 'fade-in 0.2s ease-out', '@keyframes fade-in': { '0%': { opacity: 0, transform: 'translateY(-10px)' }, '100%': { opacity: 1, transform: 'translateY(0)' } }
+                }}>
+                    {/* CABECERA */}
+                    <Box sx={{ bgcolor: selected.color, p: { xs: 1.5, md: 2 }, color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                         <Box>
-                            <Typography variant="subtitle2" fontWeight={800} color="#0f172a" mb={2} textAlign="center">
-                                Niveles y Autonomía
-                            </Typography>
-                            
-                            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
-                                <FuelGauge 
-                                    percent={selected.tank_capacity > 0 ? (tempFuel / selected.tank_capacity) * 100 : 0} 
-                                    value={tempFuel} 
-                                    capacity={selected.tank_capacity} 
-                                />
-                            </Box>
-
-                            <Box sx={{ mb: 2, px: 2 }}>
-                                <Stack direction="row" justifyContent="space-between" alignItems="center" mb={0.5}>
-                                    <Typography variant="caption" fontWeight={700} color="text.secondary">Calibración Manual (Galones)</Typography>
-                                    {fuelDirty && (
-                                        <Button size="small" variant="contained" onClick={saveManualAdjustment} sx={{ minWidth: 50, py: 0, fontSize: '0.6rem', height: 20, bgcolor: '#0f172a' }}>
-                                            Guardar
-                                        </Button>
-                                    )}
-                                </Stack>
-                                <Slider 
-                                    value={tempFuel} min={0} max={selected.tank_capacity || 200} onChange={handleSliderChange} 
-                                    size="small" sx={{ color: (tempFuel / selected.tank_capacity) < 0.2 ? '#ef4444' : '#3b82f6' }}
-                                />
-                            </Box>
-
-                            <Grid container spacing={1} sx={{ pt: 1, borderTop: '1px dashed #e2e8f0' }}>
-                                <Grid item xs={6} sx={{ textAlign: 'center', borderRight: '1px solid #e2e8f0' }}>
-                                    <Typography variant="caption" color="#64748b" display="block" fontWeight={600}>Rendimiento (Autonomía)</Typography>
-                                    <Typography variant="h6" fontWeight={800} color="#3b82f6">
-                                        {selected.avg_mpg > 0 ? Number(selected.avg_mpg).toFixed(2) : '--'} <span style={{ fontSize: '0.5em' }}>MPG</span>
-                                    </Typography>
-                                </Grid>
-                                <Grid item xs={6} sx={{ textAlign: 'center' }}>
-                                    <Typography variant="caption" color="#64748b" display="block" fontWeight={600}>Rango Estimado (Alcance)</Typography>
-                                    <Typography variant="h6" fontWeight={800} color="#10b981">
-                                        {selected.estimated_range > 0 ? Number(selected.estimated_range).toFixed(0) : '--'} <span style={{ fontSize: '0.5em' }}>mi</span>
-                                    </Typography>
-                                </Grid>
-                            </Grid>
+                            <Typography variant="h5" sx={{ fontWeight: 800, fontSize: { xs: '1.2rem', md: '1.5rem' } }}>{selected.name}</Typography>
+                            <Typography variant="caption" sx={{ opacity: 0.9 }}>Placa: {selected.placa}</Typography>
                         </Box>
-                    ) : (
-                        <Box sx={{ p: 2, textAlign: 'center', bgcolor: '#f1f5f9', borderRadius: 2 }}>
-                            <Typography variant="body2" color="#64748b" fontWeight={600}>
-                                Telemetría no disponible.<br/>Esta unidad no está registrada en el sistema interno de viajes.
+                        
+                        <Stack direction="row" spacing={0.5}>
+                            {selected.truck_id && (
+                                <IconButton size="small" onClick={() => setOpenConfig(true)} sx={{ color: 'white', bgcolor: 'rgba(0,0,0,0.2)', '&:hover': { bgcolor: 'rgba(0,0,0,0.4)' } }}>
+                                    <SettingsIcon fontSize="small" />
+                                </IconButton>
+                            )}
+                            <IconButton size="small" onClick={() => setIsHudExpanded(false)} sx={{ color: 'white', bgcolor: 'rgba(0,0,0,0.2)', '&:hover': { bgcolor: 'rgba(0,0,0,0.4)' } }}>
+                                <KeyboardArrowDownIcon fontSize="small" />
+                            </IconButton>
+                            <IconButton size="small" onClick={() => setSelected(null)} sx={{ color: 'white', bgcolor: 'rgba(0,0,0,0.2)', '&:hover': { bgcolor: 'rgba(0,0,0,0.4)' } }}>
+                                <CloseIcon fontSize="small" />
+                            </IconButton>
+                        </Stack>
+                    </Box>
+
+                    {/* CUERPO DE LA TARJETA */}
+                    <Box sx={{ p: { xs: 1.5, md: 2 } }}> 
+                        
+                        <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2, p: 1, bgcolor: '#f8fafc', borderRadius: 2, border: '1px dashed #cbd5e1' }}>
+                            <Typography variant="caption" fontWeight={700} color="#475569">
+                                {selected.trip_number ? `Viaje: #${selected.trip_number}` : 'Unidad Libre'}
                             </Typography>
-                        </Box>
-                    )}
-                </Box>
-            </Paper>
+                            {selected.trip_number && (
+                                <Chip label={selected.status} size="small" sx={{ height: 20, fontSize: '0.65rem', fontWeight: 800, color: 'white', bgcolor: getStatusColor(selected.status) }} />
+                            )}
+                        </Stack>
+
+                        <Stack spacing={1.5} sx={{ mb: 2 }}>
+                            <Stack direction="row" spacing={1.5} alignItems="flex-start">
+                                <LocationOnIcon sx={{ color: '#ef4444', fontSize: 20, mt: 0.2 }} />
+                                <Typography variant="body2" color="#334155" fontWeight={600} lineHeight={1.3} sx={{ wordBreak: 'break-word' }}>
+                                    {selected.address}
+                                </Typography>
+                            </Stack>
+                            <Stack direction="row" spacing={1.5} alignItems="center">
+                                <SpeedIcon sx={{ color: '#3b82f6', fontSize: 20 }} />
+                                <Typography variant="body2" color="#334155" fontWeight={700}>{selected.speed} km/h</Typography>
+                            </Stack>
+                            <Stack direction="row" spacing={1.5} alignItems="center">
+                                <AccessTimeIcon sx={{ color: '#94a3b8', fontSize: 20 }} />
+                                <Typography variant="caption" color="#64748b">Últ. act: {selected.timestamp ? new Date(selected.timestamp * 1000).toLocaleTimeString() : '---'}</Typography>
+                            </Stack>
+                        </Stack>
+
+                        <Divider sx={{ mb: 2 }} />
+
+                        {selected.truck_id ? (
+                            <Box>
+                                <Typography variant="subtitle2" fontWeight={800} color="#0f172a" mb={1} textAlign="center">
+                                    Niveles y Autonomía
+                                </Typography>
+                                
+                                <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1, transform: { xs: 'scale(0.85)', md: 'scale(1)' }, transformOrigin: 'top center' }}>
+                                    <FuelGauge 
+                                        percent={selected.tank_capacity > 0 ? (tempFuel / selected.tank_capacity) * 100 : 0} 
+                                        value={tempFuel} 
+                                        capacity={selected.tank_capacity} 
+                                    />
+                                </Box>
+
+                                <Box sx={{ mb: 1, px: 2 }}>
+                                    <Stack direction="row" justifyContent="space-between" alignItems="center" mb={0.5}>
+                                        <Typography variant="caption" fontWeight={700} color="text.secondary">Calibración Manual (Galones)</Typography>
+                                        {fuelDirty && (
+                                            <Button size="small" variant="contained" onClick={saveManualAdjustment} sx={{ minWidth: 50, py: 0, fontSize: '0.6rem', height: 20, bgcolor: '#0f172a' }}>
+                                                Guardar
+                                            </Button>
+                                        )}
+                                    </Stack>
+                                    <Slider 
+                                        value={tempFuel} min={0} max={selected.tank_capacity || 200} onChange={handleSliderChange} 
+                                        size="small" sx={{ color: (tempFuel / selected.tank_capacity) < 0.2 ? '#ef4444' : '#3b82f6' }}
+                                    />
+                                </Box>
+
+                                <Grid container spacing={1} sx={{ pt: 1, borderTop: '1px dashed #e2e8f0' }}>
+                                    <Grid item xs={6} sx={{ textAlign: 'center', borderRight: '1px solid #e2e8f0' }}>
+                                        <Typography variant="caption" color="#64748b" display="block" fontWeight={600}>Rendimiento</Typography>
+                                        <Typography variant="h6" fontWeight={800} color="#3b82f6" sx={{ fontSize: { xs: '1rem', md: '1.25rem' } }}>
+                                            {selected.avg_mpg > 0 ? Number(selected.avg_mpg).toFixed(2) : '--'} <span style={{ fontSize: '0.5em' }}>MPG</span>
+                                        </Typography>
+                                    </Grid>
+                                    <Grid item xs={6} sx={{ textAlign: 'center' }}>
+                                        <Typography variant="caption" color="#64748b" display="block" fontWeight={600}>Alcance</Typography>
+                                        <Typography variant="h6" fontWeight={800} color="#10b981" sx={{ fontSize: { xs: '1rem', md: '1.25rem' } }}>
+                                            {selected.estimated_range > 0 ? Number(selected.estimated_range).toFixed(0) : '--'} <span style={{ fontSize: '0.5em' }}>mi</span>
+                                        </Typography>
+                                    </Grid>
+                                </Grid>
+                            </Box>
+                        ) : (
+                            <Box sx={{ p: 1.5, textAlign: 'center', bgcolor: '#f1f5f9', borderRadius: 2 }}>
+                                <Typography variant="caption" color="#64748b" fontWeight={600}>
+                                    Telemetría no disponible. Unidad no registrada internamente.
+                                </Typography>
+                            </Box>
+                        )}
+                    </Box>
+                </Paper>
+            ) : (
+                /* ESTADO MINIMIZADO (Pastilla Flotante) */
+                <Paper 
+                    elevation={6} 
+                    onClick={() => setIsHudExpanded(true)} 
+                    sx={{ 
+                        position: 'absolute', top: { xs: 10, md: 20 }, right: { xs: 10, md: 20 }, zIndex: 1000, 
+                        bgcolor: selected.color, color: 'white', px: 2, py: 1, borderRadius: 5, 
+                        display: 'flex', alignItems: 'center', cursor: 'pointer',
+                        boxShadow: '0 4px 10px rgba(0,0,0,0.3)', transition: '0.2s',
+                        '&:hover': { transform: 'scale(1.05)', opacity: 0.9 }
+                    }}
+                >
+                    <Typography variant="subtitle2" fontWeight={800} sx={{ mr: 1, fontSize: '0.9rem' }}>
+                        {selected.name}
+                    </Typography>
+                    <KeyboardArrowUpIcon fontSize="small" />
+                </Paper>
+            )
         )}
       </Box>
 
