@@ -1,12 +1,12 @@
 import React, { useState, useMemo } from 'react';
-import { 
-    Drawer, Box, Typography, IconButton, 
-    List, ListItem, ListItemText, ListItemIcon, Switch, 
+import {
+    Drawer, Box, Typography, IconButton,
+    List, ListItem, ListItemText, ListItemIcon, Switch,
     Avatar, TextField, Chip, Stack, Collapse
 } from '@mui/material';
-import { 
-    Close as CloseIcon, 
-    Search as SearchIcon, 
+import {
+    Close as CloseIcon,
+    Search as SearchIcon,
     Security as SecurityIcon,
     SubdirectoryArrowRight as SubIcon,
     ExpandLess, ExpandMore
@@ -17,11 +17,11 @@ const PermissionDrawer = ({ open, handleClose, user, sectionsToManage, handlePer
     const [expandedSections, setExpandedSections] = useState({});
 
     const filteredSections = useMemo(() => {
-        if (!sectionsToManage) return []; 
+        if (!sectionsToManage) return [];
         if (!searchTerm) return sectionsToManage;
-        
+
         const lower = searchTerm.toLowerCase();
-        
+
         return sectionsToManage.filter(section => {
             const matchSection = section.name.toLowerCase().includes(lower);
             const matchSub = section.subItems?.some(sub => sub.name.toLowerCase().includes(lower));
@@ -66,10 +66,10 @@ const PermissionDrawer = ({ open, handleClose, user, sectionsToManage, handlePer
                                 {user.email}
                             </Typography>
                             <Box mt={0.5}>
-                                <Chip 
-                                    label={user.type} 
-                                    size="small" 
-                                    sx={{ bgcolor: 'rgba(255,255,255,0.2)', color: 'white', border: 'none' }} 
+                                <Chip
+                                    label={user.type}
+                                    size="small"
+                                    sx={{ bgcolor: 'rgba(255,255,255,0.2)', color: 'white', border: 'none' }}
                                 />
                             </Box>
                         </Box>
@@ -82,7 +82,7 @@ const PermissionDrawer = ({ open, handleClose, user, sectionsToManage, handlePer
 
             {/* CONTENIDO */}
             <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', height: '100%' }}>
-                
+
                 <TextField
                     fullWidth
                     placeholder="Buscar permiso..."
@@ -109,9 +109,9 @@ const PermissionDrawer = ({ open, handleClose, user, sectionsToManage, handlePer
                         return (
                             <React.Fragment key={section.name}>
                                 {/* PADRE */}
-                                <ListItem 
-                                    divider 
-                                    sx={{ 
+                                <ListItem
+                                    divider
+                                    sx={{
                                         bgcolor: isAllowed ? 'rgba(25, 118, 210, 0.04)' : 'transparent',
                                         borderLeft: isAllowed ? '4px solid #1976d2' : '4px solid transparent',
                                         transition: 'all 0.2s'
@@ -120,24 +120,24 @@ const PermissionDrawer = ({ open, handleClose, user, sectionsToManage, handlePer
                                     <ListItemIcon sx={{ minWidth: 40 }}>
                                         <SecurityIcon color={isAllowed ? "primary" : "disabled"} />
                                     </ListItemIcon>
-                                    
-                                    <ListItemText 
-                                        primary={section.name} 
+
+                                    <ListItemText
+                                        primary={section.name}
                                         primaryTypographyProps={{ fontWeight: 500 }}
                                         secondary={hasSubItems ? "Desplegar para ver opciones" : "Acceso a pantalla completa"}
                                     />
-                                    
+
                                     <Switch
                                         edge="end"
                                         checked={isAllowed}
                                         onChange={(e) => handlePermissionChange(user.id, permissionKey, e.target.checked)}
                                         color="primary"
                                     />
-                                    
+
                                     {hasSubItems && (
-                                        <IconButton 
+                                        <IconButton
                                             onClick={() => toggleSection(section.name)}
-                                            size="small" 
+                                            size="small"
                                             sx={{ ml: 1 }}
                                         >
                                             {expandedSections[section.name] || searchTerm ? <ExpandLess /> : <ExpandMore />}
@@ -158,8 +158,8 @@ const PermissionDrawer = ({ open, handleClose, user, sectionsToManage, handlePer
                                                         <ListItemIcon sx={{ minWidth: 30 }}>
                                                             <SubIcon fontSize="small" color="action" />
                                                         </ListItemIcon>
-                                                        <ListItemText 
-                                                            primary={subItem.name} 
+                                                        <ListItemText
+                                                            primary={subItem.name}
                                                             secondary={!subItem.route ? "Control de Pestaña/Vista" : "Sub-menú de navegación"}
                                                             primaryTypographyProps={{ variant: 'body2' }}
                                                             secondaryTypographyProps={{ variant: 'caption', color: !subItem.route ? 'secondary' : 'textSecondary' }}
@@ -168,7 +168,7 @@ const PermissionDrawer = ({ open, handleClose, user, sectionsToManage, handlePer
                                                             size="small"
                                                             edge="end"
                                                             checked={isSubAllowed}
-                                                            disabled={!isAllowed} 
+                                                            disabled={!isAllowed}
                                                             onChange={(e) => handlePermissionChange(user.id, subKey, e.target.checked)}
                                                         />
                                                     </ListItem>
