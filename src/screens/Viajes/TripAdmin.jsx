@@ -9,12 +9,12 @@ import FilterListIcon from '@mui/icons-material/FilterList';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import dayjs from 'dayjs';
-import './css/TripAdmin.css';
+import '../css/TripAdmin.css';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 
-import { TripRow } from '../components/TripRow';
-import { useAuthStore } from '../store/useAuthStore';
+import { TripRow } from '../../components/TripRow';
+import { useAuthStore } from '../../store/useAuthStore';
 
 const DIRECTION_OPTIONS = [
     { value: 'All', label: 'Todas las Direcciones' },
@@ -23,10 +23,10 @@ const DIRECTION_OPTIONS = [
 ];
 
 const TABS_CONFIG = [
-    { id: 0, label: "Up Coming", permission: "Ver Pestaña Upcoming" },
-    { id: 1, label: "Despacho", permission: "Ver Pestaña Despacho" },
-    { id: 2, label: "En Ruta", permission: "Ver Pestaña En Ruta" },
-    { id: 3, label: "Finalizados", permission: "Ver Pestaña Completados" }
+    { id: 0, label: "Up Coming", permission: "viajes_tab_upcoming" },
+    { id: 1, label: "Despacho", permission: "viajes_tab_despacho" },
+    { id: 2, label: "En Ruta", permission: "viajes_tab_en_ruta" },
+    { id: 3, label: "Finalizados", permission: "viajes_tab_completados" }
 ];
 
 const TripAdmin = () => {

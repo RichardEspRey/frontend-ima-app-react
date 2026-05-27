@@ -44,8 +44,8 @@ const iconMap = {
     'Estatus de Unidades': MdTrendingUp,
 };
 
-const ADMIN_EMAILS_ACCESS = ['1', 'israel_21027', 'angelica_21020'];
-const MANAGEMENT_ITEM = { name: 'Gestor de Acceso', route: '/access-manager', rolesPermitidos: ['admin'] };
+const ADMIN_TYPES = new Set(["admin"]);
+const MANAGEMENT_ITEM = { name: 'Gestor de Acceso', route: '/access-manager' };
 const menuItems = [ ...menuItemsConfig, MANAGEMENT_ITEM ];
 
 const labelSx = (visible) => ({
@@ -78,7 +78,6 @@ const Sidebar = () => {
   const railWidth = isPinnedExpanded ? SIDEBAR_WIDTH_EXPANDED : SIDEBAR_WIDTH_COLLAPSED;
 
   const tipoUsuario = String(user?.tipo_usuario || user?.type || '').trim().toLowerCase();
-  const userEmail = String(user?.email || '').trim().toLowerCase();
 
   useEffect(() => {
     if (window?.electron?.onUpdateProgress) window.electron.onUpdateProgress(setProgress);
@@ -92,18 +91,16 @@ const Sidebar = () => {
       });
   }, [currentPath]);
 
-  const roleAllowed = useCallback((roles) => {
-      if (!roles || roles.length === 0) return true;
-      return roles.some(r => String(r).toLowerCase() === tipoUsuario);
-  }, [tipoUsuario]);
+  const isAdmin = ADMIN_TYPES.has(tipoUsuario);
 
   const isSectionAllowed = useCallback((item, visibleSubs = true) => {
-      if (item.name === MANAGEMENT_ITEM.name) return roleAllowed(item.rolesPermitidos) && ADMIN_EMAILS_ACCESS.includes(userEmail); 
-      const dynamicPermission = userPermissions[item.name];
+      if (item.name === MANAGEMENT_ITEM.name) return isAdmin;
+      if (isAdmin) return true;
+      const dynamicPermission = userPermissions[item.featureKey ?? item.name];
       if (dynamicPermission !== undefined) return dynamicPermission;
       if (item.subItems && item.subItems.length > 0) return visibleSubs;
-      return roleAllowed(item.rolesPermitidos);
-  }, [roleAllowed, userEmail, userPermissions]);
+      return false;
+  }, [isAdmin, userPermissions]);
 
   const menuFiltrado = useMemo(() => {
       return menuItems.reduce((acc, item) => {
@@ -111,17 +108,16 @@ const Sidebar = () => {
           if (Array.isArray(item.subItems) && item.subItems.length > 0) {
               const visibleSubs = item.subItems.filter((subItem) => {
                   if (subItem.hideInSidebar) return false;
-                  const dynamicSubPermission = userPermissions[subItem.name]; 
-                  if (dynamicSubPermission !== undefined) return dynamicSubPermission;
-                  return roleAllowed(subItem.rolesPermitidos);
+                  if (isAdmin) return true;
+                  return userPermissions[subItem.featureKey ?? subItem.name] === true;
               });
               if (visibleSubs.length > 0 && isSectionAllowed(item, true)) acc.push({ ...item, subItems: visibleSubs });
-            return acc;
+              return acc;
           }
           if (isSectionAllowed(item)) acc.push(item);
           return acc;
       }, []);
-  }, [isSectionAllowed, roleAllowed, userPermissions]);
+  }, [isAdmin, isSectionAllowed, userPermissions]);
 
   const fetchdocs = useCallback(async () => {
     try {

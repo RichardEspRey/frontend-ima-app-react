@@ -11,9 +11,9 @@ import DashboardLayout from '../layouts/DashboardLayout';
 import HomeScreen from '../screens/Reports.jsx';
 import DriverAdmin from '../screens/DriverAdmin.jsx';
 import DriverEditor from '../screens/DriverEditor.jsx';
-import TripAdmin from '../screens/TripAdmin.jsx';
-import TripScreen from '../screens/TripsScreen.jsx';
-import TripScreenNew from '../screens/TripsScreenNew.jsx';
+import TripAdmin from '../screens/Viajes/TripAdmin.jsx';
+import TripScreen from '../screens/Viajes/TripsScreen.jsx';
+import TripScreenNew from '../screens/Viajes/TripsScreenNew.jsx';
 import DriverScreen from '../screens/DriverScreen.jsx';
 import TruckAdmin from '../screens/TruckAdmin.jsx';
 import TruckScreen from '../screens/TruckScreen.jsx';
@@ -25,16 +25,16 @@ import EditTripForm from '../screens/EditTripForm.jsx';
 import EditTripUpcoming from '../screens//Dispatch/EditUpcoming.jsx';
 import ImaScreen from '../screens/ImaScreen.jsx';
 import ImaAdmin from '../screens/ImaAdmin.jsx';
-import DieselAdmin from '../screens/Trips/DieselAdmin.jsx';
-import DieselDetalle from '../screens/Trips/DieselDetalle.jsx';
-import DieselEditor from '../screens/Trips/DieselEditor.jsx';
-import GastosAdmin from '../screens/Trips/GastosAdmin.jsx';
-import GastosDetalle from '../screens/Trips/GastosDetalle.jsx';
-import GastosEditor from '../screens/Trips/GastosEditor.jsx';
-import AdminGastosGeneral from '../screens/AdminGastos.jsx';
+import DieselAdmin from '../screens/Gastos/DieselAdmin.jsx';
+import DieselDetalle from '../screens/Gastos/DieselDetalle.jsx';
+import DieselEditor from '../screens/Gastos/DieselEditor.jsx';
+import GastosAdmin from '../screens/Gastos/GastosAdmin.jsx';
+import GastosDetalle from '../screens/Gastos/GastosDetalle.jsx';
+import GastosEditor from '../screens/Gastos/GastosEditor.jsx';
+import AdminGastosGeneral from '../screens/Gastos/AdminGastos.jsx';
 import Inspeccion_final from '../screens/Mantenimientos/Inspeccion_final.jsx';
-import ExpenseScreen from '../screens/ExpenseScreen.jsx';
-import ExpenseEdit from '../screens/ExpenseEdit.jsx';
+import ExpenseScreen from '../screens/Gastos/ExpenseScreen.jsx';
+import ExpenseEdit from '../screens/Gastos/ExpenseEdit.jsx';
 import StockAdmin  from '../screens/StockAdmin.jsx';
 import ServiceOrderScreen from '../screens/ServiceOrderScreen.jsx';
 import ServiceOrderScreenEdit from '../screens/ServiceOrderScreenEdit.jsx';
@@ -43,6 +43,7 @@ import Finanzas from '../screens/Finanzas.jsx';
 import ResumenTrip from '../screens/ResumenTrip.jsx';
 import ResiduoTrip from '../screens/Finanzas/ResiduosTrips.jsx';
 import ProfileAccessManager from '../screens/ProfileAccessManager.jsx';
+import AccessManager from '../screens/AccessManager.jsx';
 import Reports from '../screens/Reports.jsx';
 import Tracking from '../screens/Mapas/Tracking.jsx';
 import { Welcome } from '../screens/Welcome.jsx';
@@ -116,7 +117,7 @@ const AppRouter = () => {
               <Route path="/editar-orden/:orderId" element={<ServiceOrderScreenEdit />} />
               <Route path="/finanzas" element={<Finanzas />} />
               <Route path="/ResumenTrip/:tripId" element={<ResumenTrip />} />
-              <Route path="/access-manager" element={<ProfileAccessManager />} />
+              <Route path="/access-manager" element={<AccessManager />} />
               <Route path="/ResiduoTrip" element={<ResiduoTrip />} />  
               <Route path="/reports" element={<Reports />} />
               <Route path="/safety" element={<Safety />} />  
