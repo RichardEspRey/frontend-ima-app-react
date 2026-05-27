@@ -1,8 +1,8 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { TableCell, TableRow, TextField, Select, MenuItem, InputAdornment, Box, Typography, Chip } from '@mui/material';
 import { PAYMENT_METHODS, STATUS_OPTIONS } from '../constants/finances';
-import { AuthContext } from '../auth/AuthContext';
-import AccessTimeIcon from '@mui/icons-material/AccessTime'; 
+import { useAuthStore } from '../store/useAuthStore';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
 
 // Helpers 
 const money = (v) =>
@@ -21,7 +21,7 @@ const renderStatusValue = (val) => {
 };
 
 export const StageDetailRow = ({ trip_id, stage, handleStageFieldChange }) => {
-    const { user } = useContext(AuthContext);
+    const { user } = useAuthStore();
 
     const ROLES_PERMITIDOS = ['admin', 'dev'];
     const userRole = (user?.tipo_usuario || '').toLowerCase();

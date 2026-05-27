@@ -33,7 +33,7 @@ const Login = () => {
 
     try {
       const formData = new FormData();
-      formData.append('op', 'login');
+      formData.append('op', 'new_login');
       formData.append('usermail', usermail);
       formData.append('password', password);
 
@@ -41,7 +41,7 @@ const Login = () => {
       const data = await response.json();
 
       if (data.status === 'success') {
-        await login(data.user.id, data.user.name, data.user.type, data.user.email);
+        await login(data.user.id, data.user.name, data.user.type, data.user.user);
         
         if (window?.electron?.checkForUpdates) window.electron.checkForUpdates();
         navigate('/home');

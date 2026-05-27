@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 
 const apiHost = import.meta.env.VITE_API_HOST;
+const ADMIN_TYPES = new Set(["admin"]);
 
 export const useAuthStore = create(
   persist(
@@ -10,8 +11,8 @@ export const useAuthStore = create(
       userPermissions: {},
       loading: false,
 
-      login: async (id, name, type, email) => {
-        const userData = { id, name, tipo_usuario: type, email };
+      login: async (id, name, type, username) => {
+        const userData = { id, name, tipo_usuario: type, username };
         set({ user: userData, loading: true });
         await get().fetchPermissions(id);
       },
@@ -24,31 +25,39 @@ export const useAuthStore = create(
         if (!userId) return;
         try {
           const fd = new FormData();
-          fd.append("op", "getUserPermissions");
+          fd.append("op", "get_user_features");
           fd.append("user_id", userId);
+          fd.append("app", "Desktop");
 
-          const res = await fetch(`${apiHost}/AccessManager.php`, {
+          const res = await fetch(`${apiHost}/features.php`, {
             method: "POST",
             body: fd,
           });
           const data = await res.json();
 
           if (data.status === "success") {
-            set({ userPermissions: data.permissions || {}, loading: false });
+            // Convierte [{feature_key, enabled}] → { feature_key: bool }
+            const permissions = Object.fromEntries(
+              (data.features || []).map((f) => [f.feature_key, f.enabled === 1 || f.enabled === "1"])
+            );
+            set({ userPermissions: permissions });
           }
         } catch (error) {
           console.error("Error fetching permissions:", error);
+        } finally {
           set({ loading: false });
         }
       },
 
-      checkAccess: (sectionName, menuConfigTree) => {
+      // featureKey: string from menuConfig (preferred). sectionName: fallback by name.
+      checkAccess: (sectionName, menuConfigTree, featureKey) => {
         const { user, userPermissions } = get();
         if (!user) return false;
-        if (user.tipo_usuario.toLowerCase() === "admin") return true;
+        if (ADMIN_TYPES.has(user.tipo_usuario.toLowerCase())) return true;
 
-        if (userPermissions[sectionName] !== undefined) {
-          return userPermissions[sectionName] === true;
+        const lookupKey = featureKey ?? sectionName;
+        if (userPermissions[lookupKey] !== undefined) {
+          return userPermissions[lookupKey] === true;
         }
 
         const findRoleInTree = (items) => {
@@ -63,8 +72,7 @@ export const useAuthStore = create(
           return undefined;
         };
 
-        const defaultAccess = findRoleInTree(menuConfigTree);
-        return defaultAccess === true;
+        return findRoleInTree(menuConfigTree) === true;
       },
     }),
     {

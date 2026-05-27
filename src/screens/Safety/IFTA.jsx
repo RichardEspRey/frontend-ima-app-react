@@ -451,8 +451,8 @@ export default function IFTA() {
                                         <TableCell sx={{ fontWeight: 700 }}>Estado</TableCell>
                                         <TableCell sx={{ fontWeight: 700 }}>Periodo</TableCell>
                                         <TableCell sx={{ fontWeight: 700 }}>Año</TableCell>
-                                        <TableCell sx={{ fontWeight: 700 }}>Total Galones</TableCell>
-                                        <TableCell sx={{ fontWeight: 700, textAlign: 'right' }}>Total Mi</TableCell>
+                                        <TableCell sx={{ fontWeight: 700,  textAlign: 'right'}}>Total Galones</TableCell>
+
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
@@ -475,14 +475,12 @@ export default function IFTA() {
                                                     <TableCell>
                                                         <Chip label={row.trip_year} size="small" variant="outlined" color="primary" sx={{ fontWeight: 600 }} />
                                                     </TableCell>
-                                                    <TableCell>
-                                                        <Chip label={row.galones} size="small" variant="outlined" color="primary" sx={{ fontWeight: 600 }} />
-                                                    </TableCell>
+
                                                     <TableCell align="right">{fmt(row.total_millas)}</TableCell>
                                                 </TableRow>
                                             ))}
                                             <TableRow sx={{ bgcolor: '#f5f5f5' }}>
-                                                <TableCell sx={{ fontWeight: 700 }} colSpan={3}>TOTAL</TableCell>
+                                                <TableCell sx={{ fontWeight: 700,  textAlign: 'right' }} colSpan={3}>TOTAL</TableCell>
                                                 <TableCell align="right" sx={{ fontWeight: 700 }}>{fmt(grandTotalPeriodos)}</TableCell>
                                             </TableRow>
                                         </>

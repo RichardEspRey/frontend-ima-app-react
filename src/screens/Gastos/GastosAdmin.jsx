@@ -15,7 +15,7 @@ const money = (v) => {
     }).format(Number(v || 0));
 };
 
-
+//Administrador de gastos por viaje
 const GastosAdmin = () => {
   const navigate = useNavigate();
   const apiHost = import.meta.env.VITE_API_HOST;
