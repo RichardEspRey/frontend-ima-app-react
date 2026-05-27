@@ -1,14 +1,11 @@
-import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import './css/Sidebar.css';
-import { useDispatch, useSelector } from 'react-redux';
-import { setActiveMenu, setExpandedMenu, setSelectedSubMenu } from '../redux/menuSlice';
-import { AuthContext } from '../auth/AuthContext';
-import { menuItemsConfig } from '../config/menuConfig';
+import React, { useCallback, useEffect, useMemo, useState, useContext } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import {
+    Box, Button, Stack, Tooltip, List, ListItem, ListItemButton,
+    ListItemIcon, ListItemText, Collapse, Typography, LinearProgress, Avatar
+} from '@mui/material';
+
 import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
-import { useNavigate } from 'react-router-dom';
-import { Collapse, Box, Stack, Tooltip } from '@mui/material'; 
-import iconUpdate from '../assets/images/icons/update.png'
-import { UpdateContext } from '../App';
 import { 
     MdDashboard, MdCarRental, MdLocalShipping, MdDirectionsBus, MdLocalGasStation, 
     MdAttachMoney, MdExitToApp, MdList, MdAssignment, MdTrendingUp, MdBarChart, 
@@ -17,12 +14,19 @@ import {
 import { GrMapLocation } from "react-icons/gr";
 
 import logo from '../assets/images/logo_white.png';
+import iconUpdate from '../assets/images/icons/update.png';
+
+import { UpdateContext } from '../App';
+import { menuItemsConfig } from '../config/menuConfig';
+import { useAuthStore } from '../store/useAuthStore';
 
 const iconMap = {
     'Inicio': MdDashboard,
+    'IMA Manager': MdAssignment,
     'IMA': MdAssignment,
     'Conductores': MdCarRental,
     'Camiones': MdDirectionsBus,
+    'Cajas': MdDirectionsBus,
     'Gastos': MdLocalGasStation,
     'Mantenimientos': MdList,
     'Viajes': MdLocalShipping,
@@ -34,314 +38,212 @@ const iconMap = {
     'Estatus de Unidades': MdTrendingUp,
 };
 
-const ADMIN_EMAILS_ACCESS = ['1', 'israel_21027', 'angelica_21020'];
-const MANAGEMENT_ITEM = { 
-    name: 'Gestor de Acceso', 
-    route: '/access-manager', 
-    rolesPermitidos: ['admin'] 
-};
-
-const menuItems = [
-  ...menuItemsConfig.slice(0),
-  MANAGEMENT_ITEM, 
-];
+const ADMIN_TYPES = new Set(["admin"]);
+const MANAGEMENT_ITEM = { name: 'Gestor de Acceso', route: '/access-manager' };
+const menuItems = [ ...menuItemsConfig, MANAGEMENT_ITEM ];
 
 const Sidebar = () => {
-  const [progress, setProgress] = useState(0);
-  const { updateDisponible } = useContext(UpdateContext);
-  
-  const [notificaciones, setNotificaciones] = useState({
-    IMA: { red: 0, yellow: 0 },
-    Conductores: { red: 0, yellow: 0 },
-    Camiones: { red: 0, yellow: 0 },
-    Trailers: { red: 0, yellow: 0 },
-  });
-
-  const [subnotificaciones, setsubnotificaciones] = useState({
-    'Administrador de camiones': { red: 0, yellow: 0 },
-    'Administrador de cajas': { red: 0, yellow: 0 },
-  });
-
   const apiHost = import.meta.env.VITE_API_HOST;
-  const { user, logout, userPermissions } = useContext(AuthContext);
-  const [tipoUsuario, setTipoUsuario] = useState('');
+  const navigate = useNavigate();
+  const location = useLocation();
+  const currentPath = location.pathname;
+
+  const { user, logout, userPermissions } = useAuthStore();
+  const { updateDisponible } = useContext(UpdateContext);
+  const [progress, setProgress] = useState(0);
+  
+  const [openMenus, setOpenMenus] = useState({});
+  const [notificaciones, setNotificaciones] = useState({});
+  const [subnotificaciones, setSubnotificaciones] = useState({});
+
+  const tipoUsuario = String(user?.tipo_usuario || user?.type || '').trim().toLowerCase();
 
   useEffect(() => {
-    const storedType = localStorage.getItem('type') || '';
-    setTipoUsuario((user?.tipo_usuario || storedType || '').trim());
-  }, [user]);
-
-  const userEmail = user?.email?.trim().toLowerCase() || localStorage.getItem('userEmail')?.trim().toLowerCase() || '';
-
-  useEffect(() => {
-    window.electron?.onUpdateProgress((percent) => {
-      setProgress(percent);
-    });
+    if (window?.electron?.onUpdateProgress) window.electron.onUpdateProgress(setProgress);
   }, []);
 
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const activeMenu = useSelector((state) => state.menu.activeMenu);
-  const expandedMenu = useSelector((state) => state.menu.expandedMenu);
-  const selectedSubMenu = useSelector((state) => state.menu.selectedSubMenu);
+  useEffect(() => {
+      menuItems.forEach(item => {
+          if (item.subItems?.some(sub => sub.route === currentPath)) {
+              setOpenMenus(prev => ({ ...prev, [item.name]: true }));
+          }
+      });
+  }, [currentPath]);
 
-  const roleAllowed = useCallback(
-    (roles) => {
-      if (!roles || roles.length === 0) return true;
-      const u = String(tipoUsuario || '').toLowerCase();
-      return roles.some(r => String(r).toLowerCase() === u);
-    },
-    [tipoUsuario]
-  );
+  const isAdmin = ADMIN_TYPES.has(tipoUsuario);
 
   const isSectionAllowed = useCallback((item, visibleSubs = true) => {
-      if (item.name === MANAGEMENT_ITEM.name) {
-          return roleAllowed(item.rolesPermitidos) && ADMIN_EMAILS_ACCESS.includes(userEmail); 
-      }
-      const dynamicPermission = userPermissions[item.name];
+      if (item.name === MANAGEMENT_ITEM.name) return isAdmin;
+      if (isAdmin) return true;
+      const dynamicPermission = userPermissions[item.featureKey ?? item.name];
       if (dynamicPermission !== undefined) return dynamicPermission;
       if (item.subItems && item.subItems.length > 0) return visibleSubs;
-      return roleAllowed(item.rolesPermitidos);
-  }, [roleAllowed, userEmail, userPermissions]);
+      return false;
+  }, [isAdmin, userPermissions]);
 
-  const filterMenuByAccess = useCallback((items) => {
-      return items.reduce((acc, item) => {
+  const menuFiltrado = useMemo(() => {
+      return menuItems.reduce((acc, item) => {
           if (item.hideInSidebar) return acc;
-
           if (Array.isArray(item.subItems) && item.subItems.length > 0) {
               const visibleSubs = item.subItems.filter((subItem) => {
                   if (subItem.hideInSidebar) return false;
-
-                  const dynamicSubPermission = userPermissions[subItem.name]; 
-                  if (dynamicSubPermission !== undefined) return dynamicSubPermission;
-                  
-                  return roleAllowed(subItem.rolesPermitidos);
+                  if (isAdmin) return true;
+                  return userPermissions[subItem.featureKey ?? subItem.name] === true;
               });
-
-              if (visibleSubs.length > 0) {
-                acc.push({ ...item, subItems: visibleSubs });
-              }
-            return acc;
+              if (visibleSubs.length > 0 && isSectionAllowed(item, true)) acc.push({ ...item, subItems: visibleSubs });
+              return acc;
           }
-
-          const canSeeSection = isSectionAllowed(item);
-          if (canSeeSection) acc.push(item);
+          if (isSectionAllowed(item)) acc.push(item);
           return acc;
       }, []);
-  }, [isSectionAllowed, roleAllowed, userPermissions]);
+  }, [isAdmin, isSectionAllowed, userPermissions]);
 
-  const menuFiltrado = useMemo(() => filterMenuByAccess(menuItems), [filterMenuByAccess]);
-
-  const handleNavigate = useCallback((route) => {
-    dispatch(setActiveMenu(route));
-    dispatch(setExpandedMenu(null));
-    dispatch(setSelectedSubMenu(null));
-    navigate(route);
-  }, [dispatch, navigate]);
-
-  const toggleSubMenu = useCallback((menuName, hasVisibleSubs) => {
-    if (!hasVisibleSubs) return;
-    dispatch(setExpandedMenu(expandedMenu === menuName ? null : menuName));
-    if (expandedMenu === menuName) dispatch(setSelectedSubMenu(null));
-  }, [dispatch, expandedMenu]);
-
-  const handleSubMenuSelect = useCallback((route) => {
-    dispatch(setSelectedSubMenu(route));
-    dispatch(setActiveMenu(route));
-    navigate(route);
-  }, [dispatch, navigate]);
-
-  const handleLogout = () => logout();
-
-  const fetchdocs = async () => {
-    const formDataToSend = new FormData();
-    formDataToSend.append('op', 'getStatus');
-
+  const fetchdocs = useCallback(async () => {
     try {
-      const response = await fetch(`${apiHost}/IMA_Docs.php`, {
-        method: 'POST',
-        body: formDataToSend
-      });
-
-      const data = await response.json();
-
+      const fd = new FormData(); fd.append('op', 'getStatus');
+      const res = await fetch(`${apiHost}/IMA_Docs.php`, { method: 'POST', body: fd });
+      const data = await res.json();
       if (data.status === 'success') {
         const u = data.Users[0];
-
-        // LOGICA DE NOTIFICACIONES (SEMAFORIZACIÓN)
-        
-        const imaFaltantes = parseInt(u.documentos_faltantes_ima || 0);
-        const imaVencidos = parseInt(u.ima_vencidos || 0);
-        const imaPorVencer = parseInt(u.ima_por_vencer || 0);
-
-        const driverFaltantes = parseInt(u.documentos_faltantes_driver || 0);
-        const driverVencidos = parseInt(u.driver_vencidos || 0);
-        const driverPorVencer = parseInt(u.driver_por_vencer || 0);
-
-        const truckRed = parseInt(u.documentos_faltantes_truck || 0);
-        const trailerRed = parseInt(u.documentos_faltantes_trailer || 0);
-
-        setNotificaciones((prev) => ({
-          ...prev,
-          IMA: { 
-              red: imaVencidos, 
-              yellow: imaPorVencer 
-          },
-          Conductores: { 
-              red: driverVencidos, 
-              yellow: driverPorVencer 
-          }, 
-          Camiones: { 
-              red: truckRed + trailerRed, 
-              yellow: 0 
-          },
-        }));
-
-        setsubnotificaciones((prev) => ({
-          ...prev,
-          'Administrador de camiones': { red: truckRed, yellow: 0 },
-          'Administrador de cajas': { red: trailerRed, yellow: 0 },
-        }));
+        setNotificaciones({ 'IMA Manager': { red: parseInt(u.ima_vencidos||0) + parseInt(u.driver_vencidos||0) + parseInt(u.documentos_faltantes_truck||0) + parseInt(u.documentos_faltantes_trailer||0), yellow: parseInt(u.ima_por_vencer||0) + parseInt(u.driver_por_vencer||0) }});
+        setSubnotificaciones({
+          'Documentos': { red: parseInt(u.ima_vencidos||0), yellow: parseInt(u.ima_por_vencer||0) },
+          'Conductores': { red: parseInt(u.driver_vencidos||0), yellow: parseInt(u.driver_por_vencer||0) },
+          'Camiones': { red: parseInt(u.documentos_faltantes_truck||0), yellow: 0 },
+          'Cajas': { red: parseInt(u.documentos_faltantes_trailer||0), yellow: 0 },
+        });
       }
-    } catch (error) {
-      console.error('Error al obtener notificaciones:', error);
-    }
-  };
+    } catch (error) { console.error(error); }
+  }, [apiHost]);
 
   useEffect(() => {
-    fetchdocs();
-    const interval = setInterval(fetchdocs, 300000); 
-    return () => clearInterval(interval);
-  }, []);
+    fetchdocs(); const interval = setInterval(fetchdocs, 300000); return () => clearInterval(interval);
+  }, [fetchdocs]);
+
+  const toggleMenu = (name) => setOpenMenus(prev => ({ ...prev, [name]: !prev[name] }));
 
   const NotificationBadges = ({ counts }) => {
-      const { red, yellow } = (typeof counts === 'number') ? { red: counts, yellow: 0 } : counts;
-
+      const { red = 0, yellow = 0 } = counts || {};
       if (!red && !yellow) return null;
-
       return (
-          <Stack direction="row" spacing={0.5} alignItems="center" sx={{ marginLeft: 'auto', paddingLeft: '8px' }}>
-              {red > 0 && (
-                  <Tooltip title={`${red} Vencidos / Faltantes`}>
-                      <Box sx={{ 
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          bgcolor: '#d32f2f', color: '#fff', borderRadius: '12px', 
-                          px: 0.8, py: 0.2, minWidth: '20px', height: '20px', fontSize: '0.75rem', fontWeight: 'bold'
-                      }}>
-                          {red}
-                      </Box>
-                  </Tooltip>
-              )}
-              {yellow > 0 && (
-                  <Tooltip title={`${yellow} Por Vencer`}>
-                      <Box sx={{ 
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          bgcolor: '#ed6c02', color: '#fff', borderRadius: '12px', 
-                          px: 0.8, py: 0.2, minWidth: '20px', height: '20px', fontSize: '0.75rem', fontWeight: 'bold'
-                      }}>
-                           {yellow}
-                      </Box>
-                  </Tooltip>
-              )}
+          <Stack direction="row" spacing={0.5} alignItems="center" pl={1}>
+              {red > 0 && <Tooltip title="Vencidos" placement="right"><Avatar sx={{ width: 22, height: 22, bgcolor: '#ef4444', fontSize: '0.75rem', fontWeight: 800 }}>{red}</Avatar></Tooltip>}
+              {yellow > 0 && <Tooltip title="Por Vencer" placement="right"><Avatar sx={{ width: 22, height: 22, bgcolor: '#f59e0b', fontSize: '0.75rem', fontWeight: 800 }}>{yellow}</Avatar></Tooltip>}
           </Stack>
       );
   };
 
   return (
-    <div className="sidebar-container">
-      <div className="sidebar-logo-wrapper">
-        <img className="sidebar-logo" src={logo} alt="Logo de la aplicación" />
-      </div>
+    <Box sx={{ 
+        width: 280, 
+        height: '100vh',
+        bgcolor: '#0f172a', 
+        color: '#cbd5e1', 
+        display: 'flex', 
+        flexDirection: 'column', 
+        borderRight: '1px solid #1e293b',
+        zIndex: 20
+    }}>
+      
+      {/* LOGO */}
+      <Box sx={{ p: 3, pb: 2, display: 'flex', justifyContent: 'center' }}>
+        <img src={logo} alt="Logo" style={{ maxWidth: '75%', height: 'auto', opacity: 0.95 }} />
+      </Box>
 
-      <div className="menu-list-wrapper">
-        {menuFiltrado.map((item) => {
-          const hasSubs = !!(item.subItems && item.subItems.length > 0);
-          const isOpen = expandedMenu === item.name; 
-          const IconComponent = iconMap[item.name];
-          const notifData = notificaciones[item.name];
+      {/* LISTA DE MENÚS */}
+      <Box sx={{ flexGrow: 1, overflowY: 'auto', p: 1.5, '&::-webkit-scrollbar': { width: '4px' }, '&::-webkit-scrollbar-thumb': { bgcolor: 'rgba(255,255,255,0.1)', borderRadius: '4px' } }}>
+        <List disablePadding>
+          {menuFiltrado.map((item) => {
+            const hasSubs = !!(item.subItems && item.subItems.length > 0);
+            const isOpen = openMenus[item.name]; 
+            const IconComponent = iconMap[item.name] || MdList;
+            const isActive = currentPath === item.route;
 
-          return (
-            <div key={item.name} className="menu-section">
-              <button
-                className={`menu-item ${activeMenu === item.route && !hasSubs ? 'active-item' : ''} ${hasSubs ? 'has-submenu' : ''}`}
-                onClick={() => hasSubs ? toggleSubMenu(item.name, hasSubs) : (item.route && handleNavigate(item.route))}
-                disabled={!hasSubs && !item.route}
-                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
-                    {IconComponent && <IconComponent className="menu-icon" />}
-                    <span className="menu-text-content">{item.name}</span>
-                </div>
+            return (
+              <React.Fragment key={item.name}>
+                <ListItem disablePadding sx={{ mb: 0.5 }}>
+                  <ListItemButton 
+                    onClick={() => hasSubs ? toggleMenu(item.name) : (item.route && navigate(item.route))}
+                    sx={{ 
+                        borderRadius: 2,
+                        bgcolor: isActive ? '#3b82f6' : 'transparent',
+                        color: isActive ? '#ffffff' : '#94a3b8',
+                        transition: 'all 0.2s',
+                        '&:hover': { bgcolor: isActive ? '#2563eb' : 'rgba(255,255,255,0.05)', color: '#fff' }
+                    }}
+                  >
+                    <ListItemIcon sx={{ minWidth: 40, color: isActive ? '#ffffff' : 'inherit' }}>
+                        <IconComponent size={20} />
+                    </ListItemIcon>
+                    
+                    <ListItemText primary={item.name} primaryTypographyProps={{ fontWeight: isActive ? 700 : 500, fontSize: '0.9rem' }} />
+                    <NotificationBadges counts={notificaciones[item.name]} />
 
-                {notifData && <NotificationBadges counts={notifData} />}
+                    {hasSubs && (
+                        <Box sx={{ ml: 1, display: 'flex', alignItems: 'center', opacity: 0.7 }}>
+                            {isOpen ? <FaChevronUp size={10} /> : <FaChevronDown size={10} />}
+                        </Box>
+                    )}
+                  </ListItemButton>
+                </ListItem>
 
                 {hasSubs && (
-                  <span className="arrow-icon-wrapper" style={{ marginLeft: '8px' }}>
-                    {isOpen ? <FaChevronUp /> : <FaChevronDown />}
-                  </span>
+                  <Collapse in={isOpen} timeout="auto" unmountOnExit>
+                    <List component="div" disablePadding sx={{ pl: 2.5, mb: 1, position: 'relative' }}>
+                      <Box sx={{ position: 'absolute', left: 20, top: 0, bottom: 10, width: '1px', bgcolor: 'rgba(255,255,255,0.1)' }} />
+                      
+                      {item.subItems.map((subItem) => {
+                          const isSubActive = currentPath === subItem.route;
+                          return (
+                              <ListItemButton 
+                                  key={subItem.name} 
+                                  onClick={() => subItem.route && navigate(subItem.route)}
+                                  sx={{ 
+                                      borderRadius: 2, py: 0.8, my: 0.2,
+                                      color: isSubActive ? '#fff' : '#94a3b8',
+                                      bgcolor: isSubActive ? 'rgba(255,255,255,0.05)' : 'transparent',
+                                      '&:hover': { bgcolor: 'rgba(255,255,255,0.1)', color: '#fff' }
+                                  }}
+                              >
+                                  <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: isSubActive ? '#3b82f6' : 'transparent', border: isSubActive ? 'none' : '1px solid #64748b', mr: 2, zIndex: 2 }} />
+                                  <ListItemText primary={subItem.name} primaryTypographyProps={{ fontSize: '0.85rem', fontWeight: isSubActive ? 600 : 400 }} />
+                                  <NotificationBadges counts={subnotificaciones[subItem.name]} />
+                              </ListItemButton>
+                          );
+                      })}
+                    </List>
+                  </Collapse>
                 )}
-              </button>
+              </React.Fragment>
+            );
+          })}
+        </List>
+      </Box>
 
-              {hasSubs && (
-                <Collapse in={isOpen} timeout="auto" unmountOnExit>
-                  <div className="submenu-container">
-                    {item.subItems.map((subItem) => (
-                      <button
-                        key={subItem.name}
-                        className={`submenu-item ${selectedSubMenu === subItem.route ? 'active-submenu' : ''}`}
-                        onClick={() => handleSubMenuSelect(subItem.route)}
-                        style={{ display: 'flex', justifyContent: 'space-between', paddingRight: '15px' }}
-                      >
-                        <div style={{ display: 'flex', alignItems: 'center' }}>
-                            <span className="submenu-dot" /> 
-                            {subItem.name}
-                        </div>
-                        {subnotificaciones[subItem.name] && (
-                            <NotificationBadges counts={subnotificaciones[subItem.name]} />
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                </Collapse>
-              )}
-            </div>
-          );
-        })}
-      </div>
+      {/* SECCIÓN INFERIOR */}
+      <Box sx={{ p: 2, borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+        
+        {updateDisponible && (
+            <Box sx={{ mb: 2 }}>
+                <Button fullWidth variant="contained" color="success" startIcon={<img src={iconUpdate} width={16} alt="update" style={{ filter: 'invert(1)' }}/>} onClick={() => window.electron?.descargarUpdate()} disabled={progress > 0 && progress < 100} sx={{ textTransform: 'none', fontWeight: 700, borderRadius: 2 }}>
+                    Actualizar
+                </Button>
+                {progress > 0 && progress < 100 && (
+                    <Box sx={{ mt: 1 }}>
+                        <Typography variant="caption" color="text.secondary">Descargando... {Math.floor(progress)}%</Typography>
+                        <LinearProgress variant="determinate" value={progress} color="success" sx={{ height: 6, borderRadius: 3, mt: 0.5 }} />
+                    </Box>
+                )}
+            </Box>
+        )}
 
-      <button
-        className="logout-button"
-        onClick={() => window.electron.descargarUpdate()}
-        disabled={!updateDisponible || (progress > 0 && progress < 100)}
-        style={{ opacity: updateDisponible ? 1 : 0.5, cursor: updateDisponible ? 'pointer' : 'not-allowed' }}
-      >
-        <img src={iconUpdate} className="menu-icon" alt="update" />
-        <span className="menu-text-content">Actualizar</span>
-      </button>
+        <ListItemButton onClick={logout} sx={{ borderRadius: 2, color: '#fca5a5', transition: '0.2s', '&:hover': { bgcolor: '#ef4444', color: '#fff' } }}>
+            <ListItemIcon sx={{ minWidth: 40, color: 'inherit' }}><MdExitToApp size={22} /></ListItemIcon>
+            <ListItemText primary="Cerrar Sesión" primaryTypographyProps={{ fontWeight: 700, fontSize: '0.9rem' }} />
+        </ListItemButton>
+      </Box>
 
-      {updateDisponible && progress > 0 && progress < 100 && (
-        <div style={{ padding: '0 16px' }}>
-          <div style={{ marginTop: 4 }}>
-            <div style={{ fontSize: 12, color: '#fff' }}>
-              Descargando actualización… {Math.floor(progress)}%
-            </div>
-            <div style={{ background: '#ccc', borderRadius: 4, overflow: 'hidden', height: 6, marginTop: 4 }}>
-              <div style={{
-                height: '100%',
-                width: `${progress}%`,
-                background: '#4caf50',
-                transition: 'width 0.3s ease'
-              }} />
-            </div>
-          </div>
-        </div>
-      )}
-
-      <button className="logout-button" onClick={handleLogout}>
-        <MdExitToApp className="menu-icon" />
-        <span className="menu-text-content">Cerrar Sesión</span>
-      </button>
-    </div>
+    </Box>
   );
 };
 

@@ -4,14 +4,17 @@ import {
     List, ListItem, ListItemText, Switch,
     Avatar, TextField, Chip, Stack,
     Tabs, Tab, CircularProgress,
-    Button, FormControl, InputLabel, Select, MenuItem, Divider
+    Button, FormControl, InputLabel, Select, MenuItem, Divider,
+    InputAdornment
 } from '@mui/material';
 import {
     Close as CloseIcon,
     Computer as ComputerIcon,
     PhoneAndroid as PhoneAndroidIcon,
     ManageAccounts as ManageAccountsIcon,
-    Save as SaveIcon
+    Save as SaveIcon,
+    Visibility as VisibilityIcon,
+    VisibilityOff as VisibilityOffIcon
 } from '@mui/icons-material';
 
 const FeatureSection = ({ features, userId, onToggleFeature }) => {
@@ -50,8 +53,8 @@ const FeatureSection = ({ features, userId, onToggleFeature }) => {
                             key={f.feature_id}
                             divider
                             sx={{
-                                borderLeft: f.enabled ? '4px solid #1976d2' : '4px solid transparent',
-                                bgcolor: f.enabled ? 'rgba(25, 118, 210, 0.04)' : 'transparent',
+                                borderLeft: Number(f.enabled) === 1 ? '4px solid #1976d2' : '4px solid transparent',
+                                bgcolor: Number(f.enabled) === 1 ? 'rgba(25, 118, 210, 0.04)' : 'transparent',
                                 transition: 'all 0.2s'
                             }}
                         >
@@ -63,7 +66,7 @@ const FeatureSection = ({ features, userId, onToggleFeature }) => {
                             />
                             <Switch
                                 edge="end"
-                                checked={Boolean(f.enabled)}
+                                checked={Number(f.enabled) === 1}
                                 onChange={(e) => onToggleFeature(userId, f.feature_id, f.plataform, e.target.checked)}
                                 color="primary"
                             />
@@ -81,11 +84,12 @@ const AccessDrawer = ({
     onUpdateUser
 }) => {
     const [activeTab, setActiveTab] = useState(0);
-    const [form, setForm] = useState({ name: '', user: '', pass: '', type: '' });
+    const [form, setForm] = useState({ name: '', user: '', pass: '', type: '', active: '1' });
+    const [showPass, setShowPass] = useState(false);
 
     useEffect(() => {
         if (user) {
-            setForm({ name: user.name || '', user: user.user || '', pass: '', type: user.type || '' });
+            setForm({ name: user.name || '', user: user.user || '', pass: user.pass || '', type: user.type || '', active: user.active ?? '1' });
         }
     }, [user]);
 
@@ -171,13 +175,22 @@ const AccessDrawer = ({
                             />
                             <TextField
                                 label="Contraseña"
-                                type="password"
+                                type={showPass ? 'text' : 'password'}
                                 value={form.pass}
                                 onChange={handleFormChange('pass')}
                                 fullWidth
                                 size="small"
                                 placeholder="Dejar vacío para no cambiar"
                                 helperText="Solo completa si deseas cambiar la contraseña"
+                                InputProps={{
+                                    endAdornment: (
+                                        <InputAdornment position="end">
+                                            <IconButton onClick={() => setShowPass(prev => !prev)} edge="end" size="small">
+                                                {showPass ? <VisibilityOffIcon fontSize="small" /> : <VisibilityIcon fontSize="small" />}
+                                            </IconButton>
+                                        </InputAdornment>
+                                    )
+                                }}
                             />
                             <FormControl fullWidth size="small">
                                 <InputLabel>Tipo</InputLabel>
@@ -188,6 +201,18 @@ const AccessDrawer = ({
                                 >
                                     <MenuItem value="Administrativo">Administrativo</MenuItem>
                                     <MenuItem value="Driver">Driver</MenuItem>
+                                </Select>
+                            </FormControl>
+
+                            <FormControl fullWidth size="small">
+                                <InputLabel>Estado</InputLabel>
+                                <Select
+                                    value={String(form.active)}
+                                    label="Estado"
+                                    onChange={handleFormChange('active')}
+                                >
+                                    <MenuItem value="1">Activo</MenuItem>
+                                    <MenuItem value="0">Inactivo</MenuItem>
                                 </Select>
                             </FormControl>
 

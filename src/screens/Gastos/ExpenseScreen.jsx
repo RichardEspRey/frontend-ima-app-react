@@ -11,13 +11,13 @@ import 'react-datepicker/dist/react-datepicker.css';
 import Swal from 'sweetalert2';
 import Select from 'react-select';
 
-import ModalArchivo from '../components/ModalArchivo';
+import ModalArchivo from '../../components/ModalArchivo';
 
-import useFetchInventoryItems from '../hooks/expense_hooks/useFetchInventoryItems';
-import useFetchSubcategories from '../hooks/expense_hooks/useFetchSubcategories';
-import useFetchCategories from '../hooks/expense_hooks/useFetchCategories';
-import useFetchExpenseTypes from '../hooks/expense_hooks/useFetchExpenseTypes';
-import useFetchExchangeRate from '../hooks/useFetchExchangeRate';
+import useFetchInventoryItems from '../../hooks/expense_hooks/useFetchInventoryItems';
+import useFetchSubcategories from '../../hooks/expense_hooks/useFetchSubcategories';
+import useFetchCategories from '../../hooks/expense_hooks/useFetchCategories';
+import useFetchExpenseTypes from '../../hooks/expense_hooks/useFetchExpenseTypes';
+import useFetchExchangeRate from '../../hooks/useFetchExchangeRate';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 

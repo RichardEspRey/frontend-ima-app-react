@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { AuthProvider } from './auth/AuthContext';
 import AppRouter from './navigation/AppRouter';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -25,7 +24,6 @@ const App = () => {
 
   return (
     <UpdateContext.Provider value={{ updateDisponible }}>
-      <AuthProvider>
         <AppRouter />
         <ToastContainer position="top-right"
           autoClose={5000}
@@ -38,7 +36,6 @@ const App = () => {
           pauseOnHover
           theme="light"
            />
-      </AuthProvider>
     </UpdateContext.Provider>
   );
 };

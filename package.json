@@ -1,7 +1,9 @@
 {
   "name": "imaappdesktopreact",
   "private": true,
-  "version": "1.2.9",
+  "version": "1.3.1",
+  "description": "IMA Express Desktop Application",
+  "author": "IMA Express",
   "type": "module",
   "main": "electron.cjs",
   "scripts": {
@@ -25,6 +27,7 @@
     "@mui/icons-material": "^7.1.0",
     "@mui/material": "^7.3.4",
     "@mui/x-charts": "^8.14.1",
+    "@pablotheblink/flashyjs": "^1.0.5",
     "@reduxjs/toolkit": "^2.6.1",
     "axios": "^1.8.4",
     "dayjs": "^1.11.13",
@@ -46,7 +49,8 @@
     "react-toastify": "^11.0.5",
     "react-tooltip": "^5.28.0",
     "sweetalert2": "^11.17.2",
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.18.5",
+    "zustand": "^5.0.13"
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",
@@ -65,6 +69,7 @@
   "build": {
     "appId": "com.imaexpress.desktopapp",
     "productName": "IMA Desktop App",
+    "npmRebuild": false,
     "directories": {
       "buildResources": "assets",
       "output": "release"
@@ -76,6 +81,14 @@
     ],
     "win": {
       "target": "nsis"
+    },
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "icon": "assets/icon.icns",
+      "category": "public.app-category.business"
     },
     "publish": [
       {

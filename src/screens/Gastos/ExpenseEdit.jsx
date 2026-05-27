@@ -14,9 +14,9 @@ import Swal from 'sweetalert2';
 import { PhotoProvider, PhotoView } from 'react-photo-view';
 import 'react-photo-view/dist/react-photo-view.css';
 
-import useFetchSubcategories from '../hooks/expense_hooks/useFetchSubcategories';
-import useFetchCategories from '../hooks/expense_hooks/useFetchCategories';
-import useFetchExpenseTypes from '../hooks/expense_hooks/useFetchExpenseTypes';
+import useFetchSubcategories from '../../hooks/expense_hooks/useFetchSubcategories';
+import useFetchCategories from '../../hooks/expense_hooks/useFetchCategories';
+import useFetchExpenseTypes from '../../hooks/expense_hooks/useFetchExpenseTypes';
 
 const customSelectStyles = {
   control: (provided) => ({

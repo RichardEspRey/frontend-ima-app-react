@@ -77,7 +77,7 @@ export const AfinacionesTable = ({ trucksStatus, onOpenModal }) => {
                                         <Stack direction="row" spacing={1} mt={0.5} justifyContent="center">
                                             <Tooltip title="Ver Foto del Tablero">
                                                 <span>
-                                                    <IconButton size="small" color="info" onClick={() => onOpenModal('photo', truck)} disabled={!truck.ticket_url}>
+                                                    <IconButton size="small" color="info" onClick={() => onOpenModal('photo', truck.ticket_url)} disabled={!truck.ticket_url}>
                                                         <PhotoCameraIcon fontSize="small" />
                                                     </IconButton>
                                                 </span>

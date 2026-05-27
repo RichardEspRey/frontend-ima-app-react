@@ -1,5 +1,6 @@
-import { useState, useEffect, useContext, useCallback } from 'react';
-import { AuthContext } from '../auth/AuthContext';
+import { useState, useEffect, useCallback } from 'react';
+import Flashy from '@pablotheblink/flashyjs';
+import { useAuthStore } from '../store/useAuthStore';
 import { menuItemsConfig } from '../config/menuConfig';
 import TableUser from '../components/TableUser';
 import AccessDrawer from '../components/AccessDrawer';
@@ -13,10 +14,10 @@ import { Settings as SettingsIcon, PersonAdd as PersonAddIcon } from '@mui/icons
 
 const getSectionsToManage = () => menuItemsConfig;
 
-const ADMIN_EMAILS_ACCESS = ['1', 'Israel_21027', 'Angelica_21020'];
+const ADMIN_TYPES = new Set(["admin"]);
 
 const ProfileAccessManager = () => {
-    const { user, userPermissions } = useContext(AuthContext);
+    const { user } = useAuthStore();
     const apiHost = import.meta.env.VITE_API_HOST;
 
     const [loading, setLoading] = useState(true);
@@ -62,7 +63,7 @@ const ProfileAccessManager = () => {
 
     useEffect(() => {
         fetchUsers();
-    }, [fetchUsers, userPermissions]);
+    }, [fetchUsers]);
 
     const handlePermissionChange = async (userId, sectionName, canView) => {
         let userUpdated = false;
@@ -157,7 +158,9 @@ const ProfileAccessManager = () => {
             const res = await fetch(`${apiHost}/features.php`, { method: 'POST', body: formData });
             const data = await res.json();
 
-            if (data.status !== 'success') {
+            if (data.status === 'success') {
+                Flashy.success(enabled ? 'Funcionalidad activada correctamente.' : 'Funcionalidad desactivada correctamente.');
+            } else {
                 const reverter = (features) =>
                     features.map(f => f.feature_id === featureId ? { ...f, enabled: enabled ? 0 : 1 } : f);
                 if (plataform === 'Desktop') setFeaturesDesktop(prev => reverter(prev));
@@ -176,7 +179,7 @@ const ProfileAccessManager = () => {
     const handleCreateUser = async () => {
         const { name, user: username, pass, type } = newUserModal;
         if (!name || !username || !pass || !type) {
-            setSnackbar({ open: true, message: 'Todos los campos son requeridos.', severity: 'warning' });
+            Flashy.error('Todos los campos son requeridos para crear el usuario.');
             return;
         }
         try {
@@ -187,7 +190,7 @@ const ProfileAccessManager = () => {
             formData.append('pass', pass);
             formData.append('type', type);
 
-            const res = await fetch(`${apiHost}/AccessManager.php`, { method: 'POST', body: formData });
+            const res = await fetch(`${apiHost}/features.php`, { method: 'POST', body: formData });
             const data = await res.json();
 
             if (data.status === 'success') {
@@ -210,15 +213,16 @@ const ProfileAccessManager = () => {
             formData.append('name', data.name);
             formData.append('user', data.user);
             formData.append('type', data.type);
+            formData.append('active', data.active);
             if (data.pass) formData.append('pass', data.pass);
 
             const res = await fetch(`${apiHost}/features.php`, { method: 'POST', body: formData });
             const response = await res.json();
 
             if (response.status === 'success') {
-                setSnackbar({ open: true, message: 'Usuario actualizado correctamente.', severity: 'success' });
-                setSelectedUser(prev => ({ ...prev, name: data.name, user: data.user, type: data.type }));
+                Flashy.success('Usuario actualizado correctamente.');
                 fetchUsers();
+                handleCloseDrawer();
             } else {
                 setSnackbar({ open: true, message: response.message || 'Error al actualizar usuario.', severity: 'error' });
             }
@@ -229,7 +233,9 @@ const ProfileAccessManager = () => {
 
     const handleCloseSnackbar = () => setSnackbar(prev => ({ ...prev, open: false }));
 
-    if (!user || user.tipo_usuario.toLowerCase() !== 'admin' || !ADMIN_EMAILS_ACCESS.includes(user.email)) {
+    const userType = String(user?.tipo_usuario || '').trim().toLowerCase();
+
+    if (!user || !ADMIN_TYPES.has(userType)) {
         return (
             <Container maxWidth="lg" sx={{ mt: 4 }}>
                 <Alert severity="error">Acceso denegado. Solo administradores autorizados pueden ver esta sección.</Alert>
@@ -321,7 +327,7 @@ const ProfileAccessManager = () => {
                                 onChange={handleNewUserChange('type')}
                             >
                                 <MenuItem value="Administrativo">Administrativo</MenuItem>
-                                <MenuItem value="Driver">Driver</MenuItem>
+                                
                             </Select>
                         </FormControl>
                     </Stack>

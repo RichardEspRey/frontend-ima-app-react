@@ -1,22 +1,23 @@
-import { useState, useEffect, useContext, useCallback } from 'react';
-import { AuthContext } from '../auth/AuthContext';
+import React, { useState, useEffect, useCallback } from 'react';
 import { menuItemsConfig } from '../config/menuConfig';
 import UserTable from '../components/UserTable';
 import PermissionDrawer from '../components/PermissionDrawer'; 
 import { 
-    Container, Typography, Box, CircularProgress, 
-    Alert, Snackbar
+    Box, Typography, CircularProgress, 
+    Alert, Snackbar, Stack, Chip
 } from '@mui/material';
-import { Settings as SettingsIcon } from '@mui/icons-material';
+import { Security as SecurityIcon } from '@mui/icons-material';
+
+import { useAuthStore } from '../store/useAuthStore';
 
 const getSectionsToManage = () => {
   return menuItemsConfig;
 };
 
-const ADMIN_EMAILS_ACCESS = ['1', 'Israel_21027', 'Angelica_21020'];
+const ADMIN_EMAILS_ACCESS = ['1', 'israel_21027', 'angelica_21020'];
 
 const ProfileAccessManager = () => {
-    const { user, userPermissions } = useContext(AuthContext);
+    const { user, fetchPermissions } = useAuthStore();
     const apiHost = import.meta.env.VITE_API_HOST;
 
     const [loading, setLoading] = useState(true);
@@ -57,12 +58,11 @@ const ProfileAccessManager = () => {
 
     useEffect(() => {
         fetchUsers();
-    }, [fetchUsers, userPermissions]);
+    }, [fetchUsers]);
 
     const handlePermissionChange = async (userId, sectionName, canView) => {
         let userUpdated = false;
 
-        // Bloqueo temporal optimista
         const updatedUsers = users.map(u => {
             if (u.id === userId) {
                 userUpdated = true;
@@ -97,6 +97,11 @@ const ProfileAccessManager = () => {
 
             if (data.status === 'success') {
                 setSnackbar({ open: true, message: `Permiso actualizado correctamente.`, severity: 'success' });
+                
+                if (String(userId) === String(user?.id)) {
+                    await fetchPermissions(userId);
+                }
+                
             } else {
                 setSnackbar({ open: true, message: data.message || 'Error al guardar el permiso.', severity: 'error' });
                 fetchUsers(); 
@@ -108,7 +113,6 @@ const ProfileAccessManager = () => {
         }
     };
 
-    // Funciones para gestionar el Drawer
     const handleOpenDrawer = (userToEdit) => {
         setSelectedUser(userToEdit);
         setIsDrawerOpen(true);
@@ -123,43 +127,49 @@ const ProfileAccessManager = () => {
         setSnackbar({ ...snackbar, open: false });
     };
 
-    if (!user || user.tipo_usuario.toLowerCase() !== 'admin' || !ADMIN_EMAILS_ACCESS.includes(user.email)) {
+    const userEmail = String(user?.email || '').trim().toLowerCase();
+    const userType = String(user?.tipo_usuario || '').trim().toLowerCase();
+    
+    if (!user || userType !== 'admin' || !ADMIN_EMAILS_ACCESS.includes(userEmail)) {
         return (
-            <Container maxWidth="lg" sx={{ mt: 4 }}>
-                <Alert severity="error">Acceso denegado. Solo administradores autorizados pueden ver esta sección.</Alert>
-            </Container>
+            <Box sx={{ p: 4, display: 'flex', justifyContent: 'center' }}>
+                <Alert severity="error" sx={{ borderRadius: 2, fontWeight: 600 }}>
+                    Acceso denegado. Solo administradores autorizados (Nivel Root) pueden ver esta sección.
+                </Alert>
+            </Box>
         );
     }
 
     if (loading) {
         return (
             <Box display="flex" justifyContent="center" alignItems="center" height="80vh">
-                <CircularProgress />
+                <CircularProgress sx={{ color: '#0f172a' }} />
             </Box>
         );
     }
 
     return (
-        <Container maxWidth="xl" sx={{ mt: 4 }}>
-            <Box sx={{ mb: 4 }}>
-                <Typography variant="h4" component="h1" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
-                    <SettingsIcon sx={{ mr: 1, color: 'primary.main' }} />
-                    Gestor de Perfiles y Accesos
-                </Typography>
-                <Typography variant="body1" color="text.secondary">
-                    Administra los accesos al menú y submenús (pestañas) para todos los usuarios.
-                </Typography>
-            </Box>
+        <Box sx={{ p: { xs: 2, md: 4 }, minHeight: '100vh', bgcolor: '#f8fafc' }}>
+            <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems={{ xs: 'flex-start', md: 'center' }} mb={4} spacing={2}>
+                <Box>
+                    <Typography variant="h4" fontWeight={800} color="#0f172a" letterSpacing="-0.02em" sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                        <SecurityIcon sx={{ color: '#3b82f6', fontSize: 32 }} />
+                        Gestor de Accesos
+                    </Typography>
+                    <Typography variant="subtitle1" color="#64748b" sx={{ mt: 0.5 }}>
+                        Administración de políticas por usuario.
+                    </Typography>
+                </Box>
+                <Chip label="Nivel de Seguridad: ROOT" color="error" variant="outlined" sx={{ fontWeight: 700, borderRadius: 2 }} />
+            </Stack>
 
-            {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
+            {error && <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>{error}</Alert>}
             
-            {/* VISTA MAESTRA */}
             <UserTable 
                 users={users} 
-                onEditUser={handleOpenDrawer} // <--- Pasamos la nueva función
+                onEditUser={handleOpenDrawer}
             />
 
-            {/* NUEVO DRAWER (Panel Lateral) */}
             <PermissionDrawer
                 open={isDrawerOpen}
                 handleClose={handleCloseDrawer}
@@ -168,16 +178,12 @@ const ProfileAccessManager = () => {
                 handlePermissionChange={handlePermissionChange}
             />
 
-            <Snackbar 
-                open={snackbar.open} 
-                autoHideDuration={4000} 
-                onClose={handleCloseSnackbar}
-            >
-                <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
+            <Snackbar open={snackbar.open} autoHideDuration={4000} onClose={handleCloseSnackbar}>
+                <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%', borderRadius: 2, fontWeight: 600 }} elevation={6} variant="filled">
                     {snackbar.message}
                 </Alert>
             </Snackbar>
-        </Container>
+        </Box>
     );
 };
 

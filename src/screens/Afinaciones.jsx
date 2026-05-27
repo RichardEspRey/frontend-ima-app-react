@@ -122,7 +122,7 @@ export default function Afinaciones() {
           onOpenPhoto={(url) => openModal('photo', url)} // En este caso le pasamos la URL como data
           onOpenCorrect={(truckData) => openModal('correct', truckData)} 
       />
-      <PhotoModal open={modalConfig.type === 'photo'} onClose={closeModal} photoUrl={modalConfig.truck} />
+      <PhotoModal open={modalConfig.type === 'photo'} onClose={closeModal} photoUrl={modalConfig.type === 'photo' ? modalConfig.truck : null} />
 
     </Box>
   );
