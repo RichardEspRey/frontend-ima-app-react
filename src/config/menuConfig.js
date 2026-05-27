@@ -94,6 +94,11 @@ export const menuItemsConfig = [
         route: "/road-repairs",
         rolesPermitidos: ["admin", "Angeles", "Candy"],
       },
+      {
+        name: "Inspecciones operativas",
+        route: "/inspecciones",
+        rolesPermitidos: ["admin", "Angeles", "Candy"],
+      },
     ],
   },
 

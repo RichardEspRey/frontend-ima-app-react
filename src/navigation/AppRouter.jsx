@@ -63,6 +63,7 @@ import DetallePago from '../screens/Nomina/DetallePago.jsx';
 import RoadRepairsAdmin from '../screens/RoadRepairsAdmin.jsx';
 import Cotizador from '../screens/Viajes/Cotizacion.jsx';
 import ImaManager from '../screens/IMAManager.jsx';
+import InspectionsAdmin from '../screens/InspectionsAdmin.jsx';
 
 const AppRouter = () => {
   const { user, loading } = useAuthStore();
@@ -137,6 +138,7 @@ const AppRouter = () => {
                <Route path="/cotizador" element={<Cotizador />} />
               <Route path="*" element={<Navigate to="/home" replace />} /> 
               <Route path="/ima-manager" element={<ImaManager />} />
+              <Route path="/inspecciones" element={<InspectionsAdmin />} />
             </Route>
           )}
         </Routes>
