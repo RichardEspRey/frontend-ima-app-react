@@ -112,15 +112,38 @@ const BorderCrossingFormNew2 = ({ tripNumber, countryCode, tripYear, isTransnati
         if (stageIndex === null) return null;
         return stopIndex !== null ? etapas[stageIndex].stops_in_transit[stopIndex]?.[docType] : etapas[stageIndex].documentos?.[docType];
     };
+    
     const handleGuardarDocumentoEtapa = (data) => {
-        const { stageIndex, docType } = modalTarget;
+        const { stageIndex, docType, stopIndex } = modalTarget;
         if (stageIndex === null || !docType) return;
+
         setEtapas(prev => {
             const up = [...prev];
-            up[stageIndex] = { ...up[stageIndex], documentos: { ...up[stageIndex].documentos, [docType]: { ...up[stageIndex].documentos[docType], ...data } } };
+            
+            // Si stopIndex tiene un valor, el archivo es para una Parada Adicional
+            if (stopIndex !== null && stopIndex !== undefined) {
+                const stops = [...(up[stageIndex].stops_in_transit || [])];
+                stops[stopIndex] = { 
+                    ...stops[stopIndex], 
+                    [docType]: { ...(stops[stopIndex][docType] || {}), ...data } 
+                };
+                up[stageIndex] = { ...up[stageIndex], stops_in_transit: stops };
+            } 
+            // Si es nulo, el archivo es para la Etapa Principal
+            else {
+                up[stageIndex] = { 
+                    ...up[stageIndex], 
+                    documentos: { 
+                        ...up[stageIndex].documentos, 
+                        [docType]: { ...up[stageIndex].documentos[docType], ...data } 
+                    } 
+                };
+            }
             return up;
         });
-        setModalAbierto(false); setModalTarget({ stageIndex: null, docType: null });
+
+        setModalAbierto(false); 
+        setModalTarget({ stageIndex: null, docType: null, stopIndex: null });
     };
 
     // Creaciones

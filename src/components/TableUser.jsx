@@ -1,37 +1,31 @@
 import { useState, useMemo } from 'react';
-import { 
-    Table, TableBody, TableCell, TableContainer, TableHead, TableRow, 
-    Paper, TextField, Box, IconButton, TablePagination, Typography
+import {
+    Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
+    Paper, TextField, Box, IconButton, TablePagination, Typography, Chip
 } from '@mui/material';
-import { Edit as EditIcon, Search as SearchIcon } from '@mui/icons-material';
+import { Settings as SettingsIcon, Search as SearchIcon } from '@mui/icons-material';
 
-const UserTable = ({ users, onEditUser }) => {
+const TableUser = ({ users, onEditUser }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
 
-    // Filtrado de Usuarios
     const filteredUsers = useMemo(() => {
         if (!searchTerm) return users;
-        
-        const lowerCaseSearch = searchTerm.toLowerCase();
-        
-        return users.filter(user => 
-            user.name.toLowerCase().includes(lowerCaseSearch) ||
-            user.email.toLowerCase().includes(lowerCaseSearch) ||
-            user.type.toLowerCase().includes(lowerCaseSearch)
+
+        const lower = searchTerm.toLowerCase();
+        return users.filter(user =>
+            user.name?.toLowerCase().includes(lower) ||
+            user.user?.toLowerCase().includes(lower) ||
+            user.type?.toLowerCase().includes(lower)
         );
     }, [users, searchTerm]);
 
-    // Paginación
     const paginatedUsers = useMemo(() => {
         return filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
     }, [filteredUsers, page, rowsPerPage]);
 
-
-    const handleChangePage = (event, newPage) => {
-        setPage(newPage);
-    };
+    const handleChangePage = (event, newPage) => setPage(newPage);
 
     const handleChangeRowsPerPage = (event) => {
         setRowsPerPage(parseInt(event.target.value, 10));
@@ -39,19 +33,18 @@ const UserTable = ({ users, onEditUser }) => {
     };
 
     return (
-        <Paper elevation={0} sx={{ p: 3, border: '1px solid #e2e8f0', borderRadius: 3 }}>
+        <Paper elevation={3} sx={{ p: 3 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                 <Typography variant="h6">Lista de Usuarios ({filteredUsers.length} resultados)</Typography>
-                
-                {/* Campo de Búsqueda */}
+
                 <TextField
-                    label="Buscar por Nombre, Email o Rol"
+                    label="Buscar por Nombre, Usuario o Tipo"
                     variant="outlined"
                     size="small"
                     value={searchTerm}
                     onChange={(e) => {
                         setSearchTerm(e.target.value);
-                        setPage(0); // Reiniciar paginación al buscar
+                        setPage(0);
                     }}
                     InputProps={{
                         endAdornment: <SearchIcon color="action" />,
@@ -66,8 +59,9 @@ const UserTable = ({ users, onEditUser }) => {
                         <TableRow sx={{ backgroundColor: 'action.hover' }}>
                             <TableCell sx={{ fontWeight: 'bold' }}>ID</TableCell>
                             <TableCell sx={{ fontWeight: 'bold' }}>Nombre</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold' }}>Email</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold' }}>Rol</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold' }}>Usuario</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold' }}>Tipo</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold' }}>Estado</TableCell>
                             <TableCell sx={{ fontWeight: 'bold' }}>Acciones</TableCell>
                         </TableRow>
                     </TableHead>
@@ -76,22 +70,29 @@ const UserTable = ({ users, onEditUser }) => {
                             <TableRow key={user.id} hover>
                                 <TableCell>{user.id}</TableCell>
                                 <TableCell>{user.name}</TableCell>
-                                <TableCell>{user.email}</TableCell>
+                                <TableCell>{user.user}</TableCell>
                                 <TableCell>{user.type}</TableCell>
                                 <TableCell>
-                                    <IconButton 
-                                        color="primary" 
+                                    <Chip
+                                        label={user.active ? 'Activo' : 'Inactivo'}
+                                        color={user.active ? 'success' : 'default'}
+                                        size="small"
+                                    />
+                                </TableCell>
+                                <TableCell>
+                                    <IconButton
+                                        color="primary"
                                         onClick={() => onEditUser(user)}
-                                        aria-label={`Editar permisos de ${user.name}`}
+                                        aria-label={`Gestionar accesos de ${user.name}`}
                                     >
-                                        <EditIcon />
+                                        <SettingsIcon />
                                     </IconButton>
                                 </TableCell>
                             </TableRow>
                         ))}
                         {paginatedUsers.length === 0 && (
                             <TableRow>
-                                <TableCell colSpan={5} align="center">
+                                <TableCell colSpan={6} align="center">
                                     No se encontraron usuarios.
                                 </TableCell>
                             </TableRow>
@@ -100,7 +101,6 @@ const UserTable = ({ users, onEditUser }) => {
                 </Table>
             </TableContainer>
 
-            {/* Paginación */}
             <TablePagination
                 component="div"
                 count={filteredUsers.length}
@@ -115,4 +115,4 @@ const UserTable = ({ users, onEditUser }) => {
     );
 };
 
-export default UserTable;
+export default TableUser;

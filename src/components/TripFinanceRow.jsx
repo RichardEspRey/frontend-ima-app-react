@@ -1,4 +1,4 @@
-import { useContext } from 'react'
+import React from 'react';
 import { 
   TableRow, TableCell, IconButton, Chip, Stack, Typography, 
   Collapse, Box, Divider, Table, TableHead, TableBody, Tooltip, Badge 
@@ -8,7 +8,8 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { STATUS_OPTIONS } from '../constants/finances';
 import { StageDetailRow } from './StageDetailRow'; 
 import { money, countCriticalStages } from '../utils/financeHelpers';
-import { AuthContext } from '../auth/AuthContext';
+
+import { useAuthStore } from '../store/useAuthStore';
 
 const StatusChip = ({ value }) => {
   const meta = STATUS_OPTIONS.find(o => o.value === Number(value));
@@ -38,10 +39,11 @@ const AlertBadge = ({ count, statusValue, tooltip }) => {
 };
 
 export const TripFinanceRow = ({ trip, isOpen, onToggle, onStageChange }) => {
-  const { user } = useContext(AuthContext); 
+  
+  const { user } = useAuthStore(); 
+  
   const criticalCounts = countCriticalStages(trip.stages);
 
-  // Definir roles permitidos
   const ROLES_PERMITIDOS = ['admin', 'dev'];
   const userRole = (user?.tipo_usuario || '').toLowerCase();
   const canViewDeficit = ROLES_PERMITIDOS.includes(userRole);

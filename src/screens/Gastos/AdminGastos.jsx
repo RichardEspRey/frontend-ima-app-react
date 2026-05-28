@@ -7,10 +7,10 @@ import {
 import { useNavigate } from 'react-router-dom';
 
 // Importamos el componente extraído
-import GastoRow from '../components/GastoRow'; // Asegúrate que la ruta sea correcta
+import GastoRow from '../../components/GastoRow'; // Asegúrate que la ruta sea correcta
 
 const apiHost = import.meta.env.VITE_API_HOST;
-
+//Administrador de gastos de la empresa
 const AdminGastos = () => {
   const navigate = useNavigate(); 
   const [gastos, setGastos] = useState([]);
