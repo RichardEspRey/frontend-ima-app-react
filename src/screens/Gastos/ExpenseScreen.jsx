@@ -162,7 +162,7 @@ const ExpenseScreen = () => {
             cantidad_articulo: detail.quantity,
             precio_unitario: detail.price,
             id_categoria_mantenimiento: detail.category || null,
-            id_subcategoria_mantenimiento: detail.subcategory || null,
+            id_subcategoria_mantenimiento: String(detail.category) === '2' ? 2 : (detail.subcategory || null),
         }));
         apiFormData.append('detailsData', JSON.stringify(detailsData));
         apiFormData.append('op', 'Alta');
