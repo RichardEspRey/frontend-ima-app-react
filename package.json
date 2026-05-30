@@ -15,8 +15,8 @@
     "preview": "vite preview",
     "start": "electron .",
     "pack": "electron-builder --dir",
-    "dist": "electron-builder",
-    "electron:build": "npm run dist"
+    "dist": "CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder",    
+    "electron:build": "npm run build && npm run dist"  
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -89,7 +89,8 @@
         "zip"
       ],
       "icon": "assets/icon.icns",
-      "category": "public.app-category.business"
+      "category": "public.app-category.business",
+      "identity": null
     },
     "publish": [
       {
