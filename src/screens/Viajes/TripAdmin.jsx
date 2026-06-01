@@ -336,13 +336,33 @@ const TripAdmin = () => {
             <Collapse in={showFilters}>
                 <Paper sx={{ p: 3, mb: 3, borderRadius: 3, border: '1px solid #e2e8f0' }} elevation={0}>
                     <Grid container spacing={2}>
+                        {/* PRIMERA FILA */}
                         <Grid item xs={12} sm={3}><TextField label="Trip Number" size="small" fullWidth value={filterTrip} onChange={(e) => handleFilterChange(setFilterTrip, e.target.value)} /></Grid>
                         <Grid item xs={12} sm={3}><TextField label="Driver" size="small" fullWidth value={filterDriver} onChange={(e) => handleFilterChange(setFilterDriver, e.target.value)} /></Grid>
                         <Grid item xs={12} sm={3}><TextField label="Truck" size="small" fullWidth value={filterTruck} onChange={(e) => handleFilterChange(setFilterTruck, e.target.value)} /></Grid>
                         <Grid item xs={12} sm={3}><TextField label="Trailer" size="small" fullWidth value={filterTrailer} onChange={(e) => handleFilterChange(setFilterTrailer, e.target.value)} /></Grid>
+                        
+                        {/* SEGUNDA FILA (Nuevos Filtros Integrados) */}
+                        <Grid item xs={12} sm={3}><TextField label="Company" size="small" fullWidth value={filterCompany} onChange={(e) => handleFilterChange(setFilterCompany, e.target.value)} /></Grid>
+                        <Grid item xs={12} sm={3}><TextField label="Origin" size="small" fullWidth value={filterOrigin} onChange={(e) => handleFilterChange(setFilterOrigin, e.target.value)} /></Grid>
+                        <Grid item xs={12} sm={3}><TextField label="Destination" size="small" fullWidth value={filterDestination} onChange={(e) => handleFilterChange(setFilterDestination, e.target.value)} /></Grid>
+                        <Grid item xs={12} sm={3}>
+                            <TextField select label="Direction" size="small" fullWidth value={filterDirection} onChange={(e) => handleFilterChange(setFilterDirection, e.target.value)}>
+                                {DIRECTION_OPTIONS.map((option) => (
+                                    <MenuItem key={option.value} value={option.value}>
+                                        {option.label}
+                                    </MenuItem>
+                                ))}
+                            </TextField>
+                        </Grid>
+
                         <Grid item xs={12}>
                             <Stack direction="row" spacing={2} justifyContent="flex-end">
-                                <Button variant="text" onClick={() => { setFilterTrip(''); setFilterDriver(''); setFilterTruck(''); setFilterTrailer(''); setPage(0); }}>Limpiar Filtros</Button>
+                                <Button variant="text" onClick={() => { 
+                                    setFilterTrip(''); setFilterDriver(''); setFilterTruck(''); setFilterTrailer(''); 
+                                    setFilterCompany(''); setFilterOrigin(''); setFilterDestination(''); setFilterDirection('All');
+                                    setPage(0); 
+                                }}>Limpiar Filtros</Button>
                             </Stack>
                         </Grid>
                     </Grid>
