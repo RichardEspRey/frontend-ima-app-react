@@ -38,7 +38,10 @@ export const useAuthStore = create(
           if (data.status === "success") {
             // Convierte [{feature_key, enabled}] → { feature_key: bool }
             const permissions = Object.fromEntries(
-              (data.features || []).map((f) => [f.feature_key, f.enabled === 1 || f.enabled === "1"])
+              (data.features || []).map((f) => [
+                f.feature_key,
+                f.enabled === 1 || f.enabled === "1",
+              ]),
             );
             set({ userPermissions: permissions });
           }

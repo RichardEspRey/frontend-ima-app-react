@@ -75,20 +75,20 @@ const DieselDetalle = () => {
         }));
 
         // 🚨 MOCKUP PARA LA JUNTA: Insertamos un registro falso para mostrar cómo se ve el indicador
-        formatted.push({
-            id: 'mock-999',
-            trip_id: tripId,
-            trip_number: formatted[0]?.trip_number || tripId,
-            fecha: '2026-05-27 10:30:00',
-            monto: 345.50,
-            odometro: 145020,
-            galones: 105,
-            nombre: 'Admin Username', 
-            estado: 'NM',
-            fleetone: '0.00',
-            periodo: 'Q2',
-            is_manual: true // Esto activa la etiqueta visual de Admin
-        });
+        // formatted.push({
+        //     id: 'mock-999',
+        //     trip_id: tripId,
+        //     trip_number: formatted[0]?.trip_number || tripId,
+        //     fecha: '2026-05-27 10:30:00',
+        //     monto: 345.50,
+        //     odometro: 145020,
+        //     galones: 105,
+        //     nombre: 'Admin Username', 
+        //     estado: 'NM',
+        //     fleetone: '0.00',
+        //     periodo: 'Q2',
+        //     is_manual: true // Esto activa la etiqueta visual de Admin
+        // });
 
         setRegistros(formatted);
       }
