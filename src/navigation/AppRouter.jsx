@@ -33,7 +33,6 @@ import GastosDetalle from '../screens/Gastos/GastosDetalle.jsx';
 import GastosEditor from '../screens/Gastos/GastosEditor.jsx';
 import AdminGastosGeneral from '../screens/Gastos/AdminGastos.jsx';
 import Inspeccion_final from '../screens/Mantenimientos/Inspeccion_final.jsx';
-import ExpenseScreen from '../screens/Gastos/ExpenseScreen.jsx';
 import ExpenseEdit from '../screens/Gastos/ExpenseEdit.jsx';
 import StockAdmin  from '../screens/StockAdmin.jsx';
 import ServiceOrderScreen from '../screens/ServiceOrderScreen.jsx';
@@ -64,6 +63,7 @@ import DetallePago from '../screens/Nomina/DetallePago.jsx';
 import RoadRepairsAdmin from '../screens/RoadRepairsAdmin.jsx';
 import Cotizador from '../screens/Viajes/Cotizacion.jsx';
 import ImaManager from '../screens/IMAManager.jsx';
+import InspectionsAdmin from '../screens/InspectionsAdmin.jsx';
 
 const AppRouter = () => {
   const { user, loading } = useAuthStore();
@@ -108,7 +108,6 @@ const AppRouter = () => {
               <Route path="/ImaAdmin" element={<ImaAdmin />} />
               <Route path="/ImaScreen" element={<ImaScreen />} />
               <Route path="/Inspeccion-final" element={<Inspeccion_final />} />
-              <Route path="/new-expense" element={<ExpenseScreen />} />
               <Route path="/edit-expense/:id_gasto" element={<ExpenseEdit />} />
               <Route path="/view-inventory" element={<StockAdmin />} />
               <Route path="/new-service-order" element={<ServiceOrderScreen />} />
@@ -138,6 +137,7 @@ const AppRouter = () => {
                <Route path="/cotizador" element={<Cotizador />} />
               <Route path="*" element={<Navigate to="/home" replace />} /> 
               <Route path="/ima-manager" element={<ImaManager />} />
+              <Route path="/inspecciones" element={<InspectionsAdmin />} />
             </Route>
           )}
         </Routes>

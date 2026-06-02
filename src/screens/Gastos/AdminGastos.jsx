@@ -2,20 +2,24 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
   Button, TablePagination, TextField, Stack, FormControl, InputLabel, Select, MenuItem,
-  Typography, CircularProgress
+  Typography, CircularProgress, Box
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import AddCircleIcon from '@mui/icons-material/AddCircle';
 
-// Importamos el componente extraído
-import GastoRow from '../../components/GastoRow'; // Asegúrate que la ruta sea correcta
+// Componentes
+import GastoRow from '../../components/GastoRow'; 
+import ExpenseModal from './ExpenseModal';
 
 const apiHost = import.meta.env.VITE_API_HOST;
-//Administrador de gastos de la empresa
+
 const AdminGastos = () => {
   const navigate = useNavigate(); 
   const [gastos, setGastos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  
+  const [isModalOpen, setIsModalOpen] = useState(false);
   
   const [filterCountry, setFilterCountry] = useState('All');
   const [filterSubcat, setFilterSubcat] = useState('All'); 
@@ -95,62 +99,96 @@ const AdminGastos = () => {
 
   const handleFilterChange = (setter, value) => { setter(value); setPage(0); };
 
+  const handleSuccess = () => {
+      setIsModalOpen(false);
+      fetchGastos();
+  };
+
   return (
-    <Paper sx={{ m: 2, p: 3 }}>
-      <Typography variant="h4" fontWeight={700} gutterBottom>Expense Manager</Typography>
-        
-      <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap" sx={{ mb: 3 }}>
-        <TextField size="small" label="Search" placeholder="ID, Country..." value={search} onChange={(e) => handleFilterChange(setSearch, e.target.value)} />
-        
-        <FormControl size="small" sx={{ minWidth: 120 }}>
-            <InputLabel>Country</InputLabel>
-            <Select value={filterCountry} label="Country" onChange={(e) => handleFilterChange(setFilterCountry, e.target.value)}>
-                {uniqueCountries.map(c => <MenuItem key={c} value={c}>{c}</MenuItem>)}
-            </Select>
-        </FormControl>
+    <Box sx={{ p: { xs: 2, md: 4 }, minHeight: '100vh', bgcolor: '#f8fafc' }}>
+      
+      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Box>
+            <Typography variant="h4" fontWeight={800} color="#0f172a">Expense Manager</Typography>
+            <Typography variant="subtitle1" color="#64748b">Control y administración general de gastos</Typography>
+        </Box>
+        <Button 
+            variant="contained" 
+            disableElevation 
+            startIcon={<AddCircleIcon />} 
+            onClick={() => setIsModalOpen(true)}
+            sx={{ bgcolor: '#0f172a', fontWeight: 700, px: 3, py: 1 }}
+        >
+            Nuevo Gasto
+        </Button>
+      </Box>
 
-        <FormControl size="small" sx={{ minWidth: 150 }}>
-            <InputLabel>Subcategory</InputLabel>
-            <Select value={filterSubcat} label="Subcategory" onChange={(e) => handleFilterChange(setFilterSubcat, e.target.value)}>
-                {uniqueSubcategories.map(s => <MenuItem key={s} value={s}>{s}</MenuItem>)}
-            </Select>
-        </FormControl>
+      <Paper sx={{ p: 3, borderRadius: 3, border: '1px solid #e2e8f0', mb: 3 }} elevation={0}>
+        <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
+          <TextField size="small" label="Buscar..." placeholder="ID, País..." value={search} onChange={(e) => handleFilterChange(setSearch, e.target.value)} sx={{ minWidth: 200, bgcolor: 'white' }} />
+          
+          <FormControl size="small" sx={{ minWidth: 150, bgcolor: 'white' }}>
+              <InputLabel>País</InputLabel>
+              <Select value={filterCountry} label="País" onChange={(e) => handleFilterChange(setFilterCountry, e.target.value)}>
+                  {uniqueCountries.map(c => <MenuItem key={c} value={c}>{c}</MenuItem>)}
+              </Select>
+          </FormControl>
 
-        <TextField size="small" label="Start Date" type="date" value={startDate} onChange={(e) => handleFilterChange(setStartDate, e.target.value)} InputLabelProps={{ shrink: true }} />
-        <TextField size="small" label="End Date" type="date" value={endDate} onChange={(e) => handleFilterChange(setEndDate, e.target.value)} InputLabelProps={{ shrink: true }} />
-        
-        <Button variant="outlined" onClick={() => { setStartDate(''); setEndDate(''); setFilterSubcat('All'); setFilterCountry('All'); setPage(0); }} size="small">Clear</Button>
-        <Button variant="contained" onClick={fetchGastos} size="small">Refresh</Button>
-      </Stack>
+          <FormControl size="small" sx={{ minWidth: 200, bgcolor: 'white' }}>
+              <InputLabel>Subcategoría</InputLabel>
+              <Select value={filterSubcat} label="Subcategoría" onChange={(e) => handleFilterChange(setFilterSubcat, e.target.value)}>
+                  {uniqueSubcategories.map(s => <MenuItem key={s} value={s}>{s}</MenuItem>)}
+              </Select>
+          </FormControl>
 
-      <TableContainer component={Paper} variant="outlined">
-        <Table stickyHeader size="small">
-          <TableHead>
+          <TextField size="small" label="Fecha Inicio" type="date" value={startDate} onChange={(e) => handleFilterChange(setStartDate, e.target.value)} InputLabelProps={{ shrink: true }} sx={{ bgcolor: 'white' }} />
+          <TextField size="small" label="Fecha Fin" type="date" value={endDate} onChange={(e) => handleFilterChange(setEndDate, e.target.value)} InputLabelProps={{ shrink: true }} sx={{ bgcolor: 'white' }} />
+          
+          <Button variant="text" onClick={() => { setStartDate(''); setEndDate(''); setFilterSubcat('All'); setFilterCountry('All'); setSearch(''); setPage(0); }} sx={{ fontWeight: 600 }}>Limpiar Filtros</Button>
+          <Button variant="outlined" onClick={fetchGastos} sx={{ fontWeight: 600 }}>Actualizar</Button>
+        </Stack>
+      </Paper>
+
+      <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid #e2e8f0', borderRadius: 3 }}>
+        <Table size="small">
+          <TableHead sx={{ bgcolor: '#f1f5f9' }}>
             <TableRow>
               <TableCell /> 
-              <TableCell sx={{ fontWeight: 600 }}>Expense #</TableCell>
-              <TableCell sx={{ fontWeight: 600 }}>Expense Type</TableCell>
-              <TableCell sx={{ fontWeight: 600 }}>Date</TableCell>
-              <TableCell sx={{ fontWeight: 600 }}>Country</TableCell>
-              <TableCell sx={{ fontWeight: 600 }}>Total (USD)</TableCell>
-              <TableCell sx={{ fontWeight: 600 }}>Actions</TableCell>
+              <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Expense #</TableCell>
+              <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Expense Type</TableCell>
+              <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Date</TableCell>
+              <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Country</TableCell>
+              <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Total (USD)</TableCell>
+              <TableCell sx={{ fontWeight: 700, color: '#475569', textAlign: 'center' }}>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {loading ? (
-              <TableRow><TableCell colSpan={7} align="center"><CircularProgress /></TableCell></TableRow>
+              <TableRow><TableCell colSpan={7} align="center" sx={{ py: 5 }}><CircularProgress size={24}/></TableCell></TableRow>
+            ) : slice.length === 0 ? (
+              <TableRow><TableCell colSpan={7} align="center" sx={{ py: 5 }}><Typography color="text.secondary">No se encontraron gastos.</Typography></TableCell></TableRow>
             ) : (
               slice.map((g) => <GastoRow key={g.id_gasto} gasto={g} navigate={navigate} />)
             )}
           </TableBody>
         </Table>
       </TableContainer>
-      <TablePagination
-        rowsPerPageOptions={[20, 40, 60, { label: 'All', value: -1 }]} 
-        component="div" count={filtered.length} rowsPerPage={rowsPerPage} page={page}
-        onPageChange={(e, n) => setPage(n)} onRowsPerPageChange={(e) => setRowsPerPage(parseInt(e.target.value, 10))}
+      
+      <Box sx={{ bgcolor: 'white', border: '1px solid #e2e8f0', borderTop: 'none', borderBottomLeftRadius: 12, borderBottomRightRadius: 12 }}>
+          <TablePagination
+            rowsPerPageOptions={[20, 40, 60, { label: 'All', value: -1 }]} 
+            component="div" count={filtered.length} rowsPerPage={rowsPerPage} page={page}
+            onPageChange={(e, n) => setPage(n)} onRowsPerPageChange={(e) => setRowsPerPage(parseInt(e.target.value, 10))}
+          />
+      </Box>
+
+      <ExpenseModal 
+          open={isModalOpen} 
+          onClose={() => setIsModalOpen(false)} 
+          onSuccess={handleSuccess} 
       />
-    </Paper>
+
+    </Box>
   );
 };
 
