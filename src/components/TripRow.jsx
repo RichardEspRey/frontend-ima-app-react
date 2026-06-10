@@ -159,7 +159,20 @@ ${(!trip.caja_id && !trip.caja_externa_id) ? 'Sin tráiler asignado' : ''}
         </TableCell>
 
         <TableCell component="th" scope="row">
-          <Box sx={{ whiteSpace: 'nowrap' }}>{trip.trip_number}</Box>
+          {/* <Box sx={{ whiteSpace: 'nowrap' }}>{trip.trip_number}</Box> */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography variant="body2" fontWeight={600} sx={{ whiteSpace: 'nowrap' }}>
+                {trip.trip_number}
+            </Typography>
+            
+            {trip.etapas?.[0]?.stageType === 'emptyMileage' && (
+                <Chip 
+                    label="Inició Vacío" 
+                    size="small" 
+                    sx={{ height: 18, fontSize: '0.6rem', fontWeight: 800, bgcolor: '#e0f2fe', color: '#0284c7' }} 
+                />
+            )}
+        </Box>
         </TableCell>
 
         <TableCell>

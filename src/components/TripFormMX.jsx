@@ -194,8 +194,11 @@ const TripFormMX = ({ tripNumber, countryCode, tripYear, isTransnational, isCont
 
         for (let i = 0; i < etapas.length; i++) {
             const etapa = etapas[i];
-            if (!etapa.company_id || !etapa.destination || !etapa.warehouse_destination_id) {
-                return Swal.fire('Incompletos', `Complete campos obligatorios etapa ${i + 1}`, 'warning');
+            
+            if (etapa.stageType !== 'emptyMileage') {
+                if (!etapa.company_id || !etapa.destination || !etapa.warehouse_destination_id) {
+                    return Swal.fire('Incompletos', `Complete compañía y destino en la etapa de carga #${i + 1}`, 'warning');
+                }
             }
         }
         Swal.fire({ title: 'Guardando...', didOpen: () => Swal.showLoading() });
@@ -259,6 +262,34 @@ const TripFormMX = ({ tripNumber, countryCode, tripYear, isTransnational, isCont
 
             {/* 2. SECCIÓN DE ETAPAS */}
             <Typography variant="h6" fontWeight={700} gutterBottom sx={{ mt: 4, mb: 2 }}>Información del viaje</Typography>
+            <Paper sx={{ mb: 3, p: 2, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 2 }}>
+                <Stack direction={{ xs: 'column', sm: 'row' }} alignItems="center" justifyContent="space-between" spacing={2}>
+                    <Box>
+                        <Typography variant="subtitle1" fontWeight={700} color="#0f172a">Configuración Inicial del Viaje</Typography>
+                        <Typography variant="body2" color="text.secondary">Indica si el conductor arranca con carga o debe hacer un movimiento en vacío primero.</Typography>
+                    </Box>
+                    
+                    <Stack direction="row" spacing={1}>
+                        <Button 
+                            variant={etapas[0]?.stageType === 'normalTrip' ? 'contained' : 'outlined'} 
+                            disableElevation
+                            onClick={() => handleEtapaChange(0, 'stageType', 'normalTrip')}
+                            sx={{ fontWeight: 700 }}
+                        >
+                            Arranca Con Carga
+                        </Button>
+                        <Button 
+                            variant={etapas[0]?.stageType === 'emptyMileage' ? 'contained' : 'outlined'} 
+                            color="secondary"
+                            disableElevation
+                            onClick={() => handleEtapaChange(0, 'stageType', 'emptyMileage')}
+                            sx={{ fontWeight: 700 }}
+                        >
+                            Arranca Vacío
+                        </Button>
+                    </Stack>
+                </Stack>
+            </Paper>
             <Stack spacing={3}>
                 {etapas.map((etapa, index) => (
                     <TripStageItem 

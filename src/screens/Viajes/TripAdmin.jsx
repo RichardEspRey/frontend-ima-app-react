@@ -189,7 +189,21 @@ const TripAdmin = () => {
 
     const getTripMissingDocs = (trip) => {
         if (!Array.isArray(trip.etapas) || trip.etapas.length === 0) return { total: 0, list: [] };
-        return { total: trip.etapas[0].documentos_faltantes ?? 0, list: trip.etapas[0].documentos_faltantes_lista ?? [] };
+        
+        let totalFaltantes = 0;
+        let listaFaltantes = [];
+
+        trip.etapas.forEach(etapa => {
+            if (etapa.documentos_faltantes > 0) {
+                totalFaltantes += etapa.documentos_faltantes;
+                if (Array.isArray(etapa.documentos_faltantes_lista)) {
+                    const faltantesEtapa = etapa.documentos_faltantes_lista.map(doc => `E${etapa.stage_number}: ${doc}`);
+                    listaFaltantes = [...listaFaltantes, ...faltantesEtapa];
+                }
+            }
+        });
+
+        return { total: totalFaltantes, list: listaFaltantes };
     };
 
     const getDocumentUrl = (serverPath) => {
