@@ -170,7 +170,7 @@ const ExpenseModal = ({ open, onClose, onSuccess }) => {
             cantidad_articulo: detail.quantity,
             precio_unitario: detail.price,
             id_categoria_mantenimiento: detail.category || null,
-            id_subcategoria_mantenimiento: detail.subcategory || null,
+            id_subcategoria_mantenimiento: String(detail.category) === '2' ? 39 : ['4','5','6','7'].includes(String(detail.category)) ? 40 : (detail.subcategory || null),
         }));
         apiFormData.append('detailsData', JSON.stringify(detailsData));
         apiFormData.append('op', 'Alta');

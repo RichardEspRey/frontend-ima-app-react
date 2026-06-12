@@ -5,7 +5,7 @@ import "leaflet/dist/leaflet.css";
 
 import {
   Box, Typography, Paper, Stack, Chip,
-  Slider, IconButton, Divider, LinearProgress, TextField, InputAdornment, Button, Grid
+  Slider, IconButton, Divider, LinearProgress, TextField, InputAdornment, Button, Grid, CircularProgress
 } from "@mui/material";
 
 import SpeedIcon from '@mui/icons-material/Speed';
@@ -92,8 +92,12 @@ export default function Tracking() {
   const [routeCoords, setRouteCoords] = useState([]);
   const [routeInfo, setRouteInfo] = useState(null);
   const [isTracing, setIsTracing] = useState(false);
+  const [ping2SearchQuery, setPing2SearchQuery] = useState("");
+  const [ping2SearchResults, setPing2SearchResults] = useState([]);
+  const [ping2Searching, setPing2Searching] = useState(false);
 
   const stateRef = useRef({ selected, fuelDirty });
+  const ping2SearchTimeout = useRef(null);
   useEffect(() => { stateRef.current = { selected, fuelDirty }; }, [selected, fuelDirty]);
 
   const first = useRef(true);
@@ -295,6 +299,43 @@ export default function Tracking() {
     setPing2Mode(null);
     setRouteCoords([]);
     setRouteInfo(null);
+    setPing2SearchQuery("");
+    setPing2SearchResults([]);
+  };
+
+  const togglePing2Mode = (mode) => {
+    setPing2Mode(prev => prev === mode ? null : mode);
+    setPing2SearchQuery("");
+    setPing2SearchResults([]);
+  };
+
+  const handlePing2Search = (query) => {
+    setPing2SearchQuery(query);
+    if (ping2SearchTimeout.current) clearTimeout(ping2SearchTimeout.current);
+    if (!query.trim()) { setPing2SearchResults([]); return; }
+    ping2SearchTimeout.current = setTimeout(async () => {
+      setPing2Searching(true);
+      try {
+        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&accept-language=es`;
+        const res = await fetch(url);
+        const data = await res.json();
+        setPing2SearchResults(data);
+      } catch {
+        setPing2SearchResults([]);
+      } finally {
+        setPing2Searching(false);
+      }
+    }, 500);
+  };
+
+  const selectSearchResult = (result) => {
+    const shortName = result.display_name.length > 70
+      ? result.display_name.substring(0, 70) + '…'
+      : result.display_name;
+    setPing2({ lat: parseFloat(result.lat), lon: parseFloat(result.lon), name: shortName });
+    setPing2Mode(null);
+    setPing2SearchQuery("");
+    setPing2SearchResults([]);
   };
 
   const getStatusColor = (status) => {
@@ -341,20 +382,72 @@ export default function Tracking() {
             ) : (
               <Box mb={0.5}>
                 <Typography variant="caption" color="text.secondary" display="block" mb={0.5}>Seleccionar Ping 2:</Typography>
-                <Stack direction="row" spacing={1}>
+                <Stack direction="row" spacing={0.5}>
                   <button
-                    style={{ ...btnBase, flex: 1, background: ping2Mode === 'map' ? "#4363d8" : "#e8eaf6", color: ping2Mode === 'map' ? "white" : "#4363d8" }}
-                    onClick={() => setPing2Mode(ping2Mode === 'map' ? null : 'map')}
+                    style={{ ...btnBase, flex: 1, background: ping2Mode === 'search' ? "#4363d8" : "#e8eaf6", color: ping2Mode === 'search' ? "white" : "#4363d8", fontSize: "11px", padding: "6px 4px" }}
+                    onClick={() => togglePing2Mode('search')}
                   >
-                    {ping2Mode === 'map' ? "Clic en mapa…" : "Punto en mapa"}
+                    Búsqueda
                   </button>
                   <button
-                    style={{ ...btnBase, flex: 1, background: ping2Mode === 'truck' ? "#4363d8" : "#e8eaf6", color: ping2Mode === 'truck' ? "white" : "#4363d8" }}
-                    onClick={() => setPing2Mode(ping2Mode === 'truck' ? null : 'truck')}
+                    style={{ ...btnBase, flex: 1, background: ping2Mode === 'map' ? "#4363d8" : "#e8eaf6", color: ping2Mode === 'map' ? "white" : "#4363d8", fontSize: "11px", padding: "6px 4px" }}
+                    onClick={() => togglePing2Mode('map')}
                   >
-                    {ping2Mode === 'truck' ? "Seleccionando…" : "2° camión"}
+                    {ping2Mode === 'map' ? "Clic mapa…" : "En el mapa"}
+                  </button>
+                  <button
+                    style={{ ...btnBase, flex: 1, background: ping2Mode === 'truck' ? "#4363d8" : "#e8eaf6", color: ping2Mode === 'truck' ? "white" : "#4363d8", fontSize: "11px", padding: "6px 4px" }}
+                    onClick={() => togglePing2Mode('truck')}
+                  >
+                    {ping2Mode === 'truck' ? "Eligiendo…" : "2° camión"}
                   </button>
                 </Stack>
+
+                {ping2Mode === 'search' && (
+                  <Box sx={{ mt: 1, position: 'relative' }}>
+                    <TextField
+                      fullWidth
+                      size="small"
+                      placeholder="Escribe una dirección..."
+                      value={ping2SearchQuery}
+                      onChange={(e) => handlePing2Search(e.target.value)}
+                      autoFocus
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <SearchIcon sx={{ fontSize: 16, color: '#4363d8' }} />
+                          </InputAdornment>
+                        ),
+                        endAdornment: ping2Searching ? (
+                          <InputAdornment position="end">
+                            <CircularProgress size={14} sx={{ color: '#4363d8' }} />
+                          </InputAdornment>
+                        ) : null,
+                      }}
+                      sx={{ bgcolor: 'white', borderRadius: 1 }}
+                    />
+                    {ping2SearchResults.length > 0 && (
+                      <Paper elevation={6} sx={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 20, maxHeight: 200, overflowY: 'auto', mt: 0.5, borderRadius: 1 }}>
+                        {ping2SearchResults.map((result, i) => (
+                          <Box
+                            key={i}
+                            onClick={() => selectSearchResult(result)}
+                            sx={{
+                              px: 1.5, py: 0.75, cursor: 'pointer',
+                              borderBottom: '1px solid #f1f5f9',
+                              '&:hover': { bgcolor: '#eef5ff' },
+                              '&:last-child': { borderBottom: 'none' }
+                            }}
+                          >
+                            <Typography variant="caption" display="block" color="#1e293b" fontWeight={600} sx={{ lineHeight: 1.3, fontSize: '0.68rem' }}>
+                              {result.display_name}
+                            </Typography>
+                          </Box>
+                        ))}
+                      </Paper>
+                    )}
+                  </Box>
+                )}
               </Box>
             )}
 
@@ -385,7 +478,7 @@ export default function Tracking() {
           </Box>
         )}
 
-        {ping2Mode && (
+        {ping2Mode && ping2Mode !== 'search' && (
           <Box sx={{ px: 1.5, py: 1, bgcolor: '#fff8e1', borderBottom: '1px solid #ffe082' }}>
             <Typography variant="caption" color="#7b5e00">
               {ping2Mode === 'map' ? "Haz clic en el mapa para colocar Ping 2" : "Haz clic en otro camión para usarlo como Ping 2"}
