@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
     Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-    TextField, Button, Stack, CircularProgress, Badge, Tooltip, Chip, TablePagination, Tabs, Tab, ToggleButtonGroup, ToggleButton
+    TextField, Button, Stack, CircularProgress, Tooltip, Chip, TablePagination, Tabs, Tab, ToggleButtonGroup, ToggleButton
 } from '@mui/material'; 
 import { useNavigate, useLocation } from 'react-router-dom';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -59,6 +59,7 @@ const DieselAdmin = () => {
             // Contadores de alertas
             state_pending_count: parseInt(item.state_pending_count || 0, 10),
             fleetone_pending_count: parseInt(item.fleetone_pending_count || 0, 10),
+            manual_count: parseInt(item.manual_count || 0, 10), // 🚨 Capturamos el conteo manual
             periodo: item.periodo,
         }));
 
@@ -183,6 +184,7 @@ const DieselAdmin = () => {
                 
                 <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap', textAlign: 'center', width: 130 }}>State Pending</TableCell>
                 <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap', textAlign: 'center', width: 150 }}>Fleet One Pending</TableCell>
+                <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap', textAlign: 'center', width: 100 }}>Manuales</TableCell>
                 <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap', textAlign: 'center', width: 150 }}>Periodo</TableCell>
                 <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap', textAlign: 'center' }}>Actions</TableCell>
               </TableRow>
@@ -190,7 +192,7 @@ const DieselAdmin = () => {
             <TableBody>
               {slice.length === 0 ? (
                 <TableRow>
-                    <TableCell colSpan={8} align="center">
+                    <TableCell colSpan={10} align="center">
                         <Typography color="text.secondary" sx={{ py: 3 }}>
                             {tabValue === 0 
                                 ? "No hay registros con Fleet One pendientes." 
@@ -213,52 +215,37 @@ const DieselAdmin = () => {
                     <TableCell align="center">
                         {row.state_pending_count > 0 ? (
                             <Tooltip title={`Faltan ${row.state_pending_count} estados`}>
-                                <Chip 
-                                    label={row.state_pending_count} 
-                                    size="small" 
-                                    sx={{ 
-                                        fontWeight: 'bold', 
-                                        minWidth: 30,
-                                        bgcolor: '#d32f2f', 
-                                        color: '#ffffff',   
-                                        border: '1px solid #d32f2f'
-                                    }} 
-                                />
+                                <Chip label={row.state_pending_count} size="small" sx={{ fontWeight: 'bold', minWidth: 30, bgcolor: '#d32f2f', color: '#ffffff', border: '1px solid #d32f2f' }} />
                             </Tooltip>
                         ) : (
                             <Typography variant="caption" color="text.disabled">—</Typography>
                         )}
                     </TableCell>
 
-                    {/* Contadores de alertas */}
                     <TableCell align="center">
                         {row.fleetone_pending_count > 0 ? (
                             <Tooltip title={`Faltan ${row.fleetone_pending_count} Fleet One`}>
-                                <Chip 
-                                    label={row.fleetone_pending_count} 
-                                    size="small" 
-                                    sx={{ 
-                                        fontWeight: 'bold', 
-                                        minWidth: 30,
-                                        bgcolor: '#ed6c02', 
-                                        color: '#ffffff',   
-                                        border: '1px solid #ed6c02'
-                                    }} 
-                                />
+                                <Chip label={row.fleetone_pending_count} size="small" sx={{ fontWeight: 'bold', minWidth: 30, bgcolor: '#ed6c02', color: '#ffffff', border: '1px solid #ed6c02' }} />
                             </Tooltip>
                         ) : (
                             <Typography variant="caption" color="text.disabled">—</Typography>
                         )}
                     </TableCell>
-                    <TableCell>{row.periodo}</TableCell>
+
+                    {/* 🚨 Nuevo contador de manuales */}
                     <TableCell align="center">
-                      <Button 
-                        variant="contained" 
-                        size="small" 
-                        startIcon={<VisibilityIcon />}
-                        onClick={() => handleVer(row.trip_id)}
-                        sx={{ textTransform: 'none' }}
-                      >
+                        {row.manual_count > 0 ? (
+                            <Tooltip title={`${row.manual_count} Registros ingresados a mano`}>
+                                <Chip label={row.manual_count} size="small" sx={{ fontWeight: 'bold', minWidth: 30, bgcolor: '#f59e0b', color: '#ffffff', border: '1px solid #f59e0b' }} />
+                            </Tooltip>
+                        ) : (
+                            <Typography variant="caption" color="text.disabled">—</Typography>
+                        )}
+                    </TableCell>
+
+                    <TableCell align="center">{row.periodo}</TableCell>
+                    <TableCell align="center">
+                      <Button variant="contained" size="small" startIcon={<VisibilityIcon />} onClick={() => handleVer(row.trip_id)} sx={{ textTransform: 'none' }}>
                         View
                       </Button> 
                     </TableCell>

@@ -55,12 +55,12 @@ export const menuItemsConfig = [
     featureKey: "gastos",
     rolesPermitidos: ["admin", "Angeles", "Blanca", "Candy", "Mia"],
     subItems: [
-      {
+      /*{
         name: "Nuevo Gasto",
         featureKey: "gastos_nuevo",
         route: "/new-expense",
         rolesPermitidos: ["admin", "Angeles", "Mia"],
-      },
+      },*/
       {
         name: "Administrador gastos",
         featureKey: "gastos_admin_general",

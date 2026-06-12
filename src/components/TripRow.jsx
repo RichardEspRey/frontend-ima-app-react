@@ -4,15 +4,17 @@ import {
 } from '@mui/material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import WarningIcon from '@mui/icons-material/Warning';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+
 import dayjs from 'dayjs';
 import 'dayjs/locale/es';
 import updateLocale from 'dayjs/plugin/updateLocale';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import localizedFormat from 'dayjs/plugin/localizedFormat';
-
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-import WarningIcon from '@mui/icons-material/Warning';
+import Swal from 'sweetalert2';
 
 import { TripExpandedDetails } from './TripRow/TripExpandedDetails';
 
@@ -35,7 +37,6 @@ export const TripRow = ({
 
   if (Array.isArray(trip.etapas) && trip.etapas.length > 0) {
       const primeraEtapa = trip.etapas[0];
-
       if (primeraEtapa.date_of_departure) {
           departureDateToShow = dayjs(primeraEtapa.date_of_departure).format("DD/MM/YY");
           departureDateTitle = `Fecha de Salida (1ª Etapa): ${departureDateToShow}`;
@@ -51,18 +52,97 @@ export const TripRow = ({
   const returnDateForDisplay = trip.return_date ? dayjs(trip.return_date).format('dddd D, YYYY') : '- ';
   const returnDateTitle = trip.return_date ? `Fecha de Regreso: ${dayjs(trip.return_date).format('dddd D [de] MMMM [de] YYYY')}` : 'Fecha de regreso no asignada';
 
+  const renderDriverHover = () => {
+      if (!isEnRutaTab) return '';
+      return (
+          <>
+            <Typography color="inherit" sx={{ fontWeight: 'bold', mb: 0.5 }}>Detalles del Conductor</Typography>
+            <Typography variant="body2" component="div">
+                <b>Nombre:</b> {trip.driver_nombre || 'N/A'}<br/>
+                <b>Tel. MEX:</b> {trip.driver_phone_mex || 'N/A'}<br/>
+                <b>Tel. USA:</b> {trip.driver_phone_usa || 'N/A'}
+            </Typography>
+            {trip.driver_second_nombre && (
+                <Typography variant="body2" component="div" sx={{ mt: 1, pt: 1, borderTop: '1px solid rgba(255,255,255,0.2)' }}>
+                    <b>Segundo Conductor:</b> {trip.driver_second_nombre}<br/>
+                    <b>Tel. MEX:</b> {trip.driver_second_phone_mex || 'N/A'}<br/>
+                    <b>Tel. USA:</b> {trip.driver_second_phone_usa || 'N/A'}
+                </Typography>
+            )}
+          </>
+      );
+  };
+
+  const renderTruckHover = () => {
+      if (!isEnRutaTab) return '';
+      return (
+          <>
+            <Typography color="inherit" sx={{ fontWeight: 'bold', mb: 0.5 }}>Detalles del Camión</Typography>
+            <Typography variant="body2" component="div">
+                <b>Unidad:</b> {trip.truck_unidad || 'N/A'}<br/>
+                <b>VIN:</b> {trip.truck_vin || 'N/A'}<br/>
+                <b>Placas (MEX):</b> {trip.truck_placa_mex || 'N/A'}<br/>
+                <b>Placas (USA):</b> {trip.truck_placa_eua || 'N/A'}
+            </Typography>
+          </>
+      );
+  };
+
   const trailerTooltipContent = (
     <>
       <Typography color="inherit" sx={{ fontWeight: 'bold', mb: 0.5 }}>Detalles del Tráiler</Typography>
       {trip.caja_id && (
-        <Typography variant="body2" component="div"><b>Tipo:</b> Interno<br /><b>Número:</b> {trip.caja_no_caja || 'N/A'}<br /><b>ID:</b> {trip.caja_id}</Typography>
+        <Typography variant="body2" component="div">
+            <b>Tipo:</b> Interno<br />
+            <b>Número de caja:</b> {trip.caja_no_caja || 'N/A'}<br />
+            <b>Placas:</b> {trip.caja_placa || 'N/A'}<br/> 
+            <b>ID Interno:</b> {trip.caja_id}
+        </Typography>
       )}
       {trip.caja_externa_id && (
-        <Typography variant="body2" component="div"><b>Tipo:</b> Externo<br /><b>Número de caja:</b> {trip.caja_externa_no_caja || 'N/A'}<br /><b>Placas:</b> {trip.caja_externa_placas || 'N/A'}<br /></Typography>
+        <Typography variant="body2" component="div">
+            <b>Tipo:</b> Externo<br />
+            <b>Número de caja:</b> {trip.caja_externa_no_caja || 'N/A'}<br />
+            <b>Placas:</b> {trip.caja_externa_placas || 'N/A'}
+        </Typography>
       )}
       {!trip.caja_id && !trip.caja_externa_id && <Typography variant="body2">No hay detalles adicionales.</Typography>}
     </>
   );
+
+  // ==========================================
+  // 🚨 FUNCIÓN PARA COPIAR AL PORTAPAPELES
+  // ==========================================
+  const handleCopyToClipboard = () => {
+      const textToCopy = `
+=== DETALLES DEL VIAJE ===
+Trip Number: ${trip.trip_number || 'N/A'}
+Status: ${trip.status || 'N/A'}
+
+[ CONDUCTOR ]
+Nombre: ${trip.driver_nombre || 'N/A'}
+Teléfono MEX: ${trip.driver_phone_mex || 'N/A'}
+Teléfono USA: ${trip.driver_phone_usa || 'N/A'}
+${trip.driver_second_nombre ? `\n[ SEGUNDO CONDUCTOR ]\nNombre: ${trip.driver_second_nombre}\nTeléfono MEX: ${trip.driver_second_phone_mex || 'N/A'}\nTeléfono USA: ${trip.driver_second_phone_usa || 'N/A'}` : ''}
+
+[ CAMIÓN ]
+Unidad: ${trip.truck_unidad || 'N/A'}
+Placas MEX: ${trip.truck_placa_mex || 'N/A'}
+Placas USA: ${trip.truck_placa_eua || 'N/A'}
+VIN: ${trip.truck_vin || 'N/A'}
+
+[ REMOLQUE / TRAILER ]
+${trip.caja_id ? `Tipo: Interno\nNúmero de Caja: ${trip.caja_no_caja || 'N/A'}\nPlacas: ${trip.caja_placa || 'N/A'}` : ''}
+${trip.caja_externa_id ? `Tipo: Externo\nNúmero de Caja: ${trip.caja_externa_no_caja || 'N/A'}\nPlacas: ${trip.caja_externa_placas || 'N/A'}` : ''}
+${(!trip.caja_id && !trip.caja_externa_id) ? 'Sin tráiler asignado' : ''}
+      `.trim();
+
+      navigator.clipboard.writeText(textToCopy).then(() => {
+          Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Información copiada al portapapeles', showConfirmButton: false, timer: 2000 });
+      }).catch(err => {
+          console.error('Error copiando al portapapeles:', err);
+      });
+  };
 
   const canShowEditButton = !!onEdit && !isCompletedTab && !isDespachoTab; 
   const showViewButtonCompleted = !!onEdit && isCompletedTab;             
@@ -79,19 +159,38 @@ export const TripRow = ({
         </TableCell>
 
         <TableCell component="th" scope="row">
-          <Box sx={{ whiteSpace: 'nowrap' }}>{trip.trip_number}</Box>
+          {/* <Box sx={{ whiteSpace: 'nowrap' }}>{trip.trip_number}</Box> */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography variant="body2" fontWeight={600} sx={{ whiteSpace: 'nowrap' }}>
+                {trip.trip_number}
+            </Typography>
+            
+            {trip.etapas?.[0]?.stageType === 'emptyMileage' && (
+                <Chip 
+                    label="Inició Vacío" 
+                    size="small" 
+                    sx={{ height: 18, fontSize: '0.6rem', fontWeight: 800, bgcolor: '#e0f2fe', color: '#0284c7' }} 
+                />
+            )}
+        </Box>
         </TableCell>
 
         <TableCell>
-          {trip.driver_second_nombre ? (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-              <Typography variant="body2" component="span" noWrap>{trip.driver_nombre || 'N/A'}</Typography>
-              <Typography variant="body2" component="span" noWrap>{trip.driver_second_nombre}</Typography>
-            </Box>
-          ) : (trip.driver_nombre || trip.driver_id || '-')}
+          <Tooltip title={renderDriverHover()} arrow placement="top">
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, cursor: isEnRutaTab ? 'pointer' : 'default', borderBottom: isEnRutaTab ? '1px dotted #ccc' : 'none', width: 'fit-content' }}>
+                <Typography variant="body2" component="span" noWrap>{trip.driver_nombre || (trip.driver_id ? `ID: ${trip.driver_id}` : '-')}</Typography>
+                {trip.driver_second_nombre && <Typography variant="body2" component="span" noWrap>{trip.driver_second_nombre}</Typography>}
+              </Box>
+          </Tooltip>
         </TableCell>
 
-        <TableCell>{trip.truck_unidad || trip.truck_id || '-'}</TableCell>
+        <TableCell>
+            <Tooltip title={renderTruckHover()} arrow placement="top">
+                <Typography component="span" sx={{ cursor: isEnRutaTab ? 'pointer' : 'default', borderBottom: isEnRutaTab ? '1px dotted #ccc' : 'none' }}>
+                    {trip.truck_unidad || trip.truck_id || '-'}
+                </Typography>
+            </Tooltip>
+        </TableCell>
 
         <TableCell>
           <Tooltip title={trailerTooltipContent} arrow>
@@ -112,7 +211,7 @@ export const TripRow = ({
             else if (currentStatus === 'Almost Over') chipColor = 'primary';
             else if (currentStatus === 'Cancelled') chipColor = 'error';
             else if (currentStatus === 'In Coming') chipColor = 'info';
-            return (<Chip label={currentStatus} color={chipColor} size="small" />);
+            return (<Chip label={currentStatus} color={chipColor} size="small" sx={{ fontWeight: 600 }}/>);
           })()}
         </TableCell>
 
@@ -134,6 +233,16 @@ export const TripRow = ({
               </Box>
             )}
           </TableCell>
+        )}
+
+        {isEnRutaTab && (
+            <TableCell align="center">
+                <Tooltip title="Copiar Información de Ruta" arrow>
+                    <IconButton color="primary" onClick={handleCopyToClipboard} size="small" sx={{ bgcolor: 'rgba(25, 118, 210, 0.08)', '&:hover': { bgcolor: 'rgba(25, 118, 210, 0.2)' } }}>
+                        <ContentCopyIcon fontSize="small" />
+                    </IconButton>
+                </Tooltip>
+            </TableCell>
         )}
 
         <TableCell>

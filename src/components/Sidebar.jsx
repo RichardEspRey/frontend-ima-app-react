@@ -5,7 +5,6 @@ import {
     ListItemIcon, ListItemText, Collapse, Typography, LinearProgress, Avatar,
     Button, IconButton, Divider
 } from '@mui/material'; 
-
 import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { 
     MdDashboard, MdCarRental, MdLocalShipping, MdDirectionsBus, MdLocalGasStation, 
@@ -63,7 +62,7 @@ const Sidebar = () => {
   const location = useLocation();
   const currentPath = location.pathname;
 
-  const { user, logout, userPermissions } = useAuthStore();
+  const { user, logout, userPermissions, fetchPermissions } = useAuthStore();
   const { mode, setMode } = useSidebarStore();
   const { updateDisponible } = useContext(UpdateContext);
   const [progress, setProgress] = useState(0);
@@ -78,6 +77,19 @@ const Sidebar = () => {
   const railWidth = isPinnedExpanded ? SIDEBAR_WIDTH_EXPANDED : SIDEBAR_WIDTH_COLLAPSED;
 
   const tipoUsuario = String(user?.tipo_usuario || user?.type || '').trim().toLowerCase();
+
+  useEffect(() => {
+    if (user?.id) {
+        fetchPermissions(user.id);
+
+        const handleFocus = () => {
+            fetchPermissions(user.id);
+        };
+        
+        window.addEventListener('focus', handleFocus);
+        return () => window.removeEventListener('focus', handleFocus);
+    }
+  }, [user?.id, fetchPermissions]);
 
   useEffect(() => {
     if (window?.electron?.onUpdateProgress) window.electron.onUpdateProgress(setProgress);

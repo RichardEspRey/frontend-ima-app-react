@@ -15,6 +15,9 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 
 import Swal from 'sweetalert2';
+import dayjs from 'dayjs';
+
+import { useAuthStore } from '../../store/useAuthStore';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -37,12 +40,19 @@ const DieselDetalle = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { tripId } = useParams();
+  const { user } = useAuthStore(); 
+
   const [registros, setRegistros] = useState([]);
   const [loading, setLoading] = useState(true); 
 
-  // Estados para el modal de agregar manual
   const [openAddModal, setOpenAddModal] = useState(false);
   const [manualFiles, setManualFiles] = useState([]);
+  
+  // 🚨 Estado para guardar todo lo del formulario manual (incluyendo periodo y fecha)
+  const [manualForm, setManualForm] = useState({
+      odometro: '', galones: '', monto: '', estado: '', fleetone: '', periodo: '',
+      fecha: dayjs().format('YYYY-MM-DDTHH:mm') 
+  });
 
   const fetchDiesel = useCallback(async () => {
     setLoading(true);
@@ -51,11 +61,7 @@ const DieselDetalle = () => {
         formDataToSend.append('op', 'get_registers_diesel'); 
         formDataToSend.append('trip_id', tripId);
 
-      const response = await fetch(`${apiHost}/formularios.php`, {
-        method: 'POST',
-        body: formDataToSend
-      });
-      
+      const response = await fetch(`${apiHost}/formularios.php`, { method: 'POST', body: formDataToSend });
       const data = await response.json();
       
       if (data.status === 'success') {
@@ -71,37 +77,17 @@ const DieselDetalle = () => {
           estado: t.estado,
           fleetone: t.fleetone,
           periodo: t.periodo,
-          is_manual: t.is_manual || false 
+          // 🚨 FORZAMOS a evaluar matemáticamente que sea 1. Esto mata el bug fantasma.
+          is_manual: Number(t.is_manual) === 1, 
+          created_by: t.created_by || '' 
         }));
-
-        // 🚨 MOCKUP PARA LA JUNTA: Insertamos un registro falso para mostrar cómo se ve el indicador
-        formatted.push({
-            id: 'mock-999',
-            trip_id: tripId,
-            trip_number: formatted[0]?.trip_number || tripId,
-            fecha: '2026-05-27 10:30:00',
-            monto: 345.50,
-            odometro: 145020,
-            galones: 105,
-            nombre: 'Admin Username', 
-            estado: 'NM',
-            fleetone: '0.00',
-            periodo: 'Q2',
-            is_manual: true // Esto activa la etiqueta visual de Admin
-        });
 
         setRegistros(formatted);
       }
-    } catch (error) {
-      console.error('Error al obtener diesel:', error);
-    } finally {
-      setLoading(false);
-    }
+    } catch (error) { console.error('Error al obtener diesel:', error); } finally { setLoading(false); }
   }, [apiHost, tripId]);
 
-  useEffect(() => { 
-    fetchDiesel(); 
-  }, [fetchDiesel]);
+  useEffect(() => { fetchDiesel(); }, [fetchDiesel]);
 
   const handleVer = (id, trip_id) => {
     navigate(`/editor-diesel/${id}/${trip_id}`);
@@ -111,7 +97,10 @@ const DieselDetalle = () => {
     navigate(`/admin-diesel`, { state: location.state });
   }
 
-  // Manejo de archivos en el modal manual
+  const handleManualFormChange = (e) => {
+      setManualForm({ ...manualForm, [e.target.name]: e.target.value });
+  };
+
   const handleManualFileChange = (e) => {
       const newFiles = Array.from(e.target.files);
       setManualFiles(prev => [...prev, ...newFiles]);
@@ -123,16 +112,48 @@ const DieselDetalle = () => {
 
   const handleCloseModal = () => {
       setOpenAddModal(false);
-      setManualFiles([]); // Limpiar archivos al cerrar
+      setManualFiles([]); 
+      // Reiniciamos con la fecha y hora de este momento
+      setManualForm({ odometro: '', galones: '', monto: '', estado: '', fleetone: '', periodo: '', fecha: dayjs().format('YYYY-MM-DDTHH:mm') });
   };
 
-  // Simulación de guardado para la junta
-  const handleSaveManual = () => {
+  const handleSaveManual = async () => {
+      if (!manualForm.odometro || !manualForm.galones || !manualForm.monto) {
+          return Swal.fire('Campos requeridos', 'Odómetro, Galones y Monto son necesarios.', 'warning');
+      }
+
       handleCloseModal();
-      Swal.fire({
-          toast: true, position: 'top-end', icon: 'success', 
-          title: 'Registro manual añadido (Simulación)', showConfirmButton: false, timer: 2000
-      });
+      Swal.fire({ title: 'Guardando registro...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+      try {
+          const fd = new FormData();
+          fd.append('op', 'add_manual_diesel');
+          fd.append('trip_id', tripId);
+          fd.append('odometro', manualForm.odometro);
+          fd.append('galones', manualForm.galones);
+          fd.append('monto', manualForm.monto);
+          fd.append('estado', manualForm.estado);
+          fd.append('fleetone', manualForm.fleetone);
+          fd.append('periodo', manualForm.periodo);
+          // MySQL necesita el formato sin la T
+          fd.append('fecha', manualForm.fecha.replace('T', ' ')); 
+          fd.append('created_by', user?.name || 'Administrador');
+
+          manualFiles.forEach((f) => fd.append('manualFiles[]', f));
+
+          const response = await fetch(`${apiHost}/formularios.php`, { method: 'POST', body: fd });
+          const result = await response.json();
+          Swal.close();
+
+          if (result.status === 'success') {
+              Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Registro manual añadido', showConfirmButton: false, timer: 2000 });
+              fetchDiesel();
+          } else {
+              throw new Error(result.message);
+          }
+      } catch (error) {
+          Swal.fire('Error', error.message, 'error');
+      }
   };
 
   if (loading) {
@@ -146,7 +167,6 @@ const DieselDetalle = () => {
 
   return (
    <Box sx={{ p: 3 }}>
-      {/* Encabezado */}
       <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
           <Box>
              <Typography variant="h4" component="h1" fontWeight={700} gutterBottom>
@@ -209,12 +229,11 @@ const DieselDetalle = () => {
                   <TableRow key={row.id} hover sx={{ bgcolor: row.is_manual ? '#fff8e1' : 'inherit' }}>
                       <TableCell>{idx + 1}</TableCell>
                       
-                      {/* 🚨 Indicador Visual de Origen */}
                       <TableCell>
                           {row.is_manual ? (
-                              <Chip size="small" icon={<AdminPanelSettingsIcon />} label="Manual" color="warning" variant="outlined" sx={{ fontWeight: 'bold', bgcolor: '#fff' }} />
+                              <Chip size="small" icon={<AdminPanelSettingsIcon />} label={`Manual: ${row.created_by || 'Admin'}`} color="warning" variant="outlined" sx={{ fontWeight: 'bold', bgcolor: '#fff' }} />
                           ) : (
-                              <Chip size="small" icon={<PersonIcon />} label="App" color="primary" variant="outlined" sx={{ fontWeight: 'bold' }} />
+                              <Chip size="small" icon={<PersonIcon />} label="App Móvil" color="primary" variant="outlined" sx={{ fontWeight: 'bold' }} />
                           )}
                       </TableCell>
 
@@ -227,22 +246,16 @@ const DieselDetalle = () => {
                           {money(row.monto)}
                       </TableCell>
                       
-                      {/* Driver o Admin */}
                       <TableCell>
-                          <Typography variant="body2" fontWeight={row.is_manual ? 600 : 400}>
-                              {row.nombre}
+                          <Typography variant="body2" fontWeight={row.is_manual ? 400 : 600} color={row.is_manual ? 'text.secondary' : 'inherit'}>
+                              {row.nombre || '—'}
                           </Typography>
                       </TableCell>
                       
                       <TableCell>{formatCellData(row.estado)}</TableCell>
                       <TableCell>{formatCellData(row.fleetone)}</TableCell>
                       <TableCell align="center">
-                          <Button 
-                              variant="contained" 
-                              size="small" 
-                              onClick={() => handleVer(row.id, row.trip_id)}
-                              sx={{ textTransform: 'none' }}
-                          >
+                          <Button variant="contained" size="small" onClick={() => handleVer(row.id, row.trip_id)} sx={{ textTransform: 'none' }}>
                               Edit
                           </Button>
                       </TableCell>
@@ -254,7 +267,7 @@ const DieselDetalle = () => {
         </TableContainer>
       </Paper>
 
-      {/* 🚨 Modal de Captura Manual (Mockup para la junta) */}
+      {/* Modal de Captura Manual */}
       <Dialog open={openAddModal} onClose={handleCloseModal} maxWidth="md" fullWidth scroll="paper">
           <DialogTitle sx={{ bgcolor: '#f8f9fa', borderBottom: '1px solid #e0e0e0', fontWeight: 800, color: 'primary.main', py: 2 }}>
               Nuevo Registro Manual (A destiempo)
@@ -267,27 +280,30 @@ const DieselDetalle = () => {
                       <Paper elevation={0} sx={{ p: 3, borderRadius: 2, border: '1px solid #e0e0e0', height: '100%' }}>
                           <Typography variant="subtitle1" fontWeight={700} mb={2} color="primary">Datos del Ticket</Typography>
                           <Typography variant="body2" color="text.secondary" mb={3}>
-                              Este registro se marcará como insertado manualmente por el equipo de administración.
+                              Este registro se marcará como insertado manualmente por tu usuario.
                           </Typography>
                           
                           <Grid container spacing={2}>
-                              <Grid item xs={12} sm={6}>
-                                  <TextField fullWidth size="small" label="Odómetro *" type="number" InputLabelProps={{ shrink: true }} InputProps={{ endAdornment: <InputAdornment position="end">mi</InputAdornment> }}/>
+                              <Grid item xs={12}>
+                                  <TextField fullWidth size="small" label="Fecha y hora" type="datetime-local" name="fecha" value={manualForm.fecha} onChange={handleManualFormChange} InputLabelProps={{ shrink: true }} />
                               </Grid>
                               <Grid item xs={12} sm={6}>
-                                  <TextField fullWidth size="small" label="Galones *" type="number" InputLabelProps={{ shrink: true }} InputProps={{ endAdornment: <InputAdornment position="end">gal</InputAdornment> }}/>
+                                  <TextField fullWidth size="small" label="Odómetro *" name="odometro" type="number" value={manualForm.odometro} onChange={handleManualFormChange} InputLabelProps={{ shrink: true }} InputProps={{ endAdornment: <InputAdornment position="end">mi</InputAdornment> }}/>
+                              </Grid>
+                              <Grid item xs={12} sm={6}>
+                                  <TextField fullWidth size="small" label="Galones *" name="galones" type="number" value={manualForm.galones} onChange={handleManualFormChange} InputLabelProps={{ shrink: true }} InputProps={{ endAdornment: <InputAdornment position="end">gal</InputAdornment> }}/>
                               </Grid>
                               <Grid item xs={12}>
-                                  <TextField fullWidth size="small" label="Monto Total *" type="number" InputLabelProps={{ shrink: true }} InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }}/>
+                                  <TextField fullWidth size="small" label="Monto Total *" name="monto" type="number" value={manualForm.monto} onChange={handleManualFormChange} InputLabelProps={{ shrink: true }} InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }}/>
                               </Grid>
                               <Grid item xs={12} sm={6}>
-                                  <TextField fullWidth size="small" label="Estado (State) *" placeholder="Ej. TX" InputLabelProps={{ shrink: true }}/>
+                                  <TextField fullWidth size="small" label="Estado (State)" name="estado" value={manualForm.estado} onChange={handleManualFormChange} placeholder="Ej. TX" InputLabelProps={{ shrink: true }}/>
                               </Grid>
                               <Grid item xs={12} sm={6}>
-                                  <TextField fullWidth size="small" label="Fleet One" type="number" InputLabelProps={{ shrink: true }} InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }}/>
+                                  <TextField fullWidth size="small" label="Fleet One" name="fleetone" type="number" value={manualForm.fleetone} onChange={handleManualFormChange} InputLabelProps={{ shrink: true }} InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }}/>
                               </Grid>
                               <Grid item xs={12}>
-                                  <TextField fullWidth size="small" label="Periodo" placeholder="Ej. Q2" InputLabelProps={{ shrink: true }}/>
+                                  <TextField fullWidth size="small" label="Periodo" name="periodo" value={manualForm.periodo} onChange={handleManualFormChange} placeholder="Ej. Q2" InputLabelProps={{ shrink: true }}/>
                               </Grid>
                           </Grid>
                       </Paper>
@@ -314,7 +330,6 @@ const DieselDetalle = () => {
                               <input type="file" hidden multiple accept=".pdf,.jpg,.jpeg,.png" onChange={handleManualFileChange} />
                           </Box>
 
-                          {/* Previsualización de archivos seleccionados */}
                           {manualFiles.length > 0 && (
                               <Box sx={{ mt: 3 }}>
                                   <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ display: 'block', mb: 1 }}>

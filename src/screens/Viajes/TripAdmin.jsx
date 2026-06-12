@@ -66,7 +66,6 @@ const TripAdmin = () => {
         }
     }, [allowedTabs, tabValue]);
 
-    // FETCH OPTIMIZADO PAGINADO
     const fetchTrips = useCallback(async () => {
         setLoading(true);
         setError(null);
@@ -103,13 +102,7 @@ const TripAdmin = () => {
         }
     }, [apiHost, page, rowsPerPage, tabValue, filterTrip, filterDriver, filterTruck, filterTrailer, filterCompany, filterOrigin, filterDestination, filterDirection]);
 
-    useEffect(() => {
-        fetchTrips();
-    }, [fetchTrips]);
-
-    // =====================================================================
-    // HANDLERS
-    // =====================================================================
+    useEffect(() => { fetchTrips(); }, [fetchTrips]);
 
     const handleTabChange = (event, newValue) => { setTabValue(newValue); setPage(0); };
     const handleFilterChange = (setter, value) => { setter(value); setPage(0); };
@@ -119,48 +112,28 @@ const TripAdmin = () => {
     
     const handleAlmostOverTrip = async (tripId, tripNumber) => {
         if (!tripId) return;
-        const confirmation = await Swal.fire({
-            title: '¿Marcar como "Casi Finalizado"?',
-            text: `Viaje #${tripNumber} será marcado como "Casi Finalizado" y sus recursos serán liberados.`,
-            icon: 'info',
-            showCancelButton: true,
-            confirmButtonText: 'Sí, continuar',
-            cancelButtonText: 'Cancelar'
-        });
+        const confirmation = await Swal.fire({ title: '¿Marcar como "Casi Finalizado"?', text: `Viaje #${tripNumber} será marcado como "Casi Finalizado".`, icon: 'info', showCancelButton: true, confirmButtonText: 'Sí, continuar', cancelButtonText: 'Cancelar' });
         if (confirmation.isConfirmed) {
             try {
-                const apiUrl = `${apiHost}/new_trips.php`;
-                const formData = new FormData();
-                formData.append('op', 'AlmostOverTrip');
-                formData.append('trip_id', tripId);
-                const response = await fetch(apiUrl, { method: 'POST', body: formData });
+                const formData = new FormData(); formData.append('op', 'AlmostOverTrip'); formData.append('trip_id', tripId);
+                const response = await fetch(`${apiHost}/new_trips.php`, { method: 'POST', body: formData });
                 const result = await response.json();
-                if (response.ok && result.status === 'success') {
-                    Swal.fire('¡Éxito!', result.message, 'success');
-                    fetchTrips();
-                } else { throw new Error(result.error || result.message); }
+                if (response.ok && result.status === 'success') { Swal.fire('¡Éxito!', result.message, 'success'); fetchTrips(); } 
+                else throw new Error(result.error || result.message);
             } catch (err) { Swal.fire('Error', err.message, 'error'); }
         }
     };
 
     const handleFinalizeTrip = async (tripId, tripNumber) => {
         if (!tripId) return;
-        const confirmation = await Swal.fire({
-            title: '¿Finalizar Viaje?', text: `Viaje #${tripNumber} será completado.`,
-            icon: 'warning', showCancelButton: true, confirmButtonText: 'Sí, finalizar'
-        });
+        const confirmation = await Swal.fire({ title: '¿Finalizar Viaje?', text: `Viaje #${tripNumber} será completado.`, icon: 'warning', showCancelButton: true, confirmButtonText: 'Sí, finalizar' });
         if (confirmation.isConfirmed) {
             try {
-                const apiUrl = `${apiHost}/new_trips.php`;
-                const formData = new FormData();
-                formData.append('op', 'FinalizeTrip');
-                formData.append('trip_id', tripId);
-                const response = await fetch(apiUrl, { method: 'POST', body: formData });
+                const formData = new FormData(); formData.append('op', 'FinalizeTrip'); formData.append('trip_id', tripId);
+                const response = await fetch(`${apiHost}/new_trips.php`, { method: 'POST', body: formData });
                 const result = await response.json();
-                if (response.ok && result.status === 'success') {
-                    Swal.fire('¡Finalizado!', result.message, 'success');
-                    fetchTrips();
-                } else { throw new Error(result.error || result.message); }
+                if (response.ok && result.status === 'success') { Swal.fire('¡Finalizado!', result.message, 'success'); fetchTrips(); } 
+                else throw new Error(result.error || result.message);
             } catch (err) { Swal.fire('Error', err.message, 'error'); }
         }
     };
@@ -168,121 +141,69 @@ const TripAdmin = () => {
     const handleReactivateTrip = async (tripId, tripNumber, isEnRuta = false) => {
         if (!tripId) return;
         let reactivationType = '';
-
         if (isEnRuta) {
-            const result = await Swal.fire({
-                title: 'Reactivar Viaje',
-                text: `El viaje #${tripNumber} será reactivado para Operadores.`,
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonText: 'Operadores',
-                cancelButtonText: 'Cancelar',
-                confirmButtonColor: '#d33',
-            });
+            const result = await Swal.fire({ title: 'Reactivar Viaje', text: `El viaje #${tripNumber} será reactivado para Operadores.`, icon: 'question', showCancelButton: true, confirmButtonText: 'Operadores', cancelButtonText: 'Cancelar', confirmButtonColor: '#d33' });
             if (!result.isConfirmed) return;
             reactivationType = 'operadores';
         } else {
-            const result = await Swal.fire({
-                title: 'Reactivar Viaje',
-                text: `Selecciona el tipo de reactivación para el viaje #${tripNumber}`,
-                icon: 'question',
-                showDenyButton: true,
-                showCancelButton: true,
-                confirmButtonText: 'Administrativos',
-                denyButtonText: 'Operadores',
-                cancelButtonText: 'Cancelar',
-                confirmButtonColor: '#3085d6',
-                denyButtonColor: '#d33',
-            });
+            const result = await Swal.fire({ title: 'Reactivar Viaje', text: `Selecciona el tipo de reactivación`, icon: 'question', showDenyButton: true, showCancelButton: true, confirmButtonText: 'Administrativos', denyButtonText: 'Operadores', cancelButtonText: 'Cancelar', confirmButtonColor: '#3085d6', denyButtonColor: '#d33' });
             if (result.isDismissed) return;
             if (result.isConfirmed) reactivationType = 'admin';
             else if (result.isDenied) reactivationType = 'operadores';
         }
-
         if (!reactivationType) return;
-
         try {
-            const apiUrl = `${apiHost}/new_trips.php`;
-            const formData = new FormData();
-            formData.append('op', 'activate_trip');
-            formData.append('trip_id', tripId);
-            formData.append('type', reactivationType);
-
-            const response = await fetch(apiUrl, { method: 'POST', body: formData });
+            const formData = new FormData(); formData.append('op', 'activate_trip'); formData.append('trip_id', tripId); formData.append('type', reactivationType);
+            const response = await fetch(`${apiHost}/new_trips.php`, { method: 'POST', body: formData });
             const responseResult = await response.json();
-
-            if (response.ok && responseResult.status === 'success') {
-                Swal.fire('¡Éxito!', `Viaje reactivado correctamente como ${reactivationType === 'admin' ? 'Administrativos' : 'Operadores'}.`, 'success');
-                fetchTrips(); 
-            } else {
-                throw new Error(responseResult.error || responseResult.message);
-            }
-        } catch (err) {
-            Swal.fire('Error', err.message, 'error');
-        }
+            if (response.ok && responseResult.status === 'success') { Swal.fire('¡Éxito!', `Viaje reactivado.`, 'success'); fetchTrips(); } 
+            else throw new Error(responseResult.error || responseResult.message);
+        } catch (err) { Swal.fire('Error', err.message, 'error'); }
     };
 
     const handleSalida = async (tripId, tripNumber) => {
         if (!tripId) return;
-        const confirm = await Swal.fire({
-            title: '¿Confirmar salida?', text: `El viaje #${tripNumber} cambiará a "In Transit".`,
-            icon: 'question', showCancelButton: true, confirmButtonText: 'Sí, dar salida'
-        });
+        const confirm = await Swal.fire({ title: '¿Confirmar salida?', text: `El viaje #${tripNumber} cambiará a "In Transit".`, icon: 'question', showCancelButton: true, confirmButtonText: 'Sí, dar salida' });
         if (!confirm.isConfirmed) return;
-
         try {
-            const apiUrl = `${apiHost}/new_tripsv2.php`;
-            const formData = new FormData();
-            formData.append('op', 'salida_trip');
-            formData.append('trip_id', tripId);
-
-            const response = await fetch(apiUrl, { method: 'POST', body: formData });
+            const formData = new FormData(); formData.append('op', 'salida_trip'); formData.append('trip_id', tripId);
+            const response = await fetch(`${apiHost}/new_tripsv2.php`, { method: 'POST', body: formData });
             const result = await response.json();
-
-            if (response.ok && result.status === 'success') {
-                Swal.fire('Salida registrada', result.message, 'success');
-                fetchTrips();
-            } else {
-                throw new Error(result.message || result.error);
-            }
-        } catch (err) {
-            Swal.fire('Error', err.message, 'error');
-        }
+            if (response.ok && result.status === 'success') { Swal.fire('Salida registrada', result.message, 'success'); fetchTrips(); } 
+            else throw new Error(result.message || result.error);
+        } catch (err) { Swal.fire('Error', err.message, 'error'); }
     };
 
     const handleDeleteTrip = async (tripId, tripNumber) => {
         if (!tripId) return;
-        const confirm = await Swal.fire({
-            title: '¿Eliminar viaje?', text: `El viaje #${tripNumber} será eliminado permanentemente.`,
-            icon: 'warning', showCancelButton: true, confirmButtonText: 'Sí, eliminar', confirmButtonColor: '#d33'
-        });
+        const confirm = await Swal.fire({ title: '¿Eliminar viaje?', text: `El viaje #${tripNumber} será eliminado permanentemente.`, icon: 'warning', showCancelButton: true, confirmButtonText: 'Sí, eliminar', confirmButtonColor: '#d33' });
         if (!confirm.isConfirmed) return;
-
         try {
-            const apiUrl = `${apiHost}/new_trips.php`;
-            const formData = new FormData();
-            formData.append('op', 'delete_trip');
-            formData.append('trip_id', tripId);
-
-            const response = await fetch(apiUrl, { method: 'POST', body: formData });
+            const formData = new FormData(); formData.append('op', 'delete_trip'); formData.append('trip_id', tripId);
+            const response = await fetch(`${apiHost}/new_trips.php`, { method: 'POST', body: formData });
             const result = await response.json();
-
-            if (response.ok && result.status === 'success') {
-                Swal.fire('Eliminado', result.message, 'success');
-                fetchTrips();
-            } else {
-                throw new Error(result.message || result.error);
-            }
-        } catch (err) {
-            Swal.fire('Error', err.message, 'error');
-        }
+            if (response.ok && result.status === 'success') { Swal.fire('Eliminado', result.message, 'success'); fetchTrips(); } 
+            else throw new Error(result.message || result.error);
+        } catch (err) { Swal.fire('Error', err.message, 'error'); }
     };
-
-    // =====================================================================
 
     const getTripMissingDocs = (trip) => {
         if (!Array.isArray(trip.etapas) || trip.etapas.length === 0) return { total: 0, list: [] };
-        return { total: trip.etapas[0].documentos_faltantes ?? 0, list: trip.etapas[0].documentos_faltantes_lista ?? [] };
+        
+        let totalFaltantes = 0;
+        let listaFaltantes = [];
+
+        trip.etapas.forEach(etapa => {
+            if (etapa.documentos_faltantes > 0) {
+                totalFaltantes += etapa.documentos_faltantes;
+                if (Array.isArray(etapa.documentos_faltantes_lista)) {
+                    const faltantesEtapa = etapa.documentos_faltantes_lista.map(doc => `E${etapa.stage_number}: ${doc}`);
+                    listaFaltantes = [...listaFaltantes, ...faltantesEtapa];
+                }
+            }
+        });
+
+        return { total: totalFaltantes, list: listaFaltantes };
     };
 
     const getDocumentUrl = (serverPath) => {
@@ -292,14 +213,18 @@ const TripAdmin = () => {
 
     const isUpcomingTab = tabValue === 0;
     const isDespachoTab = tabValue === 1;
+    const isEnRutaTab = tabValue === 2;
     const showDocsColumn = isUpcomingTab || isDespachoTab;
 
-    // Cálculo dinámico de columnas
     const currentTableColSpan = useMemo(() => {
-        if (showDocsColumn) return 8; 
-        if (tabValue === 3) return isAdmin ? 11 : 10; 
-        return isAdmin ? 10 : 9; 
-    }, [showDocsColumn, tabValue, isAdmin]);
+        let cols = 8;
+        if (showDocsColumn) cols = 8; 
+        else if (tabValue === 3) cols = isAdmin ? 11 : 10; 
+        else cols = isAdmin ? 10 : 9; 
+        
+        if (isEnRutaTab) cols += 1;
+        return cols;
+    }, [showDocsColumn, tabValue, isAdmin, isEnRutaTab]);
 
     if (allowedTabs.length === 0) {
         return (
@@ -340,9 +265,23 @@ const TripAdmin = () => {
                         <Grid item xs={12} sm={3}><TextField label="Driver" size="small" fullWidth value={filterDriver} onChange={(e) => handleFilterChange(setFilterDriver, e.target.value)} /></Grid>
                         <Grid item xs={12} sm={3}><TextField label="Truck" size="small" fullWidth value={filterTruck} onChange={(e) => handleFilterChange(setFilterTruck, e.target.value)} /></Grid>
                         <Grid item xs={12} sm={3}><TextField label="Trailer" size="small" fullWidth value={filterTrailer} onChange={(e) => handleFilterChange(setFilterTrailer, e.target.value)} /></Grid>
+                        
+                        <Grid item xs={12} sm={3}><TextField label="Company" size="small" fullWidth value={filterCompany} onChange={(e) => handleFilterChange(setFilterCompany, e.target.value)} /></Grid>
+                        <Grid item xs={12} sm={3}><TextField label="Origin" size="small" fullWidth value={filterOrigin} onChange={(e) => handleFilterChange(setFilterOrigin, e.target.value)} /></Grid>
+                        <Grid item xs={12} sm={3}><TextField label="Destination" size="small" fullWidth value={filterDestination} onChange={(e) => handleFilterChange(setFilterDestination, e.target.value)} /></Grid>
+                        <Grid item xs={12} sm={3}>
+                            <TextField select label="Direction" size="small" fullWidth value={filterDirection} onChange={(e) => handleFilterChange(setFilterDirection, e.target.value)}>
+                                {DIRECTION_OPTIONS.map((option) => (<MenuItem key={option.value} value={option.value}>{option.label}</MenuItem>))}
+                            </TextField>
+                        </Grid>
+
                         <Grid item xs={12}>
                             <Stack direction="row" spacing={2} justifyContent="flex-end">
-                                <Button variant="text" onClick={() => { setFilterTrip(''); setFilterDriver(''); setFilterTruck(''); setFilterTrailer(''); setPage(0); }}>Limpiar Filtros</Button>
+                                <Button variant="text" onClick={() => { 
+                                    setFilterTrip(''); setFilterDriver(''); setFilterTruck(''); setFilterTrailer(''); 
+                                    setFilterCompany(''); setFilterOrigin(''); setFilterDestination(''); setFilterDirection('All');
+                                    setPage(0); 
+                                }}>Limpiar Filtros</Button>
                             </Stack>
                         </Grid>
                     </Grid>
@@ -365,6 +304,8 @@ const TripAdmin = () => {
                             <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Status</TableCell>
                             {!showDocsColumn && <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Return Date</TableCell>}
                             {showDocsColumn && <TableCell sx={{ fontWeight: 700, color: '#475569', textAlign: 'center' }}>Documentos Faltantes</TableCell>}
+                            
+                            {isEnRutaTab && <TableCell sx={{ fontWeight: 700, color: '#475569', textAlign: 'center' }}>Copiar Info</TableCell>}
 
                             <TableCell sx={{ fontWeight: 700, color: '#475569', textAlign: 'center' }}>Actions</TableCell>
                             {tabValue === 3 && <TableCell sx={{ fontWeight: 700, color: '#475569', textAlign: 'center' }}>Resumen</TableCell>}
@@ -373,18 +314,9 @@ const TripAdmin = () => {
                     </TableHead>
                     <TableBody>
                         {loading ? (
-                            <TableRow>
-                                <TableCell colSpan={currentTableColSpan} align="center" sx={{ py: 4 }}>
-                                    <CircularProgress size={24} sx={{ mr: 2, verticalAlign: 'middle' }} />
-                                    <Typography component="span" color="text.secondary">Actualizando datos...</Typography>
-                                </TableCell>
-                            </TableRow>
+                            <TableRow><TableCell colSpan={currentTableColSpan} align="center" sx={{ py: 4 }}><CircularProgress size={24} sx={{ mr: 2, verticalAlign: 'middle' }} /><Typography component="span" color="text.secondary">Actualizando datos...</Typography></TableCell></TableRow>
                         ) : trips.length === 0 ? (
-                            <TableRow>
-                                <TableCell colSpan={currentTableColSpan} align="center" sx={{ py: 4 }}>
-                                    <Typography variant="body2" color="text.secondary">No se localizaron registros en esta categoría.</Typography>
-                                </TableCell>
-                            </TableRow>
+                            <TableRow><TableCell colSpan={currentTableColSpan} align="center" sx={{ py: 4 }}><Typography variant="body2" color="text.secondary">No se localizaron registros en esta categoría.</Typography></TableCell></TableRow>
                         ) : (
                             trips.map((trip) => {
                                 const { total, list } = getTripMissingDocs(trip);
@@ -396,7 +328,7 @@ const TripAdmin = () => {
                                         isCompletedTab={tabValue === 3}
                                         isDespachoTab={isDespachoTab} 
                                         isUpcomingTab={isUpcomingTab} 
-                                        isEnRutaTab={tabValue === 2}
+                                        isEnRutaTab={isEnRutaTab}
                                         onEdit={handleEditTrip} 
                                         onSummary={handleSummary} 
                                         showDocsColumn={showDocsColumn}
@@ -407,7 +339,7 @@ const TripAdmin = () => {
                                         onDelete={handleDeleteTrip}
                                         onAlmostOver={handleAlmostOverTrip}
                                         onFinalize={handleFinalizeTrip}
-                                        onReactivate={(tripId, tripNumber) => handleReactivateTrip(tripId, tripNumber, tabValue === 2)}
+                                        onReactivate={(tripId, tripNumber) => handleReactivateTrip(tripId, tripNumber, isEnRutaTab)}
                                         onSalida={handleSalida}
                                     />
                                 );
@@ -418,15 +350,7 @@ const TripAdmin = () => {
             </TableContainer>
 
             <Box sx={{ bgcolor: 'white', border: '1px solid #e2e8f0', borderTop: 'none', borderBottomLeftRadius: 12, borderBottomRightRadius: 12 }}>
-                <TablePagination
-                    rowsPerPageOptions={[25, 50, 100]}
-                    component="div"
-                    count={totalRows} 
-                    rowsPerPage={rowsPerPage}
-                    page={page}
-                    onPageChange={(e, newPage) => setPage(newPage)}
-                    onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }}
-                />
+                <TablePagination rowsPerPageOptions={[25, 50, 100]} component="div" count={totalRows} rowsPerPage={rowsPerPage} page={page} onPageChange={(e, newPage) => setPage(newPage)} onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }} />
             </Box>
         </Box>
     );

@@ -39,19 +39,19 @@ export const TripExpandedDetails = ({
         <Grid container spacing={2}>
           {trip.etapas.map((etapa) => {
 
+            if (etapa.stageType === 'emptyMileage') {
+              return <StageEmptyCard key={etapa.trip_stage_id || etapa.id || Math.random()} etapa={etapa} />;
+            } 
+            
             if (isUpcomingTab || isDespachoTab) {
                 return (
-                    <Grid item xs={12} key={etapa.trip_stage_id}>
+                    <Grid item xs={12} key={etapa.trip_stage_id || etapa.id || Math.random()}>
                         <StageUpcomingCard etapa={etapa} getDocumentUrl={getDocumentUrl} />
                     </Grid>
                 );
             }
 
-            if (etapa.stageType === 'emptyMileage') {
-              return <StageEmptyCard key={etapa.trip_stage_id} etapa={etapa} />;
-            } else {
-              return <StageNormalCard key={etapa.trip_stage_id} etapa={etapa} getDocumentUrl={getDocumentUrl} isCompleted={isCompleted} />;
-            }
+            return <StageNormalCard key={etapa.trip_stage_id || etapa.id || Math.random()} etapa={etapa} getDocumentUrl={getDocumentUrl} isCompleted={isCompleted} />;
             
           })}
         </Grid>
