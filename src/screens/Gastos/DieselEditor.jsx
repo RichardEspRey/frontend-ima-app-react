@@ -203,9 +203,15 @@ const DieselEditor = () => {
               .filter(it => typeof it.url_pdf === 'string' && it.url_pdf)
               .map(it => {
                 const ext = (it.url_pdf.split('.').pop() || '').toLowerCase();
-                const url = it.url_pdf.startsWith('http')
-                  ? it.url_pdf
-                  : `${apiHost}/${it.url_pdf}`.replace(/([^:]\/)\/+/g, '$1');
+                let relativePath = it.url_pdf;
+                if (!relativePath.startsWith('http') && !relativePath.includes('Uploads/diesel/')) {
+                    relativePath = `Uploads/diesel/${relativePath}`;
+                }
+
+                const url = relativePath.startsWith('http')
+                  ? relativePath
+                  : `${apiHost}/${relativePath}`.replace(/([^:]\/)\/+/g, '$1');
+                  
                 return { ...it, url, ext };
               });
             setTickets(list);
