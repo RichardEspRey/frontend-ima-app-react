@@ -167,7 +167,7 @@ ${(!trip.caja_id && !trip.caja_externa_id) ? 'Sin tráiler asignado' : ''}
             
             {trip.etapas?.[0]?.stageType === 'emptyMileage' && (
                 <Chip 
-                    label="Inició Vacío" 
+                    label="In. V." 
                     size="small" 
                     sx={{ height: 18, fontSize: '0.6rem', fontWeight: 800, bgcolor: '#e0f2fe', color: '#0284c7' }} 
                 />
