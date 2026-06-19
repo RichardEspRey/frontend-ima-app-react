@@ -147,6 +147,7 @@ export const menuItemsConfig = [
         name: "Crear viaje",
         featureKey: "viajes_crear",
         route: "/CrearViaje",
+        hideInSidebar: true,
         rolesPermitidos: ["admin"],
       },
       {

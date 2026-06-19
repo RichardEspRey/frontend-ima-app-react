@@ -247,6 +247,16 @@ const TripAdmin = () => {
                     <Typography variant="h4" fontWeight={800} color="#0f172a" letterSpacing="-0.02em">Administrador de Viajes</Typography>
                     <Typography variant="subtitle1" color="#64748b">Gestión y control de despachos, estatus y rutas en tiempo real.</Typography>
                 </Box>
+
+                {(isAdmin || userPermissions?.viajes_crear) && (
+                    <Button 
+                        variant="contained" 
+                        onClick={() => navigate('/CrearViaje')}
+                        sx={{ bgcolor: '#0f172a', fontWeight: 700, borderRadius: 2, px: 3 }}
+                    >
+                        Crear Nuevo Viaje
+                    </Button>
+                )}
             </Stack>
 
             <Paper elevation={0} sx={{ mb: 3, bgcolor: 'transparent', borderBottom: '2px solid #e2e8f0' }}>

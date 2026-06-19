@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useCallback } from "react";
 import {
   Box, Typography, Paper, TextField, Stack, Tabs, Tab, MenuItem,
-  Checkbox, FormControlLabel, Container, Grid, Divider, Alert
+  Checkbox, FormControlLabel, Container, Grid, Divider, Alert,
+  Button
 } from "@mui/material";
 
 // Iconos
@@ -9,7 +10,10 @@ import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import LanguageIcon from "@mui/icons-material/Language";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import NumbersIcon from "@mui/icons-material/Numbers";
-import GroupIcon from "@mui/icons-material/Group"; // 🚨 Icono para los Teams
+import GroupIcon from "@mui/icons-material/Group";
+
+import { useNavigate } from "react-router-dom";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 // Componentes Hijos
 import TripFormUSA from "../../components/TripFormUSA"; 
@@ -17,6 +21,7 @@ import TripFormMX from "../../components/TripFormMX";
 import BorderCrossingFormNew2 from "../../components/BorderCrossingFormNew2";
 
 const CrearViaje = () => {
+  const navigate = useNavigate();
   const apiHost = import.meta.env.VITE_API_HOST;
   const currentYear = new Date().getFullYear();
 
@@ -118,14 +123,24 @@ const CrearViaje = () => {
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" fontWeight={800} color="primary.main" gutterBottom>
-          Crear Nuevo Viaje
-        </Typography>
-        <Typography variant="body1" color="text.secondary">
-          Configura los parámetros iniciales y selecciona el tipo de operación.
-        </Typography>
-      </Box>
+      <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ xs: 'flex-start', sm: 'center' }} sx={{ mb: 4 }} spacing={2}>
+        <Box>
+          <Typography variant="h4" fontWeight={800} color="primary.main" gutterBottom>
+            Crear Nuevo Viaje
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Configura los parámetros iniciales y selecciona el tipo de operación.
+          </Typography>
+        </Box>
+        <Button 
+            variant="outlined" 
+            startIcon={<ArrowBackIcon />} 
+            onClick={() => navigate('/admin-trips')}
+            sx={{ fontWeight: 600, bgcolor: 'white', borderColor: '#cbd5e1', color: '#475569' }}
+        >
+            Volver a Viajes
+        </Button>
+      </Stack>
 
       {/* Panel de Configuración */}
       <Paper elevation={3} sx={{ p: 3, mb: 4, borderRadius: 3 }}>
