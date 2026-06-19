@@ -84,6 +84,9 @@ const TripAdmin = () => {
             formData.append('filterDestination', filterDestination);
             formData.append('filterDirection', filterDirection);
 
+            if (user?.id) formData.append('user_id', user.id);
+            if (user?.tipo_usuario) formData.append('user_type', user.tipo_usuario);
+
             const response = await fetch(`${apiHost}/new_tripsv2.php`, { method: 'POST', body: formData });
             const result = await response.json();
 

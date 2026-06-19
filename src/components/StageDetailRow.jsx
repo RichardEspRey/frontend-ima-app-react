@@ -63,7 +63,7 @@ export const StageDetailRow = ({ trip_id, stage, handleStageFieldChange }) => {
     let deficitContent = '-';
     let deficitColor = 'text.secondary';
 
-    if (canViewDeficit && isPagada) {
+    if (isPagada) {
         const rate = Number(stage.rate_tarifa || 0);
         const paidStr = String(stage.paid_rate || '').replace(/[^\d.-]/g, '');
         const paid = Number(paidStr || 0);
@@ -143,13 +143,13 @@ export const StageDetailRow = ({ trip_id, stage, handleStageFieldChange }) => {
             </TableCell>
             {/* ------------------------------------- */}
 
-            {canViewDeficit && (
-                <TableCell sx={{ fontWeight: 700 }}>
-                    <Typography variant="body2" color={deficitColor} fontWeight="bold">
-                        {isPagada ? deficitContent : '-'}
-                    </Typography>
-                </TableCell>
-            )}
+            
+            <TableCell sx={{ fontWeight: 700 }}>
+                <Typography variant="body2" color={deficitColor} fontWeight="bold">
+                    {isPagada ? deficitContent : '-'}
+                </Typography>
+            </TableCell>
+            
 
             <TableCell sx={{ minWidth: 220 }}>
                 <Select
