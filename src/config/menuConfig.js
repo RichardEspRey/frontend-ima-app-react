@@ -184,6 +184,13 @@ export const menuItemsConfig = [
         hideInSidebar: true,
         rolesPermitidos: ["admin", "Blanca", "Candy"],
       },
+      {
+        name: "Visibilidad Global de Viajes",
+        featureKey: "view_all_trips",
+        route: null,
+        hideInSidebar: true,
+        rolesPermitidos: ["admin"],
+      },
     ],
   },
 
