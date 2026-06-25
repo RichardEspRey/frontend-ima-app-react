@@ -163,7 +163,11 @@ export default function Tracking() {
             current_fuel: Number(dbMatch.current_fuel || 0),
             tank_capacity: Number(dbMatch.tank_capacity || 200),
             avg_mpg: Number(dbMatch.avg_mpg || 0),
-            estimated_range: Number(dbMatch.estimated_range || 0)
+            estimated_range: Number(dbMatch.estimated_range || 0),
+            current_stage_number: dbMatch.current_stage_number || null,
+            current_origin: dbMatch.current_origin || null,
+            current_destination: dbMatch.current_destination || null,
+            current_stop: dbMatch.current_stop || null
           };
         });
 
@@ -630,6 +634,22 @@ export default function Tracking() {
                     <Chip label={selected.status} size="small" sx={{ height: 20, fontSize: '0.65rem', fontWeight: 800, color: 'white', bgcolor: getStatusColor(selected.status) }} />
                   )}
                 </Stack>
+
+                {selected.current_stage_number && (
+                  <Box sx={{ mb: 2, p: 1.5, bgcolor: '#eff6ff', borderRadius: 2, border: '1px solid #bfdbfe' }}>
+                    <Stack direction="row" justifyContent="space-between" alignItems="center" mb={0.5}>
+                       <Typography variant="caption" fontWeight={800} color="#1d4ed8">
+                          Etapa {selected.current_stage_number}
+                       </Typography>
+                       {selected.current_stop && (
+                          <Chip label={`Parada: ${selected.current_stop}`} size="small" sx={{ height: 18, fontSize: '0.6rem', bgcolor: '#f59e0b', color: 'white', fontWeight: 'bold' }} />
+                       )}
+                    </Stack>
+                    <Typography variant="caption" display="block" color="#334155" fontWeight={600}>
+                       {selected.current_origin} ➔ {selected.current_destination}
+                    </Typography>
+                  </Box>
+                )}
 
                 <Stack spacing={1.5} sx={{ mb: 2 }}>
                   <Stack direction="row" spacing={1.5} alignItems="flex-start">

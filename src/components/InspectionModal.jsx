@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
     Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Grid,
-    MenuItem, CircularProgress, Autocomplete, Typography, Box, Stack, Paper, Chip, InputAdornment
+    MenuItem, CircularProgress, Autocomplete, Typography, Box, Stack, Paper, Chip, InputAdornment, IconButton
 } from '@mui/material';
 
 // Íconos para la UI
@@ -10,6 +10,8 @@ import AssignmentLateIcon from '@mui/icons-material/AssignmentLate';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
+import DeleteIcon from '@mui/icons-material/Delete';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 
 import Swal from 'sweetalert2';
 
@@ -23,10 +25,7 @@ const initialForm = {
     operador: '',
     ciudad: '',
     estado: '',
-    fecha_inspeccion: '', // 🚨 Nuevo campo agregado
-    tipo_violacion: '',
-    descripcion: '',
-    comentarios: '',
+    fecha_inspeccion: '',
     multa_ima: '',
     multa_driver: ''
 };
@@ -38,6 +37,14 @@ const InspectionModal = ({ open, onClose, onSuccess, editData }) => {
     const [descriptions, setDescriptions] = useState([]);
     const [tripsOptions, setTripsOptions] = useState([]);
     
+    // Estados para la lista de reportes múltiples
+    const [reportesList, setReportesList] = useState([]);
+    const [currentReport, setCurrentReport] = useState({
+        tipo_violacion: '',
+        descripcion: '',
+        comentarios: ''
+    });
+
     const [loading, setLoading] = useState(false);
     const [loadingTrips, setLoadingTrips] = useState(false);
     const [saving, setSaving] = useState(false);
@@ -50,10 +57,23 @@ const InspectionModal = ({ open, onClose, onSuccess, editData }) => {
                     ...initialForm,
                     ...editData,
                     trip_number_search: editData.formatted_trip || '',
-                    fecha_inspeccion: editData.fecha_inspeccion || '' // 🚨 Cargar fecha al editar
+                    fecha_inspeccion: editData.fecha_inspeccion || ''
                 });
+
+                // Soporte por si ya se envían múltiples reportes desde el backend o es el formato viejo
+                if (editData.reportes && Array.isArray(editData.reportes)) {
+                    setReportesList(editData.reportes);
+                } else if (editData.tipo_violacion) {
+                    setReportesList([{
+                        tipo_violacion: editData.tipo_violacion,
+                        descripcion: editData.descripcion,
+                        comentarios: editData.comentarios || ''
+                    }]);
+                }
             } else {
                 setFormData(initialForm);
+                setReportesList([]);
+                setCurrentReport({ tipo_violacion: '', descripcion: '', comentarios: '' });
             }
             setFiles([]);
             setTripsOptions([]);
@@ -122,13 +142,32 @@ const InspectionModal = ({ open, onClose, onSuccess, editData }) => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        if (name === 'comentarios' && value.length > 500) return;
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleDescriptionChange = (event, newValue) => {
+    // Manejadores para el registro temporal de reporte
+    const handleReportChange = (e) => {
+        const { name, value } = e.target;
+        if (name === 'comentarios' && value.length > 500) return;
+        setCurrentReport(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleReportDescriptionChange = (event, newValue) => {
         if (newValue && newValue.length > 200) return;
-        setFormData(prev => ({ ...prev, descripcion: newValue || '' }));
+        setCurrentReport(prev => ({ ...prev, descripcion: newValue || '' }));
+    };
+
+    const handleAddReport = () => {
+        if (!currentReport.tipo_violacion || !currentReport.descripcion) {
+            Swal.fire('Atención', 'Selecciona el tipo de violación y la descripción para agregar a la lista.', 'warning');
+            return;
+        }
+        setReportesList(prev => [...prev, currentReport]);
+        setCurrentReport({ tipo_violacion: '', descripcion: '', comentarios: '' });
+    };
+
+    const handleRemoveReport = (index) => {
+        setReportesList(prev => prev.filter((_, i) => i !== index));
     };
 
     const handleFileChange = (e) => {
@@ -147,9 +186,15 @@ const InspectionModal = ({ open, onClose, onSuccess, editData }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         
-        // Validación de campos requeridos (incluyendo fecha)
-        if (!formData.truck_id || !formData.operador || !formData.tipo_violacion || !formData.descripcion || !formData.fecha_inspeccion) {
-            Swal.fire('Error', 'Por favor llena los campos obligatorios (*).', 'error');
+        // Validación general
+        if (!formData.truck_id || !formData.operador || !formData.fecha_inspeccion || !formData.ciudad || !formData.estado) {
+            Swal.fire('Error', 'Por favor llena los campos obligatorios de la unidad (*).', 'error');
+            return;
+        }
+
+        // Validar que exista al menos un reporte en la lista
+        if (reportesList.length === 0) {
+            Swal.fire('Error', 'Debes agregar al menos un reporte de inspección a la lista.', 'error');
             return;
         }
 
@@ -162,6 +207,9 @@ const InspectionModal = ({ open, onClose, onSuccess, editData }) => {
                 dataToSend.append(key, value);
             }
         });
+
+        // Enviar la lista de reportes como JSON para procesar en PHP
+        dataToSend.append('reportes', JSON.stringify(reportesList));
 
         files.forEach((file) => {
             dataToSend.append('invoices[]', file);
@@ -260,23 +308,15 @@ const InspectionModal = ({ open, onClose, onSuccess, editData }) => {
                                     <Grid item xs={12}>
                                         <TextField fullWidth label="Operador *" name="operador" placeholder="Nombre completo" value={formData.operador} onChange={handleChange} required {...inputProps} />
                                     </Grid>
-                                    <Grid item xs={12} sm={6}>
+                                    
+                                    {/* Ajuste de columnas para que encaje la Fecha aquí */}
+                                    <Grid item xs={12} sm={4}>
                                         <TextField fullWidth label="Ciudad *" name="ciudad" placeholder="Ciudad actual" value={formData.ciudad} onChange={handleChange} required {...inputProps} />
                                     </Grid>
-                                    <Grid item xs={12} sm={6}>
+                                    <Grid item xs={12} sm={4}>
                                         <TextField fullWidth label="Estado *" name="estado" placeholder="Estado/Provincia" value={formData.estado} onChange={handleChange} required {...inputProps} />
                                     </Grid>
-                                </Grid>
-                            </Paper>
-
-                            {/* SECCIÓN 2: REPORTE DE INSPECCIÓN */}
-                            <Paper elevation={0} sx={{ p: 3, borderRadius: 2, border: '1px solid #e0e0e0' }}>
-                                <Stack direction="row" spacing={1} alignItems="center" mb={2.5}>
-                                    <AssignmentLateIcon color="primary" fontSize="small" />
-                                    <Typography variant="subtitle1" fontWeight={700}>2. Reporte de Inspección</Typography>
-                                </Stack>
-                                <Grid container spacing={2}>
-                                    <Grid item xs={12} sm={6}>
+                                    <Grid item xs={12} sm={4}>
                                         <TextField 
                                             fullWidth 
                                             type="date" 
@@ -288,11 +328,21 @@ const InspectionModal = ({ open, onClose, onSuccess, editData }) => {
                                             {...inputProps} 
                                         />
                                     </Grid>
+                                </Grid>
+                            </Paper>
 
-                                    <Grid item xs={12} sm={6}>
+                            {/* SECCIÓN 2: REPORTE DE INSPECCIÓN (Múltiples Registros) */}
+                            <Paper elevation={0} sx={{ p: 3, borderRadius: 2, border: '1px solid #e0e0e0' }}>
+                                <Stack direction="row" spacing={1} alignItems="center" mb={2.5}>
+                                    <AssignmentLateIcon color="primary" fontSize="small" />
+                                    <Typography variant="subtitle1" fontWeight={700}>2. Reporte de Inspección</Typography>
+                                </Stack>
+                                
+                                <Grid container spacing={2} alignItems="flex-start">
+                                    <Grid item xs={12} sm={4}>
                                         <TextField 
-                                            select fullWidth label="Tipo de Violación *" name="tipo_violacion" 
-                                            value={formData.tipo_violacion} onChange={handleChange} required
+                                            select fullWidth label="Tipo de Violación" name="tipo_violacion" 
+                                            value={currentReport.tipo_violacion} onChange={handleReportChange}
                                             {...inputProps}
                                             SelectProps={{ sx: { minWidth: '150px' } }}
                                         >
@@ -301,35 +351,82 @@ const InspectionModal = ({ open, onClose, onSuccess, editData }) => {
                                         </TextField>
                                     </Grid>
                                     
-                                    <Grid item xs={12}>
+                                    <Grid item xs={12} sm={8}>
                                         <Autocomplete
                                             freeSolo
                                             options={descriptions}
-                                            value={formData.descripcion}
-                                            onChange={handleDescriptionChange}
-                                            onInputChange={(event, newInputValue) => handleDescriptionChange(event, newInputValue)}
+                                            value={currentReport.descripcion}
+                                            onChange={(event, newValue) => handleReportDescriptionChange(event, newValue)}
+                                            onInputChange={(event, newInputValue) => handleReportDescriptionChange(event, newInputValue)}
                                             renderInput={(params) => (
                                                 <TextField 
                                                     {...params} 
-                                                    label="Descripción *" 
+                                                    label="Descripción" 
                                                     placeholder="Ej. Llantas lisas, Fugas..." 
                                                     fullWidth 
-                                                    required 
                                                     {...inputProps} 
                                                     inputProps={{
                                                         ...params.inputProps,
                                                         maxLength: 200
                                                     }}
-                                                    helperText={`${(formData.descripcion || '').length}/200 caracteres`}
+                                                    helperText={`${(currentReport.descripcion || '').length}/200 caracteres`}
                                                 />
                                             )}
                                         />
                                     </Grid>
 
                                     <Grid item xs={12}>
-                                        <TextField fullWidth multiline rows={2} label="Comentarios" placeholder="Notas adicionales..." name="comentarios" value={formData.comentarios} onChange={handleChange} helperText={`${formData.comentarios.length}/500`} {...inputProps} />
+                                        <TextField fullWidth multiline rows={2} label="Comentarios" placeholder="Notas adicionales..." name="comentarios" value={currentReport.comentarios} onChange={handleReportChange} helperText={`${currentReport.comentarios.length}/500`} {...inputProps} />
+                                    </Grid>
+                                    
+                                    <Grid item xs={12} display="flex" justifyContent="flex-end">
+                                        <Button 
+                                            type="button" 
+                                            variant="outlined" 
+                                            startIcon={<AddCircleOutlineIcon />} 
+                                            onClick={handleAddReport}
+                                            sx={{ fontWeight: 'bold' }}
+                                        >
+                                            Agregar a la lista
+                                        </Button>
                                     </Grid>
                                 </Grid>
+
+                                {/* Renderizado de la lista de reportes agregados */}
+                                {reportesList.length > 0 && (
+                                    <Box sx={{ mt: 3 }}>
+                                        <Typography variant="subtitle2" color="text.secondary" mb={1.5} fontWeight={600}>
+                                            Violaciones registradas ({reportesList.length}):
+                                        </Typography>
+                                        <Stack spacing={1.5}>
+                                            {reportesList.map((reporte, index) => (
+                                                <Paper key={index} variant="outlined" sx={{ p: 1.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: '#fafafa', borderColor: '#e0e0e0' }}>
+                                                    <Box sx={{ width: '100%' }}>
+                                                        <Box display="flex" alignItems="center" gap={1} mb={0.5}>
+                                                            <Chip 
+                                                                label={reporte.tipo_violacion} 
+                                                                size="small" 
+                                                                color={reporte.tipo_violacion === 'Warning' ? 'warning' : 'error'} 
+                                                                sx={{ height: 22, fontSize: '0.7rem', fontWeight: 'bold' }} 
+                                                            />
+                                                            <Typography variant="body2" fontWeight={600}>
+                                                                {reporte.descripcion}
+                                                            </Typography>
+                                                        </Box>
+                                                        {reporte.comentarios && (
+                                                            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                                                                <strong>Nota:</strong> {reporte.comentarios}
+                                                            </Typography>
+                                                        )}
+                                                    </Box>
+                                                    <IconButton color="error" onClick={() => handleRemoveReport(index)} size="small">
+                                                        <DeleteIcon />
+                                                    </IconButton>
+                                                </Paper>
+                                            ))}
+                                        </Stack>
+                                    </Box>
+                                )}
                             </Paper>
 
                             {/* SECCIÓN 3: ADMINISTRACIÓN Y COMPROBANTES */}
@@ -346,7 +443,6 @@ const InspectionModal = ({ open, onClose, onSuccess, editData }) => {
                                         <TextField fullWidth label="Multa Driver" name="multa_driver" type="number" inputProps={{ step: "0.01", min: "0" }} value={formData.multa_driver} onChange={handleChange} {...inputProps} InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }} />
                                     </Grid>
                                     
-                                    {/* Subida de Archivos Estilo Drag & Drop */}
                                     <Grid item xs={12}>
                                         <Box sx={{ 
                                             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',

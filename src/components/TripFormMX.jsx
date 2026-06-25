@@ -30,7 +30,7 @@ const initialEtapaStateBase = {
     documentos: { ...initialNormalTripDocs }, time_of_delivery: '', date_of_departure: new Date(), stops_in_transit: []
 };
 
-const TripFormMX = ({ tripNumber, countryCode, tripYear, isTransnational, isContinuation, transnationalNumber, movementNumber, origenId, onSuccess, etapas: etapasProp, setEtapas: setEtapasProp, formData: formDataProp, setFormData: setFormDataProp, onSaveOverride }) => {
+const TripFormMX = ({ teamId,tripNumber, countryCode, tripYear, isTransnational, isContinuation, transnationalNumber, movementNumber, origenId, onSuccess, etapas: etapasProp, setEtapas: setEtapasProp, formData: formDataProp, setFormData: setFormDataProp, onSaveOverride }) => {
 
     // Hooks
     const { activeDrivers, loading: loadingDrivers, error: errorDrivers } = useFetchActiveDrivers();
@@ -206,6 +206,7 @@ const TripFormMX = ({ tripNumber, countryCode, tripYear, isTransnational, isCont
 
         const fd = new FormData();
         fd.append('op', 'Alta');
+        fd.append('team_id', teamId || '');
         fd.append('trip_number', formData.trip_number);
         fd.append('driver_id', formData.driver_id || null);
         fd.append('driver_id_second', formData.driver_id_second || null);

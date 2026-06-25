@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useCallback } from "react";
 import {
   Box, Typography, Paper, TextField, Stack, Tabs, Tab, MenuItem,
-  Checkbox, FormControlLabel, Container, Grid, Divider, Alert
+  Checkbox, FormControlLabel, Container, Grid, Divider, Alert,
+  Button
 } from "@mui/material";
 
 // Iconos
@@ -9,6 +10,10 @@ import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import LanguageIcon from "@mui/icons-material/Language";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import NumbersIcon from "@mui/icons-material/Numbers";
+import GroupIcon from "@mui/icons-material/Group";
+
+import { useNavigate } from "react-router-dom";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 // Componentes Hijos
 import TripFormUSA from "../../components/TripFormUSA"; 
@@ -16,6 +21,7 @@ import TripFormMX from "../../components/TripFormMX";
 import BorderCrossingFormNew2 from "../../components/BorderCrossingFormNew2";
 
 const CrearViaje = () => {
+  const navigate = useNavigate();
   const apiHost = import.meta.env.VITE_API_HOST;
   const currentYear = new Date().getFullYear();
 
@@ -23,6 +29,9 @@ const CrearViaje = () => {
   const [pais, setPais] = useState("");
   const [anio, setAnio] = useState(currentYear);
   const [tripNumber, setTripNumber] = useState("");
+  
+  const [teams, setTeams] = useState([]);
+  const [selectedTeam, setSelectedTeam] = useState("");
 
   // Transnacional
   const [viajeTransnacional, setViajeTransnacional] = useState(false);
@@ -41,6 +50,17 @@ const CrearViaje = () => {
   useEffect(() => {
     if (pais === "MX") setActiveForm(0);
   }, [pais]);
+
+  useEffect(() => {
+    const fd = new FormData();
+    fd.append("op", "get_teams");
+    fetch(`${apiHost}/teams.php`, { method: "POST", body: fd })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.status === "success") setTeams(data.data);
+      })
+      .catch((err) => console.error("Error cargando equipos:", err));
+  }, [apiHost]);
 
   // Obtener siguiente número de viaje
   useEffect(() => {
@@ -80,6 +100,7 @@ const CrearViaje = () => {
     setIsContinuation(false);
     setSelectedTransnational("");
     setMovementNumber("");
+    setSelectedTeam("");
     setFormKey((prev) => prev + 1);
   }, []);
 
@@ -102,14 +123,24 @@ const CrearViaje = () => {
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" fontWeight={800} color="primary.main" gutterBottom>
-          Crear Nuevo Viaje
-        </Typography>
-        <Typography variant="body1" color="text.secondary">
-          Configura los parámetros iniciales y selecciona el tipo de operación.
-        </Typography>
-      </Box>
+      <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ xs: 'flex-start', sm: 'center' }} sx={{ mb: 4 }} spacing={2}>
+        <Box>
+          <Typography variant="h4" fontWeight={800} color="primary.main" gutterBottom>
+            Crear Nuevo Viaje
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Configura los parámetros iniciales y selecciona el tipo de operación.
+          </Typography>
+        </Box>
+        <Button 
+            variant="outlined" 
+            startIcon={<ArrowBackIcon />} 
+            onClick={() => navigate('/admin-trips')}
+            sx={{ fontWeight: 600, bgcolor: 'white', borderColor: '#cbd5e1', color: '#475569' }}
+        >
+            Volver a Viajes
+        </Button>
+      </Stack>
 
       {/* Panel de Configuración */}
       <Paper elevation={3} sx={{ p: 3, mb: 4, borderRadius: 3 }}>
@@ -127,12 +158,21 @@ const CrearViaje = () => {
             </TextField>
           </Grid>
 
-          <Grid item xs={12} md={3}>
+          <Grid item xs={12} md={2}>
             <TextField label="Año" type="number" value={anio} onChange={(e) => setAnio(Number(e.target.value))} fullWidth size="small" InputProps={{ startAdornment: <CalendarTodayIcon fontSize="small" sx={{ mr: 1 }} /> }} />
           </Grid>
 
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} md={4}>
             <TextField label="Trip Number" value={tripNumber} fullWidth size="small" disabled helperText={pais && tripNumber ? `ID Final: ${pais}${tripYear2Digits}-${tripNumber}` : "Seleccione país y año"} InputProps={{ startAdornment: <NumbersIcon fontSize="small" sx={{ mr: 1 }} /> }} />
+          </Grid>
+
+          <Grid item xs={12} md={3}>
+            <TextField select label="Asignar a Equipo" value={selectedTeam} onChange={(e) => setSelectedTeam(e.target.value)} fullWidth size="small" sx={{ minWidth: '150px' }} InputProps={{ startAdornment: <GroupIcon fontSize="small" sx={{ mr: 1 }} /> }}>
+              <MenuItem value=""><em>-- Visible para todos --</em></MenuItem>
+              {teams.map((t) => (
+                <MenuItem key={t.team_id} value={t.team_id}>{t.name}</MenuItem>
+              ))}
+            </TextField>
           </Grid>
 
           {/* ====== TRANSNACIONAL ====== */}
@@ -177,6 +217,7 @@ const CrearViaje = () => {
         {pais === "US" && activeForm === 0 && (
           <BorderCrossingFormNew2
             key={`bc-${formKey}`}
+            teamId={selectedTeam} 
             tripNumber={tripNumber}
             countryCode={pais}
             tripYear={anio}
@@ -192,6 +233,7 @@ const CrearViaje = () => {
           pais === "MX" ? (
             <TripFormMX
               key={`tn-${formKey}`}
+              teamId={selectedTeam} 
               tripNumber={tripNumber}
               countryCode={pais}
               tripYear={anio}
@@ -204,6 +246,7 @@ const CrearViaje = () => {
           ) : (
             <TripFormUSA
               key={`tn-${formKey}`}
+              teamId={selectedTeam} 
               tripNumber={tripNumber}
               countryCode={pais}
               tripYear={anio}

@@ -147,6 +147,7 @@ export const menuItemsConfig = [
         name: "Crear viaje",
         featureKey: "viajes_crear",
         route: "/CrearViaje",
+        hideInSidebar: true,
         rolesPermitidos: ["admin"],
       },
       {
@@ -182,6 +183,13 @@ export const menuItemsConfig = [
         route: null,
         hideInSidebar: true,
         rolesPermitidos: ["admin", "Blanca", "Candy"],
+      },
+      {
+        name: "Visibilidad Global de Viajes",
+        featureKey: "view_all_trips",
+        route: null,
+        hideInSidebar: true,
+        rolesPermitidos: ["admin"],
       },
     ],
   },
