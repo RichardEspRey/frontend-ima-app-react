@@ -17,6 +17,7 @@ import './css/EditTripForm.css';
 import EditTripHeader from '../components/EditTripForm/EditTripHeader';
 import StageList from '../components/EditTripForm/StageList';
 import ModalsContainer from '../components/EditTripForm/ModalsContainer';
+import InvoiceModal from '../components/InvoiceModal';
 
 const EditTripForm = () => {
     const apiHost = import.meta.env.VITE_API_HOST;
@@ -49,6 +50,8 @@ const EditTripForm = () => {
     const [modalTarget, setModalTarget] = useState({ stageIndex: null, docType: null, stopIndex: null });
     const [mostrarFechaVencimientoModal, setMostrarFechaVencimientoModal] = useState(true);
     const [isModalCajaExternaOpen, setIsModalCajaExternaOpen] = useState(false);
+    const [invoiceModalOpen, setInvoiceModalOpen] = useState(false);
+    const [selectedStageForInvoice, setSelectedStageForInvoice] = useState(null);
 
     // --- CUSTOM HOOKS ---
     const { activeDrivers, loading: loadingDrivers } = useFetchActiveDrivers();
@@ -154,6 +157,23 @@ const EditTripForm = () => {
             copy[stageIdx].stops_in_transit = stops;
             return copy;
         });
+    };
+
+    const handleOpenInvoiceModal = (stageIndex) => {
+        // Validar estatus
+        if (formData.status !== 'In Transit' && formData.status !== 'Completed') {
+            Swal.fire('No permitido', 'Los Invoices solo se pueden generar para viajes En Ruta o Finalizados.', 'warning');
+            return;
+        }
+        setSelectedStageForInvoice(etapas[stageIndex]);
+        setInvoiceModalOpen(true);
+    };
+
+    const handleSaveInvoiceData = (invoiceData, stageNumber) => {
+        // Aquí actualizas el estado de tus etapas con la info del invoice
+        // para que cuando le des al botón principal de "Guardar Viaje", 
+        // esta data se vaya al backend.
+        console.log("Data del invoice para la etapa", stageNumber, invoiceData);
     };
 
     // --- CREATORS ---
@@ -347,7 +367,7 @@ const EditTripForm = () => {
                     createWarehouse: (val, idx, field) => handleCreateEntity(val, idx, field, 'warehouses.php', 'CreateWarehouse', refetchWarehouses)
                 }}
                 loadingStates={{ companies: loadingCompanies || isCreatingCompany, warehouses: loadingWarehouses || isCreatingWarehouse }}
-                apiHost={apiHost} agregarNuevaEtapa={agregarNuevaEtapa}
+                apiHost={apiHost} agregarNuevaEtapa={agregarNuevaEtapa} handleOpenInvoiceModal={handleOpenInvoiceModal}
             />
 
             {/* Modales Limpios */}
@@ -355,6 +375,14 @@ const EditTripForm = () => {
                 modalAbierto={modalAbierto} setModalAbierto={setModalAbierto} setModalTarget={setModalTarget} handleGuardarDocumento={handleGuardarDocumento}
                 modalTarget={modalTarget} getCurrentDocValueForModal={getCurrentDocValueForModal} mostrarFechaVencimientoModal={mostrarFechaVencimientoModal}
                 isModalCajaExternaOpen={isModalCajaExternaOpen} setIsModalCajaExternaOpen={setIsModalCajaExternaOpen} handleSaveExternalCaja={handleSaveExternalCaja}
+            />
+
+            <InvoiceModal 
+                isOpen={invoiceModalOpen}
+                onClose={() => setInvoiceModalOpen(false)}
+                stageData={selectedStageForInvoice}
+                tripData={formData}
+                onSaveInvoice={handleSaveInvoiceData}
             />
         </Container>
     );

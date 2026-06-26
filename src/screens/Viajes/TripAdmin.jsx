@@ -59,6 +59,7 @@ const TripAdmin = () => {
     const [filterOrigin, setFilterOrigin] = useState('');
     const [filterDestination, setFilterDestination] = useState('');
     const [filterDirection, setFilterDirection] = useState('All');
+    const [filterCI, setFilterCI] = useState('');
 
     useEffect(() => {
         if (allowedTabs.length > 0 && !allowedTabs.some(t => t.id === tabValue)) {
@@ -83,6 +84,7 @@ const TripAdmin = () => {
             formData.append('filterOrigin', filterOrigin);
             formData.append('filterDestination', filterDestination);
             formData.append('filterDirection', filterDirection);
+            formData.append('filterCI', filterCI);
 
             if (user?.id) formData.append('user_id', user.id);
             if (user?.tipo_usuario) formData.append('user_type', user.tipo_usuario);
@@ -283,6 +285,15 @@ const TripAdmin = () => {
                         <Grid item xs={12} sm={3}><TextField label="Origin" size="small" fullWidth value={filterOrigin} onChange={(e) => handleFilterChange(setFilterOrigin, e.target.value)} /></Grid>
                         <Grid item xs={12} sm={3}><TextField label="Destination" size="small" fullWidth value={filterDestination} onChange={(e) => handleFilterChange(setFilterDestination, e.target.value)} /></Grid>
                         <Grid item xs={12} sm={3}>
+                            <TextField 
+                                label="CI Number" 
+                                size="small" 
+                                fullWidth 
+                                value={filterCI} 
+                                onChange={(e) => handleFilterChange(setFilterCI, e.target.value)} 
+                            />
+                        </Grid>
+                        <Grid item xs={12} sm={3}>
                             <TextField select label="Direction" size="small" fullWidth value={filterDirection} onChange={(e) => handleFilterChange(setFilterDirection, e.target.value)}>
                                 {DIRECTION_OPTIONS.map((option) => (<MenuItem key={option.value} value={option.value}>{option.label}</MenuItem>))}
                             </TextField>
@@ -292,7 +303,7 @@ const TripAdmin = () => {
                             <Stack direction="row" spacing={2} justifyContent="flex-end">
                                 <Button variant="text" onClick={() => { 
                                     setFilterTrip(''); setFilterDriver(''); setFilterTruck(''); setFilterTrailer(''); 
-                                    setFilterCompany(''); setFilterOrigin(''); setFilterDestination(''); setFilterDirection('All');
+                                    setFilterCompany(''); setFilterOrigin(''); setFilterDestination(''); setFilterDirection('All');setFilterCI('');
                                     setPage(0); 
                                 }}>Limpiar Filtros</Button>
                             </Stack>
