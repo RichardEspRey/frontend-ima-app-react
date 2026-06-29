@@ -56,17 +56,17 @@ const Inspeccion_final = () => {
       .join('&'), []);
 
   const groupIfNeeded = useCallback((data) => {
-    if (data.motor || data.exterior || data.neumaticos || data.cabina || data.remolque) {
+    if (data.motor || data.exterior || data.neumaticos || data.cabina || data.remolque || data.otro) {
         return {
           motor: data.motor || [], exterior: data.exterior || [], neumaticos: data.neumaticos || [],
-          cabina: data.cabina || [], remolque: data.remolque || [],
+          cabina: data.cabina || [], remolque: data.remolque || [], otro: data.otro || [],
         };
       }
       const flat = data.rows || data.row || [];
-      const grouped = { motor: [], exterior: [], neumaticos: [], cabina: [], remolque: [] };
+      const grouped = { motor: [], exterior: [], neumaticos: [], cabina: [], remolque: [], otro: [] };
       flat.forEach((r) => {
         const cat = (r.categoria || '').toLowerCase();
-        if (grouped[cat]) {
+        if (grouped[cat] !== undefined) {
           grouped[cat].push({
             id: r.id,
             contenido: r.contenido,
@@ -96,7 +96,7 @@ const Inspeccion_final = () => {
         status: Number(r.status),
         cnt_motor: Number(r.cnt_motor ?? 0), cnt_exterior: Number(r.cnt_exterior ?? 0), 
         cnt_neumaticos: Number(r.cnt_neumaticos ?? 0), cnt_cabina: Number(r.cnt_cabina ?? 0),
-        cnt_remolque: Number(r.cnt_remolque ?? 0), total_cnt: Number(r.total_cnt ?? 0),
+        cnt_remolque: Number(r.cnt_remolque ?? 0), cnt_otro: Number(r.cnt_otro ?? 0), total_cnt: Number(r.total_cnt ?? 0),
         }));
 
         setRows(normalized);

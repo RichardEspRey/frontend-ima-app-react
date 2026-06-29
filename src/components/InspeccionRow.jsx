@@ -59,9 +59,9 @@ export const InspeccionRow = ({ row, abierto, loading, error, det, toggleOpen, h
                 {/* Fallas/Total de Conteo */}
                 <TableCell sx={{ whiteSpace: 'nowrap', textAlign: 'left', fontWeight: 500 }}>
                     <Typography component="div" fontWeight={700}>Total: {row.total_cnt ?? 0}</Typography>
-                    {(row.cnt_motor || row.cnt_exterior || row.cnt_neumaticos || row.cnt_cabina || row.cnt_remolque) && (
+                    {(row.cnt_motor || row.cnt_exterior || row.cnt_neumaticos || row.cnt_cabina || row.cnt_remolque || row.cnt_otro) && (
                         <Typography variant="caption" color="text.secondary">
-                            M:{row.cnt_motor||0} E:{row.cnt_exterior||0} N:{row.cnt_neumaticos||0} C:{row.cnt_cabina||0} R:{row.cnt_remolque||0}
+                            M:{row.cnt_motor||0} E:{row.cnt_exterior||0} N:{row.cnt_neumaticos||0} C:{row.cnt_cabina||0} R:{row.cnt_remolque||0} O:{row.cnt_otro||0}
                         </Typography>
                     )}
                 </TableCell>
@@ -112,6 +112,7 @@ export const InspeccionRow = ({ row, abierto, loading, error, det, toggleOpen, h
                                     <Grid item xs={12} sm={6}><Categoria titulo="Neumáticos" items={det.neumaticos} /></Grid>
                                     <Grid item xs={12} sm={6}><Categoria titulo="Cabina" items={det.cabina} /></Grid>
                                     <Grid item xs={12} sm={6}><Categoria titulo="Remolque" items={det.remolque} /></Grid>
+                                    <Grid item xs={12} sm={6}><Categoria titulo="Otro" items={det.otro} /></Grid>
                                 </Grid>
                             )}
                         </Box>
