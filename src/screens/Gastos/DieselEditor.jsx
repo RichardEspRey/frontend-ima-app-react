@@ -197,6 +197,7 @@ const DieselEditor = () => {
 
         const respTick = await fetch(`${apiHost}/formularios.php`, { method: 'POST', body: fdTick });
         const jsonTick = await respTick.json();
+        console.log('Tickets:', jsonTick);
 
         if (jsonTick.status === 'success' && Array.isArray(jsonTick.data)) {
             const list = jsonTick.data
@@ -204,14 +205,8 @@ const DieselEditor = () => {
               .map(it => {
                 const ext = (it.url_pdf.split('.').pop() || '').toLowerCase();
                 
-                let url = '';
-                if (it.url_pdf.startsWith('http')) {
-                    url = it.url_pdf;
-                } else {
-                    const fileName = it.url_pdf.split(/[\\/]/).pop();
-                    
-                    url = `${apiHost}/Uploads/diesel/${encodeURIComponent(fileName)}`;
-                }
+                const cleanPath = it.url_pdf.replace(/^\.\.\//, ''); 
+                const url = `${apiHost}/${cleanPath}`;
                   
                 return { ...it, url, ext };
               });
