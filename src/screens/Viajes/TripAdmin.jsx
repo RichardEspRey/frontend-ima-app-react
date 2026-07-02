@@ -68,6 +68,12 @@ const TripAdmin = () => {
     const [filterDirection, setFilterDirection] = useState('All');
     const [filterCI, setFilterCI] = useState('');
 
+    // Programación de viajes
+    const [scheduledTrips, setScheduledTrips] = useState([]);
+    const [openScheduleModal, setOpenScheduleModal] = useState(false);
+    const [scheduleForm, setScheduleForm] = useState(EMPTY_SCHEDULE_FORM);
+    const [editingScheduleId, setEditingScheduleId] = useState(null);
+
     useEffect(() => {
         if (allowedTabs.length > 0 && !allowedTabs.some(t => t.id === tabValue)) {
             setTabValue(allowedTabs[0].id);
