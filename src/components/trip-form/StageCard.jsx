@@ -7,6 +7,7 @@ import Select from 'react-select';
 import CreatableSelect from 'react-select/creatable';
 import DatePicker from 'react-datepicker';
 import { selectStyles, getDocumentUrl } from '../../utils/tripFormConstants';
+import ReceiptIcon from '@mui/icons-material/Receipt';
 
 const DocButton = ({ label, doc, onClick, disabled, apiHost }) => (
     <Box sx={{ mb: 1 }}>
@@ -46,7 +47,8 @@ const StageCard = ({
     options,
     creators,
     loadingStates,
-    apiHost
+    apiHost,
+    handleOpenInvoiceModal
 }) => {
 
     const getHeaderInfo = () => {
@@ -68,6 +70,16 @@ const StageCard = ({
                     </Typography>
                 </Stack>
                 <Box>
+                    <Button
+                        startIcon={<ReceiptIcon />}
+                        size="small"
+                        color="success"
+                        variant="outlined"
+                        onClick={() => handleOpenInvoiceModal(index)}
+                        sx={{ mr: 1, bgcolor: 'white' }}
+                    >
+                        Invoice
+                    </Button>
                     {(etapa.stageType === 'normalTrip' || etapa.stageType === 'borderCrossing') && (
                         <Button
                             startIcon={<AddCircleOutlineIcon />}

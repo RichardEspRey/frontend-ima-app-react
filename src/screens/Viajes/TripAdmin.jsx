@@ -66,12 +66,7 @@ const TripAdmin = () => {
     const [filterOrigin, setFilterOrigin] = useState('');
     const [filterDestination, setFilterDestination] = useState('');
     const [filterDirection, setFilterDirection] = useState('All');
-
-    // Programación de viajes
-    const [scheduledTrips, setScheduledTrips] = useState([]);
-    const [openScheduleModal, setOpenScheduleModal] = useState(false);
-    const [scheduleForm, setScheduleForm] = useState(EMPTY_SCHEDULE_FORM);
-    const [editingScheduleId, setEditingScheduleId] = useState(null);
+    const [filterCI, setFilterCI] = useState('');
 
     useEffect(() => {
         if (allowedTabs.length > 0 && !allowedTabs.some(t => t.id === tabValue)) {
@@ -96,6 +91,7 @@ const TripAdmin = () => {
             formData.append('filterOrigin', filterOrigin);
             formData.append('filterDestination', filterDestination);
             formData.append('filterDirection', filterDirection);
+            formData.append('filterCI', filterCI);
 
             if (user?.id) formData.append('user_id', user.id);
             if (user?.tipo_usuario) formData.append('user_type', user.tipo_usuario);
@@ -116,7 +112,7 @@ const TripAdmin = () => {
         } finally {
             setLoading(false);
         }
-    }, [apiHost, page, rowsPerPage, tabValue, filterTrip, filterDriver, filterTruck, filterTrailer, filterCompany, filterOrigin, filterDestination, filterDirection]);
+    }, [apiHost, page, rowsPerPage, tabValue, filterTrip, filterDriver, filterTruck, filterTrailer, filterCompany, filterOrigin, filterDestination, filterDirection, filterCI]);
 
     useEffect(() => { if (tabValue !== 4) fetchTrips(); }, [fetchTrips, tabValue]);
 
@@ -390,35 +386,36 @@ const TripAdmin = () => {
                         </Button>
                     </Box>
 
-                    <Collapse in={showFilters}>
-                        <Paper sx={{ p: 3, mb: 3, borderRadius: 3, border: '1px solid #e2e8f0' }} elevation={0}>
-                            <Grid container spacing={2}>
-                                <Grid item xs={12} sm={3}><TextField label="Trip Number" size="small" fullWidth value={filterTrip} onChange={(e) => handleFilterChange(setFilterTrip, e.target.value)} /></Grid>
-                                <Grid item xs={12} sm={3}><TextField label="Driver" size="small" fullWidth value={filterDriver} onChange={(e) => handleFilterChange(setFilterDriver, e.target.value)} /></Grid>
-                                <Grid item xs={12} sm={3}><TextField label="Truck" size="small" fullWidth value={filterTruck} onChange={(e) => handleFilterChange(setFilterTruck, e.target.value)} /></Grid>
-                                <Grid item xs={12} sm={3}><TextField label="Trailer" size="small" fullWidth value={filterTrailer} onChange={(e) => handleFilterChange(setFilterTrailer, e.target.value)} /></Grid>
+            <Collapse in={showFilters}>
+                <Paper sx={{ p: 3, mb: 3, borderRadius: 3, border: '1px solid #e2e8f0' }} elevation={0}>
+                    <Grid container spacing={2}>
+                        <Grid item xs={12} sm={3}><TextField label="Trip Number" size="small" fullWidth value={filterTrip} onChange={(e) => handleFilterChange(setFilterTrip, e.target.value)} /></Grid>
+                        <Grid item xs={12} sm={3}><TextField label="Driver" size="small" fullWidth value={filterDriver} onChange={(e) => handleFilterChange(setFilterDriver, e.target.value)} /></Grid>
+                        <Grid item xs={12} sm={3}><TextField label="Truck" size="small" fullWidth value={filterTruck} onChange={(e) => handleFilterChange(setFilterTruck, e.target.value)} /></Grid>
+                        <Grid item xs={12} sm={3}><TextField label="Trailer" size="small" fullWidth value={filterTrailer} onChange={(e) => handleFilterChange(setFilterTrailer, e.target.value)} /></Grid>
+                        
+                        <Grid item xs={12} sm={3}><TextField label="Company" size="small" fullWidth value={filterCompany} onChange={(e) => handleFilterChange(setFilterCompany, e.target.value)} /></Grid>
+                        <Grid item xs={12} sm={3}><TextField label="Origin" size="small" fullWidth value={filterOrigin} onChange={(e) => handleFilterChange(setFilterOrigin, e.target.value)} /></Grid>
+                        <Grid item xs={12} sm={3}><TextField label="Destination" size="small" fullWidth value={filterDestination} onChange={(e) => handleFilterChange(setFilterDestination, e.target.value)} /></Grid>
+                        <Grid item xs={12} sm={3}>
+                            <TextField select label="Direction" size="small" fullWidth value={filterDirection} onChange={(e) => handleFilterChange(setFilterDirection, e.target.value)}>
+                                {DIRECTION_OPTIONS.map((option) => (<MenuItem key={option.value} value={option.value}>{option.label}</MenuItem>))}
+                            </TextField>
+                        </Grid>
+                        <Grid item xs={12} sm={3}><TextField label="CI" size="small" fullWidth value={filterCI} onChange={(e) => handleFilterChange(setFilterCI, e.target.value)} /></Grid>
 
-                                <Grid item xs={12} sm={3}><TextField label="Company" size="small" fullWidth value={filterCompany} onChange={(e) => handleFilterChange(setFilterCompany, e.target.value)} /></Grid>
-                                <Grid item xs={12} sm={3}><TextField label="Origin" size="small" fullWidth value={filterOrigin} onChange={(e) => handleFilterChange(setFilterOrigin, e.target.value)} /></Grid>
-                                <Grid item xs={12} sm={3}><TextField label="Destination" size="small" fullWidth value={filterDestination} onChange={(e) => handleFilterChange(setFilterDestination, e.target.value)} /></Grid>
-                                <Grid item xs={12} sm={3}>
-                                    <TextField select label="Direction" size="small" fullWidth value={filterDirection} onChange={(e) => handleFilterChange(setFilterDirection, e.target.value)}>
-                                        {DIRECTION_OPTIONS.map((option) => (<MenuItem key={option.value} value={option.value}>{option.label}</MenuItem>))}
-                                    </TextField>
-                                </Grid>
-
-                                <Grid item xs={12}>
-                                    <Stack direction="row" spacing={2} justifyContent="flex-end">
-                                        <Button variant="text" onClick={() => {
-                                            setFilterTrip(''); setFilterDriver(''); setFilterTruck(''); setFilterTrailer('');
-                                            setFilterCompany(''); setFilterOrigin(''); setFilterDestination(''); setFilterDirection('All');
-                                            setPage(0);
-                                        }}>Limpiar Filtros</Button>
-                                    </Stack>
-                                </Grid>
-                            </Grid>
-                        </Paper>
-                    </Collapse>
+                        <Grid item xs={12}>
+                            <Stack direction="row" spacing={2} justifyContent="flex-end">
+                                <Button variant="text" onClick={() => { 
+                                    setFilterTrip(''); setFilterDriver(''); setFilterTruck(''); setFilterTrailer(''); 
+                                    setFilterCompany(''); setFilterOrigin(''); setFilterDestination(''); setFilterDirection('All'); setFilterCI('');
+                                    setPage(0);
+                                }}>Limpiar Filtros</Button>
+                            </Stack>
+                        </Grid>
+                    </Grid>
+                </Paper>
+            </Collapse>
 
                     {error && <Alert severity="error" sx={{ my: 2 }}>{error}</Alert>}
 

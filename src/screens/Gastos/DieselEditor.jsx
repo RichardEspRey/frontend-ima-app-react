@@ -197,20 +197,16 @@ const DieselEditor = () => {
 
         const respTick = await fetch(`${apiHost}/formularios.php`, { method: 'POST', body: fdTick });
         const jsonTick = await respTick.json();
+        console.log('Tickets:', jsonTick);
 
         if (jsonTick.status === 'success' && Array.isArray(jsonTick.data)) {
             const list = jsonTick.data
               .filter(it => typeof it.url_pdf === 'string' && it.url_pdf)
               .map(it => {
                 const ext = (it.url_pdf.split('.').pop() || '').toLowerCase();
-                let relativePath = it.url_pdf;
-                if (!relativePath.startsWith('http') && !relativePath.includes('Uploads/diesel/')) {
-                    relativePath = `Uploads/diesel/${relativePath}`;
-                }
-
-                const url = relativePath.startsWith('http')
-                  ? relativePath
-                  : `${apiHost}/${relativePath}`.replace(/([^:]\/)\/+/g, '$1');
+                
+                const cleanPath = it.url_pdf.replace(/^\.\.\//, ''); 
+                const url = `${apiHost}/${cleanPath}`;
                   
                 return { ...it, url, ext };
               });

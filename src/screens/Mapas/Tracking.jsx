@@ -133,13 +133,20 @@ export default function Tracking() {
           const numerosEnWialon = wialonName.match(/\d+/g) || [];
 
           for (let db of dbUnits) {
-            if (!db.unidad) continue;
-            const numDB = parseInt(db.unidad, 10);
+            // Buscamos la columna sin importar si la BD la manda en mayúscula o minúscula
+            const unidadReal = db.unidad || db.Unidad || db.UNIDAD; 
+            const truckIdReal = db.truck_id || db.Truck_id || db.id_truck;
+
+            if (!unidadReal) continue; // Si de plano no viene la unidad, lo saltamos
+            
+            const numDB = parseInt(unidadReal, 10);
             if (!isNaN(numDB) && numerosEnWialon.some(numW => parseInt(numW, 10) === numDB)) {
-              dbMatch = db; break;
+              dbMatch = { ...db, unidad: unidadReal, truck_id: truckIdReal }; 
+              break;
             }
-            if (wialonName.includes(String(db.unidad).toLowerCase())) {
-              dbMatch = db; break;
+            if (wialonName.includes(String(unidadReal).toLowerCase())) {
+              dbMatch = { ...db, unidad: unidadReal, truck_id: truckIdReal }; 
+              break;
             }
           }
 

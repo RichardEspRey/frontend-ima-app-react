@@ -3,7 +3,7 @@ import StageCard from '../trip-form/StageCard';
 
 const StageList = ({
     etapas, handleStageChange, eliminarEtapa, agregarParadaEnRuta, eliminarParadaEnRuta,
-    handleStopChange, abrirModal, isFormDisabled, options, creators, loadingStates, apiHost, agregarNuevaEtapa
+    handleStopChange, abrirModal, isFormDisabled, options, creators, loadingStates, apiHost, agregarNuevaEtapa, handleOpenInvoiceModal
 }) => {
     return (
         <>
@@ -25,6 +25,7 @@ const StageList = ({
                     creators={creators}
                     loadingStates={loadingStates}
                     apiHost={apiHost}
+                    handleOpenInvoiceModal={handleOpenInvoiceModal}
                 />
             ))}
 
