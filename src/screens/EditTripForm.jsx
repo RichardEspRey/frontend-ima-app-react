@@ -165,15 +165,21 @@ const EditTripForm = () => {
             Swal.fire('No permitido', 'Los Invoices solo se pueden generar para viajes En Ruta o Finalizados.', 'warning');
             return;
         }
-        setSelectedStageForInvoice(etapas[stageIndex]);
+        const stage = etapas[stageIndex];
+        if (String(stage.trip_stage_id).startsWith('new')) {
+            Swal.fire('Guarda el viaje primero', 'Esta etapa aún no está guardada en el servidor. Guarda el viaje antes de generar su invoice.', 'warning');
+            return;
+        }
+        setSelectedStageForInvoice(stage);
         setInvoiceModalOpen(true);
     };
 
-    const handleSaveInvoiceData = (invoiceData, stageNumber) => {
-        // Aquí actualizas el estado de tus etapas con la info del invoice
-        // para que cuando le des al botón principal de "Guardar Viaje", 
-        // esta data se vaya al backend.
-        console.log("Data del invoice para la etapa", stageNumber, invoiceData);
+    const handleSaveInvoiceData = ({ stageId, invoice_number, invoice_file_path }) => {
+        setEtapas(prev => prev.map(e => (
+            String(e.trip_stage_id) === String(stageId)
+                ? { ...e, invoice_number, invoice_file_path, has_invoice_generado: true }
+                : e
+        )));
     };
 
     // --- CREATORS ---
@@ -281,7 +287,7 @@ const EditTripForm = () => {
                 trip_stage_id: String(etapa.trip_stage_id).startsWith('new') ? null : etapa.trip_stage_id, stage_number: etapa.stage_number, stageType: etapa.stageType,
                 origin: etapa.origin, destination: etapa.destination, zip_code_origin: etapa.zip_code_origin, zip_code_destination: etapa.zip_code_destination,
                 loading_date: etapa.loading_date ? format(etapa.loading_date, 'yyyy-MM-dd') : null, delivery_date: etapa.delivery_date ? format(etapa.delivery_date, 'yyyy-MM-dd') : null,
-                date_of_departure: etapa.date_of_departure ? format(etapa.date_of_departure, 'yyyy-MM-dd') : null, // 🚨 PERSISTENCIA NUEVA FECHA AL GUARDAR
+                date_of_departure: etapa.date_of_departure ? format(etapa.date_of_departure, 'yyyy-MM-dd') : null, 
                 company_id: etapa.company_id, travel_direction: etapa.travel_direction, warehouse_origin_id: etapa.warehouse_origin_id, warehouse_destination_id: etapa.warehouse_destination_id,
                 ci_number: etapa.ci_number, rate_tarifa: etapa.rate_tarifa, millas_pcmiller: etapa.millas_pcmiller, millas_pcmiller_practicas: etapa.millas_pcmiller_practicas,
                 comments: etapa.comments, time_of_delivery: etapa.time_of_delivery, estatus: etapa.estatus, documentos: docsMeta, stops_in_transit: stopsJson

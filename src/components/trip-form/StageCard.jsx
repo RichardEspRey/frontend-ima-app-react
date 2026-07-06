@@ -3,6 +3,7 @@ import { Box, Paper, Typography, Grid, IconButton, Button, TextField, Chip, Divi
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
+import DownloadIcon from '@mui/icons-material/Download';
 import Select from 'react-select';
 import CreatableSelect from 'react-select/creatable';
 import DatePicker from 'react-datepicker';
@@ -70,16 +71,19 @@ const StageCard = ({
                     </Typography>
                 </Stack>
                 <Box>
-                    <Button
-                        startIcon={<ReceiptIcon />}
-                        size="small"
-                        color="success"
-                        variant="outlined"
-                        onClick={() => handleOpenInvoiceModal(index)}
-                        sx={{ mr: 1, bgcolor: 'white' }}
-                    >
-                        Invoice
-                    </Button>
+                    {etapa.stageType !== 'emptyMileage' && (
+                        <Button
+                            startIcon={<ReceiptIcon />}
+                            size="small"
+                            color="primary"
+                            variant="outlined"
+                            onClick={() => handleOpenInvoiceModal(index)}
+                            sx={{ mr: 1, bgcolor: 'white' }}
+                        >
+                            Invoice
+                        </Button>
+                    )}
+                    
                     {(etapa.stageType === 'normalTrip' || etapa.stageType === 'borderCrossing') && (
                         <Button
                             startIcon={<AddCircleOutlineIcon />}
@@ -212,6 +216,24 @@ const StageCard = ({
                             <Grid item xs={6} md={3}>
                                 <TextField fullWidth label="Millas Prácticas" type="number" size="small"
                                     value={etapa.millas_pcmiller_practicas} onChange={(e) => handleStageChange(index, 'millas_pcmiller_practicas', e.target.value)} disabled={isFormDisabled} />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <Typography variant="caption" display="block" fontWeight={500}>Invoice Generado (PDF)</Typography>
+                                <Button
+                                    variant="outlined"
+                                    size="small"
+                                    color={etapa.invoice_file_path ? 'success' : 'inherit'}
+                                    startIcon={<DownloadIcon />}
+                                    component="a"
+                                    href={etapa.invoice_file_path ? `${apiHost}/${etapa.invoice_file_path}` : undefined}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    disabled={!etapa.invoice_file_path}
+                                    fullWidth
+                                    sx={{ textTransform: 'none', justifyContent: 'flex-start' }}
+                                >
+                                    {etapa.invoice_file_path ? 'Ver / Descargar Invoice' : 'Invoice no generado aún'}
+                                </Button>
                             </Grid>
                             <Grid item xs={12}>
                                 <TextField fullWidth label="Comentarios" multiline size="small"

@@ -26,7 +26,6 @@ const DriverAdmin = () => {
   // Paginación y Vistas
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [hiddenColumns, setHiddenColumns] = useState([]); 
 
   // Control de Modales
   const [openConfigModal, setOpenConfigModal] = useState(false);
@@ -64,8 +63,26 @@ const DriverAdmin = () => {
   // ==========================================
   // LÓGICA DE NEGOCIO (Controladores)
   // ==========================================
-  const toggleColumnVisibility = (key_name) => {
-      setHiddenColumns(prev => prev.includes(key_name) ? prev.filter(k => k !== key_name) : [...prev, key_name]);
+  const toggleColumnVisibility = async (key_name) => {
+      if (!isAdmin) return;
+      const target = configFields.find(f => f.key_name === key_name);
+      if (!target) return;
+      const nextOculto = Number(target.oculto_en_tabla) ? 0 : 1;
+
+      const fd = new FormData();
+      fd.append('op', 'updateColumnVisibility');
+      fd.append('key_name', key_name);
+      fd.append('oculto_en_tabla', nextOculto);
+      if (user?.tipo_usuario) fd.append('user_type', user.tipo_usuario);
+
+      try {
+          const res = await fetch(`${apiHost}/${API_ENDPOINT}`, { method: 'POST', body: fd });
+          const result = await res.json();
+          if (result.status !== 'success') throw new Error(result.message || 'No se pudo actualizar la columna.');
+          setConfigFields(prev => prev.map(f => f.key_name === key_name ? { ...f, oculto_en_tabla: nextOculto } : f));
+      } catch (e) {
+          Swal.fire('Error', e.message, 'error');
+      }
   };
 
   const handleCreateField = async () => {
@@ -138,7 +155,7 @@ const DriverAdmin = () => {
   // FILTROS EN MEMORIA
   // ==========================================
   const filteredDrivers = useMemo(() => drivers.filter(d => d.nombre.toLowerCase().includes(search.toLowerCase())), [drivers, search]);
-  const visibleConfigFields = configFields.filter(req => !hiddenColumns.includes(req.key_name));
+  const visibleConfigFields = configFields.filter(req => !Number(req.oculto_en_tabla));
   const categories = [...new Set(configFields.map(f => f.categoria))];
 
   if (loading && drivers.length === 0) return <Box p={5} display="flex" justifyContent="center"><CircularProgress /></Box>;
@@ -179,9 +196,9 @@ const DriverAdmin = () => {
           openDriverEditor={openDriverEditor} deleteDriver={deleteDriver} 
       />
 
-      <ColumnConfigModal 
+      <ColumnConfigModal
           open={openColumnModal} onClose={() => setOpenColumnModal(false)}
-          configFields={configFields} hiddenColumns={hiddenColumns} toggleColumnVisibility={toggleColumnVisibility}
+          configFields={configFields} toggleColumnVisibility={toggleColumnVisibility}
       />
 
       <RequirementConfigModal 

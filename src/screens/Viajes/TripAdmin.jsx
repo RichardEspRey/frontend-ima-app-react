@@ -31,7 +31,7 @@ const TABS_CONFIG = [
 
 const TripAdmin = () => {
     const { userPermissions, user } = useAuthStore();
-    const isAdmin = user?.tipo_usuario?.toLowerCase() === 'admin';
+    const isAdmin = user?.tipo_usuario?.toLowerCase() === 'admin';;
     const navigate = useNavigate();
     const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -92,6 +92,8 @@ const TripAdmin = () => {
             const response = await fetch(`${apiHost}/new_tripsv2.php`, { method: 'POST', body: formData });
             const result = await response.json();
 
+            console.log('fetchTrips result:', result); // Debugging line
+
             if (response.ok && result.status === "success") {
                 setTrips(result.trips || []);
                 setTotalRows(result.total || 0);
@@ -105,7 +107,7 @@ const TripAdmin = () => {
         } finally {
             setLoading(false);
         }
-    }, [apiHost, page, rowsPerPage, tabValue, filterTrip, filterDriver, filterTruck, filterTrailer, filterCompany, filterOrigin, filterDestination, filterDirection]);
+    }, [apiHost, page, rowsPerPage, tabValue, filterTrip, filterDriver, filterTruck, filterTrailer, filterCompany, filterOrigin, filterDestination, filterDirection, filterCI]);
 
     useEffect(() => { fetchTrips(); }, [fetchTrips]);
 
