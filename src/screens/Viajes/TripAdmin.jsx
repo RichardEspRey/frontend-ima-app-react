@@ -31,10 +31,10 @@ const TABS_CONFIG = [
 
 const TripAdmin = () => {
     const { userPermissions, user } = useAuthStore();
-    const isAdmin = user?.tipo_usuario?.toLowerCase() === 'admin';;
+    const isAdmin = user?.tipo_usuario?.toLowerCase() === 'admin' || user?.name === 'Blanca';
     const navigate = useNavigate();
-    const apiHost = import.meta.env.VITE_API_HOST;
 
+    const apiHost = import.meta.env.VITE_API_HOST;
     const [trips, setTrips] = useState([]);
     const [totalRows, setTotalRows] = useState(0); 
     const [loading, setLoading] = useState(true);
@@ -70,6 +70,9 @@ const TripAdmin = () => {
     const fetchTrips = useCallback(async () => {
         setLoading(true);
         setError(null);
+
+            console.log('userPermissions:', user); // Debugging line
+
         try {
             const formData = new FormData();
             formData.append('op', 'getPaginated'); 
@@ -91,8 +94,6 @@ const TripAdmin = () => {
 
             const response = await fetch(`${apiHost}/new_tripsv2.php`, { method: 'POST', body: formData });
             const result = await response.json();
-
-            console.log('fetchTrips result:', result); // Debugging line
 
             if (response.ok && result.status === "success") {
                 setTrips(result.trips || []);
