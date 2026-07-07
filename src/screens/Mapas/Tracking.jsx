@@ -133,20 +133,32 @@ export default function Tracking() {
           const numerosEnWialon = wialonName.match(/\d+/g) || [];
 
           for (let db of dbUnits) {
-            // Buscamos la columna sin importar si la BD la manda en mayúscula o minúscula
-            const unidadReal = db.unidad || db.Unidad || db.UNIDAD; 
+            const rawUnidad = db.unidad || db.Unidad || db.UNIDAD; 
             const truckIdReal = db.truck_id || db.Truck_id || db.id_truck;
 
-            if (!unidadReal) continue; // Si de plano no viene la unidad, lo saltamos
+            if (!rawUnidad) continue;
             
-            const numDB = parseInt(unidadReal, 10);
-            if (!isNaN(numDB) && numerosEnWialon.some(numW => parseInt(numW, 10) === numDB)) {
-              dbMatch = { ...db, unidad: unidadReal, truck_id: truckIdReal }; 
+            const unidadString = String(rawUnidad).toLowerCase().trim();
+
+            if (wialonName === unidadString) {
+              dbMatch = { ...db, unidad: rawUnidad, truck_id: truckIdReal }; 
               break;
             }
-            if (wialonName.includes(String(unidadReal).toLowerCase())) {
-              dbMatch = { ...db, unidad: unidadReal, truck_id: truckIdReal }; 
+
+            const escapedUnidad = unidadString.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const regexStrict = new RegExp(`(^|\\s|-|_)${escapedUnidad}($|\\s|-|_)`);
+            if (regexStrict.test(wialonName)) {
+              dbMatch = { ...db, unidad: rawUnidad, truck_id: truckIdReal }; 
               break;
+            }
+
+            const numsDB = unidadString.match(/\d+/g);
+            if (numsDB && numsDB.length > 0) {
+              const numDB = parseInt(numsDB[0], 10);
+              if (numerosEnWialon.some(numW => parseInt(numW, 10) === numDB)) {
+                dbMatch = { ...db, unidad: rawUnidad, truck_id: truckIdReal }; 
+                break;
+              }
             }
           }
 

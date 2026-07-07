@@ -3,7 +3,7 @@ import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, 
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CloseIcon from '@mui/icons-material/Close';
 
-const ColumnConfigModal = ({ open, onClose, configFields, hiddenColumns, toggleColumnVisibility }) => {
+const ColumnConfigModal = ({ open, onClose, configFields, toggleColumnVisibility }) => {
     return (
         <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
             <DialogTitle sx={{ fontWeight: 800, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -14,12 +14,12 @@ const ColumnConfigModal = ({ open, onClose, configFields, hiddenColumns, toggleC
             </DialogTitle>
             <DialogContent>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                    Toca las etiquetas para encender o apagar las columnas en tu tabla. Los campos en azul están visibles actualmente.
+                    Toca las etiquetas para encender o apagar columnas. Los campos en azul están visibles actualmente. Este cambio aplica para todos los usuarios de inmediato.
                 </Typography>
                 
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
                     {configFields.map(req => {
-                        const isVisible = !hiddenColumns.includes(req.key_name);
+                        const isVisible = !Number(req.oculto_en_tabla);
                         return (
                             <Chip 
                                 key={req.key_name}
