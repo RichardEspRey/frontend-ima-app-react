@@ -3,7 +3,8 @@ import {
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
     Button, TablePagination, TextField, Box, Typography, CircularProgress, Alert,
     Grid, Stack, FormControl, InputLabel, Select, MenuItem, Collapse, Tabs, Tab,
-    Dialog, DialogTitle, DialogContent, DialogActions, IconButton, Tooltip
+    Dialog, DialogTitle, DialogContent, DialogActions, IconButton, Tooltip,
+    ListSubheader
 } from '@mui/material';
 
 import FilterListIcon from '@mui/icons-material/FilterList';
@@ -27,14 +28,26 @@ const DIRECTION_OPTIONS = [
 ];
 
 const TABS_CONFIG = [
-    { id: 0, label: "Up Coming", permission: "viajes_tab_upcoming" },
     { id: 4, label: "Programación de Viajes", permission: "viajes_tab_programacion" },
+    { id: 0, label: "Up Coming", permission: "viajes_tab_upcoming" },
     { id: 1, label: "Despacho", permission: "viajes_tab_despacho" },
     { id: 2, label: "En Ruta", permission: "viajes_tab_en_ruta" },
     { id: 3, label: "Finalizados", permission: "viajes_tab_completados" }
 ];
 
-const EMPTY_SCHEDULE_FORM = { operador: '', camion: '', caja: '', destino: '', salida: '' };
+const EMPTY_SCHEDULE_FORM = { operador_id: '', camion_id: '', caja_id: '', destino: '', salida: '' };
+
+const parseJsonSafe = async (response) => {
+    const text = await response.text();
+    if (!text.trim()) return {};
+    try {
+        return JSON.parse(text);
+    } catch {
+        const match = text.match(/\{[\s\S]*\}/);
+        if (match) { try { return JSON.parse(match[0]); } catch {} }
+        return {};
+    }
+};
 
 const TripAdmin = () => {
     const { userPermissions, user } = useAuthStore();
@@ -73,6 +86,9 @@ const TripAdmin = () => {
     const [openScheduleModal, setOpenScheduleModal] = useState(false);
     const [scheduleForm, setScheduleForm] = useState(EMPTY_SCHEDULE_FORM);
     const [editingScheduleId, setEditingScheduleId] = useState(null);
+    const [programacionData, setProgramacionData] = useState({ trucks: [], drivers: [], cajas: [], cajasExternas: [] });
+    const [loadingProgramacion, setLoadingProgramacion] = useState(false);
+    const [loadingScheduled, setLoadingScheduled] = useState(false);
 
     useEffect(() => {
         if (allowedTabs.length > 0 && !allowedTabs.some(t => t.id === tabValue)) {
@@ -121,6 +137,56 @@ const TripAdmin = () => {
     }, [apiHost, page, rowsPerPage, tabValue, filterTrip, filterDriver, filterTruck, filterTrailer, filterCompany, filterOrigin, filterDestination, filterDirection, filterCI]);
 
     useEffect(() => { if (tabValue !== 4) fetchTrips(); }, [fetchTrips, tabValue]);
+
+    const fetchProgramacionData = useCallback(async () => {
+        setLoadingProgramacion(true);
+        try {
+            const formData = new FormData();
+            formData.append('op', 'dashboard');
+            const response = await fetch(`${apiHost}/Programacion_viajes.php`, { method: 'POST', body: formData });
+            const result = await response.json();
+            if (response.ok && result.status === 'success') {
+                setProgramacionData({
+                    trucks: result.trucks || [],
+                    drivers: result.drivers || [],
+                    cajas: result.cajas || [],
+                    cajasExternas: result.cajas_externas || []
+                });
+            } else {
+                throw new Error(result.message || 'Error al cargar datos.');
+            }
+        } catch (err) {
+            Swal.fire('Error', `No se pudieron cargar los datos de programación: ${err.message}`, 'error');
+        } finally {
+            setLoadingProgramacion(false);
+        }
+    }, [apiHost]);
+
+    const fetchScheduledTrips = useCallback(async () => {
+        setLoadingScheduled(true);
+        try {
+            const formData = new FormData();
+            formData.append('op', 'getAll');
+            const response = await fetch(`${apiHost}/Programacion_viajes.php`, { method: 'POST', body: formData });
+            const result = await response.json();
+            if (response.ok && result.status === 'success') {
+                setScheduledTrips(result.data || []);
+            } else {
+                throw new Error(result.message || 'Error al cargar programaciones.');
+            }
+        } catch (err) {
+            Swal.fire('Error', `No se pudieron cargar las programaciones: ${err.message}`, 'error');
+        } finally {
+            setLoadingScheduled(false);
+        }
+    }, [apiHost]);
+
+    useEffect(() => {
+        if (tabValue === 4) {
+            fetchProgramacionData();
+            fetchScheduledTrips();
+        }
+    }, [tabValue, fetchProgramacionData, fetchScheduledTrips]);
 
     const handleTabChange = (event, newValue) => { setTabValue(newValue); setPage(0); };
     const handleFilterChange = (setter, value) => { setter(value); setPage(0); };
@@ -207,7 +273,13 @@ const TripAdmin = () => {
 
     const handleOpenScheduleModal = (trip = null) => {
         if (trip) {
-            setScheduleForm({ operador: trip.operador, camion: trip.camion, caja: trip.caja, destino: trip.destino, salida: trip.salida });
+            setScheduleForm({
+                operador_id: trip.driver_id ? String(trip.driver_id) : '',
+                camion_id:   trip.truck_id  ? String(trip.truck_id)  : '',
+                caja_id:     trip.caja_id   ? `i_${trip.caja_id}`    : '',
+                destino:     trip.destino   || '',
+                salida:      trip.salida    ? trip.salida.slice(0, 16) : ''
+            });
             setEditingScheduleId(trip.id);
         } else {
             setScheduleForm(EMPTY_SCHEDULE_FORM);
@@ -226,25 +298,63 @@ const TripAdmin = () => {
         setScheduleForm(prev => ({ ...prev, [field]: value }));
     };
 
-    const handleSaveSchedule = () => {
-        const { operador, camion, caja, destino, salida } = scheduleForm;
-        if (!operador || !camion || !caja || !destino || !salida) {
+    const handleSaveSchedule = async () => {
+        const { operador_id, camion_id, caja_id, destino, salida } = scheduleForm;
+        if (!operador_id || !camion_id || !caja_id || !destino || !salida) {
             Swal.fire('Campos requeridos', 'Por favor completa todos los campos.', 'warning');
             return;
         }
-        if (editingScheduleId !== null) {
-            setScheduledTrips(prev => prev.map(t => t.id === editingScheduleId ? { ...t, ...scheduleForm } : t));
-        } else {
-            setScheduledTrips(prev => [...prev, { id: Date.now(), ...scheduleForm }]);
+        const numericCajaId = String(caja_id).replace(/^[ie]_/, '');
+        try {
+            const formData = new FormData();
+            formData.append('op', editingScheduleId !== null ? 'update' : 'insert');
+            if (editingScheduleId !== null) formData.append('id', editingScheduleId);
+            formData.append('driver_id', operador_id);
+            formData.append('truck_id',  camion_id);
+            formData.append('caja_id',   numericCajaId);
+            formData.append('destino',   destino);
+            formData.append('salida',    salida);
+            const response = await fetch(`${apiHost}/Programacion_viajes.php`, { method: 'POST', body: formData });
+            const result = await parseJsonSafe(response);
+            if (response.ok && result.status === 'success') {
+                await Swal.fire('¡Éxito!', result.message || 'Operación exitosa.', 'success');
+                fetchScheduledTrips();
+                handleCloseScheduleModal();
+            } else {
+                throw new Error(result.message || 'Error al guardar.');
+            }
+        } catch (err) {
+            Swal.fire('Error', err.message, 'error');
         }
-        handleCloseScheduleModal();
     };
 
     const handleDeleteSchedule = async (id) => {
         const confirm = await Swal.fire({ title: '¿Eliminar?', text: 'Se eliminará este viaje programado.', icon: 'warning', showCancelButton: true, confirmButtonText: 'Sí, eliminar', confirmButtonColor: '#d33' });
-        if (confirm.isConfirmed) {
-            setScheduledTrips(prev => prev.filter(t => t.id !== id));
+        if (!confirm.isConfirmed) return;
+        try {
+            const formData = new FormData();
+            formData.append('op', 'delete');
+            formData.append('id', id);
+            const response = await fetch(`${apiHost}/Programacion_viajes.php`, { method: 'POST', body: formData });
+            const result = await parseJsonSafe(response);
+            if (response.ok && result.status === 'success') {
+                fetchScheduledTrips();
+            } else {
+                throw new Error(result.message || 'Error al eliminar.');
+            }
+        } catch (err) {
+            Swal.fire('Error', err.message, 'error');
         }
+    };
+
+    const getDriverName = (id) => programacionData.drivers.find(d => String(d.driver_id) === String(id))?.nombre || '-';
+    const getTruckUnidad = (id) => programacionData.trucks.find(t => String(t.truck_id) === String(id))?.unidad || '-';
+    const getCajaLabel = (key) => {
+        if (!key) return '-';
+        const k = String(key);
+        if (k.startsWith('i_')) return programacionData.cajas.find(c => String(c.caja_id) === k.slice(2))?.no_caja || k;
+        if (k.startsWith('e_')) return programacionData.cajasExternas.find(c => String(c.caja_externa_id) === k.slice(2))?.no_caja || k;
+        return k;
     };
 
     const getTripMissingDocs = (trip) => {
@@ -349,7 +459,14 @@ const TripAdmin = () => {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {scheduledTrips.length === 0 ? (
+                                {loadingScheduled ? (
+                                    <TableRow>
+                                        <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
+                                            <CircularProgress size={24} sx={{ mr: 2, verticalAlign: 'middle' }} />
+                                            <Typography component="span" color="text.secondary">Cargando programaciones...</Typography>
+                                        </TableCell>
+                                    </TableRow>
+                                ) : scheduledTrips.length === 0 ? (
                                     <TableRow>
                                         <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
                                             <Typography variant="body2" color="text.secondary">
@@ -360,9 +477,9 @@ const TripAdmin = () => {
                                 ) : (
                                     scheduledTrips.map(trip => (
                                         <TableRow key={trip.id} hover>
-                                            <TableCell>{trip.operador}</TableCell>
-                                            <TableCell>{trip.camion}</TableCell>
-                                            <TableCell>{trip.caja}</TableCell>
+                                            <TableCell>{trip.driver_nombre || '-'}</TableCell>
+                                            <TableCell>{trip.truck_unidad  || '-'}</TableCell>
+                                            <TableCell>{trip.caja_numero   || '-'}</TableCell>
                                             <TableCell>{trip.destino}</TableCell>
                                             <TableCell>{trip.salida ? dayjs(trip.salida).format('DD/MM/YYYY HH:mm') : '-'}</TableCell>
                                             <TableCell align="center">
@@ -495,50 +612,132 @@ const TripAdmin = () => {
                     {editingScheduleId !== null ? 'Editar Viaje Programado' : 'Programar Viaje'}
                 </DialogTitle>
                 <DialogContent>
-                    <Grid container spacing={2} sx={{ mt: 0.5 }}>
-                        <Grid item xs={12}>
-                            <TextField
-                                label="Operador"
-                                fullWidth
-                                value={scheduleForm.operador}
-                                onChange={(e) => handleScheduleFormChange('operador', e.target.value)}
-                            />
+                    {loadingProgramacion ? (
+                        <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                            <CircularProgress size={32} />
+                        </Box>
+                    ) : (
+                        <Grid container spacing={2} sx={{ mt: 0.5 }}>
+                            <Grid item xs={12}>
+                                <FormControl fullWidth>
+                                    <InputLabel id="sel-operador-label" shrink>Operador</InputLabel>
+                                    <Select
+                                        labelId="sel-operador-label"
+                                        displayEmpty
+                                        notched
+                                        value={scheduleForm.operador_id}
+                                        label="Operador"
+                                        onChange={(e) => handleScheduleFormChange('operador_id', e.target.value)}
+                                        renderValue={(val) => {
+                                            if (!val) return <Typography color="text.disabled" variant="body1">Selecciona un operador</Typography>;
+                                            const d = programacionData.drivers.find(x => String(x.driver_id) === val);
+                                            return d ? (
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                    <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: d.disponible ? '#22c55e' : '#ef4444', flexShrink: 0 }} />
+                                                    {d.nombre}
+                                                </Box>
+                                            ) : val;
+                                        }}
+                                    >
+                                        {programacionData.drivers.map(d => (
+                                            <MenuItem key={d.driver_id} value={String(d.driver_id)}>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                    <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: d.disponible ? '#22c55e' : '#ef4444', flexShrink: 0 }} />
+                                                    {d.nombre}
+                                                </Box>
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                </FormControl>
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <FormControl fullWidth>
+                                    <InputLabel id="sel-camion-label" shrink>Camión</InputLabel>
+                                    <Select
+                                        labelId="sel-camion-label"
+                                        displayEmpty
+                                        notched
+                                        value={scheduleForm.camion_id}
+                                        label="Camión"
+                                        onChange={(e) => handleScheduleFormChange('camion_id', e.target.value)}
+                                        renderValue={(val) => {
+                                            if (!val) return <Typography color="text.disabled" variant="body1">Selecciona un camión</Typography>;
+                                            const t = programacionData.trucks.find(x => String(x.truck_id) === val);
+                                            return t ? (
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                    <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: t.disponible ? '#22c55e' : '#ef4444', flexShrink: 0 }} />
+                                                    <Box>
+                                                        <Typography variant="body2" lineHeight={1.2}>{t.unidad}</Typography>
+                                                        <Typography variant="caption" color="text.secondary">Dist. Nv Laredo: {t.dist_nv_l ?? 'N/A'}</Typography>
+                                                    </Box>
+                                                </Box>
+                                            ) : val;
+                                        }}
+                                    >
+                                        {programacionData.trucks.map(t => (
+                                            <MenuItem key={t.truck_id} value={String(t.truck_id)}>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                    <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: t.disponible ? '#22c55e' : '#ef4444', flexShrink: 0 }} />
+                                                    <Box>
+                                                        <Typography variant="body2" lineHeight={1.2}>{t.unidad}</Typography>
+                                                        <Typography variant="caption" color="text.secondary">Dist. Nv Laredo: {t.dist_nv_l ?? 'N/A'}</Typography>
+                                                    </Box>
+                                                </Box>
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                </FormControl>
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <FormControl fullWidth>
+                                    <InputLabel id="sel-caja-label" shrink>Caja</InputLabel>
+                                    <Select
+                                        labelId="sel-caja-label"
+                                        displayEmpty
+                                        notched
+                                        value={scheduleForm.caja_id}
+                                        label="Caja"
+                                        onChange={(e) => handleScheduleFormChange('caja_id', e.target.value)}
+                                        renderValue={(val) => {
+                                            if (!val) return <Typography color="text.disabled" variant="body1">Selecciona una caja</Typography>;
+                                            return getCajaLabel(val);
+                                        }}
+                                    >
+                                        <ListSubheader>Cajas Propias</ListSubheader>
+                                        {programacionData.cajas.map(c => (
+                                            <MenuItem key={`i_${c.caja_id}`} value={`i_${c.caja_id}`}>
+                                                {c.no_caja}{c.no_placa ? ` — ${c.no_placa}` : ''}
+                                            </MenuItem>
+                                        ))}
+                                        <ListSubheader>Cajas Externas</ListSubheader>
+                                        {programacionData.cajasExternas.map(c => (
+                                            <MenuItem key={`e_${c.caja_externa_id}`} value={`e_${c.caja_externa_id}`}>
+                                                {c.no_caja}{c.placas ? ` — ${c.placas}` : ''}
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                </FormControl>
+                            </Grid>
+                            <Grid item xs={12}>
+                                <TextField
+                                    label="Destino"
+                                    fullWidth
+                                    value={scheduleForm.destino}
+                                    onChange={(e) => handleScheduleFormChange('destino', e.target.value)}
+                                />
+                            </Grid>
+                            <Grid item xs={12}>
+                                <TextField
+                                    label="Salida"
+                                    type="datetime-local"
+                                    fullWidth
+                                    value={scheduleForm.salida}
+                                    onChange={(e) => handleScheduleFormChange('salida', e.target.value)}
+                                    InputLabelProps={{ shrink: true }}
+                                />
+                            </Grid>
                         </Grid>
-                        <Grid item xs={12} sm={6}>
-                            <TextField
-                                label="Camión"
-                                fullWidth
-                                value={scheduleForm.camion}
-                                onChange={(e) => handleScheduleFormChange('camion', e.target.value)}
-                            />
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                            <TextField
-                                label="Caja"
-                                fullWidth
-                                value={scheduleForm.caja}
-                                onChange={(e) => handleScheduleFormChange('caja', e.target.value)}
-                            />
-                        </Grid>
-                        <Grid item xs={12}>
-                            <TextField
-                                label="Destino"
-                                fullWidth
-                                value={scheduleForm.destino}
-                                onChange={(e) => handleScheduleFormChange('destino', e.target.value)}
-                            />
-                        </Grid>
-                        <Grid item xs={12}>
-                            <TextField
-                                label="Salida"
-                                type="datetime-local"
-                                fullWidth
-                                value={scheduleForm.salida}
-                                onChange={(e) => handleScheduleFormChange('salida', e.target.value)}
-                                InputLabelProps={{ shrink: true }}
-                            />
-                        </Grid>
-                    </Grid>
+                    )}
                 </DialogContent>
                 <DialogActions sx={{ px: 3, pb: 2 }}>
                     <Button onClick={handleCloseScheduleModal} color="inherit">Cancelar</Button>

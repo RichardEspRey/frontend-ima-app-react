@@ -76,9 +76,9 @@ const ExpenseEdit = () => {
         if (Array.isArray(data.detalles)) {
             const mapped = data.detalles.map(d => ({
                 id: d.id_detalle_gasto,
-                expenseType: d.id_tipo_gasto || null, 
-                category: d.id_categoria_mantenimiento || null,
-                subcategory: d.id_subcategoria_mantenimiento || null,
+                expenseType: d.id_tipo_gasto || null,
+                category: d.id_categoria || null,
+                subcategory: d.id_subcategoria || null,
                 itemDescription: d.descripcion_articulo || '',
                 price: d.precio_unitario || '',
                 quantity: d.cantidad_articulo || '1'
