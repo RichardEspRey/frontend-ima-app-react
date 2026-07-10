@@ -455,23 +455,25 @@ const TripAdmin = () => {
                                 <TableRow>
                                     <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Operador</TableCell>
                                     <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Camión</TableCell>
+                                    <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Distancia Nv Laredo</TableCell>
                                     <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Caja</TableCell>
                                     <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Destino</TableCell>
                                     <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Salida</TableCell>
+                               
                                     <TableCell sx={{ fontWeight: 700, color: '#475569', textAlign: 'center' }}>Acciones</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
                                 {loadingScheduled ? (
                                     <TableRow>
-                                        <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
+                                        <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
                                             <CircularProgress size={24} sx={{ mr: 2, verticalAlign: 'middle' }} />
                                             <Typography component="span" color="text.secondary">Cargando programaciones...</Typography>
                                         </TableCell>
                                     </TableRow>
                                 ) : scheduledTrips.length === 0 ? (
                                     <TableRow>
-                                        <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
+                                        <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
                                             <Typography variant="body2" color="text.secondary">
                                                 No hay viajes programados. Usa "Programar Viaje" para agregar uno.
                                             </Typography>
@@ -482,6 +484,9 @@ const TripAdmin = () => {
                                         <TableRow key={trip.id} hover>
                                             <TableCell>{trip.driver_nombre || '-'}</TableCell>
                                             <TableCell>{trip.truck_unidad  || '-'}</TableCell>
+                                            <TableCell>
+                                                {trip.dist_nv_l != null ? `${trip.dist_nv_l} Km` : 'No obtenido'}
+                                            </TableCell>
                                             <TableCell>{trip.caja_numero   || '-'}</TableCell>
                                             <TableCell>{trip.destino}</TableCell>
                                             <TableCell>{trip.salida ? dayjs(trip.salida).format('DD/MM/YYYY HH:mm') : '-'}</TableCell>
