@@ -57,7 +57,7 @@ const InvoicePreview = ({ data }) => {
         { id: 'rate', value: formattedRate, top: '46%', left: '77%', width: '15%', align: 'right', variant: 'body2', bold: false },
 
         // TOTAL
-        { id: 'total', value: formattedRate, top: '73.5%', left: '75%', width: '15%', align: 'right', variant: 'body2', bold: true, color: '#111827' },
+        { id: 'total', value: formattedRate, top: '73.5%', left: '77%', width: '15%', align: 'right', variant: 'body2', bold: true, color: '#111827' },
     ];
 
     return (

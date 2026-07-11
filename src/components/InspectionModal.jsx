@@ -185,15 +185,25 @@ const InspectionModal = ({ open, onClose, onSuccess, editData }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+
         // Validación general
         if (!formData.truck_id || !formData.operador || !formData.fecha_inspeccion || !formData.ciudad || !formData.estado) {
             Swal.fire('Error', 'Por favor llena los campos obligatorios de la unidad (*).', 'error');
             return;
         }
 
+        // Si hay un reporte capturado en el formulario pero no se agregó a la lista
+        // (el usuario olvidó dar clic en "Agregar a la lista"), lo incluimos automáticamente
+        // en vez de perderlo silenciosamente.
+        let finalReportesList = reportesList;
+        if (currentReport.tipo_violacion && currentReport.descripcion) {
+            finalReportesList = [...reportesList, currentReport];
+            setReportesList(finalReportesList);
+            setCurrentReport({ tipo_violacion: '', descripcion: '', comentarios: '' });
+        }
+
         // Validar que exista al menos un reporte en la lista
-        if (reportesList.length === 0) {
+        if (finalReportesList.length === 0) {
             Swal.fire('Error', 'Debes agregar al menos un reporte de inspección a la lista.', 'error');
             return;
         }
@@ -204,12 +214,12 @@ const InspectionModal = ({ open, onClose, onSuccess, editData }) => {
         dataToSend.append('op', 'save');
         Object.entries(formData).forEach(([key, value]) => {
             if (key !== 'trip_number_search') {
-                dataToSend.append(key, value);
+                dataToSend.append(key, value === null || value === undefined ? '' : value);
             }
         });
 
         // Enviar la lista de reportes como JSON para procesar en PHP
-        dataToSend.append('reportes', JSON.stringify(reportesList));
+        dataToSend.append('reportes', JSON.stringify(finalReportesList));
 
         files.forEach((file) => {
             dataToSend.append('invoices[]', file);

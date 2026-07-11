@@ -54,6 +54,7 @@ const InspectionsAdmin = () => {
 
     return (
         <Box sx={{ p: { xs: 2, md: 4 }, minHeight: '100vh', bgcolor: '#f8fafc' }}>
+            <style>{`.swal2-container { z-index: 2000 !important; }`}</style>
             <Stack direction="row" justifyContent="space-between" alignItems="center" mb={4}>
                 <Box>
                     <Typography variant="h4" fontWeight={800} color="#0f172a">Inspecciones</Typography>
