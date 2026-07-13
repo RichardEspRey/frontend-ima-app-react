@@ -34,7 +34,13 @@ const ModalArchivo = ({ isOpen, onClose, onSave, title = "Subir/Editar Archivo",
 
     const allowedTypes = accept.split(',').map(type => type.trim());
 
-    if (allowedTypes.includes(file.type) || allowedTypes[0] === '*/*') {
+    const isAllowed = allowedTypes.some(type => {
+      if (type === '*/*') return true;
+      if (type.endsWith('/*')) return file.type.startsWith(type.slice(0, -1));
+      return type === file.type;
+    });
+
+    if (isAllowed) {
       setArchivo(file);
       // Limpia la previsualización anterior para evitar fugas de memoria
       if (previewUrl) URL.revokeObjectURL(previewUrl);

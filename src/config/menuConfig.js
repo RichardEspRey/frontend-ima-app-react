@@ -157,6 +157,13 @@ export const menuItemsConfig = [
         rolesPermitidos: ["admin", "Blanca", "Candy", "Mia"],
       },
       {
+        name: "Ver Pestaña Programacion",
+        featureKey: "viajes_tab_programacion",
+        route: null,
+        hideInSidebar: true,
+        rolesPermitidos: ["admin"],
+      },
+      {
         name: "Ver Pestaña Upcoming",
         featureKey: "viajes_tab_upcoming",
         route: null,

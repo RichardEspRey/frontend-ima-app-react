@@ -17,6 +17,7 @@ import 'react-photo-view/dist/react-photo-view.css';
 import useFetchSubcategories from '../../hooks/expense_hooks/useFetchSubcategories';
 import useFetchCategories from '../../hooks/expense_hooks/useFetchCategories';
 import useFetchExpenseTypes from '../../hooks/expense_hooks/useFetchExpenseTypes';
+import { useAuthStore } from '../../store/useAuthStore';
 
 const customSelectStyles = {
   control: (provided) => ({
@@ -30,6 +31,7 @@ const ExpenseEdit = () => {
   const { id_gasto } = useParams();
   const navigate = useNavigate();
   const apiHost = import.meta.env.VITE_API_HOST;
+  const { user } = useAuthStore();
 
   const [country, setCountry] = useState(null);
   const [expenseDate, setExpenseDate] = useState(new Date());
@@ -76,9 +78,9 @@ const ExpenseEdit = () => {
         if (Array.isArray(data.detalles)) {
             const mapped = data.detalles.map(d => ({
                 id: d.id_detalle_gasto,
-                expenseType: d.id_tipo_gasto || null, 
-                category: d.id_categoria_mantenimiento || null,
-                subcategory: d.id_subcategoria_mantenimiento || null,
+                expenseType: d.id_tipo_gasto || null,
+                category: d.id_categoria || null,
+                subcategory: d.id_subcategoria || null,
                 itemDescription: d.descripcion_articulo || '',
                 price: d.precio_unitario || '',
                 quantity: d.cantidad_articulo || '1'
@@ -148,7 +150,8 @@ const ExpenseEdit = () => {
         fd.append("fecha_gasto", expenseDate.toISOString().split('T')[0]);
         fd.append("fecha_ticket", ticketDate.toISOString().split('T')[0]);
         fd.append("monto_total", totalAmount);
-        
+        fd.append("id_usuario", user?.id);
+
         const detailsToSend = expenseDetails.map(d => ({
             id_detalle_gasto: String(d.id).startsWith('new') ? null : d.id,
             id_tipo_gasto: d.expenseType,
@@ -171,7 +174,7 @@ const ExpenseEdit = () => {
 
         if (json.status === "success") {
             Swal.fire("Éxito", "Gasto actualizado", "success");
-            navigate('/admin-gastos');
+            navigate('/admin-gastos-generales');
         } else throw new Error(json.message);
 
       } catch (err) {

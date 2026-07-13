@@ -20,6 +20,7 @@ import useFetchSubcategories from '../../hooks/expense_hooks/useFetchSubcategori
 import useFetchCategories from '../../hooks/expense_hooks/useFetchCategories';
 import useFetchExpenseTypes from '../../hooks/expense_hooks/useFetchExpenseTypes';
 import useFetchExchangeRate from '../../hooks/useFetchExchangeRate';
+import { useAuthStore } from '../../store/useAuthStore';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -31,6 +32,8 @@ const customSelectStyles = {
 };
 
 const ExpenseModal = ({ open, onClose, onSuccess }) => {
+    const { user } = useAuthStore();
+    const id = user?.id;
     const [country, setCountry] = useState(null);
     const [expenseDate, setExpenseDate] = useState(new Date());
     const [ticketDate, setTicketDate] = useState(new Date()); 
@@ -160,6 +163,7 @@ const ExpenseModal = ({ open, onClose, onSuccess }) => {
             monto_total: totalAmount,
             cantidad_original: originalAmount,
             tipo_cambio: isMX ? exchangeRate : '',
+            id_usuario: id
         };
         apiFormData.append('generalData', JSON.stringify(generalData));
 

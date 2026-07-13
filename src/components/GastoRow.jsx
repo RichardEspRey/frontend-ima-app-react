@@ -52,6 +52,8 @@ const GastoRow = ({ gasto, navigate }) => {
         <TableCell>{gasto.fecha_gasto}</TableCell>
         <TableCell>{gasto.pais}</TableCell>
         <TableCell><strong>{money(totalMostrado)}</strong></TableCell>
+        <TableCell>{gasto.created_name || '—'}</TableCell>
+        <TableCell>{gasto.updated_name || '—'}</TableCell>
         <TableCell align="left">
           <Button
             variant="contained"
@@ -64,7 +66,7 @@ const GastoRow = ({ gasto, navigate }) => {
       </TableRow>
 
       <TableRow>
-        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={7}>
+        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={9}>
           <Collapse in={open} timeout="auto" unmountOnExit>
             <Box sx={{ m: 1, p: 2, border: '1px solid #eee', borderRadius: 2, bgcolor: '#f9f9f9' }}>
               <Typography variant="h6" fontWeight={600} sx={{ fontSize: '1rem', mb: 1.5 }}>
@@ -80,6 +82,7 @@ const GastoRow = ({ gasto, navigate }) => {
                   <TableHead>
                     <TableRow>
                       <TableCell sx={{ fontWeight: 600 }}>Expense Type</TableCell>
+                      <TableCell sx={{ fontWeight: 600 }}>Category</TableCell>
                       <TableCell sx={{ fontWeight: 600 }}>Subcategory</TableCell>
                       <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
                       <TableCell align="right" sx={{ fontWeight: 600 }}>Qty</TableCell>
@@ -96,6 +99,9 @@ const GastoRow = ({ gasto, navigate }) => {
                       return (
                         <TableRow key={d.id_detalle_gasto}>
                           <TableCell>{d.tipo_gasto || '—'}</TableCell>
+                          <TableCell sx={{ color: 'text.secondary', fontSize: '0.85rem' }}>
+                            {d.nombre_categoria || '—'}
+                          </TableCell>
                           <TableCell sx={{ color: 'text.secondary', fontSize: '0.85rem' }}>
                             {d.nombre_subcategoria || '—'}
                           </TableCell>

@@ -22,30 +22,45 @@ const AdminGastos = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   
   const [filterCountry, setFilterCountry] = useState('All');
-  const [filterSubcat, setFilterSubcat] = useState('All'); 
-  const [startDate, setStartDate] = useState(''); 
-  const [endDate, setEndDate] = useState('');     
-  
+  const [filterType, setFilterType] = useState('All');
+  const [filterCategory, setFilterCategory] = useState('All');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(20); 
+  const [rowsPerPage, setRowsPerPage] = useState(20);
 
   const uniqueCountries = useMemo(() => {
     const countries = new Set(gastos.map(g => g.pais).filter(Boolean));
     return ['All', ...Array.from(countries).sort()];
   }, [gastos]);
 
-  const uniqueSubcategories = useMemo(() => {
-    const subs = new Set();
+  const uniqueTypes = useMemo(() => {
+    const types = new Set();
     gastos.forEach(g => {
         if(g.detalles && Array.isArray(g.detalles)) {
             g.detalles.forEach(d => {
-                if(d.nombre_subcategoria) {
-                    subs.add(d.nombre_subcategoria);
+                if(d.tipo_gasto) {
+                    types.add(d.tipo_gasto);
                 }
             });
         }
     });
-    return ['All', ...Array.from(subs).sort()];
+    return ['All', ...Array.from(types).sort()];
+  }, [gastos]);
+
+  const uniqueCategories = useMemo(() => {
+    const cats = new Set();
+    gastos.forEach(g => {
+        if(g.detalles && Array.isArray(g.detalles)) {
+            g.detalles.forEach(d => {
+                if(d.nombre_categoria) {
+                    cats.add(d.nombre_categoria);
+                }
+            });
+        }
+    });
+    return ['All', ...Array.from(cats).sort()];
   }, [gastos]);
 
   const fetchGastos = async () => {
@@ -79,21 +94,28 @@ const AdminGastos = () => {
         list = list.filter(g => g.pais === filterCountry);
     }
 
-    if (filterSubcat !== 'All') {
+    if (filterType !== 'All') {
         list = list.filter(g => {
             if (!g.detalles || g.detalles.length === 0) return false;
-            return g.detalles.some(d => d.nombre_subcategoria === filterSubcat);
+            return g.detalles.some(d => d.tipo_gasto === filterType);
+        });
+    }
+
+    if (filterCategory !== 'All') {
+        list = list.filter(g => {
+            if (!g.detalles || g.detalles.length === 0) return false;
+            return g.detalles.some(d => d.nombre_categoria === filterCategory);
         });
     }
 
     if (startDate || endDate) {
         list = list.filter(g => {
-            const d = g.fecha_gasto; 
+            const d = g.fecha_gasto;
             return (!startDate || d >= startDate) && (!endDate || d <= endDate);
         });
     }
     return list;
-  }, [gastos, search, filterCountry, filterSubcat, startDate, endDate]);
+  }, [gastos, search, filterCountry, filterType, filterCategory, startDate, endDate]);
 
   const slice = rowsPerPage === -1 ? filtered : filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
@@ -135,16 +157,23 @@ const AdminGastos = () => {
           </FormControl>
 
           <FormControl size="small" sx={{ minWidth: 200, bgcolor: 'white' }}>
-              <InputLabel>Subcategoría</InputLabel>
-              <Select value={filterSubcat} label="Subcategoría" onChange={(e) => handleFilterChange(setFilterSubcat, e.target.value)}>
-                  {uniqueSubcategories.map(s => <MenuItem key={s} value={s}>{s}</MenuItem>)}
+              <InputLabel>Tipo de Gasto</InputLabel>
+              <Select value={filterType} label="Tipo de Gasto" onChange={(e) => handleFilterChange(setFilterType, e.target.value)}>
+                  {uniqueTypes.map(t => <MenuItem key={t} value={t}>{t}</MenuItem>)}
+              </Select>
+          </FormControl>
+
+          <FormControl size="small" sx={{ minWidth: 200, bgcolor: 'white' }}>
+              <InputLabel>Categoría</InputLabel>
+              <Select value={filterCategory} label="Categoría" onChange={(e) => handleFilterChange(setFilterCategory, e.target.value)}>
+                  {uniqueCategories.map(c => <MenuItem key={c} value={c}>{c}</MenuItem>)}
               </Select>
           </FormControl>
 
           <TextField size="small" label="Fecha Inicio" type="date" value={startDate} onChange={(e) => handleFilterChange(setStartDate, e.target.value)} InputLabelProps={{ shrink: true }} sx={{ bgcolor: 'white' }} />
           <TextField size="small" label="Fecha Fin" type="date" value={endDate} onChange={(e) => handleFilterChange(setEndDate, e.target.value)} InputLabelProps={{ shrink: true }} sx={{ bgcolor: 'white' }} />
           
-          <Button variant="text" onClick={() => { setStartDate(''); setEndDate(''); setFilterSubcat('All'); setFilterCountry('All'); setSearch(''); setPage(0); }} sx={{ fontWeight: 600 }}>Limpiar Filtros</Button>
+          <Button variant="text" onClick={() => { setStartDate(''); setEndDate(''); setFilterType('All'); setFilterCategory('All'); setFilterCountry('All'); setSearch(''); setPage(0); }} sx={{ fontWeight: 600 }}>Limpiar Filtros</Button>
           <Button variant="outlined" onClick={fetchGastos} sx={{ fontWeight: 600 }}>Actualizar</Button>
         </Stack>
       </Paper>
@@ -159,14 +188,16 @@ const AdminGastos = () => {
               <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Date</TableCell>
               <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Country</TableCell>
               <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Total (USD)</TableCell>
+              <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Created By </TableCell>
+              <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Updated By</TableCell>
               <TableCell sx={{ fontWeight: 700, color: '#475569', textAlign: 'center' }}>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {loading ? (
-              <TableRow><TableCell colSpan={7} align="center" sx={{ py: 5 }}><CircularProgress size={24}/></TableCell></TableRow>
+              <TableRow><TableCell colSpan={9} align="center" sx={{ py: 5 }}><CircularProgress size={24}/></TableCell></TableRow>
             ) : slice.length === 0 ? (
-              <TableRow><TableCell colSpan={7} align="center" sx={{ py: 5 }}><Typography color="text.secondary">No se encontraron gastos.</Typography></TableCell></TableRow>
+              <TableRow><TableCell colSpan={9} align="center" sx={{ py: 5 }}><Typography color="text.secondary">No se encontraron gastos.</Typography></TableCell></TableRow>
             ) : (
               slice.map((g) => <GastoRow key={g.id_gasto} gasto={g} navigate={navigate} />)
             )}
