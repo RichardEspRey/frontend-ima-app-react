@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Box, Typography, TextField, Button, Stack, CircularProgress, Paper } from '@mui/material';
-
+import { Box, Typography, TextField, Button, Stack, CircularProgress, Paper, Tabs, Tab, Dialog, DialogTitle, DialogContent, DialogActions, Alert } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import SettingsIcon from '@mui/icons-material/Settings';
 import ViewColumnIcon from '@mui/icons-material/ViewColumn'; 
@@ -26,6 +25,14 @@ const DriverAdmin = () => {
   // Paginación y Vistas
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  // Control de Tabs
+  const [tabValue, setTabValue] = useState(0);
+
+  // Control Modal de Bajas
+  const [openBajaModal, setOpenBajaModal] = useState(false);
+  const [driverToBaja, setDriverToBaja] = useState(null);
+  const [bajaFormData, setBajaFormData] = useState({ motivo: '', fecha: '', observaciones: '' });
 
   // Control de Modales
   const [openConfigModal, setOpenConfigModal] = useState(false);
@@ -144,6 +151,39 @@ const DriverAdmin = () => {
       } catch(e) { Swal.fire('Error', 'Problema al guardar.', 'error'); setLoading(false); }
   };
 
+  const handleOpenBaja = (driver) => {
+      setDriverToBaja(driver);
+      setBajaFormData({ motivo: '', fecha: '', observaciones: '' });
+      setOpenBajaModal(true);
+  };
+
+  const handleConfirmarBaja = async () => {
+      if (!bajaFormData.motivo || !bajaFormData.fecha) {
+          return Swal.fire('Faltan Datos', 'El motivo y la fecha son obligatorios.', 'warning');
+      }
+      
+      const fd = new FormData();
+      fd.append('op', 'darDeBajaDriver');
+      fd.append('driver_id', driverToBaja.driver_id);
+      fd.append('motivo', bajaFormData.motivo);
+      fd.append('fecha_baja', bajaFormData.fecha);
+      fd.append('observaciones', bajaFormData.observaciones);
+
+      try {
+          const res = await fetch(`${apiHost}/${API_ENDPOINT}`, { method: 'POST', body: fd });
+          const result = await res.json();
+          if(result.status === 'success') {
+              Swal.fire('Éxito', 'Conductor dado de baja.', 'success');
+              setOpenBajaModal(false);
+              fetchData(); // Refrescar los datos
+          } else {
+              throw new Error(result.message);
+          }
+      } catch (error) {
+          Swal.fire('Error', 'No se pudo procesar la baja.', 'error');
+      }
+  };
+
   const deleteDriver = async (driver_id) => {
       const { isConfirmed } = await Swal.fire({ title: '¿Eliminar Conductor?', icon: 'error', showCancelButton: true });
       if (!isConfirmed) return;
@@ -154,7 +194,17 @@ const DriverAdmin = () => {
   // ==========================================
   // FILTROS EN MEMORIA
   // ==========================================
-  const filteredDrivers = useMemo(() => drivers.filter(d => d.nombre.toLowerCase().includes(search.toLowerCase())), [drivers, search]);
+  // Cálculos de contadores y filtros
+  const estadoFiltro = tabValue === 0 ? 'Activo' : 'Baja';
+  const activosCount = drivers.filter(d => (d.estado || 'Activo') === 'Activo').length;
+  const bajasCount = drivers.filter(d => (d.estado || 'Activo') === 'Baja').length;
+
+  const filteredDrivers = useMemo(() => {
+    return drivers.filter(d => 
+        (d.estado || 'Activo') === estadoFiltro &&
+        d.nombre.toLowerCase().includes(search.toLowerCase())
+    );
+  }, [drivers, search, tabValue]);
   const visibleConfigFields = configFields.filter(req => !Number(req.oculto_en_tabla));
   const categories = [...new Set(configFields.map(f => f.categoria))];
 
@@ -185,16 +235,63 @@ const DriverAdmin = () => {
         </Stack>
       </Stack>
 
-      <Paper elevation={0} sx={{ p: 2, mb: 3, border: '1px solid #e2e8f0', borderRadius: 3 }}>
-          <TextField label="Buscar por nombre..." size="small" variant="outlined" value={search} onChange={(e) => { setSearch(e.target.value); setPage(0); }} sx={{ width: 300 }} />
+      <Paper elevation={0} sx={{ mb: 3, border: '1px solid #e2e8f0', borderRadius: 3, overflow: 'hidden' }}>
+          {/* TABS */}
+          <Box sx={{ borderBottom: 1, borderColor: 'divider', bgcolor: 'white' }}>
+              <Tabs value={tabValue} onChange={(e, val) => { setTabValue(val); setPage(0); }}>
+                  <Tab label={`Activos (${activosCount})`} />
+                  <Tab label={`Bajas (${bajasCount})`} />
+              </Tabs>
+          </Box>
+          <Box sx={{ p: 2 }}>
+              <TextField label="Buscar por nombre..." size="small" variant="outlined" value={search} onChange={(e) => { setSearch(e.target.value); setPage(0); }} sx={{ width: 300 }} />
+          </Box>
       </Paper>
 
-      {/* MODULARES */}
+      {/* Actualiza la etiqueta <DriverTable /> */}
       <DriverTable 
           filteredDrivers={filteredDrivers} visibleConfigFields={visibleConfigFields} 
           page={page} setPage={setPage} rowsPerPage={rowsPerPage} setRowsPerPage={setRowsPerPage} 
-          openDriverEditor={openDriverEditor} deleteDriver={deleteDriver} 
+          openDriverEditor={openDriverEditor} handleOpenBaja={handleOpenBaja} 
       />
+
+      {/* MODAL DE BAJAS A AGREGAR ANTES DE CERRAR EL BOX PRINCIPAL */}
+      <Dialog open={openBajaModal} onClose={() => setOpenBajaModal(false)} maxWidth="sm" fullWidth>
+          <DialogTitle sx={{ fontWeight: 800, bgcolor: '#0f172a', color: 'white' }}>
+              Dar de baja a conductor
+          </DialogTitle>
+          <DialogContent sx={{ mt: 2 }}>
+              <Alert severity="warning" sx={{ mb: 3 }}>
+                  Esta acción cambiará el estado del conductor a <b>"Baja"</b>.<br/>
+                  El conductor ya no aparecerá en la lista de activos.
+              </Alert>
+              
+              <Box mb={3} p={2} bgcolor="#f8fafc" borderRadius={2} border="1px solid #e2e8f0">
+                  <Typography variant="body2" color="text.secondary">Conductor</Typography>
+                  <Typography variant="subtitle1" fontWeight={700}>{driverToBaja?.nombre}</Typography>
+                  <Typography variant="caption" color="text.secondary">ID: {driverToBaja?.driver_id}</Typography>
+              </Box>
+
+              <Stack spacing={2}>
+                  <TextField 
+                      label="Motivo de baja" required fullWidth size="small" 
+                      value={bajaFormData.motivo} onChange={(e) => setBajaFormData({...bajaFormData, motivo: e.target.value})} 
+                  />
+                  <TextField 
+                      label="Fecha de baja" type="date" required fullWidth size="small" InputLabelProps={{ shrink: true }} 
+                      value={bajaFormData.fecha} onChange={(e) => setBajaFormData({...bajaFormData, fecha: e.target.value})} 
+                  />
+                  <TextField 
+                      label="Observaciones" fullWidth size="small" multiline rows={3} placeholder="Opcional..."
+                      value={bajaFormData.observaciones} onChange={(e) => setBajaFormData({...bajaFormData, observaciones: e.target.value})} 
+                  />
+              </Stack>
+          </DialogContent>
+          <DialogActions sx={{ p: 2, bgcolor: '#f8fafc', borderTop: '1px solid #e2e8f0' }}>
+              <Button onClick={() => setOpenBajaModal(false)} color="inherit">Cancelar</Button>
+              <Button onClick={handleConfirmarBaja} variant="contained" color="error" disableElevation>Confirmar baja</Button>
+          </DialogActions>
+      </Dialog>
 
       <ColumnConfigModal
           open={openColumnModal} onClose={() => setOpenColumnModal(false)}
