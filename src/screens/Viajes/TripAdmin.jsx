@@ -1,11 +1,13 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import {
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
     Button, TablePagination, TextField, Box, Typography, CircularProgress, Alert,
     Grid, Stack, FormControl, InputLabel, Select, MenuItem, Collapse, Tabs, Tab,
-    Dialog, DialogTitle, DialogContent, DialogActions, IconButton, Tooltip,
-    ListSubheader
+    Dialog, DialogTitle, DialogContent, DialogActions, IconButton, Tooltip
 } from '@mui/material';
+import { MapContainer, TileLayer, Polyline, Marker, Popup, useMap } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 
 import FilterListIcon from '@mui/icons-material/FilterList';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -20,6 +22,45 @@ import Swal from 'sweetalert2';
 
 import { TripRow } from '../../components/TripRow';
 import { useAuthStore } from '../../store/useAuthStore';
+
+// ── Map helpers (ruta camión → Nuevo Laredo) ────────────────────────────────
+
+const NUEVO_LAREDO = { lat: 27.4849, lon: -99.5164 };
+
+function makeDotIcon(color, size = 14) {
+    return L.divIcon({
+        className: '',
+        html: `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${color};border:2.5px solid white;box-shadow:0 1px 5px rgba(0,0,0,.45)"></div>`,
+        iconSize: [size, size],
+        iconAnchor: [size / 2, size / 2],
+    });
+}
+
+function FitBounds({ coords }) {
+    const map = useMap();
+    const prevRef = useRef(null);
+    useEffect(() => {
+        if (!coords || coords.length === 0) return;
+        const key = coords[0]?.toString() + coords[coords.length - 1]?.toString();
+        if (key === prevRef.current) return;
+        prevRef.current = key;
+        map.fitBounds(L.latLngBounds(coords), { padding: [40, 40] });
+    }, [coords, map]);
+    return null;
+}
+
+async function getRoute(points) {
+    const coords = points.map((p) => `${p.lon},${p.lat}`).join(';');
+    const res = await fetch(
+        `https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson`
+    );
+    const data = await res.json();
+    if (data.code !== 'Ok') throw new Error('No se pudo calcular la ruta');
+    return {
+        miles: data.routes[0].distance / 1609.344,
+        coords: data.routes[0].geometry.coordinates.map(([lon, lat]) => [lat, lon]),
+    };
+}
 
 const DIRECTION_OPTIONS = [
     { value: 'All', label: 'Todas las Direcciones' },
@@ -86,9 +127,17 @@ const TripAdmin = () => {
     const [openScheduleModal, setOpenScheduleModal] = useState(false);
     const [scheduleForm, setScheduleForm] = useState(EMPTY_SCHEDULE_FORM);
     const [editingScheduleId, setEditingScheduleId] = useState(null);
+    const [trailerType, setTrailerType] = useState('interna');
     const [programacionData, setProgramacionData] = useState({ trucks: [], drivers: [], cajas: [], cajasExternas: [] });
     const [loadingProgramacion, setLoadingProgramacion] = useState(false);
     const [loadingScheduled, setLoadingScheduled] = useState(false);
+
+    // Mapa: ruta del camión seleccionado hacia Nuevo Laredo
+    const [selectedMapTripId, setSelectedMapTripId] = useState(null);
+    const [mapRouteCoords, setMapRouteCoords] = useState(null);
+    const [mapMarkers, setMapMarkers] = useState(null);
+    const [mapLoading, setMapLoading] = useState(false);
+    const [mapError, setMapError] = useState('');
 
     useEffect(() => {
         if (allowedTabs.length > 0 && !allowedTabs.some(t => t.id === tabValue)) {
@@ -188,8 +237,47 @@ const TripAdmin = () => {
         if (tabValue === 4) {
             fetchProgramacionData();
             fetchScheduledTrips();
+        } else {
+            setSelectedMapTripId(null);
+            setMapRouteCoords(null);
+            setMapMarkers(null);
+            setMapError('');
         }
     }, [tabValue, fetchProgramacionData, fetchScheduledTrips]);
+
+    const handleSelectTripRow = async (trip) => {
+        if (selectedMapTripId === trip.id) {
+            setSelectedMapTripId(null);
+            setMapRouteCoords(null);
+            setMapMarkers(null);
+            setMapError('');
+            return;
+        }
+
+        const lat = parseFloat(trip.last_latitude);
+        const lon = parseFloat(trip.last_longitude);
+        if (isNaN(lat) || isNaN(lon)) {
+            Swal.fire('Sin ubicación', 'Este camión no tiene una ubicación registrada.', 'warning');
+            return;
+        }
+
+        setSelectedMapTripId(trip.id);
+        setMapRouteCoords(null);
+        setMapMarkers(null);
+        setMapError('');
+        setMapLoading(true);
+
+        try {
+            const truckGeo = { lat, lon };
+            const route = await getRoute([truckGeo, NUEVO_LAREDO]);
+            setMapRouteCoords(route.coords);
+            setMapMarkers({ truck: truckGeo, destination: NUEVO_LAREDO });
+        } catch (err) {
+            setMapError(err.message || 'Error al calcular la ruta.');
+        } finally {
+            setMapLoading(false);
+        }
+    };
 
     const handleTabChange = (event, newValue) => { setTabValue(newValue); setPage(0); };
     const handleFilterChange = (setter, value) => { setter(value); setPage(0); };
@@ -283,9 +371,11 @@ const TripAdmin = () => {
                 destino:     trip.destino   || '',
                 salida:      trip.salida    ? trip.salida.slice(0, 16) : ''
             });
+            setTrailerType('interna');
             setEditingScheduleId(trip.id);
         } else {
             setScheduleForm(EMPTY_SCHEDULE_FORM);
+            setTrailerType('interna');
             setEditingScheduleId(null);
         }
         setOpenScheduleModal(true);
@@ -294,6 +384,7 @@ const TripAdmin = () => {
     const handleCloseScheduleModal = () => {
         setOpenScheduleModal(false);
         setScheduleForm(EMPTY_SCHEDULE_FORM);
+        setTrailerType('interna');
         setEditingScheduleId(null);
     };
 
@@ -301,13 +392,18 @@ const TripAdmin = () => {
         setScheduleForm(prev => ({ ...prev, [field]: value }));
     };
 
+    const handleTrailerTypeChange = (type) => {
+        setTrailerType(type);
+        setScheduleForm(prev => ({ ...prev, caja_id: '' }));
+    };
+
     const handleSaveSchedule = async () => {
         const { operador_id, camion_id, caja_id, destino, salida } = scheduleForm;
-        if (!operador_id || !camion_id || !caja_id || !destino || !salida) {
-            Swal.fire('Campos requeridos', 'Por favor completa todos los campos.', 'warning');
+        if (!destino || !salida) {
+            Swal.fire('Campos requeridos', 'Por favor completa el destino y la fecha de salida.', 'warning');
             return;
         }
-        const numericCajaId = String(caja_id).replace(/^[ie]_/, '');
+        const numericCajaId = caja_id ? String(caja_id).replace(/^[ie]_/, '') : '';
         try {
             const formData = new FormData();
             formData.append('op', editingScheduleId !== null ? 'update' : 'insert');
@@ -341,6 +437,12 @@ const TripAdmin = () => {
             const response = await fetch(`${apiHost}/Programacion_viajes.php`, { method: 'POST', body: formData });
             const result = await parseJsonSafe(response);
             if (response.ok && result.status === 'success') {
+                if (selectedMapTripId === id) {
+                    setSelectedMapTripId(null);
+                    setMapRouteCoords(null);
+                    setMapMarkers(null);
+                    setMapError('');
+                }
                 fetchScheduledTrips();
             } else {
                 throw new Error(result.message || 'Error al eliminar.');
@@ -481,7 +583,13 @@ const TripAdmin = () => {
                                     </TableRow>
                                 ) : (
                                     scheduledTrips.map(trip => (
-                                        <TableRow key={trip.id} hover>
+                                        <TableRow
+                                            key={trip.id}
+                                            hover
+                                            selected={selectedMapTripId === trip.id}
+                                            onClick={() => handleSelectTripRow(trip)}
+                                            sx={{ cursor: 'pointer' }}
+                                        >
                                             <TableCell>{trip.driver_nombre || '-'}</TableCell>
                                             <TableCell>{trip.truck_unidad  || '-'}</TableCell>
                                             <TableCell>
@@ -492,12 +600,12 @@ const TripAdmin = () => {
                                             <TableCell>{trip.salida ? dayjs(trip.salida).format('DD/MM/YYYY HH:mm') : '-'}</TableCell>
                                             <TableCell align="center">
                                                 <Tooltip title="Editar">
-                                                    <IconButton size="small" onClick={() => handleOpenScheduleModal(trip)}>
+                                                    <IconButton size="small" onClick={(e) => { e.stopPropagation(); handleOpenScheduleModal(trip); }}>
                                                         <EditIcon fontSize="small" />
                                                     </IconButton>
                                                 </Tooltip>
                                                 <Tooltip title="Eliminar">
-                                                    <IconButton size="small" color="error" onClick={() => handleDeleteSchedule(trip.id)}>
+                                                    <IconButton size="small" color="error" onClick={(e) => { e.stopPropagation(); handleDeleteSchedule(trip.id); }}>
                                                         <DeleteIcon fontSize="small" />
                                                     </IconButton>
                                                 </Tooltip>
@@ -508,6 +616,85 @@ const TripAdmin = () => {
                             </TableBody>
                         </Table>
                     </TableContainer>
+
+                    {selectedMapTripId && (
+                        <Paper elevation={0} sx={{ mt: 2, border: '1px solid #e2e8f0', borderRadius: 3, overflow: 'hidden' }}>
+                            <Box sx={{ px: 2.5, py: 1.5, borderBottom: '1px solid #e2e8f0' }}>
+                                <Typography variant="subtitle2" fontWeight={700} color="#475569"
+                                    sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                                    Ruta a Nuevo Laredo — Camión {scheduledTrips.find(t => t.id === selectedMapTripId)?.truck_unidad || ''}
+                                </Typography>
+                            </Box>
+
+                            <Stack direction="row" spacing={2.5}
+                                sx={{ px: 2.5, py: 1, borderBottom: '1px solid #f1f5f9', flexWrap: 'wrap' }}>
+                                <Stack direction="row" alignItems="center" spacing={0.8}>
+                                    <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: '#9c27b0',
+                                        border: '2px solid white', boxShadow: '0 0 3px rgba(0,0,0,.3)' }} />
+                                    <Typography variant="caption" color="text.secondary">Camión</Typography>
+                                </Stack>
+                                <Stack direction="row" alignItems="center" spacing={0.8}>
+                                    <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: '#f44336',
+                                        border: '2px solid white', boxShadow: '0 0 3px rgba(0,0,0,.3)' }} />
+                                    <Typography variant="caption" color="text.secondary">Nuevo Laredo</Typography>
+                                </Stack>
+                                <Stack direction="row" alignItems="center" spacing={0.8}>
+                                    <Box sx={{ width: 20, height: 3, bgcolor: '#1976d2', borderRadius: 1 }} />
+                                    <Typography variant="caption" color="text.secondary">Ruta</Typography>
+                                </Stack>
+                            </Stack>
+
+                            <Box sx={{ position: 'relative', height: 420 }}>
+                                {mapLoading && (
+                                    <Stack alignItems="center" justifyContent="center"
+                                        sx={{ position: 'absolute', inset: 0, zIndex: 1000, bgcolor: 'rgba(255,255,255,0.7)' }}>
+                                        <CircularProgress size={32} />
+                                        <Typography variant="caption" color="text.secondary" sx={{ mt: 1 }}>
+                                            Calculando ruta…
+                                        </Typography>
+                                    </Stack>
+                                )}
+
+                                {mapError && !mapLoading && (
+                                    <Alert severity="error" sx={{ position: 'absolute', top: 8, left: 8, right: 8, zIndex: 1000 }}>
+                                        {mapError}
+                                    </Alert>
+                                )}
+
+                                <MapContainer
+                                    key={selectedMapTripId}
+                                    center={[NUEVO_LAREDO.lat, NUEVO_LAREDO.lon]}
+                                    zoom={6}
+                                    style={{ height: '100%', width: '100%' }}
+                                >
+                                    <TileLayer
+                                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                    />
+
+                                    {mapRouteCoords && <FitBounds coords={mapRouteCoords} />}
+
+                                    {mapRouteCoords && (
+                                        <Polyline
+                                            positions={mapRouteCoords}
+                                            pathOptions={{ color: '#1976d2', weight: 4, opacity: 0.9 }}
+                                        />
+                                    )}
+
+                                    {mapMarkers?.truck && (
+                                        <Marker position={[mapMarkers.truck.lat, mapMarkers.truck.lon]} icon={makeDotIcon('#9c27b0', 16)}>
+                                            <Popup>Camión {scheduledTrips.find(t => t.id === selectedMapTripId)?.truck_unidad || ''}</Popup>
+                                        </Marker>
+                                    )}
+                                    {mapMarkers?.destination && (
+                                        <Marker position={[mapMarkers.destination.lat, mapMarkers.destination.lon]} icon={makeDotIcon('#f44336', 16)}>
+                                            <Popup>Nuevo Laredo, Tamps.</Popup>
+                                        </Marker>
+                                    )}
+                                </MapContainer>
+                            </Box>
+                        </Paper>
+                    )}
                 </Box>
             ) : (
                 <>
@@ -697,32 +884,52 @@ const TripAdmin = () => {
                                 </FormControl>
                             </Grid>
                             <Grid item xs={12} sm={6}>
+                                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>Tipo de trailer</Typography>
+                                <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
+                                    <Button
+                                        fullWidth
+                                        variant={trailerType === 'interna' ? 'contained' : 'outlined'}
+                                        onClick={() => handleTrailerTypeChange('interna')}
+                                        sx={trailerType === 'interna' ? { bgcolor: '#0f172a', fontWeight: 700 } : { borderColor: '#cbd5e1', color: '#475569' }}
+                                    >
+                                        Caja Interna
+                                    </Button>
+                                    <Button
+                                        fullWidth
+                                        variant={trailerType === 'externa' ? 'contained' : 'outlined'}
+                                        onClick={() => handleTrailerTypeChange('externa')}
+                                        sx={trailerType === 'externa' ? { bgcolor: '#0f172a', fontWeight: 700 } : { borderColor: '#cbd5e1', color: '#475569' }}
+                                    >
+                                        Caja Externa
+                                    </Button>
+                                </Stack>
                                 <FormControl fullWidth>
-                                    <InputLabel id="sel-caja-label" shrink>Caja</InputLabel>
+                                    <InputLabel id="sel-caja-label" shrink>{trailerType === 'externa' ? 'Caja Externa' : 'Caja'}</InputLabel>
                                     <Select
                                         labelId="sel-caja-label"
                                         displayEmpty
                                         notched
                                         value={scheduleForm.caja_id}
-                                        label="Caja"
+                                        label={trailerType === 'externa' ? 'Caja Externa' : 'Caja'}
                                         onChange={(e) => handleScheduleFormChange('caja_id', e.target.value)}
                                         renderValue={(val) => {
                                             if (!val) return <Typography color="text.disabled" variant="body1">Selecciona una caja</Typography>;
                                             return getCajaLabel(val);
                                         }}
                                     >
-                                        <ListSubheader>Cajas Propias</ListSubheader>
-                                        {programacionData.cajas.map(c => (
-                                            <MenuItem key={`i_${c.caja_id}`} value={`i_${c.caja_id}`}>
-                                                {c.no_caja}{c.no_placa ? ` — ${c.no_placa}` : ''}
-                                            </MenuItem>
-                                        ))}
-                                        <ListSubheader>Cajas Externas</ListSubheader>
-                                        {programacionData.cajasExternas.map(c => (
-                                            <MenuItem key={`e_${c.caja_externa_id}`} value={`e_${c.caja_externa_id}`}>
-                                                {c.no_caja}{c.placas ? ` — ${c.placas}` : ''}
-                                            </MenuItem>
-                                        ))}
+                                        {trailerType === 'interna' ? (
+                                            programacionData.cajas.map(c => (
+                                                <MenuItem key={`i_${c.caja_id}`} value={`i_${c.caja_id}`}>
+                                                    {c.no_caja}{c.no_placa ? ` — ${c.no_placa}` : ''}
+                                                </MenuItem>
+                                            ))
+                                        ) : (
+                                            programacionData.cajasExternas.map(c => (
+                                                <MenuItem key={`e_${c.caja_externa_id}`} value={`e_${c.caja_externa_id}`}>
+                                                    {c.no_caja}{c.placas ? ` — ${c.placas}` : ''}
+                                                </MenuItem>
+                                            ))
+                                        )}
                                     </Select>
                                 </FormControl>
                             </Grid>
