@@ -22,6 +22,7 @@ import Swal from 'sweetalert2';
 
 import { TripRow } from '../../components/TripRow';
 import { useAuthStore } from '../../store/useAuthStore';
+import ModalCajaExterna from '../../components/ModalCajaExterna';
 
 // ── Map helpers (ruta camión → Nuevo Laredo) ────────────────────────────────
 
@@ -131,6 +132,7 @@ const TripAdmin = () => {
     const [programacionData, setProgramacionData] = useState({ trucks: [], drivers: [], cajas: [], cajasExternas: [] });
     const [loadingProgramacion, setLoadingProgramacion] = useState(false);
     const [loadingScheduled, setLoadingScheduled] = useState(false);
+    const [isModalCajaExternaOpen, setIsModalCajaExternaOpen] = useState(false);
 
     // Mapa: ruta del camión seleccionado hacia Nuevo Laredo
     const [selectedMapTripId, setSelectedMapTripId] = useState(null);
@@ -364,14 +366,15 @@ const TripAdmin = () => {
 
     const handleOpenScheduleModal = (trip = null) => {
         if (trip) {
+            const hasCajaExterna = trip.caja_externa_id != null;
             setScheduleForm({
                 operador_id: trip.driver_id ? String(trip.driver_id) : '',
                 camion_id:   trip.truck_id  ? String(trip.truck_id)  : '',
-                caja_id:     trip.caja_id   ? `i_${trip.caja_id}`    : '',
+                caja_id:     hasCajaExterna ? `e_${trip.caja_externa_id}` : (trip.caja_id ? `i_${trip.caja_id}` : ''),
                 destino:     trip.destino   || '',
                 salida:      trip.salida    ? trip.salida.slice(0, 16) : ''
             });
-            setTrailerType('interna');
+            setTrailerType(hasCajaExterna ? 'externa' : 'interna');
             setEditingScheduleId(trip.id);
         } else {
             setScheduleForm(EMPTY_SCHEDULE_FORM);
@@ -397,12 +400,33 @@ const TripAdmin = () => {
         setScheduleForm(prev => ({ ...prev, caja_id: '' }));
     };
 
+    const handleSaveExternalCaja = async (cajaData) => {
+        const dataToSend = new FormData();
+        dataToSend.append('op', 'Alta');
+        Object.entries(cajaData).forEach(([k, v]) => dataToSend.append(k, v));
+        try {
+            const res = await fetch(`${apiHost}/caja_externa.php`, { method: 'POST', body: dataToSend });
+            const result = await res.json();
+            if (result.status === 'success' && result.caja) {
+                Swal.fire('¡Éxito!', 'Caja externa registrada.', 'success');
+                setProgramacionData(prev => ({ ...prev, cajasExternas: [...prev.cajasExternas, result.caja] }));
+                setScheduleForm(prev => ({ ...prev, caja_id: `e_${result.caja.caja_externa_id}` }));
+                setIsModalCajaExternaOpen(false);
+            } else {
+                throw new Error(result.message || 'No se pudo crear la caja externa.');
+            }
+        } catch (err) {
+            Swal.fire('Error', err.message, 'error');
+        }
+    };
+
     const handleSaveSchedule = async () => {
         const { operador_id, camion_id, caja_id, destino, salida } = scheduleForm;
         if (!destino || !salida) {
             Swal.fire('Campos requeridos', 'Por favor completa el destino y la fecha de salida.', 'warning');
             return;
         }
+        const isCajaExterna = String(caja_id).startsWith('e_');
         const numericCajaId = caja_id ? String(caja_id).replace(/^[ie]_/, '') : '';
         try {
             const formData = new FormData();
@@ -410,7 +434,8 @@ const TripAdmin = () => {
             if (editingScheduleId !== null) formData.append('id', editingScheduleId);
             formData.append('driver_id', operador_id);
             formData.append('truck_id',  camion_id);
-            formData.append('caja_id',   numericCajaId);
+            formData.append('caja_id',         isCajaExterna ? '' : numericCajaId);
+            formData.append('caja_externa_id', isCajaExterna ? numericCajaId : '');
             formData.append('destino',   destino);
             formData.append('salida',    salida);
             const response = await fetch(`${apiHost}/Programacion_viajes.php`, { method: 'POST', body: formData });
@@ -559,23 +584,24 @@ const TripAdmin = () => {
                                     <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Camión</TableCell>
                                     <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Distancia Nv Laredo</TableCell>
                                     <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Caja</TableCell>
+                                    <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Caja Externa</TableCell>
                                     <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Destino</TableCell>
                                     <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Salida</TableCell>
-                               
+
                                     <TableCell sx={{ fontWeight: 700, color: '#475569', textAlign: 'center' }}>Acciones</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
                                 {loadingScheduled ? (
                                     <TableRow>
-                                        <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
+                                        <TableCell colSpan={8} align="center" sx={{ py: 4 }}>
                                             <CircularProgress size={24} sx={{ mr: 2, verticalAlign: 'middle' }} />
                                             <Typography component="span" color="text.secondary">Cargando programaciones...</Typography>
                                         </TableCell>
                                     </TableRow>
                                 ) : scheduledTrips.length === 0 ? (
                                     <TableRow>
-                                        <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
+                                        <TableCell colSpan={8} align="center" sx={{ py: 4 }}>
                                             <Typography variant="body2" color="text.secondary">
                                                 No hay viajes programados. Usa "Programar Viaje" para agregar uno.
                                             </Typography>
@@ -596,6 +622,7 @@ const TripAdmin = () => {
                                                 {trip.dist_nv_l != null ? `${trip.dist_nv_l} Km` : 'No obtenido'}
                                             </TableCell>
                                             <TableCell>{trip.caja_numero   || '-'}</TableCell>
+                                            <TableCell>{trip.caja_externa_numero || '-'}</TableCell>
                                             <TableCell>{trip.destino}</TableCell>
                                             <TableCell>{trip.salida ? dayjs(trip.salida).format('DD/MM/YYYY HH:mm') : '-'}</TableCell>
                                             <TableCell align="center">
@@ -903,35 +930,48 @@ const TripAdmin = () => {
                                         Caja Externa
                                     </Button>
                                 </Stack>
-                                <FormControl fullWidth>
-                                    <InputLabel id="sel-caja-label" shrink>{trailerType === 'externa' ? 'Caja Externa' : 'Caja'}</InputLabel>
-                                    <Select
-                                        labelId="sel-caja-label"
-                                        displayEmpty
-                                        notched
-                                        value={scheduleForm.caja_id}
-                                        label={trailerType === 'externa' ? 'Caja Externa' : 'Caja'}
-                                        onChange={(e) => handleScheduleFormChange('caja_id', e.target.value)}
-                                        renderValue={(val) => {
-                                            if (!val) return <Typography color="text.disabled" variant="body1">Selecciona una caja</Typography>;
-                                            return getCajaLabel(val);
-                                        }}
-                                    >
-                                        {trailerType === 'interna' ? (
-                                            programacionData.cajas.map(c => (
-                                                <MenuItem key={`i_${c.caja_id}`} value={`i_${c.caja_id}`}>
-                                                    {c.no_caja}{c.no_placa ? ` — ${c.no_placa}` : ''}
-                                                </MenuItem>
-                                            ))
-                                        ) : (
-                                            programacionData.cajasExternas.map(c => (
-                                                <MenuItem key={`e_${c.caja_externa_id}`} value={`e_${c.caja_externa_id}`}>
-                                                    {c.no_caja}{c.placas ? ` — ${c.placas}` : ''}
-                                                </MenuItem>
-                                            ))
-                                        )}
-                                    </Select>
-                                </FormControl>
+                                <Stack direction="row" spacing={1} alignItems="flex-start">
+                                    <FormControl fullWidth>
+                                        <InputLabel id="sel-caja-label" shrink>{trailerType === 'externa' ? 'Caja Externa' : 'Caja'}</InputLabel>
+                                        <Select
+                                            labelId="sel-caja-label"
+                                            displayEmpty
+                                            notched
+                                            value={scheduleForm.caja_id}
+                                            label={trailerType === 'externa' ? 'Caja Externa' : 'Caja'}
+                                            onChange={(e) => handleScheduleFormChange('caja_id', e.target.value)}
+                                            renderValue={(val) => {
+                                                if (!val) return <Typography color="text.disabled" variant="body1">Selecciona una caja</Typography>;
+                                                return getCajaLabel(val);
+                                            }}
+                                        >
+                                            {trailerType === 'interna' ? (
+                                                programacionData.cajas.map(c => (
+                                                    <MenuItem key={`i_${c.caja_id}`} value={`i_${c.caja_id}`}>
+                                                        {c.no_caja}{c.no_placa ? ` — ${c.no_placa}` : ''}
+                                                    </MenuItem>
+                                                ))
+                                            ) : (
+                                                programacionData.cajasExternas.map(c => (
+                                                    <MenuItem key={`e_${c.caja_externa_id}`} value={`e_${c.caja_externa_id}`}>
+                                                        {c.no_caja}{c.placas ? ` — ${c.placas}` : ''}
+                                                    </MenuItem>
+                                                ))
+                                            )}
+                                        </Select>
+                                    </FormControl>
+                                    {trailerType === 'externa' && (
+                                        <Button
+                                            variant="contained"
+                                            color="primary"
+                                            sx={{ height: '40px', minWidth: '40px', p: 0, mt: '2px' }}
+                                            onClick={() => setIsModalCajaExternaOpen(true)}
+                                            title="Registrar Nueva Caja Externa"
+                                        >
+                                            +
+                                        </Button>
+                                    )}
+                                </Stack>
                             </Grid>
                             <Grid item xs={12}>
                                 <TextField
@@ -961,6 +1001,14 @@ const TripAdmin = () => {
                     </Button>
                 </DialogActions>
             </Dialog>
+
+            {isModalCajaExternaOpen && (
+                <ModalCajaExterna
+                    isOpen={isModalCajaExternaOpen}
+                    onClose={() => setIsModalCajaExternaOpen(false)}
+                    onSave={handleSaveExternalCaja}
+                />
+            )}
         </Box>
     );
 };
