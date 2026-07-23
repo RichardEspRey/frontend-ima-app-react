@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  Box, Typography, Tooltip, IconButton, LinearProgress, Chip, Button, Stack
+  Box, Typography, Tooltip, IconButton, LinearProgress, Chip, Button, Stack, Badge
 } from "@mui/material";
 
 import RefreshIcon from '@mui/icons-material/Refresh';
@@ -9,6 +9,7 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import EditIcon from '@mui/icons-material/Edit'; 
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
+import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive'; // <-- Icono de alarma
 
 const numberFmt = (n) => new Intl.NumberFormat('en-US').format(Number(n).toFixed(0));
 
@@ -21,6 +22,16 @@ const getProgressColor = (value) => {
 export const AfinacionesTable = ({ trucksStatus, onOpenModal }) => {
     return (
         <TableContainer>
+            {/* Animación CSS para el pulso de la campanita */}
+            <style>
+                {`
+                @keyframes pulse-ring {
+                    0% { transform: scale(0.8); opacity: 0.5; }
+                    50% { transform: scale(1.2); opacity: 1; }
+                    100% { transform: scale(0.8); opacity: 0.5; }
+                }
+                `}
+            </style>
             <Table>
                 <TableHead sx={{ bgcolor: '#f5f5f5' }}>
                     <TableRow>
@@ -39,10 +50,20 @@ export const AfinacionesTable = ({ trucksStatus, onOpenModal }) => {
                         const progress = Math.min((millas / limite) * 100, 100);
                         const isCritical = millas >= limite;
 
+                        // ASUMIMOS QUE EL BACKEND NOS MANDARÁ ESTA BANDERA
+                        const alarmaActiva = truck.requiere_actualizacion == 1; 
+
                         return (
-                            <TableRow key={truck.truck_id} hover>
+                            <TableRow key={truck.truck_id} hover sx={{ bgcolor: alarmaActiva ? 'rgba(239, 68, 68, 0.04)' : 'inherit' }}>
                                 <TableCell>
-                                    <Typography fontWeight={700} variant="h6">{truck.unidad}</Typography>
+                                    <Stack direction="row" alignItems="center" spacing={1}>
+                                        <Typography fontWeight={700} variant="h6">{truck.unidad}</Typography>
+                                        {alarmaActiva && (
+                                            <Tooltip title="Actualización manual pendiente">
+                                                <NotificationsActiveIcon color="error" sx={{ fontSize: 20, animation: 'pulse-ring 2s infinite' }} />
+                                            </Tooltip>
+                                        )}
+                                    </Stack>
                                 </TableCell>
                                 
                                 <TableCell>
@@ -69,8 +90,10 @@ export const AfinacionesTable = ({ trucksStatus, onOpenModal }) => {
                                 </TableCell>
 
                                 <TableCell align="center">
-                                    <Box sx={{ p: 1, border: '1px dashed #ccc', borderRadius: 2, display: 'inline-block' }}>
-                                        <Typography variant="caption" color="text.secondary">Captura chofer:</Typography>
+                                    <Box sx={{ p: 1, border: alarmaActiva ? '2px dashed #ef4444' : '1px dashed #ccc', borderRadius: 2, display: 'inline-block', bgcolor: alarmaActiva ? '#fef2f2' : 'transparent' }}>
+                                        <Typography variant="caption" color={alarmaActiva ? 'error.main' : 'text.secondary'} fontWeight={alarmaActiva ? 700 : 400}>
+                                            {alarmaActiva ? '¡Nueva Captura!' : 'Captura chofer:'}
+                                        </Typography>
                                         <Typography variant="body1" fontWeight={700}>
                                             {truck.ultimo_odometro_registrado ? `${numberFmt(truck.ultimo_odometro_registrado)} mi` : 'N/A'}
                                         </Typography>
@@ -78,7 +101,9 @@ export const AfinacionesTable = ({ trucksStatus, onOpenModal }) => {
                                             <Tooltip title="Ver Foto del Tablero">
                                                 <span>
                                                     <IconButton size="small" color="info" onClick={() => onOpenModal('photo', truck.ticket_url)} disabled={!truck.ticket_url}>
-                                                        <PhotoCameraIcon fontSize="small" />
+                                                        <Badge color="error" variant="dot" invisible={!alarmaActiva}>
+                                                            <PhotoCameraIcon fontSize="small" />
+                                                        </Badge>
                                                     </IconButton>
                                                 </span>
                                             </Tooltip>
@@ -106,7 +131,9 @@ export const AfinacionesTable = ({ trucksStatus, onOpenModal }) => {
                                 <TableCell align="center">
                                     <Tooltip title="Ajuste Manual de Millas">
                                         <IconButton onClick={() => onOpenModal('manual', truck)} color="default">
-                                            <SettingsIcon />
+                                            <Badge color="error" variant="dot" invisible={!alarmaActiva}>
+                                                <SettingsIcon color={alarmaActiva ? 'error' : 'inherit'} />
+                                            </Badge>
                                         </IconButton>
                                     </Tooltip>
                                 </TableCell>

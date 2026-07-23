@@ -661,12 +661,20 @@ export default function Tracking() {
                           Etapa {selected.current_stage_number}
                        </Typography>
                        {selected.current_stop && (
-                          <Chip label={`Parada: ${selected.current_stop}`} size="small" sx={{ height: 18, fontSize: '0.6rem', bgcolor: '#f59e0b', color: 'white', fontWeight: 'bold' }} />
+                          <Chip label="En ruta a parada" size="small" sx={{ height: 18, fontSize: '0.6rem', bgcolor: '#f59e0b', color: 'white', fontWeight: 'bold' }} />
                        )}
                     </Stack>
+                    {/* El backend solo manda la parada inmediata pendiente (current_stop).
+                        Mostramos siempre origen -> ese punto como el tramo activo; cuando
+                        current_stop pasa a null, ya no quedan paradas y se muestra el destino final. */}
                     <Typography variant="caption" display="block" color="#334155" fontWeight={600}>
-                       {selected.current_origin} ➔ {selected.current_destination}
+                       {selected.current_origin} ➔ {selected.current_stop || selected.current_destination}
                     </Typography>
+                    {selected.current_stop && (
+                       <Typography variant="caption" display="block" color="#64748b" sx={{ mt: 0.3 }}>
+                          Destino final: {selected.current_destination}
+                       </Typography>
+                    )}
                   </Box>
                 )}
 

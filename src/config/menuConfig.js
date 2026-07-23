@@ -198,6 +198,13 @@ export const menuItemsConfig = [
         hideInSidebar: true,
         rolesPermitidos: ["admin"],
       },
+      {
+        name: "Gestionar Invoices en Viajes",
+        featureKey: "viajes_invoice_fields",
+        route: null,
+        hideInSidebar: true,
+        rolesPermitidos: ["admin"],
+      },
     ],
   },
 

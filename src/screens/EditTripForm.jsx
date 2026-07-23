@@ -161,7 +161,7 @@ const EditTripForm = () => {
 
     const handleOpenInvoiceModal = (stageIndex) => {
         // Validar estatus
-        if (formData.status !== 'In Transit' && formData.status !== 'Completed') {
+        if (!['In Transit', 'Almost Over', 'Completed'].includes(formData.status)) {
             Swal.fire('No permitido', 'Los Invoices solo se pueden generar para viajes En Ruta o Finalizados.', 'warning');
             return;
         }

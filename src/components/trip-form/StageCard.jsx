@@ -9,6 +9,7 @@ import CreatableSelect from 'react-select/creatable';
 import DatePicker from 'react-datepicker';
 import { selectStyles, getDocumentUrl } from '../../utils/tripFormConstants';
 import ReceiptIcon from '@mui/icons-material/Receipt';
+import { useAuthStore } from '../../store/useAuthStore';
 
 const DocButton = ({ label, doc, onClick, disabled, apiHost }) => (
     <Box sx={{ mb: 1 }}>
@@ -51,6 +52,10 @@ const StageCard = ({
     apiHost,
     handleOpenInvoiceModal
 }) => {
+    const user = useAuthStore(state => state.user);
+    const userPermissions = useAuthStore(state => state.userPermissions);
+    const isAdmin = String(user?.tipo_usuario || '').trim().toLowerCase() === 'admin';
+    const canManageInvoice = isAdmin || userPermissions['viajes_invoice_fields'] === true;
 
     const getHeaderInfo = () => {
         switch (etapa.stageType) {
@@ -71,7 +76,7 @@ const StageCard = ({
                     </Typography>
                 </Stack>
                 <Box>
-                    {etapa.stageType !== 'emptyMileage' && (
+                    {etapa.stageType !== 'emptyMileage' && canManageInvoice && (
                         <Button
                             startIcon={<ReceiptIcon />}
                             size="small"
@@ -145,11 +150,13 @@ const StageCard = ({
                                     placeholder="Seleccionar..."
                                 />
                             </Grid>
-                            <Grid item xs={12} md={4}>
-                                <TextField fullWidth label="CI Number" size="small"
-                                    value={etapa.ci_number} onChange={(e) => handleStageChange(index, 'ci_number', e.target.value)} disabled={isFormDisabled}
-                                    sx={{ mt: 2.5 }} />
-                            </Grid>
+                            {canManageInvoice && (
+                                <Grid item xs={12} md={4}>
+                                    <TextField fullWidth label="CI Number" size="small"
+                                        value={etapa.ci_number} onChange={(e) => handleStageChange(index, 'ci_number', e.target.value)} disabled={isFormDisabled}
+                                        sx={{ mt: 2.5 }} />
+                                </Grid>
+                            )}
 
                             <Grid item xs={12} md={6}>
                                 <Typography variant="caption" color="textSecondary">Bodega Origen</Typography>
@@ -195,20 +202,24 @@ const StageCard = ({
                                 </Box>
                             </Grid>
 
-                            <Grid item xs={6} md={3}>
-                                <TextField fullWidth label="Tarifa (Rate)" type="number" size="small"
-                                    value={etapa.rate_tarifa} onChange={(e) => handleStageChange(index, 'rate_tarifa', e.target.value)} disabled={isFormDisabled} />
-                            </Grid>
-                            <Grid item xs={6} md={3}>
-                                <TextField
-                                    fullWidth
-                                    label="Invoice Number"
-                                    size="small"
-                                    value={etapa.invoice_number || ''}
-                                    onChange={(e) => handleStageChange(index, 'invoice_number', e.target.value)}
-                                    disabled={isFormDisabled}
-                                />
-                            </Grid>
+                            {canManageInvoice && (
+                                <Grid item xs={6} md={3}>
+                                    <TextField fullWidth label="Tarifa (Rate)" type="number" size="small"
+                                        value={etapa.rate_tarifa} onChange={(e) => handleStageChange(index, 'rate_tarifa', e.target.value)} disabled={isFormDisabled} />
+                                </Grid>
+                            )}
+                            {canManageInvoice && (
+                                <Grid item xs={6} md={3}>
+                                    <TextField
+                                        fullWidth
+                                        label="Invoice Number"
+                                        size="small"
+                                        value={etapa.invoice_number || ''}
+                                        onChange={(e) => handleStageChange(index, 'invoice_number', e.target.value)}
+                                        disabled={isFormDisabled}
+                                    />
+                                </Grid>
+                            )}
                             <Grid item xs={6} md={3}>
                                 <TextField fullWidth label="Millas Cortas" type="number" size="small"
                                     value={etapa.millas_pcmiller} onChange={(e) => handleStageChange(index, 'millas_pcmiller', e.target.value)} disabled={isFormDisabled} />
@@ -217,24 +228,26 @@ const StageCard = ({
                                 <TextField fullWidth label="Millas Prácticas" type="number" size="small"
                                     value={etapa.millas_pcmiller_practicas} onChange={(e) => handleStageChange(index, 'millas_pcmiller_practicas', e.target.value)} disabled={isFormDisabled} />
                             </Grid>
-                            <Grid item xs={12} sm={6}>
-                                <Typography variant="caption" display="block" fontWeight={500}>Invoice Generado (PDF)</Typography>
-                                <Button
-                                    variant="outlined"
-                                    size="small"
-                                    color={etapa.invoice_file_path ? 'success' : 'inherit'}
-                                    startIcon={<DownloadIcon />}
-                                    component="a"
-                                    href={etapa.invoice_file_path ? `${apiHost}/${etapa.invoice_file_path}` : undefined}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    disabled={!etapa.invoice_file_path}
-                                    fullWidth
-                                    sx={{ textTransform: 'none', justifyContent: 'flex-start' }}
-                                >
-                                    {etapa.invoice_file_path ? 'Ver / Descargar Invoice' : 'Invoice no generado aún'}
-                                </Button>
-                            </Grid>
+                            {canManageInvoice && (
+                                <Grid item xs={12} sm={6}>
+                                    <Typography variant="caption" display="block" fontWeight={500}>Invoice Generado (PDF)</Typography>
+                                    <Button
+                                        variant="outlined"
+                                        size="small"
+                                        color={etapa.invoice_file_path ? 'success' : 'inherit'}
+                                        startIcon={<DownloadIcon />}
+                                        component="a"
+                                        href={etapa.invoice_file_path ? `${apiHost}/${etapa.invoice_file_path}` : undefined}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        disabled={!etapa.invoice_file_path}
+                                        fullWidth
+                                        sx={{ textTransform: 'none', justifyContent: 'flex-start' }}
+                                    >
+                                        {etapa.invoice_file_path ? 'Ver / Descargar Invoice' : 'Invoice no generado aún'}
+                                    </Button>
+                                </Grid>
+                            )}
                             <Grid item xs={12}>
                                 <TextField fullWidth label="Comentarios" multiline size="small"
                                     value={etapa.comments} onChange={(e) => handleStageChange(index, 'comments', e.target.value)} disabled={isFormDisabled}  
@@ -250,7 +263,9 @@ const StageCard = ({
                             {etapa.documentos && (
                                 <>
                                     {Object.entries(etapa.documentos).map(([docKey, docValue]) => {
-                                        
+
+                                        if (docKey === 'ima_invoice' && !canManageInvoice) return null;
+
                                         const isNormalTrip = etapa.stageType === 'normalTrip';
                                         const isAllowedInNormal = ['ima_invoice', 'bl', 'bl_firmado', 'ci', 'qr_manifesto'].includes(docKey);
                                         const shouldDisable = isFormDisabled || (isNormalTrip && !isAllowedInNormal);
