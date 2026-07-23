@@ -17,6 +17,9 @@ import SearchIcon from '@mui/icons-material/Search';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import CloseIcon from '@mui/icons-material/Close';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 
 import Swal from 'sweetalert2';
 import truckIcon from "../../assets/images/icons/truck.png";
@@ -95,6 +98,9 @@ export default function Tracking() {
   const [ping2SearchQuery, setPing2SearchQuery] = useState("");
   const [ping2SearchResults, setPing2SearchResults] = useState([]);
   const [ping2Searching, setPing2Searching] = useState(false);
+
+  const [stageStops, setStageStops] = useState([]);
+  const [stageStopsLoading, setStageStopsLoading] = useState(false);
 
   const stateRef = useRef({ selected, fuelDirty });
   const ping2SearchTimeout = useRef(null);
@@ -222,6 +228,67 @@ export default function Tracking() {
       if (upd) setPing2(upd);
     }
   }, [units]);
+
+  // Trae la lista completa y ordenada de paradas adicionales de la etapa activa del
+  // camión seleccionado. estatus_unidades.php solo manda "current_stop" (la próxima
+  // parada pendiente, o null si ya no quedan), así que cruzamos ese valor contra el
+  // arreglo completo para saber cuáles ya se completaron.
+  useEffect(() => {
+    const tripNumber = selected?.trip_number;
+    const stageNumber = selected?.current_stage_number;
+
+    if (!tripNumber || !stageNumber) {
+      setStageStops([]);
+      return;
+    }
+
+    let cancelled = false;
+    setStageStopsLoading(true);
+
+    (async () => {
+      try {
+        const fd = new FormData();
+        fd.append('op', 'getPaginated');
+        fd.append('page', 0);
+        fd.append('limit', 1);
+        fd.append('tabValue', 2); // En Ruta: incluye "In Transit" y "Almost Over"
+        fd.append('filterTrip', tripNumber);
+
+        const res = await fetch(`${apiHost}/new_tripsv2.php`, { method: 'POST', body: fd });
+        const data = await res.json();
+        if (cancelled) return;
+
+        const trip = data?.trips?.[0];
+        const etapa = trip?.etapas?.find(e => String(e.stage_number) === String(stageNumber));
+        const stops = Array.isArray(etapa?.stops_in_transit)
+          ? [...etapa.stops_in_transit].sort((a, b) => Number(a.stop_order) - Number(b.stop_order))
+          : [];
+
+        if (stops.length === 0) { setStageStops([]); return; }
+
+        const currentStopName = (selected?.current_stop || '').trim().toLowerCase();
+        const currentIdx = currentStopName
+          ? stops.findIndex(s => (s.location || '').trim().toLowerCase() === currentStopName)
+          : -1;
+
+        const withStatus = stops.map((s, i) => ({
+          ...s,
+          stopStatus: currentIdx === -1
+            ? 'completed' // ya no hay parada pendiente reportada: se asume que todas se cubrieron
+            : (i < currentIdx ? 'completed' : (i === currentIdx ? 'current' : 'pending'))
+        }));
+
+        setStageStops(withStatus);
+      } catch (err) {
+        console.error('Error cargando paradas de la etapa:', err);
+        if (!cancelled) setStageStops([]);
+      } finally {
+        if (!cancelled) setStageStopsLoading(false);
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [selected?.trip_number, selected?.current_stage_number, selected?.current_stop]);
 
   const handleUpdateFuel = async (truckId, currentFuel, capacity) => {
     try {
@@ -674,6 +741,54 @@ export default function Tracking() {
                        <Typography variant="caption" display="block" color="#64748b" sx={{ mt: 0.3 }}>
                           Destino final: {selected.current_destination}
                        </Typography>
+                    )}
+
+                    {stageStopsLoading ? (
+                        <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: 1.5 }}>
+                            <CircularProgress size={12} />
+                            <Typography variant="caption" color="#94a3b8">Cargando paradas...</Typography>
+                        </Stack>
+                    ) : stageStops.length > 0 && (
+                        <Stack spacing={0.6} sx={{ mt: 1.5, pt: 1, borderTop: '1px dashed #bfdbfe' }}>
+                            <Typography variant="caption" fontWeight={700} color="#1d4ed8">
+                                Paradas Adicionales ({stageStops.filter(s => s.stopStatus === 'completed').length}/{stageStops.length} completadas)
+                            </Typography>
+                            {stageStops.map((stop, i) => {
+                                const isCompleted = stop.stopStatus === 'completed';
+                                const isCurrent = stop.stopStatus === 'current';
+                                return (
+                                    <Stack key={stop.stop_id || i} direction="row" alignItems="center" spacing={1}>
+                                        {isCompleted ? (
+                                            <CheckCircleIcon sx={{ fontSize: 16, color: '#16a34a', flexShrink: 0 }} />
+                                        ) : isCurrent ? (
+                                            <LocalShippingIcon sx={{ fontSize: 16, color: '#f59e0b', flexShrink: 0 }} />
+                                        ) : (
+                                            <RadioButtonUncheckedIcon sx={{ fontSize: 16, color: '#cbd5e1', flexShrink: 0 }} />
+                                        )}
+                                        <Typography
+                                            variant="caption"
+                                            sx={{
+                                                flexGrow: 1,
+                                                color: isCompleted ? '#16a34a' : isCurrent ? '#b45309' : '#94a3b8',
+                                                fontWeight: isCurrent ? 700 : 500,
+                                                textDecoration: isCompleted ? 'line-through' : 'none',
+                                            }}
+                                        >
+                                            {stop.location}
+                                        </Typography>
+                                        <Chip
+                                            label={isCompleted ? 'Completada' : isCurrent ? 'En curso' : 'Pendiente'}
+                                            size="small"
+                                            sx={{
+                                                height: 16, fontSize: '0.58rem', fontWeight: 700, px: 0.3,
+                                                bgcolor: isCompleted ? '#dcfce7' : isCurrent ? '#fef3c7' : '#f1f5f9',
+                                                color: isCompleted ? '#16a34a' : isCurrent ? '#b45309' : '#94a3b8',
+                                            }}
+                                        />
+                                    </Stack>
+                                );
+                            })}
+                        </Stack>
                     )}
                   </Box>
                 )}
