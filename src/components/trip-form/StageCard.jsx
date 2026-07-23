@@ -267,7 +267,7 @@ const StageCard = ({
                                         if (docKey === 'ima_invoice' && !canManageInvoice) return null;
 
                                         const isNormalTrip = etapa.stageType === 'normalTrip';
-                                        const isAllowedInNormal = ['ima_invoice', 'bl', 'bl_firmado', 'ci', 'qr_manifesto'].includes(docKey);
+                                        const isAllowedInNormal = ['ima_invoice', 'bl', 'bl_firmado', 'ci', 'qr_manifesto', 'carta_porte', 'fianza'].includes(docKey);
                                         const shouldDisable = isFormDisabled || (isNormalTrip && !isAllowedInNormal);
 
                                         return (

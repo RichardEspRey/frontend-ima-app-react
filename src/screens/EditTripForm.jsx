@@ -45,6 +45,10 @@ const EditTripForm = () => {
         return {};
     };
 
+    // Documentos ya guardados con la llave vieja "orden_de_retiro" (bug de BorderCrossingFormNew2)
+    // se normalizan a "orden_retiro" para que sigan viéndose en el detalle de la etapa.
+    const normalizeDocType = (tipo) => (tipo === 'orden_de_retiro' ? 'orden_retiro' : tipo);
+
     // Modals
     const [modalAbierto, setModalAbierto] = useState(false);
     const [modalTarget, setModalTarget] = useState({ stageIndex: null, docType: null, stopIndex: null });
@@ -94,8 +98,9 @@ const EditTripForm = () => {
 
                         if (Array.isArray(etapa.documentos_adjuntos)) {
                             etapa.documentos_adjuntos.forEach(doc => {
-                                if (baseDocs.hasOwnProperty(doc.tipo_documento)) {
-                                    baseDocs[doc.tipo_documento] = {
+                                const tipo = normalizeDocType(doc.tipo_documento);
+                                if (baseDocs.hasOwnProperty(tipo)) {
+                                    baseDocs[tipo] = {
                                         fileName: doc.nombre_archivo?.split(/[\\/]/).pop() || 'Archivo existente',
                                         vencimiento: doc.fecha_vencimiento || null, file: null, document_id: doc.document_id, serverPath: doc.path_servidor_real
                                     };

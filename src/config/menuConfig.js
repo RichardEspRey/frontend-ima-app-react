@@ -162,6 +162,7 @@ export const menuItemsConfig = [
         route: null,
         hideInSidebar: true,
         rolesPermitidos: ["admin"],
+        group: "Pestañas del Administrador de Viajes",
       },
       {
         name: "Ver Pestaña Upcoming",
@@ -169,6 +170,7 @@ export const menuItemsConfig = [
         route: null,
         hideInSidebar: true,
         rolesPermitidos: ["admin", "Blanca", "Candy"],
+        group: "Pestañas del Administrador de Viajes",
       },
       {
         name: "Ver Pestaña Despacho",
@@ -176,6 +178,7 @@ export const menuItemsConfig = [
         route: null,
         hideInSidebar: true,
         rolesPermitidos: ["admin", "Blanca", "Candy"],
+        group: "Pestañas del Administrador de Viajes",
       },
       {
         name: "Ver Pestaña En Ruta",
@@ -183,6 +186,7 @@ export const menuItemsConfig = [
         route: null,
         hideInSidebar: true,
         rolesPermitidos: ["admin", "Blanca", "Candy"],
+        group: "Pestañas del Administrador de Viajes",
       },
       {
         name: "Ver Pestaña Completados",
@@ -190,6 +194,7 @@ export const menuItemsConfig = [
         route: null,
         hideInSidebar: true,
         rolesPermitidos: ["admin", "Blanca", "Candy"],
+        group: "Pestañas del Administrador de Viajes",
       },
       {
         name: "Visibilidad Global de Viajes",
@@ -197,6 +202,7 @@ export const menuItemsConfig = [
         route: null,
         hideInSidebar: true,
         rolesPermitidos: ["admin"],
+        group: "Permisos Avanzados",
       },
       {
         name: "Gestionar Invoices en Viajes",
@@ -204,6 +210,7 @@ export const menuItemsConfig = [
         route: null,
         hideInSidebar: true,
         rolesPermitidos: ["admin"],
+        group: "Permisos Avanzados",
       },
     ],
   },
