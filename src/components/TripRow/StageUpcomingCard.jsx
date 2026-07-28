@@ -8,15 +8,12 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import FmdGoodOutlinedIcon from '@mui/icons-material/FmdGoodOutlined';
-import ReceiptIcon from '@mui/icons-material/Receipt';
 import dayjs from 'dayjs';
 
 const formatTime = (timeStr) => {
     if (!timeStr) return '';
     return timeStr.substring(0, 5);
 };
-
-const apiHost = import.meta.env.VITE_API_HOST;
 
 export const StageUpcomingCard = ({ etapa, getDocumentUrl }) => {
     const departureDate = etapa.date_of_departure
@@ -36,23 +33,6 @@ export const StageUpcomingCard = ({ etapa, getDocumentUrl }) => {
     const otrosDocumentos = Array.isArray(etapa.documentos_adjuntos)
         ? etapa.documentos_adjuntos.filter(d => d.tipo_documento.toLowerCase() !== 'bl_firmado')
         : [];
-    
-    const hasInfoParaInvoice = etapa.ci_number && etapa.rate_tarifa && etapa.loading_date && etapa.delivery_date && etapa.origin && etapa.destination && etapa.invoice_number;
-    
-    // NOTA: 'etapa.has_invoice_generado' será una bandera que nos mandará el backend 
-    // en el futuro cuando la tabla trip_stage_invoices devuelva un registro.
-    const hasInvoiceGenerado = !!etapa.has_invoice_generado; 
-
-    let invoiceStatusColor = 'error'; 
-    let invoiceStatusLabel = 'Falta Info Invoice';
-
-    if (hasInvoiceGenerado) {
-        invoiceStatusColor = 'success'; 
-        invoiceStatusLabel = 'Invoice Generado';
-    } else if (hasInfoParaInvoice) {
-        invoiceStatusColor = 'warning';
-        invoiceStatusLabel = 'Listo para Invoice';
-    }
 
     return (
         <Paper elevation={2} sx={{ borderRadius: 3, overflow: 'hidden', border: '1px solid #e0e0e0', mb: 1 }}>
@@ -86,27 +66,6 @@ export const StageUpcomingCard = ({ etapa, getDocumentUrl }) => {
                                 sx={{ height: 24, fontSize: '0.75rem', fontWeight: 'bold', px: 1 }} 
                             />
                         ))}
-                        {hasInvoiceGenerado && etapa.invoice_file_path ? (
-                            <Chip 
-                                icon={<ReceiptIcon sx={{ fontSize: '12px !important' }} />}
-                                label="Ver Invoice" 
-                                size="small" 
-                                color="success" 
-                                component="a" 
-                                href={`${apiHost}/${etapa.invoice_file_path}`} 
-                                target="_blank" 
-                                clickable
-                                sx={{ height: 20, fontSize: '0.7rem', fontWeight: 'bold', cursor: 'pointer' }} 
-                            />
-                        ) : (
-                            <Chip 
-                                icon={<ReceiptIcon sx={{ fontSize: '12px !important' }} />}
-                                label={invoiceStatusLabel} 
-                                size="small" 
-                                color={invoiceStatusColor} 
-                                sx={{ height: 20, fontSize: '0.7rem', fontWeight: 'bold' }} 
-                            />
-                        )}
                     </Stack>
                 </Stack>
                 {etapa.ci_number && (

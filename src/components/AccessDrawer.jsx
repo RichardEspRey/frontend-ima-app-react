@@ -21,18 +21,167 @@ import {
     Search as SearchIcon
 } from '@mui/icons-material';
 
+// A partir de cuántos permisos "hoja" seguidos se usa la cuadrícula compacta en vez de filas.
+const COMPACT_GRID_THRESHOLD = 5;
+
+// Agrupa visualmente sub-items consecutivos que comparten `group` bajo un encabezado.
+// No modifica los datos reales (featureKey/route/rolesPermitidos): el Sidebar sigue
+// leyendo el array plano original y nunca ve estos encabezados sintéticos.
+const groupSubItems = (subItems) => {
+    const result = [];
+    let currentGroup = null;
+    subItems.forEach((item) => {
+        if (item.group) {
+            if (!currentGroup || currentGroup.name !== item.group) {
+                currentGroup = { name: item.group, isGroupLabel: true, subItems: [] };
+                result.push(currentGroup);
+            }
+            currentGroup.subItems.push(item);
+        } else {
+            currentGroup = null;
+            result.push(item);
+        }
+    });
+    return result;
+};
+
+// Cuenta permisos reales (hojas) activos/totales bajo un nodo, recursivo.
+const countLeafFeatures = (node, desktopFeaturesMap) => {
+    if (!node.subItems || node.subItems.length === 0) {
+        const fd = desktopFeaturesMap[node.featureKey || node.name];
+        return { total: 1, enabled: fd && Number(fd.enabled) === 1 ? 1 : 0 };
+    }
+    return node.subItems.reduce((acc, child) => {
+        const r = countLeafFeatures(child, desktopFeaturesMap);
+        return { total: acc.total + r.total, enabled: acc.enabled + r.enabled };
+    }, { total: 0, enabled: 0 });
+};
+
+const CountBadge = ({ enabled, total }) => (
+    <Chip
+        label={`${enabled}/${total}`}
+        size="small"
+        sx={{
+            height: 18, fontSize: '0.65rem', fontWeight: 700, ml: 1,
+            bgcolor: enabled > 0 ? 'primary.main' : '#e0e0e0',
+            color: enabled > 0 ? '#fff' : 'text.secondary'
+        }}
+    />
+);
+
+// Toggle compacto para permisos "hoja" dentro de un grupo: se puede togglear
+// haciendo clic en cualquier parte del chip, no solo en el switch.
+const PermissionChip = ({ node, desktopFeaturesMap, onToggleFeature, userId, isParentAllowed }) => {
+    const featureData = desktopFeaturesMap[node.featureKey || node.name];
+    const existInDB = !!featureData;
+    const isAllowed = existInDB && Number(featureData.enabled) === 1;
+    const disabled = !existInDB || !isParentAllowed;
+
+    return (
+        <Box
+            onClick={() => !disabled && onToggleFeature(userId, featureData.feature_id, 'Desktop', !isAllowed)}
+            sx={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1,
+                minWidth: 168, maxWidth: 240, flex: '1 1 168px',
+                px: 1.25, py: 0.5, borderRadius: 2,
+                border: '1px solid', borderColor: isAllowed ? '#1976d2' : '#e0e0e0',
+                bgcolor: isAllowed ? 'rgba(25, 118, 210, 0.06)' : '#fff',
+                cursor: disabled ? 'default' : 'pointer',
+                opacity: disabled ? 0.55 : 1,
+                transition: 'all 0.15s',
+                '&:hover': disabled ? {} : { borderColor: '#1976d2', bgcolor: 'rgba(25, 118, 210, 0.1)' },
+            }}
+        >
+            <Typography
+                variant="caption"
+                fontWeight={isAllowed ? 700 : 500}
+                color={isAllowed ? 'primary.main' : 'text.primary'}
+                sx={{ lineHeight: 1.2, wordBreak: 'break-word' }}
+                title={!existInDB ? 'Falta dar de alta en BD' : undefined}
+            >
+                {node.name}{!existInDB && ' ⚠'}
+            </Typography>
+            <Switch
+                size="small"
+                checked={isAllowed}
+                disabled={disabled}
+                onClick={(e) => e.stopPropagation()}
+                onChange={(e) => existInDB && onToggleFeature(userId, featureData.feature_id, 'Desktop', e.target.checked)}
+                color="primary"
+            />
+        </Box>
+    );
+};
+
 const PermissionNode = ({ node, level, desktopFeaturesMap, onToggleFeature, userId, expandedSections, toggleSection, searchTerm, isParentAllowed = true }) => {
+    if (node.isGroupLabel) {
+        const { enabled, total } = countLeafFeatures(node, desktopFeaturesMap);
+        const allLeaf = node.subItems.every(child => !(child.subItems && child.subItems.length > 0));
+
+        return (
+            <React.Fragment>
+                <ListItem sx={{ pl: 2 + (level * 4), py: 0.5, bgcolor: '#eef2f6' }}>
+                    <ListItemText
+                        primary={
+                            <Stack direction="row" alignItems="center">
+                                <Typography variant="overline" fontWeight={700} color="text.secondary" sx={{ fontSize: '0.68rem', letterSpacing: 0.4 }}>
+                                    {node.name}
+                                </Typography>
+                                <CountBadge enabled={enabled} total={total} />
+                            </Stack>
+                        }
+                    />
+                </ListItem>
+                {allLeaf ? (
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, pl: 2 + (level * 4), pr: 2, pt: 1, pb: 1.5 }}>
+                        {node.subItems.map(child => (
+                            <PermissionChip
+                                key={child.featureKey || child.name}
+                                node={child}
+                                desktopFeaturesMap={desktopFeaturesMap}
+                                onToggleFeature={onToggleFeature}
+                                userId={userId}
+                                isParentAllowed={isParentAllowed}
+                            />
+                        ))}
+                    </Box>
+                ) : (
+                    node.subItems.map(child => (
+                        <PermissionNode
+                            key={child.featureKey || child.name}
+                            node={child}
+                            level={level + 1}
+                            desktopFeaturesMap={desktopFeaturesMap}
+                            onToggleFeature={onToggleFeature}
+                            userId={userId}
+                            expandedSections={expandedSections}
+                            toggleSection={toggleSection}
+                            searchTerm={searchTerm}
+                            isParentAllowed={isParentAllowed}
+                        />
+                    ))
+                )}
+            </React.Fragment>
+        );
+    }
+
     const hasSubItems = node.subItems && node.subItems.length > 0;
     const permissionKey = node.featureKey || node.name;
-    
+
     const featureData = desktopFeaturesMap[permissionKey];
     const existInDB = !!featureData;
     const isAllowed = existInDB && Number(featureData.enabled) === 1;
-    
+
     const isExpanded = expandedSections[permissionKey] || searchTerm.length > 0;
-    
+
     const effectiveAllowed = isParentAllowed && isAllowed;
     const isRoot = level === 0;
+    const displaySubItems = hasSubItems ? groupSubItems(node.subItems) : [];
+    const leafCount = hasSubItems ? countLeafFeatures(node, desktopFeaturesMap) : null;
+    // Sin `group` explícito, si de todos modos hay muchos permisos "hoja" seguidos
+    // (ej. Mantenimientos), se acomodan solos en cuadrícula compacta.
+    const allDisplayLeaf = hasSubItems && displaySubItems.every(child => !(child.subItems && child.subItems.length > 0));
+    const useCompactGrid = allDisplayLeaf && displaySubItems.length >= COMPACT_GRID_THRESHOLD;
 
     return (
         <React.Fragment>
@@ -58,9 +207,18 @@ const PermissionNode = ({ node, level, desktopFeaturesMap, onToggleFeature, user
                 </ListItemIcon>
 
                 <ListItemText
-                    primary={node.name}
+                    primary={
+                        hasSubItems ? (
+                            <Stack direction="row" alignItems="center">
+                                <Typography variant={isRoot ? 'body1' : 'body2'} fontWeight={isRoot ? 500 : 400}>
+                                    {node.name}
+                                </Typography>
+                                <CountBadge enabled={leafCount.enabled} total={leafCount.total} />
+                            </Stack>
+                        ) : node.name
+                    }
                     secondary={!existInDB ? "⚠ Falta dar de alta en BD" : (isRoot && hasSubItems ? "Desplegar opciones" : (!node.route ? "Control de Pestaña/Vista" : "Acceso a pantalla"))}
-                    primaryTypographyProps={{ fontWeight: isRoot ? 500 : 400, variant: isRoot ? 'body1' : 'body2' }}
+                    primaryTypographyProps={hasSubItems ? undefined : { fontWeight: isRoot ? 500 : 400, variant: isRoot ? 'body1' : 'body2' }}
                     secondaryTypographyProps={{ variant: 'caption', color: !existInDB ? 'error.main' : 'textSecondary' }}
                 />
 
@@ -83,22 +241,37 @@ const PermissionNode = ({ node, level, desktopFeaturesMap, onToggleFeature, user
 
             {hasSubItems && (
                 <Collapse in={isExpanded} timeout="auto" unmountOnExit>
-                    <List component="div" disablePadding sx={{ bgcolor: isRoot ? '#fafafa' : 'transparent' }}>
-                        {node.subItems.map(child => (
-                            <PermissionNode
-                                key={child.featureKey || child.name} 
-                                node={child} 
-                                level={level + 1}
-                                desktopFeaturesMap={desktopFeaturesMap} 
-                                onToggleFeature={onToggleFeature} 
-                                userId={userId}
-                                expandedSections={expandedSections} 
-                                toggleSection={toggleSection} 
-                                searchTerm={searchTerm}
-                                isParentAllowed={effectiveAllowed} 
-                            />
-                        ))}
-                    </List>
+                    {useCompactGrid ? (
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, pl: 2 + ((level + 1) * 4), pr: 2, pt: 1, pb: 1.5, bgcolor: isRoot ? '#fafafa' : 'transparent' }}>
+                            {displaySubItems.map(child => (
+                                <PermissionChip
+                                    key={child.featureKey || child.name}
+                                    node={child}
+                                    desktopFeaturesMap={desktopFeaturesMap}
+                                    onToggleFeature={onToggleFeature}
+                                    userId={userId}
+                                    isParentAllowed={effectiveAllowed}
+                                />
+                            ))}
+                        </Box>
+                    ) : (
+                        <List component="div" disablePadding sx={{ bgcolor: isRoot ? '#fafafa' : 'transparent' }}>
+                            {displaySubItems.map(child => (
+                                <PermissionNode
+                                    key={child.featureKey || child.name}
+                                    node={child}
+                                    level={level + 1}
+                                    desktopFeaturesMap={desktopFeaturesMap}
+                                    onToggleFeature={onToggleFeature}
+                                    userId={userId}
+                                    expandedSections={expandedSections}
+                                    toggleSection={toggleSection}
+                                    searchTerm={searchTerm}
+                                    isParentAllowed={effectiveAllowed}
+                                />
+                            ))}
+                        </List>
+                    )}
                 </Collapse>
             )}
         </React.Fragment>
