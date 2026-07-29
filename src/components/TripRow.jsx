@@ -25,7 +25,7 @@ dayjs.extend(localizedFormat);
 dayjs.locale('es');
 
 export const TripRow = ({
-  trip, isCompletedTab, onEdit, onFinalize, onAlmostOver, onReactivate, isAdmin, getDocumentUrl, onSummary,
+  trip, isCompletedTab, onEdit, onFinalize, onAlmostOver, onReactivate, onSpecialEdit, isAdmin, canSpecialEdit, getDocumentUrl, onSummary,
   showDocsColumn = false, isDespachoTab = false, documentosFaltantes = 0, documentosFaltantesLista = [],
   onSalida, colSpanOverride, isUpcomingTab = false, isEnRutaTab = false, onDelete,
 }) => {
@@ -261,7 +261,14 @@ ${(!trip.caja_id && !trip.caja_externa_id) ? 'Sin tráiler asignado' : ''}
         </TableCell>
 
         {isCompletedTab && <TableCell><Button size="small" variant="contained" color="secondary" onClick={() => onSummary(trip.trip_id)}>Resumen</Button></TableCell>}
-        {isAdmin && (isCompletedTab || isEnRutaTab) && <TableCell><Button size="small" variant="outlined" color="warning" onClick={() => onReactivate(trip.trip_id, trip.trip_number)}>Reactivar</Button></TableCell>}
+        {isAdmin && (isCompletedTab || isEnRutaTab) && (
+          <TableCell>
+            <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 0.8 }}>
+              <Button size="small" variant="outlined" color="warning" onClick={() => onReactivate(trip.trip_id, trip.trip_number)}>Reactivar</Button>
+              {canSpecialEdit && <Button size="small" variant="outlined" color="info" onClick={() => onSpecialEdit && onSpecialEdit(trip.trip_id, trip.trip_number)}>Editar</Button>}
+            </Box>
+          </TableCell>
+        )}
       </TableRow>
 
       <TableRow>

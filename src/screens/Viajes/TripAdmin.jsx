@@ -91,9 +91,12 @@ const parseJsonSafe = async (response) => {
     }
 };
 
+const SPECIAL_EDIT_USERS = new Set(['Blanca', 'Angelica', 'Israel', 'Richard']);
+
 const TripAdmin = () => {
     const { userPermissions, user } = useAuthStore();
     const isAdmin = user?.tipo_usuario?.toLowerCase() === 'admin' || user?.name === 'Blanca';
+    const canSpecialEdit = SPECIAL_EDIT_USERS.has(user?.name);
     const navigate = useNavigate();
 
     const apiHost = import.meta.env.VITE_API_HOST;
@@ -314,6 +317,8 @@ const TripAdmin = () => {
             } catch (err) { Swal.fire('Error', err.message, 'error'); }
         }
     };
+
+    const handleSpecialEdit = (tripId) => navigate(`/edit-trip-complete/${tripId}`);
 
     const handleReactivateTrip = async (tripId, tripNumber, isEnRuta = false) => {
         if (!tripId) return;
@@ -799,6 +804,7 @@ const TripAdmin = () => {
                                                 key={trip.trip_id}
                                                 trip={trip}
                                                 isAdmin={isAdmin}
+                                                canSpecialEdit={canSpecialEdit}
                                                 isCompletedTab={tabValue === 3}
                                                 isDespachoTab={isDespachoTab}
                                                 isUpcomingTab={isUpcomingTab}
@@ -814,6 +820,7 @@ const TripAdmin = () => {
                                                 onAlmostOver={handleAlmostOverTrip}
                                                 onFinalize={handleFinalizeTrip}
                                                 onReactivate={(tripId, tripNumber) => handleReactivateTrip(tripId, tripNumber, isEnRutaTab)}
+                                                onSpecialEdit={handleSpecialEdit}
                                                 onSalida={handleSalida}
                                             />
                                         );

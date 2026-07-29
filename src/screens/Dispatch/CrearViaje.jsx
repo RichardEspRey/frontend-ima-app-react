@@ -121,6 +121,21 @@ const CrearViaje = () => {
     if (!checked) setSelectedTransnational("");
   };
 
+  const handleTransnationalTripChange = (e) => {
+    const value = e.target.value;
+    setSelectedTransnational(value);
+
+    const selectedTrip = transnationalTrips.find(
+      (t) => (t.transnational_number ?? t.trip_number) === value
+    );
+
+    if (selectedTrip && selectedTrip.movement_number != null) {
+      setMovementNumber(String(Number(selectedTrip.movement_number) + 1));
+    } else {
+      setMovementNumber("");
+    }
+  };
+
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
       <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ xs: 'flex-start', sm: 'center' }} sx={{ mb: 4 }} spacing={2}>
@@ -184,7 +199,7 @@ const CrearViaje = () => {
                   <Box sx={{ pl: 3 }}>
                     <FormControlLabel control={<Checkbox checked={isContinuation} onChange={handleContinuationChange} size="small" />} label={`Continuación (${oppositeCountry})`} />
                     {isContinuation && (
-                      <TextField select label={`Vincular con Viaje ${oppositeCountry}`} value={selectedTransnational} onChange={(e) => setSelectedTransnational(e.target.value)} fullWidth size="small" margin="dense">
+                      <TextField select label={`Vincular con Viaje ${oppositeCountry}`} value={selectedTransnational} onChange={handleTransnationalTripChange} fullWidth size="small" margin="dense">
                         <MenuItem value="">-- Seleccione --</MenuItem>
                         {transnationalTrips.map((t) => (
                           <MenuItem key={t.transnational_number ?? t.trip_id ?? `${t.trip_number}-${t.trip_year}`} value={t.transnational_number ?? t.trip_number}>
