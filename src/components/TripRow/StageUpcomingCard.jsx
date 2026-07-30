@@ -9,6 +9,7 @@ import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import FmdGoodOutlinedIcon from '@mui/icons-material/FmdGoodOutlined';
 import dayjs from 'dayjs';
+import { useAuthStore } from '../../store/useAuthStore';
 
 const formatTime = (timeStr) => {
     if (!timeStr) return '';
@@ -16,6 +17,11 @@ const formatTime = (timeStr) => {
 };
 
 export const StageUpcomingCard = ({ etapa, getDocumentUrl }) => {
+    const user = useAuthStore(state => state.user);
+    const userPermissions = useAuthStore(state => state.userPermissions);
+    const isAdmin = String(user?.tipo_usuario || '').trim().toLowerCase() === 'admin';
+    const canManageInvoice = isAdmin || userPermissions['viajes_invoice_fields'] === true;
+
     const departureDate = etapa.date_of_departure
         ? dayjs(etapa.date_of_departure).format("DD/MM/YYYY")
         : (etapa.loading_date
@@ -68,7 +74,7 @@ export const StageUpcomingCard = ({ etapa, getDocumentUrl }) => {
                         ))}
                     </Stack>
                 </Stack>
-                {etapa.ci_number && (
+                {canManageInvoice && etapa.ci_number && (
                     <Chip label={`CI: ${etapa.ci_number}`} variant="outlined" color="primary" sx={{ fontWeight: 'bold', bgcolor: '#fff' }} />
                 )}
             </Box>
