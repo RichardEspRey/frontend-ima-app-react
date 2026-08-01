@@ -318,7 +318,7 @@ const EditTripComplete = () => {
     const handleSaveChanges = async () => {
         if (!formData.driver_id || !formData.truck_id) return Swal.fire('Error', 'Driver y Truck obligatorios', 'warning');
 
-        const fd = new FormData(); fd.append('op', 'Update'); fd.append('trip_id', tripId);
+        const fd = new FormData(); fd.append('op', 'Update_complete'); fd.append('trip_id', tripId);
         fd.append('trip_number', formData.trip_number || ''); fd.append('return_date', formData.return_date ? format(formData.return_date, 'yyyy-MM-dd') : '');
         Object.entries(formData).forEach(([k, v]) => { if (!['status', 'trip_number', 'return_date'].includes(k)) fd.append(k, v || ''); });
 
