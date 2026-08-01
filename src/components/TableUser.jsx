@@ -1,29 +1,44 @@
 import { useState, useMemo } from 'react';
 import {
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-    Paper, TextField, Box, IconButton, TablePagination, Typography, Chip
+    Paper, TextField, Box, IconButton, TablePagination, Typography, Chip,
+    Tabs, Tab
 } from '@mui/material';
 import { Settings as SettingsIcon, Search as SearchIcon } from '@mui/icons-material';
 
+// "Driver" es la única categoría de chofer; cualquier otro tipo (Admin, Administrativo, etc.)
+// se agrupa como Administradores, así los nombres inconsistentes en BD no rompen la división.
+const isDriver = (type) => String(type || '').trim().toLowerCase() === 'driver';
+
 const TableUser = ({ users, onEditUser }) => {
     const [searchTerm, setSearchTerm] = useState('');
+    const [tabIndex, setTabIndex] = useState(0); // 0 = Administradores, 1 = Drivers
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
 
+    const adminCount = useMemo(() => users.filter(u => !isDriver(u.type)).length, [users]);
+    const driverCount = useMemo(() => users.filter(u => isDriver(u.type)).length, [users]);
+
     const filteredUsers = useMemo(() => {
-        if (!searchTerm) return users;
+        const byTab = users.filter(u => (tabIndex === 1 ? isDriver(u.type) : !isDriver(u.type)));
+        if (!searchTerm) return byTab;
 
         const lower = searchTerm.toLowerCase();
-        return users.filter(user =>
+        return byTab.filter(user =>
             user.name?.toLowerCase().includes(lower) ||
             user.user?.toLowerCase().includes(lower) ||
             user.type?.toLowerCase().includes(lower)
         );
-    }, [users, searchTerm]);
+    }, [users, tabIndex, searchTerm]);
 
     const paginatedUsers = useMemo(() => {
         return filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
     }, [filteredUsers, page, rowsPerPage]);
+
+    const handleChangeTab = (event, newValue) => {
+        setTabIndex(newValue);
+        setPage(0);
+    };
 
     const handleChangePage = (event, newPage) => setPage(newPage);
 
@@ -34,6 +49,15 @@ const TableUser = ({ users, onEditUser }) => {
 
     return (
         <Paper elevation={3} sx={{ p: 3 }}>
+            <Tabs
+                value={tabIndex}
+                onChange={handleChangeTab}
+                sx={{ mb: 2, borderBottom: 1, borderColor: 'divider' }}
+            >
+                <Tab label={`Administradores (${adminCount})`} />
+                <Tab label={`Drivers (${driverCount})`} />
+            </Tabs>
+
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                 <Typography variant="h6">Lista de Usuarios ({filteredUsers.length} resultados)</Typography>
 

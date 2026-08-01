@@ -6,15 +6,20 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import ReceiptIcon from '@mui/icons-material/Receipt';
 import dayjs from 'dayjs';
+import { useAuthStore } from '../../store/useAuthStore';
 
 const formatTime = (timeStr) => {
   if (!timeStr) return '';
-  return timeStr.substring(0, 5); 
+  return timeStr.substring(0, 5);
 };
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
 export const StageNormalCard = ({ etapa, getDocumentUrl, isCompleted }) => {
+  const user = useAuthStore(state => state.user);
+  const userPermissions = useAuthStore(state => state.userPermissions);
+  const isAdmin = String(user?.tipo_usuario || '').trim().toLowerCase() === 'admin';
+  const canManageInvoice = isAdmin || userPermissions['viajes_invoice_fields'] === true;
 
   // 1. Separamos SOLO el BL Firmado
   const mainBLDocs = Array.isArray(etapa.documentos_adjuntos)
@@ -75,7 +80,7 @@ export const StageNormalCard = ({ etapa, getDocumentUrl, isCompleted }) => {
                 {etapa.nombre_compania || 'Compañía sin nombre'}
               </Typography>
               
-              {etapa.ci_number && (
+              {canManageInvoice && etapa.ci_number && (
                 <Chip label={`CI: ${etapa.ci_number}`} size="small" sx={{ height: 20, fontSize:'0.7rem', fontWeight: 'bold' }} />
               )}
 
