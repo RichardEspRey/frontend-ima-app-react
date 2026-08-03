@@ -1,12 +1,12 @@
 import React from 'react';
 import { Paper, Box, Typography, Stack, Divider, Chip, Grid } from '@mui/material';
 import BusinessIcon from '@mui/icons-material/Business';
-import RoomIcon from '@mui/icons-material/Room';
-import FlagIcon from '@mui/icons-material/Flag';
-import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
-import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
-import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import RoomOutlinedIcon from '@mui/icons-material/RoomOutlined';
+import FlagOutlinedIcon from '@mui/icons-material/FlagOutlined';
+import CalendarTodayOutlinedIcon from '@mui/icons-material/CalendarTodayOutlined';
+import AccessTimeOutlinedIcon from '@mui/icons-material/AccessTimeOutlined';
+import InsertDriveFileOutlinedIcon from '@mui/icons-material/InsertDriveFileOutlined';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import FmdGoodOutlinedIcon from '@mui/icons-material/FmdGoodOutlined';
 import dayjs from 'dayjs';
 import { useAuthStore } from '../../store/useAuthStore';
@@ -37,100 +37,101 @@ export const StageUpcomingCard = ({ etapa, getDocumentUrl }) => {
         : [];
 
     const otrosDocumentos = Array.isArray(etapa.documentos_adjuntos)
-        ? etapa.documentos_adjuntos.filter(d => d.tipo_documento.toLowerCase() !== 'bl_firmado')
+        ? etapa.documentos_adjuntos.filter(d => {
+            const tipo = d.tipo_documento.toLowerCase();
+            if (tipo === 'bl_firmado') return false;
+            if (!canManageInvoice && (tipo === 'ci' || tipo === 'ima_invoice')) return false;
+            return true;
+          })
         : [];
 
     return (
-        <Paper elevation={2} sx={{ borderRadius: 3, overflow: 'hidden', border: '1px solid #e0e0e0', mb: 1 }}>
-            
+        <Paper elevation={0} sx={{ borderRadius: 2, overflow: 'hidden', border: '1px solid #e2e8f0', mb: 1 }}>
+
             {/* ENCABEZADO DE LA ETAPA */}
-            <Box sx={{ bgcolor: '#f0f4f8', px: 3, py: 1.5, borderBottom: '1px solid #e0e0e0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
+            <Box sx={{ bgcolor: '#fafbfc', px: 2.5, py: 1.5, borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
                 <Stack direction="row" alignItems="center" spacing={2} flexWrap="wrap" useFlexGap>
-                    <Chip 
-                        label={`Etapa ${etapa.stage_number}${etapa.travel_direction ? ` • ${etapa.travel_direction}` : ''}`} 
-                        size="small" 
-                        color={etapa.travel_direction === 'Going Up' ? 'success' : (etapa.travel_direction === 'Going Down' ? 'warning' : 'default')} 
-                        sx={{ fontWeight: 'bold' }} 
-                    />
+                    <Typography variant="overline" sx={{ color: '#94a3b8', fontWeight: 700, letterSpacing: '0.06em', fontSize: '0.68rem' }}>
+                        Etapa {etapa.stage_number}{etapa.travel_direction ? ` • ${etapa.travel_direction}` : ''}
+                    </Typography>
                     <Stack direction="row" alignItems="center" spacing={1} flexWrap="wrap" useFlexGap>
-                        <BusinessIcon color="action" />
-                        <Typography variant="subtitle1" fontWeight={700} color="text.primary">
+                        <BusinessIcon sx={{ fontSize: 18, color: '#94a3b8' }} />
+                        <Typography variant="subtitle1" fontWeight={700} color="#0f172a">
                             {etapa.nombre_compania || 'Compañía sin nombre'}
                         </Typography>
 
                         {mainBLDocs.map(doc => (
-                            <Chip 
+                            <Chip
                                 key={doc.document_id}
-                                icon={<InsertDriveFileIcon sx={{ fontSize: '14px !important', color: '#fff' }} />}
-                                label="BL Firmado" 
-                                size="small" 
-                                component="a" 
-                                href={getDocumentUrl(doc.path_servidor_real || doc.nombre_archivo)} 
-                                target="_blank" 
-                                clickable 
-                                color="info" 
-                                sx={{ height: 24, fontSize: '0.75rem', fontWeight: 'bold', px: 1 }} 
+                                icon={<InsertDriveFileOutlinedIcon sx={{ fontSize: '13px !important' }} />}
+                                label="BL Firmado"
+                                size="small"
+                                component="a"
+                                href={getDocumentUrl(doc.path_servidor_real || doc.nombre_archivo)}
+                                target="_blank"
+                                clickable
+                                sx={{ height: 22, fontSize: '0.7rem', fontWeight: 700, bgcolor: '#eff6ff', color: '#2563eb', border: '1px solid #2563eb22' }}
                             />
                         ))}
                     </Stack>
                 </Stack>
                 {canManageInvoice && etapa.ci_number && (
-                    <Chip label={`CI: ${etapa.ci_number}`} variant="outlined" color="primary" sx={{ fontWeight: 'bold', bgcolor: '#fff' }} />
+                    <Chip label={`CI: ${etapa.ci_number}`} sx={{ fontWeight: 700, bgcolor: '#f1f5f9', color: '#475569' }} />
                 )}
             </Box>
 
-            <Box sx={{ p: 3, pb: tieneParadas ? 1 : 3 }}> 
+            <Box sx={{ p: 2.5, pb: tieneParadas ? 1 : 2.5 }}>
                 <Grid container spacing={2} alignItems="center">
                     {/* ORIGEN Y FECHA SALIDA */}
                     <Grid item xs={12} md={5}>
-                        <Paper variant="outlined" sx={{ p: 2, bgcolor: '#fafafa', borderRadius: 2, borderLeft: '4px solid #0288d1' }}>
-                            <Stack direction="row" alignItems="center" spacing={1} mb={2}>
-                                <RoomIcon color="primary" />
-                                <Typography variant="h6" fontWeight={700} color="text.secondary">Origen</Typography>
+                        <Paper variant="outlined" sx={{ p: 2, bgcolor: '#fafbfc', borderRadius: 2, borderLeft: '3px solid #2563eb', borderColor: '#e2e8f0' }}>
+                            <Stack direction="row" alignItems="center" spacing={1} mb={1.5}>
+                                <RoomOutlinedIcon sx={{ fontSize: 18, color: '#2563eb' }} />
+                                <Typography variant="caption" fontWeight={700} color="#94a3b8" sx={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}>Origen</Typography>
                             </Stack>
-                            <Typography variant="body1" fontWeight={600} mb={2} sx={{ minHeight: '48px' }}>
+                            <Typography variant="body1" fontWeight={600} color="#0f172a" mb={1.5} sx={{ minHeight: '48px' }}>
                                 {etapa.origin || 'Sin origen especificado'}
                             </Typography>
-                            
-                            <Box sx={{ bgcolor: '#e1f5fe', p: 1.5, borderRadius: 2, display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                <CalendarMonthIcon sx={{ color: '#0288d1', fontSize: 32 }} />
+
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+                                <CalendarTodayOutlinedIcon sx={{ color: '#94a3b8', fontSize: 20 }} />
                                 <Box>
-                                    <Typography variant="caption" color="text.secondary" fontWeight={700} sx={{ textTransform: 'uppercase' }}>FECHA SALIDA</Typography>
-                                    <Typography variant="h6" color="#0288d1" fontWeight={800} lineHeight={1}>{departureDate}</Typography>
+                                    <Typography variant="caption" color="#94a3b8" fontWeight={700} sx={{ textTransform: 'uppercase', fontSize: '0.65rem' }}>Fecha Salida</Typography>
+                                    <Typography variant="body1" color="#0f172a" fontWeight={700} lineHeight={1.2}>{departureDate}</Typography>
                                 </Box>
                             </Box>
                         </Paper>
                     </Grid>
 
                     <Grid item xs={12} md={2} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                        <ArrowForwardIosIcon sx={{ fontSize: 40, color: '#bdbdbd', display: { xs: 'none', md: 'block' } }} />
+                        <ArrowForwardIcon sx={{ fontSize: 24, color: '#cbd5e1', display: { xs: 'none', md: 'block' } }} />
                     </Grid>
 
                     <Grid item xs={12} md={5}>
-                        <Paper variant="outlined" sx={{ p: 2, bgcolor: '#fafafa', borderRadius: 2, borderLeft: '4px solid #d32f2f' }}>
-                            <Stack direction="row" alignItems="center" spacing={1} mb={2}>
-                                <FlagIcon color="error" />
-                                <Typography variant="h6" fontWeight={700} color="text.secondary">Destino</Typography>
+                        <Paper variant="outlined" sx={{ p: 2, bgcolor: '#fafbfc', borderRadius: 2, borderLeft: '3px solid #dc2626', borderColor: '#e2e8f0' }}>
+                            <Stack direction="row" alignItems="center" spacing={1} mb={1.5}>
+                                <FlagOutlinedIcon sx={{ fontSize: 18, color: '#dc2626' }} />
+                                <Typography variant="caption" fontWeight={700} color="#94a3b8" sx={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}>Destino</Typography>
                             </Stack>
-                            <Typography variant="body1" fontWeight={600} mb={2} sx={{ minHeight: '48px' }}>
+                            <Typography variant="body1" fontWeight={600} color="#0f172a" mb={1.5} sx={{ minHeight: '48px' }}>
                                 {etapa.destination || 'Sin destino especificado'}
                             </Typography>
 
-                            <Stack direction="row" spacing={1}>
-                                <Box sx={{ bgcolor: '#ffebee', p: 1.5, borderRadius: 2, flexGrow: 1, display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                    <CalendarMonthIcon sx={{ color: '#d32f2f', fontSize: 32 }} />
+                            <Stack direction="row" spacing={2}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, flexGrow: 1 }}>
+                                    <CalendarTodayOutlinedIcon sx={{ color: '#94a3b8', fontSize: 20 }} />
                                     <Box>
-                                        <Typography variant="caption" color="text.secondary" fontWeight={700} sx={{ textTransform: 'uppercase' }}>FECHA ENTREGA</Typography>
-                                        <Typography variant="h6" color="#d32f2f" fontWeight={800} lineHeight={1}>{deliveryDate}</Typography>
+                                        <Typography variant="caption" color="#94a3b8" fontWeight={700} sx={{ textTransform: 'uppercase', fontSize: '0.65rem' }}>Fecha Entrega</Typography>
+                                        <Typography variant="body1" color="#0f172a" fontWeight={700} lineHeight={1.2}>{deliveryDate}</Typography>
                                     </Box>
                                 </Box>
-                                
+
                                 {etapa.time_of_delivery && (
-                                    <Box sx={{ bgcolor: '#fff3e0', p: 1.5, borderRadius: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                                        <AccessTimeIcon sx={{ color: '#d32f2f', fontSize: 28 }} />
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        <AccessTimeOutlinedIcon sx={{ color: '#94a3b8', fontSize: 18 }} />
                                         <Box>
-                                            <Typography variant="caption" color="text.secondary" fontWeight={700} sx={{ textTransform: 'uppercase' }}>HORA</Typography>
-                                            <Typography variant="h6" color="#d32f2f" fontWeight={800} lineHeight={1}>{formatTime(etapa.time_of_delivery)}</Typography>
+                                            <Typography variant="caption" color="#94a3b8" fontWeight={700} sx={{ textTransform: 'uppercase', fontSize: '0.65rem' }}>Hora</Typography>
+                                            <Typography variant="body2" color="#0f172a" fontWeight={700} lineHeight={1.2}>{formatTime(etapa.time_of_delivery)}</Typography>
                                         </Box>
                                     </Box>
                                 )}
@@ -141,44 +142,49 @@ export const StageUpcomingCard = ({ etapa, getDocumentUrl }) => {
             </Box>
 
             {tieneParadas && (
-                <Box sx={{ px: 3, pb: 3 }}>
-                    <Paper variant="outlined" sx={{ p: 2, bgcolor: '#fff', borderRadius: 2, border: '1px solid #e0e0e0' }}>
-                        <Typography variant="subtitle2" fontWeight={800} color="text.primary" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                            <FmdGoodOutlinedIcon color="action" /> Detalle de Paradas en Tránsito ({etapa.stops_in_transit.length})
-                        </Typography>
-                        
-                        <Stack spacing={1} divider={<Divider orientation="horizontal" flexItem sx={{ borderStyle: 'dashed' }} />}>
+                <Box sx={{ px: 2.5, pb: 2.5 }}>
+                    <Paper variant="outlined" sx={{ p: 2, bgcolor: '#fff', borderRadius: 2, borderColor: '#e2e8f0' }}>
+                        <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1.5 }}>
+                            <FmdGoodOutlinedIcon sx={{ fontSize: 16, color: '#94a3b8' }} />
+                            <Typography variant="overline" fontWeight={700} color="#94a3b8" sx={{ fontSize: '0.65rem', letterSpacing: '0.06em' }}>
+                                Detalle de Paradas en Tránsito ({etapa.stops_in_transit.length})
+                            </Typography>
+                        </Stack>
+
+                        <Stack spacing={1} divider={<Divider sx={{ borderColor: '#f1f5f9' }} />}>
                             {etapa.stops_in_transit.map((stop, index) => (
-                                <Box key={index} sx={{ py: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
+                                <Box key={index} sx={{ py: 0.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
                                     <Stack direction="row" alignItems="center" spacing={1.5} sx={{ flexGrow: 1 }}>
-                                        <Typography variant="body2" fontWeight={700} color="text.secondary" sx={{ minWidth: '25px' }}>
-                                            #{stop.stop_order || (index + 1)}
-                                        </Typography>
-                                        <Typography variant="body2" fontWeight={600} color="text.primary">
+                                        <Box sx={{
+                                            width: 18, height: 18, borderRadius: '50%', bgcolor: '#f1f5f9', color: '#64748b',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem', fontWeight: 700, flexShrink: 0,
+                                        }}>
+                                            {stop.stop_order || (index + 1)}
+                                        </Box>
+                                        <Typography variant="body2" fontWeight={600} color="#334155">
                                             {stop.location}
                                         </Typography>
-                                        
+
                                         {stop.time_of_delivery && (
-                                            <Chip 
-                                                icon={<AccessTimeIcon sx={{ fontSize: '14px !important' }} />} 
-                                                label={formatTime(stop.time_of_delivery)} 
-                                                size="small" 
-                                                sx={{ height: 20, fontSize: '0.7rem', bgcolor: '#f5f5f5', border: '1px solid #e0e0e0' }} 
+                                            <Chip
+                                                icon={<AccessTimeOutlinedIcon sx={{ fontSize: '13px !important' }} />}
+                                                label={formatTime(stop.time_of_delivery)}
+                                                size="small"
+                                                sx={{ height: 20, fontSize: '0.7rem', bgcolor: '#f8fafc', border: '1px solid #e2e8f0', color: '#64748b' }}
                                             />
                                         )}
                                     </Stack>
 
                                     {stop.bl_firmado_doc && (
-                                        <Chip 
-                                            icon={<InsertDriveFileIcon style={{ fontSize: '14px', color: '#fff' }} />}
-                                            label="BL" 
-                                            component="a" 
-                                            href={getDocumentUrl(stop.bl_firmado_doc.path_servidor_real || stop.bl_firmado_doc.nombre_archivo)} 
-                                            target="_blank" 
-                                            clickable 
-                                            color="info" 
+                                        <Chip
+                                            icon={<InsertDriveFileOutlinedIcon sx={{ fontSize: '13px !important' }} />}
+                                            label="BL"
+                                            component="a"
+                                            href={getDocumentUrl(stop.bl_firmado_doc.path_servidor_real || stop.bl_firmado_doc.nombre_archivo)}
+                                            target="_blank"
+                                            clickable
                                             size="small"
-                                            sx={{ height: 24, fontSize: '0.75rem', fontWeight: 'bold', px: 1 }} 
+                                            sx={{ height: 22, fontSize: '0.72rem', fontWeight: 700, bgcolor: '#eff6ff', color: '#2563eb', border: '1px solid #2563eb22' }}
                                         />
                                     )}
                                 </Box>
@@ -188,34 +194,33 @@ export const StageUpcomingCard = ({ etapa, getDocumentUrl }) => {
                 </Box>
             )}
 
-            <Divider />
+            <Divider sx={{ borderColor: '#e2e8f0' }} />
 
-            <Box sx={{ px: 3, py: 2, bgcolor: '#fff' }}>
+            <Box sx={{ px: 2.5, py: 2, bgcolor: '#fff' }}>
                 <Grid container spacing={2}>
                     <Grid item xs={12} md={7}>
-                        <Typography variant="subtitle2" fontWeight={700} color="text.secondary" mb={1} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                            <InsertDriveFileIcon fontSize="small" /> Documentos de la Etapa:
+                        <Typography variant="overline" fontWeight={700} color="#94a3b8" mb={1} sx={{ display: 'flex', alignItems: 'center', gap: 0.5, fontSize: '0.65rem', letterSpacing: '0.06em' }}>
+                            <InsertDriveFileOutlinedIcon sx={{ fontSize: 15 }} /> Documentos de la Etapa
                         </Typography>
-                        
+
                         {/* Renderizamos solo los "otros documentos" (Incluye el BL normal) */}
                         {otrosDocumentos.length > 0 ? (
                             <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
                                 {otrosDocumentos.map(doc => (
                                     <Chip
                                         key={doc.document_id}
-                                        icon={<InsertDriveFileIcon style={{ color: '#fff' }} />}
                                         label={doc.tipo_documento.toUpperCase().replace(/_/g, ' ')}
                                         component="a"
                                         href={getDocumentUrl(doc.path_servidor_real || doc.nombre_archivo)}
                                         target="_blank"
                                         clickable
-                                        color="success"
-                                        sx={{ fontWeight: 'bold', fontSize: '0.8rem', boxShadow: 1 }}
+                                        variant="outlined"
+                                        sx={{ fontWeight: 700, fontSize: '0.75rem', borderColor: '#e2e8f0', color: '#475569' }}
                                     />
                                 ))}
                             </Stack>
                         ) : (
-                            <Typography variant="body2" color="text.disabled" fontStyle="italic">
+                            <Typography variant="body2" color="#94a3b8" fontStyle="italic">
                                 Aún no se han subido documentos adicionales.
                             </Typography>
                         )}
@@ -223,9 +228,9 @@ export const StageUpcomingCard = ({ etapa, getDocumentUrl }) => {
 
                     {etapa.comments && (
                         <Grid item xs={12} md={5}>
-                            <Box sx={{ bgcolor: '#fff9c4', p: 1.5, borderRadius: 2, border: '1px dashed #ffb300' }}>
-                                <Typography variant="caption" fontWeight={700} color="#f57c00" display="block">Comentarios:</Typography>
-                                <Typography variant="body2" fontStyle="italic" color="text.primary">"{etapa.comments}"</Typography>
+                            <Box sx={{ bgcolor: '#fffbeb', p: 1.5, borderRadius: 2, border: '1px dashed #fbbf24' }}>
+                                <Typography variant="caption" fontWeight={700} color="#b45309" display="block">Comentarios:</Typography>
+                                <Typography variant="body2" fontStyle="italic" color="#78350f">"{etapa.comments}"</Typography>
                             </Box>
                         </Grid>
                     )}
