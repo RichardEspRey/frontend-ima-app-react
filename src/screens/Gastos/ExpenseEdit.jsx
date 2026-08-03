@@ -7,6 +7,7 @@ import {
 import DeleteIcon from '@mui/icons-material/Delete';
 import SaveIcon from '@mui/icons-material/Save';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
+import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import Select from 'react-select';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -25,6 +26,10 @@ const customSelectStyles = {
   }),
   menu: (provided) => ({ ...provided, zIndex: 9999 })
 };
+
+// La app móvil puede subir el "ticket" como PDF escaneado en vez de imagen
+// (ej. archivos "scan_*.pdf"), no solo JPG/PNG. Un <img> no puede mostrar un PDF.
+const isImageUrl = (url = '') => /\.(png|jpe?g|gif|webp|bmp|tiff?)$/i.test(url);
 
 
 const ExpenseEdit = () => {
@@ -341,20 +346,40 @@ const ExpenseEdit = () => {
 
                     <Box>
                         <Typography variant="caption" fontWeight={600}>Ticket (Image)</Typography>
-                        {files.ticketJpg ? (
-                            <Paper variant="outlined" sx={{ p: 1, mt: 1 }}>
-                                <PhotoProvider>
-                                    <PhotoView src={files.ticketJpg.url || (files.ticketJpg instanceof File ? URL.createObjectURL(files.ticketJpg) : '')}>
-                                        <img 
-                                            src={files.ticketJpg.url || (files.ticketJpg instanceof File ? URL.createObjectURL(files.ticketJpg) : '')} 
-                                            alt="ticket" 
-                                            style={{ width: '100%', height: 150, objectFit: 'cover', borderRadius: 4, cursor: 'zoom-in' }} 
-                                        />
-                                    </PhotoView>
-                                </PhotoProvider>
-                                <Button size="small" color="error" fullWidth onClick={() => handleRemoveFile('ticketJpg')} sx={{ mt: 1 }}>Remove</Button>
-                            </Paper>
-                        ) : (
+                        {files.ticketJpg ? (() => {
+                            const ticketUrl = files.ticketJpg.url || (files.ticketJpg instanceof File ? URL.createObjectURL(files.ticketJpg) : '');
+                            const ticketIsImage = files.ticketJpg instanceof File
+                                ? files.ticketJpg.type?.startsWith('image/')
+                                : isImageUrl(ticketUrl);
+                            return (
+                                <Paper variant="outlined" sx={{ p: 1, mt: 1 }}>
+                                    {ticketIsImage ? (
+                                        <PhotoProvider>
+                                            <PhotoView src={ticketUrl}>
+                                                <img
+                                                    src={ticketUrl}
+                                                    alt="ticket"
+                                                    style={{ width: '100%', height: 150, objectFit: 'cover', borderRadius: 4, cursor: 'zoom-in' }}
+                                                />
+                                            </PhotoView>
+                                        </PhotoProvider>
+                                    ) : (
+                                        <Box
+                                            sx={{ height: 150, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 1, bgcolor: '#fafafa', borderRadius: 1, border: '1px dashed #ccc' }}
+                                        >
+                                            <InsertDriveFileIcon sx={{ fontSize: 32, color: '#94a3b8' }} />
+                                            <Typography variant="caption" color="text.secondary" noWrap sx={{ maxWidth: '90%' }}>
+                                                {files.ticketJpg.name || 'Documento'}
+                                            </Typography>
+                                            {ticketUrl && (
+                                                <Button size="small" href={ticketUrl} target="_blank" rel="noopener noreferrer">View</Button>
+                                            )}
+                                        </Box>
+                                    )}
+                                    <Button size="small" color="error" fullWidth onClick={() => handleRemoveFile('ticketJpg')} sx={{ mt: 1 }}>Remove</Button>
+                                </Paper>
+                            );
+                        })() : (
                             <Button variant="outlined" component="label" fullWidth startIcon={<AttachFileIcon />} sx={{ mt: 1 }}>
                                 Upload Image <input hidden type="file" accept="image/*" onChange={e => handleFileChange('ticketJpg', e)} />
                             </Button>

@@ -264,7 +264,7 @@ const StageCard = ({
                                 <>
                                     {Object.entries(etapa.documentos).map(([docKey, docValue]) => {
 
-                                        if (docKey === 'ima_invoice' && !canManageInvoice) return null;
+                                        if (['ima_invoice', 'ci'].includes(docKey) && !canManageInvoice) return null;
 
                                         const isNormalTrip = etapa.stageType === 'normalTrip';
                                         const isAllowedInNormal = ['ima_invoice', 'bl', 'bl_firmado', 'ci', 'qr_manifesto', 'carta_porte', 'fianza'].includes(docKey);

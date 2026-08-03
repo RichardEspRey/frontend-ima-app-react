@@ -10,10 +10,10 @@ export const StageEmptyCard = ({ etapa }) => {
     <Grid item xs={12} sm={6} md={4}>
       <Paper 
         elevation={0} 
-        sx={{ 
-          height: '100%', 
-          borderRadius: '8px',
-          border: '1px solid #cbd5e1',
+        sx={{
+          height: '100%',
+          borderRadius: 2,
+          border: '1px solid #e2e8f0',
           overflow: 'hidden',
           display: 'flex',
           flexDirection: 'column',
@@ -27,16 +27,17 @@ export const StageEmptyCard = ({ etapa }) => {
                       Etapa {etapa.stage_number}
                     </Typography>
                 </Stack>
-                <Chip 
-                  label="Vacío Inicial" 
-                  size="small" 
+                <Chip
+                  label="Vacío Inicial"
+                  size="small"
                   icon={<LocalShippingOutlinedIcon fontSize="small" />}
-                  sx={{ 
-                      bgcolor: '#e2e8f0', 
-                      color: '#475569', 
-                      fontWeight: 700, 
-                      borderRadius: '6px'
-                  }} 
+                  sx={{
+                      bgcolor: '#f1f5f9',
+                      color: '#475569',
+                      fontWeight: 700,
+                      borderRadius: 1.5,
+                      '& .MuiChip-icon': { color: '#475569' },
+                  }}
                 />
             </Stack>
 

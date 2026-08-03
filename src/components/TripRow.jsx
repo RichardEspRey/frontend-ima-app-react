@@ -17,6 +17,7 @@ import localizedFormat from 'dayjs/plugin/localizedFormat';
 import Swal from 'sweetalert2';
 
 import { TripExpandedDetails } from './TripRow/TripExpandedDetails';
+import { StatusIndicator, getStatusColor } from './TripStatusIndicator';
 
 dayjs.extend(updateLocale);
 dayjs.extend(isSameOrAfter);
@@ -144,32 +145,33 @@ ${(!trip.caja_id && !trip.caja_externa_id) ? 'Sin tráiler asignado' : ''}
       });
   };
 
-  const canShowEditButton = !!onEdit && !isCompletedTab && !isDespachoTab; 
-  const showViewButtonCompleted = !!onEdit && isCompletedTab;             
+  const canShowEditButton = !!onEdit && !isCompletedTab && !isDespachoTab;
+  const showViewButtonCompleted = !!onEdit && isCompletedTab;
   const canSalida = isDespachoTab && documentosFaltantes === 0;
   const collapseColSpan = typeof colSpanOverride === 'number' ? colSpanOverride : 11;
+  const statusAccentColor = getStatusColor(trip.status);
+  const actionBtnSx = { textTransform: 'none', fontWeight: 600, borderRadius: 1.5 };
 
   return (
     <>
       <TableRow sx={{ '& > *': { borderBottom: 'unset' } }} hover>
-        <TableCell>
+        <TableCell sx={{ borderLeft: `3px solid ${statusAccentColor}`, pl: 1.5 }}>
           <IconButton aria-label="expand row" size="small" onClick={() => setOpen(!open)}>
             {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
           </IconButton>
         </TableCell>
 
         <TableCell component="th" scope="row">
-          {/* <Box sx={{ whiteSpace: 'nowrap' }}>{trip.trip_number}</Box> */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography variant="body2" fontWeight={600} sx={{ whiteSpace: 'nowrap' }}>
+            <Typography variant="body2" fontWeight={700} color="#0f172a" sx={{ whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}>
                 {trip.trip_number}
             </Typography>
-            
+
             {trip.etapas?.[0]?.stageType === 'emptyMileage' && (
-                <Chip 
-                    label="In. V." 
-                    size="small" 
-                    sx={{ height: 18, fontSize: '0.6rem', fontWeight: 800, bgcolor: '#e0f2fe', color: '#0284c7' }} 
+                <Chip
+                    label="In. V."
+                    size="small"
+                    sx={{ height: 18, fontSize: '0.6rem', fontWeight: 800, bgcolor: '#e0f2fe', color: '#0284c7' }}
                 />
             )}
         </Box>
@@ -203,16 +205,7 @@ ${(!trip.caja_id && !trip.caja_externa_id) ? 'Sin tráiler asignado' : ''}
         {!showDocsColumn && <TableCell sx={{ whiteSpace: 'nowrap' }} title={departureDateTitle}>{departureDateToShow}</TableCell>}
 
         <TableCell>
-          {(() => {
-            const currentStatus = trip.status || 'In Transit';
-            let chipColor = 'default';
-            if (currentStatus === 'Completed') chipColor = 'success';
-            else if (currentStatus === 'In Transit') chipColor = 'warning';
-            else if (currentStatus === 'Almost Over') chipColor = 'primary';
-            else if (currentStatus === 'Cancelled') chipColor = 'error';
-            else if (currentStatus === 'In Coming') chipColor = 'info';
-            return (<Chip label={currentStatus} color={chipColor} size="small" sx={{ fontWeight: 600 }}/>);
-          })()}
+          <StatusIndicator status={trip.status} />
         </TableCell>
 
         {!showDocsColumn && <TableCell sx={{ whiteSpace: 'nowrap' }} title={returnDateTitle}>{returnDateForDisplay}</TableCell>}
@@ -247,21 +240,21 @@ ${(!trip.caja_id && !trip.caja_externa_id) ? 'Sin tráiler asignado' : ''}
 
         <TableCell>
           <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 0.8 }}>
-            {showViewButtonCompleted && <Button size="small" variant="outlined" onClick={() => onEdit(trip.trip_id)}>Ver</Button>}
-            {canShowEditButton && <Button size="small" variant="outlined" onClick={() => onEdit(trip.trip_id)}>Editar</Button>}
-            {isUpcomingTab && <Button size="small" variant="outlined" color="error" onClick={() => onDelete(trip.trip_id, trip.trip_number)}>Eliminar</Button>}
+            {showViewButtonCompleted && <Button size="small" variant="outlined" onClick={() => onEdit(trip.trip_id)} sx={actionBtnSx}>Ver</Button>}
+            {canShowEditButton && <Button size="small" variant="outlined" onClick={() => onEdit(trip.trip_id)} sx={actionBtnSx}>Editar</Button>}
+            {isUpcomingTab && <Button size="small" variant="outlined" color="error" onClick={() => onDelete(trip.trip_id, trip.trip_number)} sx={actionBtnSx}>Eliminar</Button>}
             {isDespachoTab && (
               <Tooltip title={canSalida ? 'Listo para salida' : `No puedes dar salida: faltan ${documentosFaltantes} documento(s)`} arrow>
                 <span>
-                  <Button size="small" variant="contained" color="primary" disabled={!canSalida} onClick={() => onSalida && onSalida(trip.trip_id, trip.trip_number)} sx={{ textTransform: 'none', fontWeight: 800 }}>SALIDA</Button>
+                  <Button size="small" variant="contained" color="primary" disabled={!canSalida} onClick={() => onSalida && onSalida(trip.trip_id, trip.trip_number)} sx={{ ...actionBtnSx, fontWeight: 800, boxShadow: 'none' }}>SALIDA</Button>
                 </span>
               </Tooltip>
             )}
           </Box>
         </TableCell>
 
-        {isCompletedTab && <TableCell><Button size="small" variant="contained" color="secondary" onClick={() => onSummary(trip.trip_id)}>Resumen</Button></TableCell>}
-        {isAdmin && (isCompletedTab || isEnRutaTab) && <TableCell><Button size="small" variant="outlined" color="warning" onClick={() => onReactivate(trip.trip_id, trip.trip_number)}>Reactivar</Button></TableCell>}
+        {isCompletedTab && <TableCell><Button size="small" variant="contained" color="secondary" onClick={() => onSummary(trip.trip_id)} sx={{ ...actionBtnSx, boxShadow: 'none' }}>Resumen</Button></TableCell>}
+        {isAdmin && (isCompletedTab || isEnRutaTab) && <TableCell><Button size="small" variant="outlined" color="warning" onClick={() => onReactivate(trip.trip_id, trip.trip_number)} sx={actionBtnSx}>Reactivar</Button></TableCell>}
       </TableRow>
 
       <TableRow>
