@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import {
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
     Button, TablePagination, TextField, Box, Typography, CircularProgress, Alert,
@@ -6,6 +6,9 @@ import {
     Dialog, DialogTitle, DialogContent, DialogActions, IconButton, Tooltip,
     InputAdornment, Divider, ToggleButtonGroup, ToggleButton
 } from '@mui/material';
+import { MapContainer, TileLayer, Polyline, Marker, Popup, useMap } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 
 import FilterListIcon from '@mui/icons-material/FilterList';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -34,6 +37,45 @@ import Swal from 'sweetalert2';
 import { TripRow } from '../../components/TripRow';
 import { useAuthStore } from '../../store/useAuthStore';
 import ModalCajaExterna from '../../components/ModalCajaExterna';
+
+// ── Map helpers (ruta camión → Nuevo Laredo) ────────────────────────────────
+
+const NUEVO_LAREDO = { lat: 27.4849, lon: -99.5164 };
+
+function makeDotIcon(color, size = 14) {
+    return L.divIcon({
+        className: '',
+        html: `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${color};border:2.5px solid white;box-shadow:0 1px 5px rgba(0,0,0,.45)"></div>`,
+        iconSize: [size, size],
+        iconAnchor: [size / 2, size / 2],
+    });
+}
+
+function FitBounds({ coords }) {
+    const map = useMap();
+    const prevRef = useRef(null);
+    useEffect(() => {
+        if (!coords || coords.length === 0) return;
+        const key = coords[0]?.toString() + coords[coords.length - 1]?.toString();
+        if (key === prevRef.current) return;
+        prevRef.current = key;
+        map.fitBounds(L.latLngBounds(coords), { padding: [40, 40] });
+    }, [coords, map]);
+    return null;
+}
+
+async function getRoute(points) {
+    const coords = points.map((p) => `${p.lon},${p.lat}`).join(';');
+    const res = await fetch(
+        `https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson`
+    );
+    const data = await res.json();
+    if (data.code !== 'Ok') throw new Error('No se pudo calcular la ruta');
+    return {
+        miles: data.routes[0].distance / 1609.344,
+        coords: data.routes[0].geometry.coordinates.map(([lon, lat]) => [lat, lon]),
+    };
+}
 
 const DIRECTION_OPTIONS = [
     { value: 'All', label: 'Todas las Direcciones' },
@@ -72,9 +114,12 @@ const parseJsonSafe = async (response) => {
     }
 };
 
+const SPECIAL_EDIT_USERS = new Set(['Blanca', 'Angelica', 'Israel', 'Richard']);
+
 const TripAdmin = () => {
     const { userPermissions, user } = useAuthStore();
     const isAdmin = user?.tipo_usuario?.toLowerCase() === 'admin' || user?.name === 'Blanca';
+    const canSpecialEdit = SPECIAL_EDIT_USERS.has(user?.name);
     const navigate = useNavigate();
 
     const apiHost = import.meta.env.VITE_API_HOST;
@@ -119,6 +164,13 @@ const TripAdmin = () => {
     const [loadingScheduled, setLoadingScheduled] = useState(false);
     const [scheduleTrailerType, setScheduleTrailerType] = useState('interna');
     const [isModalCajaExternaOpen, setIsModalCajaExternaOpen] = useState(false);
+
+    // Mapa: ruta del camión seleccionado hacia Nuevo Laredo
+    const [selectedMapTripId, setSelectedMapTripId] = useState(null);
+    const [mapRouteCoords, setMapRouteCoords] = useState(null);
+    const [mapMarkers, setMapMarkers] = useState(null);
+    const [mapLoading, setMapLoading] = useState(false);
+    const [mapError, setMapError] = useState('');
 
     useEffect(() => {
         if (allowedTabs.length > 0 && !allowedTabs.some(t => t.id === tabValue)) {
@@ -218,8 +270,47 @@ const TripAdmin = () => {
         if (tabValue === 4) {
             fetchProgramacionData();
             fetchScheduledTrips();
+        } else {
+            setSelectedMapTripId(null);
+            setMapRouteCoords(null);
+            setMapMarkers(null);
+            setMapError('');
         }
     }, [tabValue, fetchProgramacionData, fetchScheduledTrips]);
+
+    const handleSelectTripRow = async (trip) => {
+        if (selectedMapTripId === trip.id) {
+            setSelectedMapTripId(null);
+            setMapRouteCoords(null);
+            setMapMarkers(null);
+            setMapError('');
+            return;
+        }
+
+        const lat = parseFloat(trip.last_latitude);
+        const lon = parseFloat(trip.last_longitude);
+        if (isNaN(lat) || isNaN(lon)) {
+            Swal.fire('Sin ubicación', 'Este camión no tiene una ubicación registrada.', 'warning');
+            return;
+        }
+
+        setSelectedMapTripId(trip.id);
+        setMapRouteCoords(null);
+        setMapMarkers(null);
+        setMapError('');
+        setMapLoading(true);
+
+        try {
+            const truckGeo = { lat, lon };
+            const route = await getRoute([truckGeo, NUEVO_LAREDO]);
+            setMapRouteCoords(route.coords);
+            setMapMarkers({ truck: truckGeo, destination: NUEVO_LAREDO });
+        } catch (err) {
+            setMapError(err.message || 'Error al calcular la ruta.');
+        } finally {
+            setMapLoading(false);
+        }
+    };
 
     const handleTabChange = (event, newValue) => { setTabValue(newValue); setPage(0); };
     const handleFilterChange = (setter, value) => { setter(value); setPage(0); };
@@ -254,6 +345,8 @@ const TripAdmin = () => {
             } catch (err) { Swal.fire('Error', err.message, 'error'); }
         }
     };
+
+    const handleSpecialEdit = (tripId) => navigate(`/edit-trip-complete/${tripId}`);
 
     const handleReactivateTrip = async (tripId, tripNumber, isEnRuta = false) => {
         if (!tripId) return;
@@ -364,18 +457,20 @@ const TripAdmin = () => {
 
     const handleSaveSchedule = async () => {
         const { operador_id, camion_id, caja_id, destino, salida } = scheduleForm;
-        if (!operador_id || !camion_id || !caja_id || !destino || !salida) {
-            Swal.fire('Campos requeridos', 'Por favor completa todos los campos.', 'warning');
+        if (!destino || !salida) {
+            Swal.fire('Campos requeridos', 'Por favor completa el destino y la fecha de salida.', 'warning');
             return;
         }
-        const numericCajaId = String(caja_id).replace(/^[ie]_/, '');
+        const isCajaExterna = String(caja_id).startsWith('e_');
+        const numericCajaId = caja_id ? String(caja_id).replace(/^[ie]_/, '') : '';
         try {
             const formData = new FormData();
             formData.append('op', editingScheduleId !== null ? 'update' : 'insert');
             if (editingScheduleId !== null) formData.append('id', editingScheduleId);
             formData.append('driver_id', operador_id);
             formData.append('truck_id',  camion_id);
-            formData.append('caja_id',   numericCajaId);
+            formData.append('caja_id',         isCajaExterna ? '' : numericCajaId);
+            formData.append('caja_externa_id', isCajaExterna ? numericCajaId : '');
             formData.append('destino',   destino);
             formData.append('salida',    salida);
             const response = await fetch(`${apiHost}/Programacion_viajes.php`, { method: 'POST', body: formData });
@@ -402,6 +497,12 @@ const TripAdmin = () => {
             const response = await fetch(`${apiHost}/Programacion_viajes.php`, { method: 'POST', body: formData });
             const result = await parseJsonSafe(response);
             if (response.ok && result.status === 'success') {
+                if (selectedMapTripId === id) {
+                    setSelectedMapTripId(null);
+                    setMapRouteCoords(null);
+                    setMapMarkers(null);
+                    setMapError('');
+                }
                 fetchScheduledTrips();
             } else {
                 throw new Error(result.message || 'Error al eliminar.');
@@ -557,6 +658,7 @@ const TripAdmin = () => {
                                     <TableCell sx={HEADER_CELL_SX}>Camión</TableCell>
                                     <TableCell sx={HEADER_CELL_SX}>Distancia Nv Laredo</TableCell>
                                     <TableCell sx={HEADER_CELL_SX}>Caja</TableCell>
+                                    <TableCell sx={HEADER_CELL_SX}>Caja Externa</TableCell>
                                     <TableCell sx={HEADER_CELL_SX}>Destino</TableCell>
                                     <TableCell sx={HEADER_CELL_SX}>Salida</TableCell>
                                     <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'center' }}>Acciones</TableCell>
@@ -565,14 +667,14 @@ const TripAdmin = () => {
                             <TableBody>
                                 {loadingScheduled ? (
                                     <TableRow>
-                                        <TableCell colSpan={7} align="center" sx={{ py: 5 }}>
+                                        <TableCell colSpan={8} align="center" sx={{ py: 5 }}>
                                             <CircularProgress size={22} sx={{ mr: 1.5, verticalAlign: 'middle', color: '#94a3b8' }} />
                                             <Typography component="span" color="#64748b" fontWeight={500}>Cargando programaciones...</Typography>
                                         </TableCell>
                                     </TableRow>
                                 ) : scheduledTrips.length === 0 ? (
                                     <TableRow>
-                                        <TableCell colSpan={7} align="center" sx={{ py: 6 }}>
+                                        <TableCell colSpan={8} align="center" sx={{ py: 6 }}>
                                             <InboxOutlinedIcon sx={{ fontSize: 34, color: '#cbd5e1', mb: 1 }} />
                                             <Typography variant="body2" color="#94a3b8" fontWeight={500}>
                                                 No hay viajes programados. Usa "Programar Viaje" para agregar uno.
@@ -581,23 +683,30 @@ const TripAdmin = () => {
                                     </TableRow>
                                 ) : (
                                     scheduledTrips.map(trip => (
-                                        <TableRow key={trip.id} hover>
+                                        <TableRow
+                                            key={trip.id}
+                                            hover
+                                            selected={selectedMapTripId === trip.id}
+                                            onClick={() => handleSelectTripRow(trip)}
+                                            sx={{ cursor: 'pointer' }}
+                                        >
                                             <TableCell sx={{ fontWeight: 600 }}>{trip.driver_nombre || '-'}</TableCell>
                                             <TableCell>{trip.truck_unidad  || '-'}</TableCell>
                                             <TableCell sx={{ color: '#64748b' }}>
                                                 {trip.dist_nv_l != null ? `${trip.dist_nv_l} Km` : 'No obtenido'}
                                             </TableCell>
                                             <TableCell>{trip.caja_numero   || '-'}</TableCell>
+                                            <TableCell>{trip.caja_externa_numero || '-'}</TableCell>
                                             <TableCell>{trip.destino}</TableCell>
                                             <TableCell sx={{ fontVariantNumeric: 'tabular-nums', color: '#64748b' }}>{trip.salida ? dayjs(trip.salida).format('DD/MM/YYYY HH:mm') : '-'}</TableCell>
                                             <TableCell align="center">
                                                 <Tooltip title="Editar">
-                                                    <IconButton size="small" onClick={() => handleOpenScheduleModal(trip)} sx={{ '&:hover': { bgcolor: '#f1f5f9' } }}>
+                                                    <IconButton size="small" onClick={(e) => { e.stopPropagation(); handleOpenScheduleModal(trip); }} sx={{ '&:hover': { bgcolor: '#f1f5f9' } }}>
                                                         <EditIcon fontSize="small" />
                                                     </IconButton>
                                                 </Tooltip>
                                                 <Tooltip title="Eliminar">
-                                                    <IconButton size="small" color="error" onClick={() => handleDeleteSchedule(trip.id)} sx={{ '&:hover': { bgcolor: '#fef2f2' } }}>
+                                                    <IconButton size="small" color="error" onClick={(e) => { e.stopPropagation(); handleDeleteSchedule(trip.id); }} sx={{ '&:hover': { bgcolor: '#fef2f2' } }}>
                                                         <DeleteIcon fontSize="small" />
                                                     </IconButton>
                                                 </Tooltip>
@@ -608,6 +717,85 @@ const TripAdmin = () => {
                             </TableBody>
                         </Table>
                     </TableContainer>
+
+                    {selectedMapTripId && (
+                        <Paper elevation={0} sx={{ mt: 2, border: '1px solid #e2e8f0', borderRadius: 3, overflow: 'hidden' }}>
+                            <Box sx={{ px: 2.5, py: 1.5, borderBottom: '1px solid #e2e8f0' }}>
+                                <Typography variant="subtitle2" fontWeight={700} color="#475569"
+                                    sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                                    Ruta a Nuevo Laredo — Camión {scheduledTrips.find(t => t.id === selectedMapTripId)?.truck_unidad || ''}
+                                </Typography>
+                            </Box>
+
+                            <Stack direction="row" spacing={2.5}
+                                sx={{ px: 2.5, py: 1, borderBottom: '1px solid #f1f5f9', flexWrap: 'wrap' }}>
+                                <Stack direction="row" alignItems="center" spacing={0.8}>
+                                    <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: '#9c27b0',
+                                        border: '2px solid white', boxShadow: '0 0 3px rgba(0,0,0,.3)' }} />
+                                    <Typography variant="caption" color="text.secondary">Camión</Typography>
+                                </Stack>
+                                <Stack direction="row" alignItems="center" spacing={0.8}>
+                                    <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: '#f44336',
+                                        border: '2px solid white', boxShadow: '0 0 3px rgba(0,0,0,.3)' }} />
+                                    <Typography variant="caption" color="text.secondary">Nuevo Laredo</Typography>
+                                </Stack>
+                                <Stack direction="row" alignItems="center" spacing={0.8}>
+                                    <Box sx={{ width: 20, height: 3, bgcolor: '#1976d2', borderRadius: 1 }} />
+                                    <Typography variant="caption" color="text.secondary">Ruta</Typography>
+                                </Stack>
+                            </Stack>
+
+                            <Box sx={{ position: 'relative', height: 420 }}>
+                                {mapLoading && (
+                                    <Stack alignItems="center" justifyContent="center"
+                                        sx={{ position: 'absolute', inset: 0, zIndex: 1000, bgcolor: 'rgba(255,255,255,0.7)' }}>
+                                        <CircularProgress size={32} />
+                                        <Typography variant="caption" color="text.secondary" sx={{ mt: 1 }}>
+                                            Calculando ruta…
+                                        </Typography>
+                                    </Stack>
+                                )}
+
+                                {mapError && !mapLoading && (
+                                    <Alert severity="error" sx={{ position: 'absolute', top: 8, left: 8, right: 8, zIndex: 1000 }}>
+                                        {mapError}
+                                    </Alert>
+                                )}
+
+                                <MapContainer
+                                    key={selectedMapTripId}
+                                    center={[NUEVO_LAREDO.lat, NUEVO_LAREDO.lon]}
+                                    zoom={6}
+                                    style={{ height: '100%', width: '100%' }}
+                                >
+                                    <TileLayer
+                                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                    />
+
+                                    {mapRouteCoords && <FitBounds coords={mapRouteCoords} />}
+
+                                    {mapRouteCoords && (
+                                        <Polyline
+                                            positions={mapRouteCoords}
+                                            pathOptions={{ color: '#1976d2', weight: 4, opacity: 0.9 }}
+                                        />
+                                    )}
+
+                                    {mapMarkers?.truck && (
+                                        <Marker position={[mapMarkers.truck.lat, mapMarkers.truck.lon]} icon={makeDotIcon('#9c27b0', 16)}>
+                                            <Popup>Camión {scheduledTrips.find(t => t.id === selectedMapTripId)?.truck_unidad || ''}</Popup>
+                                        </Marker>
+                                    )}
+                                    {mapMarkers?.destination && (
+                                        <Marker position={[mapMarkers.destination.lat, mapMarkers.destination.lon]} icon={makeDotIcon('#f44336', 16)}>
+                                            <Popup>Nuevo Laredo, Tamps.</Popup>
+                                        </Marker>
+                                    )}
+                                </MapContainer>
+                            </Box>
+                        </Paper>
+                    )}
                 </Box>
             ) : (
                 <>
@@ -763,6 +951,7 @@ const TripAdmin = () => {
                                                 key={trip.trip_id}
                                                 trip={trip}
                                                 isAdmin={isAdmin}
+                                                canSpecialEdit={canSpecialEdit}
                                                 isCompletedTab={tabValue === 3}
                                                 isDespachoTab={isDespachoTab}
                                                 isUpcomingTab={isUpcomingTab}
@@ -778,6 +967,7 @@ const TripAdmin = () => {
                                                 onAlmostOver={handleAlmostOverTrip}
                                                 onFinalize={handleFinalizeTrip}
                                                 onReactivate={(tripId, tripNumber) => handleReactivateTrip(tripId, tripNumber, isEnRutaTab)}
+                                                onSpecialEdit={handleSpecialEdit}
                                                 onSalida={handleSalida}
                                             />
                                         );
