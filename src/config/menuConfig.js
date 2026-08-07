@@ -117,18 +117,6 @@ export const menuItemsConfig = [
         route: "/afinaciones",
         rolesPermitidos: ["admin", "dev", "Angeles", "Candy"],
       },
-      {
-        name: "Reparaciones en ruta",
-        featureKey: "mant_reparaciones",
-        route: "/road-repairs",
-        rolesPermitidos: ["admin", "Angeles", "Candy"],
-      },
-      {
-        name: "Inspecciones operativas",
-        featureKey: "mant_inspecciones_operativas",
-        route: "/inspecciones",
-        rolesPermitidos: ["admin", "Angeles", "Candy"],
-      },
     ],
   },
 

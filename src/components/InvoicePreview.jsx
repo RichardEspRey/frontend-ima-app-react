@@ -26,6 +26,16 @@ const getDynamicFontSize = (id, value) => {
         return '0.75rem';
     }
 
+    // La descripción puede traer varias "piernas" de ruta (una por parada
+    // adicional), una por línea. Achicamos la letra para que quepan sin
+    // desbordar el recuadro de la plantilla.
+    if (id === 'description') {
+        const lines = strValue.split('\n').length;
+        if (lines >= 4) return '0.6rem';
+        if (lines >= 3) return '0.68rem';
+        if (lines >= 2) return '0.75rem';
+    }
+
     return undefined;
 };
 

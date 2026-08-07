@@ -15,6 +15,26 @@ function createWindow() {
 
   // Carga el frontend compilado por Vite usando path.join (Súper seguro)
   win.loadFile(path.join(__dirname, "dist", "index.html"));
+
+  // -------------------------------
+  //  BLOQUEO DE ZOOM
+  // -------------------------------
+  // Electron habilita por defecto el pinch-to-zoom del trackpad y los atajos
+  // Ctrl+Plus/Ctrl+Minus/Ctrl+0. Un gesto accidental (ej. al mover el mouse/trackpad
+  // hacia el sidebar para cambiar de módulo) dispara ese zoom nativo de Chromium,
+  // recortando las tablas. Lo fijamos en 100% y desactivamos ambos mecanismos para
+  // que la app se vea igual sin importar laptop o monitor.
+  win.webContents.on("did-finish-load", () => {
+    win.webContents.setZoomFactor(1);
+    win.webContents.setVisualZoomLevelLimits(1, 1); // bloquea pinch-zoom del trackpad
+  });
+
+  win.webContents.on("before-input-event", (event, input) => {
+    const isZoomKey = ["+", "-", "=", "0", "Add", "Subtract"].includes(input.key);
+    if ((input.control || input.meta) && isZoomKey) {
+      event.preventDefault();
+    }
+  });
 }
 
 // -------------------------------

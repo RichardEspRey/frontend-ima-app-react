@@ -1,12 +1,19 @@
 import React, { useState } from 'react';
 import {
-  TableCell, TableRow, Button, Typography, Tooltip, IconButton, Collapse, Box, Chip, Stack
+  TableCell, TableRow, Button, Typography, Tooltip, IconButton, Collapse, Box, Chip, Stack,
+  Menu, MenuItem, ListItemIcon, ListItemText
 } from '@mui/material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import WarningIcon from '@mui/icons-material/Warning';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
+import EditIcon from '@mui/icons-material/Edit';
+import BuildIcon from '@mui/icons-material/Build';
+import AssignmentLateIcon from '@mui/icons-material/AssignmentLate';
+import SummarizeIcon from '@mui/icons-material/Summarize';
 
 import dayjs from 'dayjs';
 import 'dayjs/locale/es';
@@ -26,12 +33,15 @@ dayjs.extend(localizedFormat);
 dayjs.locale('es');
 
 export const TripRow = ({
-  trip, isCompletedTab, onEdit, onFinalize, onAlmostOver, onReactivate, onSpecialEdit, isAdmin, canSpecialEdit, getDocumentUrl, onSummary,
+  trip, isCompletedTab, onEdit, onFinalize, onAlmostOver, onReactivate, onSpecialEdit, isAdmin, canSpecialEdit, canManageInvoice, getDocumentUrl,
   showDocsColumn = false, isDespachoTab = false, documentosFaltantes = 0, documentosFaltantesLista = [],
-  onSalida, colSpanOverride, isUpcomingTab = false, isEnRutaTab = false, onDelete,
+  onSalida, colSpanOverride, isUpcomingTab = false, isEnRutaTab = false, onDelete, onSummary,
+  onOpenRoadRepair, onOpenInspection,
 }) => {
 
   const [open, setOpen] = useState(false);
+  const [adminMenuAnchor, setAdminMenuAnchor] = useState(null);
+  const [quickMenuAnchor, setQuickMenuAnchor] = useState(null);
 
   let departureDateToShow = '-';
   let departureDateTitle = 'Fecha de salida no disponible';
@@ -250,16 +260,46 @@ ${(!trip.caja_id && !trip.caja_externa_id) ? 'Sin tráiler asignado' : ''}
                 </span>
               </Tooltip>
             )}
+
+            <IconButton size="small" onClick={(e) => setQuickMenuAnchor(e.currentTarget)}>
+              <MoreVertIcon fontSize="small" />
+            </IconButton>
+            <Menu anchorEl={quickMenuAnchor} open={!!quickMenuAnchor} onClose={() => setQuickMenuAnchor(null)}>
+              <MenuItem onClick={() => { setQuickMenuAnchor(null); onOpenRoadRepair && onOpenRoadRepair(trip); }}>
+                <ListItemIcon><BuildIcon fontSize="small" color="warning" /></ListItemIcon>
+                <ListItemText>Reparación en Ruta</ListItemText>
+              </MenuItem>
+              <MenuItem onClick={() => { setQuickMenuAnchor(null); onOpenInspection && onOpenInspection(trip); }}>
+                <ListItemIcon><AssignmentLateIcon fontSize="small" color="info" /></ListItemIcon>
+                <ListItemText>Inspección Operativa</ListItemText>
+              </MenuItem>
+            </Menu>
           </Box>
         </TableCell>
 
-        {isCompletedTab && <TableCell><Button size="small" variant="contained" color="secondary" onClick={() => onSummary(trip.trip_id)} sx={{ ...actionBtnSx, boxShadow: 'none' }}>Resumen</Button></TableCell>}
         {isAdmin && (isCompletedTab || isEnRutaTab) && (
-          <TableCell>
-            <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 0.8 }}>
-              <Button size="small" variant="outlined" color="warning" onClick={() => onReactivate(trip.trip_id, trip.trip_number)}>Reactivar</Button>
-              {canSpecialEdit && <Button size="small" variant="outlined" color="info" onClick={() => onSpecialEdit && onSpecialEdit(trip.trip_id, trip.trip_number)}>Editar</Button>}
-            </Box>
+          <TableCell align="center">
+            <IconButton size="small" onClick={(e) => setAdminMenuAnchor(e.currentTarget)}>
+              <MoreVertIcon fontSize="small" />
+            </IconButton>
+            <Menu anchorEl={adminMenuAnchor} open={!!adminMenuAnchor} onClose={() => setAdminMenuAnchor(null)}>
+              <MenuItem onClick={() => { setAdminMenuAnchor(null); onReactivate(trip.trip_id, trip.trip_number); }}>
+                <ListItemIcon><RestartAltIcon fontSize="small" color="warning" /></ListItemIcon>
+                <ListItemText>Reactivar</ListItemText>
+              </MenuItem>
+              {canSpecialEdit && (
+                <MenuItem onClick={() => { setAdminMenuAnchor(null); onSpecialEdit && onSpecialEdit(trip.trip_id, trip.trip_number); }}>
+                  <ListItemIcon><EditIcon fontSize="small" color="info" /></ListItemIcon>
+                  <ListItemText>Editar</ListItemText>
+                </MenuItem>
+              )}
+              {isCompletedTab && canManageInvoice && (
+                <MenuItem onClick={() => { setAdminMenuAnchor(null); onSummary && onSummary(trip.trip_id); }}>
+                  <ListItemIcon><SummarizeIcon fontSize="small" color="secondary" /></ListItemIcon>
+                  <ListItemText>Resumen</ListItemText>
+                </MenuItem>
+              )}
+            </Menu>
           </TableCell>
         )}
       </TableRow>
