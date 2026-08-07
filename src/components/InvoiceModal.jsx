@@ -11,6 +11,28 @@ import InvoicePreview from './InvoicePreview';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
+// Arma la ruta como una pierna por línea cuando hay paradas adicionales:
+// Origen -> Parada 1 / Parada 1 -> Parada 2 / Parada 2 -> Destino.
+// Sin paradas, se queda igual que antes: Origen -> Destino.
+const buildRouteDescription = (stageData) => {
+    const origin = stageData?.origin || 'Origen';
+    const destination = stageData?.destination || 'Destino';
+    const stops = Array.isArray(stageData?.stops_in_transit)
+        ? stageData.stops_in_transit.filter(s => s?.location)
+        : [];
+
+    if (stops.length === 0) {
+        return `${origin} -> ${destination}`;
+    }
+
+    const points = [origin, ...stops.map(s => s.location), destination];
+    const legs = [];
+    for (let i = 0; i < points.length - 1; i++) {
+        legs.push(`${points[i]} -> ${points[i + 1]}`);
+    }
+    return legs.join('\n');
+};
+
 const InvoiceModal = ({ isOpen, onClose, stageData, tripData, onSaveInvoice }) => {
     const [viewMode, setViewMode] = useState('form');
     const [saving, setSaving] = useState(false);
@@ -46,7 +68,7 @@ const InvoiceModal = ({ isOpen, onClose, stageData, tripData, onSaveInvoice }) =
                 trip_number: tripData.trip_number || '',
                 pickup_date: formatDateForInput(stageData.loading_date),
                 delivery_date: formatDateForInput(stageData.delivery_date),
-                description: `${stageData.origin || 'Origen'} -> ${stageData.destination || 'Destino'}`,
+                description: buildRouteDescription(stageData),
                 rate: stageData.rate_tarifa || ''
             });
         }
@@ -145,7 +167,17 @@ const InvoiceModal = ({ isOpen, onClose, stageData, tripData, onSaveInvoice }) =
                                         <TextField fullWidth size="small" label="Delivery Date" type="date" InputLabelProps={{ shrink: true }} name="delivery_date" value={invoiceForm.delivery_date} onChange={handleChange} />
                                     </Grid>
                                     <Grid item xs={12} sm={8}>
-                                        <TextField fullWidth size="small" label="Descripción (Ruta)" name="description" value={invoiceForm.description} onChange={handleChange} />
+                                        <TextField
+                                            fullWidth
+                                            size="small"
+                                            label="Descripción (Ruta)"
+                                            name="description"
+                                            value={invoiceForm.description}
+                                            onChange={handleChange}
+                                            multiline
+                                            minRows={2}
+                                            helperText="Una parada por línea (Origen -> Parada 1 -> ... -> Destino). Se genera automático si la etapa tiene paradas adicionales."
+                                        />
                                     </Grid>
                                     <Grid item xs={12} sm={4}>
                                         <TextField fullWidth size="small" label="Tarifa (Rate)" name="rate" type="number" value={invoiceForm.rate} onChange={handleChange} />

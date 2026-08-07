@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import {
   TableRow, TableCell, IconButton, Collapse, Box, Typography,
-  Table, TableHead, TableBody, Divider, Chip, Stack, Button
+  Table, TableHead, TableBody, Divider, Chip, Stack, Button, Tooltip
 } from '@mui/material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
@@ -9,17 +9,25 @@ import { PhotoProvider, PhotoView } from 'react-photo-view';
 import 'react-photo-view/dist/react-photo-view.css';
 
 const money = (v) => {
-  return new Intl.NumberFormat('en-US', { 
-    style: 'currency', 
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
     currency: 'USD',
-    currencyDisplay: 'symbol' 
+    currencyDisplay: 'symbol'
+  }).format(Number(v || 0));
+};
+
+const moneyMXN = (v) => {
+  return new Intl.NumberFormat('es-MX', {
+    style: 'currency',
+    currency: 'MXN',
+    currencyDisplay: 'symbol'
   }).format(Number(v || 0));
 };
 
 const isImageUrl = (url = '') => /\.(png|jpe?g|gif|webp|bmp|tiff?)$/i.test(url);
 const fileName = (path = '') => path.split('/').pop() || '';
 
-const GastoRow = ({ gasto, navigate }) => {
+const GastoRow = ({ gasto, navigate, mxnRate }) => {
   const [open, setOpen] = useState(false);
   const detalles = gasto?.detalles ?? [];
   const tickets = gasto?.tickets ?? [];
@@ -36,6 +44,30 @@ const GastoRow = ({ gasto, navigate }) => {
     ? Number(gasto.monto_total)
     : totalCalc;
 
+  // El gasto ya se registró en pesos (moneda MXN): usamos el monto original exacto
+  // que se capturó, en vez de reconvertir el total en USD con la tasa de hoy.
+  // Si se registró en USD, no hay un monto en pesos "real" que mostrar, así que
+  // convertimos el total en USD con la tasa del día (misma fuente que usa el
+  // formulario de Nuevo Gasto para México).
+  const esMXN = String(gasto.moneda || '').toUpperCase() === 'MXN';
+  const cantidadOriginal = Number(gasto.cantidad_original ?? 0);
+  const rate = parseFloat(mxnRate) || 0;
+
+  let totalMXNMostrado = null;
+  let totalMXNEsConvertido = false;
+  if (esMXN && cantidadOriginal > 0) {
+    totalMXNMostrado = cantidadOriginal;
+  } else if (rate > 0) {
+    totalMXNMostrado = totalMostrado * rate;
+    totalMXNEsConvertido = true;
+  }
+
+  // Resalta la columna que refleja la moneda en la que realmente se capturó el
+  // gasto (según el país elegido al crearlo), la otra columna es solo una conversión.
+  const esOriginalUSD = !esMXN;
+  const esOriginalMXN = esMXN && !totalMXNEsConvertido;
+  const originalSx = { color: '#16a34a', bgcolor: '#f0fdf4', px: 1, py: 0.4, borderRadius: 1.5, display: 'inline-block' };
+
   const lastDetail = detalles.length > 0 ? detalles[detalles.length - 1] : null;
   const lastExpenseType = lastDetail?.tipo_gasto || '—';
 
@@ -51,7 +83,24 @@ const GastoRow = ({ gasto, navigate }) => {
         <TableCell>{lastExpenseType}</TableCell>
         <TableCell>{gasto.fecha_gasto}</TableCell>
         <TableCell>{gasto.pais}</TableCell>
-        <TableCell><strong>{money(totalMostrado)}</strong></TableCell>
+        <TableCell>
+          <Tooltip title={esOriginalUSD ? 'Monto original (el gasto se registró en USD)' : ''} disableHoverListener={!esOriginalUSD}>
+            <Box component="strong" sx={esOriginalUSD ? originalSx : undefined}>{money(totalMostrado)}</Box>
+          </Tooltip>
+        </TableCell>
+        <TableCell>
+          {totalMXNMostrado === null ? (
+            <Typography variant="body2" color="text.secondary">—</Typography>
+          ) : totalMXNEsConvertido ? (
+            <Tooltip title="Convertido con la tasa de cambio de hoy (el gasto se registró en USD)">
+              <strong style={{ cursor: 'help', borderBottom: '1px dashed #94a3b8' }}>{moneyMXN(totalMXNMostrado)}</strong>
+            </Tooltip>
+          ) : (
+            <Tooltip title="Monto original (el gasto se registró en MXN)" disableHoverListener={!esOriginalMXN}>
+              <Box component="strong" sx={esOriginalMXN ? originalSx : undefined}>{moneyMXN(totalMXNMostrado)}</Box>
+            </Tooltip>
+          )}
+        </TableCell>
         <TableCell>{gasto.created_name || '—'}</TableCell>
         <TableCell>{gasto.updated_name || '—'}</TableCell>
         <TableCell align="left">
@@ -66,7 +115,7 @@ const GastoRow = ({ gasto, navigate }) => {
       </TableRow>
 
       <TableRow>
-        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={9}>
+        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={10}>
           <Collapse in={open} timeout="auto" unmountOnExit>
             <Box sx={{ m: 1, p: 2, border: '1px solid #eee', borderRadius: 2, bgcolor: '#f9f9f9' }}>
               <Typography variant="h6" fontWeight={600} sx={{ fontSize: '1rem', mb: 1.5 }}>

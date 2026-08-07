@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import {
     Dialog, DialogTitle, DialogContent, DialogActions,
-    Button, TextField, MenuItem, Grid, Typography, Box, Paper, Chip, Stack, InputAdornment, Autocomplete, CircularProgress
+    Button, TextField, MenuItem, Grid, Typography, Box, Paper, Chip, Stack, InputAdornment, Autocomplete, CircularProgress, IconButton
 } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import BuildIcon from '@mui/icons-material/Build';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import EditIcon from '@mui/icons-material/Edit';
 import Swal from 'sweetalert2';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
-const RoadRepairModal = ({ open, onClose, onSuccess, editData }) => {
+const RoadRepairModal = ({ open, onClose, onSuccess, editData, initialTrip }) => {
     const [trucks, setTrucks] = useState([]);
     
     // 🚨 Agregamos trip_id y formatted_trip al estado
@@ -26,10 +27,15 @@ const RoadRepairModal = ({ open, onClose, onSuccess, editData }) => {
     // 🚨 Estados para el Autocomplete de Viajes
     const [tripOptions, setTripOptions] = useState([]);
     const [loadingTrips, setLoadingTrips] = useState(false);
+    // Si ya hay un viaje asociado, lo mostramos como texto junto al título en vez
+    // del input de búsqueda; este flag permite volver a mostrar el input para
+    // cambiarlo (solo cuando no viene fijado por contexto, ver initialTrip).
+    const [editingTrip, setEditingTrip] = useState(false);
 
     useEffect(() => {
         if (open) {
             fetchTrucks();
+            setEditingTrip(false);
             if (editData) {
                 setFormData({
                     ...editData,
@@ -41,14 +47,15 @@ const RoadRepairModal = ({ open, onClose, onSuccess, editData }) => {
                 }
             } else {
                 setFormData({
-                    id_reparacion: '', truck_id: '', trip_id: '', formatted_trip: '', operador: '', ciudad: '', estado: '',
+                    id_reparacion: '', truck_id: initialTrip?.truck_id || '', trip_id: initialTrip?.trip_id || '', formatted_trip: initialTrip?.formatted_trip || '',
+                    operador: initialTrip?.operador || '', ciudad: '', estado: '',
                     fallo: '', tipo_reparacion: '', comentarios: '', costo_reparacion: '', costo_refacciones: ''
                 });
-                setTripOptions([]);
+                setTripOptions(initialTrip ? [{ trip_id: initialTrip.trip_id, formatted_trip: initialTrip.formatted_trip }] : []);
             }
             setFiles([]);
         }
-    }, [open, editData]);
+    }, [open, editData, initialTrip]);
 
     const fetchTrucks = async () => {
         const fd = new FormData();
@@ -136,15 +143,73 @@ const RoadRepairModal = ({ open, onClose, onSuccess, editData }) => {
     return (
         <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth scroll="paper">
             <DialogTitle sx={{ bgcolor: '#f8f9fa', borderBottom: '1px solid #e0e0e0', py: 2 }}>
-                <Typography variant="h5" fontWeight={800} color="primary.main">
-                    {editData ? 'Editar Reparación' : 'Nueva Reparación en Carretera'}
-                </Typography>
+                <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 1.5 }}>
+                    <Typography variant="h5" fontWeight={800} color="primary.main">
+                        {editData ? 'Editar Reparación' : 'Nueva Reparación en Carretera'}
+                    </Typography>
+                    {formData.trip_id && !editingTrip && (
+                        <Chip
+                            label={`Viaje: ${formData.formatted_trip || formData.trip_id}`}
+                            color="primary"
+                            variant="outlined"
+                            sx={{ fontWeight: 700, bgcolor: 'white' }}
+                            onDelete={initialTrip ? undefined : () => setEditingTrip(true)}
+                            deleteIcon={initialTrip ? undefined : <EditIcon />}
+                        />
+                    )}
+                </Stack>
+                {(!formData.trip_id || editingTrip) && (
+                    <Autocomplete
+                        fullWidth
+                        disabled={!!initialTrip}
+                        options={tripOptions}
+                        getOptionLabel={(option) => option.formatted_trip || ''}
+                        isOptionEqualToValue={(option, value) => option.trip_id === value.trip_id}
+                        value={formData.trip_id ? { trip_id: formData.trip_id, formatted_trip: formData.formatted_trip } : null}
+                        onChange={(event, newValue) => {
+                            setFormData({
+                                ...formData,
+                                trip_id: newValue ? newValue.trip_id : '',
+                                formatted_trip: newValue ? newValue.formatted_trip : ''
+                            });
+                            if (newValue) setEditingTrip(false);
+                        }}
+                        onInputChange={(event, newInputValue, reason) => {
+                            if (reason === 'input') {
+                                fetchTrips(newInputValue);
+                            }
+                        }}
+                        loading={loadingTrips}
+                        noOptionsText="Ingresa el número exacto del viaje..."
+                        sx={{ maxWidth: 320 }}
+                        renderInput={(params) => (
+                            <TextField
+                                {...params}
+                                fullWidth
+                                label="Viaje Asociado"
+                                placeholder="Ej. 8"
+                                InputLabelProps={{ shrink: true }}
+                                size="small"
+                                sx={{ bgcolor: 'white' }}
+                                InputProps={{
+                                    ...params.InputProps,
+                                    endAdornment: (
+                                        <React.Fragment>
+                                            {loadingTrips ? <CircularProgress color="inherit" size={20} /> : null}
+                                            {params.InputProps.endAdornment}
+                                        </React.Fragment>
+                                    ),
+                                }}
+                            />
+                        )}
+                    />
+                )}
             </DialogTitle>
-            
+
             <DialogContent sx={{ bgcolor: '#f4f6f8', p: 3 }}>
                 <Stack spacing={3} sx={{ mt: 1 }}>
-                    
-                    {/* SECCIÓN 1: UNIDAD Y VIAJE */}
+
+                    {/* SECCIÓN 1: UNIDAD */}
                     <Paper elevation={0} sx={{ p: 3, borderRadius: 2, border: '1px solid #e0e0e0' }}>
                         <Stack direction="row" spacing={1} alignItems="center" mb={2.5}>
                             <LocalShippingIcon color="primary" fontSize="small" />
@@ -152,13 +217,13 @@ const RoadRepairModal = ({ open, onClose, onSuccess, editData }) => {
                         </Stack>
                         <Grid container spacing={2}>
                             <Grid item xs={12} sm={6}>
-                                <TextField 
-                                    select 
-                                    fullWidth 
-                                    label="Unidad (Camión) *" 
-                                    name="truck_id" 
-                                    value={formData.truck_id} 
-                                    onChange={handleChange} 
+                                <TextField
+                                    select
+                                    fullWidth
+                                    label="Unidad (Camión) *"
+                                    name="truck_id"
+                                    value={formData.truck_id}
+                                    onChange={handleChange}
                                     {...inputProps}
                                     SelectProps={{ sx: { minWidth: '180px' } }}
                                 >
@@ -166,59 +231,8 @@ const RoadRepairModal = ({ open, onClose, onSuccess, editData }) => {
                                     {trucks.map(t => <MenuItem key={t.truck_id} value={t.truck_id}>{t.unidad}</MenuItem>)}
                                 </TextField>
                             </Grid>
-                            
-                            <Grid item xs={12} sm={12}>
-                                <Autocomplete
-                                    fullWidth
-                                    options={tripOptions}
-                                    getOptionLabel={(option) => option.formatted_trip || ''}
-                                    isOptionEqualToValue={(option, value) => option.trip_id === value.trip_id}
-                                    value={formData.trip_id ? { trip_id: formData.trip_id, formatted_trip: formData.formatted_trip } : null}
-                                    onChange={(event, newValue) => {
-                                        setFormData({
-                                            ...formData,
-                                            trip_id: newValue ? newValue.trip_id : '',
-                                            formatted_trip: newValue ? newValue.formatted_trip : ''
-                                        });
-                                    }}
-                                    onInputChange={(event, newInputValue, reason) => {
-                                        if (reason === 'input') {
-                                            fetchTrips(newInputValue);
-                                        }
-                                    }}
-                                    loading={loadingTrips}
-                                    noOptionsText="Ingresa el número exacto del viaje..."
-                                    renderInput={(params) => (
-                                        <TextField
-                                            {...params}
-                                            fullWidth
-                                            sx={{ minWidth: '200px' }}
-                                            label="Viaje Asociado"
-                                            placeholder="Ej. 8"
-                                            InputLabelProps={{ shrink: true }}
-                                            size="small"
-                                            InputProps={{
-                                                ...params.InputProps,
-                                                endAdornment: (
-                                                    <React.Fragment>
-                                                        {loadingTrips ? <CircularProgress color="inherit" size={20} /> : null}
-                                                        {params.InputProps.endAdornment}
-                                                    </React.Fragment>
-                                                ),
-                                            }}
-                                        />
-                                    )}
-                                />
-                            </Grid>
-
-                            <Grid item xs={12}>
+                            <Grid item xs={12} sm={6}>
                                 <TextField fullWidth label="Operador *" name="operador" placeholder="Nombre completo" value={formData.operador} onChange={handleChange} {...inputProps} />
-                            </Grid>
-                            <Grid item xs={6}>
-                                <TextField fullWidth label="Ciudad" name="ciudad" placeholder="Ciudad actual" value={formData.ciudad} onChange={handleChange} {...inputProps} />
-                            </Grid>
-                            <Grid item xs={6}>
-                                <TextField fullWidth label="Estado" name="estado" placeholder="Estado/Provincia" value={formData.estado} onChange={handleChange} {...inputProps} />
                             </Grid>
                         </Grid>
                     </Paper>
@@ -230,6 +244,12 @@ const RoadRepairModal = ({ open, onClose, onSuccess, editData }) => {
                             <Typography variant="subtitle1" fontWeight={700}>2. Reporte de Falla</Typography>
                         </Stack>
                         <Grid container spacing={2}>
+                            <Grid item xs={12} sm={6}>
+                                <TextField fullWidth label="Ciudad" name="ciudad" placeholder="Ciudad actual" value={formData.ciudad} onChange={handleChange} {...inputProps} />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <TextField fullWidth label="Estado" name="estado" placeholder="Estado/Provincia" value={formData.estado} onChange={handleChange} {...inputProps} />
+                            </Grid>
                             <Grid item xs={12} sm={7}>
                                 <TextField fullWidth label="Fallo Reportado *" name="fallo" placeholder="Ej. Falla en sistema de frenos" value={formData.fallo} onChange={handleChange} {...inputProps} />
                             </Grid>

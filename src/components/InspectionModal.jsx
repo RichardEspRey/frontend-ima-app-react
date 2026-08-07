@@ -12,6 +12,7 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import EditIcon from '@mui/icons-material/Edit';
 
 import Swal from 'sweetalert2';
 
@@ -30,7 +31,7 @@ const initialForm = {
     multa_driver: ''
 };
 
-const InspectionModal = ({ open, onClose, onSuccess, editData }) => {
+const InspectionModal = ({ open, onClose, onSuccess, editData, initialTrip }) => {
     const [formData, setFormData] = useState(initialForm);
     const [files, setFiles] = useState([]);
     const [trucks, setTrucks] = useState([]);
@@ -48,10 +49,15 @@ const InspectionModal = ({ open, onClose, onSuccess, editData }) => {
     const [loading, setLoading] = useState(false);
     const [loadingTrips, setLoadingTrips] = useState(false);
     const [saving, setSaving] = useState(false);
+    // Si ya hay un viaje asociado, lo mostramos como texto junto al título en vez
+    // del input de búsqueda; este flag permite volver a mostrar el input para
+    // cambiarlo (solo cuando no viene fijado por contexto, ver initialTrip).
+    const [editingTrip, setEditingTrip] = useState(false);
 
     useEffect(() => {
         if (open) {
             fetchInitialData();
+            setEditingTrip(false);
             if (editData) {
                 setFormData({
                     ...initialForm,
@@ -71,14 +77,20 @@ const InspectionModal = ({ open, onClose, onSuccess, editData }) => {
                     }]);
                 }
             } else {
-                setFormData(initialForm);
+                setFormData({
+                    ...initialForm,
+                    trip_id: initialTrip?.trip_id || '',
+                    trip_number_search: initialTrip?.formatted_trip || '',
+                    truck_id: initialTrip?.truck_id || '',
+                    operador: initialTrip?.operador || ''
+                });
                 setReportesList([]);
                 setCurrentReport({ tipo_violacion: '', descripcion: '', comentarios: '' });
             }
             setFiles([]);
-            setTripsOptions([]);
+            setTripsOptions(initialTrip ? [initialTrip] : []);
         }
-    }, [open, editData]);
+    }, [open, editData, initialTrip]);
 
     const fetchInitialData = async () => {
         setLoading(true);
@@ -250,9 +262,57 @@ const InspectionModal = ({ open, onClose, onSuccess, editData }) => {
     return (
         <Dialog open={open} onClose={!saving ? onClose : undefined} maxWidth="md" fullWidth scroll="paper">
             <DialogTitle sx={{ bgcolor: '#f8f9fa', borderBottom: '1px solid #e0e0e0', py: 2 }}>
-                <Typography variant="h5" fontWeight={800} color="primary.main">
-                    {editData ? 'Editar Inspección' : 'Nueva Inspección'}
-                </Typography>
+                <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 1.5 }}>
+                    <Typography variant="h5" fontWeight={800} color="primary.main">
+                        {editData ? 'Editar Inspección' : 'Nueva Inspección'}
+                    </Typography>
+                    {formData.trip_id && !editingTrip && (
+                        <Chip
+                            label={`Viaje: ${formData.trip_number_search || formData.trip_id}`}
+                            color="primary"
+                            variant="outlined"
+                            sx={{ fontWeight: 700, bgcolor: 'white' }}
+                            onDelete={initialTrip ? undefined : () => setEditingTrip(true)}
+                            deleteIcon={initialTrip ? undefined : <EditIcon />}
+                        />
+                    )}
+                </Stack>
+                {(!formData.trip_id || editingTrip) && (
+                    <Autocomplete
+                        fullWidth
+                        disabled={!!initialTrip}
+                        options={tripsOptions}
+                        getOptionLabel={(option) => typeof option === 'string' ? option : option.formatted_trip || ''}
+                        isOptionEqualToValue={(option, value) => option.trip_id === value.trip_id}
+                        value={formData.trip_id ? { trip_id: formData.trip_id, formatted_trip: formData.trip_number_search } : null}
+                        onChange={(event, newValue) => { handleSelectTrip(event, newValue); if (newValue) setEditingTrip(false); }}
+                        onInputChange={(event, newInputValue, reason) => {
+                            if (reason === 'input') handleSearchTrip(newInputValue);
+                        }}
+                        loading={loadingTrips}
+                        noOptionsText="Ingresa el número exacto del viaje..."
+                        sx={{ maxWidth: 320 }}
+                        renderInput={(params) => (
+                            <TextField
+                                {...params}
+                                fullWidth
+                                label="Viaje Asociado"
+                                placeholder="Ej. 102"
+                                {...inputProps}
+                                sx={{ bgcolor: 'white' }}
+                                InputProps={{
+                                    ...params.InputProps,
+                                    endAdornment: (
+                                        <React.Fragment>
+                                            {loadingTrips ? <CircularProgress color="inherit" size={20} /> : null}
+                                            {params.InputProps.endAdornment}
+                                        </React.Fragment>
+                                    ),
+                                }}
+                            />
+                        )}
+                    />
+                )}
             </DialogTitle>
             
             <DialogContent sx={{ bgcolor: '#f4f6f8', p: 3 }}>
@@ -270,8 +330,8 @@ const InspectionModal = ({ open, onClose, onSuccess, editData }) => {
                                 </Stack>
                                 <Grid container spacing={2}>
                                     <Grid item xs={12} sm={6}>
-                                        <TextField 
-                                            select fullWidth label="Unidad (Camión) *" name="truck_id" 
+                                        <TextField
+                                            select fullWidth label="Unidad (Camión) *" name="truck_id"
                                             value={formData.truck_id} onChange={handleChange} required
                                             {...inputProps}
                                             SelectProps={{ sx: { minWidth: '180px' } }}
@@ -280,63 +340,8 @@ const InspectionModal = ({ open, onClose, onSuccess, editData }) => {
                                             {trucks.map(t => <MenuItem key={t.truck_id} value={t.truck_id}>{t.unidad}</MenuItem>)}
                                         </TextField>
                                     </Grid>
-                                    
                                     <Grid item xs={12} sm={6}>
-                                        <Autocomplete
-                                            fullWidth
-                                            options={tripsOptions}
-                                            getOptionLabel={(option) => typeof option === 'string' ? option : option.formatted_trip || ''}
-                                            isOptionEqualToValue={(option, value) => option.trip_id === value.trip_id}
-                                            value={formData.trip_id ? { trip_id: formData.trip_id, formatted_trip: formData.trip_number_search } : null}
-                                            onChange={handleSelectTrip}
-                                            onInputChange={(event, newInputValue, reason) => {
-                                                if (reason === 'input') handleSearchTrip(newInputValue);
-                                            }}
-                                            loading={loadingTrips}
-                                            noOptionsText="Ingresa el número exacto del viaje..."
-                                            renderInput={(params) => (
-                                                <TextField
-                                                    {...params}
-                                                    fullWidth
-                                                    label="Viaje Asociado"
-                                                    placeholder="Ej. 102"
-                                                    {...inputProps}
-                                                    InputProps={{
-                                                        ...params.InputProps,
-                                                        endAdornment: (
-                                                            <React.Fragment>
-                                                                {loadingTrips ? <CircularProgress color="inherit" size={20} /> : null}
-                                                                {params.InputProps.endAdornment}
-                                                            </React.Fragment>
-                                                        ),
-                                                    }}
-                                                />
-                                            )}
-                                        />
-                                    </Grid>
-
-                                    <Grid item xs={12}>
                                         <TextField fullWidth label="Operador *" name="operador" placeholder="Nombre completo" value={formData.operador} onChange={handleChange} required {...inputProps} />
-                                    </Grid>
-                                    
-                                    {/* Ajuste de columnas para que encaje la Fecha aquí */}
-                                    <Grid item xs={12} sm={4}>
-                                        <TextField fullWidth label="Ciudad *" name="ciudad" placeholder="Ciudad actual" value={formData.ciudad} onChange={handleChange} required {...inputProps} />
-                                    </Grid>
-                                    <Grid item xs={12} sm={4}>
-                                        <TextField fullWidth label="Estado *" name="estado" placeholder="Estado/Provincia" value={formData.estado} onChange={handleChange} required {...inputProps} />
-                                    </Grid>
-                                    <Grid item xs={12} sm={4}>
-                                        <TextField 
-                                            fullWidth 
-                                            type="date" 
-                                            label="Fecha de Inspección *" 
-                                            name="fecha_inspeccion" 
-                                            value={formData.fecha_inspeccion} 
-                                            onChange={handleChange} 
-                                            required 
-                                            {...inputProps} 
-                                        />
                                     </Grid>
                                 </Grid>
                             </Paper>
@@ -347,7 +352,28 @@ const InspectionModal = ({ open, onClose, onSuccess, editData }) => {
                                     <AssignmentLateIcon color="primary" fontSize="small" />
                                     <Typography variant="subtitle1" fontWeight={700}>2. Reporte de Inspección</Typography>
                                 </Stack>
-                                
+
+                                <Grid container spacing={2} alignItems="flex-start" sx={{ mb: 1 }}>
+                                    <Grid item xs={12} sm={4}>
+                                        <TextField fullWidth label="Ciudad *" name="ciudad" placeholder="Ciudad actual" value={formData.ciudad} onChange={handleChange} required {...inputProps} />
+                                    </Grid>
+                                    <Grid item xs={12} sm={4}>
+                                        <TextField fullWidth label="Estado *" name="estado" placeholder="Estado/Provincia" value={formData.estado} onChange={handleChange} required {...inputProps} />
+                                    </Grid>
+                                    <Grid item xs={12} sm={4}>
+                                        <TextField
+                                            fullWidth
+                                            type="date"
+                                            label="Fecha de Inspección *"
+                                            name="fecha_inspeccion"
+                                            value={formData.fecha_inspeccion}
+                                            onChange={handleChange}
+                                            required
+                                            {...inputProps}
+                                        />
+                                    </Grid>
+                                </Grid>
+
                                 <Grid container spacing={2} alignItems="flex-start">
                                     <Grid item xs={12} sm={4}>
                                         <TextField 

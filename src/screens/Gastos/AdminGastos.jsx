@@ -2,14 +2,19 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
   Button, TablePagination, TextField, Stack, FormControl, InputLabel, Select, MenuItem,
-  Typography, CircularProgress, Box
+  Typography, CircularProgress, Box, Collapse, ToggleButton, ToggleButtonGroup
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
+import InsertChartOutlinedIcon from '@mui/icons-material/InsertChartOutlined';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 // Componentes
-import GastoRow from '../../components/GastoRow'; 
+import GastoRow from '../../components/GastoRow';
 import ExpenseModal from './ExpenseModal';
+import { ExpenseTypeChart } from '../../components/Gastos/ExpenseTypeChart';
+import useFetchExchangeRate from '../../hooks/useFetchExchangeRate';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -29,6 +34,14 @@ const AdminGastos = () => {
 
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(20);
+
+  const [showChart, setShowChart] = useState(false);
+  const [chartCountry, setChartCountry] = useState('US');
+
+  // Tasa USD -> MXN del día (misma fuente que usa el formulario de gastos en México)
+  // para convertir en pantalla los gastos registrados en USD a su equivalente en pesos.
+  const { exchangeRate: mxnRate, fetchExchangeRate: fetchMxnRate } = useFetchExchangeRate();
+  useEffect(() => { fetchMxnRate(); }, [fetchMxnRate]);
 
   const uniqueCountries = useMemo(() => {
     const countries = new Set(gastos.map(g => g.pais).filter(Boolean));
@@ -134,16 +147,52 @@ const AdminGastos = () => {
             <Typography variant="h4" fontWeight={800} color="#0f172a">Expense Manager</Typography>
             <Typography variant="subtitle1" color="#64748b">Control y administración general de gastos</Typography>
         </Box>
-        <Button 
-            variant="contained" 
-            disableElevation 
-            startIcon={<AddCircleIcon />} 
-            onClick={() => setIsModalOpen(true)}
-            sx={{ bgcolor: '#0f172a', fontWeight: 700, px: 3, py: 1 }}
-        >
-            Nuevo Gasto
-        </Button>
+        <Stack direction="row" spacing={1.5}>
+            <Button
+                variant="outlined"
+                disableElevation
+                startIcon={<InsertChartOutlinedIcon />}
+                endIcon={showChart ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                onClick={() => setShowChart(p => !p)}
+                sx={{ fontWeight: 700, px: 3, py: 1, borderColor: '#cbd5e1', color: '#0f172a' }}
+            >
+                Gráfica de Gastos
+            </Button>
+            <Button
+                variant="contained"
+                disableElevation
+                startIcon={<AddCircleIcon />}
+                onClick={() => setIsModalOpen(true)}
+                sx={{ bgcolor: '#0f172a', fontWeight: 700, px: 3, py: 1 }}
+            >
+                Nuevo Gasto
+            </Button>
+        </Stack>
       </Box>
+
+      <Collapse in={showChart} sx={{ mb: showChart ? 3 : 0 }}>
+        <Paper sx={{ p: 3, borderRadius: 3, border: '1px solid #e2e8f0', mb: 3 }} elevation={0}>
+          <Stack direction="row" justifyContent="space-between" alignItems="center" flexWrap="wrap" gap={2} sx={{ mb: 1 }}>
+            <Box>
+              <Typography variant="h6" fontWeight={700} color="#0f172a">Gastos por Tipo (Acumulativo Mensual)</Typography>
+              <Typography variant="body2" color="#64748b">
+                {new Date().getFullYear()} · Total por mes dividido por Expense Type, en {chartCountry === 'MX' ? 'pesos mexicanos' : 'dólares'}
+              </Typography>
+            </Box>
+            <ToggleButtonGroup
+              value={chartCountry}
+              exclusive
+              size="small"
+              onChange={(e, val) => val && setChartCountry(val)}
+              color="primary"
+            >
+              <ToggleButton value="US" sx={{ fontWeight: 700, px: 3 }}>USA</ToggleButton>
+              <ToggleButton value="MX" sx={{ fontWeight: 700, px: 3 }}>México</ToggleButton>
+            </ToggleButtonGroup>
+          </Stack>
+          <ExpenseTypeChart gastos={gastos} country={chartCountry} loading={loading} />
+        </Paper>
+      </Collapse>
 
       <Paper sx={{ p: 3, borderRadius: 3, border: '1px solid #e2e8f0', mb: 3 }} elevation={0}>
         <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
@@ -188,6 +237,7 @@ const AdminGastos = () => {
               <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Date</TableCell>
               <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Country</TableCell>
               <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Total (USD)</TableCell>
+              <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Total (MX)</TableCell>
               <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Created By </TableCell>
               <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Updated By</TableCell>
               <TableCell sx={{ fontWeight: 700, color: '#475569', textAlign: 'center' }}>Actions</TableCell>
@@ -195,11 +245,11 @@ const AdminGastos = () => {
           </TableHead>
           <TableBody>
             {loading ? (
-              <TableRow><TableCell colSpan={9} align="center" sx={{ py: 5 }}><CircularProgress size={24}/></TableCell></TableRow>
+              <TableRow><TableCell colSpan={10} align="center" sx={{ py: 5 }}><CircularProgress size={24}/></TableCell></TableRow>
             ) : slice.length === 0 ? (
-              <TableRow><TableCell colSpan={9} align="center" sx={{ py: 5 }}><Typography color="text.secondary">No se encontraron gastos.</Typography></TableCell></TableRow>
+              <TableRow><TableCell colSpan={10} align="center" sx={{ py: 5 }}><Typography color="text.secondary">No se encontraron gastos.</Typography></TableCell></TableRow>
             ) : (
-              slice.map((g) => <GastoRow key={g.id_gasto} gasto={g} navigate={navigate} />)
+              slice.map((g) => <GastoRow key={g.id_gasto} gasto={g} navigate={navigate} mxnRate={mxnRate} />)
             )}
           </TableBody>
         </Table>

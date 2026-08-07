@@ -5,8 +5,9 @@ import {
     Avatar, TextField, Chip, Stack,
     Tabs, Tab, CircularProgress, Collapse,
     Button, FormControl, InputLabel, Select, MenuItem, Divider,
-    InputAdornment
+    InputAdornment, Autocomplete
 } from '@mui/material';
+import useFetchActiveDrivers from '../hooks/useFetchActiveDrivers';
 import {
     Close as CloseIcon,
     Computer as ComputerIcon,
@@ -92,15 +93,26 @@ const PermissionChip = ({ node, desktopFeaturesMap, onToggleFeature, userId, isP
                 '&:hover': disabled ? {} : { borderColor: '#1976d2', bgcolor: 'rgba(25, 118, 210, 0.1)' },
             }}
         >
-            <Typography
-                variant="caption"
-                fontWeight={isAllowed ? 700 : 500}
-                color={isAllowed ? 'primary.main' : 'text.primary'}
-                sx={{ lineHeight: 1.2, wordBreak: 'break-word' }}
-                title={!existInDB ? 'Falta dar de alta en BD' : undefined}
-            >
-                {node.name}{!existInDB && ' ⚠'}
-            </Typography>
+            <Box sx={{ minWidth: 0 }}>
+                <Typography
+                    variant="caption"
+                    fontWeight={isAllowed ? 700 : 500}
+                    color={isAllowed ? 'primary.main' : 'text.primary'}
+                    sx={{ lineHeight: 1.2, wordBreak: 'break-word', display: 'block' }}
+                    title={!existInDB ? 'Falta dar de alta en BD' : undefined}
+                >
+                    {node.name}{!existInDB && ' ⚠'}
+                </Typography>
+                {!isAllowed && (
+                    <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ lineHeight: 1.2, fontSize: '0.65rem', display: 'block' }}
+                    >
+                        No tiene permiso
+                    </Typography>
+                )}
+            </Box>
             <Switch
                 size="small"
                 checked={isAllowed}
@@ -345,15 +357,16 @@ const AccessDrawer = ({
     onUpdateUser
 }) => {
     const [activeTab, setActiveTab] = useState(0);
-    const [form, setForm] = useState({ name: '', user: '', pass: '', type: '', active: '1' });
+    const [form, setForm] = useState({ name: '', user: '', pass: '', type: '', active: '1', driver_id: '' });
     const [showPass, setShowPass] = useState(false);
+    const { activeDrivers } = useFetchActiveDrivers();
 
     const [searchTerm, setSearchTerm] = useState('');
     const [expandedSections, setExpandedSections] = useState({});
 
     useEffect(() => {
         if (user) {
-            setForm({ name: user.name || '', user: user.user || '', pass: user.pass || '', type: user.type || '', active: user.active ?? '1' });
+            setForm({ name: user.name || '', user: user.user || '', pass: user.pass || '', type: user.type || '', active: user.active ?? '1', driver_id: user.driver_id || '' });
         }
     }, [user]);
 
@@ -452,6 +465,19 @@ const AccessDrawer = ({
                                     <MenuItem value="Driver">Driver</MenuItem>
                                 </Select>
                             </FormControl>
+                            {form.type === 'Driver' && (
+                                <Autocomplete
+                                    size="small"
+                                    options={activeDrivers}
+                                    getOptionLabel={(d) => d.nombre || ''}
+                                    isOptionEqualToValue={(a, b) => String(a.driver_id) === String(b.driver_id)}
+                                    value={activeDrivers.find(d => String(d.driver_id) === String(form.driver_id)) || null}
+                                    onChange={(_, selected) => setForm(prev => ({ ...prev, driver_id: selected?.driver_id || '' }))}
+                                    renderInput={(params) => (
+                                        <TextField {...params} label="Conductor vinculado" helperText="Conductor de IMA Manager al que pertenece este acceso." />
+                                    )}
+                                />
+                            )}
                             <FormControl fullWidth size="small">
                                 <InputLabel>Estado</InputLabel>
                                 <Select value={String(form.active)} label="Estado" onChange={handleFormChange('active')}>

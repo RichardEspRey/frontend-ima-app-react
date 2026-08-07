@@ -11,6 +11,8 @@ import SearchIcon from '@mui/icons-material/Search';
 import { DocumentCell } from "../../components/DocumentCell.jsx";
 import { PCMillerModal } from "../../components/PCMillerModal.jsx";
 import { DocPreviewModal } from "../../components/DocPreviewModal.jsx";
+import RoadRepairsAdmin from "../RoadRepairsAdmin.jsx";
+import InspectionsAdmin from "../InspectionsAdmin.jsx";
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -191,118 +193,128 @@ export default function Safety() {
         >
           <Tab label="Pendientes de Documentación" />
           <Tab label="Cumplimiento Completo" />
+          <Tab label="Reparaciones en Ruta" />
+          <Tab label="Inspecciones Operativas" />
         </Tabs>
       </Paper>
 
-      <Paper elevation={0} sx={{ p: 2, mb: 3, bgcolor: '#f5f5f5', borderRadius: 2, border: '1px solid #e0e0e0' }}>
-        <TextField
-          size="small"
-          placeholder="Buscar por Trip #..."
-          value={search}
-          onChange={(e) => { setSearch(e.target.value); setPage(0); }}
-          slotProps={{
-            input: {
-              startAdornment: <InputAdornment position="start"><SearchIcon color="action" /></InputAdornment>,
-              sx: { bgcolor: 'white', minWidth: 300 }
-            }
-          }}
-        />
-      </Paper>
+      {(tabValue === 0 || tabValue === 1) && (
+        <>
+          <Paper elevation={0} sx={{ p: 2, mb: 3, bgcolor: '#f5f5f5', borderRadius: 2, border: '1px solid #e0e0e0' }}>
+            <TextField
+              size="small"
+              placeholder="Buscar por Trip #..."
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); setPage(0); }}
+              slotProps={{
+                input: {
+                  startAdornment: <InputAdornment position="start"><SearchIcon color="action" /></InputAdornment>,
+                  sx: { bgcolor: 'white', minWidth: 300 }
+                }
+              }}
+            />
+          </Paper>
 
-      <Paper elevation={0} variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden' }}>
-        <TableContainer>
-          <Table stickyHeader size="small">
-            <TableHead>
-              <TableRow>
-                <TableCell sx={{ fontWeight: 800, bgcolor: '#fff', py: 1.5, width: '15%' }}>Trip #</TableCell>
-                <TableCell sx={{ fontWeight: 800, bgcolor: '#fff', py: 1.5 }}>
-                  Libro Electrónico
-                  {tabValue === 0 && missingCounts.libro > 0 && (
-                    <Chip size="small" label={`${missingCounts.libro} faltan`} color="error" sx={{ ml: 1, height: 20, fontSize: '0.7rem' }} />
-                  )}
-                </TableCell>
-                <TableCell sx={{ fontWeight: 800, bgcolor: '#fff', py: 1.5 }}>
-                  Reporte Diesel
-                  {tabValue === 0 && missingCounts.diesel > 0 && (
-                    <Chip size="small" label={`${missingCounts.diesel} faltan`} color="error" sx={{ ml: 1, height: 20, fontSize: '0.7rem' }} />
-                  )}
-                </TableCell>
-                <TableCell sx={{ fontWeight: 800, bgcolor: '#fff', py: 1.5 }}>
-                  Reporte PC Miller
-                  {tabValue === 0 && missingCounts.pcmiller > 0 && (
-                    <Chip size="small" label={`${missingCounts.pcmiller} faltan`} color="error" sx={{ ml: 1, height: 20, fontSize: '0.7rem' }} />
-                  )}
-                </TableCell>
-              </TableRow>
-            </TableHead>
-
-            <TableBody>
-              {loading ? (
-                <TableRow><TableCell colSpan={4} align="center" sx={{ py: 10 }}><CircularProgress /></TableCell></TableRow>
-              ) : pageData.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={4} align="center" sx={{ py: 5 }}>
-                    <Typography color="text.secondary">No se encontraron viajes en esta categoría.</Typography>
-                  </TableCell>
-                </TableRow>
-              ) : (
-                pageData.map((row) => (
-                  <TableRow key={row.trip_id} hover>
-                    <TableCell>
-                      <Typography fontWeight={800} color="primary.main" variant="body2">
-                        {row.trip_number}
-                      </Typography>
-                      {row.driver_nombre && (
-                        <Typography variant="caption" display="block" color="text.secondary">
-                          {row.driver_nombre}
-                        </Typography>
+          <Paper elevation={0} variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden' }}>
+            <TableContainer>
+              <Table stickyHeader size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell sx={{ fontWeight: 800, bgcolor: '#fff', py: 1.5, width: '15%' }}>Trip #</TableCell>
+                    <TableCell sx={{ fontWeight: 800, bgcolor: '#fff', py: 1.5 }}>
+                      Libro Electrónico
+                      {tabValue === 0 && missingCounts.libro > 0 && (
+                        <Chip size="small" label={`${missingCounts.libro} faltan`} color="error" sx={{ ml: 1, height: 20, fontSize: '0.7rem' }} />
                       )}
                     </TableCell>
-
-                    <TableCell>
-                      <DocumentCell
-                        isUploaded={!!row.libro_electronico}
-                        docName="Libro Electrónico"
-                        onUpload={() => triggerFileUpload(row.trip_id, 'libro_electronico')}
-                        onView={() => handleViewDoc(row.trip_id, 'libro_electronico', row.libro_electronico)}
-                      />
+                    <TableCell sx={{ fontWeight: 800, bgcolor: '#fff', py: 1.5 }}>
+                      Reporte Diesel
+                      {tabValue === 0 && missingCounts.diesel > 0 && (
+                        <Chip size="small" label={`${missingCounts.diesel} faltan`} color="error" sx={{ ml: 1, height: 20, fontSize: '0.7rem' }} />
+                      )}
                     </TableCell>
-
-                    <TableCell>
-                      <DocumentCell
-                        isUploaded={!!row.reporte_diesel}
-                        docName="Reporte Diesel"
-                        onUpload={() => triggerFileUpload(row.trip_id, 'reporte_diesel')}
-                        onView={() => handleViewDoc(row.trip_id, 'reporte_diesel', row.reporte_diesel)}
-                      />
-                    </TableCell>
-
-                    <TableCell>
-                      <DocumentCell
-                        isUploaded={!!row.reporte_pcmiller}
-                        docName="Reporte PC Miller"
-                        onUpload={() => triggerFileUpload(row.trip_id, 'reporte_pcmiller')}
-                        onView={() => handleViewDoc(row.trip_id, 'reporte_pcmiller', row.reporte_pcmiller)}
-                      />
+                    <TableCell sx={{ fontWeight: 800, bgcolor: '#fff', py: 1.5 }}>
+                      Reporte PC Miller
+                      {tabValue === 0 && missingCounts.pcmiller > 0 && (
+                        <Chip size="small" label={`${missingCounts.pcmiller} faltan`} color="error" sx={{ ml: 1, height: 20, fontSize: '0.7rem' }} />
+                      )}
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
+                </TableHead>
 
-        <TablePagination
-            rowsPerPageOptions={[50, 100, 150]}
-            component="div"
-            count={filteredTrips.length}
-            rowsPerPage={rowsPerPage}
-            page={page}
-            onPageChange={(e, newPage) => setPage(newPage)}
-            onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }}
-            labelRowsPerPage="Filas:"
-        />
-      </Paper>
+                <TableBody>
+                  {loading ? (
+                    <TableRow><TableCell colSpan={4} align="center" sx={{ py: 10 }}><CircularProgress /></TableCell></TableRow>
+                  ) : pageData.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={4} align="center" sx={{ py: 5 }}>
+                        <Typography color="text.secondary">No se encontraron viajes en esta categoría.</Typography>
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    pageData.map((row) => (
+                      <TableRow key={row.trip_id} hover>
+                        <TableCell>
+                          <Typography fontWeight={800} color="primary.main" variant="body2">
+                            {row.trip_number}
+                          </Typography>
+                          {row.driver_nombre && (
+                            <Typography variant="caption" display="block" color="text.secondary">
+                              {row.driver_nombre}
+                            </Typography>
+                          )}
+                        </TableCell>
+
+                        <TableCell>
+                          <DocumentCell
+                            isUploaded={!!row.libro_electronico}
+                            docName="Libro Electrónico"
+                            onUpload={() => triggerFileUpload(row.trip_id, 'libro_electronico')}
+                            onView={() => handleViewDoc(row.trip_id, 'libro_electronico', row.libro_electronico)}
+                          />
+                        </TableCell>
+
+                        <TableCell>
+                          <DocumentCell
+                            isUploaded={!!row.reporte_diesel}
+                            docName="Reporte Diesel"
+                            onUpload={() => triggerFileUpload(row.trip_id, 'reporte_diesel')}
+                            onView={() => handleViewDoc(row.trip_id, 'reporte_diesel', row.reporte_diesel)}
+                          />
+                        </TableCell>
+
+                        <TableCell>
+                          <DocumentCell
+                            isUploaded={!!row.reporte_pcmiller}
+                            docName="Reporte PC Miller"
+                            onUpload={() => triggerFileUpload(row.trip_id, 'reporte_pcmiller')}
+                            onView={() => handleViewDoc(row.trip_id, 'reporte_pcmiller', row.reporte_pcmiller)}
+                          />
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
+
+            <TablePagination
+                rowsPerPageOptions={[50, 100, 150]}
+                component="div"
+                count={filteredTrips.length}
+                rowsPerPage={rowsPerPage}
+                page={page}
+                onPageChange={(e, newPage) => setPage(newPage)}
+                onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }}
+                labelRowsPerPage="Filas:"
+            />
+          </Paper>
+        </>
+      )}
+
+      {tabValue === 2 && <RoadRepairsAdmin />}
+
+      {tabValue === 3 && <InspectionsAdmin />}
     </Container>
   );
 }

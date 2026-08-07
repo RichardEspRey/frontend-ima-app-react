@@ -38,6 +38,8 @@ import Swal from 'sweetalert2';
 import { TripRow } from '../../components/TripRow';
 import { useAuthStore } from '../../store/useAuthStore';
 import ModalCajaExterna from '../../components/ModalCajaExterna';
+import RoadRepairModal from '../../components/RoadRepairModal';
+import InspectionModal from '../../components/InspectionModal';
 import useFetchCompanies from '../../hooks/useFetchCompanies';
 import { selectStyles } from '../../utils/tripFormConstants';
 
@@ -123,6 +125,7 @@ const TripAdmin = () => {
     const { userPermissions, user } = useAuthStore();
     const isAdmin = user?.tipo_usuario?.toLowerCase() === 'admin' || user?.name === 'Blanca';
     const canSpecialEdit = SPECIAL_EDIT_USERS.has(user?.name);
+    const canManageInvoice = isAdmin || userPermissions?.viajes_invoice_fields === true;
     const navigate = useNavigate();
 
     const apiHost = import.meta.env.VITE_API_HOST;
@@ -167,6 +170,26 @@ const TripAdmin = () => {
     const [loadingScheduled, setLoadingScheduled] = useState(false);
     const [scheduleTrailerType, setScheduleTrailerType] = useState('interna');
     const [isModalCajaExternaOpen, setIsModalCajaExternaOpen] = useState(false);
+    const [repairModalTrip, setRepairModalTrip] = useState(null);
+    const [inspectionModalTrip, setInspectionModalTrip] = useState(null);
+
+    // Memorizados para no recrear el objeto en cada render (ej. el refresco de
+    // permisos cada 15s en DashboardLayout): si la referencia cambiara sin que
+    // el viaje realmente cambie, el useEffect de los modales se reinicia y
+    // parece que "recargan" solos mientras están abiertos.
+    const repairInitialTrip = useMemo(() => (repairModalTrip ? {
+        trip_id: repairModalTrip.trip_id,
+        formatted_trip: repairModalTrip.trip_number,
+        operador: repairModalTrip.driver_nombre || '',
+        truck_id: repairModalTrip.truck_id ? String(repairModalTrip.truck_id) : '',
+    } : null), [repairModalTrip]);
+
+    const inspectionInitialTrip = useMemo(() => (inspectionModalTrip ? {
+        trip_id: inspectionModalTrip.trip_id,
+        formatted_trip: inspectionModalTrip.trip_number,
+        operador: inspectionModalTrip.driver_nombre || '',
+        truck_id: inspectionModalTrip.truck_id ? String(inspectionModalTrip.truck_id) : '',
+    } : null), [inspectionModalTrip]);
     const [isCreatingCompany, setIsCreatingCompany] = useState(false);
     const { activeCompanies, loading: loadingCompanies, refetchCompanies } = useFetchCompanies();
     const companyOptions = useMemo(() => activeCompanies.map(c => ({ value: c.company_id, label: c.nombre_compania })), [activeCompanies]);
@@ -587,7 +610,7 @@ const TripAdmin = () => {
     const currentTableColSpan = useMemo(() => {
         let cols = 8;
         if (showDocsColumn) cols = 8;
-        else if (tabValue === 3) cols = isAdmin ? 11 : 10;
+        else if (tabValue === 3) cols = isAdmin ? 10 : 9;
         else cols = isAdmin ? 10 : 9;
 
         if (isEnRutaTab) cols += 1;
@@ -927,10 +950,12 @@ const TripAdmin = () => {
                                     <TextField label="Company" size="small" fullWidth value={filterCompany} onChange={(e) => handleFilterChange(setFilterCompany, e.target.value)}
                                         InputProps={{ startAdornment: <InputAdornment position="start"><ApartmentOutlinedIcon sx={{ fontSize: 18, color: '#94a3b8' }} /></InputAdornment> }} />
                                 </Grid>
-                                <Grid item xs={12} sm={6} md={4}>
-                                    <TextField label="CI" size="small" fullWidth value={filterCI} onChange={(e) => handleFilterChange(setFilterCI, e.target.value)}
-                                        InputProps={{ startAdornment: <InputAdornment position="start"><BadgeOutlinedIcon sx={{ fontSize: 18, color: '#94a3b8' }} /></InputAdornment> }} />
-                                </Grid>
+                                {canManageInvoice && (
+                                    <Grid item xs={12} sm={6} md={4}>
+                                        <TextField label="CI" size="small" fullWidth value={filterCI} onChange={(e) => handleFilterChange(setFilterCI, e.target.value)}
+                                            InputProps={{ startAdornment: <InputAdornment position="start"><BadgeOutlinedIcon sx={{ fontSize: 18, color: '#94a3b8' }} /></InputAdornment> }} />
+                                    </Grid>
+                                )}
                             </Grid>
                         </Box>
 
@@ -972,7 +997,6 @@ const TripAdmin = () => {
                                     {isEnRutaTab && <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'center' }}>Copiar Info</TableCell>}
 
                                     <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'center' }}>Actions</TableCell>
-                                    {tabValue === 3 && <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'center' }}>Resumen</TableCell>}
                                     {isAdmin && (tabValue === 3 || tabValue === 2) && <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'center' }}>Admin</TableCell>}
                                 </TableRow>
                             </TableHead>
@@ -995,12 +1019,12 @@ const TripAdmin = () => {
                                                 trip={trip}
                                                 isAdmin={isAdmin}
                                                 canSpecialEdit={canSpecialEdit}
+                                                canManageInvoice={canManageInvoice}
                                                 isCompletedTab={tabValue === 3}
                                                 isDespachoTab={isDespachoTab}
                                                 isUpcomingTab={isUpcomingTab}
                                                 isEnRutaTab={isEnRutaTab}
                                                 onEdit={handleEditTrip}
-                                                onSummary={handleSummary}
                                                 showDocsColumn={showDocsColumn}
                                                 documentosFaltantes={total}
                                                 documentosFaltantesLista={list}
@@ -1012,6 +1036,9 @@ const TripAdmin = () => {
                                                 onReactivate={(tripId, tripNumber) => handleReactivateTrip(tripId, tripNumber, isEnRutaTab)}
                                                 onSpecialEdit={handleSpecialEdit}
                                                 onSalida={handleSalida}
+                                                onSummary={handleSummary}
+                                                onOpenRoadRepair={setRepairModalTrip}
+                                                onOpenInspection={setInspectionModalTrip}
                                             />
                                         );
                                     })
@@ -1304,6 +1331,20 @@ const TripAdmin = () => {
                 isOpen={isModalCajaExternaOpen}
                 onClose={() => setIsModalCajaExternaOpen(false)}
                 onSave={handleSaveExternalCaja}
+            />
+
+            <RoadRepairModal
+                open={!!repairModalTrip}
+                onClose={() => setRepairModalTrip(null)}
+                onSuccess={() => setRepairModalTrip(null)}
+                initialTrip={repairInitialTrip}
+            />
+
+            <InspectionModal
+                open={!!inspectionModalTrip}
+                onClose={() => setInspectionModalTrip(null)}
+                onSuccess={() => setInspectionModalTrip(null)}
+                initialTrip={inspectionInitialTrip}
             />
         </Box>
     );

@@ -4,12 +4,14 @@ import { useAuthStore } from '../store/useAuthStore';
 import { menuItemsConfig } from '../config/menuConfig';
 import TableUser from '../components/TableUser';
 import AccessDrawer from '../components/AccessDrawer';
+import useFetchActiveDrivers from '../hooks/useFetchActiveDrivers';
 import {
     Container, Typography, Box, CircularProgress,
     Alert, Snackbar, Button, Dialog, DialogTitle,
     DialogContent, DialogActions, TextField,
     FormControl, InputLabel, Select, MenuItem, Stack,
     List, ListItem, ListItemText, Checkbox, Divider, IconButton,
+    Autocomplete,
 } from '@mui/material';
 import { Settings as SettingsIcon, PersonAdd as PersonAddIcon, Group as GroupIcon, Delete as DeleteIcon, Edit as EditIcon, Search as SearchIcon } from '@mui/icons-material';
 import { InputAdornment, Chip } from '@mui/material';
@@ -20,6 +22,7 @@ const ADMIN_TYPES = new Set(["admin"]);
 const ProfileAccessManager = () => {
     const { user, fetchPermissions } = useAuthStore();
     const apiHost = import.meta.env.VITE_API_HOST;
+    const { activeDrivers } = useFetchActiveDrivers();
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -42,7 +45,7 @@ const ProfileAccessManager = () => {
     const [editingTeamId, setEditingTeamId] = useState(null);
     const [userSearchTerm, setUserSearchTerm] = useState('');
 
-    const [newUserModal, setNewUserModal] = useState({ open: false, name: '', user: '', pass: '', type: '' });
+    const [newUserModal, setNewUserModal] = useState({ open: false, name: '', user: '', pass: '', type: '', driver_id: '' });
     const sectionsToManage = getSectionsToManage();
 
     const fetchUsers = useCallback(async () => {
@@ -118,17 +121,19 @@ const ProfileAccessManager = () => {
         }
     };
 
-    const handleOpenNewUser = () => setNewUserModal({ open: true, name: '', user: '', pass: '', type: '' });
-    const handleCloseNewUser = () => setNewUserModal({ open: false, name: '', user: '', pass: '', type: '' });
+    const handleOpenNewUser = () => setNewUserModal({ open: true, name: '', user: '', pass: '', type: '', driver_id: '' });
+    const handleCloseNewUser = () => setNewUserModal({ open: false, name: '', user: '', pass: '', type: '', driver_id: '' });
     const handleNewUserChange = (field) => (e) => setNewUserModal(prev => ({ ...prev, [field]: e.target.value }));
 
     const handleCreateUser = async () => {
-        const { name, user: username, pass, type } = newUserModal;
+        const { name, user: username, pass, type, driver_id } = newUserModal;
         if (!name || !username || !pass || !type) return Flashy.error('Todos los campos son requeridos para crear el usuario.');
+        if (type === 'Driver' && !driver_id) return Flashy.error('Selecciona el Conductor al que pertenece este acceso.');
         try {
             const formData = new FormData();
             formData.append('op', 'create_user'); formData.append('name', name);
             formData.append('user', username); formData.append('pass', pass); formData.append('type', type);
+            formData.append('driver_id', type === 'Driver' ? driver_id : '');
             const res = await fetch(`${apiHost}/features.php`, { method: 'POST', body: formData });
             const data = await res.json();
             if (data.status === 'success') {
@@ -139,11 +144,13 @@ const ProfileAccessManager = () => {
     };
 
     const handleUpdateUser = async (userId, data) => {
+        if (data.type === 'Driver' && !data.driver_id) return Flashy.error('Selecciona el Conductor al que pertenece este acceso.');
         try {
             const formData = new FormData();
             formData.append('op', 'update_user'); formData.append('user_id', userId);
             formData.append('name', data.name); formData.append('user', data.user);
             formData.append('type', data.type); formData.append('active', data.active);
+            formData.append('driver_id', data.type === 'Driver' ? data.driver_id : '');
             if (data.pass) formData.append('pass', data.pass);
             const res = await fetch(`${apiHost}/features.php`, { method: 'POST', body: formData });
             const response = await res.json();
@@ -336,6 +343,19 @@ const ProfileAccessManager = () => {
                                 <MenuItem value="Driver">Driver</MenuItem>
                             </Select>
                         </FormControl>
+                        {newUserModal.type === 'Driver' && (
+                            <Autocomplete
+                                size="small"
+                                options={activeDrivers}
+                                getOptionLabel={(d) => d.nombre || ''}
+                                isOptionEqualToValue={(a, b) => a.driver_id === b.driver_id}
+                                value={activeDrivers.find(d => d.driver_id === newUserModal.driver_id) || null}
+                                onChange={(_, selected) => setNewUserModal(prev => ({ ...prev, driver_id: selected?.driver_id || '' }))}
+                                renderInput={(params) => (
+                                    <TextField {...params} label="Conductor vinculado" helperText="Este acceso quedará ligado a este Conductor de IMA Manager." />
+                                )}
+                            />
+                        )}
                     </Stack>
                 </DialogContent>
                 <DialogActions>
