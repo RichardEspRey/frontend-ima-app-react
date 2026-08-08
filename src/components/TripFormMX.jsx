@@ -30,7 +30,7 @@ const initialEtapaStateBase = {
     documentos: { ...initialNormalTripDocs }, time_of_delivery: '', date_of_departure: new Date(), stops_in_transit: []
 };
 
-const TripFormMX = ({ teamId,tripNumber, countryCode, tripYear, isTransnational, isContinuation, transnationalNumber, movementNumber, origenId, onSuccess, etapas: etapasProp, setEtapas: setEtapasProp, formData: formDataProp, setFormData: setFormDataProp, onSaveOverride }) => {
+const TripFormMX = ({ teamId,tripNumber, countryCode, tripYear, isTransnational, isContinuation, transnationalNumber, movementNumber, origenId, onSuccess, etapas: etapasProp, setEtapas: setEtapasProp, formData: formDataProp, setFormData: setFormDataProp, onSaveOverride, initialFormDataOverrides, initialStageOverrides }) => {
 
     // Hooks
     const { activeDrivers, loading: loadingDrivers, error: errorDrivers } = useFetchActiveDrivers();
@@ -41,7 +41,7 @@ const TripFormMX = ({ teamId,tripNumber, countryCode, tripYear, isTransnational,
     const { activeWarehouses, loading: loadingWarehouses } = useFetchWarehouses();
 
     // States
-    const [etapasLocal, setEtapasLocal] = useState([{ ...initialEtapaStateBase, stageType: 'normalTrip' }]);
+    const [etapasLocal, setEtapasLocal] = useState([{ ...initialEtapaStateBase, stageType: 'normalTrip', ...(initialStageOverrides || {}) }]);
     const etapas = etapasProp ?? etapasLocal;
     const setEtapas = setEtapasProp ?? setEtapasLocal;
     const [loadingSave, setLoadingSave] = useState(false);
@@ -75,7 +75,8 @@ const TripFormMX = ({ teamId,tripNumber, countryCode, tripYear, isTransnational,
     }, [apiHost]);
 
     const [formDataLocal, setFormDataLocal] = useState({
-        trip_number: tripNumber || '', driver_id: '', driver_id_second: '', truck_id: '', caja_id: '', caja_externa_id: ''
+        trip_number: tripNumber || '', driver_id: '', driver_id_second: '', truck_id: '', caja_id: '', caja_externa_id: '',
+        ...(initialFormDataOverrides || {})
     });
     const formData = formDataProp ?? formDataLocal;
     const setFormData = setFormDataProp ?? setFormDataLocal;

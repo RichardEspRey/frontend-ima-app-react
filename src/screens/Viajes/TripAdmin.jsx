@@ -41,6 +41,7 @@ import ModalCajaExterna from '../../components/ModalCajaExterna';
 import RoadRepairModal from '../../components/RoadRepairModal';
 import InspectionModal from '../../components/InspectionModal';
 import useFetchCompanies from '../../hooks/useFetchCompanies';
+import useFetchWarehouses from '../../hooks/useFetchWarehouses';
 import { selectStyles } from '../../utils/tripFormConstants';
 
 // ── Map helpers (ruta camión → Nuevo Laredo) ────────────────────────────────
@@ -96,7 +97,7 @@ const TABS_CONFIG = [
     { id: 3, label: "Finalizados", permission: "viajes_tab_completados" }
 ];
 
-const EMPTY_SCHEDULE_FORM = { operador_id: '', camion_id: '', caja_id: '', company_id: '', destino: '', salida: '' };
+const EMPTY_SCHEDULE_FORM = { operador_id: '', camion_id: '', caja_id: '', company_id: '', destino: '', warehouse_id: '', salida: '' };
 
 // Estilo compartido del encabezado de tabla: micro-label discreta en vez de
 // texto grueso sobre una caja de color sólido.
@@ -193,6 +194,10 @@ const TripAdmin = () => {
     const [isCreatingCompany, setIsCreatingCompany] = useState(false);
     const { activeCompanies, loading: loadingCompanies, refetchCompanies } = useFetchCompanies();
     const companyOptions = useMemo(() => activeCompanies.map(c => ({ value: c.company_id, label: c.nombre_compania })), [activeCompanies]);
+
+    const [isCreatingWarehouse, setIsCreatingWarehouse] = useState(false);
+    const { activeWarehouses, loading: loadingWarehouses, refetchWarehouses } = useFetchWarehouses();
+    const warehouseOptions = useMemo(() => activeWarehouses.map(w => ({ value: w.warehouse_id, label: w.nombre_almacen })), [activeWarehouses]);
 
     // Mapa: ruta del camión seleccionado hacia Nuevo Laredo
     const [selectedMapTripId, setSelectedMapTripId] = useState(null);
@@ -434,7 +439,8 @@ const TripAdmin = () => {
                 camion_id:   trip.truck_id  ? String(trip.truck_id)  : '',
                 caja_id:     cajaValue,
                 company_id:  trip.company_id ? String(trip.company_id) : '',
-                destino:     trip.destino   || '',
+                destino:     trip.nombre_almacen || '',
+                warehouse_id: trip.warehouse_id ? String(trip.warehouse_id) : '',
                 salida:      trip.salida    ? trip.salida.slice(0, 16) : ''
             });
             setScheduleTrailerType(cajaValue.startsWith('e_') ? 'externa' : 'interna');
@@ -509,9 +515,34 @@ const TripAdmin = () => {
         }
     };
 
+    const handleCreateWarehouseDestino = async (inputValue) => {
+        setIsCreatingWarehouse(true);
+        try {
+            const fd = new FormData();
+            fd.append('op', 'CreateWarehouse');
+            fd.append('nombre_almacen', inputValue);
+            const res = await fetch(`${apiHost}/warehouses.php`, { method: 'POST', body: fd });
+            const result = await res.json();
+            if (result.status === 'success') {
+                const { warehouse_id, nombre_almacen } = result.warehouse;
+                refetchWarehouses();
+                handleScheduleFormChange('destino', nombre_almacen);
+                handleScheduleFormChange('warehouse_id', String(warehouse_id));
+                Swal.fire('Éxito', `Creado: ${nombre_almacen}`, 'success');
+                return { value: warehouse_id, label: nombre_almacen };
+            } else {
+                throw new Error(result.message);
+            }
+        } catch (err) {
+            Swal.fire('Error', err.message, 'error');
+        } finally {
+            setIsCreatingWarehouse(false);
+        }
+    };
+
     const handleSaveSchedule = async () => {
-        const { operador_id, camion_id, caja_id, company_id, destino, salida } = scheduleForm;
-        if (!destino || !salida) {
+        const { operador_id, camion_id, caja_id, company_id, warehouse_id, salida } = scheduleForm;
+        if (!warehouse_id || !salida) {
             Swal.fire('Campos requeridos', 'Por favor completa el destino y la fecha de salida.', 'warning');
             return;
         }
@@ -526,7 +557,7 @@ const TripAdmin = () => {
             formData.append('caja_id',         isCajaExterna ? '' : numericCajaId);
             formData.append('caja_externa_id', isCajaExterna ? numericCajaId : '');
             formData.append('company_id', company_id);
-            formData.append('destino',   destino);
+            formData.append('warehouse_id', warehouse_id);
             formData.append('salida',    salida);
             const response = await fetch(`${apiHost}/Programacion_viajes.php`, { method: 'POST', body: formData });
             const result = await parseJsonSafe(response);
@@ -754,14 +785,14 @@ const TripAdmin = () => {
                                             <TableCell>{trip.caja_numero   || '-'}</TableCell>
                                             <TableCell>{trip.caja_externa_numero || '-'}</TableCell>
                                             <TableCell>{trip.nombre_compania || '-'}</TableCell>
-                                            <TableCell>{trip.destino}</TableCell>
+                                            <TableCell>{trip.nombre_almacen || '-'}</TableCell>
                                             <TableCell sx={{ fontVariantNumeric: 'tabular-nums', color: '#64748b' }}>{trip.salida ? dayjs(trip.salida).format('DD/MM/YYYY HH:mm') : '-'}</TableCell>
                                             <TableCell align="center">
                                                 <Button
                                                     size="small"
                                                     variant="outlined"
                                                     color="success"
-                                                    onClick={(e) => e.stopPropagation()}
+                                                    onClick={(e) => { e.stopPropagation(); navigate('/CrearViaje', { state: { presetTrip: trip } }); }}
                                                     sx={{ textTransform: 'none', fontWeight: 600, mr: 1 }}
                                                 >
                                                     Aprobar
@@ -1289,12 +1320,23 @@ const TripAdmin = () => {
                                 </Typography>
                                 <Grid container spacing={2} sx={{ mt: 0.25 }}>
                                     <Grid item xs={12}>
-                                        <TextField
-                                            label="Destino"
-                                            fullWidth
-                                            value={scheduleForm.destino}
-                                            onChange={(e) => handleScheduleFormChange('destino', e.target.value)}
-                                            InputProps={{ startAdornment: <InputAdornment position="start"><PlaceOutlinedIcon sx={{ fontSize: 20, color: '#94a3b8' }} /></InputAdornment> }}
+                                        <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 0.5 }}>
+                                            <PlaceOutlinedIcon sx={{ fontSize: 18, color: '#94a3b8' }} />
+                                            <Typography variant="body2" fontWeight={600} color="#334155">Destino</Typography>
+                                        </Stack>
+                                        <CreatableSelect
+                                            value={warehouseOptions.find(opt => opt.value === scheduleForm.warehouse_id) || warehouseOptions.find(opt => opt.label === scheduleForm.destino) || (scheduleForm.destino ? { value: '', label: scheduleForm.destino } : null)}
+                                            onChange={(sel) => {
+                                                handleScheduleFormChange('destino', sel?.label || '');
+                                                handleScheduleFormChange('warehouse_id', sel?.value ? String(sel.value) : '');
+                                            }}
+                                            onCreateOption={handleCreateWarehouseDestino}
+                                            options={warehouseOptions}
+                                            isLoading={loadingWarehouses || isCreatingWarehouse}
+                                            isClearable
+                                            styles={selectStyles}
+                                            placeholder="Seleccionar/Crear destino..."
+                                            formatCreateLabel={(v) => `Crear destino "${v}"`}
                                         />
                                     </Grid>
                                     <Grid item xs={12}>
