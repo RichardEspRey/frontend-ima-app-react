@@ -63,7 +63,7 @@ const CrearViaje = () => {
 
   const initialStageOverrides = presetTrip ? {
     company_id: resolvedCompanyId,
-    destination: presetTrip.nombre_compania || '',
+    destination: presetTrip.destino || '',
     warehouse_destination_id: resolvedWarehouseId,
     loading_date: presetTrip.salida ? new Date(presetTrip.salida) : new Date(),
   } : undefined;
@@ -228,7 +228,7 @@ const CrearViaje = () => {
           }
         >
           Datos precargados desde la programación de viaje: <strong>{presetTrip.nombre_compania}</strong>
-          {presetTrip.nombre_almacen ? ` → ${presetTrip.nombre_almacen}` : ''}
+          {presetTrip.destino ? ` → ${presetTrip.destino}` : ''}
           {presetTrip.salida ? ` — salida ${presetTrip.salida}` : ''}. Selecciona el país y confirma el resto de los datos.
         </Alert>
       )}
