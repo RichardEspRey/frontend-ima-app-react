@@ -34,11 +34,10 @@ export const ExpenseTypeChart = ({ gastos, country, loading }) => {
     gastosDelPais.forEach(g => (g.detalles || []).forEach(d => {
       if (d.tipo_gasto) types.add(d.tipo_gasto);
     }));
-    const typeList = Array.from(types).sort();
 
     const buckets = Array.from({ length: 12 }, (_, i) => {
       const row = { label: MONTH_LABELS_ES[i] };
-      typeList.forEach(t => { row[t] = 0; });
+      types.forEach(t => { row[t] = 0; });
       return row;
     });
 
@@ -56,12 +55,20 @@ export const ExpenseTypeChart = ({ gastos, country, loading }) => {
       });
     });
 
+    // Orden por total del año (mayor a menor), para que la leyenda quede en el
+    // mismo orden que la columna: `stackOrder: 'descending'` es lo que en
+    // realidad manda al gasto más grande hasta abajo de cada columna.
+    const totalByType = {};
+    types.forEach(t => { totalByType[t] = buckets.reduce((sum, row) => sum + row[t], 0); });
+    const typeList = Array.from(types).sort((a, b) => totalByType[b] - totalByType[a]);
+
     const seriesArr = typeList.map((t, i) => ({
       dataKey: t,
       label: t,
       stack: 'total',
+      stackOrder: 'descending',
       color: PALETTE[i % PALETTE.length],
-      valueFormatter: formatMoney,
+      valueFormatter: (v) => (v ? formatMoney(v) : null),
     }));
 
     return { dataset: buckets, series: seriesArr };
@@ -92,9 +99,16 @@ export const ExpenseTypeChart = ({ gastos, country, loading }) => {
         yAxis={[{ valueFormatter: formatMoney }]}
         series={series}
         height={380}
-        margin={{ top: 20, right: 20, bottom: 30, left: 90 }}
+        margin={{ top: 20, right: 20, bottom: 30, left: 130 }}
         borderRadius={4}
-        slotProps={{ legend: { hidden: false, direction: 'row', position: { vertical: 'top', horizontal: 'right' } } }}
+        slotProps={{
+          legend: { hidden: false, direction: 'row', position: { vertical: 'top', horizontal: 'right' } },
+          // 'axis' (el default): muestra todos los Expense Types del mes en un
+          // solo tooltip. Los que están en $0 no aparecen porque su
+          // valueFormatter devuelve null, y ChartsAxisTooltipContent omite
+          // cualquier fila cuyo valor formateado sea null.
+          tooltip: { trigger: 'axis' },
+        }}
       />
     </Box>
   );

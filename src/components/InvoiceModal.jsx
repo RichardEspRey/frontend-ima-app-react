@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { 
-    Dialog, DialogTitle, DialogContent, DialogActions, 
-    TextField, Button, Grid, Typography, Divider, Box, Chip, Paper
+import {
+    Dialog, DialogTitle, DialogContent, DialogActions,
+    TextField, Button, Grid, Typography, Divider, Box, Chip, Paper, Autocomplete
 } from '@mui/material';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import SaveIcon from '@mui/icons-material/Save';
@@ -37,11 +37,31 @@ const InvoiceModal = ({ isOpen, onClose, stageData, tripData, onSaveInvoice }) =
     const [viewMode, setViewMode] = useState('form');
     const [saving, setSaving] = useState(false);
 
+    // Empresas con su nombre/dirección de facturación ya conocidos (tabla
+    // company_invoice_info, unida por company_id). Sirve tanto para
+    // autocompletar al abrir el modal como para el selector manual.
+    const [companyOptions, setCompanyOptions] = useState([]);
+    const [loadingCompanies, setLoadingCompanies] = useState(false);
+
     const [invoiceForm, setInvoiceForm] = useState({
         stage_id: '', pdf_number: '', save_date: '', client_name: '', client_address: '',
         driver_name: '', ci_number: '', trip_number: '', pickup_date: '',
         delivery_date: '', description: '', rate: ''
     });
+
+    useEffect(() => {
+        if (!isOpen) return;
+        setLoadingCompanies(true);
+        const fd = new FormData();
+        fd.append('op', 'getCompanies');
+        fetch(`${apiHost}/companies.php`, { method: 'POST', body: fd })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success' && Array.isArray(data.companies)) setCompanyOptions(data.companies);
+            })
+            .catch(err => console.error('No se pudieron cargar las empresas:', err))
+            .finally(() => setLoadingCompanies(false));
+    }, [isOpen]);
 
     useEffect(() => {
         if (isOpen && stageData && tripData) {
@@ -74,10 +94,40 @@ const InvoiceModal = ({ isOpen, onClose, stageData, tripData, onSaveInvoice }) =
         }
     }, [isOpen, stageData, tripData]);
 
+    // Autocompleta nombre/dirección de facturación en cuanto llega la lista de
+    // empresas, comparando por company_id de la etapa (no por texto).
+    useEffect(() => {
+        if (!isOpen || !stageData?.company_id || companyOptions.length === 0) return;
+        const match = companyOptions.find(c => String(c.company_id) === String(stageData.company_id));
+        if (match?.nombre_factura) {
+            setInvoiceForm(prev => ({
+                ...prev,
+                client_name: prev.client_name || match.nombre_factura,
+                client_address: prev.client_address || match.direccion || '',
+            }));
+        }
+    }, [isOpen, stageData, companyOptions]);
+
     const isFormValid = Object.values(invoiceForm).every(val => String(val).trim() !== '');
 
     const handleChange = (e) => {
         setInvoiceForm({ ...invoiceForm, [e.target.name]: e.target.value });
+    };
+
+    const handleSelectCompany = (event, newValue) => {
+        if (newValue && typeof newValue === 'object') {
+            setInvoiceForm(prev => ({
+                ...prev,
+                client_name: newValue.nombre_factura || '',
+                client_address: newValue.direccion || prev.client_address,
+            }));
+        }
+    };
+
+    const handleClientNameInput = (event, newValue, reason) => {
+        if (reason === 'input' || reason === 'clear') {
+            setInvoiceForm(prev => ({ ...prev, client_name: newValue }));
+        }
     };
 
     const handleSave = async () => {
@@ -92,6 +142,22 @@ const InvoiceModal = ({ isOpen, onClose, stageData, tripData, onSaveInvoice }) =
 
             if (result.status !== 'success') {
                 throw new Error(result.message || 'No se pudo generar el invoice.');
+            }
+
+            // Guarda/actualiza el nombre y dirección de facturación de esta empresa
+            // para que la próxima vez se rellene solo. No debe tumbar el guardado
+            // del invoice si esto falla, por eso va en su propio try/catch.
+            if (stageData?.company_id && invoiceForm.client_name.trim()) {
+                try {
+                    const fdCompany = new FormData();
+                    fdCompany.append('op', 'save_company_invoice_info');
+                    fdCompany.append('company_id', stageData.company_id);
+                    fdCompany.append('nombre_factura', invoiceForm.client_name);
+                    fdCompany.append('direccion', invoiceForm.client_address);
+                    await fetch(`${apiHost}/companies.php`, { method: 'POST', body: fdCompany });
+                } catch (companyErr) {
+                    console.error('No se pudo guardar la información de facturación de la empresa:', companyErr);
+                }
             }
 
             onSaveInvoice?.({
@@ -141,10 +207,43 @@ const InvoiceModal = ({ isOpen, onClose, stageData, tripData, onSaveInvoice }) =
                                 <Typography variant="caption" fontWeight={700} color="textSecondary" mb={1} display="block">DATOS DEL CLIENTE</Typography>
                                 <Grid container spacing={2}>
                                     <Grid item xs={12} sm={6}>
-                                        <TextField fullWidth size="small" label="Nombre del Cliente" name="client_name" value={invoiceForm.client_name} onChange={handleChange} />
+                                        <Autocomplete
+                                            freeSolo
+                                            fullWidth
+                                            options={companyOptions.filter(c => c.nombre_factura)}
+                                            getOptionLabel={(opt) => (typeof opt === 'string' ? opt : (opt.nombre_factura || ''))}
+                                            loading={loadingCompanies}
+                                            inputValue={invoiceForm.client_name}
+                                            onInputChange={handleClientNameInput}
+                                            onChange={handleSelectCompany}
+                                            renderOption={(props, option) => (
+                                                <li {...props} key={option.company_id}>
+                                                    {option.nombre_factura}
+                                                    {option.nombre_compania ? ` (${option.nombre_compania})` : ''}
+                                                </li>
+                                            )}
+                                            renderInput={(params) => (
+                                                <TextField
+                                                    {...params}
+                                                    size="small"
+                                                    label="Nombre del Cliente"
+                                                    placeholder="Escribe o elige una empresa ya conocida..."
+                                                    helperText="Si la empresa no está en la lista, escríbela y guárdala junto con la dirección; la próxima vez se autocompleta."
+                                                />
+                                            )}
+                                        />
                                     </Grid>
                                     <Grid item xs={12} sm={6}>
-                                        <TextField fullWidth size="small" label="Dirección" name="client_address" value={invoiceForm.client_address} onChange={handleChange} />
+                                        <TextField
+                                            fullWidth
+                                            size="small"
+                                            label="Dirección"
+                                            name="client_address"
+                                            value={invoiceForm.client_address}
+                                            onChange={handleChange}
+                                            multiline
+                                            minRows={2}
+                                        />
                                     </Grid>
                                 </Grid>
                             </Paper>
