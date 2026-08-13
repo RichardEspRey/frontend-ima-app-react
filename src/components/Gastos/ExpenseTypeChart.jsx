@@ -18,25 +18,41 @@ const money = (currency) => (v) =>
     maximumFractionDigits: 0,
   }).format(Number(v || 0));
 
-// Gráfica de barras acumulativa (stacked): eje X = los 12 meses del año en curso,
-// eje Y = dinero, cada columna se divide por Expense Type (una serie por tipo,
-// todas compartiendo el mismo `stack`). El hover y la leyenda de colores los da
-// @mui/x-charts de forma nativa.
+// Los 12 meses terminando en el mes actual (ventana móvil), del más antiguo
+// (izquierda) al más reciente (derecha). Ej. si hoy es agosto 2026, va de
+// septiembre 2025 a agosto 2026, y el próximo mes la ventana se recorre sola.
+const getRollingMonths = () => {
+  const now = new Date();
+  return Array.from({ length: 12 }, (_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - (11 - i), 1);
+    return { year: d.getFullYear(), month: d.getMonth() + 1 };
+  });
+};
+
+// Gráfica de barras acumulativa (stacked): eje X = últimos 12 meses (ventana
+// móvil), eje Y = dinero, cada columna se divide por Expense Type (una serie
+// por tipo, todas compartiendo el mismo `stack`). El hover y la leyenda de
+// colores los da @mui/x-charts de forma nativa.
 export const ExpenseTypeChart = ({ gastos, country, loading }) => {
   const currency = country === 'MX' ? 'MXN' : 'USD';
-  const year = new Date().getFullYear();
   const formatMoney = money(currency);
+
+  const months = useMemo(() => getRollingMonths(), []);
+  const rangeLabel = `${MONTH_LABELS_ES[months[0].month - 1]} ${months[0].year} – ${MONTH_LABELS_ES[months[11].month - 1]} ${months[11].year}`;
 
   const { dataset, series } = useMemo(() => {
     const gastosDelPais = gastos.filter(g => g.pais === country);
+
+    const indexByKey = {};
+    months.forEach(({ year, month }, i) => { indexByKey[`${year}-${month}`] = i; });
 
     const types = new Set();
     gastosDelPais.forEach(g => (g.detalles || []).forEach(d => {
       if (d.tipo_gasto) types.add(d.tipo_gasto);
     }));
 
-    const buckets = Array.from({ length: 12 }, (_, i) => {
-      const row = { label: MONTH_LABELS_ES[i] };
+    const buckets = months.map(({ year, month }) => {
+      const row = { label: `${MONTH_LABELS_ES[month - 1]} ${String(year).slice(2)}` };
       types.forEach(t => { row[t] = 0; });
       return row;
     });
@@ -45,19 +61,21 @@ export const ExpenseTypeChart = ({ gastos, country, loading }) => {
       const fecha = g.fecha_gasto;
       if (!fecha) return;
       const [y, m] = fecha.split('-').map(Number);
-      if (y !== year || !m || m < 1 || m > 12) return;
+      if (!y || !m) return;
+      const idx = indexByKey[`${y}-${m}`];
+      if (idx === undefined) return;
 
       (g.detalles || []).forEach(d => {
         if (!d.tipo_gasto) return;
         const cant = parseFloat(d.cantidad_articulo ?? 0) || 0;
         const pu = parseFloat(d.precio_unitario ?? 0) || 0;
-        buckets[m - 1][d.tipo_gasto] += cant * pu;
+        buckets[idx][d.tipo_gasto] += cant * pu;
       });
     });
 
-    // Orden por total del año (mayor a menor), para que la leyenda quede en el
-    // mismo orden que la columna: `stackOrder: 'descending'` es lo que en
-    // realidad manda al gasto más grande hasta abajo de cada columna.
+    // Orden por total de la ventana (mayor a menor), para que la leyenda quede
+    // en el mismo orden que la columna: `stackOrder: 'descending'` es lo que
+    // en realidad manda al gasto más grande hasta abajo de cada columna.
     const totalByType = {};
     types.forEach(t => { totalByType[t] = buckets.reduce((sum, row) => sum + row[t], 0); });
     const typeList = Array.from(types).sort((a, b) => totalByType[b] - totalByType[a]);
@@ -73,7 +91,7 @@ export const ExpenseTypeChart = ({ gastos, country, loading }) => {
 
     return { dataset: buckets, series: seriesArr };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gastos, country, currency, year]);
+  }, [gastos, country, currency, months]);
 
   const hasData = series.length > 0 && dataset.some(row => series.some(s => row[s.dataKey] > 0));
 
@@ -85,7 +103,7 @@ export const ExpenseTypeChart = ({ gastos, country, loading }) => {
     return (
       <Stack alignItems="center" justifyContent="center" height={340} spacing={1}>
         <Typography color="text.secondary">
-          No hay gastos registrados para {country === 'MX' ? 'México' : 'Estados Unidos'} en {year}.
+          No hay gastos registrados para {country === 'MX' ? 'México' : 'Estados Unidos'} entre {rangeLabel}.
         </Typography>
       </Stack>
     );
@@ -96,10 +114,14 @@ export const ExpenseTypeChart = ({ gastos, country, loading }) => {
       <BarChart
         dataset={dataset}
         xAxis={[{ dataKey: 'label', scaleType: 'band' }]}
-        yAxis={[{ valueFormatter: formatMoney }]}
+        // El ancho por default del eje Y es de solo 45px (65 si tiene label),
+        // insuficiente para montos completos como "$123,456" — por eso se
+        // veían cortados sin importar el margen del chart. Con `width` se
+        // reserva el espacio real que necesita el texto.
+        yAxis={[{ valueFormatter: formatMoney, width: 95 }]}
         series={series}
         height={380}
-        margin={{ top: 20, right: 20, bottom: 30, left: 130 }}
+        margin={{ top: 20, right: 20, bottom: 30, left: 10 }}
         borderRadius={4}
         slotProps={{
           legend: { hidden: false, direction: 'row', position: { vertical: 'top', horizontal: 'right' } },

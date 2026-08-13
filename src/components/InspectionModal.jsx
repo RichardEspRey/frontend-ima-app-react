@@ -479,10 +479,36 @@ const InspectionModal = ({ open, onClose, onSuccess, editData, initialTrip }) =>
                                         <TextField fullWidth label="Multa Driver" name="multa_driver" type="number" inputProps={{ step: "0.01", min: "0" }} value={formData.multa_driver} onChange={handleChange} {...inputProps} InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }} />
                                     </Grid>
                                     
+                                    {/* Documentos ya guardados (solo al editar un registro existente) */}
+                                    {Array.isArray(formData.documentos) && formData.documentos.length > 0 && (
+                                        <Grid item xs={12}>
+                                            <Typography variant="caption" fontWeight={700} color="textSecondary" display="block" sx={{ mb: 0.5 }}>
+                                                DOCUMENTOS YA GUARDADOS
+                                            </Typography>
+                                            <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 1 }}>
+                                                {formData.documentos.map((doc) => (
+                                                    <Chip
+                                                        key={doc.id_doc || doc.file_path}
+                                                        icon={<InsertDriveFileIcon />}
+                                                        label={doc.file_name || 'Documento'}
+                                                        component="a"
+                                                        href={doc.url}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        clickable
+                                                        color="success"
+                                                        variant="outlined"
+                                                        size="small"
+                                                    />
+                                                ))}
+                                            </Stack>
+                                        </Grid>
+                                    )}
+
                                     <Grid item xs={12}>
-                                        <Box sx={{ 
+                                        <Box sx={{
                                             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                                            width: '100%', boxSizing: 'border-box', border: '2px dashed #90caf9', 
+                                            width: '100%', boxSizing: 'border-box', border: '2px dashed #90caf9',
                                             bgcolor: '#e3f2fd', py: 4, px: 2, textAlign: 'center', borderRadius: 2,
                                             cursor: 'pointer', transition: '0.2s', '&:hover': { bgcolor: '#e1f5fe', borderColor: '#42a5f5' }
                                         }} component="label">

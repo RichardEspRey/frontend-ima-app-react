@@ -289,9 +289,35 @@ const RoadRepairModal = ({ open, onClose, onSuccess, editData, initialTrip }) =>
                                 <TextField fullWidth label="Refacciones" name="costo_refacciones" type="number" value={formData.costo_refacciones} onChange={handleChange} {...inputProps} InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }} />
                             </Grid>
                             
+                            {/* Documentos ya guardados (solo al editar un registro existente) */}
+                            {Array.isArray(formData.documentos) && formData.documentos.length > 0 && (
+                                <Grid item xs={12}>
+                                    <Typography variant="caption" fontWeight={700} color="textSecondary" display="block" sx={{ mb: 0.5 }}>
+                                        DOCUMENTOS YA GUARDADOS
+                                    </Typography>
+                                    <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 1 }}>
+                                        {formData.documentos.map((doc) => (
+                                            <Chip
+                                                key={doc.id_doc || doc.file_path}
+                                                icon={<PictureAsPdfIcon />}
+                                                label={doc.file_name || 'Documento'}
+                                                component="a"
+                                                href={doc.url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                clickable
+                                                color="success"
+                                                variant="outlined"
+                                                size="small"
+                                            />
+                                        ))}
+                                    </Stack>
+                                </Grid>
+                            )}
+
                             {/* Subida de Invoices */}
                             <Grid item xs={12}>
-                                <Box sx={{ 
+                                <Box sx={{
                                     display: 'flex',
                                     flexDirection: 'column',
                                     alignItems: 'center',

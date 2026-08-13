@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import {
     Box, Typography, Paper, Button, Table, TableBody, TableCell, TableContainer,
-    TableHead, TableRow, IconButton, CircularProgress, Chip
+    TableHead, TableRow, IconButton, CircularProgress, Chip, Stack
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import RoadRepairModal from '../components/RoadRepairModal';
 
 const apiHost = import.meta.env.VITE_API_HOST;
@@ -72,19 +73,20 @@ const RoadRepairsAdmin = () => {
                             <TableCell sx={{ fontWeight: 'bold', textAlign: 'right' }}>Costo Rep.</TableCell>
                             <TableCell sx={{ fontWeight: 'bold', textAlign: 'right' }}>Costo Ref.</TableCell>
                             <TableCell sx={{ fontWeight: 'bold', textAlign: 'right' }}>Total</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold' }}>Documentos</TableCell>
                             <TableCell sx={{ fontWeight: 'bold', textAlign: 'center' }}>Acciones</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
                         {loading ? (
                             <TableRow>
-                                <TableCell colSpan={8} align="center" sx={{ py: 3 }}>
+                                <TableCell colSpan={9} align="center" sx={{ py: 3 }}>
                                     <CircularProgress size={24} /> <Typography>Cargando...</Typography>
                                 </TableCell>
                             </TableRow>
                         ) : repairs.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={8} align="center" sx={{ py: 3 }}>
+                                <TableCell colSpan={9} align="center" sx={{ py: 3 }}>
                                     No hay reparaciones registradas.
                                 </TableCell>
                             </TableRow>
@@ -105,6 +107,30 @@ const RoadRepairsAdmin = () => {
                                     <TableCell align="right">{money(row.costo_refacciones)}</TableCell>
                                     <TableCell align="right" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
                                         {money(row.total)}
+                                    </TableCell>
+                                    <TableCell>
+                                        {Array.isArray(row.documentos) && row.documentos.length > 0 ? (
+                                            <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap>
+                                                {row.documentos.map((doc) => (
+                                                    <Chip
+                                                        key={doc.id_doc || doc.file_path}
+                                                        icon={<PictureAsPdfIcon />}
+                                                        label={doc.file_name || 'Documento'}
+                                                        component="a"
+                                                        href={doc.url}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        clickable
+                                                        size="small"
+                                                        color="error"
+                                                        variant="outlined"
+                                                        sx={{ maxWidth: 160 }}
+                                                    />
+                                                ))}
+                                            </Stack>
+                                        ) : (
+                                            <Typography variant="caption" color="text.secondary">Sin documentos</Typography>
+                                        )}
                                     </TableCell>
                                     <TableCell align="center">
                                         <IconButton color="primary" onClick={() => handleOpenModal(row)}>

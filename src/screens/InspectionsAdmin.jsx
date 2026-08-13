@@ -4,6 +4,7 @@ import {
     TableHead, TableRow, IconButton, CircularProgress, Chip, Stack
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import InspectionModal from '../components/InspectionModal';
 
 const apiHost = import.meta.env.VITE_API_HOST;
@@ -78,19 +79,20 @@ const InspectionsAdmin = () => {
                             <TableCell sx={{ fontWeight: 700, color: '#475569', textAlign: 'right' }}>Multa IMA</TableCell>
                             <TableCell sx={{ fontWeight: 700, color: '#475569', textAlign: 'right' }}>Multa Driver</TableCell>
                             <TableCell sx={{ fontWeight: 700, color: '#475569', textAlign: 'right' }}>Total</TableCell>
+                            <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Documentos</TableCell>
                             <TableCell sx={{ fontWeight: 700, color: '#475569', textAlign: 'center' }}>Acciones</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
                         {loading ? (
                             <TableRow>
-                                <TableCell colSpan={10} align="center" sx={{ py: 4 }}>
+                                <TableCell colSpan={11} align="center" sx={{ py: 4 }}>
                                     <CircularProgress size={24} sx={{ mr: 2 }} />
                                 </TableCell>
                             </TableRow>
                         ) : inspections.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={10} align="center" sx={{ py: 4 }}>
+                                <TableCell colSpan={11} align="center" sx={{ py: 4 }}>
                                     <Typography variant="body2" color="text.secondary">No hay inspecciones registradas.</Typography>
                                 </TableCell>
                             </TableRow>
@@ -108,10 +110,10 @@ const InspectionsAdmin = () => {
                                         )}
                                     </TableCell>
                                     <TableCell>
-                                        <Chip 
-                                            label={row.tipo_violacion} 
-                                            size="small" 
-                                            color={row.tipo_violacion === 'Out of services' ? 'error' : 'warning'} 
+                                        <Chip
+                                            label={row.tipo_violacion}
+                                            size="small"
+                                            color={row.tipo_violacion === 'Out of services' ? 'error' : 'warning'}
                                             sx={{ fontWeight: 700 }}
                                         />
                                     </TableCell>
@@ -120,6 +122,30 @@ const InspectionsAdmin = () => {
                                     <TableCell align="right">{formatMoney(row.multa_driver)}</TableCell>
                                     <TableCell align="right" sx={{ fontWeight: 700, color: '#0f172a' }}>
                                         {formatMoney(row.total)}
+                                    </TableCell>
+                                    <TableCell>
+                                        {Array.isArray(row.documentos) && row.documentos.length > 0 ? (
+                                            <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap>
+                                                {row.documentos.map((doc) => (
+                                                    <Chip
+                                                        key={doc.id_doc || doc.file_path}
+                                                        icon={<PictureAsPdfIcon />}
+                                                        label={doc.file_name || 'Documento'}
+                                                        component="a"
+                                                        href={doc.url}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        clickable
+                                                        size="small"
+                                                        color="error"
+                                                        variant="outlined"
+                                                        sx={{ maxWidth: 160 }}
+                                                    />
+                                                ))}
+                                            </Stack>
+                                        ) : (
+                                            <Typography variant="caption" color="text.secondary">Sin documentos</Typography>
+                                        )}
                                     </TableCell>
                                     <TableCell align="center">
                                         <IconButton color="primary" onClick={() => handleOpenModal(row)}>

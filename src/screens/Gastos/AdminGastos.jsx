@@ -176,7 +176,7 @@ const AdminGastos = () => {
             <Box>
               <Typography variant="h6" fontWeight={700} color="#0f172a">Gastos por Tipo (Acumulativo Mensual)</Typography>
               <Typography variant="body2" color="#64748b">
-                {new Date().getFullYear()} · Total por mes dividido por Expense Type, en {chartCountry === 'MX' ? 'pesos mexicanos' : 'dólares'}
+                Últimos 12 meses · Total por mes dividido por Expense Type, en {chartCountry === 'MX' ? 'pesos mexicanos' : 'dólares'}
               </Typography>
             </Box>
             <ToggleButtonGroup
