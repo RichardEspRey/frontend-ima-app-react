@@ -55,6 +55,7 @@ const RoadRepairsAdmin = () => {
 
     return (
         <Box sx={{ p: 3 }}>
+            <style>{`.swal2-container { z-index: 2000 !important; }`}</style>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                 <Typography variant="h4" fontWeight={700}>Reparaciones en Carretera</Typography>
                 <Button variant="contained" color="primary" onClick={() => handleOpenModal()}>
@@ -144,11 +145,12 @@ const RoadRepairsAdmin = () => {
                 </Table>
             </TableContainer>
 
-            <RoadRepairModal 
-                open={modalOpen} 
-                onClose={handleCloseModal} 
-                onSuccess={handleSuccess} 
-                editData={selectedRepair} 
+            <RoadRepairModal
+                open={modalOpen}
+                onClose={handleCloseModal}
+                onSuccess={handleSuccess}
+                editData={selectedRepair}
+                onDocumentsChanged={fetchRepairs}
             />
         </Box>
     );

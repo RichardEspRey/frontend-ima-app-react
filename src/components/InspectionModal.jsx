@@ -31,9 +31,11 @@ const initialForm = {
     multa_driver: ''
 };
 
-const InspectionModal = ({ open, onClose, onSuccess, editData, initialTrip }) => {
+const InspectionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDocumentsChanged }) => {
     const [formData, setFormData] = useState(initialForm);
     const [files, setFiles] = useState([]);
+    // id_doc del documento guardado que se está eliminando (para el spinner del chip)
+    const [deletingDocId, setDeletingDocId] = useState(null);
     const [trucks, setTrucks] = useState([]);
     const [descriptions, setDescriptions] = useState([]);
     const [tripsOptions, setTripsOptions] = useState([]);
@@ -88,6 +90,7 @@ const InspectionModal = ({ open, onClose, onSuccess, editData, initialTrip }) =>
                 setCurrentReport({ tipo_violacion: '', descripcion: '', comentarios: '' });
             }
             setFiles([]);
+            setDeletingDocId(null);
             setTripsOptions(initialTrip ? [initialTrip] : []);
         }
     }, [open, editData, initialTrip]);
@@ -193,6 +196,46 @@ const InspectionModal = ({ open, onClose, onSuccess, editData, initialTrip }) =>
 
     const removeFile = (indexToRemove) => {
         setFiles(prev => prev.filter((_, index) => index !== indexToRemove));
+    };
+
+    // Elimina un documento YA guardado en el servidor (uno por uno).
+    // El backend solo borra el renglón de inspection_docs + el archivo físico;
+    // la inspección y sus reportes nunca se tocan.
+    const handleDeleteDoc = async (doc) => {
+        const confirm = await Swal.fire({
+            title: '¿Eliminar documento?',
+            html: `Se eliminará <b>${doc.file_name || 'este documento'}</b> de forma permanente.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#d32f2f'
+        });
+        if (!confirm.isConfirmed) return;
+
+        setDeletingDocId(doc.id_doc);
+        try {
+            const fd = new FormData();
+            fd.append('op', 'delete_doc');
+            fd.append('id_doc', doc.id_doc);
+            fd.append('id_inspeccion', formData.id_inspeccion);
+
+            const res = await fetch(`${apiHost}/inspecciones.php`, { method: 'POST', body: fd });
+            const data = await res.json();
+
+            if (data.status !== 'success') throw new Error(data.message || 'No se pudo eliminar el documento.');
+
+            setFormData(prev => ({
+                ...prev,
+                documentos: (prev.documentos || []).filter(d => String(d.id_doc) !== String(doc.id_doc))
+            }));
+            onDocumentsChanged?.();
+            Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Documento eliminado', showConfirmButton: false, timer: 2000 });
+        } catch (error) {
+            Swal.fire('Error', error.message || 'Problema de conexión.', 'error');
+        } finally {
+            setDeletingDocId(null);
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -485,22 +528,35 @@ const InspectionModal = ({ open, onClose, onSuccess, editData, initialTrip }) =>
                                             <Typography variant="caption" fontWeight={700} color="textSecondary" display="block" sx={{ mb: 0.5 }}>
                                                 DOCUMENTOS YA GUARDADOS
                                             </Typography>
+                                            <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 1 }}>
+                                                Da clic en el nombre para abrirlo, o en la <b>X</b> para eliminarlo permanentemente.
+                                            </Typography>
                                             <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 1 }}>
-                                                {formData.documentos.map((doc) => (
-                                                    <Chip
-                                                        key={doc.id_doc || doc.file_path}
-                                                        icon={<InsertDriveFileIcon />}
-                                                        label={doc.file_name || 'Documento'}
-                                                        component="a"
-                                                        href={doc.url}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        clickable
-                                                        color="success"
-                                                        variant="outlined"
-                                                        size="small"
-                                                    />
-                                                ))}
+                                                {formData.documentos.map((doc) => {
+                                                    const isDeleting = String(deletingDocId) === String(doc.id_doc);
+                                                    return (
+                                                        <Chip
+                                                            key={doc.id_doc || doc.file_path}
+                                                            icon={<InsertDriveFileIcon />}
+                                                            label={doc.file_name || 'Documento'}
+                                                            component="a"
+                                                            href={doc.url}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            clickable
+                                                            color="success"
+                                                            variant="outlined"
+                                                            size="small"
+                                                            disabled={isDeleting}
+                                                            onDelete={doc.id_doc ? () => handleDeleteDoc(doc) : undefined}
+                                                            deleteIcon={
+                                                                isDeleting
+                                                                    ? <CircularProgress size={14} sx={{ mr: 1 }} />
+                                                                    : <DeleteIcon titleAccess="Eliminar documento" />
+                                                            }
+                                                        />
+                                                    );
+                                                })}
                                             </Stack>
                                         </Grid>
                                     )}

@@ -159,11 +159,12 @@ const InspectionsAdmin = () => {
                 </Table>
             </TableContainer>
 
-            <InspectionModal 
-                open={modalOpen} 
-                onClose={handleCloseModal} 
-                onSuccess={handleSuccess} 
-                editData={selectedInspection} 
+            <InspectionModal
+                open={modalOpen}
+                onClose={handleCloseModal}
+                onSuccess={handleSuccess}
+                editData={selectedInspection}
+                onDocumentsChanged={fetchInspections}
             />
         </Box>
     );

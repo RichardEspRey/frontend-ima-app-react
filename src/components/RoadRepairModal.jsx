@@ -9,11 +9,12 @@ import BuildIcon from '@mui/icons-material/Build';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import Swal from 'sweetalert2';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
-const RoadRepairModal = ({ open, onClose, onSuccess, editData, initialTrip }) => {
+const RoadRepairModal = ({ open, onClose, onSuccess, editData, initialTrip, onDocumentsChanged }) => {
     const [trucks, setTrucks] = useState([]);
     
     // 🚨 Agregamos trip_id y formatted_trip al estado
@@ -23,6 +24,8 @@ const RoadRepairModal = ({ open, onClose, onSuccess, editData, initialTrip }) =>
     });
     
     const [files, setFiles] = useState([]);
+    // id_doc del documento guardado que se está eliminando (para el spinner del chip)
+    const [deletingDocId, setDeletingDocId] = useState(null);
 
     // 🚨 Estados para el Autocomplete de Viajes
     const [tripOptions, setTripOptions] = useState([]);
@@ -54,6 +57,7 @@ const RoadRepairModal = ({ open, onClose, onSuccess, editData, initialTrip }) =>
                 setTripOptions(initialTrip ? [{ trip_id: initialTrip.trip_id, formatted_trip: initialTrip.formatted_trip }] : []);
             }
             setFiles([]);
+            setDeletingDocId(null);
         }
     }, [open, editData, initialTrip]);
 
@@ -108,6 +112,46 @@ const RoadRepairModal = ({ open, onClose, onSuccess, editData, initialTrip }) =>
         const newFiles = [...files];
         newFiles.splice(index, 1);
         setFiles(newFiles);
+    };
+
+    // Elimina un documento YA guardado en el servidor (uno por uno).
+    // El backend solo borra el renglón de la tabla de documentos + el archivo
+    // físico; la reparación en sí nunca se toca.
+    const handleDeleteDoc = async (doc) => {
+        const confirm = await Swal.fire({
+            title: '¿Eliminar documento?',
+            html: `Se eliminará <b>${doc.file_name || 'este documento'}</b> de forma permanente.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#d32f2f'
+        });
+        if (!confirm.isConfirmed) return;
+
+        setDeletingDocId(doc.id_doc);
+        try {
+            const fd = new FormData();
+            fd.append('op', 'delete_doc');
+            fd.append('id_doc', doc.id_doc);
+            fd.append('id_reparacion', formData.id_reparacion);
+
+            const res = await fetch(`${apiHost}/roadside_repairs.php`, { method: 'POST', body: fd });
+            const data = await res.json();
+
+            if (data.status !== 'success') throw new Error(data.message || 'No se pudo eliminar el documento.');
+
+            setFormData(prev => ({
+                ...prev,
+                documentos: (prev.documentos || []).filter(d => String(d.id_doc) !== String(doc.id_doc))
+            }));
+            onDocumentsChanged?.();
+            Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Documento eliminado', showConfirmButton: false, timer: 2000 });
+        } catch (err) {
+            Swal.fire('Error', err.message || 'Problema de conexión.', 'error');
+        } finally {
+            setDeletingDocId(null);
+        }
     };
 
     const handleSubmit = async () => {
@@ -295,22 +339,35 @@ const RoadRepairModal = ({ open, onClose, onSuccess, editData, initialTrip }) =>
                                     <Typography variant="caption" fontWeight={700} color="textSecondary" display="block" sx={{ mb: 0.5 }}>
                                         DOCUMENTOS YA GUARDADOS
                                     </Typography>
+                                    <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 1 }}>
+                                        Da clic en el nombre para abrirlo, o en la <b>X</b> para eliminarlo permanentemente.
+                                    </Typography>
                                     <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 1 }}>
-                                        {formData.documentos.map((doc) => (
-                                            <Chip
-                                                key={doc.id_doc || doc.file_path}
-                                                icon={<PictureAsPdfIcon />}
-                                                label={doc.file_name || 'Documento'}
-                                                component="a"
-                                                href={doc.url}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                clickable
-                                                color="success"
-                                                variant="outlined"
-                                                size="small"
-                                            />
-                                        ))}
+                                        {formData.documentos.map((doc) => {
+                                            const isDeleting = String(deletingDocId) === String(doc.id_doc);
+                                            return (
+                                                <Chip
+                                                    key={doc.id_doc || doc.file_path}
+                                                    icon={<PictureAsPdfIcon />}
+                                                    label={doc.file_name || 'Documento'}
+                                                    component="a"
+                                                    href={doc.url}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    clickable
+                                                    color="success"
+                                                    variant="outlined"
+                                                    size="small"
+                                                    disabled={isDeleting}
+                                                    onDelete={doc.id_doc ? () => handleDeleteDoc(doc) : undefined}
+                                                    deleteIcon={
+                                                        isDeleting
+                                                            ? <CircularProgress size={14} sx={{ mr: 1 }} />
+                                                            : <DeleteIcon titleAccess="Eliminar documento" />
+                                                    }
+                                                />
+                                            );
+                                        })}
                                     </Stack>
                                 </Grid>
                             )}
