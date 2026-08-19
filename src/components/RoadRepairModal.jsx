@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
     Dialog, DialogTitle, DialogContent, DialogActions,
-    Button, TextField, MenuItem, Grid, Typography, Box, Paper, Chip, Stack, InputAdornment, Autocomplete, CircularProgress, IconButton
+    Button, TextField, MenuItem, Grid, Typography, Box, Paper, Chip, Stack, InputAdornment, Autocomplete, CircularProgress, IconButton, Tooltip
 } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
@@ -340,32 +340,51 @@ const RoadRepairModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
                                         DOCUMENTOS YA GUARDADOS
                                     </Typography>
                                     <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 1 }}>
-                                        Da clic en el nombre para abrirlo, o en la <b>X</b> para eliminarlo permanentemente.
+                                        Da clic en el documento para abrirlo, o en el bote de basura para eliminarlo permanentemente.
                                     </Typography>
-                                    <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 1 }}>
+                                    {/* El botón de borrar va FUERA del chip: dentro, el chip es un <a>
+                                        y el clic abría el documento antes de mostrar la confirmación. */}
+                                    <Stack spacing={1}>
                                         {formData.documentos.map((doc) => {
                                             const isDeleting = String(deletingDocId) === String(doc.id_doc);
                                             return (
-                                                <Chip
+                                                <Stack
                                                     key={doc.id_doc || doc.file_path}
-                                                    icon={<PictureAsPdfIcon />}
-                                                    label={doc.file_name || 'Documento'}
-                                                    component="a"
-                                                    href={doc.url}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    clickable
-                                                    color="success"
-                                                    variant="outlined"
-                                                    size="small"
-                                                    disabled={isDeleting}
-                                                    onDelete={doc.id_doc ? () => handleDeleteDoc(doc) : undefined}
-                                                    deleteIcon={
-                                                        isDeleting
-                                                            ? <CircularProgress size={14} sx={{ mr: 1 }} />
-                                                            : <DeleteIcon titleAccess="Eliminar documento" />
-                                                    }
-                                                />
+                                                    direction="row"
+                                                    alignItems="center"
+                                                    spacing={1}
+                                                >
+                                                    <Chip
+                                                        icon={<PictureAsPdfIcon />}
+                                                        label={doc.file_name || 'Documento'}
+                                                        component="a"
+                                                        href={doc.url}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        clickable
+                                                        color="success"
+                                                        variant="outlined"
+                                                        size="small"
+                                                        disabled={isDeleting}
+                                                        sx={{ maxWidth: '100%' }}
+                                                    />
+                                                    {doc.id_doc && (
+                                                        <Tooltip title="Eliminar documento">
+                                                            <span>
+                                                                <IconButton
+                                                                    size="small"
+                                                                    color="error"
+                                                                    disabled={isDeleting}
+                                                                    onClick={() => handleDeleteDoc(doc)}
+                                                                >
+                                                                    {isDeleting
+                                                                        ? <CircularProgress size={16} color="inherit" />
+                                                                        : <DeleteIcon fontSize="small" />}
+                                                                </IconButton>
+                                                            </span>
+                                                        </Tooltip>
+                                                    )}
+                                                </Stack>
                                             );
                                         })}
                                     </Stack>
