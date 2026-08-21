@@ -1,7 +1,7 @@
 {
   "name": "imaappdesktopreact",
   "private": true,
-  "version": "1.4.8",
+  "version": "1.5.0",
   "description": "IMA Express Desktop Application",
   "author": "IMA Express",
   "type": "module",
@@ -30,6 +30,7 @@
     "@pablotheblink/flashyjs": "^1.0.5",
     "@reduxjs/toolkit": "^2.6.1",
     "axios": "^1.8.4",
+    "@cuj1559/electron-push-receiver": "^3.1.8",
     "dayjs": "^1.11.13",
     "electron-updater": "^6.6.2",
     "html2canvas": "^1.4.1",

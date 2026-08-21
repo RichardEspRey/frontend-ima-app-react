@@ -29,6 +29,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import CreatableSelect from 'react-select/creatable';
 import dayjs from 'dayjs';
 import '../css/TripAdmin.css';
 import { useNavigate } from 'react-router-dom';
@@ -39,6 +40,8 @@ import { useAuthStore } from '../../store/useAuthStore';
 import ModalCajaExterna from '../../components/ModalCajaExterna';
 import RoadRepairModal from '../../components/RoadRepairModal';
 import InspectionModal from '../../components/InspectionModal';
+import useFetchCompanies from '../../hooks/useFetchCompanies';
+import { selectStyles } from '../../utils/tripFormConstants';
 
 // ── Map helpers (ruta camión → Nuevo Laredo) ────────────────────────────────
 
@@ -93,7 +96,7 @@ const TABS_CONFIG = [
     { id: 3, label: "Finalizados", permission: "viajes_tab_completados" }
 ];
 
-const EMPTY_SCHEDULE_FORM = { operador_id: '', camion_id: '', caja_id: '', destino: '', salida: '' };
+const EMPTY_SCHEDULE_FORM = { operador_id: '', camion_id: '', caja_id: '', company_id: '', destino: '', salida: '' };
 
 // Estilo compartido del encabezado de tabla: micro-label discreta en vez de
 // texto grueso sobre una caja de color sólido.
@@ -187,6 +190,9 @@ const TripAdmin = () => {
         operador: inspectionModalTrip.driver_nombre || '',
         truck_id: inspectionModalTrip.truck_id ? String(inspectionModalTrip.truck_id) : '',
     } : null), [inspectionModalTrip]);
+    const [isCreatingCompany, setIsCreatingCompany] = useState(false);
+    const { activeCompanies, loading: loadingCompanies, refetchCompanies } = useFetchCompanies();
+    const companyOptions = useMemo(() => activeCompanies.map(c => ({ value: c.company_id, label: c.nombre_compania })), [activeCompanies]);
 
     // Mapa: ruta del camión seleccionado hacia Nuevo Laredo
     const [selectedMapTripId, setSelectedMapTripId] = useState(null);
@@ -427,7 +433,8 @@ const TripAdmin = () => {
                 operador_id: trip.driver_id ? String(trip.driver_id) : '',
                 camion_id:   trip.truck_id  ? String(trip.truck_id)  : '',
                 caja_id:     cajaValue,
-                destino:     trip.destino   || '',
+                company_id:  trip.company_id ? String(trip.company_id) : '',
+                destino:     trip.destino || '',
                 salida:      trip.salida    ? trip.salida.slice(0, 16) : ''
             });
             setScheduleTrailerType(cajaValue.startsWith('e_') ? 'externa' : 'interna');
@@ -469,7 +476,7 @@ const TripAdmin = () => {
                 setProgramacionData(prev => ({ ...prev, cajasExternas: [...prev.cajasExternas, result.caja] }));
                 setScheduleTrailerType('externa');
                 setScheduleForm(prev => ({ ...prev, caja_id: `e_${result.caja.caja_externa_id}` }));
-                setIsModalCajaExternaOpen(false);
+                    setIsModalCajaExternaOpen(false);
             } else {
                 throw new Error(result.message || 'Error al registrar la caja externa.');
             }
@@ -478,8 +485,32 @@ const TripAdmin = () => {
         }
     };
 
+    const handleCreateCompany = async (inputValue) => {
+        setIsCreatingCompany(true);
+        try {
+            const fd = new FormData();
+            fd.append('op', 'CreateCompany');
+            fd.append('nombre_compania', inputValue);
+            const res = await fetch(`${apiHost}/companies.php`, { method: 'POST', body: fd });
+            const result = await res.json();
+            if (result.status === 'success') {
+                const { company_id, nombre_compania } = result.company;
+                refetchCompanies();
+                handleScheduleFormChange('company_id', company_id);
+                Swal.fire('Éxito', `Creado: ${nombre_compania}`, 'success');
+                return { value: company_id, label: nombre_compania };
+            } else {
+                throw new Error(result.message);
+            }
+        } catch (err) {
+            Swal.fire('Error', err.message, 'error');
+        } finally {
+            setIsCreatingCompany(false);
+        }
+    };
+
     const handleSaveSchedule = async () => {
-        const { operador_id, camion_id, caja_id, destino, salida } = scheduleForm;
+        const { operador_id, camion_id, caja_id, company_id, destino, salida } = scheduleForm;
         if (!destino || !salida) {
             Swal.fire('Campos requeridos', 'Por favor completa el destino y la fecha de salida.', 'warning');
             return;
@@ -494,7 +525,8 @@ const TripAdmin = () => {
             formData.append('truck_id',  camion_id);
             formData.append('caja_id',         isCajaExterna ? '' : numericCajaId);
             formData.append('caja_externa_id', isCajaExterna ? numericCajaId : '');
-            formData.append('destino',   destino);
+            formData.append('company_id', company_id);
+            formData.append('destino', destino);
             formData.append('salida',    salida);
             const response = await fetch(`${apiHost}/Programacion_viajes.php`, { method: 'POST', body: formData });
             const result = await parseJsonSafe(response);
@@ -682,6 +714,7 @@ const TripAdmin = () => {
                                     <TableCell sx={HEADER_CELL_SX}>Distancia Nv Laredo</TableCell>
                                     <TableCell sx={HEADER_CELL_SX}>Caja</TableCell>
                                     <TableCell sx={HEADER_CELL_SX}>Caja Externa</TableCell>
+                                    <TableCell sx={HEADER_CELL_SX}>Compañía</TableCell>
                                     <TableCell sx={HEADER_CELL_SX}>Destino</TableCell>
                                     <TableCell sx={HEADER_CELL_SX}>Salida</TableCell>
                                     <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'center' }}>Acciones</TableCell>
@@ -690,14 +723,14 @@ const TripAdmin = () => {
                             <TableBody>
                                 {loadingScheduled ? (
                                     <TableRow>
-                                        <TableCell colSpan={8} align="center" sx={{ py: 5 }}>
+                                        <TableCell colSpan={9} align="center" sx={{ py: 5 }}>
                                             <CircularProgress size={22} sx={{ mr: 1.5, verticalAlign: 'middle', color: '#94a3b8' }} />
                                             <Typography component="span" color="#64748b" fontWeight={500}>Cargando programaciones...</Typography>
                                         </TableCell>
                                     </TableRow>
                                 ) : scheduledTrips.length === 0 ? (
                                     <TableRow>
-                                        <TableCell colSpan={8} align="center" sx={{ py: 6 }}>
+                                        <TableCell colSpan={9} align="center" sx={{ py: 6 }}>
                                             <InboxOutlinedIcon sx={{ fontSize: 34, color: '#cbd5e1', mb: 1 }} />
                                             <Typography variant="body2" color="#94a3b8" fontWeight={500}>
                                                 No hay viajes programados. Usa "Programar Viaje" para agregar uno.
@@ -720,9 +753,19 @@ const TripAdmin = () => {
                                             </TableCell>
                                             <TableCell>{trip.caja_numero   || '-'}</TableCell>
                                             <TableCell>{trip.caja_externa_numero || '-'}</TableCell>
-                                            <TableCell>{trip.destino}</TableCell>
+                                            <TableCell>{trip.nombre_compania || '-'}</TableCell>
+                                            <TableCell>{trip.destino || '-'}</TableCell>
                                             <TableCell sx={{ fontVariantNumeric: 'tabular-nums', color: '#64748b' }}>{trip.salida ? dayjs(trip.salida).format('DD/MM/YYYY HH:mm') : '-'}</TableCell>
                                             <TableCell align="center">
+                                                <Button
+                                                    size="small"
+                                                    variant="outlined"
+                                                    color="success"
+                                                    onClick={(e) => { e.stopPropagation(); navigate('/CrearViaje', { state: { presetTrip: trip } }); }}
+                                                    sx={{ textTransform: 'none', fontWeight: 600, mr: 1 }}
+                                                >
+                                                    Aprobar
+                                                </Button>
                                                 <Tooltip title="Editar">
                                                     <IconButton size="small" onClick={(e) => { e.stopPropagation(); handleOpenScheduleModal(trip); }} sx={{ '&:hover': { bgcolor: '#f1f5f9' } }}>
                                                         <EditIcon fontSize="small" />
@@ -1133,6 +1176,23 @@ const TripAdmin = () => {
                                         </FormControl>
                                     </Grid>
                                     <Grid item xs={12}>
+                                        <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 0.5 }}>
+                                            <ApartmentOutlinedIcon sx={{ fontSize: 18, color: '#94a3b8' }} />
+                                            <Typography variant="body2" fontWeight={600} color="#334155">Compañía</Typography>
+                                        </Stack>
+                                        <CreatableSelect
+                                            value={companyOptions.find(opt => opt.value === scheduleForm.company_id) || null}
+                                            onChange={(sel) => handleScheduleFormChange('company_id', sel?.value || '')}
+                                            onCreateOption={handleCreateCompany}
+                                            options={companyOptions}
+                                            isLoading={loadingCompanies || isCreatingCompany}
+                                            isClearable
+                                            styles={selectStyles}
+                                            placeholder="Seleccionar/Crear compañía..."
+                                            formatCreateLabel={(v) => `Crear "${v}"`}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12}>
                                         <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 1.25 }}>
                                             <Inventory2OutlinedIcon sx={{ fontSize: 18, color: '#94a3b8' }} />
                                             <Typography variant="body2" fontWeight={600} color="#334155">Caja</Typography>
@@ -1229,12 +1289,16 @@ const TripAdmin = () => {
                                 </Typography>
                                 <Grid container spacing={2} sx={{ mt: 0.25 }}>
                                     <Grid item xs={12}>
+                                        <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 0.5 }}>
+                                            <PlaceOutlinedIcon sx={{ fontSize: 18, color: '#94a3b8' }} />
+                                            <Typography variant="body2" fontWeight={600} color="#334155">Destino</Typography>
+                                        </Stack>
                                         <TextField
-                                            label="Destino"
                                             fullWidth
+                                            size="small"
                                             value={scheduleForm.destino}
                                             onChange={(e) => handleScheduleFormChange('destino', e.target.value)}
-                                            InputProps={{ startAdornment: <InputAdornment position="start"><PlaceOutlinedIcon sx={{ fontSize: 20, color: '#94a3b8' }} /></InputAdornment> }}
+                                            placeholder="Escribe el destino..."
                                         />
                                     </Grid>
                                     <Grid item xs={12}>
