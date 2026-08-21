@@ -24,7 +24,6 @@ import useFetchExpenseTypes from '../../hooks/expense_hooks/useFetchExpenseTypes
 import useFetchExchangeRate from '../../hooks/useFetchExchangeRate';
 import { useAuthStore } from '../../store/useAuthStore';
 
-// Mismo lenguaje visual que el Administrador de Viajes.
 const SECTION_LABEL_SX = {
   color: '#94a3b8', fontWeight: 700, letterSpacing: '0.08em', fontSize: '0.68rem',
 };
@@ -67,8 +66,6 @@ const money = (v) => new Intl.NumberFormat('en-US', { style: 'currency', currenc
 // (ej. archivos "scan_*.pdf"), no solo JPG/PNG. Un <img> no puede mostrar un PDF.
 const isImageUrl = (url = '') => /\.(png|jpe?g|gif|webp|bmp|tiff?)$/i.test(url);
 
-// Etiqueta reutilizable para los campos que no son TextField de MUI
-// (react-select / react-datepicker no traen su propio label flotante).
 const FieldLabel = ({ children }) => (
   <Typography
     variant="caption"
@@ -87,9 +84,8 @@ const ExpenseEdit = () => {
   const [country, setCountry] = useState(null);
   const [expenseDate, setExpenseDate] = useState(new Date());
   const [totalAmount, setTotalAmount] = useState('0.00');
-  // Monto tal como se capturó (MXN en México, USD en EE.UU.) y su tipo de cambio.
-  // La tabla muestra la columna "Total (MX)" a partir de cantidad_original, así
-  // que sin estos campos un gasto en pesos nunca podía corregirse.
+  // La columna "Total (MX)" de la tabla sale de cantidad_original: sin estos
+  // campos un gasto en pesos no se puede corregir.
   const [originalAmount, setOriginalAmount] = useState('');
   const { exchangeRate, setExchangeRate, fetchExchangeRate } = useFetchExchangeRate();
   const [expenseDetails, setExpenseDetails] = useState([]);
@@ -198,16 +194,13 @@ const ExpenseEdit = () => {
 
   const esMXN = country?.value === 'MX';
 
-  // Al cambiar a México se trae la tasa del día si el gasto no tenía una guardada
-  // (misma fuente que usa el formulario de Nuevo Gasto).
   const handleCountryChange = (opt) => {
     setCountry(opt);
     if (opt?.value === 'MX' && !exchangeRate) fetchExchangeRate();
   };
 
-  // Mismo cálculo que el alta: el total en USD se deriva del monto original.
-  // Se salta si falta el monto o (en México) la tasa, para no dejar en 0.00 los
-  // gastos antiguos que no guardaron cantidad_original / tipo_cambio.
+  // Sin monto original, o sin tasa en México, no se recalcula: los gastos
+  // antiguos que no guardaron esos campos quedarían en 0.00.
   useEffect(() => {
     const amount = parseFloat(originalAmount);
     if (!amount) return;
@@ -220,8 +213,6 @@ const ExpenseEdit = () => {
     }
   }, [originalAmount, exchangeRate, esMXN]);
 
-  // Solo informativo: suma de los conceptos capturados, para detectar de un
-  // vistazo cuándo el total no cuadra con el detalle.
   const detailsSum = useMemo(() => expenseDetails.reduce((acc, d) => {
       const p = parseFloat(d.price) || 0;
       const q = parseFloat(d.quantity) || 0;
@@ -238,8 +229,8 @@ const ExpenseEdit = () => {
         fd.append("fecha_gasto", expenseDate.toISOString().split('T')[0]);
         fd.append("moneda", esMXN ? 'MXN' : 'USD');
         fd.append("monto_total", totalAmount);
-        // Se omiten si están vacíos: el backend solo escribe las columnas que
-        // recibe, así no se borra lo que ya tenía el gasto.
+        // El backend solo escribe las columnas que recibe: omitir las vacías
+        // evita borrar lo que ya tenía el gasto.
         if (originalAmount !== '' && originalAmount !== null) fd.append("cantidad_original", originalAmount);
         if (esMXN && exchangeRate) fd.append("tipo_cambio", exchangeRate);
         fd.append("id_usuario", user?.id);

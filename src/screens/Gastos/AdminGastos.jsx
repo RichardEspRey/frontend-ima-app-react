@@ -25,8 +25,6 @@ import useFetchExchangeRate from '../../hooks/useFetchExchangeRate';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
-// Mismo lenguaje visual que el Administrador de Viajes: micro-label discreta en
-// el encabezado de tabla en vez de texto grueso sobre una caja de color sólido.
 const HEADER_ROW_SX = { bgcolor: '#fafbfc', borderBottom: '1px solid #e2e8f0' };
 const HEADER_CELL_SX = {
   fontWeight: 700, color: '#94a3b8', fontSize: '0.7rem',
@@ -156,7 +154,6 @@ const AdminGastos = () => {
 
   const slice = rowsPerPage === -1 ? filtered : filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
-  // Solo para la UI: cuántos filtros están activos (badge del botón de filtros).
   const activeFilterCount = useMemo(() => (
     [search, filterCountry !== 'All', filterType !== 'All', filterCategory !== 'All', startDate, endDate]
       .filter(Boolean).length
