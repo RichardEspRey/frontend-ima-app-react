@@ -1,10 +1,12 @@
 import React, { useState, useMemo } from 'react';
 import {
   TableRow, TableCell, IconButton, Collapse, Box, Typography,
-  Table, TableHead, TableBody, Divider, Chip, Stack, Button, Tooltip
+  Table, TableHead, TableBody, Chip, Stack, Button, Tooltip
 } from '@mui/material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import EditIcon from '@mui/icons-material/Edit';
+import InsertDriveFileOutlinedIcon from '@mui/icons-material/InsertDriveFileOutlined';
 import { PhotoProvider, PhotoView } from 'react-photo-view';
 import 'react-photo-view/dist/react-photo-view.css';
 
@@ -26,6 +28,15 @@ const moneyMXN = (v) => {
 
 const isImageUrl = (url = '') => /\.(png|jpe?g|gif|webp|bmp|tiff?)$/i.test(url);
 const fileName = (path = '') => path.split('/').pop() || '';
+
+// Mismo lenguaje visual que el Administrador de Viajes.
+const SUB_HEADER_CELL_SX = {
+  fontWeight: 700, color: '#94a3b8', fontSize: '0.68rem',
+  textTransform: 'uppercase', letterSpacing: '0.06em', borderBottom: '1px solid #e2e8f0',
+};
+const MICRO_LABEL_SX = {
+  color: '#94a3b8', fontWeight: 700, letterSpacing: '0.08em', fontSize: '0.68rem',
+};
 
 const GastoRow = ({ gasto, navigate, mxnRate }) => {
   const [open, setOpen] = useState(false);
@@ -66,77 +77,121 @@ const GastoRow = ({ gasto, navigate, mxnRate }) => {
   // gasto (según el país elegido al crearlo), la otra columna es solo una conversión.
   const esOriginalUSD = !esMXN;
   const esOriginalMXN = esMXN && !totalMXNEsConvertido;
-  const originalSx = { color: '#16a34a', bgcolor: '#f0fdf4', px: 1, py: 0.4, borderRadius: 1.5, display: 'inline-block' };
+  const originalSx = { color: '#15803d', fontWeight: 700 };
+  const secundarioSx = { color: '#64748b', fontWeight: 500 };
 
   const lastDetail = detalles.length > 0 ? detalles[detalles.length - 1] : null;
   const lastExpenseType = lastDetail?.tipo_gasto || '—';
 
+  // Franja de color a la izquierda de la fila según el país del gasto.
+  const accentColor = esMXN ? '#0d9488' : '#4f46e5';
+
   return (
     <>
       <TableRow hover sx={{ '& > *': { borderBottom: 'unset' } }}>
-        <TableCell padding="checkbox">
-          <IconButton size="small" onClick={() => setOpen((p) => !p)}>
-            {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+        <TableCell padding="checkbox" sx={{ borderLeft: `3px solid ${accentColor}` }}>
+          <IconButton size="small" onClick={() => setOpen((p) => !p)} sx={{ color: '#64748b' }}>
+            {open ? <KeyboardArrowUpIcon fontSize="small" /> : <KeyboardArrowDownIcon fontSize="small" />}
           </IconButton>
         </TableCell>
-        <TableCell>#{gasto.id_gasto}</TableCell>
-        <TableCell>{lastExpenseType}</TableCell>
-        <TableCell>{gasto.fecha_gasto}</TableCell>
-        <TableCell>{gasto.pais}</TableCell>
+
         <TableCell>
-          <Tooltip title={esOriginalUSD ? 'Monto original (el gasto se registró en USD)' : ''} disableHoverListener={!esOriginalUSD}>
-            <Box component="strong" sx={esOriginalUSD ? originalSx : undefined}>{money(totalMostrado)}</Box>
+          <Typography variant="body2" fontWeight={700} color="#0f172a">#{gasto.id_gasto}</Typography>
+          {detalles.length > 1 && (
+            <Typography variant="caption" color="#94a3b8">{detalles.length} conceptos</Typography>
+          )}
+        </TableCell>
+
+        <TableCell>
+          <Typography variant="body2" color="#334155" noWrap sx={{ maxWidth: 220 }} title={lastExpenseType}>
+            {lastExpenseType}
+          </Typography>
+        </TableCell>
+
+        <TableCell sx={{ whiteSpace: 'nowrap', color: '#475569' }}>{gasto.fecha_gasto}</TableCell>
+
+        <TableCell>
+          <Chip
+            size="small"
+            label={gasto.pais || '—'}
+            sx={{
+              height: 22, fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.04em',
+              bgcolor: esMXN ? '#f0fdfa' : '#eef2ff',
+              color: esMXN ? '#0f766e' : '#4338ca',
+              border: `1px solid ${esMXN ? '#99f6e4' : '#e0e7ff'}`,
+            }}
+          />
+        </TableCell>
+
+        <TableCell align="right">
+          <Tooltip title={esOriginalUSD ? 'Monto original (el gasto se registró en USD)' : 'Conversión a dólares'}>
+            <Box component="span" sx={esOriginalUSD ? originalSx : secundarioSx}>{money(totalMostrado)}</Box>
           </Tooltip>
         </TableCell>
-        <TableCell>
+
+        <TableCell align="right">
           {totalMXNMostrado === null ? (
-            <Typography variant="body2" color="text.secondary">—</Typography>
+            <Typography variant="body2" color="#cbd5e1">—</Typography>
           ) : totalMXNEsConvertido ? (
             <Tooltip title="Convertido con la tasa de cambio de hoy (el gasto se registró en USD)">
-              <strong style={{ cursor: 'help', borderBottom: '1px dashed #94a3b8' }}>{moneyMXN(totalMXNMostrado)}</strong>
+              <Box component="span" sx={{ ...secundarioSx, cursor: 'help', borderBottom: '1px dashed #cbd5e1' }}>
+                {moneyMXN(totalMXNMostrado)}
+              </Box>
             </Tooltip>
           ) : (
             <Tooltip title="Monto original (el gasto se registró en MXN)" disableHoverListener={!esOriginalMXN}>
-              <Box component="strong" sx={esOriginalMXN ? originalSx : undefined}>{moneyMXN(totalMXNMostrado)}</Box>
+              <Box component="span" sx={esOriginalMXN ? originalSx : secundarioSx}>{moneyMXN(totalMXNMostrado)}</Box>
             </Tooltip>
           )}
         </TableCell>
-        <TableCell>{gasto.created_name || '—'}</TableCell>
-        <TableCell>{gasto.updated_name || '—'}</TableCell>
-        <TableCell align="left">
-          <Button
-            variant="contained"
-            size="small"
-            onClick={() => navigate(`/edit-expense/${gasto.id_gasto}`)}
-          >
-            Editar
-          </Button>
+
+        <TableCell sx={{ color: '#475569' }}>{gasto.created_name || '—'}</TableCell>
+
+        <TableCell>
+          {gasto.updated_name
+            ? <Typography variant="body2" color="#475569">{gasto.updated_name}</Typography>
+            : <Typography variant="body2" color="#cbd5e1">—</Typography>}
+        </TableCell>
+
+        <TableCell align="center">
+          <Tooltip title="Editar gasto">
+            <IconButton
+              size="small"
+              onClick={() => navigate(`/edit-expense/${gasto.id_gasto}`)}
+              sx={{
+                color: '#334155', border: '1px solid #e2e8f0', borderRadius: 1.5,
+                '&:hover': { bgcolor: '#0f172a', color: '#fff', borderColor: '#0f172a' },
+              }}
+            >
+              <EditIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
         </TableCell>
       </TableRow>
 
       <TableRow>
         <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={10}>
           <Collapse in={open} timeout="auto" unmountOnExit>
-            <Box sx={{ m: 1, p: 2, border: '1px solid #eee', borderRadius: 2, bgcolor: '#f9f9f9' }}>
-              <Typography variant="h6" fontWeight={600} sx={{ fontSize: '1rem', mb: 1.5 }}>
-                Expense details #{gasto.id_gasto}
+            <Box sx={{ my: 1.5, mx: 1, p: 2.5, border: '1px solid #e2e8f0', borderRadius: 2, bgcolor: '#fafbfc' }}>
+              <Typography variant="overline" sx={MICRO_LABEL_SX}>
+                Detalle del gasto #{gasto.id_gasto}
               </Typography>
 
               {detalles.length === 0 ? (
-                <Typography variant="body2" color="text.secondary">
-                  No details available.
+                <Typography variant="body2" color="#64748b" sx={{ mt: 1 }}>
+                  Sin conceptos registrados.
                 </Typography>
               ) : (
-                <Table size="small" sx={{ mb: 2 }}>
+                <Table size="small" sx={{ mb: 3, mt: 1, bgcolor: 'white', borderRadius: 2, border: '1px solid #e2e8f0' }}>
                   <TableHead>
                     <TableRow>
-                      <TableCell sx={{ fontWeight: 600 }}>Expense Type</TableCell>
-                      <TableCell sx={{ fontWeight: 600 }}>Category</TableCell>
-                      <TableCell sx={{ fontWeight: 600 }}>Subcategory</TableCell>
-                      <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
-                      <TableCell align="right" sx={{ fontWeight: 600 }}>Qty</TableCell>
-                      <TableCell align="right" sx={{ fontWeight: 600 }}>Unit Price</TableCell>
-                      <TableCell align="right" sx={{ fontWeight: 600 }}>Subtotal</TableCell>
+                      <TableCell sx={SUB_HEADER_CELL_SX}>Expense Type</TableCell>
+                      <TableCell sx={SUB_HEADER_CELL_SX}>Category</TableCell>
+                      <TableCell sx={SUB_HEADER_CELL_SX}>Subcategory</TableCell>
+                      <TableCell sx={SUB_HEADER_CELL_SX}>Description</TableCell>
+                      <TableCell align="right" sx={SUB_HEADER_CELL_SX}>Qty</TableCell>
+                      <TableCell align="right" sx={SUB_HEADER_CELL_SX}>Unit Price</TableCell>
+                      <TableCell align="right" sx={SUB_HEADER_CELL_SX}>Subtotal</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -146,18 +201,18 @@ const GastoRow = ({ gasto, navigate, mxnRate }) => {
                       const sub = cant * pu;
                       
                       return (
-                        <TableRow key={d.id_detalle_gasto}>
-                          <TableCell>{d.tipo_gasto || '—'}</TableCell>
-                          <TableCell sx={{ color: 'text.secondary', fontSize: '0.85rem' }}>
+                        <TableRow key={d.id_detalle_gasto} hover>
+                          <TableCell sx={{ color: '#0f172a', fontWeight: 600 }}>{d.tipo_gasto || '—'}</TableCell>
+                          <TableCell sx={{ color: '#64748b', fontSize: '0.82rem' }}>
                             {d.nombre_categoria || '—'}
                           </TableCell>
-                          <TableCell sx={{ color: 'text.secondary', fontSize: '0.85rem' }}>
+                          <TableCell sx={{ color: '#64748b', fontSize: '0.82rem' }}>
                             {d.nombre_subcategoria || '—'}
                           </TableCell>
-                          <TableCell>{d.descripcion_articulo || '—'}</TableCell>
-                          <TableCell align="right">{cant}</TableCell>
-                          <TableCell align="right">{money(pu)}</TableCell>
-                          <TableCell align="right">{money(sub)}</TableCell>
+                          <TableCell sx={{ color: '#334155' }}>{d.descripcion_articulo || '—'}</TableCell>
+                          <TableCell align="right" sx={{ color: '#475569' }}>{cant}</TableCell>
+                          <TableCell align="right" sx={{ color: '#475569' }}>{money(pu)}</TableCell>
+                          <TableCell align="right" sx={{ fontWeight: 700, color: '#0f172a' }}>{money(sub)}</TableCell>
                         </TableRow>
                       );
                     })}
@@ -165,34 +220,56 @@ const GastoRow = ({ gasto, navigate, mxnRate }) => {
                 </Table>
               )}
 
-              <Divider sx={{ my: 2 }} />
-
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                <Typography variant="subtitle2" fontWeight={600}>Tickets</Typography>
-                <Chip size="small" label={tickets.length} />
-              </Box>
+              <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
+                <Typography variant="overline" sx={MICRO_LABEL_SX}>Documentos</Typography>
+                <Chip
+                  size="small"
+                  label={tickets.length}
+                  sx={{ height: 18, fontSize: '0.68rem', fontWeight: 700, bgcolor: '#e2e8f0', color: '#475569' }}
+                />
+              </Stack>
 
               {tickets.length === 0 ? (
-                <Typography variant="body2" color="text.secondary">No tickets attached.</Typography>
+                <Typography variant="body2" color="#94a3b8">Sin documentos adjuntos.</Typography>
               ) : (
                 <PhotoProvider>
-                  <Stack direction="row" spacing={1.5} sx={{ flexWrap: 'wrap' }}>
+                  <Stack direction="row" spacing={1.5} sx={{ flexWrap: 'wrap', gap: 1.5 }}>
                     {tickets.map((t) => {
                       const url = t.url || t.ruta_archivo;
                       const name = t.nombre_original || fileName(url);
                       const esImg = isImageUrl(url);
                       return (
-                        <Box key={t.id_documento} sx={{ width: 120, border: '1px solid #e0e0e0', borderRadius: 1, p: 1, textAlign: 'center', bgcolor: '#fff' }}>
+                        <Box
+                          key={t.id_documento}
+                          sx={{ width: 132, border: '1px solid #e2e8f0', borderRadius: 2, p: 1, textAlign: 'center', bgcolor: '#fff' }}
+                        >
                           {esImg ? (
                             <PhotoView src={url}>
-                              <img src={url} alt={name} style={{ width: '100%', height: 80, objectFit: 'cover', borderRadius: 4, cursor: 'zoom-in' }} />
+                              <img src={url} alt={name} style={{ width: '100%', height: 84, objectFit: 'cover', borderRadius: 6, cursor: 'zoom-in' }} />
                             </PhotoView>
                           ) : (
-                            <Box sx={{ height: 80, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 1, border: '1px dashed #ccc', fontSize: 11 }}>
-                              {t.tipo_documento || 'Doc'}
+                            <Box sx={{
+                              height: 84, display: 'flex', flexDirection: 'column', alignItems: 'center',
+                              justifyContent: 'center', gap: 0.5, borderRadius: 1.5, bgcolor: '#f8fafc',
+                              border: '1px dashed #cbd5e1',
+                            }}>
+                              <InsertDriveFileOutlinedIcon sx={{ fontSize: 22, color: '#94a3b8' }} />
+                              <Typography variant="caption" color="#94a3b8" sx={{ fontSize: '0.65rem' }}>
+                                {t.tipo_documento || 'Doc'}
+                              </Typography>
                             </Box>
                           )}
-                          <Button size="small" sx={{ mt: 0.5, fontSize: '0.65rem' }} href={url} target="_blank">View</Button>
+                          <Typography variant="caption" noWrap sx={{ display: 'block', mt: 0.75, color: '#64748b', fontSize: '0.65rem' }} title={name}>
+                            {name}
+                          </Typography>
+                          <Button
+                            size="small"
+                            href={url}
+                            target="_blank"
+                            sx={{ mt: 0.25, fontSize: '0.65rem', textTransform: 'none', fontWeight: 700, color: '#334155' }}
+                          >
+                            Ver
+                          </Button>
                         </Box>
                       );
                     })}
