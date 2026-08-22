@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import { useNotificationStore } from "./useNotificationStore";
 
 const apiHost = import.meta.env.VITE_API_HOST;
 const ADMIN_TYPES = new Set(["admin"]);
@@ -19,7 +18,6 @@ export const useAuthStore = create(
       },
 
       logout: () => {
-        useNotificationStore.getState().unregisterToken();
         set({ user: null, userPermissions: {}, loading: false });
       },
 
