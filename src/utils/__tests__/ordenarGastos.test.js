@@ -1,10 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { ordenarGastos, siguienteOrden } from "../ordenarGastos";
 
-/* Datos que ejercitan los casos reales del Expense Manager:
-   - #3  se capturó en pesos, así que su total MX es el monto original (2000).
-   - #10 tiene monto_total en 0: su total USD se reconstruye de los detalles (75).
-   - #9  no tiene conceptos ni updated_name. */
 const gastos = [
   { id_gasto: 3, fecha_gasto: "2026-01-15", pais: "MX", moneda: "MXN", monto_total: 100, cantidad_original: 2000,
     created_name: "ángel", updated_name: null,
@@ -45,12 +41,10 @@ describe("ordenarGastos", () => {
   });
 
   it("usa el total USD reconstruido cuando monto_total viene en cero", () => {
-    // #10 vale 75 (3 x 25), no 0: si se ordenara por monto_total quedaría primero.
     expect(ids(ordenarGastos(gastos, { campo: "usd", dir: "asc" }, RATE))).toEqual([10, 3, 9]);
   });
 
   it("usa el monto original en pesos y no la conversión del día", () => {
-    // #3 vale 2000 (lo capturado), no 100 x 20.
     expect(ids(ordenarGastos(gastos, { campo: "mxn", dir: "desc" }, RATE))).toEqual([9, 3, 10]);
   });
 

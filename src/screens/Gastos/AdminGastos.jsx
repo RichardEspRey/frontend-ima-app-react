@@ -23,6 +23,7 @@ import ExpenseModal from './ExpenseModal';
 import { ExpenseTypeChart } from '../../components/Gastos/ExpenseTypeChart';
 import useFetchExchangeRate from '../../hooks/useFetchExchangeRate';
 import { ordenarGastos, siguienteOrden } from '../../utils/ordenarGastos';
+import { useGastosFiltrosStore } from '../../store/useGastosFiltrosStore';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -57,7 +58,6 @@ const CeldaOrdenable = ({ campo, label, orden, onOrdenar, align = 'left' }) => {
           direction={activa ? orden.dir : 'asc'}
           onClick={() => onOrdenar(campo)}
           sx={{
-            // Hereda la micro-label del encabezado en vez de imponer su estilo.
             color: 'inherit !important',
             '& .MuiTableSortLabel-icon': { color: '#64748b !important' },
           }}
@@ -73,22 +73,14 @@ const AdminGastos = () => {
   const navigate = useNavigate(); 
   const [gastos, setGastos] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
-  const [filterCountry, setFilterCountry] = useState('All');
-  const [filterType, setFilterType] = useState('All');
-  const [filterCategory, setFilterCategory] = useState('All');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(20);
-  const [orden, setOrden] = useState({ campo: null, dir: null });
-
   const [showChart, setShowChart] = useState(false);
-  const [showFilters, setShowFilters] = useState(false);
+
+  const {
+    search, filterCountry, filterType, filterCategory, startDate, endDate,
+    page, rowsPerPage, orden, showFilters,
+    set: setEstado, setFiltro, limpiarFiltros,
+  } = useGastosFiltrosStore();
   const [chartCountry, setChartCountry] = useState('US');
 
   // Tasa USD -> MXN del día (misma fuente que usa el formulario de gastos en México)
@@ -190,11 +182,14 @@ const AdminGastos = () => {
 
   const slice = rowsPerPage === -1 ? ordenados : ordenados.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
-  // Volver a la primera página: quedarse en la página 5 de una lista recién
-  // reordenada muestra datos que no tienen relación con lo que se pidió.
+  useEffect(() => {
+    if (rowsPerPage === -1) return;
+    const ultimaPagina = Math.max(0, Math.ceil(ordenados.length / rowsPerPage) - 1);
+    if (page > ultimaPagina) setEstado({ page: ultimaPagina });
+  }, [ordenados.length, rowsPerPage, page, setEstado]);
+
   const handleOrdenar = (campo) => {
-    setOrden((prev) => siguienteOrden(prev, campo));
-    setPage(0);
+    setEstado({ orden: siguienteOrden(orden, campo), page: 0 });
   };
 
   const activeFilterCount = useMemo(() => (
@@ -202,12 +197,9 @@ const AdminGastos = () => {
       .filter(Boolean).length
   ), [search, filterCountry, filterType, filterCategory, startDate, endDate]);
 
-  const handleFilterChange = (setter, value) => { setter(value); setPage(0); };
+  const handleFilterChange = (campo, value) => setFiltro({ [campo]: value });
 
-  const clearFilters = () => {
-    setStartDate(''); setEndDate(''); setFilterType('All');
-    setFilterCategory('All'); setFilterCountry('All'); setSearch(''); setPage(0);
-  };
+  const clearFilters = () => limpiarFiltros();
 
   const handleSuccess = () => {
       setIsModalOpen(false);
@@ -287,7 +279,7 @@ const AdminGastos = () => {
         <Button
           variant="outlined"
           startIcon={<FilterListIcon />}
-          onClick={() => setShowFilters(p => !p)}
+          onClick={() => setEstado({ showFilters: !showFilters })}
           sx={{
             bgcolor: 'white', borderColor: activeFilterCount > 0 ? '#0f172a' : '#cbd5e1',
             color: '#334155', fontWeight: 600, textTransform: 'none', borderRadius: 2,
@@ -327,7 +319,7 @@ const AdminGastos = () => {
                 <Grid item xs={12} sm={6} md={4}>
                   <TextField
                     label="Buscar" placeholder="ID, país, moneda…" size="small" fullWidth
-                    value={search} onChange={(e) => handleFilterChange(setSearch, e.target.value)}
+                    value={search} onChange={(e) => handleFilterChange('search', e.target.value)}
                     InputProps={{ startAdornment: <InputAdornment position="start"><SearchIcon sx={{ fontSize: 18, color: '#94a3b8' }} /></InputAdornment> }}
                   />
                 </Grid>
@@ -336,7 +328,7 @@ const AdminGastos = () => {
                     <InputLabel>País</InputLabel>
                     <Select
                       value={filterCountry} label="País"
-                      onChange={(e) => handleFilterChange(setFilterCountry, e.target.value)}
+                      onChange={(e) => handleFilterChange('filterCountry', e.target.value)}
                       startAdornment={<InputAdornment position="start"><PublicOutlinedIcon sx={{ fontSize: 18, color: '#94a3b8' }} /></InputAdornment>}
                     >
                       {uniqueCountries.map(c => <MenuItem key={c} value={c}>{c}</MenuItem>)}
@@ -356,7 +348,7 @@ const AdminGastos = () => {
                     <InputLabel>Tipo de Gasto</InputLabel>
                     <Select
                       value={filterType} label="Tipo de Gasto"
-                      onChange={(e) => handleFilterChange(setFilterType, e.target.value)}
+                      onChange={(e) => handleFilterChange('filterType', e.target.value)}
                       startAdornment={<InputAdornment position="start"><SellOutlinedIcon sx={{ fontSize: 18, color: '#94a3b8' }} /></InputAdornment>}
                     >
                       {uniqueTypes.map(t => <MenuItem key={t} value={t}>{t}</MenuItem>)}
@@ -368,7 +360,7 @@ const AdminGastos = () => {
                     <InputLabel>Categoría</InputLabel>
                     <Select
                       value={filterCategory} label="Categoría"
-                      onChange={(e) => handleFilterChange(setFilterCategory, e.target.value)}
+                      onChange={(e) => handleFilterChange('filterCategory', e.target.value)}
                       startAdornment={<InputAdornment position="start"><CategoryOutlinedIcon sx={{ fontSize: 18, color: '#94a3b8' }} /></InputAdornment>}
                     >
                       {uniqueCategories.map(c => <MenuItem key={c} value={c}>{c}</MenuItem>)}
@@ -386,14 +378,14 @@ const AdminGastos = () => {
                 <Grid item xs={12} sm={6} md={3}>
                   <TextField
                     label="Fecha Inicio" type="date" size="small" fullWidth
-                    value={startDate} onChange={(e) => handleFilterChange(setStartDate, e.target.value)}
+                    value={startDate} onChange={(e) => handleFilterChange('startDate', e.target.value)}
                     InputLabelProps={{ shrink: true }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
                   <TextField
                     label="Fecha Fin" type="date" size="small" fullWidth
-                    value={endDate} onChange={(e) => handleFilterChange(setEndDate, e.target.value)}
+                    value={endDate} onChange={(e) => handleFilterChange('endDate', e.target.value)}
                     InputLabelProps={{ shrink: true }}
                   />
                 </Grid>
@@ -453,7 +445,7 @@ const AdminGastos = () => {
           <TablePagination
             rowsPerPageOptions={[20, 40, 60, { label: 'All', value: -1 }]} 
             component="div" count={ordenados.length} rowsPerPage={rowsPerPage} page={page}
-            onPageChange={(e, n) => setPage(n)} onRowsPerPageChange={(e) => setRowsPerPage(parseInt(e.target.value, 10))}
+            onPageChange={(e, n) => setEstado({ page: n })} onRowsPerPageChange={(e) => setEstado({ rowsPerPage: parseInt(e.target.value, 10), page: 0 })}
             sx={{ color: '#475569', '.MuiTablePagination-selectLabel, .MuiTablePagination-displayedRows': { fontSize: '0.8rem' } }}
           />
       </Box>

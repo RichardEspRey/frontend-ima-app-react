@@ -44,8 +44,6 @@ const GastoRow = ({ gasto, navigate, mxnRate }) => {
   const detalles = gasto?.detalles ?? [];
   const tickets = gasto?.tickets ?? [];
 
-  // Los valores derivados viven en utils/gastosValores para que la tabla ordene
-  // exactamente por los mismos números que esta fila pinta.
   const esMXN = esGastoMXN(gasto);
   const totalMostrado = useMemo(() => totalUSD(gasto), [gasto]);
   const { valor: totalMXNMostrado, esConvertido: totalMXNEsConvertido } = useMemo(
