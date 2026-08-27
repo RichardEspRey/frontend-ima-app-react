@@ -3,7 +3,7 @@ import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
   Button, TablePagination, TextField, Stack, FormControl, InputLabel, Select, MenuItem,
   Typography, CircularProgress, Box, Collapse, ToggleButton, ToggleButtonGroup,
-  Grid, Divider, InputAdornment, Tooltip, IconButton
+  Grid, Divider, InputAdornment, Tooltip, IconButton, TableSortLabel
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import AddIcon from '@mui/icons-material/Add';
@@ -22,6 +22,7 @@ import GastoRow from '../../components/GastoRow';
 import ExpenseModal from './ExpenseModal';
 import { ExpenseTypeChart } from '../../components/Gastos/ExpenseTypeChart';
 import useFetchExchangeRate from '../../hooks/useFetchExchangeRate';
+import { ordenarGastos, siguienteOrden } from '../../utils/ordenarGastos';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -37,6 +38,35 @@ const DARK_BTN_SX = {
   bgcolor: '#0f172a', fontWeight: 700, borderRadius: 2, px: 3, py: 1.1,
   textTransform: 'none', boxShadow: 'none', transition: 'all 0.15s',
   '&:hover': { bgcolor: '#1e293b', boxShadow: '0 6px 16px rgba(15,23,42,0.22)' },
+};
+
+
+const ETIQUETA_SIGUIENTE = { asc: 'descendente', desc: 'quitar orden' };
+
+const CeldaOrdenable = ({ campo, label, orden, onOrdenar, align = 'left' }) => {
+  const activa = orden.campo === campo;
+  const siguiente = activa ? ETIQUETA_SIGUIENTE[orden.dir] : 'ascendente';
+  return (
+    <TableCell
+      sx={{ ...HEADER_CELL_SX, textAlign: align }}
+      sortDirection={activa ? orden.dir : false}
+    >
+      <Tooltip title={`Ordenar ${siguiente}`} enterDelay={600}>
+        <TableSortLabel
+          active={activa}
+          direction={activa ? orden.dir : 'asc'}
+          onClick={() => onOrdenar(campo)}
+          sx={{
+            // Hereda la micro-label del encabezado en vez de imponer su estilo.
+            color: 'inherit !important',
+            '& .MuiTableSortLabel-icon': { color: '#64748b !important' },
+          }}
+        >
+          {label}
+        </TableSortLabel>
+      </Tooltip>
+    </TableCell>
+  );
 };
 
 const AdminGastos = () => {
@@ -55,6 +85,7 @@ const AdminGastos = () => {
 
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(20);
+  const [orden, setOrden] = useState({ campo: null, dir: null });
 
   const [showChart, setShowChart] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
@@ -152,7 +183,19 @@ const AdminGastos = () => {
     return list;
   }, [gastos, search, filterCountry, filterType, filterCategory, startDate, endDate]);
 
-  const slice = rowsPerPage === -1 ? filtered : filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+  const ordenados = useMemo(
+    () => ordenarGastos(filtered, orden, mxnRate),
+    [filtered, orden, mxnRate],
+  );
+
+  const slice = rowsPerPage === -1 ? ordenados : ordenados.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+
+  // Volver a la primera página: quedarse en la página 5 de una lista recién
+  // reordenada muestra datos que no tienen relación con lo que se pidió.
+  const handleOrdenar = (campo) => {
+    setOrden((prev) => siguienteOrden(prev, campo));
+    setPage(0);
+  };
 
   const activeFilterCount = useMemo(() => (
     [search, filterCountry !== 'All', filterType !== 'All', filterCategory !== 'All', startDate, endDate]
@@ -376,14 +419,14 @@ const AdminGastos = () => {
           <TableHead>
             <TableRow sx={HEADER_ROW_SX}>
               <TableCell sx={HEADER_CELL_SX} />
-              <TableCell sx={HEADER_CELL_SX}>Expense #</TableCell>
-              <TableCell sx={HEADER_CELL_SX}>Expense Type</TableCell>
-              <TableCell sx={HEADER_CELL_SX}>Date</TableCell>
-              <TableCell sx={HEADER_CELL_SX}>Country</TableCell>
-              <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'right' }}>Total (USD)</TableCell>
-              <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'right' }}>Total (MX)</TableCell>
-              <TableCell sx={HEADER_CELL_SX}>Created By</TableCell>
-              <TableCell sx={HEADER_CELL_SX}>Updated By</TableCell>
+              <CeldaOrdenable campo="id_gasto"     label="Expense #"    orden={orden} onOrdenar={handleOrdenar} />
+              <CeldaOrdenable campo="tipo"         label="Expense Type" orden={orden} onOrdenar={handleOrdenar} />
+              <CeldaOrdenable campo="fecha_gasto"  label="Date"         orden={orden} onOrdenar={handleOrdenar} />
+              <CeldaOrdenable campo="pais"         label="Country"      orden={orden} onOrdenar={handleOrdenar} />
+              <CeldaOrdenable campo="usd"          label="Total (USD)"  orden={orden} onOrdenar={handleOrdenar} align="right" />
+              <CeldaOrdenable campo="mxn"          label="Total (MX)"   orden={orden} onOrdenar={handleOrdenar} align="right" />
+              <CeldaOrdenable campo="created_name" label="Created By"   orden={orden} onOrdenar={handleOrdenar} />
+              <CeldaOrdenable campo="updated_name" label="Updated By"   orden={orden} onOrdenar={handleOrdenar} />
               <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'center' }}>Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -409,7 +452,7 @@ const AdminGastos = () => {
       <Box sx={{ bgcolor: 'white', border: '1px solid #e2e8f0', borderTop: 'none', borderBottomLeftRadius: 8, borderBottomRightRadius: 8 }}>
           <TablePagination
             rowsPerPageOptions={[20, 40, 60, { label: 'All', value: -1 }]} 
-            component="div" count={filtered.length} rowsPerPage={rowsPerPage} page={page}
+            component="div" count={ordenados.length} rowsPerPage={rowsPerPage} page={page}
             onPageChange={(e, n) => setPage(n)} onRowsPerPageChange={(e) => setRowsPerPage(parseInt(e.target.value, 10))}
             sx={{ color: '#475569', '.MuiTablePagination-selectLabel, .MuiTablePagination-displayedRows': { fontSize: '0.8rem' } }}
           />

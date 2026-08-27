@@ -9,6 +9,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import InsertDriveFileOutlinedIcon from '@mui/icons-material/InsertDriveFileOutlined';
 import { PhotoProvider, PhotoView } from 'react-photo-view';
 import 'react-photo-view/dist/react-photo-view.css';
+import { esGastoMXN, totalUSD, totalMXN, tipoGastoPrincipal } from '../utils/gastosValores';
 
 const money = (v) => {
   return new Intl.NumberFormat('en-US', {
@@ -43,35 +44,14 @@ const GastoRow = ({ gasto, navigate, mxnRate }) => {
   const detalles = gasto?.detalles ?? [];
   const tickets = gasto?.tickets ?? [];
 
-  const totalCalc = useMemo(() => {
-    return detalles.reduce((acc, d) => {
-      const cant = parseFloat(d.cantidad_articulo ?? 0) || 0;
-      const pu = parseFloat(d.precio_unitario ?? 0) || 0;
-      return acc + cant * pu;
-    }, 0);
-  }, [detalles]);
-
-  const totalMostrado = Number(gasto.monto_total ?? 0) > 0
-    ? Number(gasto.monto_total)
-    : totalCalc;
-
-  // El gasto ya se registró en pesos (moneda MXN): usamos el monto original exacto
-  // que se capturó, en vez de reconvertir el total en USD con la tasa de hoy.
-  // Si se registró en USD, no hay un monto en pesos "real" que mostrar, así que
-  // convertimos el total en USD con la tasa del día (misma fuente que usa el
-  // formulario de Nuevo Gasto para México).
-  const esMXN = String(gasto.moneda || '').toUpperCase() === 'MXN';
-  const cantidadOriginal = Number(gasto.cantidad_original ?? 0);
-  const rate = parseFloat(mxnRate) || 0;
-
-  let totalMXNMostrado = null;
-  let totalMXNEsConvertido = false;
-  if (esMXN && cantidadOriginal > 0) {
-    totalMXNMostrado = cantidadOriginal;
-  } else if (rate > 0) {
-    totalMXNMostrado = totalMostrado * rate;
-    totalMXNEsConvertido = true;
-  }
+  // Los valores derivados viven en utils/gastosValores para que la tabla ordene
+  // exactamente por los mismos números que esta fila pinta.
+  const esMXN = esGastoMXN(gasto);
+  const totalMostrado = useMemo(() => totalUSD(gasto), [gasto]);
+  const { valor: totalMXNMostrado, esConvertido: totalMXNEsConvertido } = useMemo(
+    () => totalMXN(gasto, mxnRate),
+    [gasto, mxnRate],
+  );
 
   // Resalta la columna que refleja la moneda en la que realmente se capturó el
   // gasto (según el país elegido al crearlo), la otra columna es solo una conversión.
@@ -80,8 +60,7 @@ const GastoRow = ({ gasto, navigate, mxnRate }) => {
   const originalSx = { color: '#15803d', fontWeight: 700 };
   const secundarioSx = { color: '#64748b', fontWeight: 500 };
 
-  const lastDetail = detalles.length > 0 ? detalles[detalles.length - 1] : null;
-  const lastExpenseType = lastDetail?.tipo_gasto || '—';
+  const lastExpenseType = tipoGastoPrincipal(gasto) || '—';
 
   // Franja de color a la izquierda de la fila según el país del gasto.
   const accentColor = esMXN ? '#0d9488' : '#4f46e5';
