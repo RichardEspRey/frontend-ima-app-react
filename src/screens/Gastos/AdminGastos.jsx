@@ -24,6 +24,8 @@ import { ExpenseTypeChart } from '../../components/Gastos/ExpenseTypeChart';
 import useFetchExchangeRate from '../../hooks/useFetchExchangeRate';
 import { ordenarGastos, siguienteOrden } from '../../utils/ordenarGastos';
 import { useGastosFiltrosStore } from '../../store/useGastosFiltrosStore';
+import useFetchExpenseTypes from '../../hooks/expense_hooks/useFetchExpenseTypes';
+import useFetchCategories from '../../hooks/expense_hooks/useFetchCategories';
 import { SECTION_LABEL_SX, HEADER_ROW_SX, HEADER_CELL_SX, DARK_BTN_SX } from './estilosGastos';
 
 const apiHost = import.meta.env.VITE_API_HOST;
@@ -45,6 +47,7 @@ const CeldaOrdenable = ({ campo, label, orden, onOrdenar, align = 'left' }) => {
           onClick={() => onOrdenar(campo)}
           sx={{
             color: 'inherit !important',
+            whiteSpace: 'nowrap',
             '& .MuiTableSortLabel-icon': {
               color: '#64748b !important',
               width: 0,
@@ -80,38 +83,30 @@ const AdminGastos = () => {
   const { exchangeRate: mxnRate, fetchExchangeRate: fetchMxnRate } = useFetchExchangeRate();
   useEffect(() => { fetchMxnRate(); }, [fetchMxnRate]);
 
+  const { expenseTypes } = useFetchExpenseTypes();
+  const { maintenanceCategories } = useFetchCategories();
+
   const uniqueCountries = useMemo(() => {
     const countries = new Set(gastos.map(g => g.pais).filter(Boolean));
     return ['All', ...Array.from(countries).sort()];
   }, [gastos]);
 
-  const uniqueTypes = useMemo(() => {
-    const types = new Set();
-    gastos.forEach(g => {
-        if(g.detalles && Array.isArray(g.detalles)) {
-            g.detalles.forEach(d => {
-                if(d.tipo_gasto) {
-                    types.add(d.tipo_gasto);
-                }
-            });
-        }
-    });
-    return ['All', ...Array.from(types).sort()];
-  }, [gastos]);
+  const uniqueTypes = useMemo(
+    () => ['All', ...expenseTypes.map(t => t.label).sort((a, b) => a.localeCompare(b, 'es'))],
+    [expenseTypes],
+  );
+
+  const tipoSeleccionado = useMemo(
+    () => expenseTypes.find(t => t.label === filterType) || null,
+    [expenseTypes, filterType],
+  );
 
   const uniqueCategories = useMemo(() => {
-    const cats = new Set();
-    gastos.forEach(g => {
-        if(g.detalles && Array.isArray(g.detalles)) {
-            g.detalles.forEach(d => {
-                if(d.nombre_categoria) {
-                    cats.add(d.nombre_categoria);
-                }
-            });
-        }
-    });
-    return ['All', ...Array.from(cats).sort()];
-  }, [gastos]);
+    const relevantes = tipoSeleccionado
+      ? maintenanceCategories.filter(c => String(c.id_tipo_gasto) === String(tipoSeleccionado.value))
+      : maintenanceCategories;
+    return ['All', ...relevantes.map(c => c.label).sort((a, b) => a.localeCompare(b, 'es'))];
+  }, [maintenanceCategories, tipoSeleccionado]);
 
   const fetchGastos = async () => {
     setLoading(true);
@@ -189,7 +184,19 @@ const AdminGastos = () => {
       .filter(Boolean).length
   ), [search, filterCountry, filterType, filterCategory, startDate, endDate]);
 
-  const handleFilterChange = (campo, value) => setFiltro({ [campo]: value });
+  const handleFilterChange = (campo, value) => {
+    if (campo === 'filterType') setFiltro({ filterType: value, filterCategory: 'All' });
+    else setFiltro({ [campo]: value });
+  };
+
+  useEffect(() => {
+    if (expenseTypes.length === 0) return;
+    if (filterType !== 'All' && !uniqueTypes.includes(filterType)) {
+      setEstado({ filterType: 'All', filterCategory: 'All', page: 0 });
+    } else if (filterCategory !== 'All' && !uniqueCategories.includes(filterCategory)) {
+      setEstado({ filterCategory: 'All', page: 0 });
+    }
+  }, [expenseTypes.length, uniqueTypes, uniqueCategories, filterType, filterCategory, setEstado]);
 
   const clearFilters = () => limpiarFiltros();
 
@@ -428,7 +435,7 @@ const AdminGastos = () => {
         </Paper>
       </Collapse>
 
-      <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid #e2e8f0', borderRadius: 2, overflow: 'hidden' }}>
+      <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid #e2e8f0', borderRadius: 2, overflowX: 'auto' }}>
         <Table size="small">
           <TableHead>
             <TableRow sx={HEADER_ROW_SX}>
