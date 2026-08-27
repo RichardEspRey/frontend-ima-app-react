@@ -2,9 +2,11 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { 
     Box, Paper, Typography, Grid, Stack, TextField, Button, 
     CircularProgress, IconButton, Divider, Dialog, DialogTitle, 
-    DialogContent, DialogActions 
+    DialogContent, DialogActions, Chip, Tooltip
 } from '@mui/material'; 
-import DeleteIcon from '@mui/icons-material/Delete';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import AddIcon from '@mui/icons-material/Add';
+import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
 import SaveIcon from '@mui/icons-material/Save';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import CloseIcon from '@mui/icons-material/Close';
@@ -21,15 +23,13 @@ import useFetchCategories from '../../hooks/expense_hooks/useFetchCategories';
 import useFetchExpenseTypes from '../../hooks/expense_hooks/useFetchExpenseTypes';
 import useFetchExchangeRate from '../../hooks/useFetchExchangeRate';
 import { useAuthStore } from '../../store/useAuthStore';
+import FieldLabel from '../../components/Gastos/FieldLabel';
+import {
+    SECTION_LABEL_SX, CARD_SX, DARK_BTN_SX, GHOST_BTN_SX, INPUT_SX,
+    customSelectStyles, DATEPICKER_CSS, money,
+} from './estilosGastos';
 
 const apiHost = import.meta.env.VITE_API_HOST;
-
-const customSelectStyles = {
-  control: (provided) => ({
-    ...provided, height: 40, minHeight: 40, borderRadius: 4, borderColor: 'rgba(0, 0, 0, 0.23)'
-  }),
-  menu: (provided) => ({ ...provided, zIndex: 9999 })
-};
 
 const ExpenseModal = ({ open, onClose, onSuccess }) => {
     const { user } = useAuthStore();
@@ -199,60 +199,127 @@ const ExpenseModal = ({ open, onClose, onSuccess }) => {
     const countries = [{ value: 'MX', label: 'México' }, { value: 'US', label: 'Estados Unidos' }];
 
     return (
-        <Dialog open={open} onClose={!saving ? onClose : undefined} maxWidth="lg" fullWidth scroll="paper">
-            <DialogTitle sx={{ bgcolor: '#0f172a', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="h6" fontWeight={800}>Nuevo Registro de Gasto</Typography>
-                <IconButton onClick={onClose} sx={{ color: 'white' }} disabled={saving}>
-                    <CloseIcon />
-                </IconButton>
+        <Dialog
+            open={open}
+            onClose={!saving ? onClose : undefined}
+            maxWidth="lg"
+            fullWidth
+            scroll="paper"
+            PaperProps={{ sx: { borderRadius: 3, overflow: 'hidden' } }}
+        >
+            <style>{DATEPICKER_CSS}</style>
+
+            <DialogTitle sx={{ bgcolor: '#fff', borderBottom: '1px solid #e2e8f0', px: { xs: 2, md: 4 }, py: 2.5 }}>
+                <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
+                    <Box>
+                        <Typography variant="overline" sx={{ ...SECTION_LABEL_SX, letterSpacing: '0.12em', fontSize: '0.7rem', lineHeight: 1 }}>
+                            Gastos · Nuevo
+                        </Typography>
+                        <Typography variant="h5" fontWeight={800} color="#0f172a" letterSpacing="-0.02em" sx={{ mt: 0.25 }}>
+                            Nuevo Gasto
+                        </Typography>
+                        <Typography variant="body2" color="#64748b" sx={{ mt: 0.5 }}>
+                            Captura los datos generales, los conceptos y adjunta los documentos.
+                        </Typography>
+                    </Box>
+                    <IconButton onClick={onClose} sx={{ color: '#64748b' }} disabled={saving}>
+                        <CloseIcon />
+                    </IconButton>
+                </Stack>
             </DialogTitle>
 
-            <DialogContent dividers sx={{ bgcolor: '#f8fafc', p: { xs: 2, md: 4 } }}>
+            <DialogContent sx={{ bgcolor: '#f8fafc', p: { xs: 2, md: 4 } }}>
                 <Grid container spacing={3}>
-                    <Grid item xs={12} md={8}>
+                    <Grid
+                        size={{
+                            xs: 12,
+                            md: 8
+                        }}>
                         
-                        <Paper sx={{ p: 3, mb: 3, borderRadius: 2, border: '1px solid #e2e8f0' }} elevation={0}>
-                            <Typography variant="h6" fontWeight={700} color="primary" gutterBottom>Datos Generales</Typography>
-                            <Grid container spacing={2}>
-                                <Grid item xs={12} md={4}>
-                                    <Typography variant="caption" fontWeight={600}>País</Typography>
+                        <Paper sx={{ ...CARD_SX, mb: 3 }} elevation={0}>
+                            <Typography variant="overline" sx={SECTION_LABEL_SX}>Datos Generales</Typography>
+                            <Grid container spacing={2} sx={{ mt: 0.25 }}>
+                                <Grid
+                                    size={{
+                                        xs: 12,
+                                        md: 4
+                                    }}>
+                                    <FieldLabel>País</FieldLabel>
                                     <Select 
                                         options={countries} value={country} onChange={setCountry} 
-                                        styles={customSelectStyles} placeholder="Seleccionar..." menuPosition="fixed"
+                                        styles={customSelectStyles} placeholder="Seleccionar…" menuPosition="fixed"
                                     />
                                 </Grid>
-                                <Grid item xs={12} md={4}>
-                                    <Typography variant="caption" fontWeight={600}>Fecha de Ticket</Typography>
-                                    <div style={{display:'block'}}>
-                                        <DatePicker selected={ticketDate} onChange={setTicketDate} className="form-input" placeholderText="Seleccionar fecha" />
-                                    </div>
+                                <Grid
+                                    size={{
+                                        xs: 12,
+                                        md: 4
+                                    }}>
+                                    <FieldLabel>Fecha de Ticket</FieldLabel>
+                                    <DatePicker
+                                        selected={ticketDate} onChange={setTicketDate}
+                                        dateFormat="dd/MM/yyyy" placeholderText="Seleccionar fecha"
+                                        className="expense-datepicker"
+                                        wrapperClassName="expense-datepicker-wrapper"
+                                        popperClassName="expense-datepicker-popper"
+                                    />
                                 </Grid>
-                                <Grid item xs={12} md={4}>
-                                    <Typography variant="caption" fontWeight={600}>Fecha Contable</Typography>
-                                    <div style={{display:'block'}}>
-                                        <DatePicker selected={expenseDate} onChange={setExpenseDate} className="form-input" />
-                                    </div>
+                                <Grid
+                                    size={{
+                                        xs: 12,
+                                        md: 4
+                                    }}>
+                                    <FieldLabel>Fecha Contable</FieldLabel>
+                                    <DatePicker
+                                        selected={expenseDate} onChange={setExpenseDate}
+                                        dateFormat="dd/MM/yyyy"
+                                        className="expense-datepicker"
+                                        wrapperClassName="expense-datepicker-wrapper"
+                                        popperClassName="expense-datepicker-popper"
+                                    />
                                 </Grid>
 
-                                <Grid item xs={12} md={4}>
-                                    <TextField fullWidth label={`Monto Original (${country?.value === 'MX' ? 'MXN' : 'USD'})`} type="number" size="small" value={originalAmount} onChange={e => setOriginalAmount(e.target.value)} />
+                                <Grid
+                                    size={{
+                                        xs: 12,
+                                        md: 4
+                                    }}>
+                                    <FieldLabel>Monto Original ({country?.value === 'MX' ? 'MXN' : 'USD'})</FieldLabel>
+                                    <TextField fullWidth type="number" size="small" value={originalAmount} onChange={e => setOriginalAmount(e.target.value)} InputProps={{ sx: INPUT_SX }} />
                                 </Grid>
                                 {country?.value === 'MX' && (
-                                    <Grid item xs={12} md={4}>
-                                        <TextField fullWidth label="Tipo de Cambio" type="number" size="small" value={exchangeRate} onChange={e => setExchangeRate(e.target.value)} />
+                                    <Grid
+                                        size={{
+                                            xs: 12,
+                                            md: 4
+                                        }}>
+                                        <FieldLabel>Tipo de Cambio</FieldLabel>
+                                        <TextField fullWidth type="number" size="small" value={exchangeRate} onChange={e => setExchangeRate(e.target.value)} InputProps={{ sx: INPUT_SX }} />
                                     </Grid>
                                 )}
-                                <Grid item xs={12} md={4}>
-                                    <TextField fullWidth label="Total Calculado (USD)" value={`$${totalAmount}`} size="small" InputProps={{ readOnly: true }} sx={{ bgcolor: '#f1f5f9' }} />
+                                <Grid
+                                    size={{
+                                        xs: 12,
+                                        md: 4
+                                    }}>
+                                    <FieldLabel>Total Calculado (USD)</FieldLabel>
+                                    <TextField fullWidth value={money(totalAmount)} size="small" InputProps={{ readOnly: true, sx: { ...INPUT_SX, bgcolor: '#f8fafc' } }} />
                                 </Grid>
                             </Grid>
                         </Paper>
 
-                        <Paper sx={{ p: 3, borderRadius: 2, border: '1px solid #e2e8f0' }} elevation={0}>
-                            <Box display="flex" justifyContent="space-between" mb={2}>
-                                <Typography variant="h6" fontWeight={700} color="primary">Detalles del Gasto</Typography>
-                                <Button variant="outlined" size="small" onClick={handleAddDetail} sx={{ fontWeight: 700 }}>+ Añadir Concepto</Button>
-                            </Box>
+                        <Paper sx={CARD_SX} elevation={0}>
+                            <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+                                <Box>
+                                    <Typography variant="overline" sx={SECTION_LABEL_SX}>Conceptos</Typography>
+                                    <Typography variant="body2" color="#64748b">
+                                        {expenseDetails.length} concepto{expenseDetails.length === 1 ? '' : 's'} en este gasto
+                                    </Typography>
+                                </Box>
+                                <Button size="small" variant="outlined" startIcon={<AddIcon />} onClick={handleAddDetail} sx={{ ...GHOST_BTN_SX, py: 0.75 }}>
+                                    Agregar
+                                </Button>
+                            </Stack>
                             
                             <Stack spacing={2}>
                                 {expenseDetails.map((detail) => {
@@ -266,105 +333,189 @@ const ExpenseModal = ({ open, onClose, onSuccess }) => {
                                     else if (hasCategories) mdSelectSize = 6;
 
                                     return (
-                                        <Paper key={detail.id} variant="outlined" sx={{ p: 2, bgcolor: '#ffffff', borderRadius: 2 }}>
+                                        <Paper key={detail.id} elevation={0} sx={{ p: 2, bgcolor: '#fafbfc', borderRadius: 2, border: '1px solid #e2e8f0' }}>
                                             <Grid container spacing={2} alignItems="center">
                                                 
-                                                <Grid item xs={12} md={mdSelectSize}>
-                                                    <Typography variant="caption" fontWeight={600}>Tipo</Typography>
+                                                <Grid
+                                                    size={{
+                                                        xs: 12,
+                                                        md: mdSelectSize
+                                                    }}>
+                                                    <FieldLabel>Tipo</FieldLabel>
                                                     <Select 
                                                         options={expenseTypes} value={expenseTypes.find(t => String(t.value) === String(detail.expenseType)) || null}
                                                         onChange={opt => handleDetailChange(detail.id, 'expenseType', opt?.value)}
-                                                        styles={customSelectStyles} isLoading={typesLoading} placeholder="Tipo..." menuPosition="fixed"
+                                                        styles={customSelectStyles} isLoading={typesLoading} placeholder="Tipo…" menuPosition="fixed"
                                                     />
                                                 </Grid>
                                                 
                                                 {hasCategories && (
-                                                    <Grid item xs={12} md={mdSelectSize}>
-                                                        <Typography variant="caption" fontWeight={600}>Categoría</Typography>
+                                                    <Grid
+                                                        size={{
+                                                            xs: 12,
+                                                            md: mdSelectSize
+                                                        }}>
+                                                        <FieldLabel>Categoría</FieldLabel>
                                                         <Select 
                                                             options={relevantCategories} value={relevantCategories.find(c => c.value === detail.category) || null}
                                                             onChange={opt => handleDetailChange(detail.id, 'category', opt?.value)}
-                                                            styles={customSelectStyles} isLoading={catLoading} placeholder="Categoría..." menuPosition="fixed"
+                                                            styles={customSelectStyles} isLoading={catLoading} placeholder="Categoría…" menuPosition="fixed"
                                                         />
                                                     </Grid>
                                                 )}
                                                 
                                                 {hasSubcategories && (
-                                                    <Grid item xs={12} md={mdSelectSize}>
-                                                        <Typography variant="caption" fontWeight={600}>Subcategoría</Typography>
+                                                    <Grid
+                                                        size={{
+                                                            xs: 12,
+                                                            md: mdSelectSize
+                                                        }}>
+                                                        <FieldLabel>Subcategoría</FieldLabel>
                                                         <Select 
                                                             options={relevantSubs} value={relevantSubs.find(s => s.value === detail.subcategory) || null}
                                                             onChange={opt => handleDetailChange(detail.id, 'subcategory', opt?.value)}
-                                                            styles={customSelectStyles} isDisabled={!detail.category} isLoading={subLoading} placeholder="Subcategoría..." menuPosition="fixed"
+                                                            styles={customSelectStyles} isDisabled={!detail.category} isLoading={subLoading} placeholder="Subcategoría…" menuPosition="fixed"
                                                         />
                                                     </Grid>
                                                 )}
 
-                                                <Grid item xs={12} md={6}>
-                                                    <TextField fullWidth label="Descripción" size="small" value={detail.itemDescription} onChange={e => handleDetailChange(detail.id, 'itemDescription', e.target.value)} />
+                                                <Grid
+                                                    size={{
+                                                        xs: 12,
+                                                        md: 6
+                                                    }}>
+                                                    <FieldLabel>Descripción</FieldLabel>
+                                                    <TextField fullWidth size="small" value={detail.itemDescription} onChange={e => handleDetailChange(detail.id, 'itemDescription', e.target.value)} InputProps={{ sx: INPUT_SX }} />
                                                 </Grid>
-                                                <Grid item xs={6} md={2}>
-                                                    <TextField fullWidth label="Precio Unit." type="number" size="small" value={detail.price} onChange={e => handleDetailChange(detail.id, 'price', e.target.value)} />
+                                                <Grid
+                                                    size={{
+                                                        xs: 6,
+                                                        md: 2
+                                                    }}>
+                                                    <FieldLabel>Precio Unit.</FieldLabel>
+                                                    <TextField fullWidth type="number" size="small" value={detail.price} onChange={e => handleDetailChange(detail.id, 'price', e.target.value)} InputProps={{ sx: INPUT_SX }} />
                                                 </Grid>
-                                                <Grid item xs={6} md={2}>
-                                                    <TextField fullWidth label="Cant." type="number" size="small" value={detail.quantity} onChange={e => handleDetailChange(detail.id, 'quantity', e.target.value)} />
+                                                <Grid
+                                                    size={{
+                                                        xs: 6,
+                                                        md: 2
+                                                    }}>
+                                                    <FieldLabel>Cant.</FieldLabel>
+                                                    <TextField fullWidth type="number" size="small" value={detail.quantity} onChange={e => handleDetailChange(detail.id, 'quantity', e.target.value)} InputProps={{ sx: INPUT_SX }} />
                                                 </Grid>
-                                                <Grid item xs={12} md={2} display="flex" justifyContent="flex-end">
-                                                    <IconButton color="error" onClick={() => handleRemoveDetail(detail.id)}>
-                                                        <DeleteIcon />
-                                                    </IconButton>
+                                                <Grid
+                                                    display="flex"
+                                                    justifyContent="flex-end"
+                                                    alignItems="center"
+                                                    size={{
+                                                        xs: 12,
+                                                        md: 2
+                                                    }}>
+                                                    <Tooltip title="Quitar concepto">
+                                                        <IconButton
+                                                            onClick={() => handleRemoveDetail(detail.id)}
+                                                            sx={{
+                                                                color: '#b91c1c', border: '1px solid #fecaca', borderRadius: 1.5,
+                                                                '&:hover': { bgcolor: '#b91c1c', color: '#fff', borderColor: '#b91c1c' },
+                                                            }}
+                                                        >
+                                                            <DeleteOutlineIcon fontSize="small" />
+                                                        </IconButton>
+                                                    </Tooltip>
                                                 </Grid>
                                             </Grid>
                                         </Paper>
                                     );
                                 })}
                                 {expenseDetails.length === 0 && (
-                                    <Typography color="text.secondary" align="center" sx={{ py: 3, fontStyle: 'italic' }}>
-                                        Aún no hay conceptos añadidos. Haz clic en "+ Añadir Concepto" para comenzar.
-                                    </Typography>
+                                    <Box sx={{ py: 6, textAlign: 'center', borderRadius: 2, border: '1px dashed #cbd5e1', bgcolor: '#fafbfc' }}>
+                                        <ReceiptLongOutlinedIcon sx={{ fontSize: 28, color: '#cbd5e1' }} />
+                                        <Typography variant="body2" color="#64748b" fontWeight={600} sx={{ mt: 1 }}>
+                                            Este gasto no tiene conceptos.
+                                        </Typography>
+                                        <Typography variant="caption" color="#94a3b8">Agrega al menos uno antes de guardar.</Typography>
+                                    </Box>
                                 )}
                             </Stack>
                         </Paper>
                     </Grid>
 
-                    <Grid item xs={12} md={4}>
-                        <Paper sx={{ p: 3, mb: 3, borderRadius: 2, border: '1px solid #e2e8f0' }} elevation={0}>
-                            <Typography variant="h6" fontWeight={700} gutterBottom color="primary">Resumen</Typography>
-                            <Box mb={2}>
-                                <Typography variant="body2"><strong>País:</strong> {country?.label || '-'}</Typography>
-                                <Typography variant="body2"><strong>Fecha:</strong> {ticketDate.toLocaleDateString()}</Typography>
-                                <Typography variant="h4" color="success.main" fontWeight={800} mt={1}>${totalAmount}</Typography>
-                            </Box>
-                            <Divider sx={{ my: 2 }} />
-                            <Typography variant="subtitle2" fontWeight={700}>Conceptos ({expenseDetails.length})</Typography>
-                            <ul style={{ paddingLeft: 20, margin: '10px 0', fontSize: '0.85rem', color: '#475569' }}>
-                                {expenseDetails.map((d, i) => (
-                                    <li key={d.id || i}>{d.itemDescription || 'Concepto'} - Cant: {d.quantity}</li>
-                                ))}
-                            </ul>
+                    <Grid
+                        size={{
+                            xs: 12,
+                            md: 4
+                        }}>
+                        <Paper sx={{ ...CARD_SX, mb: 3 }} elevation={0}>
+                            <Typography variant="overline" sx={SECTION_LABEL_SX}>Resumen</Typography>
+
+                            <Stack spacing={1} sx={{ mt: 1 }}>
+                                <Stack direction="row" justifyContent="space-between">
+                                    <Typography variant="body2" color="#64748b">País</Typography>
+                                    <Typography variant="body2" color="#334155" fontWeight={600}>{country?.label || '—'}</Typography>
+                                </Stack>
+                                <Stack direction="row" justifyContent="space-between">
+                                    <Typography variant="body2" color="#64748b">Fecha de ticket</Typography>
+                                    <Typography variant="body2" color="#334155" fontWeight={600}>{ticketDate.toLocaleDateString()}</Typography>
+                                </Stack>
+                            </Stack>
+
+                            <Divider sx={{ my: 2, borderColor: '#f1f5f9' }} />
+
+                            <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, letterSpacing: '0.06em' }}>
+                                TOTAL (USD)
+                            </Typography>
+                            <Typography variant="h4" fontWeight={800} color="#0f172a" letterSpacing="-0.02em">
+                                {money(totalAmount)}
+                            </Typography>
+
+                            <Divider sx={{ my: 2, borderColor: '#f1f5f9' }} />
+
+                            <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
+                                <Typography variant="overline" sx={SECTION_LABEL_SX}>Conceptos</Typography>
+                                <Chip
+                                    size="small"
+                                    label={expenseDetails.length}
+                                    sx={{ height: 18, fontSize: '0.68rem', fontWeight: 700, bgcolor: '#e2e8f0', color: '#475569' }}
+                                />
+                            </Stack>
+
+                            {expenseDetails.length === 0 ? (
+                                <Typography variant="body2" color="#94a3b8">Sin conceptos todavía.</Typography>
+                            ) : (
+                                <Stack spacing={0.75}>
+                                    {expenseDetails.map((d, i) => (
+                                        <Stack key={d.id || i} direction="row" justifyContent="space-between" spacing={1}>
+                                            <Typography variant="body2" color="#334155" noWrap sx={{ maxWidth: 170 }}>
+                                                {d.itemDescription || 'Concepto'}
+                                            </Typography>
+                                            <Typography variant="body2" color="#64748b">×{d.quantity || 0}</Typography>
+                                        </Stack>
+                                    ))}
+                                </Stack>
+                            )}
                         </Paper>
 
-                        <Paper sx={{ p: 3, borderRadius: 2, border: '1px solid #e2e8f0' }} elevation={0}>
-                            <Typography variant="h6" fontWeight={700} gutterBottom color="primary">Documentos</Typography>
+                        <Paper sx={CARD_SX} elevation={0}>
+                            <Typography variant="overline" sx={{ ...SECTION_LABEL_SX, display: 'block', mb: 1.5 }}>Documentos</Typography>
                             <Stack spacing={2}>
                                 {files.facturaPdf ? (
-                                    <Paper variant="outlined" sx={{ p: 1.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between', bgcolor: '#f1f5f9' }}>
-                                        <Typography variant="caption" fontWeight={600} noWrap sx={{ maxWidth: 180 }}>{files.facturaPdf.name}</Typography>
-                                        <IconButton size="small" color="error" onClick={() => handleRemoveFile('facturaPdf')}><DeleteIcon fontSize="small"/></IconButton>
+                                    <Paper elevation={0} sx={{ p: 1.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between', bgcolor: '#fafbfc', border: '1px solid #e2e8f0', borderRadius: 2 }}>
+                                        <Typography variant="caption" fontWeight={600} color="#334155" noWrap sx={{ maxWidth: 180 }}>{files.facturaPdf.name}</Typography>
+                                        <IconButton size="small" onClick={() => handleRemoveFile('facturaPdf')} sx={{ color: '#b91c1c' }}><DeleteOutlineIcon fontSize="small"/></IconButton>
                                     </Paper>
                                 ) : (
-                                    <Button variant="outlined" fullWidth startIcon={<AttachFileIcon/>} onClick={() => setModalState({ isOpen: true, fileType: 'facturaPdf' })} sx={{ fontWeight: 600 }}>
+                                    <Button variant="outlined" fullWidth startIcon={<AttachFileIcon/>} onClick={() => setModalState({ isOpen: true, fileType: 'facturaPdf' })} sx={GHOST_BTN_SX}>
                                         Adjuntar Factura (PDF)
                                     </Button>
                                 )}
 
                                 {files.ticketJpg ? (
-                                    <Paper variant="outlined" sx={{ p: 1.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between', bgcolor: '#f1f5f9' }}>
-                                        <Typography variant="caption" fontWeight={600} noWrap sx={{ maxWidth: 180 }}>{files.ticketJpg.name}</Typography>
-                                        <IconButton size="small" color="error" onClick={() => handleRemoveFile('ticketJpg')}><DeleteIcon fontSize="small"/></IconButton>
+                                    <Paper elevation={0} sx={{ p: 1.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between', bgcolor: '#fafbfc', border: '1px solid #e2e8f0', borderRadius: 2 }}>
+                                        <Typography variant="caption" fontWeight={600} color="#334155" noWrap sx={{ maxWidth: 180 }}>{files.ticketJpg.name}</Typography>
+                                        <IconButton size="small" onClick={() => handleRemoveFile('ticketJpg')} sx={{ color: '#b91c1c' }}><DeleteOutlineIcon fontSize="small"/></IconButton>
                                     </Paper>
                                 ) : (
-                                    <Button variant="outlined" fullWidth startIcon={<AttachFileIcon/>} onClick={() => setModalState({ isOpen: true, fileType: 'ticketJpg' })} sx={{ fontWeight: 600 }}>
+                                    <Button variant="outlined" fullWidth startIcon={<AttachFileIcon/>} onClick={() => setModalState({ isOpen: true, fileType: 'ticketJpg' })} sx={GHOST_BTN_SX}>
                                         Adjuntar Ticket (IMG)
                                     </Button>
                                 )}
@@ -384,12 +535,18 @@ const ExpenseModal = ({ open, onClose, onSuccess }) => {
                 />
             </DialogContent>
 
-            <DialogActions sx={{ p: 3, bgcolor: '#f8fafc', borderTop: '1px solid #e2e8f0' }}>
-                <Button onClick={onClose} disabled={saving} sx={{ color: 'text.secondary', fontWeight: 600, px: 3 }}>
+            <DialogActions sx={{ px: { xs: 2, md: 4 }, py: 2.5, bgcolor: '#fff', borderTop: '1px solid #e2e8f0', gap: 1 }}>
+                <Button variant="outlined" onClick={onClose} disabled={saving} sx={GHOST_BTN_SX}>
                     Cancelar
                 </Button>
-                <Button variant="contained" onClick={handleSaveExpense} disabled={saving} startIcon={saving ? <CircularProgress size={20} color='inherit'/> : <SaveIcon/>} sx={{ px: 4, fontWeight: 700, bgcolor: '#0f172a' }} disableElevation>
-                    {saving ? "Guardando..." : "Guardar Gasto"}
+                <Button
+                    variant="contained"
+                    onClick={handleSaveExpense}
+                    disabled={saving}
+                    startIcon={saving ? <CircularProgress size={18} sx={{ color: '#fff' }}/> : <SaveIcon/>}
+                    sx={DARK_BTN_SX}
+                >
+                    {saving ? 'Guardando…' : 'Guardar Gasto'}
                 </Button>
             </DialogActions>
         </Dialog>

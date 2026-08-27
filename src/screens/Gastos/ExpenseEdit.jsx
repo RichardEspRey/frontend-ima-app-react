@@ -23,57 +23,15 @@ import useFetchCategories from '../../hooks/expense_hooks/useFetchCategories';
 import useFetchExpenseTypes from '../../hooks/expense_hooks/useFetchExpenseTypes';
 import useFetchExchangeRate from '../../hooks/useFetchExchangeRate';
 import { useAuthStore } from '../../store/useAuthStore';
-
-const SECTION_LABEL_SX = {
-  color: '#94a3b8', fontWeight: 700, letterSpacing: '0.08em', fontSize: '0.68rem',
-};
-const CARD_SX = { p: 3, borderRadius: 2, border: '1px solid #e2e8f0' };
-const DARK_BTN_SX = {
-  bgcolor: '#0f172a', fontWeight: 700, borderRadius: 2, px: 3, py: 1.1,
-  textTransform: 'none', boxShadow: 'none', transition: 'all 0.15s',
-  '&:hover': { bgcolor: '#1e293b', boxShadow: '0 6px 16px rgba(15,23,42,0.22)' },
-  '&.Mui-disabled': { bgcolor: '#cbd5e1', color: '#fff' },
-};
-const GHOST_BTN_SX = {
-  bgcolor: 'white', borderColor: '#cbd5e1', color: '#334155',
-  fontWeight: 600, textTransform: 'none', borderRadius: 2, px: 2.5, py: 1.1,
-};
-
-const customSelectStyles = {
-  control: (provided, state) => ({
-    ...provided,
-    minHeight: 40,
-    borderRadius: 8,
-    fontSize: '0.9rem',
-    backgroundColor: '#fff',
-    borderColor: state.isFocused ? '#0f172a' : '#cbd5e1',
-    boxShadow: state.isFocused ? '0 0 0 1px #0f172a' : 'none',
-    '&:hover': { borderColor: state.isFocused ? '#0f172a' : '#94a3b8' },
-  }),
-  placeholder: (provided) => ({ ...provided, color: '#94a3b8' }),
-  menu: (provided) => ({ ...provided, zIndex: 9999, borderRadius: 8, overflow: 'hidden' }),
-  option: (provided, state) => ({
-    ...provided,
-    fontSize: '0.9rem',
-    backgroundColor: state.isSelected ? '#0f172a' : state.isFocused ? '#f1f5f9' : '#fff',
-    color: state.isSelected ? '#fff' : '#334155',
-  }),
-};
-
-const money = (v) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(Number(v || 0));
+import FieldLabel from '../../components/Gastos/FieldLabel';
+import {
+  SECTION_LABEL_SX, CARD_SX, DARK_BTN_SX, GHOST_BTN_SX,
+  customSelectStyles, DATEPICKER_CSS, money,
+} from './estilosGastos';
 
 // La app móvil puede subir el "ticket" como PDF escaneado en vez de imagen
 // (ej. archivos "scan_*.pdf"), no solo JPG/PNG. Un <img> no puede mostrar un PDF.
 const isImageUrl = (url = '') => /\.(png|jpe?g|gif|webp|bmp|tiff?)$/i.test(url);
-
-const FieldLabel = ({ children }) => (
-  <Typography
-    variant="caption"
-    sx={{ display: 'block', mb: 0.5, color: '#475569', fontWeight: 600, fontSize: '0.75rem' }}
-  >
-    {children}
-  </Typography>
-);
 
 const ExpenseEdit = () => {
   const { id_gasto } = useParams();
@@ -277,27 +235,7 @@ const ExpenseEdit = () => {
 
   return (
     <Box sx={{ p: { xs: 2, md: 4 }, minHeight: '100vh', bgcolor: '#f8fafc' }}>
-      <style>{`
-        .expense-datepicker {
-          padding: 8.5px 12px;
-          border: 1px solid #cbd5e1;
-          border-radius: 8px;
-          width: 100%;
-          font-size: 0.9rem;
-          color: #334155;
-          box-sizing: border-box;
-          height: 40px;
-          background: #fff;
-          transition: border-color .15s, box-shadow .15s;
-        }
-        .expense-datepicker:focus {
-          border-color: #0f172a;
-          box-shadow: 0 0 0 1px #0f172a;
-          outline: none;
-        }
-        .expense-datepicker-wrapper { width: 100%; display: block; }
-        .expense-datepicker-popper { z-index: 20; }
-      `}</style>
+      <style>{DATEPICKER_CSS}</style>
 
       <Stack direction="row" justifyContent="space-between" alignItems="flex-end" mb={4} flexWrap="wrap" gap={2}>
         <Box>
@@ -341,11 +279,20 @@ const ExpenseEdit = () => {
       </Stack>
 
       <Grid container spacing={3}>
-        <Grid item xs={12} md={8}>
+        <Grid
+          size={{
+            xs: 12,
+            md: 8
+          }}>
           <Paper elevation={0} sx={{ ...CARD_SX, mb: 3 }}>
             <Typography variant="overline" sx={SECTION_LABEL_SX}>Datos Generales</Typography>
             <Grid container spacing={2} sx={{ mt: 0.25 }}>
-              <Grid item xs={12} sm={6} md={3}>
+              <Grid
+                size={{
+                  xs: 12,
+                  sm: 6,
+                  md: 3
+                }}>
                 <FieldLabel>País</FieldLabel>
                 <Select
                   value={country} onChange={handleCountryChange}
@@ -353,7 +300,12 @@ const ExpenseEdit = () => {
                   placeholder="Seleccionar…"
                 />
               </Grid>
-              <Grid item xs={12} sm={6} md={3}>
+              <Grid
+                size={{
+                  xs: 12,
+                  sm: 6,
+                  md: 3
+                }}>
                 <FieldLabel>Fecha del Gasto</FieldLabel>
                 <DatePicker
                   selected={expenseDate}
@@ -364,7 +316,12 @@ const ExpenseEdit = () => {
                   popperClassName="expense-datepicker-popper"
                 />
               </Grid>
-              <Grid item xs={12} sm={6} md={3}>
+              <Grid
+                size={{
+                  xs: 12,
+                  sm: 6,
+                  md: 3
+                }}>
                 <FieldLabel>Monto Original ({esMXN ? 'MXN' : 'USD'})</FieldLabel>
                 <TextField
                   fullWidth size="small" type="number" value={originalAmount}
@@ -374,7 +331,12 @@ const ExpenseEdit = () => {
                 />
               </Grid>
               {esMXN && (
-                <Grid item xs={12} sm={6} md={3}>
+                <Grid
+                  size={{
+                    xs: 12,
+                    sm: 6,
+                    md: 3
+                  }}>
                   <FieldLabel>Tipo de Cambio</FieldLabel>
                   <TextField
                     fullWidth size="small" type="number" value={exchangeRate}
@@ -383,7 +345,12 @@ const ExpenseEdit = () => {
                   />
                 </Grid>
               )}
-              <Grid item xs={12} sm={6} md={3}>
+              <Grid
+                size={{
+                  xs: 12,
+                  sm: 6,
+                  md: 3
+                }}>
                 <FieldLabel>Total (USD)</FieldLabel>
                 <TextField
                   fullWidth size="small" type="number" value={totalAmount}
@@ -473,7 +440,11 @@ const ExpenseEdit = () => {
                       <Divider sx={{ borderColor: '#e2e8f0', mb: 2 }} />
 
                       <Grid container spacing={2}>
-                        <Grid item xs={12} md={mdSelectSize}>
+                        <Grid
+                          size={{
+                            xs: 12,
+                            md: mdSelectSize
+                          }}>
                           <FieldLabel>Tipo de Gasto</FieldLabel>
                           <Select 
                             options={expenseTypes} 
@@ -486,7 +457,11 @@ const ExpenseEdit = () => {
                         </Grid>
                         
                         {hasCategories && (
-                          <Grid item xs={12} md={mdSelectSize}>
+                          <Grid
+                            size={{
+                              xs: 12,
+                              md: mdSelectSize
+                            }}>
                             <FieldLabel>Categoría</FieldLabel>
                             <Select 
                               options={relevantCategories}
@@ -500,7 +475,11 @@ const ExpenseEdit = () => {
                         )}
 
                         {hasSubcategories && (
-                          <Grid item xs={12} md={mdSelectSize}>
+                          <Grid
+                            size={{
+                              xs: 12,
+                              md: mdSelectSize
+                            }}>
                             <FieldLabel>Subcategoría</FieldLabel>
                             <Select 
                               options={relevantSubs}
@@ -514,7 +493,11 @@ const ExpenseEdit = () => {
                           </Grid>
                         )}
 
-                        <Grid item xs={12} md={8}>
+                        <Grid
+                          size={{
+                            xs: 12,
+                            md: 8
+                          }}>
                           <FieldLabel>Descripción</FieldLabel>
                           <TextField
                             fullWidth size="small" placeholder="Descripción del artículo o servicio"
@@ -523,7 +506,11 @@ const ExpenseEdit = () => {
                             InputProps={{ sx: { borderRadius: 2, bgcolor: '#fff' } }}
                           />
                         </Grid>
-                        <Grid item xs={6} md={2}>
+                        <Grid
+                          size={{
+                            xs: 6,
+                            md: 2
+                          }}>
                           <FieldLabel>Precio</FieldLabel>
                           <TextField
                             fullWidth size="small" type="number"
@@ -532,7 +519,11 @@ const ExpenseEdit = () => {
                             InputProps={{ sx: { borderRadius: 2, bgcolor: '#fff' } }}
                           />
                         </Grid>
-                        <Grid item xs={6} md={2}>
+                        <Grid
+                          size={{
+                            xs: 6,
+                            md: 2
+                          }}>
                           <FieldLabel>Cantidad</FieldLabel>
                           <TextField
                             fullWidth size="small" type="number"
@@ -550,7 +541,11 @@ const ExpenseEdit = () => {
           </Paper>
         </Grid>
 
-        <Grid item xs={12} md={4}>
+        <Grid
+          size={{
+            xs: 12,
+            md: 4
+          }}>
           <Box sx={{ position: 'sticky', top: 24 }}>
             <Paper elevation={0} sx={{ ...CARD_SX, mb: 3 }}>
               <Typography variant="overline" sx={SECTION_LABEL_SX}>Resumen</Typography>

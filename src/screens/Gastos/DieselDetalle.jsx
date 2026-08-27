@@ -166,204 +166,228 @@ const DieselDetalle = () => {
   }
 
   return (
-   <Box sx={{ p: 3 }}>
-      <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
-          <Box>
-             <Typography variant="h4" component="h1" fontWeight={700} gutterBottom>
-                Diesel Detail
-            </Typography>
-            <Typography variant="subtitle1" color="text.secondary">
-                Trip: <strong>#{registros[0]?.trip_number || tripId}</strong>
-            </Typography>
-          </Box>
-          
-          <Stack direction="row" spacing={2}>
-              <Button 
-                variant="contained" 
-                color="secondary"
-                startIcon={<AddCircleIcon />} 
-                onClick={() => setOpenAddModal(true)}
-                sx={{ fontWeight: 600, bgcolor: '#0f172a' }}
-              >
-                Añadir Registro Manual
-              </Button>
-              <Button 
-                variant="outlined" 
-                startIcon={<ArrowBackIcon />} 
-                onClick={cancelar}
-                sx={{ fontWeight: 600 }}
-              >
-                Return
-              </Button>
+      <Box sx={{ p: 3 }}>
+          <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
+              <Box>
+                 <Typography variant="h4" component="h1" fontWeight={700} gutterBottom>
+                    Diesel Detail
+                </Typography>
+                <Typography variant="subtitle1" color="text.secondary">
+                    Trip: <strong>#{registros[0]?.trip_number || tripId}</strong>
+                </Typography>
+              </Box>
+              
+              <Stack direction="row" spacing={2}>
+                  <Button 
+                    variant="contained" 
+                    color="secondary"
+                    startIcon={<AddCircleIcon />} 
+                    onClick={() => setOpenAddModal(true)}
+                    sx={{ fontWeight: 600, bgcolor: '#0f172a' }}
+                  >
+                    Añadir Registro Manual
+                  </Button>
+                  <Button 
+                    variant="outlined" 
+                    startIcon={<ArrowBackIcon />} 
+                    onClick={cancelar}
+                    sx={{ fontWeight: 600 }}
+                  >
+                    Return
+                  </Button>
+              </Stack>
           </Stack>
-      </Stack>
 
-      <Paper elevation={1} sx={{ width: '100%', mb: 2, overflow: 'hidden' }}>
-        <TableContainer sx={{ overflowX: 'auto' }}>
-          <Table sx={{ minWidth: 900 }} aria-label="diesel detail table" size="small" stickyHeader>
-            <TableHead>
-              <TableRow>
-                <TableCell sx={{ fontWeight: 600 }}>No.</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>Origen</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>Trip</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>Last update</TableCell>
-                <TableCell sx={{ fontWeight: 600, textAlign: 'right' }}>Odometer</TableCell>
-                <TableCell sx={{ fontWeight: 600, textAlign: 'right' }}>Gal.</TableCell>
-                <TableCell sx={{ fontWeight: 600, textAlign: 'right' }}>Total ($)</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>Registrado por</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>State</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>Fleet One</TableCell>
-                <TableCell sx={{ fontWeight: 600, textAlign: 'center' }}>Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            
-            <TableBody>
-              {registros.length === 0 ? (
+          <Paper elevation={1} sx={{ width: '100%', mb: 2, overflow: 'hidden' }}>
+            <TableContainer sx={{ overflowX: 'auto' }}>
+              <Table sx={{ minWidth: 900 }} aria-label="diesel detail table" size="small" stickyHeader>
+                <TableHead>
                   <TableRow>
-                      <TableCell colSpan={11} align="center">
-                          <Typography color="text.secondary" sx={{ py: 3 }}>No hay registros para este viaje.</Typography>
-                      </TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>No.</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Origen</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Trip</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Last update</TableCell>
+                    <TableCell sx={{ fontWeight: 600, textAlign: 'right' }}>Odometer</TableCell>
+                    <TableCell sx={{ fontWeight: 600, textAlign: 'right' }}>Gal.</TableCell>
+                    <TableCell sx={{ fontWeight: 600, textAlign: 'right' }}>Total ($)</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Registrado por</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>State</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Fleet One</TableCell>
+                    <TableCell sx={{ fontWeight: 600, textAlign: 'center' }}>Actions</TableCell>
                   </TableRow>
-              ) : (
-                  registros.map((row, idx) => ( 
-                  <TableRow key={row.id} hover sx={{ bgcolor: row.is_manual ? '#fff8e1' : 'inherit' }}>
-                      <TableCell>{idx + 1}</TableCell>
-                      
-                      <TableCell>
-                          {row.is_manual ? (
-                              <Chip size="small" icon={<AdminPanelSettingsIcon />} label={`Manual: ${row.created_by || 'Admin'}`} color="warning" variant="outlined" sx={{ fontWeight: 'bold', bgcolor: '#fff' }} />
-                          ) : (
-                              <Chip size="small" icon={<PersonIcon />} label="App Móvil" color="primary" variant="outlined" sx={{ fontWeight: 'bold' }} />
-                          )}
-                      </TableCell>
-
-                      <TableCell sx={{ fontWeight: 500 }}>{row.trip_number}</TableCell>
-                      <TableCell>{row.fecha}</TableCell>
-                      
-                      <TableCell align="right">{row.odometro} mi</TableCell>
-                      <TableCell align="right">{row.galones} gal</TableCell>
-                      <TableCell align="right" sx={{ fontWeight: 600, color: '#3C48E1' }}> 
-                          {money(row.monto)}
-                      </TableCell>
-                      
-                      <TableCell>
-                          <Typography variant="body2" fontWeight={row.is_manual ? 400 : 600} color={row.is_manual ? 'text.secondary' : 'inherit'}>
-                              {row.nombre || '—'}
-                          </Typography>
-                      </TableCell>
-                      
-                      <TableCell>{formatCellData(row.estado)}</TableCell>
-                      <TableCell>{formatCellData(row.fleetone)}</TableCell>
-                      <TableCell align="center">
-                          <Button variant="contained" size="small" onClick={() => handleVer(row.id, row.trip_id)} sx={{ textTransform: 'none' }}>
-                              Edit
-                          </Button>
-                      </TableCell>
-                  </TableRow>
-                  ))
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Paper>
-
-      {/* Modal de Captura Manual */}
-      <Dialog open={openAddModal} onClose={handleCloseModal} maxWidth="md" fullWidth scroll="paper">
-          <DialogTitle sx={{ bgcolor: '#f8f9fa', borderBottom: '1px solid #e0e0e0', fontWeight: 800, color: 'primary.main', py: 2 }}>
-              Nuevo Registro Manual (A destiempo)
-          </DialogTitle>
-          <DialogContent sx={{ p: { xs: 2, md: 4 }, bgcolor: '#f4f6f8' }}>
-              <Grid container spacing={4}>
-                  
-                  {/* Columna Izquierda: Formulario */}
-                  <Grid item xs={12} md={6}>
-                      <Paper elevation={0} sx={{ p: 3, borderRadius: 2, border: '1px solid #e0e0e0', height: '100%' }}>
-                          <Typography variant="subtitle1" fontWeight={700} mb={2} color="primary">Datos del Ticket</Typography>
-                          <Typography variant="body2" color="text.secondary" mb={3}>
-                              Este registro se marcará como insertado manualmente por tu usuario.
-                          </Typography>
+                </TableHead>
+                
+                <TableBody>
+                  {registros.length === 0 ? (
+                      <TableRow>
+                          <TableCell colSpan={11} align="center">
+                              <Typography color="text.secondary" sx={{ py: 3 }}>No hay registros para este viaje.</Typography>
+                          </TableCell>
+                      </TableRow>
+                  ) : (
+                      registros.map((row, idx) => ( 
+                      <TableRow key={row.id} hover sx={{ bgcolor: row.is_manual ? '#fff8e1' : 'inherit' }}>
+                          <TableCell>{idx + 1}</TableCell>
                           
-                          <Grid container spacing={2}>
-                              <Grid item xs={12}>
-                                  <TextField fullWidth size="small" label="Fecha y hora" type="datetime-local" name="fecha" value={manualForm.fecha} onChange={handleManualFormChange} InputLabelProps={{ shrink: true }} />
-                              </Grid>
-                              <Grid item xs={12} sm={6}>
-                                  <TextField fullWidth size="small" label="Odómetro *" name="odometro" type="number" value={manualForm.odometro} onChange={handleManualFormChange} InputLabelProps={{ shrink: true }} InputProps={{ endAdornment: <InputAdornment position="end">mi</InputAdornment> }}/>
-                              </Grid>
-                              <Grid item xs={12} sm={6}>
-                                  <TextField fullWidth size="small" label="Galones *" name="galones" type="number" value={manualForm.galones} onChange={handleManualFormChange} InputLabelProps={{ shrink: true }} InputProps={{ endAdornment: <InputAdornment position="end">gal</InputAdornment> }}/>
-                              </Grid>
-                              <Grid item xs={12}>
-                                  <TextField fullWidth size="small" label="Monto Total *" name="monto" type="number" value={manualForm.monto} onChange={handleManualFormChange} InputLabelProps={{ shrink: true }} InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }}/>
-                              </Grid>
-                              <Grid item xs={12} sm={6}>
-                                  <TextField fullWidth size="small" label="Estado (State)" name="estado" value={manualForm.estado} onChange={handleManualFormChange} placeholder="Ej. TX" InputLabelProps={{ shrink: true }}/>
-                              </Grid>
-                              <Grid item xs={12} sm={6}>
-                                  <TextField fullWidth size="small" label="Fleet One" name="fleetone" type="number" value={manualForm.fleetone} onChange={handleManualFormChange} InputLabelProps={{ shrink: true }} InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }}/>
-                              </Grid>
-                              <Grid item xs={12}>
-                                  <TextField fullWidth size="small" label="Periodo" name="periodo" value={manualForm.periodo} onChange={handleManualFormChange} placeholder="Ej. Q2" InputLabelProps={{ shrink: true }}/>
-                              </Grid>
-                          </Grid>
-                      </Paper>
-                  </Grid>
+                          <TableCell>
+                              {row.is_manual ? (
+                                  <Chip size="small" icon={<AdminPanelSettingsIcon />} label={`Manual: ${row.created_by || 'Admin'}`} color="warning" variant="outlined" sx={{ fontWeight: 'bold', bgcolor: '#fff' }} />
+                              ) : (
+                                  <Chip size="small" icon={<PersonIcon />} label="App Móvil" color="primary" variant="outlined" sx={{ fontWeight: 'bold' }} />
+                              )}
+                          </TableCell>
 
-                  {/* Columna Derecha: Carga de Archivos */}
-                  <Grid item xs={12} md={6}>
-                      <Paper elevation={0} sx={{ p: 3, borderRadius: 2, border: '1px solid #e0e0e0', height: '100%' }}>
-                          <Typography variant="subtitle1" fontWeight={700} mb={2} color="primary">Evidencia (Tickets)</Typography>
+                          <TableCell sx={{ fontWeight: 500 }}>{row.trip_number}</TableCell>
+                          <TableCell>{row.fecha}</TableCell>
                           
-                          <Box sx={{ 
-                              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                              width: '100%', border: '2px dashed #90caf9', bgcolor: '#e3f2fd', 
-                              py: 4, px: 2, textAlign: 'center', borderRadius: 2,
-                              cursor: 'pointer', transition: '0.2s', '&:hover': { bgcolor: '#e1f5fe', borderColor: '#42a5f5' }
-                          }} component="label">
-                              <CloudUploadIcon sx={{ fontSize: 40, color: '#1976d2', mb: 1 }} />
-                              <Typography variant="button" fontWeight={700} color="primary" sx={{ display: 'block' }}>
-                                  Seleccionar Tickets (PDF/IMG)
+                          <TableCell align="right">{row.odometro} mi</TableCell>
+                          <TableCell align="right">{row.galones} gal</TableCell>
+                          <TableCell align="right" sx={{ fontWeight: 600, color: '#3C48E1' }}> 
+                              {money(row.monto)}
+                          </TableCell>
+                          
+                          <TableCell>
+                              <Typography variant="body2" fontWeight={row.is_manual ? 400 : 600} color={row.is_manual ? 'text.secondary' : 'inherit'}>
+                                  {row.nombre || '—'}
                               </Typography>
-                              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
-                                  Puedes subir múltiples archivos
-                              </Typography>
-                              <input type="file" hidden multiple accept=".pdf,.jpg,.jpeg,.png" onChange={handleManualFileChange} />
-                          </Box>
+                          </TableCell>
+                          
+                          <TableCell>{formatCellData(row.estado)}</TableCell>
+                          <TableCell>{formatCellData(row.fleetone)}</TableCell>
+                          <TableCell align="center">
+                              <Button variant="contained" size="small" onClick={() => handleVer(row.id, row.trip_id)} sx={{ textTransform: 'none' }}>
+                                  Edit
+                              </Button>
+                          </TableCell>
+                      </TableRow>
+                      ))
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Paper>
 
-                          {manualFiles.length > 0 && (
-                              <Box sx={{ mt: 3 }}>
-                                  <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ display: 'block', mb: 1 }}>
-                                      Archivos adjuntos ({manualFiles.length}):
+          {/* Modal de Captura Manual */}
+          <Dialog open={openAddModal} onClose={handleCloseModal} maxWidth="md" fullWidth scroll="paper">
+              <DialogTitle sx={{ bgcolor: '#f8f9fa', borderBottom: '1px solid #e0e0e0', fontWeight: 800, color: 'primary.main', py: 2 }}>
+                  Nuevo Registro Manual (A destiempo)
+              </DialogTitle>
+              <DialogContent sx={{ p: { xs: 2, md: 4 }, bgcolor: '#f4f6f8' }}>
+                  <Grid container spacing={4}>
+                      
+                      {/* Columna Izquierda: Formulario */}
+                      <Grid
+                          size={{
+                              xs: 12,
+                              md: 6
+                          }}>
+                          <Paper elevation={0} sx={{ p: 3, borderRadius: 2, border: '1px solid #e0e0e0', height: '100%' }}>
+                              <Typography variant="subtitle1" fontWeight={700} mb={2} color="primary">Datos del Ticket</Typography>
+                              <Typography variant="body2" color="text.secondary" mb={3}>
+                                  Este registro se marcará como insertado manualmente por tu usuario.
+                              </Typography>
+                              
+                              <Grid container spacing={2}>
+                                  <Grid size={12}>
+                                      <TextField fullWidth size="small" label="Fecha y hora" type="datetime-local" name="fecha" value={manualForm.fecha} onChange={handleManualFormChange} InputLabelProps={{ shrink: true }} />
+                                  </Grid>
+                                  <Grid
+                                      size={{
+                                          xs: 12,
+                                          sm: 6
+                                      }}>
+                                      <TextField fullWidth size="small" label="Odómetro *" name="odometro" type="number" value={manualForm.odometro} onChange={handleManualFormChange} InputLabelProps={{ shrink: true }} InputProps={{ endAdornment: <InputAdornment position="end">mi</InputAdornment> }}/>
+                                  </Grid>
+                                  <Grid
+                                      size={{
+                                          xs: 12,
+                                          sm: 6
+                                      }}>
+                                      <TextField fullWidth size="small" label="Galones *" name="galones" type="number" value={manualForm.galones} onChange={handleManualFormChange} InputLabelProps={{ shrink: true }} InputProps={{ endAdornment: <InputAdornment position="end">gal</InputAdornment> }}/>
+                                  </Grid>
+                                  <Grid size={12}>
+                                      <TextField fullWidth size="small" label="Monto Total *" name="monto" type="number" value={manualForm.monto} onChange={handleManualFormChange} InputLabelProps={{ shrink: true }} InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }}/>
+                                  </Grid>
+                                  <Grid
+                                      size={{
+                                          xs: 12,
+                                          sm: 6
+                                      }}>
+                                      <TextField fullWidth size="small" label="Estado (State)" name="estado" value={manualForm.estado} onChange={handleManualFormChange} placeholder="Ej. TX" InputLabelProps={{ shrink: true }}/>
+                                  </Grid>
+                                  <Grid
+                                      size={{
+                                          xs: 12,
+                                          sm: 6
+                                      }}>
+                                      <TextField fullWidth size="small" label="Fleet One" name="fleetone" type="number" value={manualForm.fleetone} onChange={handleManualFormChange} InputLabelProps={{ shrink: true }} InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }}/>
+                                  </Grid>
+                                  <Grid size={12}>
+                                      <TextField fullWidth size="small" label="Periodo" name="periodo" value={manualForm.periodo} onChange={handleManualFormChange} placeholder="Ej. Q2" InputLabelProps={{ shrink: true }}/>
+                                  </Grid>
+                              </Grid>
+                          </Paper>
+                      </Grid>
+
+                      {/* Columna Derecha: Carga de Archivos */}
+                      <Grid
+                          size={{
+                              xs: 12,
+                              md: 6
+                          }}>
+                          <Paper elevation={0} sx={{ p: 3, borderRadius: 2, border: '1px solid #e0e0e0', height: '100%' }}>
+                              <Typography variant="subtitle1" fontWeight={700} mb={2} color="primary">Evidencia (Tickets)</Typography>
+                              
+                              <Box sx={{ 
+                                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                                  width: '100%', border: '2px dashed #90caf9', bgcolor: '#e3f2fd', 
+                                  py: 4, px: 2, textAlign: 'center', borderRadius: 2,
+                                  cursor: 'pointer', transition: '0.2s', '&:hover': { bgcolor: '#e1f5fe', borderColor: '#42a5f5' }
+                              }} component="label">
+                                  <CloudUploadIcon sx={{ fontSize: 40, color: '#1976d2', mb: 1 }} />
+                                  <Typography variant="button" fontWeight={700} color="primary" sx={{ display: 'block' }}>
+                                      Seleccionar Tickets (PDF/IMG)
                                   </Typography>
-                                  <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 1 }}>
-                                      {manualFiles.map((file, index) => (
-                                          <Chip 
-                                              key={index} 
-                                              icon={<InsertDriveFileIcon />} 
-                                              label={file.name} 
-                                              onDelete={() => removeManualFile(index)} 
-                                              color="primary" 
-                                              variant="outlined" 
-                                              size="small"
-                                              sx={{ fontWeight: 600 }}
-                                          />
-                                      ))}
-                                  </Stack>
+                                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                                      Puedes subir múltiples archivos
+                                  </Typography>
+                                  <input type="file" hidden multiple accept=".pdf,.jpg,.jpeg,.png" onChange={handleManualFileChange} />
                               </Box>
-                          )}
-                      </Paper>
-                  </Grid>
 
-              </Grid>
-          </DialogContent>
-          <DialogActions sx={{ p: 3, bgcolor: '#f8f9fa', borderTop: '1px solid #e0e0e0' }}>
-              <Button onClick={handleCloseModal} color="inherit" sx={{ fontWeight: 600 }}>Cancelar</Button>
-              <Button onClick={handleSaveManual} variant="contained" disableElevation sx={{ bgcolor: '#0f172a', fontWeight: 700, px: 4, borderRadius: 2 }}>
-                  Guardar Registro
-              </Button>
-          </DialogActions>
-      </Dialog>
-    </Box>
+                              {manualFiles.length > 0 && (
+                                  <Box sx={{ mt: 3 }}>
+                                      <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+                                          Archivos adjuntos ({manualFiles.length}):
+                                      </Typography>
+                                      <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 1 }}>
+                                          {manualFiles.map((file, index) => (
+                                              <Chip 
+                                                  key={index} 
+                                                  icon={<InsertDriveFileIcon />} 
+                                                  label={file.name} 
+                                                  onDelete={() => removeManualFile(index)} 
+                                                  color="primary" 
+                                                  variant="outlined" 
+                                                  size="small"
+                                                  sx={{ fontWeight: 600 }}
+                                              />
+                                          ))}
+                                      </Stack>
+                                  </Box>
+                              )}
+                          </Paper>
+                      </Grid>
+
+                  </Grid>
+              </DialogContent>
+              <DialogActions sx={{ p: 3, bgcolor: '#f8f9fa', borderTop: '1px solid #e0e0e0' }}>
+                  <Button onClick={handleCloseModal} color="inherit" sx={{ fontWeight: 600 }}>Cancelar</Button>
+                  <Button onClick={handleSaveManual} variant="contained" disableElevation sx={{ bgcolor: '#0f172a', fontWeight: 700, px: 4, borderRadius: 2 }}>
+                      Guardar Registro
+                  </Button>
+              </DialogActions>
+          </Dialog>
+      </Box>
   );
 };
 

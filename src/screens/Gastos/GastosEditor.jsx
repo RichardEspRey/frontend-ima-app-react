@@ -220,14 +220,18 @@ const GastoEditor = () => {
       </Stack>
 
       <Grid container spacing={3}>
-        <Grid item xs={12} md={6}>
+        <Grid
+          size={{
+            xs: 12,
+            md: 6
+          }}>
             <Paper elevation={1} sx={{ p: 3, border: '1px solid #ccc' }}>
                 <Typography variant="h6" fontWeight={600} gutterBottom sx={{ borderBottom: '1px solid #eee', pb: 1, mb: 3 }}>
                     Detalles del Gasto
                 </Typography>
 
                 <Grid container spacing={2}>
-                    <Grid item xs={12}>
+                    <Grid size={12}>
                         <TextField 
                             label="Trip Number" 
                             value={formData.trip_number} 
@@ -236,7 +240,7 @@ const GastoEditor = () => {
                             variant="filled" 
                         />
                     </Grid>
-                    <Grid item xs={12}>
+                    <Grid size={12}>
                         <TextField 
                             label="Driver" 
                             value={formData.nombre} 
@@ -246,7 +250,7 @@ const GastoEditor = () => {
                         />
                     </Grid>
                     
-                    <Grid item xs={12}>
+                    <Grid size={12}>
                         <TextField
                             label="Expense Type"
                             value={formData.tipo_gasto}
@@ -256,7 +260,7 @@ const GastoEditor = () => {
                         />
                     </Grid>
                     
-                    <Grid item xs={12}>
+                    <Grid size={12}>
                         <TextField 
                             label="Total Cost" 
                             type="number" 
@@ -270,7 +274,11 @@ const GastoEditor = () => {
             </Paper>
         </Grid>
 
-        <Grid item xs={12} md={6}>
+        <Grid
+          size={{
+            xs: 12,
+            md: 6
+          }}>
             <Paper elevation={1} sx={{ p: 3, border: '1px solid #ccc', height: '100%' }}>
                 <Typography variant="h6" fontWeight={600} gutterBottom sx={{ borderBottom: '1px solid #eee', pb: 1, mb: 3 }}>
                     Tickets & Evidencia

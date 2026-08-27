@@ -231,94 +231,118 @@ const DieselEditor = () => {
   }
 
   return (
-    <Box sx={{ p: 3 }}>
-      {/* Header */}
-      <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
-          <Typography variant="h4" component="h1" fontWeight={700}>Diesel Log Editor</Typography>
-          <Stack direction="row" spacing={2}>
-             <Button variant="outlined" color="inherit" startIcon={<ArrowBackIcon />} onClick={cancelar}>Cancel</Button>
-             <Button variant="contained" color="error" startIcon={<DeleteIcon />} onClick={eliminar}>Delete</Button>
-             <Button variant="contained" color="primary" startIcon={<SaveIcon />} onClick={actualizar}>Save Changes</Button>
+      <Box sx={{ p: 3 }}>
+          {/* Header */}
+          <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
+              <Typography variant="h4" component="h1" fontWeight={700}>Diesel Log Editor</Typography>
+              <Stack direction="row" spacing={2}>
+                 <Button variant="outlined" color="inherit" startIcon={<ArrowBackIcon />} onClick={cancelar}>Cancel</Button>
+                 <Button variant="contained" color="error" startIcon={<DeleteIcon />} onClick={eliminar}>Delete</Button>
+                 <Button variant="contained" color="primary" startIcon={<SaveIcon />} onClick={actualizar}>Save Changes</Button>
+              </Stack>
           </Stack>
-      </Stack>
 
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={6}>
-            <Paper elevation={1} sx={{ p: 3, border: '1px solid #ccc' }}>
-                <Typography variant="h6" fontWeight={600} gutterBottom sx={{ borderBottom: '1px solid #eee', pb: 1, mb: 3 }}>
-                    Detalles del Registro
-                </Typography>
+          <Grid container spacing={3}>
+            <Grid
+                size={{
+                    xs: 12,
+                    md: 6
+                }}>
+                <Paper elevation={1} sx={{ p: 3, border: '1px solid #ccc' }}>
+                    <Typography variant="h6" fontWeight={600} gutterBottom sx={{ borderBottom: '1px solid #eee', pb: 1, mb: 3 }}>
+                        Detalles del Registro
+                    </Typography>
 
-                <Grid container spacing={2}>
-                    <Grid item xs={12}><TextField label="Trip Number" value={formData.trip_number} fullWidth size="small" disabled variant="filled" /></Grid>
-                    <Grid item xs={12}><TextField label="Driver" value={formData.nombre} fullWidth size="small" disabled variant="filled" /></Grid>
-                    
-                    <Grid item xs={12} sm={6}>
-                        <TextField
-                            label="State"
-                            value={formData.estado}
-                            onChange={(e) => handleInputChange('estado', e.target.value)}
-                            fullWidth size="small"
-                            placeholder="e.g. TX, NM"
-                        />
+                    <Grid container spacing={2}>
+                        <Grid size={12}><TextField label="Trip Number" value={formData.trip_number} fullWidth size="small" disabled variant="filled" /></Grid>
+                        <Grid size={12}><TextField label="Driver" value={formData.nombre} fullWidth size="small" disabled variant="filled" /></Grid>
+                        
+                        <Grid
+                            size={{
+                                xs: 12,
+                                sm: 6
+                            }}>
+                            <TextField
+                                label="State"
+                                value={formData.estado}
+                                onChange={(e) => handleInputChange('estado', e.target.value)}
+                                fullWidth size="small"
+                                placeholder="e.g. TX, NM"
+                            />
+                        </Grid>
+                         <Grid
+                             size={{
+                                 xs: 12,
+                                 sm: 6
+                             }}>
+                            <TextField
+                                label="Fleet One ($)"
+                                value={formData.fleetone}
+                                onChange={(e) => handleInputChange('fleetone', e.target.value)}
+                                fullWidth size="small"
+                                type="number"
+                                placeholder="0.00"
+                            />
+                        </Grid>
+                        
+                        <Grid
+                            size={{
+                                xs: 12,
+                                sm: 6
+                            }}><TextField label="Odometer" type="number" value={formData.odometro} onChange={(e) => handleInputChange('odometro', e.target.value)} fullWidth size="small" InputProps={{ endAdornment: <InputAdornment position="end">mi</InputAdornment> }} /></Grid>
+                        <Grid
+                            size={{
+                                xs: 12,
+                                sm: 6
+                            }}><TextField label="Gallons" type="number" value={formData.galones} onChange={(e) => handleInputChange('galones', e.target.value)} fullWidth size="small" InputProps={{ endAdornment: <InputAdornment position="end">gal</InputAdornment> }} /></Grid>
+                        <Grid size={12}><TextField label="Total Cost" type="number" value={formData.monto} onChange={(e) => handleInputChange('monto', e.target.value)} fullWidth size="small" InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }} /></Grid>
+                        <Grid size={12}><TextField label="Periodo" value={formData.periodo} onChange={(e) => handleInputChange('periodo', e.target.value)} fullWidth size="small" placeholder="Ej. Q1, Q2..." /></Grid>
                     </Grid>
-                     <Grid item xs={12} sm={6}>
-                        <TextField
-                            label="Fleet One ($)"
-                            value={formData.fleetone}
-                            onChange={(e) => handleInputChange('fleetone', e.target.value)}
-                            fullWidth size="small"
-                            type="number"
-                            placeholder="0.00"
-                        />
-                    </Grid>
-                    
-                    <Grid item xs={12} sm={6}><TextField label="Odometer" type="number" value={formData.odometro} onChange={(e) => handleInputChange('odometro', e.target.value)} fullWidth size="small" InputProps={{ endAdornment: <InputAdornment position="end">mi</InputAdornment> }} /></Grid>
-                    <Grid item xs={12} sm={6}><TextField label="Gallons" type="number" value={formData.galones} onChange={(e) => handleInputChange('galones', e.target.value)} fullWidth size="small" InputProps={{ endAdornment: <InputAdornment position="end">gal</InputAdornment> }} /></Grid>
-                    <Grid item xs={12}><TextField label="Total Cost" type="number" value={formData.monto} onChange={(e) => handleInputChange('monto', e.target.value)} fullWidth size="small" InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }} /></Grid>
-                    <Grid item xs={12}><TextField label="Periodo" value={formData.periodo} onChange={(e) => handleInputChange('periodo', e.target.value)} fullWidth size="small" placeholder="Ej. Q1, Q2..." /></Grid>
-                </Grid>
-            </Paper>
-        </Grid>
-        <Grid item xs={12} md={6}>
-            <Paper elevation={1} sx={{ p: 3, border: '1px solid #ccc', height: '100%' }}>
-                <Typography variant="h6" fontWeight={600} gutterBottom sx={{ borderBottom: '1px solid #eee', pb: 1, mb: 3 }}>
-                    Tickets & Evidencia
-                </Typography>
+                </Paper>
+            </Grid>
+            <Grid
+                size={{
+                    xs: 12,
+                    md: 6
+                }}>
+                <Paper elevation={1} sx={{ p: 3, border: '1px solid #ccc', height: '100%' }}>
+                    <Typography variant="h6" fontWeight={600} gutterBottom sx={{ borderBottom: '1px solid #eee', pb: 1, mb: 3 }}>
+                        Tickets & Evidencia
+                    </Typography>
 
-                <PhotoProvider>
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-                        {tickets.length === 0 ? (
-                            <Typography color="text.secondary" sx={{ fontStyle: 'italic' }}>No hay documentos adjuntos.</Typography>
-                        ) : (
-                            tickets.map((item) => {
-                                const isImage = ['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(item.ext);
-                                if (isImage) {
-                                    return (
-                                        <PhotoView key={item.id} src={item.url}>
-                                            <Card sx={{ width: 120, cursor: 'zoom-in' }}>
-                                                <CardMedia component="img" height="120" image={item.url} alt={`ticket ${item.id}`} sx={{ objectFit: 'cover' }} />
+                    <PhotoProvider>
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+                            {tickets.length === 0 ? (
+                                <Typography color="text.secondary" sx={{ fontStyle: 'italic' }}>No hay documentos adjuntos.</Typography>
+                            ) : (
+                                tickets.map((item) => {
+                                    const isImage = ['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(item.ext);
+                                    if (isImage) {
+                                        return (
+                                            <PhotoView key={item.id} src={item.url}>
+                                                <Card sx={{ width: 120, cursor: 'zoom-in' }}>
+                                                    <CardMedia component="img" height="120" image={item.url} alt={`ticket ${item.id}`} sx={{ objectFit: 'cover' }} />
+                                                </Card>
+                                            </PhotoView>
+                                        );
+                                    } else {
+                                        return (
+                                            <Card key={item.id} sx={{ width: 120, height: 120, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#f5f5f5' }} variant="outlined">
+                                                <Button href={item.url} target="_blank" rel="noreferrer" sx={{ display: 'flex', flexDirection: 'column', textTransform: 'none', height: '100%', width: '100%' }}>
+                                                    <PictureAsPdfIcon sx={{ fontSize: 40, color: '#d32f2f', mb: 1 }} />
+                                                    <Typography variant="caption" align="center" sx={{ lineHeight: 1.2 }}>Ver Archivo</Typography>
+                                                </Button>
                                             </Card>
-                                        </PhotoView>
-                                    );
-                                } else {
-                                    return (
-                                        <Card key={item.id} sx={{ width: 120, height: 120, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#f5f5f5' }} variant="outlined">
-                                            <Button href={item.url} target="_blank" rel="noreferrer" sx={{ display: 'flex', flexDirection: 'column', textTransform: 'none', height: '100%', width: '100%' }}>
-                                                <PictureAsPdfIcon sx={{ fontSize: 40, color: '#d32f2f', mb: 1 }} />
-                                                <Typography variant="caption" align="center" sx={{ lineHeight: 1.2 }}>Ver Archivo</Typography>
-                                            </Button>
-                                        </Card>
-                                    );
-                                }
-                            })
-                        )}
-                    </Box>
-                </PhotoProvider>
-            </Paper>
-        </Grid>
-      </Grid>
-    </Box>
+                                        );
+                                    }
+                                })
+                            )}
+                        </Box>
+                    </PhotoProvider>
+                </Paper>
+            </Grid>
+          </Grid>
+      </Box>
   );
 };
 

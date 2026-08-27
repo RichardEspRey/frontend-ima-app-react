@@ -24,42 +24,34 @@ import { ExpenseTypeChart } from '../../components/Gastos/ExpenseTypeChart';
 import useFetchExchangeRate from '../../hooks/useFetchExchangeRate';
 import { ordenarGastos, siguienteOrden } from '../../utils/ordenarGastos';
 import { useGastosFiltrosStore } from '../../store/useGastosFiltrosStore';
+import { SECTION_LABEL_SX, HEADER_ROW_SX, HEADER_CELL_SX, DARK_BTN_SX } from './estilosGastos';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
-const HEADER_ROW_SX = { bgcolor: '#fafbfc', borderBottom: '1px solid #e2e8f0' };
-const HEADER_CELL_SX = {
-  fontWeight: 700, color: '#94a3b8', fontSize: '0.7rem',
-  textTransform: 'uppercase', letterSpacing: '0.06em', borderBottom: 'none',
-};
-const SECTION_LABEL_SX = {
-  color: '#94a3b8', fontWeight: 700, letterSpacing: '0.08em', fontSize: '0.68rem',
-};
-const DARK_BTN_SX = {
-  bgcolor: '#0f172a', fontWeight: 700, borderRadius: 2, px: 3, py: 1.1,
-  textTransform: 'none', boxShadow: 'none', transition: 'all 0.15s',
-  '&:hover': { bgcolor: '#1e293b', boxShadow: '0 6px 16px rgba(15,23,42,0.22)' },
-};
-
-
-const ETIQUETA_SIGUIENTE = { asc: 'descendente', desc: 'quitar orden' };
+const TOOLTIP_SIGUIENTE = { asc: 'Ordenar descendente', desc: 'Quitar orden' };
 
 const CeldaOrdenable = ({ campo, label, orden, onOrdenar, align = 'left' }) => {
   const activa = orden.campo === campo;
-  const siguiente = activa ? ETIQUETA_SIGUIENTE[orden.dir] : 'ascendente';
+  const siguiente = activa ? TOOLTIP_SIGUIENTE[orden.dir] : 'Ordenar ascendente';
   return (
     <TableCell
       sx={{ ...HEADER_CELL_SX, textAlign: align }}
       sortDirection={activa ? orden.dir : false}
     >
-      <Tooltip title={`Ordenar ${siguiente}`} enterDelay={600}>
+      <Tooltip title={siguiente} enterDelay={600}>
         <TableSortLabel
           active={activa}
           direction={activa ? orden.dir : 'asc'}
           onClick={() => onOrdenar(campo)}
           sx={{
             color: 'inherit !important',
-            '& .MuiTableSortLabel-icon': { color: '#64748b !important' },
+            '& .MuiTableSortLabel-icon': {
+              color: '#64748b !important',
+              width: 0,
+              mx: 0,
+              overflow: 'hidden',
+            },
+            '&.Mui-active .MuiTableSortLabel-icon': { width: 18, ml: '4px' },
           }}
         >
           {label}
@@ -183,10 +175,10 @@ const AdminGastos = () => {
   const slice = rowsPerPage === -1 ? ordenados : ordenados.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   useEffect(() => {
-    if (rowsPerPage === -1) return;
+    if (loading || rowsPerPage === -1) return;
     const ultimaPagina = Math.max(0, Math.ceil(ordenados.length / rowsPerPage) - 1);
     if (page > ultimaPagina) setEstado({ page: ultimaPagina });
-  }, [ordenados.length, rowsPerPage, page, setEstado]);
+  }, [loading, ordenados.length, rowsPerPage, page, setEstado]);
 
   const handleOrdenar = (campo) => {
     setEstado({ orden: siguienteOrden(orden, campo), page: 0 });
@@ -316,14 +308,24 @@ const AdminGastos = () => {
             <Box>
               <Typography variant="overline" sx={SECTION_LABEL_SX}>Búsqueda</Typography>
               <Grid container spacing={2} sx={{ mt: 0.25 }}>
-                <Grid item xs={12} sm={6} md={4}>
+                <Grid
+                  size={{
+                    xs: 12,
+                    sm: 6,
+                    md: 4
+                  }}>
                   <TextField
                     label="Buscar" placeholder="ID, país, moneda…" size="small" fullWidth
                     value={search} onChange={(e) => handleFilterChange('search', e.target.value)}
                     InputProps={{ startAdornment: <InputAdornment position="start"><SearchIcon sx={{ fontSize: 18, color: '#94a3b8' }} /></InputAdornment> }}
                   />
                 </Grid>
-                <Grid item xs={12} sm={6} md={4}>
+                <Grid
+                  size={{
+                    xs: 12,
+                    sm: 6,
+                    md: 4
+                  }}>
                   <FormControl size="small" fullWidth>
                     <InputLabel>País</InputLabel>
                     <Select
@@ -343,7 +345,12 @@ const AdminGastos = () => {
             <Box>
               <Typography variant="overline" sx={SECTION_LABEL_SX}>Clasificación</Typography>
               <Grid container spacing={2} sx={{ mt: 0.25 }}>
-                <Grid item xs={12} sm={6} md={4}>
+                <Grid
+                  size={{
+                    xs: 12,
+                    sm: 6,
+                    md: 4
+                  }}>
                   <FormControl size="small" fullWidth>
                     <InputLabel>Tipo de Gasto</InputLabel>
                     <Select
@@ -355,7 +362,12 @@ const AdminGastos = () => {
                     </Select>
                   </FormControl>
                 </Grid>
-                <Grid item xs={12} sm={6} md={4}>
+                <Grid
+                  size={{
+                    xs: 12,
+                    sm: 6,
+                    md: 4
+                  }}>
                   <FormControl size="small" fullWidth>
                     <InputLabel>Categoría</InputLabel>
                     <Select
@@ -375,14 +387,24 @@ const AdminGastos = () => {
             <Box>
               <Typography variant="overline" sx={SECTION_LABEL_SX}>Periodo</Typography>
               <Grid container spacing={2} sx={{ mt: 0.25 }}>
-                <Grid item xs={12} sm={6} md={3}>
+                <Grid
+                  size={{
+                    xs: 12,
+                    sm: 6,
+                    md: 3
+                  }}>
                   <TextField
                     label="Fecha Inicio" type="date" size="small" fullWidth
                     value={startDate} onChange={(e) => handleFilterChange('startDate', e.target.value)}
                     InputLabelProps={{ shrink: true }}
                   />
                 </Grid>
-                <Grid item xs={12} sm={6} md={3}>
+                <Grid
+                  size={{
+                    xs: 12,
+                    sm: 6,
+                    md: 3
+                  }}>
                   <TextField
                     label="Fecha Fin" type="date" size="small" fullWidth
                     value={endDate} onChange={(e) => handleFilterChange('endDate', e.target.value)}
@@ -440,7 +462,7 @@ const AdminGastos = () => {
           </TableBody>
         </Table>
       </TableContainer>
-      
+
       <Box sx={{ bgcolor: 'white', border: '1px solid #e2e8f0', borderTop: 'none', borderBottomLeftRadius: 8, borderBottomRightRadius: 8 }}>
           <TablePagination
             rowsPerPageOptions={[20, 40, 60, { label: 'All', value: -1 }]} 
