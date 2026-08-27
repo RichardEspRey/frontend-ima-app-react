@@ -37,6 +37,7 @@ import Swal from 'sweetalert2';
 
 import { TripRow } from '../../components/TripRow';
 import { useAuthStore } from '../../store/useAuthStore';
+import { useViajesFiltrosStore } from '../../store/useViajesFiltrosStore';
 import ModalCajaExterna from '../../components/ModalCajaExterna';
 import RoadRepairModal from '../../components/RoadRepairModal';
 import InspectionModal from '../../components/InspectionModal';
@@ -139,21 +140,12 @@ const TripAdmin = () => {
         return TABS_CONFIG.filter(tab => userPermissions[tab.permission] === true);
     }, [userPermissions]);
 
-    const [tabValue, setTabValue] = useState(1);
-    const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(25);
-    const [showFilters, setShowFilters] = useState(false);
-
-    // Filtros de búsqueda
-    const [filterTrip, setFilterTrip] = useState('');
-    const [filterDriver, setFilterDriver] = useState('');
-    const [filterTruck, setFilterTruck] = useState('');
-    const [filterTrailer, setFilterTrailer] = useState('');
-    const [filterCompany, setFilterCompany] = useState('');
-    const [filterOrigin, setFilterOrigin] = useState('');
-    const [filterDestination, setFilterDestination] = useState('');
-    const [filterDirection, setFilterDirection] = useState('All');
-    const [filterCI, setFilterCI] = useState('');
+    const {
+        tabValue, page, rowsPerPage, showFilters,
+        filterTrip, filterDriver, filterTruck, filterTrailer, filterCompany,
+        filterOrigin, filterDestination, filterDirection, filterCI,
+        set: setEstado, setFiltro, limpiarFiltros,
+    } = useViajesFiltrosStore();
 
     const activeFilterCount = useMemo(() => {
         return [filterTrip, filterDriver, filterTruck, filterTrailer, filterCompany, filterOrigin, filterDestination, filterCI]
@@ -203,9 +195,9 @@ const TripAdmin = () => {
 
     useEffect(() => {
         if (allowedTabs.length > 0 && !allowedTabs.some(t => t.id === tabValue)) {
-            setTabValue(allowedTabs[0].id);
+            setEstado({ tabValue: allowedTabs[0].id });
         }
-    }, [allowedTabs, tabValue]);
+    }, [allowedTabs, tabValue, setEstado]);
 
     const fetchTrips = useCallback(async () => {
         setLoading(true);
@@ -341,8 +333,8 @@ const TripAdmin = () => {
         }
     };
 
-    const handleTabChange = (event, newValue) => { setTabValue(newValue); setPage(0); };
-    const handleFilterChange = (setter, value) => { setter(value); setPage(0); };
+    const handleTabChange = (event, newValue) => setEstado({ tabValue: newValue, page: 0 });
+    const handleFilterChange = (campo, value) => setFiltro({ [campo]: value });
 
     const handleEditTrip = (tripId) => navigate(tabValue === 0 ? `/edit-trip-upcoming/${tripId}` : `/edit-trip/${tripId}`);
     const handleSummary = (tripId) => navigate(`/ResumenTrip/${tripId}`);
@@ -869,7 +861,7 @@ const TripAdmin = () => {
                         <Button
                             variant="outlined"
                             startIcon={<FilterListIcon />}
-                            onClick={() => setShowFilters(p => !p)}
+                            onClick={() => setEstado({ showFilters: !showFilters })}
                             sx={{
                                 bgcolor: 'white', borderColor: activeFilterCount > 0 ? '#0f172a' : '#cbd5e1',
                                 color: '#334155', fontWeight: 600, textTransform: 'none', borderRadius: 2,
@@ -897,19 +889,19 @@ const TripAdmin = () => {
                             </Typography>
                             <Grid container spacing={2} sx={{ mt: 0.25 }}>
                                 <Grid item xs={12} sm={6} md={3}>
-                                    <TextField label="Trip Number" size="small" fullWidth value={filterTrip} onChange={(e) => handleFilterChange(setFilterTrip, e.target.value)}
+                                    <TextField label="Trip Number" size="small" fullWidth value={filterTrip} onChange={(e) => handleFilterChange('filterTrip', e.target.value)}
                                         InputProps={{ startAdornment: <InputAdornment position="start"><ConfirmationNumberOutlinedIcon sx={{ fontSize: 18, color: '#94a3b8' }} /></InputAdornment> }} />
                                 </Grid>
                                 <Grid item xs={12} sm={6} md={3}>
-                                    <TextField label="Driver" size="small" fullWidth value={filterDriver} onChange={(e) => handleFilterChange(setFilterDriver, e.target.value)}
+                                    <TextField label="Driver" size="small" fullWidth value={filterDriver} onChange={(e) => handleFilterChange('filterDriver', e.target.value)}
                                         InputProps={{ startAdornment: <InputAdornment position="start"><PersonOutlineIcon sx={{ fontSize: 18, color: '#94a3b8' }} /></InputAdornment> }} />
                                 </Grid>
                                 <Grid item xs={12} sm={6} md={3}>
-                                    <TextField label="Truck" size="small" fullWidth value={filterTruck} onChange={(e) => handleFilterChange(setFilterTruck, e.target.value)}
+                                    <TextField label="Truck" size="small" fullWidth value={filterTruck} onChange={(e) => handleFilterChange('filterTruck', e.target.value)}
                                         InputProps={{ startAdornment: <InputAdornment position="start"><LocalShippingOutlinedIcon sx={{ fontSize: 18, color: '#94a3b8' }} /></InputAdornment> }} />
                                 </Grid>
                                 <Grid item xs={12} sm={6} md={3}>
-                                    <TextField label="Trailer" size="small" fullWidth value={filterTrailer} onChange={(e) => handleFilterChange(setFilterTrailer, e.target.value)}
+                                    <TextField label="Trailer" size="small" fullWidth value={filterTrailer} onChange={(e) => handleFilterChange('filterTrailer', e.target.value)}
                                         InputProps={{ startAdornment: <InputAdornment position="start"><Inventory2OutlinedIcon sx={{ fontSize: 18, color: '#94a3b8' }} /></InputAdornment> }} />
                                 </Grid>
                             </Grid>
@@ -923,15 +915,15 @@ const TripAdmin = () => {
                             </Typography>
                             <Grid container spacing={2} sx={{ mt: 0.25 }}>
                                 <Grid item xs={12} sm={6} md={4}>
-                                    <TextField label="Origin" size="small" fullWidth value={filterOrigin} onChange={(e) => handleFilterChange(setFilterOrigin, e.target.value)}
+                                    <TextField label="Origin" size="small" fullWidth value={filterOrigin} onChange={(e) => handleFilterChange('filterOrigin', e.target.value)}
                                         InputProps={{ startAdornment: <InputAdornment position="start"><TripOriginIcon sx={{ fontSize: 16, color: '#94a3b8' }} /></InputAdornment> }} />
                                 </Grid>
                                 <Grid item xs={12} sm={6} md={4}>
-                                    <TextField label="Destination" size="small" fullWidth value={filterDestination} onChange={(e) => handleFilterChange(setFilterDestination, e.target.value)}
+                                    <TextField label="Destination" size="small" fullWidth value={filterDestination} onChange={(e) => handleFilterChange('filterDestination', e.target.value)}
                                         InputProps={{ startAdornment: <InputAdornment position="start"><PlaceOutlinedIcon sx={{ fontSize: 18, color: '#94a3b8' }} /></InputAdornment> }} />
                                 </Grid>
                                 <Grid item xs={12} sm={6} md={4}>
-                                    <TextField select label="Direction" size="small" fullWidth value={filterDirection} onChange={(e) => handleFilterChange(setFilterDirection, e.target.value)}
+                                    <TextField select label="Direction" size="small" fullWidth value={filterDirection} onChange={(e) => handleFilterChange('filterDirection', e.target.value)}
                                         InputProps={{ startAdornment: <InputAdornment position="start"><SwapHorizIcon sx={{ fontSize: 18, color: '#94a3b8' }} /></InputAdornment> }}>
                                         {DIRECTION_OPTIONS.map((option) => (<MenuItem key={option.value} value={option.value}>{option.label}</MenuItem>))}
                                     </TextField>
@@ -947,12 +939,12 @@ const TripAdmin = () => {
                             </Typography>
                             <Grid container spacing={2} sx={{ mt: 0.25 }}>
                                 <Grid item xs={12} sm={6} md={4}>
-                                    <TextField label="Company" size="small" fullWidth value={filterCompany} onChange={(e) => handleFilterChange(setFilterCompany, e.target.value)}
+                                    <TextField label="Company" size="small" fullWidth value={filterCompany} onChange={(e) => handleFilterChange('filterCompany', e.target.value)}
                                         InputProps={{ startAdornment: <InputAdornment position="start"><ApartmentOutlinedIcon sx={{ fontSize: 18, color: '#94a3b8' }} /></InputAdornment> }} />
                                 </Grid>
                                 {canManageInvoice && (
                                     <Grid item xs={12} sm={6} md={4}>
-                                        <TextField label="CI" size="small" fullWidth value={filterCI} onChange={(e) => handleFilterChange(setFilterCI, e.target.value)}
+                                        <TextField label="CI" size="small" fullWidth value={filterCI} onChange={(e) => handleFilterChange('filterCI', e.target.value)}
                                             InputProps={{ startAdornment: <InputAdornment position="start"><BadgeOutlinedIcon sx={{ fontSize: 18, color: '#94a3b8' }} /></InputAdornment> }} />
                                     </Grid>
                                 )}
@@ -965,9 +957,7 @@ const TripAdmin = () => {
                                 disabled={activeFilterCount === 0}
                                 sx={{ textTransform: 'none', fontWeight: 600, color: '#64748b' }}
                                 onClick={() => {
-                                    setFilterTrip(''); setFilterDriver(''); setFilterTruck(''); setFilterTrailer('');
-                                    setFilterCompany(''); setFilterOrigin(''); setFilterDestination(''); setFilterDirection('All'); setFilterCI('');
-                                    setPage(0);
+                                    limpiarFiltros();
                                 }}
                             >
                                 Limpiar Filtros
@@ -1050,8 +1040,8 @@ const TripAdmin = () => {
                     <Box sx={{ bgcolor: 'white', border: '1px solid #e2e8f0', borderTop: 'none', borderBottomLeftRadius: 8, borderBottomRightRadius: 8 }}>
                         <TablePagination
                             rowsPerPageOptions={[25, 50, 100]} component="div" count={totalRows} rowsPerPage={rowsPerPage} page={page}
-                            onPageChange={(e, newPage) => setPage(newPage)}
-                            onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }}
+                            onPageChange={(e, newPage) => setEstado({ page: newPage })}
+                            onRowsPerPageChange={(e) => setEstado({ rowsPerPage: parseInt(e.target.value, 10), page: 0 })}
                             sx={{ color: '#475569', '.MuiTablePagination-selectLabel, .MuiTablePagination-displayedRows': { fontSize: '0.8rem' } }}
                         />
                     </Box>
