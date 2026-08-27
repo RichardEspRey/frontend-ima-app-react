@@ -4,7 +4,19 @@ import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 
 export default [
-  { ignores: ['dist'] },
+  { ignores: ['dist', 'release', 'build'] },
+  // Los archivos de test corren en Vitest, no en el navegador: usan `global`,
+  // `describe`, `it`, `expect`, `vi`... que no existen en globals.browser.
+  {
+    files: [
+      '**/*.{test,spec}.{js,jsx}',
+      'src/test/**/*.{js,jsx}',
+      '**/__tests__/**/*.{js,jsx}',
+    ],
+    languageOptions: {
+      globals: { ...globals.browser, ...globals.node, ...globals.vitest },
+    },
+  },
   {
     files: ['**/*.{js,jsx}'],
     languageOptions: {
