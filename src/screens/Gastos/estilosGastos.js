@@ -70,3 +70,6 @@ export const DATEPICKER_CSS = `
 
 export const money = (v) =>
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(Number(v || 0));
+
+export const moneyMXN = (v) =>
+  new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(Number(v || 0));

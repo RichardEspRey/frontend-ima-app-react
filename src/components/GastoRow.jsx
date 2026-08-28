@@ -10,22 +10,7 @@ import InsertDriveFileOutlinedIcon from '@mui/icons-material/InsertDriveFileOutl
 import { PhotoProvider, PhotoView } from 'react-photo-view';
 import 'react-photo-view/dist/react-photo-view.css';
 import { esGastoMXN, totalUSD, totalMXN, tipoGastoPrincipal } from '../utils/gastosValores';
-
-const money = (v) => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    currencyDisplay: 'symbol'
-  }).format(Number(v || 0));
-};
-
-const moneyMXN = (v) => {
-  return new Intl.NumberFormat('es-MX', {
-    style: 'currency',
-    currency: 'MXN',
-    currencyDisplay: 'symbol'
-  }).format(Number(v || 0));
-};
+import { money, moneyMXN } from '../screens/Gastos/estilosGastos';
 
 const isImageUrl = (url = '') => /\.(png|jpe?g|gif|webp|bmp|tiff?)$/i.test(url);
 const fileName = (path = '') => path.split('/').pop() || '';

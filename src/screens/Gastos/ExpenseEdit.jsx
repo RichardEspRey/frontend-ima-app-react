@@ -152,13 +152,18 @@ const ExpenseEdit = () => {
 
   const esMXN = country?.value === 'MX';
 
+  const tasaValida = parseFloat(exchangeRate) > 0;
+  const faltaTasa = esMXN && !tasaValida;
+  const fechaISO = expenseDate instanceof Date && !isNaN(expenseDate)
+    ? `${expenseDate.getFullYear()}-${String(expenseDate.getMonth() + 1).padStart(2, '0')}-${String(expenseDate.getDate()).padStart(2, '0')}`
+    : null;
+  const traerTasaDelGasto = () => fetchExchangeRate(fechaISO);
+
   const handleCountryChange = (opt) => {
     setCountry(opt);
-    if (opt?.value === 'MX' && !exchangeRate) fetchExchangeRate();
+    if (opt?.value === 'MX' && !(parseFloat(exchangeRate) > 0)) fetchExchangeRate(fechaISO);
   };
 
-  // Sin monto original, o sin tasa en México, no se recalcula: los gastos
-  // antiguos que no guardaron esos campos quedarían en 0.00.
   useEffect(() => {
     const amount = parseFloat(originalAmount);
     if (!amount) return;
@@ -178,6 +183,13 @@ const ExpenseEdit = () => {
   }, 0), [expenseDetails]);
 
   const handleSubmit = async () => {
+      if (faltaTasa) {
+        return Swal.fire(
+          'Falta el tipo de cambio',
+          'Un gasto en pesos necesita un tipo de cambio mayor a cero: sin él, el Total (USD) se queda con el monto en pesos.',
+          'warning',
+        );
+      }
       setSaving(true);
       try {
         const fd = new FormData();
@@ -341,7 +353,22 @@ const ExpenseEdit = () => {
                   <TextField
                     fullWidth size="small" type="number" value={exchangeRate}
                     onChange={e => setExchangeRate(e.target.value)}
-                    InputProps={{ sx: { borderRadius: 2 } }}
+                    error={faltaTasa}
+                    helperText={faltaTasa ? 'Requerido para convertir a dólares' : ''}
+                    InputProps={{
+                      sx: { borderRadius: 2 },
+                      endAdornment: (
+                        <Tooltip title={`Traer la tasa del ${expenseDate?.toLocaleDateString?.('es-MX') || 'día del gasto'}`}>
+                          <Button
+                            size="small"
+                            onClick={traerTasaDelGasto}
+                            sx={{ textTransform: 'none', fontWeight: 700, minWidth: 0, px: 1, color: '#334155' }}
+                          >
+                            Buscar
+                          </Button>
+                        </Tooltip>
+                      ),
+                    }}
                   />
                 </Grid>
               )}
@@ -360,9 +387,15 @@ const ExpenseEdit = () => {
               </Grid>
             </Grid>
             {esMXN && (
-              <Typography variant="caption" color="#94a3b8" sx={{ display: 'block', mt: 2 }}>
-                El total en USD se recalcula solo al cambiar el monto original o el tipo de cambio; también puedes escribirlo a mano.
-              </Typography>
+              faltaTasa ? (
+                <Typography variant="caption" sx={{ display: 'block', mt: 2, color: '#b91c1c', fontWeight: 600 }}>
+                  Sin tipo de cambio no se puede convertir a dólares: el Total (USD) que ves es el monto en pesos, no una conversión. Pulsa &quot;Buscar&quot; para traer la tasa de la fecha del gasto, o escríbela.
+                </Typography>
+              ) : (
+                <Typography variant="caption" color="#94a3b8" sx={{ display: 'block', mt: 2 }}>
+                  El total en USD se recalcula solo al cambiar el monto original o el tipo de cambio; también puedes escribirlo a mano.
+                </Typography>
+              )
             )}
           </Paper>
 

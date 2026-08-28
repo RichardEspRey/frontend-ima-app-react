@@ -3,7 +3,7 @@ import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
   Button, TablePagination, TextField, Stack, FormControl, InputLabel, Select, MenuItem,
   Typography, CircularProgress, Box, Collapse, ToggleButton, ToggleButtonGroup,
-  Grid, Divider, InputAdornment, Tooltip, IconButton, TableSortLabel
+  Grid, Divider, InputAdornment, Tooltip, IconButton, TableSortLabel, TableFooter
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import AddIcon from '@mui/icons-material/Add';
@@ -15,6 +15,8 @@ import SearchIcon from '@mui/icons-material/Search';
 import PublicOutlinedIcon from '@mui/icons-material/PublicOutlined';
 import SellOutlinedIcon from '@mui/icons-material/SellOutlined';
 import CategoryOutlinedIcon from '@mui/icons-material/CategoryOutlined';
+import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
+import NotesOutlinedIcon from '@mui/icons-material/NotesOutlined';
 import RefreshIcon from '@mui/icons-material/Refresh';
 
 // Componentes
@@ -23,10 +25,13 @@ import ExpenseModal from './ExpenseModal';
 import { ExpenseTypeChart } from '../../components/Gastos/ExpenseTypeChart';
 import useFetchExchangeRate from '../../hooks/useFetchExchangeRate';
 import { ordenarGastos, siguienteOrden } from '../../utils/ordenarGastos';
+import { normalizarTexto } from '../../utils/texto';
+import { totalUSD, totalMXN } from '../../utils/gastosValores';
 import { useGastosFiltrosStore } from '../../store/useGastosFiltrosStore';
 import useFetchExpenseTypes from '../../hooks/expense_hooks/useFetchExpenseTypes';
 import useFetchCategories from '../../hooks/expense_hooks/useFetchCategories';
-import { SECTION_LABEL_SX, HEADER_ROW_SX, HEADER_CELL_SX, DARK_BTN_SX } from './estilosGastos';
+import useFetchSubcategories from '../../hooks/expense_hooks/useFetchSubcategories';
+import { SECTION_LABEL_SX, HEADER_ROW_SX, HEADER_CELL_SX, DARK_BTN_SX, money, moneyMXN } from './estilosGastos';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -72,7 +77,7 @@ const AdminGastos = () => {
   const [showChart, setShowChart] = useState(false);
 
   const {
-    search, filterCountry, filterType, filterCategory, startDate, endDate,
+    search, filterCountry, filterType, filterCategory, filterSubcategory, filterDescription, startDate, endDate,
     page, rowsPerPage, orden, showFilters,
     set: setEstado, setFiltro, limpiarFiltros,
   } = useGastosFiltrosStore();
@@ -85,6 +90,7 @@ const AdminGastos = () => {
 
   const { expenseTypes } = useFetchExpenseTypes();
   const { maintenanceCategories } = useFetchCategories();
+  const { subcategories } = useFetchSubcategories();
 
   const uniqueCountries = useMemo(() => {
     const countries = new Set(gastos.map(g => g.pais).filter(Boolean));
@@ -107,6 +113,21 @@ const AdminGastos = () => {
       : maintenanceCategories;
     return ['All', ...relevantes.map(c => c.label).sort((a, b) => a.localeCompare(b, 'es'))];
   }, [maintenanceCategories, tipoSeleccionado]);
+
+  const categoriaSeleccionada = useMemo(
+    () => maintenanceCategories.find(c => c.label === filterCategory) || null,
+    [maintenanceCategories, filterCategory],
+  );
+
+  const uniqueSubcategories = useMemo(() => {
+    if (!categoriaSeleccionada) return [];
+    return subcategories
+      .filter(sub => String(sub.id_categoria) === String(categoriaSeleccionada.value))
+      .map(sub => sub.label)
+      .sort((a, b) => a.localeCompare(b, 'es'));
+  }, [subcategories, categoriaSeleccionada]);
+
+  const haySubcategorias = uniqueSubcategories.length > 0;
 
   const fetchGastos = async () => {
     setLoading(true);
@@ -153,6 +174,21 @@ const AdminGastos = () => {
         });
     }
 
+    if (filterSubcategory !== 'All') {
+        list = list.filter(g => {
+            if (!g.detalles || g.detalles.length === 0) return false;
+            return g.detalles.some(d => d.nombre_subcategoria === filterSubcategory);
+        });
+    }
+
+    const descripcionBuscada = normalizarTexto(filterDescription);
+    if (descripcionBuscada) {
+        list = list.filter(g => {
+            if (!g.detalles || g.detalles.length === 0) return false;
+            return g.detalles.some(d => normalizarTexto(d.descripcion_articulo).includes(descripcionBuscada));
+        });
+    }
+
     if (startDate || endDate) {
         list = list.filter(g => {
             const d = g.fecha_gasto;
@@ -160,12 +196,25 @@ const AdminGastos = () => {
         });
     }
     return list;
-  }, [gastos, search, filterCountry, filterType, filterCategory, startDate, endDate]);
+  }, [gastos, search, filterCountry, filterType, filterCategory, filterSubcategory, filterDescription, startDate, endDate]);
 
   const ordenados = useMemo(
     () => ordenarGastos(filtered, orden, mxnRate),
     [filtered, orden, mxnRate],
   );
+
+  const totales = useMemo(() => {
+    let usd = 0;
+    let mxn = 0;
+    let sinConversion = 0;
+    for (const g of filtered) {
+      usd += totalUSD(g);
+      const { valor } = totalMXN(g, mxnRate);
+      if (valor === null) sinConversion += 1;
+      else mxn += valor;
+    }
+    return { usd, mxn, sinConversion, cuantos: filtered.length };
+  }, [filtered, mxnRate]);
 
   const slice = rowsPerPage === -1 ? ordenados : ordenados.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
@@ -180,23 +229,28 @@ const AdminGastos = () => {
   };
 
   const activeFilterCount = useMemo(() => (
-    [search, filterCountry !== 'All', filterType !== 'All', filterCategory !== 'All', startDate, endDate]
+    [search, filterCountry !== 'All', filterType !== 'All', filterCategory !== 'All',
+     filterSubcategory !== 'All', filterDescription.trim(), startDate, endDate]
       .filter(Boolean).length
-  ), [search, filterCountry, filterType, filterCategory, startDate, endDate]);
+  ), [search, filterCountry, filterType, filterCategory, filterSubcategory, filterDescription, startDate, endDate]);
 
   const handleFilterChange = (campo, value) => {
-    if (campo === 'filterType') setFiltro({ filterType: value, filterCategory: 'All' });
+    if (campo === 'filterType') setFiltro({ filterType: value, filterCategory: 'All', filterSubcategory: 'All' });
+    else if (campo === 'filterCategory') setFiltro({ filterCategory: value, filterSubcategory: 'All' });
     else setFiltro({ [campo]: value });
   };
 
   useEffect(() => {
     if (expenseTypes.length === 0) return;
     if (filterType !== 'All' && !uniqueTypes.includes(filterType)) {
-      setEstado({ filterType: 'All', filterCategory: 'All', page: 0 });
+      setEstado({ filterType: 'All', filterCategory: 'All', filterSubcategory: 'All', page: 0 });
     } else if (filterCategory !== 'All' && !uniqueCategories.includes(filterCategory)) {
-      setEstado({ filterCategory: 'All', page: 0 });
+      setEstado({ filterCategory: 'All', filterSubcategory: 'All', page: 0 });
+    } else if (filterSubcategory !== 'All' && !uniqueSubcategories.includes(filterSubcategory)) {
+      setEstado({ filterSubcategory: 'All', page: 0 });
     }
-  }, [expenseTypes.length, uniqueTypes, uniqueCategories, filterType, filterCategory, setEstado]);
+  }, [expenseTypes.length, uniqueTypes, uniqueCategories, uniqueSubcategories,
+      filterType, filterCategory, filterSubcategory, setEstado]);
 
   const clearFilters = () => limpiarFiltros();
 
@@ -344,6 +398,18 @@ const AdminGastos = () => {
                     </Select>
                   </FormControl>
                 </Grid>
+                <Grid
+                  size={{
+                    xs: 12,
+                    sm: 6,
+                    md: 4
+                  }}>
+                  <TextField
+                    label="Descripción" placeholder="Llantas, aceite, filtro…" size="small" fullWidth
+                    value={filterDescription} onChange={(e) => handleFilterChange('filterDescription', e.target.value)}
+                    InputProps={{ startAdornment: <InputAdornment position="start"><NotesOutlinedIcon sx={{ fontSize: 18, color: '#94a3b8' }} /></InputAdornment> }}
+                  />
+                </Grid>
               </Grid>
             </Box>
 
@@ -385,6 +451,29 @@ const AdminGastos = () => {
                       {uniqueCategories.map(c => <MenuItem key={c} value={c}>{c}</MenuItem>)}
                     </Select>
                   </FormControl>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                  <Tooltip
+                    title={
+                      filterCategory === 'All'
+                        ? 'Elige una categoría primero'
+                        : haySubcategorias ? '' : `"${filterCategory}" no tiene subcategorías`
+                    }
+                  >
+                    <span>
+                      <FormControl size="small" fullWidth disabled={!haySubcategorias}>
+                        <InputLabel>Subcategoría</InputLabel>
+                        <Select
+                          value={filterSubcategory} label="Subcategoría"
+                          onChange={(e) => handleFilterChange('filterSubcategory', e.target.value)}
+                          startAdornment={<InputAdornment position="start"><AccountTreeOutlinedIcon sx={{ fontSize: 18, color: '#94a3b8' }} /></InputAdornment>}
+                        >
+                          <MenuItem value="All">All</MenuItem>
+                          {uniqueSubcategories.map(sub => <MenuItem key={sub} value={sub}>{sub}</MenuItem>)}
+                        </Select>
+                      </FormControl>
+                    </span>
+                  </Tooltip>
                 </Grid>
               </Grid>
             </Box>
@@ -467,6 +556,29 @@ const AdminGastos = () => {
               slice.map((g) => <GastoRow key={g.id_gasto} gasto={g} navigate={navigate} mxnRate={mxnRate} />)
             )}
           </TableBody>
+
+          {activeFilterCount > 0 && !loading && ordenados.length > 0 && (
+            <TableFooter>
+              <TableRow sx={{ bgcolor: '#f8fafc', '& td': { borderTop: '2px solid #e2e8f0', borderBottom: 'none' } }}>
+                <TableCell colSpan={5} sx={{ py: 1.75 }}>
+                  <Typography variant="caption" sx={{ ...SECTION_LABEL_SX, textTransform: 'uppercase' }}>
+                    Total filtrado
+                  </Typography>
+                  <Typography variant="body2" color="#64748b">
+                    {totales.cuantos} gasto{totales.cuantos === 1 ? '' : 's'}
+                    {totales.sinConversion > 0 && ` · ${totales.sinConversion} sin conversión a pesos`}
+                  </Typography>
+                </TableCell>
+                <TableCell align="right" sx={{ py: 1.75 }}>
+                  <Typography variant="body2" fontWeight={800} color="#0f172a">{money(totales.usd)}</Typography>
+                </TableCell>
+                <TableCell align="right" sx={{ py: 1.75 }}>
+                  <Typography variant="body2" fontWeight={800} color="#0f172a">{moneyMXN(totales.mxn)}</Typography>
+                </TableCell>
+                <TableCell colSpan={3} />
+              </TableRow>
+            </TableFooter>
+          )}
         </Table>
       </TableContainer>
 
