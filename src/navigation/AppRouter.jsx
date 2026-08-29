@@ -38,7 +38,7 @@ import ExpenseEdit from '../screens/Gastos/ExpenseEdit.jsx';
 import StockAdmin  from '../screens/StockAdmin.jsx';
 import ServiceOrderScreen from '../screens/ServiceOrderScreen.jsx';
 import ServiceOrderScreenEdit from '../screens/ServiceOrderScreenEdit.jsx';
-import ServiceOrderAdmin from '../screens/ServiceOrderAdmin.jsx';
+import AdminOrdenesServicio from '../screens/Mantenimientos/AdminOrdenesServicio.jsx';
 import Finanzas from '../screens/Finanzas.jsx';
 import ResumenTrip from '../screens/ResumenTrip.jsx';
 import ResiduoTrip from '../screens/Finanzas/ResiduosTrips.jsx';
@@ -114,7 +114,7 @@ const AppRouter = () => {
               <Route path="/edit-expense/:id_gasto" element={<ExpenseEdit />} />
               <Route path="/view-inventory" element={<StockAdmin />} />
               <Route path="/new-service-order" element={<ServiceOrderScreen />} />
-              <Route path="/admin-service-order" element={<ServiceOrderAdmin />} />
+              <Route path="/admin-service-order" element={<AdminOrdenesServicio />} />
               <Route path="/editar-orden/:orderId" element={<ServiceOrderScreenEdit />} />
               <Route path="/finanzas" element={<Finanzas />} />
               <Route path="/ResumenTrip/:tripId" element={<ResumenTrip />} />

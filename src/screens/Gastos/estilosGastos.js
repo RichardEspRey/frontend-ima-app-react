@@ -1,29 +1,13 @@
-export const SECTION_LABEL_SX = {
-  color: '#94a3b8', fontWeight: 700, letterSpacing: '0.08em', fontSize: '0.68rem',
-};
-
-export const CARD_SX = { p: 3, borderRadius: 2, border: '1px solid #e2e8f0' };
-
-export const HEADER_ROW_SX = { bgcolor: '#fafbfc', borderBottom: '1px solid #e2e8f0' };
-
-export const HEADER_CELL_SX = {
-  fontWeight: 700, color: '#94a3b8', fontSize: '0.7rem',
-  textTransform: 'uppercase', letterSpacing: '0.06em', borderBottom: 'none',
-};
-
-export const DARK_BTN_SX = {
-  bgcolor: '#0f172a', fontWeight: 700, borderRadius: 2, px: 3, py: 1.1,
-  textTransform: 'none', boxShadow: 'none', transition: 'all 0.15s',
-  '&:hover': { bgcolor: '#1e293b', boxShadow: '0 6px 16px rgba(15,23,42,0.22)' },
-  '&.Mui-disabled': { bgcolor: '#cbd5e1', color: '#fff' },
-};
-
-export const GHOST_BTN_SX = {
-  bgcolor: 'white', borderColor: '#cbd5e1', color: '#334155',
-  fontWeight: 600, textTransform: 'none', borderRadius: 2, px: 2.5, py: 1.1,
-};
-
-export const INPUT_SX = { borderRadius: 2 };
+export {
+  SECTION_LABEL_SX,
+  CARD_SX,
+  HEADER_ROW_SX,
+  HEADER_CELL_SX,
+  TABLE_CONTAINER_SX,
+  DARK_BTN_SX,
+  GHOST_BTN_SX,
+  INPUT_SX,
+} from '../../styles/estilosTabla';
 
 export const customSelectStyles = {
   control: (provided, state) => ({

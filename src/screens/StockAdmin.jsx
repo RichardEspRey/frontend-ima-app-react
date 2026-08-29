@@ -17,11 +17,39 @@ import {
     TablePagination, 
     CircularProgress,
     Stack,
-    Button
+    Button,
+    Chip,
+    TableFooter
 } from '@mui/material';
+
+import {
+    HEADER_ROW_SX, HEADER_CELL_SX, TABLE_CONTAINER_SX, CARD_SX, SECTION_LABEL_SX,
+    PAGINATION_BOX_SX, PAGINATION_SX, GHOST_BTN_SX, CELL_STRONG_SX, CELL_MUTED_SX,
+} from '../styles/estilosTabla';
 
 // **Definición de las categorías para el filtro**
 const CATEGORIES = ['Todas', 'Consumibles', 'Refacciones', 'Herramientas'];
+
+const TONO_NEUTRO = { bg: '#f8fafc', texto: '#475569', borde: '#e2e8f0', acento: '#cbd5e1' };
+
+const TONOS_CATEGORIA = {
+    Refacciones: { bg: '#eef2ff', texto: '#4338ca', borde: '#e0e7ff', acento: '#6366f1' },
+    Consumibles: { bg: '#f0fdfa', texto: '#0f766e', borde: '#99f6e4', acento: '#14b8a6' },
+    Herramientas: { bg: '#fffbeb', texto: '#b45309', borde: '#fde68a', acento: '#f59e0b' },
+    Basicos: { bg: '#f5f3ff', texto: '#6d28d9', borde: '#ddd6fe', acento: '#8b5cf6' },
+};
+
+const tonoCategoria = (nombre) => TONOS_CATEGORIA[nombre] || TONO_NEUTRO;
+
+const tonoStock = (cantidad) => (
+    cantidad <= 0
+        ? { bg: '#fef2f2', texto: '#b91c1c', borde: '#fecaca' }
+        : { bg: '#f8fafc', texto: '#334155', borde: '#e2e8f0' }
+);
+
+const CHIP_SX = {
+    height: 22, fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.04em',
+};
 
 const StockAdmin = () => {
     const [inventoryList, setInventoryList] = useState([]);
@@ -80,6 +108,11 @@ const StockAdmin = () => {
     }, [inventoryList, searchTerm, categoryFilter]);
     
     // **Lógica de Paginación**
+    const agotados = useMemo(
+        () => filteredInventory.filter(item => (Number(item.cantidad_stock) || 0) <= 0).length,
+        [filteredInventory]
+    );
+
     const emptyRows = rowsPerPage - Math.min(rowsPerPage, filteredInventory.length - page * rowsPerPage);
 
     const paginatedInventory = filteredInventory.slice(
@@ -99,113 +132,175 @@ const StockAdmin = () => {
         setPage(0); 
     };
 
-    if (loading) {
-        return (
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh', p: 3 }}>
-                <CircularProgress />
-                <Typography variant="h6" sx={{ ml: 2 }}>Cargando inventario...</Typography>
-            </Box>
-        );
-    }
-
     return (
-        <Box sx={{ p: 3 }}> 
-            <Typography variant="h4" component="h1" fontWeight={700} gutterBottom sx={{ mb: 3 }}>
-                Administración de Stock
-            </Typography>
-            
-            <Stack direction="row" spacing={3} sx={{ mb: 3 }} alignItems="center">
-                <TextField
-                    label="Búsqueda Rápida"
-                    variant="outlined"
-                    size="small" 
-                    value={searchTerm}
-                    onChange={(e) => {
-                        setSearchTerm(e.target.value);
-                        setPage(0); 
-                    }}
-                    placeholder="Buscar por artículo, categoría..."
-                    sx={{ width: 300 }}
-                />
+        <Box>
+            <Paper elevation={0} sx={{ ...CARD_SX, mb: 3 }}>
+                <Typography variant="overline" sx={SECTION_LABEL_SX}>
+                    Filtros de Búsqueda
+                </Typography>
 
-                {/* Control: Filtro por Categoría (MUI Select) */}
-                <FormControl sx={{ minWidth: 200 }} size="small"> 
-                    <InputLabel id="category-label">Filtrar por Categoría</InputLabel>
-                    <Select
-                        labelId="category-label"
-                        value={categoryFilter}
-                        label="Filtrar por Categoría"
+                <Stack direction="row" spacing={2} sx={{ mt: 1.5 }} alignItems="center" flexWrap="wrap" useFlexGap>
+                    <TextField
+                        label="Búsqueda Rápida"
+                        variant="outlined"
+                        size="small" 
+                        value={searchTerm}
                         onChange={(e) => {
-                            setCategoryFilter(e.target.value);
+                            setSearchTerm(e.target.value);
                             setPage(0); 
                         }}
-                    >
-                        {CATEGORIES.map(category => (
-                            <MenuItem key={category} value={category}>
-                                {category}
-                            </MenuItem>
-                        ))}
-                    </Select>
-                </FormControl>
+                        placeholder="Buscar por artículo, categoría..."
+                        sx={{ width: 300 }}
+                    />
+
+                    <FormControl sx={{ minWidth: 200 }} size="small"> 
+                        <InputLabel id="category-label">Filtrar por Categoría</InputLabel>
+                        <Select
+                            labelId="category-label"
+                            value={categoryFilter}
+                            label="Filtrar por Categoría"
+                            onChange={(e) => {
+                                setCategoryFilter(e.target.value);
+                                setPage(0); 
+                            }}
+                        >
+                            {CATEGORIES.map(category => (
+                                <MenuItem key={category} value={category}>
+                                    {category}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
                 
-                <Button variant="contained" onClick={fetchInventory} size="small">Refrescar</Button>
-            </Stack>
+                    <Button
+                        variant="outlined"
+                        onClick={fetchInventory}
+                        sx={{ ...GHOST_BTN_SX, py: 0.75 }}
+                    >
+                        Refrescar
+                    </Button>
+                </Stack>
+            </Paper>
 
-            <Paper elevation={3}>
-                <TableContainer sx={{ overflowX: 'auto' }}> 
-                    <Table stickyHeader size="small">
-                        <TableHead>
+            <TableContainer component={Paper} elevation={0} sx={TABLE_CONTAINER_SX}>
+                <Table size="small">
+                    <TableHead>
+                        <TableRow sx={HEADER_ROW_SX}>
+                            <TableCell scope="col" sx={HEADER_CELL_SX}>Artículo</TableCell>
+                            <TableCell scope="col" sx={HEADER_CELL_SX}>Categoría</TableCell>
+                            <TableCell scope="col" sx={HEADER_CELL_SX}>Subcategoría</TableCell>
+                            <TableCell scope="col" sx={{ ...HEADER_CELL_SX, textAlign: 'center' }}>Stock</TableCell>
+                        </TableRow>
+                    </TableHead>
+
+                    <TableBody>
+                        {loading ? (
                             <TableRow>
-                                <TableCell scope="col" sx={{ fontWeight: 600 }}>Artículo</TableCell>
-                                <TableCell scope="col" sx={{ fontWeight: 600 }}>Categoría</TableCell>
-                                <TableCell scope="col" sx={{ fontWeight: 600 }}>Subcategoría</TableCell>
-                                <TableCell align="center" scope="col" sx={{ fontWeight: 600 }}>Stock</TableCell> 
+                                <TableCell colSpan={4} align="center" sx={{ py: 6 }}>
+                                    <CircularProgress size={24} />
+                                </TableCell>
                             </TableRow>
-                        </TableHead>
-
-                        <TableBody>
-                            {paginatedInventory.length > 0 ? (
-                                paginatedInventory.map(item => (
-                                    <TableRow key={item.id_articulo} hover>
-                                        <TableCell component="th" scope="row">
-                                            {item.nombre_articulo}
-                                        </TableCell>
-                                        <TableCell>{item.nombre_categoria}</TableCell>
-                                        <TableCell>{item.nombre_subcategoria}</TableCell>
-                                        <TableCell align="center">{item.cantidad_stock}</TableCell>
-                                    </TableRow>
-                                ))
-                            ) : (
-                                <TableRow>
-                                    <TableCell colSpan={4} align="center">
-                                        No se encontraron artículos con los filtros aplicados.
+                        ) : paginatedInventory.length > 0 ? (
+                            paginatedInventory.map(item => (
+                                <TableRow key={item.id_articulo} hover>
+                                    <TableCell
+                                        component="th"
+                                        scope="row"
+                                        sx={{ ...CELL_STRONG_SX, borderLeft: `3px solid ${tonoCategoria(item.nombre_categoria).acento}` }}
+                                    >
+                                        {item.nombre_articulo?.trim() || (
+                                            <Box component="span" sx={{ color: '#94a3b8', fontWeight: 500 }}>Sin nombre</Box>
+                                        )}
+                                    </TableCell>
+                                    <TableCell>
+                                        <Chip
+                                            size="small"
+                                            label={item.nombre_categoria || '—'}
+                                            sx={{
+                                                ...CHIP_SX,
+                                                bgcolor: tonoCategoria(item.nombre_categoria).bg,
+                                                color: tonoCategoria(item.nombre_categoria).texto,
+                                                border: `1px solid ${tonoCategoria(item.nombre_categoria).borde}`,
+                                            }}
+                                        />
+                                    </TableCell>
+                                    <TableCell sx={CELL_MUTED_SX}>{item.nombre_subcategoria || '—'}</TableCell>
+                                    <TableCell align="center">
+                                        <Box
+                                            component="span"
+                                            sx={{
+                                                display: 'inline-block', minWidth: 44, py: 0.25, borderRadius: 1.5,
+                                                fontWeight: 700, fontSize: '0.78rem',
+                                                bgcolor: tonoStock(Number(item.cantidad_stock) || 0).bg,
+                                                color: tonoStock(Number(item.cantidad_stock) || 0).texto,
+                                                border: `1px solid ${tonoStock(Number(item.cantidad_stock) || 0).borde}`,
+                                            }}
+                                        >
+                                            {item.cantidad_stock}
+                                        </Box>
                                     </TableCell>
                                 </TableRow>
-                            )}
+                            ))
+                        ) : (
+                            <TableRow>
+                                <TableCell colSpan={4} align="center" sx={{ py: 6 }}>
+                                    <Typography variant="body2" color="#64748b" fontWeight={600}>
+                                        No se encontraron artículos.
+                                    </Typography>
+                                    <Typography variant="caption" color="#94a3b8">
+                                        Ajusta la búsqueda o el filtro de categoría.
+                                    </Typography>
+                                </TableCell>
+                            </TableRow>
+                        )}
 
-                            {emptyRows > 0 && paginatedInventory.length > 0 && (
-                                <TableRow style={{ height: 53 * emptyRows }}>
-                                    <TableCell colSpan={4} />
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
+                        {emptyRows > 0 && paginatedInventory.length > 0 && (
+                            <TableRow style={{ height: 53 * emptyRows }}>
+                                <TableCell colSpan={4} />
+                            </TableRow>
+                        )}
+                    </TableBody>
 
+                    {!loading && filteredInventory.length > 0 && (
+                        <TableFooter>
+                            <TableRow sx={{ bgcolor: '#f8fafc', '& td': { borderTop: '2px solid #e2e8f0', borderBottom: 'none' } }}>
+                                <TableCell colSpan={2} sx={{ py: 1.75 }}>
+                                    <Typography variant="caption" sx={{ ...SECTION_LABEL_SX, textTransform: 'uppercase' }}>
+                                        Resumen
+                                    </Typography>
+                                    <Typography variant="body2" color="#64748b">
+                                        {filteredInventory.length} artículo{filteredInventory.length === 1 ? '' : 's'}
+                                    </Typography>
+                                </TableCell>
+                                <TableCell colSpan={2} align="right" sx={{ py: 1.75 }}>
+                                    <Chip
+                                        size="small"
+                                        label={`${agotados} agotado${agotados === 1 ? '' : 's'}`}
+                                        sx={{ ...CHIP_SX, bgcolor: '#fef2f2', color: '#b91c1c', border: '1px solid #fecaca' }}
+                                    />
+                                </TableCell>
+                            </TableRow>
+                        </TableFooter>
+                    )}
+                </Table>
+            </TableContainer>
+
+            <Box sx={PAGINATION_BOX_SX}>
                 <TablePagination
-                    rowsPerPageOptions={[20, 50, 100, { label: 'Todos', value: -1 }]} 
+                    rowsPerPageOptions={[20, 50, 100, { label: 'Todos', value: -1 }]}
                     component="div"
-                    count={filteredInventory.length} 
-                    rowsPerPage={rowsPerPage === filteredInventory.length ? -1 : rowsPerPage} 
+                    count={filteredInventory.length}
+                    rowsPerPage={rowsPerPage === filteredInventory.length ? -1 : rowsPerPage}
                     page={page}
                     onPageChange={handleChangePage}
                     onRowsPerPageChange={handleChangeRowsPerPage}
-                    labelRowsPerPage="Filas por página:" 
-                    labelDisplayedRows={({ from, to, count }) => 
+                    labelRowsPerPage="Filas por página:"
+                    labelDisplayedRows={({ from, to, count }) =>
                         `${from}-${to} de ${count !== -1 ? count : `más de ${to}`}`
                     }
+                    sx={PAGINATION_SX}
                 />
-            </Paper>
+            </Box>
         </Box>
     );
 };

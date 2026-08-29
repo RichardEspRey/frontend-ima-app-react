@@ -94,12 +94,6 @@ export const menuItemsConfig = [
     rolesPermitidos: ["admin", "Angeles", "Candy"],
     subItems: [
       {
-        name: "Inventario",
-        featureKey: "mant_inventario",
-        route: "/view-inventory",
-        rolesPermitidos: ["admin", "Angeles", "Candy"],
-      },
-      {
         name: "Inspeccion final",
         featureKey: "mant_inspeccion_final",
         route: "/Inspeccion-final",
@@ -110,6 +104,14 @@ export const menuItemsConfig = [
         featureKey: "mant_ordenes_servicio",
         route: "/admin-service-order",
         rolesPermitidos: ["admin", "Angeles", "Candy"],
+      },
+      {
+        name: "Ver Pestaña Inventario",
+        featureKey: "mant_inventario",
+        route: "/view-inventory",
+        hideInSidebar: true,
+        rolesPermitidos: ["admin", "Angeles", "Candy"],
+        group: "Pestañas del Administrador de Ordenes de Servicio",
       },
       {
         name: "Autonomías",

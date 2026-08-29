@@ -43,6 +43,7 @@ import RoadRepairModal from '../../components/RoadRepairModal';
 import InspectionModal from '../../components/InspectionModal';
 import useFetchCompanies from '../../hooks/useFetchCompanies';
 import { selectStyles } from '../../utils/tripFormConstants';
+import { HEADER_ROW_SX, HEADER_CELL_SX } from '../../styles/estilosTabla';
 
 // ── Map helpers (ruta camión → Nuevo Laredo) ────────────────────────────────
 
@@ -99,13 +100,6 @@ const TABS_CONFIG = [
 
 const EMPTY_SCHEDULE_FORM = { operador_id: '', camion_id: '', caja_id: '', company_id: '', destino: '', salida: '' };
 
-// Estilo compartido del encabezado de tabla: micro-label discreta en vez de
-// texto grueso sobre una caja de color sólido.
-const HEADER_ROW_SX = { bgcolor: '#fafbfc', borderBottom: '1px solid #e2e8f0' };
-const HEADER_CELL_SX = {
-    fontWeight: 700, color: '#94a3b8', fontSize: '0.7rem',
-    textTransform: 'uppercase', letterSpacing: '0.06em', borderBottom: 'none',
-};
 
 
 const parseJsonSafe = async (response) => {

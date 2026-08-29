@@ -18,6 +18,10 @@ import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import useFetchRepairTypes from '../hooks/service_order/useFetchRepairTypes.jsx';
 import EditDetailModal from '../components/EditDetailModa';
 import { OrderRow } from '../components/OrderRow';
+import {
+    HEADER_ROW_SX, HEADER_CELL_SX, TABLE_CONTAINER_SX, CARD_SX,
+    SECTION_LABEL_SX, PAGINATION_BOX_SX, PAGINATION_SX, GHOST_BTN_SX,
+} from '../styles/estilosTabla';
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
@@ -157,16 +161,9 @@ const ServiceOrderAdmin = () => {
     };
 
     return (
-        <Paper sx={{ m: 2, p: 3 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                <Typography variant="h4" component="h1" fontWeight={700}>Administrador de Órdenes</Typography>
-                <Button variant="contained" onClick={() => navigate('/new-service-order')}>
-                    + Crear Nueva Orden
-                </Button>
-            </Box>
-
-            <Paper variant="outlined" sx={{ p: 2, mb: 3, bgcolor: '#f8f9fa', borderRadius: 2 }}>
-                <Typography variant="subtitle2" gutterBottom color="text.secondary" fontWeight={600}>
+        <Box>
+            <Paper elevation={0} sx={{ ...CARD_SX, mb: 3 }}>
+                <Typography variant="overline" sx={SECTION_LABEL_SX}>
                     Filtros de Búsqueda
                 </Typography>
                 
@@ -269,13 +266,11 @@ const ServiceOrderAdmin = () => {
                         >
                             <DeleteSweepIcon />
                         </IconButton>
-                        <Button 
-                            variant="outlined" 
-                            color="primary"
-                            size="small"
+                        <Button
+                            variant="outlined"
                             onClick={() => { fetchOrders(); refetchRepairTypes(); }}
                             startIcon={<RefreshIcon />}
-                            sx={{ minWidth: '100px' }}
+                            sx={{ ...GHOST_BTN_SX, py: 0.75 }}
                         >
                             Refrescar
                         </Button>
@@ -284,39 +279,39 @@ const ServiceOrderAdmin = () => {
                 </Grid>
             </Paper>
 
-            <TableContainer component={Paper} variant="outlined" sx={{ overflowX: 'auto' }}>
-                <Table stickyHeader size="small">
+            <TableContainer component={Paper} elevation={0} sx={TABLE_CONTAINER_SX}>
+                <Table size="small">
                     <TableHead>
-                        <TableRow>
-                            <TableCell />
-                            <TableCell sx={{ fontWeight: 600 }}>ID</TableCell>
-                            <TableCell sx={{ fontWeight: 600 }}>Fecha</TableCell>
-                            <TableCell sx={{ fontWeight: 600 }}>Camión</TableCell>
-                            <TableCell sx={{ fontWeight: 600 }}>Servicios</TableCell>
-                            <TableCell sx={{ fontWeight: 600, textAlign: 'right' }}>Mano de obra</TableCell>
-                            <TableCell sx={{ fontWeight: 600, textAlign: 'right' }}>Refacciones</TableCell>
-                            <TableCell sx={{ fontWeight: 600, textAlign: 'right' }}>T. cambio</TableCell>
-                            <TableCell sx={{ fontWeight: 600, textAlign: 'right' }}>Total</TableCell>
-                            <TableCell sx={{ fontWeight: 600, textAlign: 'center' }}>Estatus</TableCell>
-                            <TableCell sx={{ fontWeight: 600, textAlign: 'center' }}>Acciones</TableCell>
+                        <TableRow sx={HEADER_ROW_SX}>
+                            <TableCell sx={HEADER_CELL_SX} />
+                            <TableCell sx={HEADER_CELL_SX}>ID</TableCell>
+                            <TableCell sx={HEADER_CELL_SX}>Fecha</TableCell>
+                            <TableCell sx={HEADER_CELL_SX}>Camión</TableCell>
+                            <TableCell sx={HEADER_CELL_SX}>Servicios</TableCell>
+                            <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'right' }}>Mano de obra</TableCell>
+                            <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'right' }}>Refacciones</TableCell>
+                            <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'right' }}>T. cambio</TableCell>
+                            <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'right' }}>Total</TableCell>
+                            <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'center' }}>Estatus</TableCell>
+                            <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'center' }}>Acciones</TableCell>
                         </TableRow>
                     </TableHead>
 
                     <TableBody>
                         {loading ? (
                             <TableRow>
-                                <TableCell colSpan={11} align="center">
-                                    <Box sx={{ py: 4, display: 'flex', gap: 2, alignItems: 'center', justifyContent: 'center' }}>
-                                        <CircularProgress size={24} />
-                                        <Typography>Cargando órdenes…</Typography>
-                                    </Box>
+                                <TableCell colSpan={11} align="center" sx={{ py: 6 }}>
+                                    <CircularProgress size={24} />
                                 </TableCell>
                             </TableRow>
                         ) : filteredOrders.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={11} align="center">
-                                    <Typography color="text.secondary" sx={{ py: 3 }}>
-                                        No hay órdenes que coincidan con los filtros seleccionados.
+                                <TableCell colSpan={11} align="center" sx={{ py: 6 }}>
+                                    <Typography variant="body2" color="#64748b" fontWeight={600}>
+                                        No se encontraron órdenes.
+                                    </Typography>
+                                    <Typography variant="caption" color="#94a3b8">
+                                        Ajusta los filtros o crea una nueva orden.
                                     </Typography>
                                 </TableCell>
                             </TableRow>
@@ -336,16 +331,19 @@ const ServiceOrderAdmin = () => {
                 </Table>
             </TableContainer>
 
-            <TablePagination
-                rowsPerPageOptions={[10, 25, 50]}
-                component="div"
-                count={filteredOrders.length}
-                rowsPerPage={rowsPerPage}
-                page={page}
-                onPageChange={(e, newPage) => setPage(newPage)}
-                onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }}
-                labelRowsPerPage="Filas por página:"
-            />
+            <Box sx={PAGINATION_BOX_SX}>
+                <TablePagination
+                    rowsPerPageOptions={[10, 25, 50]}
+                    component="div"
+                    count={filteredOrders.length}
+                    rowsPerPage={rowsPerPage}
+                    page={page}
+                    onPageChange={(e, newPage) => setPage(newPage)}
+                    onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }}
+                    labelRowsPerPage="Filas por página:"
+                    sx={PAGINATION_SX}
+                />
+            </Box>
 
             <EditDetailModal
                 isOpen={!!editingDetail}
@@ -353,7 +351,7 @@ const ServiceOrderAdmin = () => {
                 onClose={() => setEditingDetail(null)}
                 onSave={handleSaveDetail}
             />
-        </Paper>
+        </Box>
     );
 };
 
