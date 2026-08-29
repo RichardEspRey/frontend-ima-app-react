@@ -44,6 +44,24 @@ export const TAB_SX = {
   '&.Mui-selected': { bgcolor: '#0f172a', color: '#fff' },
 };
 
+export const CHIP_SX = {
+  height: 22, fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.04em',
+  textTransform: 'none',
+};
+
+export const CHIP_OK_SX = {
+  ...CHIP_SX, bgcolor: '#f0fdf4', color: '#15803d', border: '1px solid #bbf7d0',
+};
+
+export const CHIP_DANGER_SX = {
+  ...CHIP_SX, bgcolor: '#fef2f2', color: '#b91c1c', border: '1px solid #fecaca',
+};
+
+export const ICON_BTN_SX = {
+  border: '1px solid #e2e8f0', bgcolor: '#fff', color: '#475569',
+  '&:hover': { bgcolor: '#f8fafc', borderColor: '#cbd5e1' },
+};
+
 export const CELL_STRONG_SX = { color: '#0f172a', fontWeight: 600 };
 export const CELL_SX = { color: '#334155' };
 export const CELL_MUTED_SX = { color: '#475569' };

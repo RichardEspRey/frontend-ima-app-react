@@ -6,27 +6,38 @@ import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import ChangeCircleIcon from '@mui/icons-material/ChangeCircle';
+
+import { CHIP_OK_SX, CHIP_DANGER_SX, ICON_BTN_SX } from '../styles/estilosTabla';
 
 export const DocumentCell = ({ isUploaded, docName, onUpload, onView }) => {
     return (
         <Stack direction="row" alignItems="center" spacing={1.5}>
             {isUploaded ? (
-                <Chip icon={<CheckCircleIcon />} label="Subido" color="success" size="small" variant="filled" sx={{ fontWeight: 600, minWidth: 95 }} />
+                <Chip
+                    icon={<CheckCircleIcon sx={{ fontSize: 14 }} />}
+                    label="Subido"
+                    size="small"
+                    sx={{ ...CHIP_OK_SX, minWidth: 92, '& .MuiChip-icon': { color: '#15803d', ml: 0.75 } }}
+                />
             ) : (
-                <Chip icon={<ErrorOutlineIcon />} label="Falta" color="error" size="small" variant="outlined" sx={{ fontWeight: 600, minWidth: 95, bgcolor: 'rgba(211, 47, 47, 0.05)' }} />
+                <Chip
+                    icon={<ErrorOutlineIcon sx={{ fontSize: 14 }} />}
+                    label="Falta"
+                    size="small"
+                    sx={{ ...CHIP_DANGER_SX, minWidth: 92, '& .MuiChip-icon': { color: '#b91c1c', ml: 0.75 } }}
+                />
             )}
 
             <Box sx={{ display: 'flex', gap: 0.5 }}>
                 {isUploaded && (
                     <Tooltip title={`Ver ${docName}`}>
-                        <IconButton size="small" color="primary" onClick={onView} sx={{ border: '1px solid #e0e0e0', bgcolor: '#fff' }}>
+                        <IconButton size="small" onClick={onView} sx={ICON_BTN_SX}>
                             <VisibilityIcon fontSize="small" />
                         </IconButton>
                     </Tooltip>
                 )}
                 <Tooltip title={`Subir ${docName}`}>
-                    <IconButton size="small" color="secondary" onClick={onUpload} sx={{ border: '1px dashed #9c27b0', bgcolor: '#fff' }}>
+                    <IconButton size="small" onClick={onUpload} sx={ICON_BTN_SX}>
                         <CloudUploadIcon fontSize="small" />
                     </IconButton>
                 </Tooltip>

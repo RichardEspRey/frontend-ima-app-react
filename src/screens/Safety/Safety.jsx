@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import {
-  Box, Paper, Typography, Stack, Container,
+  Box, Paper, Typography, Stack,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Chip, CircularProgress, Tabs, Tab, TextField, InputAdornment, TablePagination
 } from "@mui/material";
@@ -11,6 +11,11 @@ import SearchIcon from '@mui/icons-material/Search';
 import { DocumentCell } from "../../components/DocumentCell.jsx";
 import { PCMillerModal } from "../../components/PCMillerModal.jsx";
 import { DocPreviewModal } from "../../components/DocPreviewModal.jsx";
+import {
+  PAGE_SHELL_SX, PAGE_OVERLINE_SX, PAGE_TITLE_SX, TABS_WRAPPER_SX, TAB_SX,
+  CARD_SX, SECTION_LABEL_SX, HEADER_ROW_SX, HEADER_CELL_SX, TABLE_CONTAINER_SX,
+  PAGINATION_BOX_SX, PAGINATION_SX, CHIP_DANGER_SX,
+} from "../../styles/estilosTabla";
 import RoadRepairsAdmin from "../RoadRepairsAdmin.jsx";
 import InspectionsAdmin from "../InspectionsAdmin.jsx";
 
@@ -129,7 +134,7 @@ export default function Safety() {
   const pageData = filteredTrips.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
+    <Box sx={PAGE_SHELL_SX}>
       <input
         type="file"
         ref={fileInputRef}
@@ -160,83 +165,87 @@ export default function Safety() {
         onDeleteSuccess={() => { fetchSafetyTrips(); }}
       />
 
-      <Stack direction="row" justifyContent="space-between" alignItems="center" mb={3}>
+      <Stack
+        direction="row" justifyContent="space-between" alignItems="flex-end"
+        mb={4} flexWrap="wrap" gap={2}
+      >
         <Box>
-          <Typography variant="h4" fontWeight={800} sx={{ letterSpacing: '-0.5px' }}>
-            Safety & Cumplimiento
+          <Typography variant="overline" sx={PAGE_OVERLINE_SX}>
+            Safety · Cumplimiento
           </Typography>
-          <Typography variant="body1" color="text.secondary">
+          <Typography variant="h4" fontWeight={800} color="#0f172a" letterSpacing="-0.02em" sx={PAGE_TITLE_SX}>
+            Safety &amp; Cumplimiento
+          </Typography>
+          <Typography variant="body2" color="#64748b" sx={{ mt: 0.5 }}>
             Control de documentos para viajes completados.
           </Typography>
         </Box>
       </Stack>
 
-      <Paper
-        elevation={0}
-        sx={{ mb: 3, bgcolor: 'transparent', borderBottom: '1px solid #e0e0e0' }}
-      >
+      <Box sx={TABS_WRAPPER_SX}>
         <Tabs
           value={tabValue}
           onChange={(e, val) => { setTabValue(val); setPage(0); }}
-          textColor="primary"
-          indicatorColor="primary"
-          sx={{
-            minHeight: '40px',
-            '& .MuiTab-root': {
-              minHeight: '40px',
-              textTransform: 'none',
-              fontWeight: 600,
-              fontSize: '0.95rem',
-              px: 3
-            }
-          }}
+          variant="scrollable"
+          scrollButtons="auto"
+          allowScrollButtonsMobile
+          TabIndicatorProps={{ sx: { display: 'none' } }}
+          sx={{ minHeight: 0, '& .MuiTabs-flexContainer': { gap: 0.5 } }}
         >
-          <Tab label="Pendientes de Documentación" />
-          <Tab label="Cumplimiento Completo" />
-          <Tab label="Reparaciones en Ruta" />
-          <Tab label="Inspecciones Operativas" />
+          <Tab label="Pendientes de Documentación" disableRipple sx={TAB_SX} />
+          <Tab label="Cumplimiento Completo" disableRipple sx={TAB_SX} />
+          <Tab label="Reparaciones en Ruta" disableRipple sx={TAB_SX} />
+          <Tab label="Inspecciones Operativas" disableRipple sx={TAB_SX} />
         </Tabs>
-      </Paper>
+      </Box>
 
       {(tabValue === 0 || tabValue === 1) && (
         <>
-          <Paper elevation={0} sx={{ p: 2, mb: 3, bgcolor: '#f5f5f5', borderRadius: 2, border: '1px solid #e0e0e0' }}>
-            <TextField
-              size="small"
-              placeholder="Buscar por Trip #..."
-              value={search}
-              onChange={(e) => { setSearch(e.target.value); setPage(0); }}
-              slotProps={{
-                input: {
-                  startAdornment: <InputAdornment position="start"><SearchIcon color="action" /></InputAdornment>,
-                  sx: { bgcolor: 'white', minWidth: 300 }
-                }
-              }}
-            />
+          <Paper elevation={0} sx={{ ...CARD_SX, mb: 3 }}>
+            <Typography variant="overline" sx={SECTION_LABEL_SX}>
+              Filtros de Búsqueda
+            </Typography>
+            <Box sx={{ mt: 1.5 }}>
+              <TextField
+                size="small"
+                placeholder="Buscar por Trip #..."
+                value={search}
+                onChange={(e) => { setSearch(e.target.value); setPage(0); }}
+                slotProps={{
+                  input: {
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <SearchIcon sx={{ fontSize: 18, color: '#94a3b8' }} />
+                      </InputAdornment>
+                    ),
+                    sx: { bgcolor: 'white', minWidth: 300 }
+                  }
+                }}
+              />
+            </Box>
           </Paper>
 
-          <Paper elevation={0} variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden' }}>
-            <TableContainer>
-              <Table stickyHeader size="small">
+          <TableContainer component={Paper} elevation={0} sx={TABLE_CONTAINER_SX}>
+            <Table size="small">
                 <TableHead>
-                  <TableRow>
-                    <TableCell sx={{ fontWeight: 800, bgcolor: '#fff', py: 1.5, width: '15%' }}>Trip #</TableCell>
-                    <TableCell sx={{ fontWeight: 800, bgcolor: '#fff', py: 1.5 }}>
+                  <TableRow sx={HEADER_ROW_SX}>
+                    <TableCell sx={{ ...HEADER_CELL_SX, width: '15%' }}>Trip #</TableCell>
+                    <TableCell sx={HEADER_CELL_SX}>
                       Libro Electrónico
                       {tabValue === 0 && missingCounts.libro > 0 && (
-                        <Chip size="small" label={`${missingCounts.libro} faltan`} color="error" sx={{ ml: 1, height: 20, fontSize: '0.7rem' }} />
+                        <Chip size="small" label={`${missingCounts.libro} faltan`} sx={{ ...CHIP_DANGER_SX, ml: 1 }} />
                       )}
                     </TableCell>
-                    <TableCell sx={{ fontWeight: 800, bgcolor: '#fff', py: 1.5 }}>
+                    <TableCell sx={HEADER_CELL_SX}>
                       Reporte Diesel
                       {tabValue === 0 && missingCounts.diesel > 0 && (
-                        <Chip size="small" label={`${missingCounts.diesel} faltan`} color="error" sx={{ ml: 1, height: 20, fontSize: '0.7rem' }} />
+                        <Chip size="small" label={`${missingCounts.diesel} faltan`} sx={{ ...CHIP_DANGER_SX, ml: 1 }} />
                       )}
                     </TableCell>
-                    <TableCell sx={{ fontWeight: 800, bgcolor: '#fff', py: 1.5 }}>
+                    <TableCell sx={HEADER_CELL_SX}>
                       Reporte PC Miller
                       {tabValue === 0 && missingCounts.pcmiller > 0 && (
-                        <Chip size="small" label={`${missingCounts.pcmiller} faltan`} color="error" sx={{ ml: 1, height: 20, fontSize: '0.7rem' }} />
+                        <Chip size="small" label={`${missingCounts.pcmiller} faltan`} sx={{ ...CHIP_DANGER_SX, ml: 1 }} />
                       )}
                     </TableCell>
                   </TableRow>
@@ -244,22 +253,31 @@ export default function Safety() {
 
                 <TableBody>
                   {loading ? (
-                    <TableRow><TableCell colSpan={4} align="center" sx={{ py: 10 }}><CircularProgress /></TableCell></TableRow>
+                    <TableRow>
+                      <TableCell colSpan={4} align="center" sx={{ py: 6 }}>
+                        <CircularProgress size={24} />
+                      </TableCell>
+                    </TableRow>
                   ) : pageData.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={4} align="center" sx={{ py: 5 }}>
-                        <Typography color="text.secondary">No se encontraron viajes en esta categoría.</Typography>
+                      <TableCell colSpan={4} align="center" sx={{ py: 6 }}>
+                        <Typography variant="body2" color="#64748b" fontWeight={600}>
+                          No se encontraron viajes.
+                        </Typography>
+                        <Typography variant="caption" color="#94a3b8">
+                          Ajusta la búsqueda o revisa otra pestaña.
+                        </Typography>
                       </TableCell>
                     </TableRow>
                   ) : (
                     pageData.map((row) => (
                       <TableRow key={row.trip_id} hover>
                         <TableCell>
-                          <Typography fontWeight={800} color="primary.main" variant="body2">
+                          <Typography variant="body2" fontWeight={700} color="#0f172a">
                             {row.trip_number}
                           </Typography>
                           {row.driver_nombre && (
-                            <Typography variant="caption" display="block" color="text.secondary">
+                            <Typography variant="caption" display="block" color="#64748b">
                               {row.driver_nombre}
                             </Typography>
                           )}
@@ -296,25 +314,27 @@ export default function Safety() {
                   )}
                 </TableBody>
               </Table>
-            </TableContainer>
+          </TableContainer>
 
+          <Box sx={PAGINATION_BOX_SX}>
             <TablePagination
-                rowsPerPageOptions={[50, 100, 150]}
-                component="div"
-                count={filteredTrips.length}
-                rowsPerPage={rowsPerPage}
-                page={page}
-                onPageChange={(e, newPage) => setPage(newPage)}
-                onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }}
-                labelRowsPerPage="Filas:"
+              rowsPerPageOptions={[50, 100, 150]}
+              component="div"
+              count={filteredTrips.length}
+              rowsPerPage={rowsPerPage}
+              page={page}
+              onPageChange={(e, newPage) => setPage(newPage)}
+              onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }}
+              labelRowsPerPage="Filas por página:"
+              sx={PAGINATION_SX}
             />
-          </Paper>
+          </Box>
         </>
       )}
 
-      {tabValue === 2 && <RoadRepairsAdmin />}
+      {tabValue === 2 && <RoadRepairsAdmin embedded />}
 
-      {tabValue === 3 && <InspectionsAdmin />}
-    </Container>
+      {tabValue === 3 && <InspectionsAdmin embedded />}
+    </Box>
   );
 }

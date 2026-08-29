@@ -24,7 +24,7 @@ import {
 
 import {
     HEADER_ROW_SX, HEADER_CELL_SX, TABLE_CONTAINER_SX, CARD_SX, SECTION_LABEL_SX,
-    PAGINATION_BOX_SX, PAGINATION_SX, GHOST_BTN_SX, CELL_STRONG_SX, CELL_MUTED_SX,
+    PAGINATION_BOX_SX, PAGINATION_SX, GHOST_BTN_SX, CELL_STRONG_SX, CELL_MUTED_SX, CHIP_SX,
 } from '../styles/estilosTabla';
 
 // **Definición de las categorías para el filtro**
@@ -47,9 +47,6 @@ const tonoStock = (cantidad) => (
         : { bg: '#f8fafc', texto: '#334155', borde: '#e2e8f0' }
 );
 
-const CHIP_SX = {
-    height: 22, fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.04em',
-};
 
 const StockAdmin = () => {
     const [inventoryList, setInventoryList] = useState([]);

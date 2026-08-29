@@ -3,15 +3,21 @@ import {
     Box, Typography, Paper, Button, Table, TableBody, TableCell, TableContainer,
     TableHead, TableRow, IconButton, CircularProgress, Chip, Stack
 } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import RoadRepairModal from '../components/RoadRepairModal';
+import {
+    PAGE_SHELL_SX, PAGE_OVERLINE_SX, PAGE_TITLE_SX, HEADER_ROW_SX, HEADER_CELL_SX,
+    TABLE_CONTAINER_SX, DARK_BTN_SX, CHIP_SX, CHIP_DANGER_SX, ICON_BTN_SX,
+    CELL_STRONG_SX, CELL_MUTED_SX,
+} from '../styles/estilosTabla';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
 const money = (val) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val || 0);
 
-const RoadRepairsAdmin = () => {
+const RoadRepairsAdmin = ({ embedded = false }) => {
     const [repairs, setRepairs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [modalOpen, setModalOpen] = useState(false);
@@ -54,59 +60,81 @@ const RoadRepairsAdmin = () => {
     };
 
     return (
-        <Box sx={{ p: 3 }}>
+        <Box sx={embedded ? undefined : PAGE_SHELL_SX}>
             <style>{`.swal2-container { z-index: 2000 !important; }`}</style>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                <Typography variant="h4" fontWeight={700}>Reparaciones en Carretera</Typography>
-                <Button variant="contained" color="primary" onClick={() => handleOpenModal()}>
-                    + Agregar Reparación
+            <Stack
+                direction="row" justifyContent="space-between" alignItems="flex-end"
+                mb={4} flexWrap="wrap" gap={2}
+            >
+                <Box>
+                    <Typography variant="overline" sx={PAGE_OVERLINE_SX}>
+                        Safety · Reparaciones
+                    </Typography>
+                    <Typography variant="h4" fontWeight={800} color="#0f172a" letterSpacing="-0.02em" sx={PAGE_TITLE_SX}>
+                        Reparaciones en Carretera
+                    </Typography>
+                    <Typography variant="body2" color="#64748b" sx={{ mt: 0.5 }}>
+                        Reparaciones realizadas fuera de taller durante un viaje.
+                    </Typography>
+                </Box>
+                <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenModal()} sx={DARK_BTN_SX}>
+                    Agregar Reparación
                 </Button>
-            </Box>
+            </Stack>
 
-            <TableContainer component={Paper} elevation={3}>
+            <TableContainer component={Paper} elevation={0} sx={TABLE_CONTAINER_SX}>
                 <Table size="small">
-                    <TableHead sx={{ bgcolor: '#f5f5f5' }}>
-                        <TableRow>
-                            <TableCell sx={{ fontWeight: 'bold' }}>ID</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold' }}>Fecha</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold' }}>Camión</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold' }}>Viaje Asociado</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold', textAlign: 'right' }}>Costo Rep.</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold', textAlign: 'right' }}>Costo Ref.</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold', textAlign: 'right' }}>Total</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold' }}>Documentos</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold', textAlign: 'center' }}>Acciones</TableCell>
+                    <TableHead>
+                        <TableRow sx={HEADER_ROW_SX}>
+                            <TableCell sx={HEADER_CELL_SX}>ID</TableCell>
+                            <TableCell sx={HEADER_CELL_SX}>Fecha</TableCell>
+                            <TableCell sx={HEADER_CELL_SX}>Camión</TableCell>
+                            <TableCell sx={HEADER_CELL_SX}>Viaje Asociado</TableCell>
+                            <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'right' }}>Costo Rep.</TableCell>
+                            <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'right' }}>Costo Ref.</TableCell>
+                            <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'right' }}>Total</TableCell>
+                            <TableCell sx={HEADER_CELL_SX}>Documentos</TableCell>
+                            <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'center' }}>Acciones</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
                         {loading ? (
                             <TableRow>
-                                <TableCell colSpan={9} align="center" sx={{ py: 3 }}>
-                                    <CircularProgress size={24} /> <Typography>Cargando...</Typography>
+                                <TableCell colSpan={9} align="center" sx={{ py: 6 }}>
+                                    <CircularProgress size={24} />
                                 </TableCell>
                             </TableRow>
                         ) : repairs.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={9} align="center" sx={{ py: 3 }}>
-                                    No hay reparaciones registradas.
+                                <TableCell colSpan={9} align="center" sx={{ py: 6 }}>
+                                    <Typography variant="body2" color="#64748b" fontWeight={600}>
+                                        No hay reparaciones registradas.
+                                    </Typography>
+                                    <Typography variant="caption" color="#94a3b8">
+                                        Agrega la primera con el botón de arriba.
+                                    </Typography>
                                 </TableCell>
                             </TableRow>
                         ) : (
                             repairs.map((row) => (
                                 <TableRow key={row.id_reparacion} hover>
-                                    <TableCell>{row.id_reparacion}</TableCell>
-                                    <TableCell>{new Date(row.fecha_registro).toLocaleDateString()}</TableCell>
-                                    <TableCell>{row.nombre_camion}</TableCell>
+                                    <TableCell sx={CELL_MUTED_SX}>{row.id_reparacion}</TableCell>
+                                    <TableCell sx={CELL_MUTED_SX}>{new Date(row.fecha_registro).toLocaleDateString()}</TableCell>
+                                    <TableCell sx={CELL_STRONG_SX}>{row.nombre_camion}</TableCell>
                                     <TableCell>
                                         {row.formatted_trip ? (
-                                            <Chip label={row.formatted_trip} size="small" color="primary" variant="outlined" sx={{ fontWeight: 'bold' }} />
+                                            <Chip
+                                                label={row.formatted_trip}
+                                                size="small"
+                                                sx={{ ...CHIP_SX, bgcolor: '#eef2ff', color: '#4338ca', border: '1px solid #e0e7ff' }}
+                                            />
                                         ) : (
-                                            <Typography variant="caption" color="text.secondary">No Asociado</Typography>
+                                            <Typography variant="caption" color="#94a3b8">No asociado</Typography>
                                         )}
                                     </TableCell>
-                                    <TableCell align="right">{money(row.costo_reparacion)}</TableCell>
-                                    <TableCell align="right">{money(row.costo_refacciones)}</TableCell>
-                                    <TableCell align="right" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+                                    <TableCell align="right" sx={CELL_MUTED_SX}>{money(row.costo_reparacion)}</TableCell>
+                                    <TableCell align="right" sx={CELL_MUTED_SX}>{money(row.costo_refacciones)}</TableCell>
+                                    <TableCell align="right" sx={{ fontWeight: 800, color: '#0f172a' }}>
                                         {money(row.total)}
                                     </TableCell>
                                     <TableCell>
@@ -123,18 +151,16 @@ const RoadRepairsAdmin = () => {
                                                         rel="noopener noreferrer"
                                                         clickable
                                                         size="small"
-                                                        color="error"
-                                                        variant="outlined"
-                                                        sx={{ maxWidth: 160 }}
+                                                        sx={{ ...CHIP_DANGER_SX, maxWidth: 160, '& .MuiChip-icon': { color: '#b91c1c' } }}
                                                     />
                                                 ))}
                                             </Stack>
                                         ) : (
-                                            <Typography variant="caption" color="text.secondary">Sin documentos</Typography>
+                                            <Typography variant="caption" color="#94a3b8">Sin documentos</Typography>
                                         )}
                                     </TableCell>
                                     <TableCell align="center">
-                                        <IconButton color="primary" onClick={() => handleOpenModal(row)}>
+                                        <IconButton size="small" onClick={() => handleOpenModal(row)} sx={ICON_BTN_SX}>
                                             <EditIcon fontSize="small" />
                                         </IconButton>
                                     </TableCell>

@@ -3,15 +3,21 @@ import {
     Box, Typography, Paper, Button, Table, TableBody, TableCell, TableContainer,
     TableHead, TableRow, IconButton, CircularProgress, Chip, Stack
 } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import InspectionModal from '../components/InspectionModal';
+import {
+    PAGE_SHELL_SX, PAGE_OVERLINE_SX, PAGE_TITLE_SX, HEADER_ROW_SX, HEADER_CELL_SX,
+    TABLE_CONTAINER_SX, DARK_BTN_SX, CHIP_SX, CHIP_DANGER_SX, ICON_BTN_SX,
+    CELL_STRONG_SX, CELL_MUTED_SX,
+} from '../styles/estilosTabla';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
 const formatMoney = (val) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val || 0);
 
-const InspectionsAdmin = () => {
+const InspectionsAdmin = ({ embedded = false }) => {
     const [inspections, setInspections] = useState([]);
     const [loading, setLoading] = useState(true);
     const [modalOpen, setModalOpen] = useState(false);
@@ -54,73 +60,93 @@ const InspectionsAdmin = () => {
     };
 
     return (
-        <Box sx={{ p: { xs: 2, md: 4 }, minHeight: '100vh', bgcolor: '#f8fafc' }}>
+        <Box sx={embedded ? undefined : PAGE_SHELL_SX}>
             <style>{`.swal2-container { z-index: 2000 !important; }`}</style>
-            <Stack direction="row" justifyContent="space-between" alignItems="center" mb={4}>
+            <Stack
+                direction="row" justifyContent="space-between" alignItems="flex-end"
+                mb={4} flexWrap="wrap" gap={2}
+            >
                 <Box>
-                    <Typography variant="h4" fontWeight={800} color="#0f172a">Inspecciones</Typography>
-                    <Typography variant="subtitle1" color="#64748b">Registro y control de inspecciones operativas</Typography>
+                    <Typography variant="overline" sx={PAGE_OVERLINE_SX}>
+                        Safety · Inspecciones
+                    </Typography>
+                    <Typography variant="h4" fontWeight={800} color="#0f172a" letterSpacing="-0.02em" sx={PAGE_TITLE_SX}>
+                        Inspecciones
+                    </Typography>
+                    <Typography variant="body2" color="#64748b" sx={{ mt: 0.5 }}>
+                        Registro y control de inspecciones operativas.
+                    </Typography>
                 </Box>
-                <Button variant="contained" disableElevation onClick={() => handleOpenModal()} sx={{ bgcolor: '#0f172a' }}>
+                <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenModal()} sx={DARK_BTN_SX}>
                     Agregar Inspección
                 </Button>
             </Stack>
 
-            <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid #e2e8f0', borderRadius: 3 }}>
+            <TableContainer component={Paper} elevation={0} sx={TABLE_CONTAINER_SX}>
                 <Table size="small">
-                    <TableHead sx={{ bgcolor: '#f1f5f9' }}>
-                        <TableRow>
-                            <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Folio</TableCell>
-                            <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Fecha</TableCell>
-                            <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Camión</TableCell>
-                            <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Viaje Asociado</TableCell>
-                            <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Tipo de Violación</TableCell>
-                            <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Descripción</TableCell>
-                            <TableCell sx={{ fontWeight: 700, color: '#475569', textAlign: 'right' }}>Multa IMA</TableCell>
-                            <TableCell sx={{ fontWeight: 700, color: '#475569', textAlign: 'right' }}>Multa Driver</TableCell>
-                            <TableCell sx={{ fontWeight: 700, color: '#475569', textAlign: 'right' }}>Total</TableCell>
-                            <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Documentos</TableCell>
-                            <TableCell sx={{ fontWeight: 700, color: '#475569', textAlign: 'center' }}>Acciones</TableCell>
+                    <TableHead>
+                        <TableRow sx={HEADER_ROW_SX}>
+                            <TableCell sx={HEADER_CELL_SX}>Folio</TableCell>
+                            <TableCell sx={HEADER_CELL_SX}>Fecha</TableCell>
+                            <TableCell sx={HEADER_CELL_SX}>Camión</TableCell>
+                            <TableCell sx={HEADER_CELL_SX}>Viaje Asociado</TableCell>
+                            <TableCell sx={HEADER_CELL_SX}>Tipo de Violación</TableCell>
+                            <TableCell sx={HEADER_CELL_SX}>Descripción</TableCell>
+                            <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'right' }}>Multa IMA</TableCell>
+                            <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'right' }}>Multa Driver</TableCell>
+                            <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'right' }}>Total</TableCell>
+                            <TableCell sx={HEADER_CELL_SX}>Documentos</TableCell>
+                            <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'center' }}>Acciones</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
                         {loading ? (
                             <TableRow>
-                                <TableCell colSpan={11} align="center" sx={{ py: 4 }}>
-                                    <CircularProgress size={24} sx={{ mr: 2 }} />
+                                <TableCell colSpan={11} align="center" sx={{ py: 6 }}>
+                                    <CircularProgress size={24} />
                                 </TableCell>
                             </TableRow>
                         ) : inspections.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={11} align="center" sx={{ py: 4 }}>
-                                    <Typography variant="body2" color="text.secondary">No hay inspecciones registradas.</Typography>
+                                <TableCell colSpan={11} align="center" sx={{ py: 6 }}>
+                                    <Typography variant="body2" color="#64748b" fontWeight={600}>
+                                        No hay inspecciones registradas.
+                                    </Typography>
+                                    <Typography variant="caption" color="#94a3b8">
+                                        Agrega la primera con el botón de arriba.
+                                    </Typography>
                                 </TableCell>
                             </TableRow>
                         ) : (
                             inspections.map((row) => (
                                 <TableRow key={row.id_inspeccion} hover>
-                                    <TableCell sx={{ fontWeight: 600 }}>{row.id_inspeccion}</TableCell>
-                                    <TableCell>{new Date(row.fecha_registro).toLocaleDateString()}</TableCell>
-                                    <TableCell>{row.nombre_camion}</TableCell>
+                                    <TableCell sx={CELL_STRONG_SX}>{row.id_inspeccion}</TableCell>
+                                    <TableCell sx={CELL_MUTED_SX}>{new Date(row.fecha_registro).toLocaleDateString()}</TableCell>
+                                    <TableCell sx={CELL_STRONG_SX}>{row.nombre_camion}</TableCell>
                                     <TableCell>
                                         {row.formatted_trip ? (
-                                            <Chip label={row.formatted_trip} size="small" variant="outlined" />
+                                            <Chip
+                                                label={row.formatted_trip}
+                                                size="small"
+                                                sx={{ ...CHIP_SX, bgcolor: '#eef2ff', color: '#4338ca', border: '1px solid #e0e7ff' }}
+                                            />
                                         ) : (
-                                            <Typography variant="caption" color="text.secondary">N/A</Typography>
+                                            <Typography variant="caption" color="#94a3b8">N/A</Typography>
                                         )}
                                     </TableCell>
                                     <TableCell>
                                         <Chip
                                             label={row.tipo_violacion}
                                             size="small"
-                                            color={row.tipo_violacion === 'Out of services' ? 'error' : 'warning'}
-                                            sx={{ fontWeight: 700 }}
+                                            sx={row.tipo_violacion === 'Out of services'
+                                                ? CHIP_DANGER_SX
+                                                : { ...CHIP_SX, bgcolor: '#fffbeb', color: '#b45309', border: '1px solid #fde68a' }}
                                         />
                                     </TableCell>
-                                    <TableCell>{row.descripcion}</TableCell>
-                                    <TableCell align="right">{formatMoney(row.multa_ima)}</TableCell>
-                                    <TableCell align="right">{formatMoney(row.multa_driver)}</TableCell>
-                                    <TableCell align="right" sx={{ fontWeight: 700, color: '#0f172a' }}>
+                                    <TableCell sx={CELL_MUTED_SX}>{row.descripcion}</TableCell>
+                                    <TableCell align="right" sx={CELL_MUTED_SX}>{formatMoney(row.multa_ima)}</TableCell>
+                                    <TableCell align="right" sx={CELL_MUTED_SX}>{formatMoney(row.multa_driver)}</TableCell>
+                                    <TableCell align="right" sx={{ fontWeight: 800, color: '#0f172a' }}>
                                         {formatMoney(row.total)}
                                     </TableCell>
                                     <TableCell>
@@ -137,18 +163,16 @@ const InspectionsAdmin = () => {
                                                         rel="noopener noreferrer"
                                                         clickable
                                                         size="small"
-                                                        color="error"
-                                                        variant="outlined"
-                                                        sx={{ maxWidth: 160 }}
+                                                        sx={{ ...CHIP_DANGER_SX, maxWidth: 160, '& .MuiChip-icon': { color: '#b91c1c' } }}
                                                     />
                                                 ))}
                                             </Stack>
                                         ) : (
-                                            <Typography variant="caption" color="text.secondary">Sin documentos</Typography>
+                                            <Typography variant="caption" color="#94a3b8">Sin documentos</Typography>
                                         )}
                                     </TableCell>
                                     <TableCell align="center">
-                                        <IconButton color="primary" onClick={() => handleOpenModal(row)}>
+                                        <IconButton size="small" onClick={() => handleOpenModal(row)} sx={ICON_BTN_SX}>
                                             <EditIcon fontSize="small" />
                                         </IconButton>
                                     </TableCell>
