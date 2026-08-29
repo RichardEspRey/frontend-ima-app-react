@@ -123,7 +123,10 @@ const ExpenseEdit = () => {
             updated.category = null;
             updated.subcategory = null;
         }
-        if (field === 'category') updated.subcategory = null;
+        if (field === 'category') {
+          const propias = subcategories.filter(sub => String(sub.id_categoria) === String(value));
+          updated.subcategory = propias.length === 1 ? propias[0].value : null;
+        }
         return updated;
     }));
   };
@@ -428,7 +431,7 @@ const ExpenseEdit = () => {
                   const relevantCategories = maintenanceCategories.filter(c => String(c.id_tipo_gasto) === String(detail.expenseType));
                   const hasCategories = relevantCategories.length > 0;
 
-                  const relevantSubs = subcategories.filter(s => s.id_categoria === detail.category);
+                  const relevantSubs = subcategories.filter(s => String(s.id_categoria) === String(detail.category));
                   const hasSubcategories = relevantSubs.length > 0;
 
                   let mdSelectSize = 12;

@@ -96,7 +96,8 @@ const ExpenseModal = ({ open, onClose, onSuccess }) => {
                 updated.subcategory = null;
             }
             if (field === 'category') {
-                updated.subcategory = null;
+                const propias = subcategories.filter(sub => String(sub.id_categoria) === String(value));
+                updated.subcategory = propias.length === 1 ? propias[0].value : null;
             }
             
             return updated;
@@ -174,7 +175,7 @@ const ExpenseModal = ({ open, onClose, onSuccess }) => {
             cantidad_articulo: detail.quantity,
             precio_unitario: detail.price,
             id_categoria_mantenimiento: detail.category || null,
-            id_subcategoria_mantenimiento: String(detail.category) === '2' ? 39 : ['4','5','6','7'].includes(String(detail.category)) ? 40 : (detail.subcategory || null),
+            id_subcategoria_mantenimiento: detail.subcategory || null,
         }));
         apiFormData.append('detailsData', JSON.stringify(detailsData));
         apiFormData.append('op', 'Alta');
@@ -325,7 +326,7 @@ const ExpenseModal = ({ open, onClose, onSuccess }) => {
                                 {expenseDetails.map((detail) => {
                                     const relevantCategories = maintenanceCategories.filter(c => String(c.id_tipo_gasto) === String(detail.expenseType));
                                     const hasCategories = relevantCategories.length > 0;
-                                    const relevantSubs = subcategories.filter(s => s.id_categoria === detail.category);
+                                    const relevantSubs = subcategories.filter(s => String(s.id_categoria) === String(detail.category));
                                     const hasSubcategories = relevantSubs.length > 0;
 
                                     let mdSelectSize = 12;
