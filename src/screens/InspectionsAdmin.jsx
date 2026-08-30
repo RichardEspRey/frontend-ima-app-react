@@ -4,6 +4,7 @@ import {
     TableHead, TableRow, IconButton, CircularProgress, Chip, Stack
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
+import { fechaCorta } from '../utils/fechas';
 import EditIcon from '@mui/icons-material/Edit';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import InspectionModal from '../components/InspectionModal';
@@ -121,7 +122,7 @@ const InspectionsAdmin = ({ embedded = false }) => {
                             inspections.map((row) => (
                                 <TableRow key={row.id_inspeccion} hover>
                                     <TableCell sx={CELL_STRONG_SX}>{row.id_inspeccion}</TableCell>
-                                    <TableCell sx={CELL_MUTED_SX}>{new Date(row.fecha_registro).toLocaleDateString()}</TableCell>
+                                    <TableCell sx={CELL_MUTED_SX}>{fechaCorta(row.fecha_inspeccion)}</TableCell>
                                     <TableCell sx={CELL_STRONG_SX}>{row.nombre_camion}</TableCell>
                                     <TableCell>
                                         {row.formatted_trip ? (

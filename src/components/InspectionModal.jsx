@@ -5,9 +5,7 @@ import {
 } from '@mui/material';
 
 // Íconos para la UI
-import LocalShippingIcon from '@mui/icons-material/LocalShipping';
-import AssignmentLateIcon from '@mui/icons-material/AssignmentLate';
-import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import CloseIcon from '@mui/icons-material/Close';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -15,6 +13,12 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import EditIcon from '@mui/icons-material/Edit';
 
 import Swal from 'sweetalert2';
+import FieldLabel from './Gastos/FieldLabel';
+import {
+    DIALOG_PAPER_SX, DIALOG_TITLE_SX, DIALOG_CONTENT_SX, DIALOG_ACTIONS_SX,
+    CARD_SX, SECTION_LABEL_SX, PAGE_OVERLINE_SX, INPUT_SX,
+    GHOST_BTN_SX, DARK_BTN_SX, CHIP_SX,
+} from '../styles/estilosTabla';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -297,30 +301,41 @@ const InspectionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
         }
     };
 
-    const inputProps = { 
-        InputLabelProps: { shrink: true },
-        size: "small"
-    };
+    const inputProps = { size: "small", InputProps: { sx: INPUT_SX } };
 
     return (
-        <Dialog open={open} onClose={!saving ? onClose : undefined} maxWidth="md" fullWidth scroll="paper">
-            <DialogTitle sx={{ bgcolor: '#f8f9fa', borderBottom: '1px solid #e0e0e0', py: 2 }}>
-                <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 1.5 }}>
-                    <Typography variant="h5" fontWeight={800} color="primary.main">
-                        {editData ? 'Editar Inspección' : 'Nueva Inspección'}
-                    </Typography>
-                    {formData.trip_id && !editingTrip && (
-                        <Chip
-                            label={`Viaje: ${formData.trip_number_search || formData.trip_id}`}
-                            color="primary"
-                            variant="outlined"
-                            sx={{ fontWeight: 700, bgcolor: 'white' }}
-                            onDelete={initialTrip ? undefined : () => setEditingTrip(true)}
-                            deleteIcon={initialTrip ? undefined : <EditIcon />}
-                        />
-                    )}
+        <Dialog open={open} onClose={!saving ? onClose : undefined} maxWidth="lg" fullWidth scroll="paper" PaperProps={{ sx: DIALOG_PAPER_SX }}>
+            <DialogTitle sx={DIALOG_TITLE_SX}>
+                <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 1.5 }}>
+                    <Box>
+                        <Typography variant="overline" sx={PAGE_OVERLINE_SX}>
+                            Safety · Inspecciones
+                        </Typography>
+                        <Typography variant="h5" fontWeight={800} color="#0f172a" letterSpacing="-0.02em" sx={{ mt: 0.25 }}>
+                            {editData ? 'Editar Inspección' : 'Nueva Inspección'}
+                        </Typography>
+                        <Typography variant="body2" color="#64748b" sx={{ mt: 0.5 }}>
+                            Captura la unidad, las violaciones detectadas y las multas.
+                        </Typography>
+                    </Box>
+                    <Stack direction="row" alignItems="center" spacing={1}>
+                        {formData.trip_id && !editingTrip && (
+                            <Chip
+                                label={`Viaje: ${formData.trip_number_search || formData.trip_id}`}
+                                size="small"
+                                sx={{ ...CHIP_SX, bgcolor: '#eef2ff', color: '#4338ca', border: '1px solid #e0e7ff' }}
+                                onDelete={initialTrip ? undefined : () => setEditingTrip(true)}
+                                deleteIcon={initialTrip ? undefined : <EditIcon sx={{ fontSize: 15 }} />}
+                            />
+                        )}
+                        <IconButton onClick={onClose} sx={{ color: '#64748b' }} disabled={saving}>
+                            <CloseIcon />
+                        </IconButton>
+                    </Stack>
                 </Stack>
                 {(!formData.trip_id || editingTrip) && (
+                  <Box sx={{ maxWidth: 320, mt: 1 }}>
+                    <FieldLabel>Viaje Asociado</FieldLabel>
                     <Autocomplete
                         fullWidth
                         disabled={!!initialTrip}
@@ -334,12 +349,10 @@ const InspectionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
                         }}
                         loading={loadingTrips}
                         noOptionsText="Ingresa el número exacto del viaje..."
-                        sx={{ maxWidth: 320 }}
                         renderInput={(params) => (
                             <TextField
                                 {...params}
                                 fullWidth
-                                label="Viaje Asociado"
                                 placeholder="Ej. 102"
                                 {...inputProps}
                                 sx={{ bgcolor: 'white' }}
@@ -355,10 +368,11 @@ const InspectionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
                             />
                         )}
                     />
+                  </Box>
                 )}
             </DialogTitle>
             
-            <DialogContent sx={{ bgcolor: '#f4f6f8', p: 3 }}>
+            <DialogContent sx={DIALOG_CONTENT_SX}>
                 {loading ? (
                     <Box display="flex" justifyContent="center" py={5}><CircularProgress /></Box>
                 ) : (
@@ -366,15 +380,13 @@ const InspectionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
                         <Stack spacing={3}>
                             
                             {/* SECCIÓN 1: DATOS DE LA UNIDAD */}
-                            <Paper elevation={0} sx={{ p: 3, borderRadius: 2, border: '1px solid #e0e0e0' }}>
-                                <Stack direction="row" spacing={1} alignItems="center" mb={2.5}>
-                                    <LocalShippingIcon color="primary" fontSize="small" />
-                                    <Typography variant="subtitle1" fontWeight={700}>1. Datos de la Unidad</Typography>
-                                </Stack>
+                            <Paper elevation={0} sx={CARD_SX}>
+                                <Typography variant="overline" sx={SECTION_LABEL_SX}>Datos de la Unidad</Typography>
                                 <Grid container spacing={2}>
-                                    <Grid item xs={12} sm={6}>
+                                    <Grid size={{ xs: 12, sm: 6 }}>
+                                        <FieldLabel>Unidad (Camión) *</FieldLabel>
                                         <TextField
-                                            select fullWidth label="Unidad (Camión) *" name="truck_id"
+                                            select fullWidth name="truck_id"
                                             value={formData.truck_id} onChange={handleChange} required
                                             {...inputProps}
                                             SelectProps={{ sx: { minWidth: '180px' } }}
@@ -383,31 +395,31 @@ const InspectionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
                                             {trucks.map(t => <MenuItem key={t.truck_id} value={t.truck_id}>{t.unidad}</MenuItem>)}
                                         </TextField>
                                     </Grid>
-                                    <Grid item xs={12} sm={6}>
-                                        <TextField fullWidth label="Operador *" name="operador" placeholder="Nombre completo" value={formData.operador} onChange={handleChange} required {...inputProps} />
+                                    <Grid size={{ xs: 12, sm: 6 }}>
+                                        <FieldLabel>Operador *</FieldLabel>
+                                        <TextField fullWidth name="operador" placeholder="Nombre completo" value={formData.operador} onChange={handleChange} required {...inputProps} />
                                     </Grid>
                                 </Grid>
                             </Paper>
 
                             {/* SECCIÓN 2: REPORTE DE INSPECCIÓN (Múltiples Registros) */}
-                            <Paper elevation={0} sx={{ p: 3, borderRadius: 2, border: '1px solid #e0e0e0' }}>
-                                <Stack direction="row" spacing={1} alignItems="center" mb={2.5}>
-                                    <AssignmentLateIcon color="primary" fontSize="small" />
-                                    <Typography variant="subtitle1" fontWeight={700}>2. Reporte de Inspección</Typography>
-                                </Stack>
+                            <Paper elevation={0} sx={CARD_SX}>
+                                <Typography variant="overline" sx={SECTION_LABEL_SX}>Reporte de Inspección</Typography>
 
                                 <Grid container spacing={2} alignItems="flex-start" sx={{ mb: 1 }}>
-                                    <Grid item xs={12} sm={4}>
-                                        <TextField fullWidth label="Ciudad *" name="ciudad" placeholder="Ciudad actual" value={formData.ciudad} onChange={handleChange} required {...inputProps} />
+                                    <Grid size={{ xs: 12, sm: 4 }}>
+                                        <FieldLabel>Ciudad *</FieldLabel>
+                                        <TextField fullWidth name="ciudad" placeholder="Ciudad actual" value={formData.ciudad} onChange={handleChange} required {...inputProps} />
                                     </Grid>
-                                    <Grid item xs={12} sm={4}>
-                                        <TextField fullWidth label="Estado *" name="estado" placeholder="Estado/Provincia" value={formData.estado} onChange={handleChange} required {...inputProps} />
+                                    <Grid size={{ xs: 12, sm: 4 }}>
+                                        <FieldLabel>Estado *</FieldLabel>
+                                        <TextField fullWidth name="estado" placeholder="Estado/Provincia" value={formData.estado} onChange={handleChange} required {...inputProps} />
                                     </Grid>
-                                    <Grid item xs={12} sm={4}>
+                                    <Grid size={{ xs: 12, sm: 4 }}>
+                                        <FieldLabel>Fecha de Inspección *</FieldLabel>
                                         <TextField
                                             fullWidth
                                             type="date"
-                                            label="Fecha de Inspección *"
                                             name="fecha_inspeccion"
                                             value={formData.fecha_inspeccion}
                                             onChange={handleChange}
@@ -418,9 +430,10 @@ const InspectionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
                                 </Grid>
 
                                 <Grid container spacing={2} alignItems="flex-start">
-                                    <Grid item xs={12} sm={4}>
+                                    <Grid size={{ xs: 12, sm: 4 }}>
+                                        <FieldLabel>Tipo de Violación</FieldLabel>
                                         <TextField 
-                                            select fullWidth label="Tipo de Violación" name="tipo_violacion" 
+                                            select fullWidth name="tipo_violacion" 
                                             value={currentReport.tipo_violacion} onChange={handleReportChange}
                                             {...inputProps}
                                             SelectProps={{ sx: { minWidth: '150px' } }}
@@ -430,7 +443,8 @@ const InspectionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
                                         </TextField>
                                     </Grid>
                                     
-                                    <Grid item xs={12} sm={8}>
+                                    <Grid size={{ xs: 12, sm: 8 }}>
+                                        <FieldLabel>Descripción</FieldLabel>
                                         <Autocomplete
                                             freeSolo
                                             options={descriptions}
@@ -440,7 +454,6 @@ const InspectionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
                                             renderInput={(params) => (
                                                 <TextField 
                                                     {...params} 
-                                                    label="Descripción" 
                                                     placeholder="Ej. Llantas lisas, Fugas..." 
                                                     fullWidth 
                                                     {...inputProps} 
@@ -454,11 +467,12 @@ const InspectionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
                                         />
                                     </Grid>
 
-                                    <Grid item xs={12}>
-                                        <TextField fullWidth multiline rows={2} label="Comentarios" placeholder="Notas adicionales..." name="comentarios" value={currentReport.comentarios} onChange={handleReportChange} helperText={`${currentReport.comentarios.length}/500`} {...inputProps} />
+                                    <Grid size={{ xs: 12 }}>
+                                        <FieldLabel>Comentarios</FieldLabel>
+                                        <TextField fullWidth multiline rows={2} placeholder="Notas adicionales..." name="comentarios" value={currentReport.comentarios} onChange={handleReportChange} helperText={`${currentReport.comentarios.length}/500`} {...inputProps} />
                                     </Grid>
                                     
-                                    <Grid item xs={12} display="flex" justifyContent="flex-end">
+                                    <Grid size={{ xs: 12 }} display="flex" justifyContent="flex-end">
                                         <Button 
                                             type="button" 
                                             variant="outlined" 
@@ -509,22 +523,21 @@ const InspectionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
                             </Paper>
 
                             {/* SECCIÓN 3: ADMINISTRACIÓN Y COMPROBANTES */}
-                            <Paper elevation={0} sx={{ p: 3, borderRadius: 2, border: '1px solid #e0e0e0' }}>
-                                <Stack direction="row" spacing={1} alignItems="center" mb={2.5}>
-                                    <AttachMoneyIcon color="primary" fontSize="small" />
-                                    <Typography variant="subtitle1" fontWeight={700}>3. Administración y Comprobantes</Typography>
-                                </Stack>
+                            <Paper elevation={0} sx={CARD_SX}>
+                                <Typography variant="overline" sx={SECTION_LABEL_SX}>Administración y Comprobantes</Typography>
                                 <Grid container spacing={2}>
-                                    <Grid item xs={12} sm={6}>
-                                        <TextField fullWidth label="Multa IMA" name="multa_ima" type="number" inputProps={{ step: "0.01", min: "0" }} value={formData.multa_ima} onChange={handleChange} {...inputProps} InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }} />
+                                    <Grid size={{ xs: 12, sm: 6 }}>
+                                        <FieldLabel>Multa IMA</FieldLabel>
+                                        <TextField fullWidth name="multa_ima" type="number" inputProps={{ step: "0.01", min: "0" }} value={formData.multa_ima} onChange={handleChange} {...inputProps} InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }} />
                                     </Grid>
-                                    <Grid item xs={12} sm={6}>
-                                        <TextField fullWidth label="Multa Driver" name="multa_driver" type="number" inputProps={{ step: "0.01", min: "0" }} value={formData.multa_driver} onChange={handleChange} {...inputProps} InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }} />
+                                    <Grid size={{ xs: 12, sm: 6 }}>
+                                        <FieldLabel>Multa Driver</FieldLabel>
+                                        <TextField fullWidth name="multa_driver" type="number" inputProps={{ step: "0.01", min: "0" }} value={formData.multa_driver} onChange={handleChange} {...inputProps} InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }} />
                                     </Grid>
                                     
                                     {/* Documentos ya guardados (solo al editar un registro existente) */}
                                     {Array.isArray(formData.documentos) && formData.documentos.length > 0 && (
-                                        <Grid item xs={12}>
+                                        <Grid size={{ xs: 12 }}>
                                             <Typography variant="caption" fontWeight={700} color="textSecondary" display="block" sx={{ mb: 0.5 }}>
                                                 DOCUMENTOS YA GUARDADOS
                                             </Typography>
@@ -580,7 +593,7 @@ const InspectionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
                                         </Grid>
                                     )}
 
-                                    <Grid item xs={12}>
+                                    <Grid size={{ xs: 12 }}>
                                         <Box sx={{
                                             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                                             width: '100%', boxSizing: 'border-box', border: '2px dashed #90caf9',
@@ -621,11 +634,11 @@ const InspectionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
                 )}
             </DialogContent>
             
-            <DialogActions sx={{ p: 3, bgcolor: '#f8f9fa', borderTop: '1px solid #e0e0e0' }}>
-                <Button onClick={onClose} disabled={saving} color="inherit" sx={{ fontWeight: 700 }}>
+            <DialogActions sx={DIALOG_ACTIONS_SX}>
+                <Button variant="outlined" onClick={onClose} disabled={saving} sx={GHOST_BTN_SX}>
                     Cancelar
                 </Button>
-                <Button type="submit" form="inspectionForm" variant="contained" disabled={saving || loading} elevation={0} sx={{ px: 4, fontWeight: 700, borderRadius: 2 }}>
+                <Button type="submit" form="inspectionForm" variant="contained" disabled={saving || loading} sx={DARK_BTN_SX}>
                     {saving ? 'Guardando...' : 'Guardar Inspección'}
                 </Button>
             </DialogActions>

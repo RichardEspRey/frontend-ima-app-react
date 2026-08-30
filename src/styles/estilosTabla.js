@@ -12,6 +12,22 @@ export const PAGE_TITLE_SX = { mt: 0.25 };
 
 export const CARD_SX = { p: 3, borderRadius: 2, border: '1px solid #e2e8f0' };
 
+export const DIALOG_PAPER_SX = { borderRadius: 3, overflow: 'hidden' };
+
+export const DIALOG_TITLE_SX = {
+  bgcolor: '#fff', borderBottom: '1px solid #e2e8f0', px: { xs: 2, md: 4 }, py: 2.5,
+};
+
+export const DIALOG_CONTENT_SX = { bgcolor: '#f8fafc', p: { xs: 2, md: 4 } };
+
+export const DIALOG_ACTIONS_SX = {
+  px: { xs: 2, md: 4 }, py: 2.5, bgcolor: '#fff', borderTop: '1px solid #e2e8f0', gap: 1,
+};
+
+export const SECTION_ICON_SX = { color: '#64748b' };
+
+export const SECTION_TITLE_SX = { fontWeight: 700, color: '#0f172a' };
+
 export const HEADER_ROW_SX = { bgcolor: '#fafbfc', borderBottom: '1px solid #e2e8f0' };
 
 export const HEADER_CELL_SX = {

@@ -3,14 +3,18 @@ import {
     Dialog, DialogTitle, DialogContent, DialogActions,
     Button, TextField, MenuItem, Grid, Typography, Box, Paper, Chip, Stack, InputAdornment, Autocomplete, CircularProgress, IconButton, Tooltip
 } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import LocalShippingIcon from '@mui/icons-material/LocalShipping';
-import BuildIcon from '@mui/icons-material/Build';
-import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Swal from 'sweetalert2';
+import FieldLabel from './Gastos/FieldLabel';
+import {
+    DIALOG_PAPER_SX, DIALOG_TITLE_SX, DIALOG_CONTENT_SX, DIALOG_ACTIONS_SX,
+    CARD_SX, SECTION_LABEL_SX, PAGE_OVERLINE_SX, INPUT_SX,
+    GHOST_BTN_SX, DARK_BTN_SX, CHIP_SX,
+} from '../styles/estilosTabla';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -20,7 +24,7 @@ const RoadRepairModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
     // 🚨 Agregamos trip_id y formatted_trip al estado
     const [formData, setFormData] = useState({
         id_reparacion: '', truck_id: '', trip_id: '', formatted_trip: '', operador: '', ciudad: '', estado: '',
-        fallo: '', tipo_reparacion: '', comentarios: '', costo_reparacion: '', costo_refacciones: ''
+        fallo: '', tipo_reparacion: '', comentarios: '', costo_reparacion: '', costo_refacciones: '', fecha_suceso: ''
     });
     
     const [files, setFiles] = useState([]);
@@ -43,7 +47,8 @@ const RoadRepairModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
                 setFormData({
                     ...editData,
                     trip_id: editData.trip_id || '',
-                    formatted_trip: editData.formatted_trip || ''
+                    formatted_trip: editData.formatted_trip || '',
+                    fecha_suceso: editData.fecha_suceso || ''
                 });
                 if (editData.trip_id) {
                     setTripOptions([{ trip_id: editData.trip_id, formatted_trip: editData.formatted_trip }]);
@@ -52,7 +57,7 @@ const RoadRepairModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
                 setFormData({
                     id_reparacion: '', truck_id: initialTrip?.truck_id || '', trip_id: initialTrip?.trip_id || '', formatted_trip: initialTrip?.formatted_trip || '',
                     operador: initialTrip?.operador || '', ciudad: '', estado: '',
-                    fallo: '', tipo_reparacion: '', comentarios: '', costo_reparacion: '', costo_refacciones: ''
+                    fallo: '', tipo_reparacion: '', comentarios: '', costo_reparacion: '', costo_refacciones: '', fecha_suceso: ''
                 });
                 setTripOptions(initialTrip ? [{ trip_id: initialTrip.trip_id, formatted_trip: initialTrip.formatted_trip }] : []);
             }
@@ -179,30 +184,41 @@ const RoadRepairModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
         }
     };
 
-    const inputProps = { 
-        InputLabelProps: { shrink: true },
-        size: "small"
-    };
+    const inputProps = { size: "small", InputProps: { sx: INPUT_SX } };
 
     return (
-        <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth scroll="paper">
-            <DialogTitle sx={{ bgcolor: '#f8f9fa', borderBottom: '1px solid #e0e0e0', py: 2 }}>
-                <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 1.5 }}>
-                    <Typography variant="h5" fontWeight={800} color="primary.main">
-                        {editData ? 'Editar Reparación' : 'Nueva Reparación en Carretera'}
-                    </Typography>
-                    {formData.trip_id && !editingTrip && (
-                        <Chip
-                            label={`Viaje: ${formData.formatted_trip || formData.trip_id}`}
-                            color="primary"
-                            variant="outlined"
-                            sx={{ fontWeight: 700, bgcolor: 'white' }}
-                            onDelete={initialTrip ? undefined : () => setEditingTrip(true)}
-                            deleteIcon={initialTrip ? undefined : <EditIcon />}
-                        />
-                    )}
+        <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth scroll="paper" PaperProps={{ sx: DIALOG_PAPER_SX }}>
+            <DialogTitle sx={DIALOG_TITLE_SX}>
+                <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 1.5 }}>
+                    <Box>
+                        <Typography variant="overline" sx={PAGE_OVERLINE_SX}>
+                            Safety · Reparaciones
+                        </Typography>
+                        <Typography variant="h5" fontWeight={800} color="#0f172a" letterSpacing="-0.02em" sx={{ mt: 0.25 }}>
+                            {editData ? 'Editar Reparación' : 'Nueva Reparación en Carretera'}
+                        </Typography>
+                        <Typography variant="body2" color="#64748b" sx={{ mt: 0.5 }}>
+                            Registra la unidad, la falla y los comprobantes del gasto.
+                        </Typography>
+                    </Box>
+                    <Stack direction="row" alignItems="center" spacing={1}>
+                        {formData.trip_id && !editingTrip && (
+                            <Chip
+                                label={`Viaje: ${formData.formatted_trip || formData.trip_id}`}
+                                size="small"
+                                sx={{ ...CHIP_SX, bgcolor: '#eef2ff', color: '#4338ca', border: '1px solid #e0e7ff' }}
+                                onDelete={initialTrip ? undefined : () => setEditingTrip(true)}
+                                deleteIcon={initialTrip ? undefined : <EditIcon sx={{ fontSize: 15 }} />}
+                            />
+                        )}
+                        <IconButton onClick={onClose} sx={{ color: '#64748b' }}>
+                            <CloseIcon />
+                        </IconButton>
+                    </Stack>
                 </Stack>
                 {(!formData.trip_id || editingTrip) && (
+                  <Box sx={{ maxWidth: 320, mt: 1 }}>
+                    <FieldLabel>Viaje Asociado</FieldLabel>
                     <Autocomplete
                         fullWidth
                         disabled={!!initialTrip}
@@ -225,12 +241,10 @@ const RoadRepairModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
                         }}
                         loading={loadingTrips}
                         noOptionsText="Ingresa el número exacto del viaje..."
-                        sx={{ maxWidth: 320 }}
                         renderInput={(params) => (
                             <TextField
                                 {...params}
                                 fullWidth
-                                label="Viaje Asociado"
                                 placeholder="Ej. 8"
                                 InputLabelProps={{ shrink: true }}
                                 size="small"
@@ -247,24 +261,22 @@ const RoadRepairModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
                             />
                         )}
                     />
+                  </Box>
                 )}
             </DialogTitle>
 
-            <DialogContent sx={{ bgcolor: '#f4f6f8', p: 3 }}>
+            <DialogContent sx={DIALOG_CONTENT_SX}>
                 <Stack spacing={3} sx={{ mt: 1 }}>
 
                     {/* SECCIÓN 1: UNIDAD */}
-                    <Paper elevation={0} sx={{ p: 3, borderRadius: 2, border: '1px solid #e0e0e0' }}>
-                        <Stack direction="row" spacing={1} alignItems="center" mb={2.5}>
-                            <LocalShippingIcon color="primary" fontSize="small" />
-                            <Typography variant="subtitle1" fontWeight={700}>1. Datos de la Unidad</Typography>
-                        </Stack>
+                    <Paper elevation={0} sx={CARD_SX}>
+                        <Typography variant="overline" sx={SECTION_LABEL_SX}>Datos de la Unidad</Typography>
                         <Grid container spacing={2}>
-                            <Grid item xs={12} sm={6}>
+                            <Grid size={{ xs: 12, sm: 6 }}>
+                                <FieldLabel>Unidad (Camión) *</FieldLabel>
                                 <TextField
                                     select
                                     fullWidth
-                                    label="Unidad (Camión) *"
                                     name="truck_id"
                                     value={formData.truck_id}
                                     onChange={handleChange}
@@ -275,33 +287,45 @@ const RoadRepairModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
                                     {trucks.map(t => <MenuItem key={t.truck_id} value={t.truck_id}>{t.unidad}</MenuItem>)}
                                 </TextField>
                             </Grid>
-                            <Grid item xs={12} sm={6}>
-                                <TextField fullWidth label="Operador *" name="operador" placeholder="Nombre completo" value={formData.operador} onChange={handleChange} {...inputProps} />
+                            <Grid size={{ xs: 12, sm: 6 }}>
+                                <FieldLabel>Operador *</FieldLabel>
+                                <TextField fullWidth name="operador" placeholder="Nombre completo" value={formData.operador} onChange={handleChange} {...inputProps} />
                             </Grid>
                         </Grid>
                     </Paper>
 
                     {/* SECCIÓN 2: INCIDENTE */}
-                    <Paper elevation={0} sx={{ p: 3, borderRadius: 2, border: '1px solid #e0e0e0' }}>
-                        <Stack direction="row" spacing={1} alignItems="center" mb={2.5}>
-                            <BuildIcon color="primary" fontSize="small" />
-                            <Typography variant="subtitle1" fontWeight={700}>2. Reporte de Falla</Typography>
-                        </Stack>
+                    <Paper elevation={0} sx={CARD_SX}>
+                        <Typography variant="overline" sx={SECTION_LABEL_SX}>Reporte de Falla</Typography>
                         <Grid container spacing={2}>
-                            <Grid item xs={12} sm={6}>
-                                <TextField fullWidth label="Ciudad" name="ciudad" placeholder="Ciudad actual" value={formData.ciudad} onChange={handleChange} {...inputProps} />
+                            <Grid size={{ xs: 12, sm: 4 }}>
+                                <FieldLabel>Ciudad</FieldLabel>
+                                <TextField fullWidth name="ciudad" placeholder="Ciudad actual" value={formData.ciudad} onChange={handleChange} {...inputProps} />
                             </Grid>
-                            <Grid item xs={12} sm={6}>
-                                <TextField fullWidth label="Estado" name="estado" placeholder="Estado/Provincia" value={formData.estado} onChange={handleChange} {...inputProps} />
+                            <Grid size={{ xs: 12, sm: 4 }}>
+                                <FieldLabel>Estado</FieldLabel>
+                                <TextField fullWidth name="estado" placeholder="Estado/Provincia" value={formData.estado} onChange={handleChange} {...inputProps} />
                             </Grid>
-                            <Grid item xs={12} sm={7}>
-                                <TextField fullWidth label="Fallo Reportado *" name="fallo" placeholder="Ej. Falla en sistema de frenos" value={formData.fallo} onChange={handleChange} {...inputProps} />
+                            <Grid size={{ xs: 12, sm: 4 }}>
+                                <FieldLabel>Fecha del Suceso</FieldLabel>
+                                <TextField
+                                    fullWidth
+                                    type="date"
+                                    name="fecha_suceso"
+                                    value={formData.fecha_suceso || ''}
+                                    onChange={handleChange}
+                                    {...inputProps}
+                                />
                             </Grid>
-                            <Grid item xs={12} sm={5}>
+                            <Grid size={{ xs: 12, sm: 7 }}>
+                                <FieldLabel>Fallo Reportado *</FieldLabel>
+                                <TextField fullWidth name="fallo" placeholder="Ej. Falla en sistema de frenos" value={formData.fallo} onChange={handleChange} {...inputProps} />
+                            </Grid>
+                            <Grid size={{ xs: 12, sm: 5 }}>
+                                <FieldLabel>Reparación realizada por *</FieldLabel>
                                 <TextField 
                                     select 
                                     fullWidth 
-                                    label="Reparación realizada por *" 
                                     name="tipo_reparacion" 
                                     value={formData.tipo_reparacion} 
                                     onChange={handleChange} 
@@ -313,29 +337,29 @@ const RoadRepairModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
                                     <MenuItem value="Road Services">Road Services</MenuItem>
                                 </TextField>
                             </Grid>
-                            <Grid item xs={12}>
-                                <TextField fullWidth multiline rows={2} label="Comentarios" placeholder="Notas adicionales..." name="comentarios" value={formData.comentarios} onChange={handleChange} {...inputProps} helperText={`${formData.comentarios.length}/300`} />
+                            <Grid size={{ xs: 12 }}>
+                                <FieldLabel>Comentarios</FieldLabel>
+                                <TextField fullWidth multiline rows={2} placeholder="Notas adicionales..." name="comentarios" value={formData.comentarios} onChange={handleChange} {...inputProps} helperText={`${formData.comentarios.length}/300`} />
                             </Grid>
                         </Grid>
                     </Paper>
 
                     {/* SECCIÓN 3: COSTOS Y ARCHIVOS */}
-                    <Paper elevation={0} sx={{ p: 3, borderRadius: 2, border: '1px solid #e0e0e0' }}>
-                        <Stack direction="row" spacing={1} alignItems="center" mb={2.5}>
-                            <AttachMoneyIcon color="primary" fontSize="small" />
-                            <Typography variant="subtitle1" fontWeight={700}>3. Administración y Comprobantes</Typography>
-                        </Stack>
+                    <Paper elevation={0} sx={CARD_SX}>
+                        <Typography variant="overline" sx={SECTION_LABEL_SX}>Administración y Comprobantes</Typography>
                         <Grid container spacing={2}>
-                            <Grid item xs={12} sm={6}>
-                                <TextField fullWidth label="Mano de Obra" name="costo_reparacion" type="number" value={formData.costo_reparacion} onChange={handleChange} {...inputProps} InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }} />
+                            <Grid size={{ xs: 12, sm: 6 }}>
+                                <FieldLabel>Mano de Obra</FieldLabel>
+                                <TextField fullWidth name="costo_reparacion" type="number" value={formData.costo_reparacion} onChange={handleChange} {...inputProps} InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }} />
                             </Grid>
-                            <Grid item xs={12} sm={6}>
-                                <TextField fullWidth label="Refacciones" name="costo_refacciones" type="number" value={formData.costo_refacciones} onChange={handleChange} {...inputProps} InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }} />
+                            <Grid size={{ xs: 12, sm: 6 }}>
+                                <FieldLabel>Refacciones</FieldLabel>
+                                <TextField fullWidth name="costo_refacciones" type="number" value={formData.costo_refacciones} onChange={handleChange} {...inputProps} InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }} />
                             </Grid>
                             
                             {/* Documentos ya guardados (solo al editar un registro existente) */}
                             {Array.isArray(formData.documentos) && formData.documentos.length > 0 && (
-                                <Grid item xs={12}>
+                                <Grid size={{ xs: 12 }}>
                                     <Typography variant="caption" fontWeight={700} color="textSecondary" display="block" sx={{ mb: 0.5 }}>
                                         DOCUMENTOS YA GUARDADOS
                                     </Typography>
@@ -392,7 +416,7 @@ const RoadRepairModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
                             )}
 
                             {/* Subida de Invoices */}
-                            <Grid item xs={12}>
+                            <Grid size={{ xs: 12 }}>
                                 <Box sx={{
                                     display: 'flex',
                                     flexDirection: 'column',
@@ -437,9 +461,9 @@ const RoadRepairModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
                 </Stack>
             </DialogContent>
             
-            <DialogActions sx={{ p: 3, bgcolor: '#f8f9fa', borderTop: '1px solid #e0e0e0' }}>
-                <Button onClick={onClose} color="inherit" sx={{ fontWeight: 700 }}>Cancelar</Button>
-                <Button onClick={handleSubmit} variant="contained" elevation={0} sx={{ px: 4, fontWeight: 700, borderRadius: 2 }}>
+            <DialogActions sx={DIALOG_ACTIONS_SX}>
+                <Button variant="outlined" onClick={onClose} sx={GHOST_BTN_SX}>Cancelar</Button>
+                <Button onClick={handleSubmit} variant="contained" sx={DARK_BTN_SX}>
                     Guardar Registro
                 </Button>
             </DialogActions>

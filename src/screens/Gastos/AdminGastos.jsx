@@ -28,12 +28,15 @@ import { ordenarGastos, siguienteOrden } from '../../utils/ordenarGastos';
 import { normalizarTexto } from '../../utils/texto';
 import { totalUSD, totalMXN } from '../../utils/gastosValores';
 import { useGastosFiltrosStore } from '../../store/useGastosFiltrosStore';
+import { useAuthStore } from '../../store/useAuthStore';
 import useFetchExpenseTypes from '../../hooks/expense_hooks/useFetchExpenseTypes';
 import useFetchCategories from '../../hooks/expense_hooks/useFetchCategories';
 import useFetchSubcategories from '../../hooks/expense_hooks/useFetchSubcategories';
 import { SECTION_LABEL_SX, HEADER_ROW_SX, HEADER_CELL_SX, DARK_BTN_SX, money, moneyMXN } from './estilosGastos';
 
 const apiHost = import.meta.env.VITE_API_HOST;
+
+const ADMIN_TYPES = new Set(['admin']);
 
 const TOOLTIP_SIGUIENTE = { asc: 'Ordenar descendente', desc: 'Quitar orden' };
 
@@ -70,7 +73,9 @@ const CeldaOrdenable = ({ campo, label, orden, onOrdenar, align = 'left' }) => {
 };
 
 const AdminGastos = () => {
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
+  const { user } = useAuthStore();
+  const esAdmin = ADMIN_TYPES.has(user?.tipo_usuario?.toLowerCase());
   const [gastos, setGastos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -553,7 +558,16 @@ const AdminGastos = () => {
                 </TableCell>
               </TableRow>
             ) : (
-              slice.map((g) => <GastoRow key={g.id_gasto} gasto={g} navigate={navigate} mxnRate={mxnRate} />)
+              slice.map((g) => (
+                <GastoRow
+                  key={g.id_gasto}
+                  gasto={g}
+                  navigate={navigate}
+                  mxnRate={mxnRate}
+                  puedeEliminar={esAdmin}
+                  onEliminado={fetchGastos}
+                />
+              ))
             )}
           </TableBody>
 

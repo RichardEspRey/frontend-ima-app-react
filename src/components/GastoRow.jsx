@@ -6,11 +6,16 @@ import {
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import EditIcon from '@mui/icons-material/Edit';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import InsertDriveFileOutlinedIcon from '@mui/icons-material/InsertDriveFileOutlined';
 import { PhotoProvider, PhotoView } from 'react-photo-view';
 import 'react-photo-view/dist/react-photo-view.css';
 import { esGastoMXN, totalUSD, totalMXN, tipoGastoPrincipal } from '../utils/gastosValores';
 import { money, moneyMXN } from '../screens/Gastos/estilosGastos';
+import Swal from 'sweetalert2';
+import { useAuthStore } from '../store/useAuthStore';
+
+const apiHost = import.meta.env.VITE_API_HOST;
 
 const isImageUrl = (url = '') => /\.(png|jpe?g|gif|webp|bmp|tiff?)$/i.test(url);
 const fileName = (path = '') => path.split('/').pop() || '';
@@ -24,8 +29,10 @@ const MICRO_LABEL_SX = {
   color: '#94a3b8', fontWeight: 700, letterSpacing: '0.08em', fontSize: '0.68rem',
 };
 
-const GastoRow = ({ gasto, navigate, mxnRate }) => {
+const GastoRow = ({ gasto, navigate, mxnRate, puedeEliminar = false, onEliminado }) => {
   const [open, setOpen] = useState(false);
+  const [eliminando, setEliminando] = useState(false);
+  const { user } = useAuthStore();
   const detalles = gasto?.detalles ?? [];
   const tickets = gasto?.tickets ?? [];
 
@@ -42,6 +49,43 @@ const GastoRow = ({ gasto, navigate, mxnRate }) => {
   const esOriginalMXN = esMXN && !totalMXNEsConvertido;
   const originalSx = { color: '#15803d', fontWeight: 700 };
   const secundarioSx = { color: '#64748b', fontWeight: 500 };
+
+  const eliminarGasto = async () => {
+    const confirmacion = await Swal.fire({
+      title: `¿Eliminar el gasto #${gasto.id_gasto}?`,
+      html: 'Se revertirá el stock que este gasto haya sumado al inventario.<br/>El gasto dejará de aparecer en la lista.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#b91c1c',
+      cancelButtonColor: '#64748b',
+    });
+
+    if (!confirmacion.isConfirmed) return;
+
+    setEliminando(true);
+    try {
+      const fd = new FormData();
+      fd.append('op', 'deleteExpense');
+      fd.append('id_gasto', gasto.id_gasto);
+      fd.append('id_usuario', user?.id ?? '');
+
+      const res = await fetch(`${apiHost}/save_expense.php`, { method: 'POST', body: fd });
+      const data = await res.json();
+
+      if (data.status === 'success') {
+        Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Gasto eliminado', showConfirmButton: false, timer: 2000 });
+        onEliminado?.();
+      } else {
+        throw new Error(data.message || 'No se pudo eliminar el gasto.');
+      }
+    } catch (err) {
+      Swal.fire('Error', err.message, 'error');
+    } finally {
+      setEliminando(false);
+    }
+  };
 
   const lastExpenseType = tipoGastoPrincipal(gasto) || '—';
 
@@ -128,6 +172,25 @@ const GastoRow = ({ gasto, navigate, mxnRate }) => {
               <EditIcon fontSize="small" />
             </IconButton>
           </Tooltip>
+
+          {puedeEliminar && (
+            <Tooltip title="Eliminar gasto">
+              <span>
+                <IconButton
+                  size="small"
+                  onClick={eliminarGasto}
+                  disabled={eliminando}
+                  sx={{
+                    ml: 0.5,
+                    color: '#b91c1c', border: '1px solid #fecaca', borderRadius: 1.5,
+                    '&:hover': { bgcolor: '#b91c1c', color: '#fff', borderColor: '#b91c1c' },
+                  }}
+                >
+                  <DeleteOutlineIcon fontSize="small" />
+                </IconButton>
+              </span>
+            </Tooltip>
+          )}
         </TableCell>
       </TableRow>
 

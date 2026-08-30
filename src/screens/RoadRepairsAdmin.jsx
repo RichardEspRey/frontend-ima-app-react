@@ -4,6 +4,7 @@ import {
     TableHead, TableRow, IconButton, CircularProgress, Chip, Stack
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
+import { fechaCorta } from '../utils/fechas';
 import EditIcon from '@mui/icons-material/Edit';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import RoadRepairModal from '../components/RoadRepairModal';
@@ -119,7 +120,7 @@ const RoadRepairsAdmin = ({ embedded = false }) => {
                             repairs.map((row) => (
                                 <TableRow key={row.id_reparacion} hover>
                                     <TableCell sx={CELL_MUTED_SX}>{row.id_reparacion}</TableCell>
-                                    <TableCell sx={CELL_MUTED_SX}>{new Date(row.fecha_registro).toLocaleDateString()}</TableCell>
+                                    <TableCell sx={CELL_MUTED_SX}>{fechaCorta(row.fecha_suceso)}</TableCell>
                                     <TableCell sx={CELL_STRONG_SX}>{row.nombre_camion}</TableCell>
                                     <TableCell>
                                         {row.formatted_trip ? (
