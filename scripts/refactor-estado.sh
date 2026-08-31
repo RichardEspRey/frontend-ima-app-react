@@ -1,11 +1,17 @@
 #!/usr/bin/env bash
 #
-# Mide la divergencia del refactor y avisa cuando toca parar.
+# Mide qué tan al día está el refactor y avisa cuando se está quedando atrás.
 #
-# La rama `refactor` de abril de 2026 llegó a 116 commits de divergencia sin que
-# nadie mirara el número. Este script existe para que ese número esté a la vista.
+# El refactor es una rama de vida larga que reemplazará a `Emiliano` cuando esté
+# probada al 100 %. Que acumule commits propios es su trabajo, no un problema: lo
+# que lo mata es quedarse ATRÁS de lo que se sigue desarrollando.
 #
-# Tripwire: 40 commits propios o 42 días sin integrar.
+# Por eso el tripwire NO mira los commits propios. Mira dos cosas:
+#   · commits de Emiliano sin integrar  (tope 15)
+#   · días desde la última integración  (tope 14)
+#
+# La rama `refactor` de abril murió justo así: 116 commits de divergencia porque
+# nadie la sincronizaba, no porque hubiera hecho demasiado.
 #
 # Uso:  npm run refactor:estado          solo reporta
 #       npm run refactor:estado -- -w    además escribe la fila en 00-ESTADO.md
@@ -13,8 +19,8 @@
 set -uo pipefail
 
 RAMA_FEATURES="Emiliano"
-TOPE_COMMITS=40
-TOPE_DIAS=42
+TOPE_ATRAS=15
+TOPE_DIAS=14
 ESTADO="docs/refactor/00-ESTADO.md"
 
 ROJO=$'\033[31m'; VERDE=$'\033[32m'; AMARILLO=$'\033[33m'; NEGRITA=$'\033[1m'; FIN=$'\033[0m'
@@ -29,14 +35,14 @@ FECHA_BASE=$(git log -1 --format=%ct "$BASE")
 DIAS=$(( ( $(date +%s) - FECHA_BASE ) / 86400 ))
 
 echo "   rama:        $RAMA_REFACTOR"
-echo "   commits propios del refactor:      ${NEGRITA}$PROPIOS${FIN} / $TOPE_COMMITS"
-echo "   commits de $RAMA_FEATURES sin integrar: ${NEGRITA}$ATRAS${FIN}"
+echo "   commits de $RAMA_FEATURES sin integrar: ${NEGRITA}$ATRAS${FIN} / $TOPE_ATRAS   <- el que importa"
 echo "   días desde la última integración:  ${NEGRITA}$DIAS${FIN} / $TOPE_DIAS"
+echo "   commits propios del refactor:      ${NEGRITA}$PROPIOS${FIN}   (informativo: es el trabajo hecho)"
 echo
 
 ALERTA=0
-if [ "$PROPIOS" -ge "$TOPE_COMMITS" ]; then
-  echo "   ${ROJO}${NEGRITA}TRIPWIRE: $PROPIOS commits propios (tope $TOPE_COMMITS).${FIN}"
+if [ "$ATRAS" -ge "$TOPE_ATRAS" ]; then
+  echo "   ${ROJO}${NEGRITA}TRIPWIRE: $ATRAS commits de $RAMA_FEATURES sin integrar (tope $TOPE_ATRAS).${FIN}"
   ALERTA=1
 fi
 if [ "$DIAS" -ge "$TOPE_DIAS" ]; then
@@ -45,18 +51,18 @@ if [ "$DIAS" -ge "$TOPE_DIAS" ]; then
 fi
 
 if [ "$ALERTA" -eq 1 ]; then
-  echo "   ${ROJO}Parar de agregar incrementos y consolidar lo que hay.${FIN}"
+  echo "   ${ROJO}Parar de agregar incrementos y ponerse al día con $RAMA_FEATURES primero.${FIN}"
 elif [ "$ATRAS" -gt 0 ]; then
   echo "   ${AMARILLO}Hay $ATRAS commit(s) de $RAMA_FEATURES sin integrar. Corre: npm run refactor:sync${FIN}"
-elif [ "$PROPIOS" -ge $(( TOPE_COMMITS * 3 / 4 )) ] || [ "$DIAS" -ge $(( TOPE_DIAS * 3 / 4 )) ]; then
-  echo "   ${AMARILLO}Acercándose al tripwire. Ir pensando en consolidar.${FIN}"
+elif [ "$DIAS" -ge $(( TOPE_DIAS * 3 / 4 )) ]; then
+  echo "   ${AMARILLO}Acercándose al tripwire. Correr npm run refactor:sync.${FIN}"
 else
   echo "   ${VERDE}Sano.${FIN}"
 fi
 
 if [ "${1:-}" = "-w" ] && [ -f "$ESTADO" ]; then
   HOY=$(date +%Y-%m-%d)
-  FILA="| $HOY | $PROPIOS | $(( DIAS / 7 )) |"
+  FILA="| $HOY | $ATRAS | $DIAS | $PROPIOS |"
   awk -v fila="$FILA" -v hoy="| $HOY |" '
     index($0, hoy) == 1 { next }
     /^\| Fecha \| Commits de divergencia/ { print; getline; print; print fila; next }

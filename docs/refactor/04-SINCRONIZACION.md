@@ -39,10 +39,19 @@ Richard mergea a main  →  Emiliano jala main  →  el refactor jala Emiliano
 Tres pasos, siempre en ese orden. El refactor **nunca** jala de `main` directo: jalaría una
 versión sin las features de Emiliano.
 
-### El refactor no se mergea a `main` hasta estar probado al 100 %
+### El refactor no se mergea a ningún lado hasta estar probado al 100 %
 
-Decisión de Emiliano del 2026-08-31. `main` sigue recibiendo el trabajo que pide la
-empresa; el refactor se integra cuando esté verificado, no antes.
+Decisión de Emiliano del 2026-08-31, precisada el mismo día:
+
+- **`Emiliano` se queda intacta.** Es la rama de desarrollo y, sobre todo, **la
+  referencia contra la que se compara el refactor**. Meterle partes del refactor
+  contaminaría justo eso. No se le mergea nada del refactor, ni siquiera los
+  incrementos que no cambian comportamiento.
+- **El flujo es de una sola dirección**: `main` → `Emiliano` → `refactor`. Nunca al revés.
+- Cuando Emiliano meta una feature nueva a `Emiliano`, **se traslada al refactor
+  reescribiéndola con las reglas nuevas**, no copiándola tal cual. Una feature que llega
+  sin refactorizar es deuda que hay que pagar dos veces.
+- El refactor reemplaza a `Emiliano` de una sola vez, cuando la app funcione al 100 %.
 
 Esto convierte la rama del refactor en una **rama de vida larga**, que es exactamente el
 patrón que mató a la rama `refactor` de abril (116 commits de divergencia). La diferencia
@@ -59,11 +68,15 @@ reestructurando lo mismo que las features están tocando. Por eso los incremento
 frío a caliente según el mapa de calor combinado, y por eso Gastos y Viajes —el 60 % de la
 actividad de features— se dejaron al final.
 
-**3. La divergencia se mide, no se supone.**
+**3. Lo que se mide es el retraso, no el tamaño.**
 ```bash
 npm run refactor:estado        # reporta
 npm run refactor:estado -- -w  # además escribe la fila en 00-ESTADO.md
 ```
+
+El tripwire son **15 commits de `Emiliano` sin integrar o 14 días sin sincronizar**. No
+mira los commits propios del refactor: acumularlos es su trabajo. La rama de abril no
+murió por hacer demasiado, murió por quedarse atrás.
 
 **Tripwire: a los 40 commits de divergencia o a las 6 semanas sin integrar, se para de
 agregar incrementos y se consolida.** La rama vieja llegó a 116 sin que nadie mirara el
@@ -76,12 +89,15 @@ sea impagable.
 `Emiliano`, si se mergea antes arrastra también commits de features que todavía no estaban
 aprobados. Mergeando `Emiliano` primero, el merge del refactor lleva solo lo suyo.
 
-### Excepción que vale la pena considerar
+### Se consideró adelantar los incrementos inocuos, y se descartó
 
-Los incrementos **0 y 1 no cambian el comportamiento de la app**: son tests, configuración
-de linter, documentación y borrado de código muerto. Mergearlos a `main` temprano baja la
-divergencia a cero riesgo y le da a Richard el linter y las convenciones desde ya. Queda a
-criterio de Emiliano; el resto de los incrementos sí espera a estar probado.
+Los incrementos 0, 1 y 4b no cambian el comportamiento de la app, así que propuse
+mergearlos a `Emiliano` para bajar la divergencia sin riesgo. **Emiliano lo descartó, y
+tenía razón**: `Emiliano` es la referencia contra la cual se prueba que el refactor
+funciona igual. Si se le meten partes del refactor, deja de servir para comparar.
+
+El costo de esa decisión es que la divergencia crece; se compensa sincronizando seguido,
+que es lo que mide el tripwire.
 
 ## Las cinco reglas
 

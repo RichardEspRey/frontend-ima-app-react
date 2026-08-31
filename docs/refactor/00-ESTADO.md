@@ -37,30 +37,22 @@ Todo vive en la rama larga **`refactor-fase-1`**, con un tag por incremento
 
 Detalle de cada uno en `05-INCREMENTOS.md`.
 
-## Divergencia (revisar cada semana)
+## Salud del refactor (revisar cada semana)
 
 ```bash
-git rev-list --left-right --count Emiliano...refactor-00-cimientos
+npm run refactor:estado -- -w
 ```
 
-| Fecha | Commits de divergencia | Semanas sin integrar |
-|---|---:|---:|
-| 2026-08-31 | 31 | 0 |
+| Fecha | Sin integrar | Días | Commits propios |
+|---|---:|---:|---:|
+| 2026-08-31 | 0 | 0 | 32 |
 
-**Tripwire: 40 commits o 6 semanas.** Al llegar a cualquiera de los dos, se para de agregar
-incrementos y se consolida. La rama `refactor` de abril llegó a 116 sin que nadie mirara
-el número.
+**Tripwire: 15 commits de `Emiliano` sin integrar, o 14 días sin sincronizar.**
 
-## Arreglos listos para cherry-pick a `Emiliano`
-
-Bugs de producción que el refactor destapó. Viven en commits `fix()` propios, sin
-mezclar con el refactor, para que se puedan llevar a `Emiliano` sin arrastrar nada.
-**Emiliano decide cuándo; el refactor no toca su rama.**
-
-| Commit | Qué arregla |
-|---|---|
-| `6294534` | `TicketPayment` se va a blanco si el fetch falla; `ExpenseEdit` revienta con fecha inválida (mezclado con cambios del harness de tests — extraer solo los 5 renglones de `src/screens/`) |
-| `2af9ecd` | `Emptystage.jsx` importado como `./EmptyStage`: el build falla en Linux. Commit limpio, cherry-pick directo |
+Ojo con qué mide: **no** los commits propios del refactor. Que el refactor acumule
+trabajo propio es su función, no un síntoma. Lo que lo mata es quedarse **atrás** de lo
+que se sigue desarrollando en `Emiliano` — así murió la rama de abril, con 116 commits de
+divergencia porque nadie la sincronizaba, no porque hubiera hecho demasiado.
 
 ## Decisiones ya tomadas
 
