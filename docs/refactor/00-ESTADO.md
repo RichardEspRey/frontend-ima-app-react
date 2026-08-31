@@ -15,7 +15,7 @@
 
 ## Dónde vamos
 
-**Fase 1 (frontend) — incrementos 0, 1, 2 y 3 terminados.**
+**Fase 1 (frontend) — incrementos 0 a 4 terminados.**
 Todo vive en la rama larga **`refactor-fase-1`**, con un tag por incremento
 (`incremento-0`, `incremento-1`). No se mergea a `main` hasta estar probada al 100 %.
 
@@ -29,7 +29,8 @@ Todo vive en la rama larga **`refactor-fase-1`**, con un tag por incremento
 | 1 | Limpieza sin riesgo (huérfanos, redux, AuthContext) | **hecho** | tag `incremento-1` |
 | 2 | Capa de API (`shared/api` + TanStack Query) | **hecho** | tag `incremento-2` |
 | 3 | Biblioteca de UI compartida (`shared/ui`) | **hecho** | tag `incremento-3` |
-| 4 | Sesión y permisos (`shared/auth`) | **siguiente** — bloqueado, ver abajo | — |
+| 4 | Sesión y permisos (`shared/auth`) | **hecho** | tag `incremento-4` |
+| 4b | Dependencias y vulnerabilidades (136, 3 críticas) | **siguiente** | — |
 | 5 | Módulo Gastos → `features/gastos` (patrón de referencia) | pendiente | — |
 | 6+ | Resto de módulos, uno por uno | pendiente | — |
 | N | Deduplicar formularios (~4 000 líneas) | pendiente | — |
@@ -44,7 +45,7 @@ git rev-list --left-right --count Emiliano...refactor-00-cimientos
 
 | Fecha | Commits de divergencia | Semanas sin integrar |
 |---|---:|---:|
-| 2026-08-31 | 26 | 0 |
+| 2026-08-31 | 28 | 0 |
 
 **Tripwire: 40 commits o 6 semanas.** Al llegar a cualquiera de los dos, se para de agregar
 incrementos y se consolida. La rama `refactor` de abril llegó a 116 sin que nadie mirara
@@ -98,20 +99,36 @@ Se integró con **merge, no rebase**: los 18 commits de la rama `Emiliano` ya es
 diario" del `04-SINCRONIZACION.md` aplica a los commits propios del refactor, no a
 reescribir historia ya publicada de otra rama.
 
-## Bloqueante del incremento 4
+## Pendiente para afinar los roles
 
-El siguiente incremento es **sesión y permisos**, y necesita saber qué valores de rol
-existen de verdad en producción antes de escribir el mapa de alias. Sin eso, un
-normalizador escrito a ciegas puede quitarle accesos a alguien.
+El modelo está puesto y funcionando, pero los 12 `Administrativo` están todos en un
+mismo rol de transición. Para repartirlos en Operaciones / Finanzas / Mantenimiento /
+Safety hace falta ver qué tiene habilitado cada uno hoy:
 
 ```sql
-SELECT type, COUNT(*) FROM Users_credentials GROUP BY type;
+SHOW TABLES LIKE '%feature%';
+-- y con el nombre real de la tabla:
+SELECT u.name, u.type, GROUP_CONCAT(f.feature_key ORDER BY f.feature_key SEPARATOR ', ')
+FROM Users_credentials u
+JOIN <TABLA_FEATURES> f ON f.user_id = u.id AND f.enabled = 1
+WHERE u.type = 'Administrativo'
+GROUP BY u.id;
 ```
 
-Más el esquema de `Users_credentials` y de cualquier tabla de roles o permisos.
+Con eso se agrupan por lo que de verdad usan, en vez de inventar los roles.
+Mientras tanto **nadie pierde ni gana accesos**: sus flags individuales siguen mandando.
 
-Si prefieres no parar, se puede adelantar el incremento 5 (Nómina) y volver al 4 cuando
-tengas los datos.
+## Decisión pendiente
+
+`src/screens/Viajes/TripAdmin.jsx:121` tiene el nombre de una persona cableado en una
+comprobación de permisos:
+
+```js
+const isAdmin = user?.tipo_usuario?.toLowerCase() === 'admin' || user?.name === 'Blanca';
+```
+
+Se dejó intacto para no cambiarle el acceso a nadie sin avisar. Lo correcto es darle a
+esa persona el permiso que necesita y borrar la línea.
 
 ## Pendiente de Emiliano
 

@@ -18,17 +18,23 @@ por decisión confirmada.
 
 ## Próximo módulo a mover
 
-Incremento 4 — sesión y permisos (`src/shared/auth/`). Este **sí toca código existente**:
-sustituye las ~57 comparaciones literales de `"admin"` repartidas por los componentes, y
-`config/menuConfig.js`. Richard: avísame si estás en `menuConfig` o en `useAuthStore`.
+Incremento 4b — dependencias y vulnerabilidades. Toca `package.json` y
+`package-lock.json`, no código de pantallas.
 
-Lo que ya cambió y puedes usar desde hoy:
-- **`src/shared/api/`** — para código nuevo, `post(ENDPOINTS.x, 'op', {campos})` en vez de
-  `fetch()` directo. Catálogo completo en `docs/API-ENDPOINTS.md`.
-- **`src/shared/ui/`** — `DataTable` (columnas declarativas, orden y los tres estados),
-  `PageHeader`, `ErrorBoundary`, `notify`. Ver `src/shared/ui/README.md`.
-- Los 10 hooks `useFetchX` devuelven lo mismo de siempre, pero ahora cachean.
-- Se eliminó **Redux** y 9 archivos huérfanos.
+**Richard, lo que cambió en el incremento 4 y sí te afecta:**
+- `config/menuConfig.js` ya **no tiene `rolesPermitidos`**. Contenía nombres de
+  personas que nunca coincidían con ningún valor real de `type`, así que no hacían
+  nada. Los permisos se resuelven en `src/shared/auth`.
+- `useAuthStore.checkAccess` **se eliminó** (no lo llamaba nadie).
+- Para comprobar permisos, ahora:
+  ```js
+  import { usePermisos, PERMISOS } from "../shared/auth";
+  const { can } = usePermisos();
+  if (can(PERMISOS.VIAJES_INVOICES)) { ... }
+  ```
+  o `const { esTotal } = useSesion();` para el equivalente del viejo `isAdmin`.
+- `docs/sql/001-roles-y-permisos.sql` es la propuesta de tablas para la junta.
+  **No toca nada de producción**; nadie lo ha corrido.
 
 ## Cómo leer esto
 

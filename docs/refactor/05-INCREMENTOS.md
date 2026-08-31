@@ -129,6 +129,29 @@ real siguen siendo exactamente los de antes.
 
 ---
 
+## Incremento 4b — Dependencias y vulnerabilidades
+
+**Riesgo: medio.** No mueve arquitectura; actualiza dependencias.
+
+GitHub reporta **136 vulnerabilidades** en el repo (3 críticas, 58 altas, 62 medias,
+13 bajas) al 2026-08-31. No espera al final de la fase 1: tres críticas conviviendo
+meses con una app que ya manda credenciales en claro es demasiado.
+
+1. `npm audit` y separar lo que se arregla solo (`npm audit fix`) de lo que exige
+   un salto de versión mayor.
+2. Distinguir lo que corre en el **navegador del usuario** de lo que solo corre al
+   **construir**: una vulnerabilidad en una dependencia de build no tiene el mismo
+   radio que una en `pdfjs-dist` o `xlsx`, que procesan archivos que la gente sube.
+3. `pdfjs-dist` está clavada en `4.4.168` — hay que ver por qué antes de moverla.
+4. Los saltos mayores se hacen de uno en uno, con `npm test` entre cada uno.
+5. Lo que no se pueda actualizar sin romper, se anota con su razón en
+   `docs/DECISIONES/`, no se deja en silencio.
+
+**Terminado cuando**: cero vulnerabilidades críticas y altas en dependencias que
+lleguen al usuario, y las que queden estén justificadas por escrito.
+
+---
+
 ## Incremento 5 — Nómina completo (el patrón de referencia)
 
 **Riesgo: bajo.** `screens/Nomina/` tiene **0 toques** de Emiliano y de Richard en 4 meses:
