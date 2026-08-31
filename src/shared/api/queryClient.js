@@ -18,6 +18,17 @@ export function debeReintentar(intentosPrevios, error) {
 }
 
 /**
+ * Bajo test, la caché se recolecta de inmediato y no se reintenta nada.
+ *
+ * El smoke test monta las 61 rutas, y cada montaje crea su propio cliente: con
+ * la recolección normal de 10 minutos, esos temporizadores se acumulan y la
+ * suite deja de terminar. Verificado el 2026-08-31, pasó de 6 s a no acabar.
+ *
+ * @type {boolean}
+ */
+const EN_PRUEBAS = import.meta.env?.MODE === "test"
+
+/**
  * Crea el cliente de TanStack Query con la configuración del proyecto.
  *
  * Se crea con una función y no como constante de módulo para que cada test
@@ -30,9 +41,9 @@ export function crearQueryClient() {
   return new QueryClient({
     defaultOptions: {
       queries: {
-        staleTime: 5 * 60 * 1000,
-        gcTime: 10 * 60 * 1000,
-        retry: debeReintentar,
+        staleTime: EN_PRUEBAS ? 0 : 5 * 60 * 1000,
+        gcTime: EN_PRUEBAS ? 0 : 10 * 60 * 1000,
+        retry: EN_PRUEBAS ? false : debeReintentar,
         retryDelay: (intento) => Math.min(1000 * 2 ** intento, 8000),
         refetchOnWindowFocus: false,
         placeholderData: (anterior) => anterior,
