@@ -56,9 +56,9 @@ import AfinacionesHistory from '../screens/AfinacionesHistory.jsx';
 import CrearViaje from '../screens/Dispatch/CrearViaje.jsx';
 import Safety from '../screens/Safety/Safety.jsx';
 import Ifta from '../screens/Safety/IFTA.jsx';
-import Nomina from '../screens/Nomina/Nomina.jsx';
-import PersonalAdmin from '../screens/Nomina/PersonalAdmin.jsx';
-import DetallePago from '../screens/Nomina/DetallePago.jsx';
+import NominaPage from '../pages/nomina/NominaPage.jsx';
+import PersonalPage from '../pages/nomina/PersonalPage.jsx';
+import DetallePagoPage from '../pages/nomina/DetallePagoPage.jsx';
 import RoadRepairsAdmin from '../screens/RoadRepairsAdmin.jsx';
 import Cotizador from '../screens/Viajes/Cotizacion.jsx';
 import ImaManager from '../screens/IMAManager.jsx';
@@ -129,9 +129,9 @@ const AppRouter = () => {
             <Route path="/registros-afinaciones" element={<AfinacionesHistory />} />
             <Route path="/estatus-unidades" element={<EstatusUnidades />} />
             <Route path="/CrearViaje" element={<CrearViaje />} />
-            <Route path="/nomina" element={<Nomina />} />
-            <Route path="/personal" element={<PersonalAdmin />} />
-            <Route path="/detalle-pago/:period_id" element={<DetallePago />} />
+            <Route path="/nomina" element={<NominaPage />} />
+            <Route path="/personal" element={<PersonalPage />} />
+            <Route path="/detalle-pago/:period_id" element={<DetallePagoPage />} />
             <Route path="/road-repairs" element={<RoadRepairsAdmin />} />
              <Route path="/cotizador" element={<Cotizador />} />
             <Route path="*" element={<Navigate to="/home" replace />} /> 
