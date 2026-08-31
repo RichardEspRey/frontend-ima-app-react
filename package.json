@@ -12,6 +12,8 @@
     "build": "npm run copy-pdfworker && vite build",
     "docs:dev": "npx htmldocs@latest dev",
     "lint": "eslint .",
+    "refactor:sync": "bash scripts/refactor-sync.sh",
+    "refactor:estado": "bash scripts/refactor-estado.sh",
     "docs:api": "jsdoc2md --files \"src/shared/**/*.js\" \"src/entities/**/*.js\" \"src/features/**/*.js\" > docs/api/README.md",
     "preview": "vite preview",
     "start": "electron .",
