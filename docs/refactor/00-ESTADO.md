@@ -127,27 +127,23 @@ arranque, pero no cubre estos flujos. **Antes de que esto llegue a `main`:**
 Si alguna pantalla deja de cargar en la app empaquetada pero funciona en `npm run dev`,
 lo más probable es que falte un origen en la CSP de `vite.config.js`.
 
-## Bug encontrado al verificar el mapa (no es del refactor)
+## Los mapas — resuelto, con un pendiente para ti
 
-`src/screens/Mapas/Tracking.jsx:651` pide los tiles a CartoDB:
+`Tracking` pedía los tiles a CartoDB, que ya exige API key, y sin atribución. Las cuatro
+pantallas con mapa ahora usan `shared/config/mapa.js` con OpenStreetMap, que es lo que ya
+usaban las otras tres. Verificado en Chrome: limpio, con atribución, sin errores.
 
-```jsx
-<TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" />
-```
+**Lo que sí conviene que decidas:** los tiles de OpenStreetMap corren sobre infraestructura
+donada, y su política de uso desaconseja el consumo comercial intensivo. Una app que
+rastrea la flota todo el día es exactamente eso. No es urgente ni ilegal, pero si algún día
+OSM empieza a limitar peticiones, el mapa se degrada sin avisar.
 
-Carto ya exige API key para sus basemaps y devuelve los tiles **estampados con
-"API KEY REQUIRED"** por todo el mapa. Responde 200, así que no hay error en consola ni
-petición bloqueada: simplemente se ve mal. **Está pasando en producción ahora mismo**, es
-anterior al refactor.
+Alternativas, todas de un cambio en un archivo:
 
-Las otras tres pantallas con mapa —`TripAdmin` y `Cotizacion` ×2— usan
-`tile.openstreetmap.org`, que no pide llave y funciona. Opciones:
-
-1. Sacar una API key de Carto y ponerla (conserva el estilo Voyager, más limpio).
-2. Usar los mismos tiles de OSM que las otras tres (una línea, consistente, pero cambia
-   el aspecto del mapa).
-
-Es decisión de producto por el cambio visual, así que se deja sin tocar.
+1. **API key de Carto** (capa gratuita) — recupera el estilo Voyager, más limpio.
+2. **Un proveedor pensado para uso comercial**: OpenFreeMap no pide llave; Stadia Maps y
+   MapTiler tienen capa gratuita con llave.
+3. Dejarlo como está y revisarlo si aparecen problemas.
 
 ## Decisión pendiente
 
