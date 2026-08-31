@@ -15,7 +15,7 @@
 
 ## Dónde vamos
 
-**Fase 1 (frontend) — incrementos 0 a 4 terminados.**
+**Fase 1 (frontend) — incrementos 0 a 4b terminados.**
 Todo vive en la rama larga **`refactor-fase-1`**, con un tag por incremento
 (`incremento-0`, `incremento-1`). No se mergea a `main` hasta estar probada al 100 %.
 
@@ -30,8 +30,8 @@ Todo vive en la rama larga **`refactor-fase-1`**, con un tag por incremento
 | 2 | Capa de API (`shared/api` + TanStack Query) | **hecho** | tag `incremento-2` |
 | 3 | Biblioteca de UI compartida (`shared/ui`) | **hecho** | tag `incremento-3` |
 | 4 | Sesión y permisos (`shared/auth`) | **hecho** | tag `incremento-4` |
-| 4b | Dependencias y vulnerabilidades (136, 3 críticas) | **siguiente** | — |
-| 5 | Módulo Gastos → `features/gastos` (patrón de referencia) | pendiente | — |
+| 4b | Dependencias y vulnerabilidades | **hecho** — 0 vulnerabilidades | tag `incremento-4b` |
+| 5 | **Nómina** completo (patrón de referencia) | **siguiente** | — |
 | 6+ | Resto de módulos, uno por uno | pendiente | — |
 | N | Deduplicar formularios (~4 000 líneas) | pendiente | — |
 
@@ -45,7 +45,7 @@ git rev-list --left-right --count Emiliano...refactor-00-cimientos
 
 | Fecha | Commits de divergencia | Semanas sin integrar |
 |---|---:|---:|
-| 2026-08-31 | 28 | 0 |
+| 2026-08-31 | 31 | 0 |
 
 **Tripwire: 40 commits o 6 semanas.** Al llegar a cualquiera de los dos, se para de agregar
 incrementos y se consolida. La rama `refactor` de abril llegó a 116 sin que nadie mirara
@@ -83,7 +83,8 @@ mezclar con el refactor, para que se puedan llevar a `Emiliano` sin arrastrar na
 
 - **No hay HTTPS.** El hosting acepta TCP en 443 pero el handshake TLS se corta.
   Todas las credenciales viajan en claro. Hay que reparar el certificado en GoDaddy;
-  no se arregla desde este repo.
+  no se arregla desde este repo. **Es el pendiente de seguridad más grande que queda**:
+  además de exponer las contraseñas, permite alterar lo que llega al renderer.
 - **`features.php` · `op=get_users` devuelve las contraseñas en claro de todos los
   usuarios, sin autenticación.** Verificado el 2026-08-31.
 
@@ -117,6 +118,20 @@ GROUP BY u.id;
 
 Con eso se agrupan por lo que de verdad usan, en vez de inventar los roles.
 Mientras tanto **nadie pierde ni gana accesos**: sus flags individuales siguen mandando.
+
+## Falta probar a mano (incremento 4b)
+
+Electron pasó de 35 a 44 y jspdf de 3 a 4. `npm run humo:electron` comprueba que la app
+arranque, pero no cubre estos flujos. **Antes de que esto llegue a `main`:**
+
+- Exportar un PDF desde Resumen de viaje, Ticket de pago e IFTA (cambió jspdf).
+- Abrir el Mapa y ver que carguen los tiles (la CSP nueva los permite explícitamente).
+- Abrir el modal de PC Miller, que lee PDFs (cambió pdfjs-dist).
+- Empaquetar con `npm run dist` y probar el instalador en Windows.
+- Probar el flujo de actualización automática (`electron-updater`).
+
+Si alguna pantalla deja de cargar en la app empaquetada pero funciona en `npm run dev`,
+lo más probable es que falte un origen en la CSP de `vite.config.js`.
 
 ## Decisión pendiente
 

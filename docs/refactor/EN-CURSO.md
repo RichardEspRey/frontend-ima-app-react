@@ -18,23 +18,13 @@ por decisión confirmada.
 
 ## Próximo módulo a mover
 
-Incremento 4b — dependencias y vulnerabilidades. Toca `package.json` y
-`package-lock.json`, no código de pantallas.
+Incremento 5 — **Nómina** entero a la estructura nueva. Es el módulo con 0 toques de
+ambos en 4 meses, así que no compite con nadie.
 
-**Richard, lo que cambió en el incremento 4 y sí te afecta:**
-- `config/menuConfig.js` ya **no tiene `rolesPermitidos`**. Contenía nombres de
-  personas que nunca coincidían con ningún valor real de `type`, así que no hacían
-  nada. Los permisos se resuelven en `src/shared/auth`.
-- `useAuthStore.checkAccess` **se eliminó** (no lo llamaba nadie).
-- Para comprobar permisos, ahora:
-  ```js
-  import { usePermisos, PERMISOS } from "../shared/auth";
-  const { can } = usePermisos();
-  if (can(PERMISOS.VIAJES_INVOICES)) { ... }
-  ```
-  o `const { esTotal } = useSesion();` para el equivalente del viejo `isAdmin`.
-- `docs/sql/001-roles-y-permisos.sql` es la propuesta de tablas para la junta.
-  **No toca nada de producción**; nadie lo ha corrido.
+**Richard, del incremento 4b:** subieron Electron (35 → 44), jspdf (3 → 4) y pdfjs-dist.
+Corre `npm install` al jalar. Si algo deja de cargar en la app **empaquetada** pero
+funciona en `npm run dev`, probablemente falta un origen en la CSP de `vite.config.js`.
+Para comprobar que la app arranca: `npm run build && npm run humo:electron`.
 
 ## Cómo leer esto
 
