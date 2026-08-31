@@ -1,7 +1,7 @@
 {
   "name": "imaappdesktopreact",
   "private": true,
-  "version": "1.5.0",
+  "version": "1.5.1",
   "description": "IMA Express Desktop Application",
   "author": "IMA Express",
   "type": "module",
@@ -22,7 +22,6 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@cuj1559/electron-push-receiver": "^3.1.8",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@fortawesome/fontawesome-svg-core": "^6.7.2",

@@ -59,7 +59,6 @@ const RUTAS = [
   "/millasDriversTable",
   "/new-service-order",
   "/nomina",
-  "/notifications-admin",
   "/paymentDrivers",
   "/personal",
   "/registros-afinaciones",

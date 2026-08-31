@@ -1,7 +1,6 @@
 const { app, BrowserWindow, dialog, ipcMain, shell } = require("electron");
 const path = require("path");
 const { autoUpdater } = require("electron-updater");
-const { setup: setupPushReceiver } = require("@cuj1559/electron-push-receiver");
 
 let win; // ventana global
 
@@ -30,9 +29,6 @@ function createWindow() {
 
   // Carga el frontend compilado por Vite usando path.join (Súper seguro)
   win.loadFile(path.join(__dirname, "dist", "index.html"));
-
-  // Habilita recepción de notificaciones push (FCM) vía IPC hacia el renderer
-  setupPushReceiver(win.webContents);
 
   // -------------------------------
   //  BLOQUEO DE ZOOM
