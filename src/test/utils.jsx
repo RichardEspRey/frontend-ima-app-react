@@ -1,7 +1,5 @@
 import { render } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
-import { Provider } from "react-redux";
-import store from "../redux/store";
 import { useAuthStore } from "../store/useAuthStore";
 
 /**
@@ -28,20 +26,18 @@ export function sinSesion() {
 
 /**
  * Renderiza un componente de pantalla con los providers que la app le da en
- * producción (redux + router). `ruta` y `path` permiten probar pantallas que
+ * producción (el router). `ruta` y `path` permiten probar pantallas que
  * leen useParams, p.ej. renderPantalla(<ExpenseEdit/>, {
  *   path: '/edit-expense/:id_gasto', ruta: '/edit-expense/7'
  * })
  */
 export function renderPantalla(ui, { path = "/", ruta = "/" } = {}) {
   return render(
-    <Provider store={store}>
-      <MemoryRouter initialEntries={[ruta]}>
-        <Routes>
-          <Route path={path} element={ui} />
-        </Routes>
-      </MemoryRouter>
-    </Provider>,
+    <MemoryRouter initialEntries={[ruta]}>
+      <Routes>
+        <Route path={path} element={ui} />
+      </Routes>
+    </MemoryRouter>,
   );
 }
 

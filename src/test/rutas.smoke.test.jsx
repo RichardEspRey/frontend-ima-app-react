@@ -76,7 +76,7 @@ const RUTAS = [
 
 // Se monta <App/> completo, no <AppRouter/>: el árbol real incluye providers
 // que las pantallas consumen (UpdateContext lo provee App, y Sidebar lo lee).
-// App ya trae su propio HashRouter y su Provider de redux, así que el test no
+// App ya trae su propio HashRouter, así que el test no
 // envuelve nada — solo posiciona la ruta en el hash. Cero cambios en producción.
 async function montarRuta(ruta) {
   window.location.hash = "#" + ruta;

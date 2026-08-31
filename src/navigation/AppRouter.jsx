@@ -3,8 +3,6 @@ import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 
 import { useAuthStore } from '../store/useAuthStore'; 
 
-import { Provider } from 'react-redux';
-import store from '../redux/store';
 
 import LoginScreen from '../screens/Login/Login.jsx';
 import DashboardLayout from '../layouts/DashboardLayout';
@@ -72,79 +70,77 @@ const AppRouter = () => {
   if (loading) return null;
 
   return (
-    <Provider store={store}>
-      <Router>
-        <Routes>
-          {!user ? (
-            <>
-              <Route path="*" element={<Navigate to="/login" replace />} />
-              <Route path="/login" element={<LoginScreen />} />
-            </>
-          ) : (
-            <Route path="/" element={<DashboardLayout />}> 
-              <Route index element={<Navigate to="/home" replace />} /> 
-              <Route path="/home" element={<Welcome/>} />
-              <Route path="/drivers" element={<DriverScreen />} />
-              <Route path="/admin-drivers" element={<DriverAdmin />} />
-              <Route path="/editor-drivers/:id" element={<DriverEditor />} />
-              <Route path="/trucks" element={<TruckScreen />} />
-              <Route path="/admin-trucks" element={<TruckAdmin />} />
-              <Route path="/editor-trucks/:id" element={<TrucksEditor />} /> 
-              <Route path="/trailers" element={<TrailerScreen />} />
-              <Route path="/admin-trailers" element={<TrailerAdmin />} />
-              <Route path="/editor-trailers/:id" element={<TrailerEdit />} /> 
-              <Route path="/trips" element={<TripScreen />} />
-              <Route path="/trips-new" element={<TripScreenNew />} />
-              <Route path="/admin-trips" element={<TripAdmin />} />
-              <Route path="/admin-diesel" element={<DieselAdmin />} />
-              <Route path="/detalle-diesel/:tripId" element={<DieselDetalle />} />
-              <Route path="/editor-diesel/:id/:trip_id" element={<DieselEditor />} />
-              <Route path="/admin-gastos" element={<GastosAdmin />} />
-              <Route path="/detalle-gastos/:tripId" element={<GastosDetalle />} />
-              <Route path="/editor-gastos/:id/:trip_id" element={<GastosEditor />} />
-              <Route path="/admin-gastos-generales" element={<AdminGastosGeneral />} />
-              <Route path="/edit-trip/:tripId" element={<EditTripForm />} />
-              <Route path="/edit-trip-complete/:tripId" element={<EditTripComplete />} />
-              <Route path="/edit-trip-upcoming/:tripId" element={<EditTripUpcoming />} />
-              <Route path="/edit-trailer/:trailerId" element={<TrailerEdit />} />
-              <Route path="/ImaAdmin" element={<ImaAdmin />} />
-              <Route path="/ImaScreen" element={<ImaScreen />} />
-              <Route path="/Inspeccion-final" element={<Inspeccion_final />} />
-              <Route path="/edit-expense/:id_gasto" element={<ExpenseEdit />} />
-              <Route path="/view-inventory" element={<StockAdmin />} />
-              <Route path="/new-service-order" element={<ServiceOrderScreen />} />
-              <Route path="/admin-service-order" element={<AdminOrdenesServicio />} />
-              <Route path="/editar-orden/:orderId" element={<ServiceOrderScreenEdit />} />
-              <Route path="/finanzas" element={<Finanzas />} />
-              <Route path="/ResumenTrip/:tripId" element={<ResumenTrip />} />
-              <Route path="/access-manager" element={<AccessManager />} />
-              <Route path="/ResiduoTrip" element={<ResiduoTrip />} />  
-              <Route path="/reports" element={<Reports />} />
-              <Route path="/safety" element={<Safety />} />  
-              <Route path="/Ifta" element={<Ifta />} />  
-              <Route path="/tracking" element={<Tracking />} />  
-              <Route path="/margen" element={<MargenScreen />} />  
-              <Route path="/paymentDrivers" element ={<PaymentDrivers />} />
-              <Route path='/millasDriversTable' element ={<MillasDriversTable/>} />
-              <Route path='/ticketPayment/:trip_id' element ={<TicketPayment/>} />
-              <Route path="/autonomia" element={<Autonomia />} />
-              <Route path="/afinaciones" element={<Afinaciones />} />
-              <Route path="/registros-afinaciones" element={<AfinacionesHistory />} />
-              <Route path="/estatus-unidades" element={<EstatusUnidades />} />
-              <Route path="/CrearViaje" element={<CrearViaje />} />
-              <Route path="/nomina" element={<Nomina />} />
-              <Route path="/personal" element={<PersonalAdmin />} />
-              <Route path="/detalle-pago/:period_id" element={<DetallePago />} />
-              <Route path="/road-repairs" element={<RoadRepairsAdmin />} />
-               <Route path="/cotizador" element={<Cotizador />} />
-              <Route path="*" element={<Navigate to="/home" replace />} /> 
-              <Route path="/ima-manager" element={<ImaManager />} />
-              <Route path="/inspecciones" element={<InspectionsAdmin />} />
-            </Route>
-          )}
-        </Routes>
-      </Router>
-    </Provider>
+    <Router>
+      <Routes>
+        {!user ? (
+          <>
+            <Route path="*" element={<Navigate to="/login" replace />} />
+            <Route path="/login" element={<LoginScreen />} />
+          </>
+        ) : (
+          <Route path="/" element={<DashboardLayout />}> 
+            <Route index element={<Navigate to="/home" replace />} /> 
+            <Route path="/home" element={<Welcome/>} />
+            <Route path="/drivers" element={<DriverScreen />} />
+            <Route path="/admin-drivers" element={<DriverAdmin />} />
+            <Route path="/editor-drivers/:id" element={<DriverEditor />} />
+            <Route path="/trucks" element={<TruckScreen />} />
+            <Route path="/admin-trucks" element={<TruckAdmin />} />
+            <Route path="/editor-trucks/:id" element={<TrucksEditor />} /> 
+            <Route path="/trailers" element={<TrailerScreen />} />
+            <Route path="/admin-trailers" element={<TrailerAdmin />} />
+            <Route path="/editor-trailers/:id" element={<TrailerEdit />} /> 
+            <Route path="/trips" element={<TripScreen />} />
+            <Route path="/trips-new" element={<TripScreenNew />} />
+            <Route path="/admin-trips" element={<TripAdmin />} />
+            <Route path="/admin-diesel" element={<DieselAdmin />} />
+            <Route path="/detalle-diesel/:tripId" element={<DieselDetalle />} />
+            <Route path="/editor-diesel/:id/:trip_id" element={<DieselEditor />} />
+            <Route path="/admin-gastos" element={<GastosAdmin />} />
+            <Route path="/detalle-gastos/:tripId" element={<GastosDetalle />} />
+            <Route path="/editor-gastos/:id/:trip_id" element={<GastosEditor />} />
+            <Route path="/admin-gastos-generales" element={<AdminGastosGeneral />} />
+            <Route path="/edit-trip/:tripId" element={<EditTripForm />} />
+            <Route path="/edit-trip-complete/:tripId" element={<EditTripComplete />} />
+            <Route path="/edit-trip-upcoming/:tripId" element={<EditTripUpcoming />} />
+            <Route path="/edit-trailer/:trailerId" element={<TrailerEdit />} />
+            <Route path="/ImaAdmin" element={<ImaAdmin />} />
+            <Route path="/ImaScreen" element={<ImaScreen />} />
+            <Route path="/Inspeccion-final" element={<Inspeccion_final />} />
+            <Route path="/edit-expense/:id_gasto" element={<ExpenseEdit />} />
+            <Route path="/view-inventory" element={<StockAdmin />} />
+            <Route path="/new-service-order" element={<ServiceOrderScreen />} />
+            <Route path="/admin-service-order" element={<AdminOrdenesServicio />} />
+            <Route path="/editar-orden/:orderId" element={<ServiceOrderScreenEdit />} />
+            <Route path="/finanzas" element={<Finanzas />} />
+            <Route path="/ResumenTrip/:tripId" element={<ResumenTrip />} />
+            <Route path="/access-manager" element={<AccessManager />} />
+            <Route path="/ResiduoTrip" element={<ResiduoTrip />} />  
+            <Route path="/reports" element={<Reports />} />
+            <Route path="/safety" element={<Safety />} />  
+            <Route path="/Ifta" element={<Ifta />} />  
+            <Route path="/tracking" element={<Tracking />} />  
+            <Route path="/margen" element={<MargenScreen />} />  
+            <Route path="/paymentDrivers" element ={<PaymentDrivers />} />
+            <Route path='/millasDriversTable' element ={<MillasDriversTable/>} />
+            <Route path='/ticketPayment/:trip_id' element ={<TicketPayment/>} />
+            <Route path="/autonomia" element={<Autonomia />} />
+            <Route path="/afinaciones" element={<Afinaciones />} />
+            <Route path="/registros-afinaciones" element={<AfinacionesHistory />} />
+            <Route path="/estatus-unidades" element={<EstatusUnidades />} />
+            <Route path="/CrearViaje" element={<CrearViaje />} />
+            <Route path="/nomina" element={<Nomina />} />
+            <Route path="/personal" element={<PersonalAdmin />} />
+            <Route path="/detalle-pago/:period_id" element={<DetallePago />} />
+            <Route path="/road-repairs" element={<RoadRepairsAdmin />} />
+             <Route path="/cotizador" element={<Cotizador />} />
+            <Route path="*" element={<Navigate to="/home" replace />} /> 
+            <Route path="/ima-manager" element={<ImaManager />} />
+            <Route path="/inspecciones" element={<InspectionsAdmin />} />
+          </Route>
+        )}
+      </Routes>
+    </Router>
   );
 };
 
