@@ -28,6 +28,7 @@ docs/
   sql/                 Migraciones propuestas; ninguna se ha corrido
   MODULOS/             Un archivo por módulo funcional       (se llena por incremento)
   DECISIONES/          ADRs: por qué se decidió cada cosa
+                       0005 · proveedor de tiles: riesgo aceptado y alternativas
   api/                 Referencia generada desde JSDoc — NO editar a mano
   refactor/            Plan del refactor en curso
 ```

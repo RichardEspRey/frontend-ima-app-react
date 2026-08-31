@@ -16,6 +16,11 @@
  * estampados con "API KEY REQUIRED" — con HTTP 200, así que no salta ningún error
  * en consola: el mapa simplemente se ve mal.
  *
+ * Antes de cambiar de proveedor, lee `docs/DECISIONES/0005-proveedor-de-tiles-de-mapa.md`:
+ * está el porqué de OpenStreetMap, el riesgo que se aceptó a sabiendas, las señales de
+ * que toca migrar y la tabla de alternativas. Y acuérdate de actualizar el `img-src` de
+ * la CSP en `vite.config.js`, o el proveedor nuevo se bloquea sin explicación visible.
+ *
  * @readonly
  * @enum {string}
  */

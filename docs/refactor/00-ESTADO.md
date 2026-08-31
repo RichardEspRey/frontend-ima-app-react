@@ -127,23 +127,15 @@ arranque, pero no cubre estos flujos. **Antes de que esto llegue a `main`:**
 Si alguna pantalla deja de cargar en la app empaquetada pero funciona en `npm run dev`,
 lo más probable es que falte un origen en la CSP de `vite.config.js`.
 
-## Los mapas — resuelto, con un pendiente para ti
+## Los mapas — cerrado
 
-`Tracking` pedía los tiles a CartoDB, que ya exige API key, y sin atribución. Las cuatro
-pantallas con mapa ahora usan `shared/config/mapa.js` con OpenStreetMap, que es lo que ya
-usaban las otras tres. Verificado en Chrome: limpio, con atribución, sin errores.
+`Tracking` pedía tiles a CartoDB, que ya exige API key, y sin atribución. Las cuatro
+pantallas usan ahora `shared/config/mapa.js` con OpenStreetMap. Verificado en Chrome:
+limpio, con atribución, cero errores en consola.
 
-**Lo que sí conviene que decidas:** los tiles de OpenStreetMap corren sobre infraestructura
-donada, y su política de uso desaconseja el consumo comercial intensivo. Una app que
-rastrea la flota todo el día es exactamente eso. No es urgente ni ilegal, pero si algún día
-OSM empieza a limitar peticiones, el mapa se degrada sin avisar.
-
-Alternativas, todas de un cambio en un archivo:
-
-1. **API key de Carto** (capa gratuita) — recupera el estilo Voyager, más limpio.
-2. **Un proveedor pensado para uso comercial**: OpenFreeMap no pide llave; Stadia Maps y
-   MapTiler tienen capa gratuita con llave.
-3. Dejarlo como está y revisarlo si aparecen problemas.
+Se decidió **no cambiar de proveedor**: el aspecto actual es el que el equipo quiere.
+El riesgo aceptado y las alternativas para el futuro están en
+[`../DECISIONES/0005-proveedor-de-tiles-de-mapa.md`](../DECISIONES/0005-proveedor-de-tiles-de-mapa.md).
 
 ## Decisión pendiente
 
