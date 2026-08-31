@@ -26,6 +26,7 @@ import truckIcon from "../../assets/images/icons/truck.png";
 
 import FuelGauge from "../../components/FuelGauge";
 import TankConfigModal from "../../components/TankConfigModal";
+import { TILES_BASE } from '../../shared/config/mapa';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -648,7 +649,7 @@ export default function Tracking() {
             style={{ height: "100%", width: "100%" }}
             zoomControl={false}
           >
-            <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" />
+            <TileLayer {...TILES_BASE} />
 
             <MapClickHandler active={ping2Mode === 'map'} onMapClick={handleMapClick} />
 

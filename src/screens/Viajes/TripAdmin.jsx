@@ -44,6 +44,7 @@ import InspectionModal from '../../components/InspectionModal';
 import useFetchCompanies from '../../hooks/useFetchCompanies';
 import { selectStyles } from '../../utils/tripFormConstants';
 import { HEADER_ROW_SX, HEADER_CELL_SX } from '../../styles/estilosTabla';
+import { TILES_BASE } from '../../shared/config/mapa';
 
 // ── Map helpers (ruta camión → Nuevo Laredo) ────────────────────────────────
 
@@ -820,10 +821,7 @@ const TripAdmin = () => {
                                     zoom={6}
                                     style={{ height: '100%', width: '100%' }}
                                 >
-                                    <TileLayer
-                                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                                    />
+                                    <TileLayer {...TILES_BASE} />
 
                                     {mapRouteCoords && <FitBounds coords={mapRouteCoords} />}
 

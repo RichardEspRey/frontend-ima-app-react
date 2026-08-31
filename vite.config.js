@@ -20,7 +20,7 @@ const CSP = [
   "worker-src 'self' blob:",
   "font-src 'self' data:",
   // blob: y data: los usan la generación de PDF y los mapas.
-  "img-src 'self' data: blob: https://*.tile.openstreetmap.org https://*.basemaps.cartocdn.com",
+  "img-src 'self' data: blob: https://*.tile.openstreetmap.org",
   [
     "connect-src 'self'",
     "http://imaexpressllc.com https://imaexpressllc.com", // la API de IMA

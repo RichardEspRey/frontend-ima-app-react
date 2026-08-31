@@ -17,6 +17,7 @@ import PlaceIcon from "@mui/icons-material/Place";
 import HistoryIcon from "@mui/icons-material/History";
 import SaveIcon from "@mui/icons-material/Save";
 import CloseIcon from "@mui/icons-material/Close";
+import { TILES_BASE } from '../../shared/config/mapa';
 
 // ── API base ────────────────────────────────────────────────────────────────
 
@@ -664,10 +665,7 @@ export default function Cotizacion() {
               zoom={5}
               style={{ height: "100%", width: "100%" }}
             >
-              <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              />
+              <TileLayer {...TILES_BASE} />
 
               {allCoords.length > 0 && <FitBounds coords={allCoords} />}
 
@@ -908,10 +906,7 @@ export default function Cotizacion() {
               zoom={5}
               style={{ height: "100%", width: "100%" }}
             >
-              <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              />
+              <TileLayer {...TILES_BASE} />
 
               {(() => {
                 const all = [...(previewRouteCoords ?? []), ...(previewEmptyCoords ?? [])];
