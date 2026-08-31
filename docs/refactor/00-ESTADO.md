@@ -15,7 +15,7 @@
 
 ## Dónde vamos
 
-**Fase 1 (frontend) — incrementos 0 y 1 terminados.**
+**Fase 1 (frontend) — incrementos 0 y 1 terminados. Incremento 2 a medias.**
 Todo vive en la rama larga **`refactor-fase-1`**, con un tag por incremento
 (`incremento-0`, `incremento-1`). No se mergea a `main` hasta estar probada al 100 %.
 
@@ -27,7 +27,7 @@ Todo vive en la rama larga **`refactor-fase-1`**, con un tag por incremento
 |---|---|---|---|
 | 0 | Red de seguridad + Electron + fronteras ESLint + base de documentación | **hecho** | tag `incremento-0` |
 | 1 | Limpieza sin riesgo (huérfanos, redux, AuthContext) | **hecho** | tag `incremento-1` |
-| 2 | Capa de API (`shared/api` + TanStack Query) | pendiente | — |
+| 2 | Capa de API (`shared/api` + TanStack Query) | **a medias** — ver abajo | `refactor-fase-1` |
 | 3 | Biblioteca de UI compartida (`shared/ui`) | pendiente | — |
 | 4 | Sesión y permisos (`shared/auth`) | pendiente | — |
 | 5 | Módulo Gastos → `features/gastos` (patrón de referencia) | pendiente | — |
@@ -35,6 +35,53 @@ Todo vive en la rama larga **`refactor-fase-1`**, con un tag por incremento
 | N | Deduplicar formularios (~4 000 líneas) | pendiente | — |
 
 Detalle de cada uno en `05-INCREMENTOS.md`.
+
+## AQUÍ ME QUEDÉ — retomar por esto
+
+**Incremento 2, a medias.** Lo hecho está commiteado y la rama está **verde**
+(97 tests, exit 0, build compila).
+
+### Hecho
+- `shared/config/env.js`, `shared/api/{client,endpoints,errors,queryClient}.js` + 19 tests
+- `app/providers/QueryProvider.jsx`, montado en `App.jsx`
+- `entities/personal` completa (zod + queries + mutations) y **`PersonalAdmin.jsx` migrado**:
+  0 `fetch()`, 0 `apiHost`, con estados de carga y error que no tenía
+- `entities/{driver,truck,trailer,company,warehouse}` — consultas de catálogo con caché
+
+### Lo siguiente, y el problema a resolver primero
+
+Faltan los **puentes**: convertir los 10 hooks `useFetchX` de `src/hooks/` en
+envoltorios de las entidades nuevas, para que las ~30 pantallas que los usan ganen
+caché sin tocar ni una línea de ellas.
+
+Ya los escribí una vez y **los reverti**, porque con ellos puestos el smoke test de
+las 61 rutas **deja de terminar** (antes: 6 s). Diagnóstico hasta donde llegué:
+
+- No es una ruta concreta: `/tracking` sola pasa en 182 ms, `/drivers` en 120 ms.
+  Se atora después de ~55 tests, o sea que **es acumulativo**.
+- Hipótesis: cada montaje de `<App/>` crea su propio `QueryClient` vía `useState`
+  en `QueryProvider`, y sus temporizadores se acumulan a lo largo de la suite.
+- Ya probé acotar `gcTime`, `staleTime` y `retry` bajo `MODE=test` en
+  `crearQueryClient`. **No bastó** — ese cambio sí quedó commiteado.
+- Siguiente cosa a probar: que el smoke test comparta un solo `QueryClient` y lo
+  limpie en `afterEach` (`queryClient.clear()`), en vez de crear uno por montaje.
+  Eso implica que `QueryProvider` acepte un cliente por prop.
+
+Detalles que los puentes **deben** respetar, ya verificados contra el original:
+
+| Hook | Devuelve | Proyecta |
+|---|---|---|
+| `useFetchActiveDrivers` | `{activeDrivers, loading, error}` | `driver_id`, `nombre` |
+| `useFetchActiveTrucks` | `{activeTrucks, loading, error}` | `truck_id`, `unidad` |
+| `useFetchActiveTrailers` | `{activeTrailers, loading, error}` | `caja_id`, `no_caja` |
+| `useFetchActiveExternalTrailers` | `{activeExternalTrailers, loading, error, refetch}` | `caja_externa_id`, `no_caja` |
+| `useFetchCompanies` | `{activeCompanies, loading, error, refetchCompanies}` | tal cual |
+| `useFetchWarehouses` | `{activeWarehouses, loading, error, refetchWarehouses}` | tal cual |
+
+Los de `hooks/Edit_Trips_complete/` usan las variantes `...Completos/Completas`.
+
+Después de los puentes, queda de este incremento: llenar `docs/API-ENDPOINTS.md`
+con los 36 endpoints y sus `op`.
 
 ## Divergencia (revisar cada semana)
 
@@ -44,7 +91,7 @@ git rev-list --left-right --count Emiliano...refactor-00-cimientos
 
 | Fecha | Commits de divergencia | Semanas sin integrar |
 |---|---:|---:|
-| 2026-08-31 | 16 | 0 |
+| 2026-08-31 | 20 | 0 |
 
 **Tripwire: 40 commits o 6 semanas.** Al llegar a cualquiera de los dos, se para de agregar
 incrementos y se consolida. La rama `refactor` de abril llegó a 116 sin que nadie mirara
