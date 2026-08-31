@@ -13,6 +13,9 @@
 
 **Richard trabajando en:** _(llenar)_
 
+**Ya integrado:** `origin/main` hasta `db0cf47`. Las notificaciones push quedaron fuera,
+por decisión confirmada.
+
 ## Próximo módulo a mover
 
 Incremento 1 — limpieza de código muerto: los 9 archivos huérfanos,
