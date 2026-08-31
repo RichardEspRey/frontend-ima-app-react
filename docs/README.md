@@ -10,6 +10,7 @@ viajes, gastos, mantenimientos, finanzas, nómina, safety y seguimiento de unida
 | Alguien nuevo en el proyecto | `ONBOARDING.md` → `ARQUITECTURA.md` → `GLOSARIO.md` |
 | Quien va a escribir código | `CONTRIBUYENDO.md` |
 | Quien va a tocar la API | `API-ENDPOINTS.md` |
+| Quien necesita saber de roles o permisos | `ROLES-Y-PERMISOS.md` |
 | Quien retoma el refactor | `refactor/00-ESTADO.md` |
 | Quien pregunta "¿por qué se hizo así?" | `DECISIONES/` |
 
@@ -22,7 +23,9 @@ docs/
   ARQUITECTURA.md      Estructura del código y sus reglas    (pendiente — hoy en refactor/02)
   CONTRIBUYENDO.md     Convenciones de trabajo
   GLOSARIO.md          Términos del dominio                  (pendiente — incremento 4)
-  API-ENDPOINTS.md     Catálogo de la API PHP                (pendiente — incremento 2)
+  API-ENDPOINTS.md     Catálogo de la API PHP
+  ROLES-Y-PERMISOS.md  Roles, permisos y su migración
+  sql/                 Migraciones propuestas; ninguna se ha corrido
   MODULOS/             Un archivo por módulo funcional       (se llena por incremento)
   DECISIONES/          ADRs: por qué se decidió cada cosa
   api/                 Referencia generada desde JSDoc — NO editar a mano
