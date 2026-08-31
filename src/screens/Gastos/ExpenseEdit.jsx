@@ -80,7 +80,7 @@ const ExpenseEdit = () => {
         const data = json.data;
         
         setCountry(countries.find(c => c.value === data.pais) || null);
-        setExpenseDate(new Date(`${data.fecha_gasto}T00:00:00`));
+        if (data.fecha_gasto) setExpenseDate(new Date(`${data.fecha_gasto}T00:00:00`));
         setTotalAmount(parseFloat(data.monto_total || 0).toFixed(2));
         setOriginalAmount(data.cantidad_original ?? '');
         setExchangeRate(data.tipo_cambio ?? '');

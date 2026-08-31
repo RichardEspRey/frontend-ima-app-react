@@ -41,12 +41,29 @@ global.URL.createObjectURL = () => "blob:mock";
 global.URL.revokeObjectURL = () => {};
 
 /* ---------------------------------------------------------------------------
-   fetch: por defecto responde el "éxito vacío" que usa la API de IMA
-   ({status:'success', data:[]}). Así cada pantalla renderiza su estado vacío
-   en vez de su estado de error, que es el render que queremos verificar.
+   fetch: por defecto responde el "éxito vacío" que usa la API de IMA. Cada
+   pantalla lee su payload con un nombre distinto, así que la respuesta trae
+   vacías todas las claves que las pantallas iteran. Si agregas una ruta al
+   smoke test y falla con "cannot read properties of undefined", la clave que
+   lee esa pantalla falta en esta lista.
    Un test que necesite otra respuesta sobreescribe global.fetch.
 --------------------------------------------------------------------------- */
-export const respuestaVacia = { status: "success", data: [], features: [] };
+export const respuestaVacia = {
+  status: "success",
+  message: "",
+  data: [],
+  features: [],
+  users: [],
+  drivers: [],
+  requisitos: [],
+  valores: [],
+  detalles: [],
+  tickets: [],
+  stages: [],
+  documentos: [],
+  info_viaje: {},
+  saved_data: {},
+};
 
 beforeEach(() => {
   global.fetch = vi.fn(() =>

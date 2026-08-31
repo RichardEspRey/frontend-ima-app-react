@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { render } from "@testing-library/react";
+import { render, act } from "@testing-library/react";
 import App from "../App";
 import { useAuthStore } from "../store/useAuthStore";
 
@@ -78,9 +78,13 @@ const RUTAS = [
 // que las pantallas consumen (UpdateContext lo provee App, y Sidebar lo lee).
 // App ya trae su propio HashRouter y su Provider de redux, así que el test no
 // envuelve nada — solo posiciona la ruta en el hash. Cero cambios en producción.
-function montarRuta(ruta) {
+async function montarRuta(ruta) {
   window.location.hash = "#" + ruta;
-  return render(<App />);
+  const resultado = render(<App />);
+  await act(async () => {
+    await new Promise((listo) => setTimeout(listo, 0));
+  });
+  return resultado;
 }
 
 describe("humo: todas las rutas montan", () => {
@@ -92,9 +96,8 @@ describe("humo: todas las rutas montan", () => {
     });
   });
 
-  it.each(RUTAS)("%s monta sin reventar", (ruta) => {
-    montarRuta(ruta);
-    // Si el componente tronó al montar, render() ya habría lanzado.
+  it.each(RUTAS)("%s monta sin reventar", async (ruta) => {
+    await montarRuta(ruta);
     expect(document.body).toBeInTheDocument();
   });
 });

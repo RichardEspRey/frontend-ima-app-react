@@ -48,7 +48,7 @@ const TicketPayment = () => {
 
       if (json.status === "success") {
         setInfo(json.data.info_viaje);
-        setStages(json.data.stages);
+        setStages(json.data.stages ?? []);
         setCustomRate(Number(json.data.info_viaje.valor_milla || 0));
 
         const savedAjustes = {};
@@ -290,6 +290,7 @@ const TicketPayment = () => {
   };
 
   if (loading) return <Box p={5} textAlign="center"><Typography>Cargando información del ticket...</Typography></Box>;
+  if (!info) return <Box p={5} textAlign="center"><Typography>No se encontró la información del ticket.</Typography></Box>;
 
   return (
     <Box sx={{ p: 3, maxWidth: 1200, margin: '0 auto' }}>
