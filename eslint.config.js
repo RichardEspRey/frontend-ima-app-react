@@ -2,21 +2,44 @@ import js from '@eslint/js'
 import globals from 'globals'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
+import boundaries from 'eslint-plugin-boundaries'
+import jsdoc from 'eslint-plugin-jsdoc'
+
+const CAPAS = ['app', 'pages', 'features', 'entities', 'shared']
+
+const ZONA_REFACTORIZADA = [
+  'src/shared/**/*.{js,jsx}',
+  'src/entities/**/*.{js,jsx}',
+  'src/features/**/*.{js,jsx}',
+  'src/pages/**/*.{js,jsx}',
+  'src/app/**/*.{js,jsx}',
+]
+
+const reglasJsdoc = {
+  'jsdoc/require-jsdoc': ['error', {
+    publicOnly: true,
+    require: {
+      FunctionDeclaration: true,
+      ArrowFunctionExpression: true,
+      FunctionExpression: true,
+      ClassDeclaration: true,
+    },
+  }],
+  'jsdoc/require-description': 'error',
+  'jsdoc/require-param': 'error',
+  'jsdoc/require-param-description': 'error',
+  'jsdoc/require-param-name': 'error',
+  'jsdoc/require-returns': 'error',
+  'jsdoc/require-returns-description': 'error',
+  'jsdoc/check-param-names': 'error',
+  'jsdoc/check-tag-names': ['error', { definedTags: ['endpoint'] }],
+  'jsdoc/check-alignment': 'error',
+  'jsdoc/no-undefined-types': 'off',
+}
 
 export default [
-  { ignores: ['dist', 'release', 'build'] },
-  // Los archivos de test corren en Vitest, no en el navegador: usan `global`,
-  // `describe`, `it`, `expect`, `vi`... que no existen en globals.browser.
-  {
-    files: [
-      '**/*.{test,spec}.{js,jsx}',
-      'src/test/**/*.{js,jsx}',
-      '**/__tests__/**/*.{js,jsx}',
-    ],
-    languageOptions: {
-      globals: { ...globals.browser, ...globals.node, ...globals.vitest },
-    },
-  },
+  { ignores: ['dist', 'release', 'docs/api', 'node_modules'] },
+
   {
     files: ['**/*.{js,jsx}'],
     languageOptions: {
@@ -31,15 +54,104 @@ export default [
     plugins: {
       'react-hooks': reactHooks,
       'react-refresh': reactRefresh,
+      jsdoc,
     },
     rules: {
       ...js.configs.recommended.rules,
       ...reactHooks.configs.recommended.rules,
       'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
-      'react-refresh/only-export-components': [
-        'warn',
-        { allowConstantExport: true },
+      'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
+
+      'no-eval': 'error',
+      'no-implied-eval': 'error',
+      'no-new-func': 'error',
+      'no-restricted-syntax': ['error',
+        {
+          selector: 'JSXAttribute[name.name="dangerouslySetInnerHTML"]',
+          message: 'Prohibido: es la vía de XSS. Renderiza el contenido como texto.',
+        },
+        {
+          selector: 'MemberExpression[property.name="innerHTML"]',
+          message: 'Prohibido: es la vía de XSS. Usa textContent o React.',
+        },
       ],
     },
+  },
+
+  {
+    files: ['src/**/*.{js,jsx}'],
+    plugins: { boundaries },
+    settings: {
+      'boundaries/include': ['src/**/*.{js,jsx}'],
+      'boundaries/elements': CAPAS.map((capa) => ({
+        type: capa,
+        pattern: `src/${capa}/*`,
+        capture: ['slice'],
+      })),
+    },
+    rules: {
+      'boundaries/dependencies': ['warn', {
+        default: 'disallow',
+        policies: [
+          {
+            from: { element: { type: 'app' } },
+            allow: { to: { element: { types: { anyOf: ['pages', 'features', 'entities', 'shared'] } } } },
+          },
+          {
+            from: { element: { type: 'pages' } },
+            allow: { to: { element: { types: { anyOf: ['features', 'entities', 'shared'] } } } },
+          },
+          {
+            from: { element: { type: 'features' } },
+            allow: { to: { element: { types: { anyOf: ['entities', 'shared'] } } } },
+          },
+          {
+            from: { element: { type: 'entities' } },
+            allow: { to: { element: { type: 'shared' } } },
+          },
+          {
+            from: { element: { type: 'shared' } },
+            allow: { to: { element: { type: 'shared' } } },
+          },
+        ],
+      }],
+    },
+  },
+
+  {
+    files: ZONA_REFACTORIZADA,
+    rules: reglasJsdoc,
+  },
+
+  {
+    files: ['src/**/*.{js,jsx}'],
+    ignores: [...ZONA_REFACTORIZADA, 'src/test/**', 'src/**/__tests__/**'],
+    rules: Object.fromEntries(
+      Object.entries(reglasJsdoc).map(([regla, valor]) => [
+        regla,
+        Array.isArray(valor) ? ['warn', ...valor.slice(1)] : (valor === 'off' ? 'off' : 'warn'),
+      ]),
+    ),
+  },
+
+  {
+    files: ['src/test/**/*.{js,jsx}', 'src/**/__tests__/**/*.{js,jsx}'],
+    languageOptions: { globals: { ...globals.browser, ...globals.node } },
+    rules: {
+      'jsdoc/require-jsdoc': 'off',
+      'boundaries/element-types': 'off',
+    },
+  },
+
+  {
+    files: ['**/*.cjs', 'preload.js'],
+    languageOptions: { globals: { ...globals.node }, sourceType: 'commonjs' },
+    rules: { 'jsdoc/require-jsdoc': 'off' },
+  },
+
+  {
+    files: ['vite.config.js', 'eslint.config.js'],
+    languageOptions: { globals: { ...globals.node }, sourceType: 'module' },
+    rules: { 'jsdoc/require-jsdoc': 'off' },
   },
 ]

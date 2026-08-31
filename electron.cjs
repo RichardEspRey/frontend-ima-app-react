@@ -1,4 +1,4 @@
-const { app, BrowserWindow, dialog, ipcMain } = require("electron");
+const { app, BrowserWindow, dialog, ipcMain, shell } = require("electron");
 const path = require("path");
 const { autoUpdater } = require("electron-updater");
 const { setup: setupPushReceiver } = require("@cuj1559/electron-push-receiver");
@@ -11,7 +11,21 @@ function createWindow() {
     height: 800,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
+      contextIsolation: true,
+      nodeIntegration: false,
+      nodeIntegrationInWorker: false,
+      webviewTag: false,
+      allowRunningInsecureContent: false,
     },
+  });
+
+  win.webContents.setWindowOpenHandler(({ url }) => {
+    shell.openExternal(url);
+    return { action: "deny" };
+  });
+
+  win.webContents.on("will-navigate", (event, url) => {
+    if (!url.startsWith("file://")) event.preventDefault();
   });
 
   // Carga el frontend compilado por Vite usando path.join (Súper seguro)
