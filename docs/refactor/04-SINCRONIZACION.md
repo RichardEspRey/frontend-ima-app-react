@@ -4,6 +4,48 @@ Este es el documento que decide si el refactor llega o no. La rama `refactor` an
 murió por mala arquitectura: murió con **116 commits de divergencia** porque nadie la
 reintegró a tiempo. Todo lo de aquí existe para que eso no se repita.
 
+## El modelo de ramas
+
+Confirmado con Emiliano el 2026-08-31:
+
+```
+main ─────────────────────────────────────────────────►
+ ▲                                    ▲
+ │                                    │
+ └── Emiliano ───────────────┬────────┘
+     (features, siempre viva)│
+                             └── refactor-NN-nombre ──┘
+                                 (sale de Emiliano, muere al mergear)
+```
+
+- **`main`** — lo aprobado. Richard y Emiliano mergean aquí.
+- **`Emiliano`** — rama de trabajo permanente. Sigue recibiendo features nuevas.
+- **`refactor-NN-nombre`** — sale de **`Emiliano`**, no de `main`.
+
+**Por qué sale de `Emiliano` y no de `main`:** el refactor tiene que trabajar sobre la app
+que realmente existe, con las features ya hechas. Medido el 2026-08-31: `main` y `Emiliano`
+difieren en **41 archivos de `src/`**; `AdminGastos.jsx` solo por 598 líneas y
+`useGastosFiltrosStore.js` ni siquiera existe en `main`. Un refactor basado en `main`
+estaría refactorizando una versión vieja de la app — justo lo que hay que evitar. Se
+comprobó: la red de seguridad corre 78 tests sobre `Emiliano` y solo 59 sobre `main`,
+porque un tercio prueba código que `main` no tiene.
+
+### La cadena de actualización
+
+```
+Richard mergea a main  →  Emiliano jala main  →  el refactor jala Emiliano
+```
+
+Tres pasos, siempre en ese orden. El refactor **nunca** jala de `main` directo: jalaría una
+versión sin las features de Emiliano.
+
+### Orden al mergear
+
+**`Emiliano` → `main` va primero; el incremento del refactor después.** Como la rama del
+refactor sale de `Emiliano`, si se mergea antes arrastra también los commits de features
+que todavía no estaban aprobados. Mergeando `Emiliano` primero, el merge del refactor lleva
+solo los commits del refactor.
+
 ## Las cinco reglas
 
 ### 1. Ninguna rama vive más de una semana
@@ -14,13 +56,20 @@ esa ventana, está mal cortado: pártelo.
 **Antes de abrir cualquier rama:**
 ```bash
 git fetch origin
-git checkout -b refactor-NN-nombre origin/main
+git checkout Emiliano && git merge origin/main    # Emiliano al día con main
+git checkout -b refactor-NN-nombre Emiliano
 ```
 
 **Todos los días, sobre la rama viva:**
 ```bash
-git fetch origin && git rebase origin/main
+git fetch origin
+git checkout Emiliano && git merge origin/main
+git checkout refactor-NN-nombre && git merge Emiliano
 ```
+
+Se usa `merge` y no `rebase` contra `Emiliano` porque esa rama está publicada en
+`origin/Emiliano`: rebasar sus commits crearía duplicados con hash nuevo. El `rebase` sigue
+valiendo para limpiar los commits *propios* del refactor antes de mergear.
 Rebase diario, no al final. Un conflicto de un día se resuelve en minutos; el de tres
 semanas no se resuelve.
 
