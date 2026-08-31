@@ -15,6 +15,12 @@ por su cuenta qué significa un error, que es lo que pasa hoy.</p>
 ## Constants
 
 <dl>
+<dt><a href="#EN_PRUEBAS">EN_PRUEBAS</a> : <code>boolean</code></dt>
+<dd><p>Bajo test, la caché se recolecta de inmediato y no se reintenta nada.</p>
+<p>El smoke test monta las 61 rutas en la misma sesión; sin esto, la caché de una
+ruta sobrevive a la siguiente y los tests dependen del orden en que corren.
+Los reintentos tampoco aportan nada cuando <code>fetch</code> está simulado.</p>
+</dd>
 <dt><a href="#FRESCURA_CATALOGO_MS">FRESCURA_CATALOGO_MS</a> : <code>number</code></dt>
 <dd><p>Tiempo que un catálogo se considera fresco. Conductores, camiones, cajas y
 almacenes cambian de vez en cuando, no dentro de una sesión de trabajo: no
@@ -28,6 +34,35 @@ no en las 96 pantallas que antes lo leían por su cuenta.</p>
 </dd>
 <dt><a href="#TIMEOUT_PETICION_MS">TIMEOUT_PETICION_MS</a> : <code>number</code></dt>
 <dd><p>Milisegundos que espera una petición antes de abortarse.</p>
+</dd>
+<dt><a href="#esVacio">esVacio</a> ⇒ <code>boolean</code></dt>
+<dd><p>Indica si un valor debe tratarse como vacío al ordenar.</p>
+</dd>
+<dt><a href="#compararValores">compararValores</a> ⇒ <code>number</code></dt>
+<dd><p>Compara dos valores del mismo campo.</p>
+<p>Los números se comparan como números; el resto como texto en español con
+<code>numeric: true</code>, para que &quot;Caja 10&quot; quede después de &quot;Caja 9&quot; y no antes.</p>
+</dd>
+<dt><a href="#siguienteOrden">siguienteOrden</a> ⇒ <code>Object</code></dt>
+<dd><p>Calcula el siguiente estado al hacer clic en una cabecera de columna.</p>
+<p>El ciclo tiene tres pasos: ascendente, descendente y sin orden. El tercero
+importa: permite volver al orden natural que trae la API sin recargar.</p>
+</dd>
+<dt><a href="#ordenarPor">ordenarPor</a> ⇒ <code>Array</code></dt>
+<dd><p>Ordena una lista según un orden y un mapa de accesores.</p>
+<p>Los valores vacíos van <strong>siempre al final</strong>, suban o bajen los demás: una fila
+sin fecha estorba igual arriba que abajo, y verlas agrupadas es más útil que
+verlas saltar de extremo con cada clic.</p>
+<p>No muta la lista original.</p>
+</dd>
+<dt><a href="#notify">notify</a></dt>
+<dd><p>Avisos al usuario, en un solo lugar.</p>
+<p>Hoy el proyecto usa <strong>tres</strong> librerías para lo mismo: <code>sweetalert2</code> (343
+llamadas en 56 archivos), <code>react-toastify</code> (una) y <code>@pablotheblink/flashyjs</code>
+(nueve). Este módulo envuelve sweetalert2, que es la que domina, para que las
+otras dos se puedan ir retirando módulo por módulo y para que cambiar de
+librería sea editar este archivo en vez de 56.</p>
+<p>Cada función devuelve una promesa, así que se puede esperar el cierre.</p>
 </dd>
 <dt><a href="#LLAVE_PERSONAL">LLAVE_PERSONAL</a> : <code>Array.&lt;string&gt;</code></dt>
 <dd><p>Llave de caché de la lista de personal. Las mutaciones la invalidan para que
@@ -93,6 +128,33 @@ veces y solo retrasaría el mensaje.</p>
 pueda tener el suyo: una caché compartida entre tests los vuelve dependientes
 del orden en que corren.</p>
 </dd>
+<dt><a href="#obtenerCompanias">obtenerCompanias([opciones])</a> ⇒ <code>Promise.&lt;Array&gt;</code></dt>
+<dd><p>Compañías dadas de alta.</p>
+</dd>
+<dt><a href="#useCompanias">useCompanias()</a> ⇒ <code>object</code></dt>
+<dd><p>Compañías dadas de alta.</p>
+<p>Es un catálogo: se cachea <a href="#FRESCURA_CATALOGO_MS">FRESCURA_CATALOGO_MS</a> y se comparte entre
+todas las pantallas que lo pidan, así que varias a la vez hacen una sola
+petición en lugar de una cada una.</p>
+</dd>
+<dt><a href="#obtenerConductoresActivos">obtenerConductoresActivos([opciones])</a> ⇒ <code>Promise.&lt;Array&gt;</code></dt>
+<dd><p>Conductores activos, para los selectores de viaje.</p>
+</dd>
+<dt><a href="#useConductoresActivos">useConductoresActivos()</a> ⇒ <code>object</code></dt>
+<dd><p>Conductores activos, para los selectores de viaje.</p>
+<p>Es un catálogo: se cachea <a href="#FRESCURA_CATALOGO_MS">FRESCURA_CATALOGO_MS</a> y se comparte entre
+todas las pantallas que lo pidan, así que varias a la vez hacen una sola
+petición en lugar de una cada una.</p>
+</dd>
+<dt><a href="#obtenerConductoresActivosCompletos">obtenerConductoresActivosCompletos([opciones])</a> ⇒ <code>Promise.&lt;Array&gt;</code></dt>
+<dd><p>Conductores activos con los campos extra que pide la edición completa de viaje.</p>
+</dd>
+<dt><a href="#useConductoresActivosCompletos">useConductoresActivosCompletos()</a> ⇒ <code>object</code></dt>
+<dd><p>Conductores activos con los campos extra que pide la edición completa de viaje.</p>
+<p>Es un catálogo: se cachea <a href="#FRESCURA_CATALOGO_MS">FRESCURA_CATALOGO_MS</a> y se comparte entre
+todas las pantallas que lo pidan, así que varias a la vez hacen una sola
+petición en lugar de una cada una.</p>
+</dd>
 <dt><a href="#obtenerPersonal">obtenerPersonal([opciones])</a> ⇒ <code>Promise.&lt;Array.&lt;Empleado&gt;&gt;</code></dt>
 <dd><p>Trae todo el personal de nómina, validado.</p>
 </dd>
@@ -122,6 +184,57 @@ of undefined&quot; que hay repartidos por el proyecto.</p>
 </dd>
 <dt><a href="#validarFormularioEmpleado">validarFormularioEmpleado(formulario)</a> ⇒ <code>Object</code></dt>
 <dd><p>Comprueba el formulario y devuelve el primer mensaje de error, si lo hay.</p>
+</dd>
+<dt><a href="#obtenerCajasActivas">obtenerCajasActivas([opciones])</a> ⇒ <code>Promise.&lt;Array&gt;</code></dt>
+<dd><p>Cajas propias activas.</p>
+</dd>
+<dt><a href="#useCajasActivas">useCajasActivas()</a> ⇒ <code>object</code></dt>
+<dd><p>Cajas propias activas.</p>
+<p>Es un catálogo: se cachea <a href="#FRESCURA_CATALOGO_MS">FRESCURA_CATALOGO_MS</a> y se comparte entre
+todas las pantallas que lo pidan, así que varias a la vez hacen una sola
+petición en lugar de una cada una.</p>
+</dd>
+<dt><a href="#obtenerCajasActivasCompletas">obtenerCajasActivasCompletas([opciones])</a> ⇒ <code>Promise.&lt;Array&gt;</code></dt>
+<dd><p>Cajas propias activas con los campos de la edición completa de viaje.</p>
+</dd>
+<dt><a href="#useCajasActivasCompletas">useCajasActivasCompletas()</a> ⇒ <code>object</code></dt>
+<dd><p>Cajas propias activas con los campos de la edición completa de viaje.</p>
+<p>Es un catálogo: se cachea <a href="#FRESCURA_CATALOGO_MS">FRESCURA_CATALOGO_MS</a> y se comparte entre
+todas las pantallas que lo pidan, así que varias a la vez hacen una sola
+petición en lugar de una cada una.</p>
+</dd>
+<dt><a href="#obtenerCajasExternasActivas">obtenerCajasExternasActivas([opciones])</a> ⇒ <code>Promise.&lt;Array&gt;</code></dt>
+<dd><p>Cajas externas activas: las que no son propias de IMA.</p>
+</dd>
+<dt><a href="#useCajasExternasActivas">useCajasExternasActivas()</a> ⇒ <code>object</code></dt>
+<dd><p>Cajas externas activas, cacheadas y compartidas entre pantallas.</p>
+</dd>
+<dt><a href="#obtenerCamionesActivos">obtenerCamionesActivos([opciones])</a> ⇒ <code>Promise.&lt;Array&gt;</code></dt>
+<dd><p>Camiones activos, para los selectores de viaje.</p>
+</dd>
+<dt><a href="#useCamionesActivos">useCamionesActivos()</a> ⇒ <code>object</code></dt>
+<dd><p>Camiones activos, para los selectores de viaje.</p>
+<p>Es un catálogo: se cachea <a href="#FRESCURA_CATALOGO_MS">FRESCURA_CATALOGO_MS</a> y se comparte entre
+todas las pantallas que lo pidan, así que varias a la vez hacen una sola
+petición en lugar de una cada una.</p>
+</dd>
+<dt><a href="#obtenerCamionesActivosCompletos">obtenerCamionesActivosCompletos([opciones])</a> ⇒ <code>Promise.&lt;Array&gt;</code></dt>
+<dd><p>Camiones activos con los campos extra de la edición completa de viaje.</p>
+</dd>
+<dt><a href="#useCamionesActivosCompletos">useCamionesActivosCompletos()</a> ⇒ <code>object</code></dt>
+<dd><p>Camiones activos con los campos extra de la edición completa de viaje.</p>
+<p>Es un catálogo: se cachea <a href="#FRESCURA_CATALOGO_MS">FRESCURA_CATALOGO_MS</a> y se comparte entre
+todas las pantallas que lo pidan, así que varias a la vez hacen una sola
+petición en lugar de una cada una.</p>
+</dd>
+<dt><a href="#obtenerBodegas">obtenerBodegas([opciones])</a> ⇒ <code>Promise.&lt;Array&gt;</code></dt>
+<dd><p>Bodegas dadas de alta.</p>
+</dd>
+<dt><a href="#useBodegas">useBodegas()</a> ⇒ <code>object</code></dt>
+<dd><p>Bodegas dadas de alta.</p>
+<p>Es un catálogo: se cachea <a href="#FRESCURA_CATALOGO_MS">FRESCURA_CATALOGO_MS</a> y se comparte entre
+todas las pantallas que lo pidan, así que varias a la vez hacen una sola
+petición en lugar de una cada una.</p>
 </dd>
 </dl>
 
@@ -167,6 +280,16 @@ que manda `US`. Por eso el dominio real son estos dos valores y no más.
 
 **Kind**: global enum  
 **Read only**: true  
+<a name="EN_PRUEBAS"></a>
+
+## EN\_PRUEBAS : <code>boolean</code>
+Bajo test, la caché se recolecta de inmediato y no se reintenta nada.
+
+El smoke test monta las 61 rutas en la misma sesión; sin esto, la caché de una
+ruta sobrevive a la siguiente y los tests dependen del orden en que corren.
+Los reintentos tampoco aportan nada cuando `fetch` está simulado.
+
+**Kind**: global constant  
 <a name="FRESCURA_CATALOGO_MS"></a>
 
 ## FRESCURA\_CATALOGO\_MS : <code>number</code>
@@ -191,6 +314,154 @@ no en las 96 pantallas que antes lo leían por su cuenta.
 Milisegundos que espera una petición antes de abortarse.
 
 **Kind**: global constant  
+<a name="esVacio"></a>
+
+## esVacio ⇒ <code>boolean</code>
+Indica si un valor debe tratarse como vacío al ordenar.
+
+**Kind**: global constant  
+**Returns**: <code>boolean</code> - `true` si es `null`, `undefined` o cadena vacía.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| valor | <code>\*</code> | Valor a evaluar. |
+
+<a name="compararValores"></a>
+
+## compararValores ⇒ <code>number</code>
+Compara dos valores del mismo campo.
+
+Los números se comparan como números; el resto como texto en español con
+`numeric: true`, para que "Caja 10" quede después de "Caja 9" y no antes.
+
+**Kind**: global constant  
+**Returns**: <code>number</code> - Negativo, cero o positivo, como espera `Array.sort`.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| a | <code>\*</code> | Primer valor. |
+| b | <code>\*</code> | Segundo valor. |
+
+<a name="siguienteOrden"></a>
+
+## siguienteOrden ⇒ <code>Object</code>
+Calcula el siguiente estado al hacer clic en una cabecera de columna.
+
+El ciclo tiene tres pasos: ascendente, descendente y sin orden. El tercero
+importa: permite volver al orden natural que trae la API sin recargar.
+
+**Kind**: global constant  
+**Returns**: <code>Object</code> - El orden siguiente.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| actual | <code>Object</code> | Orden vigente. |
+| campo | <code>string</code> | Columna sobre la que se hizo clic. |
+
+<a name="ordenarPor"></a>
+
+## ordenarPor ⇒ <code>Array</code>
+Ordena una lista según un orden y un mapa de accesores.
+
+Los valores vacíos van **siempre al final**, suban o bajen los demás: una fila
+sin fecha estorba igual arriba que abajo, y verlas agrupadas es más útil que
+verlas saltar de extremo con cada clic.
+
+No muta la lista original.
+
+**Kind**: global constant  
+**Returns**: <code>Array</code> - Una lista nueva, ordenada; la original si el campo no existe.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| filas | <code>Array</code> | Lista a ordenar. |
+| orden | <code>Object</code> | Campo y dirección. |
+| accesores | <code>object</code> | Mapa `campo -> (fila, contexto) => valor`. |
+| [contexto] | <code>\*</code> | Segundo argumento que reciben los accesores, por ejemplo   el tipo de cambio cuando la columna es un total convertido. |
+
+<a name="notify"></a>
+
+## notify
+Avisos al usuario, en un solo lugar.
+
+Hoy el proyecto usa **tres** librerías para lo mismo: `sweetalert2` (343
+llamadas en 56 archivos), `react-toastify` (una) y `@pablotheblink/flashyjs`
+(nueve). Este módulo envuelve sweetalert2, que es la que domina, para que las
+otras dos se puedan ir retirando módulo por módulo y para que cambiar de
+librería sea editar este archivo en vez de 56.
+
+Cada función devuelve una promesa, así que se puede esperar el cierre.
+
+**Kind**: global constant  
+
+* [notify](#notify)
+    * [.exito(mensaje, [titulo])](#notify.exito) ⇒ <code>Promise</code>
+    * [.error(problema, [titulo])](#notify.error) ⇒ <code>Promise</code>
+    * [.aviso(mensaje, [titulo])](#notify.aviso) ⇒ <code>Promise</code>
+    * [.confirmar(opciones)](#notify.confirmar) ⇒ <code>Promise.&lt;boolean&gt;</code>
+
+<a name="notify.exito"></a>
+
+### notify.exito(mensaje, [titulo]) ⇒ <code>Promise</code>
+Confirma que una operación salió bien.
+
+**Kind**: static method of [<code>notify</code>](#notify)  
+**Returns**: <code>Promise</code> - Se resuelve al cerrarse el aviso.  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| mensaje | <code>string</code> |  | Qué ocurrió, en lenguaje de la persona. |
+| [titulo] | <code>string</code> | <code>&quot;&#x27;Listo&#x27;&quot;</code> | Encabezado del aviso. |
+
+<a name="notify.error"></a>
+
+### notify.error(problema, [titulo]) ⇒ <code>Promise</code>
+Informa de un fallo.
+
+Acepta un `Error` directamente, para que un `catch` no tenga que acordarse
+de sacar el `.message`.
+
+**Kind**: static method of [<code>notify</code>](#notify)  
+**Returns**: <code>Promise</code> - Se resuelve al cerrarse el aviso.  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| problema | <code>string</code> \| <code>Error</code> |  | Mensaje, o el error capturado. |
+| [titulo] | <code>string</code> | <code>&quot;&#x27;No se pudo completar&#x27;&quot;</code> | Encabezado del aviso. |
+
+<a name="notify.aviso"></a>
+
+### notify.aviso(mensaje, [titulo]) ⇒ <code>Promise</code>
+Advierte de algo que impide continuar, como un campo obligatorio vacío.
+
+**Kind**: static method of [<code>notify</code>](#notify)  
+**Returns**: <code>Promise</code> - Se resuelve al cerrarse el aviso.  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| mensaje | <code>string</code> |  | Qué falta o qué está mal. |
+| [titulo] | <code>string</code> | <code>&quot;&#x27;Atención&#x27;&quot;</code> | Encabezado del aviso. |
+
+<a name="notify.confirmar"></a>
+
+### notify.confirmar(opciones) ⇒ <code>Promise.&lt;boolean&gt;</code>
+Pide confirmación antes de una acción destructiva.
+
+Devuelve un booleano en vez del objeto de sweetalert2, para que quien llama
+no tenga que conocer la forma `{ isConfirmed }` de la librería.
+
+**Kind**: static method of [<code>notify</code>](#notify)  
+**Returns**: <code>Promise.&lt;boolean&gt;</code> - `true` si la persona aceptó.  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| opciones | <code>object</code> |  | Textos del diálogo. |
+| opciones.titulo | <code>string</code> |  | Pregunta principal. |
+| [opciones.mensaje] | <code>string</code> |  | Consecuencia de aceptar; conviene ser explícito. |
+| [opciones.confirmar] | <code>string</code> | <code>&quot;&#x27;Sí, continuar&#x27;&quot;</code> | Texto del botón de aceptar. |
+| [opciones.cancelar] | <code>string</code> | <code>&quot;&#x27;Cancelar&#x27;&quot;</code> | Texto del botón de cancelar. |
+| [opciones.peligroso] | <code>boolean</code> | <code>true</code> | Pinta de rojo el botón de aceptar. |
+
 <a name="LLAVE_PERSONAL"></a>
 
 ## LLAVE\_PERSONAL : <code>Array.&lt;string&gt;</code>
@@ -338,6 +609,93 @@ del orden en que corren.
 
 **Kind**: global function  
 **Returns**: <code>object</code> - Cliente de TanStack Query listo para el provider.  
+<a name="obtenerCompanias"></a>
+
+## obtenerCompanias([opciones]) ⇒ <code>Promise.&lt;Array&gt;</code>
+Compañías dadas de alta.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;Array&gt;</code> - La lista, o `[]` si la API no la devolvió.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la petición falla.
+
+**Endpoint**: POST companies.php · op=getCompanies  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [opciones] | <code>object</code> | Ajustes de la petición. |
+| [opciones.signal] | <code>AbortSignal</code> | Señal de cancelación. |
+
+<a name="useCompanias"></a>
+
+## useCompanias() ⇒ <code>object</code>
+Compañías dadas de alta.
+
+Es un catálogo: se cachea [FRESCURA_CATALOGO_MS](#FRESCURA_CATALOGO_MS) y se comparte entre
+todas las pantallas que lo pidan, así que varias a la vez hacen una sola
+petición en lugar de una cada una.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useQuery`: `{data, isLoading, isError, error}`.  
+<a name="obtenerConductoresActivos"></a>
+
+## obtenerConductoresActivos([opciones]) ⇒ <code>Promise.&lt;Array&gt;</code>
+Conductores activos, para los selectores de viaje.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;Array&gt;</code> - La lista, o `[]` si la API no la devolvió.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la petición falla.
+
+**Endpoint**: POST drivers.php · op=getDriversActivos  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [opciones] | <code>object</code> | Ajustes de la petición. |
+| [opciones.signal] | <code>AbortSignal</code> | Señal de cancelación. |
+
+<a name="useConductoresActivos"></a>
+
+## useConductoresActivos() ⇒ <code>object</code>
+Conductores activos, para los selectores de viaje.
+
+Es un catálogo: se cachea [FRESCURA_CATALOGO_MS](#FRESCURA_CATALOGO_MS) y se comparte entre
+todas las pantallas que lo pidan, así que varias a la vez hacen una sola
+petición en lugar de una cada una.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useQuery`: `{data, isLoading, isError, error}`.  
+<a name="obtenerConductoresActivosCompletos"></a>
+
+## obtenerConductoresActivosCompletos([opciones]) ⇒ <code>Promise.&lt;Array&gt;</code>
+Conductores activos con los campos extra que pide la edición completa de viaje.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;Array&gt;</code> - La lista, o `[]` si la API no la devolvió.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la petición falla.
+
+**Endpoint**: POST drivers.php · op=getDriversActivosComplete  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [opciones] | <code>object</code> | Ajustes de la petición. |
+| [opciones.signal] | <code>AbortSignal</code> | Señal de cancelación. |
+
+<a name="useConductoresActivosCompletos"></a>
+
+## useConductoresActivosCompletos() ⇒ <code>object</code>
+Conductores activos con los campos extra que pide la edición completa de viaje.
+
+Es un catálogo: se cachea [FRESCURA_CATALOGO_MS](#FRESCURA_CATALOGO_MS) y se comparte entre
+todas las pantallas que lo pidan, así que varias a la vez hacen una sola
+petición en lugar de una cada una.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useQuery`: `{data, isLoading, isError, error}`.  
 <a name="obtenerPersonal"></a>
 
 ## obtenerPersonal([opciones]) ⇒ <code>Promise.&lt;Array.&lt;Empleado&gt;&gt;</code>
@@ -443,6 +801,176 @@ Comprueba el formulario y devuelve el primer mensaje de error, si lo hay.
 | --- | --- | --- |
 | formulario | <code>Record.&lt;string, unknown&gt;</code> | Datos capturados en el modal. |
 
+<a name="obtenerCajasActivas"></a>
+
+## obtenerCajasActivas([opciones]) ⇒ <code>Promise.&lt;Array&gt;</code>
+Cajas propias activas.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;Array&gt;</code> - La lista, o `[]` si la API no la devolvió.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la petición falla.
+
+**Endpoint**: POST cajas.php · op=getCajasActivas  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [opciones] | <code>object</code> | Ajustes de la petición. |
+| [opciones.signal] | <code>AbortSignal</code> | Señal de cancelación. |
+
+<a name="useCajasActivas"></a>
+
+## useCajasActivas() ⇒ <code>object</code>
+Cajas propias activas.
+
+Es un catálogo: se cachea [FRESCURA_CATALOGO_MS](#FRESCURA_CATALOGO_MS) y se comparte entre
+todas las pantallas que lo pidan, así que varias a la vez hacen una sola
+petición en lugar de una cada una.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useQuery`: `{data, isLoading, isError, error}`.  
+<a name="obtenerCajasActivasCompletas"></a>
+
+## obtenerCajasActivasCompletas([opciones]) ⇒ <code>Promise.&lt;Array&gt;</code>
+Cajas propias activas con los campos de la edición completa de viaje.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;Array&gt;</code> - La lista, o `[]` si la API no la devolvió.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la petición falla.
+
+**Endpoint**: POST cajas.php · op=getCajasActivasComplete  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [opciones] | <code>object</code> | Ajustes de la petición. |
+| [opciones.signal] | <code>AbortSignal</code> | Señal de cancelación. |
+
+<a name="useCajasActivasCompletas"></a>
+
+## useCajasActivasCompletas() ⇒ <code>object</code>
+Cajas propias activas con los campos de la edición completa de viaje.
+
+Es un catálogo: se cachea [FRESCURA_CATALOGO_MS](#FRESCURA_CATALOGO_MS) y se comparte entre
+todas las pantallas que lo pidan, así que varias a la vez hacen una sola
+petición en lugar de una cada una.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useQuery`: `{data, isLoading, isError, error}`.  
+<a name="obtenerCajasExternasActivas"></a>
+
+## obtenerCajasExternasActivas([opciones]) ⇒ <code>Promise.&lt;Array&gt;</code>
+Cajas externas activas: las que no son propias de IMA.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;Array&gt;</code> - La lista, o `[]` si la API no la devolvió.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la petición falla.
+
+**Endpoint**: POST caja_externa.php · op=getCajasExternasActivas  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [opciones] | <code>object</code> | Ajustes de la petición. |
+| [opciones.signal] | <code>AbortSignal</code> | Señal de cancelación. |
+
+<a name="useCajasExternasActivas"></a>
+
+## useCajasExternasActivas() ⇒ <code>object</code>
+Cajas externas activas, cacheadas y compartidas entre pantallas.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useQuery`: `{data, isLoading, isError, error}`.  
+<a name="obtenerCamionesActivos"></a>
+
+## obtenerCamionesActivos([opciones]) ⇒ <code>Promise.&lt;Array&gt;</code>
+Camiones activos, para los selectores de viaje.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;Array&gt;</code> - La lista, o `[]` si la API no la devolvió.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la petición falla.
+
+**Endpoint**: POST trucks.php · op=getTrucksActivos  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [opciones] | <code>object</code> | Ajustes de la petición. |
+| [opciones.signal] | <code>AbortSignal</code> | Señal de cancelación. |
+
+<a name="useCamionesActivos"></a>
+
+## useCamionesActivos() ⇒ <code>object</code>
+Camiones activos, para los selectores de viaje.
+
+Es un catálogo: se cachea [FRESCURA_CATALOGO_MS](#FRESCURA_CATALOGO_MS) y se comparte entre
+todas las pantallas que lo pidan, así que varias a la vez hacen una sola
+petición en lugar de una cada una.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useQuery`: `{data, isLoading, isError, error}`.  
+<a name="obtenerCamionesActivosCompletos"></a>
+
+## obtenerCamionesActivosCompletos([opciones]) ⇒ <code>Promise.&lt;Array&gt;</code>
+Camiones activos con los campos extra de la edición completa de viaje.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;Array&gt;</code> - La lista, o `[]` si la API no la devolvió.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la petición falla.
+
+**Endpoint**: POST trucks.php · op=getTrucksActivosComplete  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [opciones] | <code>object</code> | Ajustes de la petición. |
+| [opciones.signal] | <code>AbortSignal</code> | Señal de cancelación. |
+
+<a name="useCamionesActivosCompletos"></a>
+
+## useCamionesActivosCompletos() ⇒ <code>object</code>
+Camiones activos con los campos extra de la edición completa de viaje.
+
+Es un catálogo: se cachea [FRESCURA_CATALOGO_MS](#FRESCURA_CATALOGO_MS) y se comparte entre
+todas las pantallas que lo pidan, así que varias a la vez hacen una sola
+petición en lugar de una cada una.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useQuery`: `{data, isLoading, isError, error}`.  
+<a name="obtenerBodegas"></a>
+
+## obtenerBodegas([opciones]) ⇒ <code>Promise.&lt;Array&gt;</code>
+Bodegas dadas de alta.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;Array&gt;</code> - La lista, o `[]` si la API no la devolvió.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la petición falla.
+
+**Endpoint**: POST warehouses.php · op=getWarehouses  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [opciones] | <code>object</code> | Ajustes de la petición. |
+| [opciones.signal] | <code>AbortSignal</code> | Señal de cancelación. |
+
+<a name="useBodegas"></a>
+
+## useBodegas() ⇒ <code>object</code>
+Bodegas dadas de alta.
+
+Es un catálogo: se cachea [FRESCURA_CATALOGO_MS](#FRESCURA_CATALOGO_MS) y se comparte entre
+todas las pantallas que lo pidan, así que varias a la vez hacen una sola
+petición en lugar de una cada una.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useQuery`: `{data, isLoading, isError, error}`.  
 <a name="Empleado"></a>
 
 ## Empleado : <code>object</code>
