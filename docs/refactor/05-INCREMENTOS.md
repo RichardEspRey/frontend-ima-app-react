@@ -75,8 +75,9 @@ convenciones. El HTTPS queda anotado como bloqueante de infraestructura.
 3. Crear `entities/` para los catálogos: `driver`, `truck`, `trailer`, `warehouse`,
    `company`. Los 14 hooks `useFetchX` se vuelven una línea de `useQuery` cada uno y los
    viejos quedan como puentes de re-export.
-4. **Piloto**: migrar una sola pantalla completa a la capa nueva. Sugerencia:
-   `screens/Gastos/DieselAdmin.jsx` — es de tamaño medio y Richard casi no la toca.
+4. **Piloto**: migrar una sola pantalla completa a la capa nueva.
+   `screens/Nomina/PersonalAdmin.jsx` (401 líneas) — módulo con **0 toques** de ambos
+   desarrolladores en 4 meses, así que el piloto no va a chocar con nada.
 5. Documentar el patrón resultante en este archivo para que los demás módulos lo copien.
 5b. Llenar `docs/API-ENDPOINTS.md` con los 36 endpoints y sus `op` mientras se inventarían
    las llamadas — incluida la columna que marca cuáles usa la app móvil.
@@ -128,40 +129,52 @@ real siguen siendo exactamente los de antes.
 
 ---
 
-## Incremento 5 — Gastos completo (el patrón de referencia)
+## Incremento 5 — Nómina completo (el patrón de referencia)
 
-**Riesgo: medio** (Richard toca `screens/Gastos`, 7 veces en 6 meses — avisarle).
+**Riesgo: bajo.** `screens/Nomina/` tiene **0 toques** de Emiliano y de Richard en 4 meses:
+es el único módulo donde el refactor puede trabajar sin competir con nadie.
 
-Es el módulo que mejor conoces y el que ya tiene tests. Sale entero:
-`entities/expense/` + `features/expense-*/` + `pages/gastos/`.
+Sale entero: `entities/payroll/` + `features/payroll-*/` + `pages/nomina/`.
+Incluye `Nomina.jsx`, `PersonalAdmin.jsx` (401) y `DetallePago.jsx`.
 
-Incluye `AdminGastos.jsx` (618), `ExpenseEdit.jsx` (727), `ExpenseModal.jsx` (556),
-`DieselDetalle.jsx` (393), `GastosEditor.jsx` (322), `DieselEditor.jsx` (348) y sus
-componentes en `components/Gastos/`.
+Es representativo de lo que hay en el resto de la app —lista, detalle, formulario y
+llamadas a la API— así que el patrón que salga de aquí sirve para todos los demás.
 
 Ningún archivo del módulo pasa de 250 líneas al terminar.
 
 **Terminado cuando**: el módulo entero está en la estructura nueva y este documento tiene
-la receta paso a paso que los demás módulos van a seguir.
+la receta paso a paso que los demás módulos van a seguir, con su `README.md`,
+`docs/MODULOS/nomina.md` y JSDoc completo.
+
+> **Por qué no Gastos, que era el plan original.** Gastos es el módulo **más caliente de
+> los dos desarrolladores** (40 toques en 4 meses). Con una rama de refactor de vida larga,
+> refactorizarlo temprano garantiza conflictos en cada merge entrante durante meses. Se va
+> al final, cuando ya no queda nada más que hacer y la ventana de exposición es mínima.
 
 ---
 
 ## Incrementos 6 a N — Resto de módulos, de frío a caliente
 
-Uno por rama, en este orden (por el mapa de calor de `01-DIAGNOSTICO.md`):
+Uno por rama, en este orden — **de frío a caliente según el mapa de calor combinado** de
+`01-DIAGNOSTICO.md`. El principio: cuanto más caliente el módulo, más tarde se toca, para
+reducir la ventana en que un merge entrante puede chocar con él.
 
-| # | Módulo | Toques de Richard |
-|---|---|---|
-| 6 | Nómina | 0 |
-| 7 | AccessManager / Usuarios | 0 |
-| 8 | Reports / Welcome | 0 |
+| # | Módulo | Toques combinados |
+|---|---|---:|
+| 6 | AccessManager / Usuarios | 0 |
+| 7 | Reports / Welcome | 0 |
+| 8 | IMA Manager (documentos) | 0 |
 | 9 | Mantenimientos / Órdenes de servicio | 1 |
-| 10 | Finanzas | 1 |
-| 11 | Mapas / Tracking (916 líneas) | 3 |
-| 12 | Dispatch | 4 |
-| 13 | Safety / IFTA | 6 |
-| 14 | IMA Manager (drivers, trucks, trailers) | — |
-| 15 | **Viajes** — el más grande y el más caliente | 13 |
+| 10 | Safety / IFTA | 1 |
+| 11 | Finanzas | 4 |
+| 12 | Dispatch | 6 |
+| 13 | Mapas / Tracking (916 líneas) | 11 |
+| 14 | Drivers / Trucks / Trailers | 15 |
+| 15 | **Viajes** + `TripRow` + `trip-form` | 44 |
+| 16 | **Gastos** — el más caliente de todos | 40 |
+
+Viajes y Gastos van al final a propósito: juntos concentran el 60 % de la actividad de
+features de los últimos 4 meses.
 
 Cada uno: mover con `git mv` limpio, extraer el controller, partir en piezas, migrar a la
 capa de API, dejar puentes, borrar los puentes del incremento anterior.

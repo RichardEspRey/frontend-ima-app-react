@@ -39,12 +39,50 @@ Richard mergea a main  →  Emiliano jala main  →  el refactor jala Emiliano
 Tres pasos, siempre en ese orden. El refactor **nunca** jala de `main` directo: jalaría una
 versión sin las features de Emiliano.
 
-### Orden al mergear
+### El refactor no se mergea a `main` hasta estar probado al 100 %
 
-**`Emiliano` → `main` va primero; el incremento del refactor después.** Como la rama del
-refactor sale de `Emiliano`, si se mergea antes arrastra también los commits de features
-que todavía no estaban aprobados. Mergeando `Emiliano` primero, el merge del refactor lleva
-solo los commits del refactor.
+Decisión de Emiliano del 2026-08-31. `main` sigue recibiendo el trabajo que pide la
+empresa; el refactor se integra cuando esté verificado, no antes.
+
+Esto convierte la rama del refactor en una **rama de vida larga**, que es exactamente el
+patrón que mató a la rama `refactor` de abril (116 commits de divergencia). La diferencia
+tiene que estar en tres cosas, y si alguna se afloja el refactor se muere igual:
+
+**1. El flujo entrante es constante, no ocasional.**
+`main` → `Emiliano` → `refactor`. Cada vez que Emiliano jala `main` a su rama, avisa y el
+refactor jala de `Emiliano` **ese mismo día**. Un merge diario es de minutos; uno mensual
+es un proyecto.
+
+**2. El orden de los módulos es la defensa principal.**
+Como el refactor no puede acortar su vida, lo único que reduce el choque es no estar
+reestructurando lo mismo que las features están tocando. Por eso los incrementos van de
+frío a caliente según el mapa de calor combinado, y por eso Gastos y Viajes —el 60 % de la
+actividad de features— se dejaron al final.
+
+**3. La divergencia se mide, no se supone.**
+Se anota en `00-ESTADO.md` cada semana:
+
+```bash
+git rev-list --left-right --count Emiliano...refactor-NN-nombre
+```
+
+**Tripwire: a los 40 commits de divergencia o a las 6 semanas sin integrar, se para de
+agregar incrementos y se consolida.** La rama vieja llegó a 116 sin que nadie mirara el
+número; el punto de anotarlo es que la decisión de parar se tome con un dato, no cuando ya
+sea impagable.
+
+### Orden al mergear, cuando llegue el momento
+
+**`Emiliano` → `main` va primero; el refactor después.** Como la rama del refactor sale de
+`Emiliano`, si se mergea antes arrastra también commits de features que todavía no estaban
+aprobados. Mergeando `Emiliano` primero, el merge del refactor lleva solo lo suyo.
+
+### Excepción que vale la pena considerar
+
+Los incrementos **0 y 1 no cambian el comportamiento de la app**: son tests, configuración
+de linter, documentación y borrado de código muerto. Mergearlos a `main` temprano baja la
+divergencia a cero riesgo y le da a Richard el linter y las convenciones desde ya. Queda a
+criterio de Emiliano; el resto de los incrementos sí espera a estar probado.
 
 ## Las cinco reglas
 

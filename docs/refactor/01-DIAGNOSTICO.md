@@ -110,22 +110,36 @@ antes de pintar el login.
   `refactor/…` en git; por eso las ramas nuevas usan guion.
 - Últimos 6 meses: Emiliano 117 commits, Richard 62.
 
-### Mapa de calor por desarrollador (últimos 6 meses)
+### Mapa de calor COMBINADO (últimos 4 meses)
 
-Directorios que **Richard** toca, de más a menos — este es el orden de riesgo de conflicto:
+Con el modelo de ramas confirmado el 2026-08-31, la rama del refactor recibe cambios de
+**los dos** desarrolladores: los de Richard vía `main` → `Emiliano`, y los de Emiliano
+directo. Lo que importa entonces es la suma, no cada uno por separado.
 
-| Toques | Directorio |
-|---:|---|
-| 22 | `src/components` |
-| 17 | `src/screens` (raíz) |
-| 13 | `src/screens/Viajes` |
-| 7 | `src/screens/Gastos` |
-| 7 | `src/navigation` |
-| 6 | `src/screens/Safety` |
-| 5 | `src/config` |
-| 4 | `src/store`, `src/screens/Dispatch`, `src/hooks/Edit_Trips_complete` |
-| 3 | `src/screens/Mapas` |
-| 1 | `src/screens/Mantenimientos`, `src/screens/Finanzas` |
-| 0 | `src/screens/Nomina`, `AccessManager`, `Reports`, `ImaManager` |
+| Emiliano | Richard | **Total** | Directorio |
+|---:|---:|---:|---|
+| 56 | 14 | **70** | `src/components` (se desarma por módulo, no de golpe) |
+| 48 | 6 | **54** | `src/screens` (raíz) |
+| 33 | 7 | **40** | `src/screens/Gastos` |
+| 12 | 13 | **25** | `src/screens/Viajes` |
+| 11 | 4 | **15** | `src/config` |
+| 13 | 0 | **13** | `src/components/TripRow` |
+| 8 | 3 | **11** | `src/screens/Mapas` |
+| 5 | 5 | **10** | `src/navigation` |
+| 6 | 4 | **10** | `src/store` |
+| 6 | 0 | **6** | `src/utils` |
+| 6 | 0 | **6** | `src/components/DriverAdmin` |
+| 5 | 1 | **6** | `src/components/trip-form` |
+| 3 | 3 | **6** | `src/screens/Dispatch` |
+| 5 | 0 | **5** | `src/components/TruckAdmin` |
+| 4 | 0 | **4** | `src/components/TrailerAdmin` |
+| 4 | 0 | **4** | `src/components/Gastos` |
+| 3 | 1 | **4** | `src/screens/Finanzas` |
+| 0 | 1 | **1** | `src/screens/Safety`, `src/screens/Mantenimientos` |
+| 0 | 0 | **0** | `src/screens/Nomina`, `AccessManager`, `Reports`, `ImaManager` |
 
-Esto ordena los incrementos: se empieza por lo que él no toca.
+**Consecuencia que cambió el plan:** `screens/Gastos` es el módulo más caliente de los dos
+(40 toques). Estaba puesto como incremento 5 —el patrón de referencia— porque es el que
+Emiliano mejor conoce y el único con tests. Con una rama de refactor de vida larga eso lo
+convierte en la peor elección posible: cada merge entrante chocaría ahí durante meses.
+El patrón de referencia pasa a **Nómina** (0 toques) y Gastos se va al final.

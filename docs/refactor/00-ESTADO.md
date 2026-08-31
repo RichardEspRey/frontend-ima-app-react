@@ -35,11 +35,28 @@ La rama `refactor-00-cimientos` está lista para mergear a `main` (sin push toda
 
 Detalle de cada uno en `05-INCREMENTOS.md`.
 
+## Divergencia (revisar cada semana)
+
+```bash
+git rev-list --left-right --count Emiliano...refactor-00-cimientos
+```
+
+| Fecha | Commits de divergencia | Semanas sin integrar |
+|---|---:|---:|
+| 2026-08-31 | 5 | 0 |
+
+**Tripwire: 40 commits o 6 semanas.** Al llegar a cualquiera de los dos, se para de agregar
+incrementos y se consolida. La rama `refactor` de abril llegó a 116 sin que nadie mirara
+el número.
+
 ## Decisiones ya tomadas
 
-- **Nada de ramas largas.** Ya hay una rama `refactor` muerta con 116 commits de
-  divergencia contra `main` que probó que ese camino no se paga. Incrementos de días,
-  mergeados antes de empezar el siguiente.
+- **El refactor no se mergea a `main` hasta estar probado al 100 %** (decisión de Emiliano,
+  2026-08-31). Es una rama de vida larga y eso es un riesgo conocido: así murió la rama
+  `refactor` de abril, con 116 commits de divergencia. Se compensa con integración diaria
+  desde `Emiliano`, con el orden de módulos de frío a caliente, y midiendo la divergencia.
+- **Los incrementos siguen siendo cortos** aunque no se mergeen: cada uno se cierra,
+  se prueba y se anota antes de empezar el siguiente.
 - **No se toca ningún endpoint en la fase 1.** Hay una app móvil consumiendo la misma
   API PHP; cambiar un contrato la rompe en silencio.
 - **No se contrata un servicio de identidad (Auth0/Clerk/Firebase Auth).** Razones en
