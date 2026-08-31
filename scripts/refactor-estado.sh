@@ -55,14 +55,12 @@ else
 fi
 
 if [ "${1:-}" = "-w" ] && [ -f "$ESTADO" ]; then
-  FILA="| $(date +%Y-%m-%d) | $PROPIOS | $(( DIAS / 7 )) |"
-  if grep -qF "| $(date +%Y-%m-%d) |" "$ESTADO"; then
-    echo "   (la fila de hoy ya estaba en $ESTADO)"
-  else
-    awk -v fila="$FILA" '
-      /^\| Fecha \| Commits de divergencia/ { print; getline; print; print fila; next }
-      { print }
-    ' "$ESTADO" > "$ESTADO.tmp" && mv "$ESTADO.tmp" "$ESTADO"
-    echo "   fila agregada a $ESTADO"
-  fi
+  HOY=$(date +%Y-%m-%d)
+  FILA="| $HOY | $PROPIOS | $(( DIAS / 7 )) |"
+  awk -v fila="$FILA" -v hoy="| $HOY |" '
+    index($0, hoy) == 1 { next }
+    /^\| Fecha \| Commits de divergencia/ { print; getline; print; print fila; next }
+    { print }
+  ' "$ESTADO" > "$ESTADO.tmp" && mv "$ESTADO.tmp" "$ESTADO"
+  echo "   $ESTADO actualizado: $PROPIOS commits, $(( DIAS / 7 )) semanas"
 fi

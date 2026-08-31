@@ -60,10 +60,9 @@ frío a caliente según el mapa de calor combinado, y por eso Gastos y Viajes �
 actividad de features— se dejaron al final.
 
 **3. La divergencia se mide, no se supone.**
-Se anota en `00-ESTADO.md` cada semana:
-
 ```bash
-git rev-list --left-right --count Emiliano...refactor-NN-nombre
+npm run refactor:estado        # reporta
+npm run refactor:estado -- -w  # además escribe la fila en 00-ESTADO.md
 ```
 
 **Tripwire: a los 40 commits de divergencia o a las 6 semanas sin integrar, se para de
@@ -98,11 +97,26 @@ git checkout Emiliano && git merge origin/main    # Emiliano al día con main
 git checkout -b refactor-NN-nombre Emiliano
 ```
 
-**Todos los días, sobre la rama viva:**
+**Todos los días, sobre la rama viva — un solo comando:**
 ```bash
-git fetch origin
-git checkout Emiliano && git merge origin/main
-git checkout refactor-NN-nombre && git merge Emiliano
+npm run refactor:sync
+```
+
+Hace la cadena completa y para en seco si algo va mal:
+
+- aborta si el árbol está sucio, antes de tocar nada
+- si hay conflictos, **deja el merge a medias a propósito** y te dice qué archivos
+  chocaron, en vez de inventar una resolución
+- corre los tests después de integrar y falla si se rompieron
+- imprime la divergencia al final
+
+Sin red (o con una red que filtre SSH, como la del colegio) el fetch falla pero el
+tramo `Emiliano → refactor` es local y sigue funcionando: lo avisa y continúa. Para
+saltarse el fetch a propósito: `npm run refactor:sync -- --local`.
+
+Y cada semana, para dejar constancia en `00-ESTADO.md`:
+```bash
+npm run refactor:estado -- -w
 ```
 
 Se usa `merge` y no `rebase` contra `Emiliano` porque esa rama está publicada en
@@ -223,7 +237,15 @@ toque, el patrón ya estará probado en seis módulos y la conversión será mec
 
 ## La red de seguridad
 
-`npm test` verde es el contrato de cada incremento. Los smoke tests de rutas
+`npm test` verde es el contrato de cada incremento, y **`npm run refactor:sync` no te
+deja seguir si se rompió**.
+
+> Hasta el 2026-08-31 esa compuerta estaba rota: `npm test` salía con código 1 aunque
+> los 78 tests pasaran, porque el smoke test no esperaba a los efectos asíncronos y
+> vitest contaba 5 "unhandled errors" sin atribuírselos a ninguna ruta. Se arregló, y
+> de paso destapó dos bugs reales de producción (`TicketPayment` y `ExpenseEdit`
+> asignando sin guarda campos que la respuesta puede no traer).
+ Los smoke tests de rutas
 (`src/test/rutas.smoke.test.jsx`, en la rama `refactor-01-red-de-seguridad`) montan cada
 pantalla y verifican que renderiza. No prueban lógica de negocio — prueban que el refactor
 no rompió el cableado, que es exactamente el 90 % de lo que un refactor puede romper.
