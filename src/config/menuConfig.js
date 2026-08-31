@@ -17,12 +17,6 @@ export const menuItemsConfig = [
     route: "/reports",
     rolesPermitidos: ["admin"],
   },
-  {
-    name: "Notificaciones",
-    featureKey: "notificaciones",
-    route: "/notifications-admin",
-    rolesPermitidos: ["admin"],
-  },
 
   {
     name: "IMA Manager",
