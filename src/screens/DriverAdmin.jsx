@@ -11,6 +11,7 @@ import RequirementConfigModal from '../components/DriverAdmin/RequirementConfigM
 import DriverMasterFormModal from '../components/DriverAdmin/DriverMasterFormModal';
 
 import { useAuthStore } from '../store/useAuthStore';
+import { useSesion } from '../shared/auth';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 const API_ENDPOINT = 'drivers_v2.php';
@@ -45,7 +46,7 @@ const DriverAdmin = () => {
   const [driverDocs, setDriverDocs] = useState({});
 
   const { user } = useAuthStore();
-  const isAdmin = user?.tipo_usuario?.toLowerCase() === 'admin';
+  const { esTotal: isAdmin } = useSesion();
 
   // ==========================================
   // FETCH DE DATOS

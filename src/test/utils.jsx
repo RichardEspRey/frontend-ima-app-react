@@ -1,5 +1,6 @@
 import { render } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { SessionProvider } from "../app/providers/SessionProvider";
 import { useAuthStore } from "../store/useAuthStore";
 
 /**
@@ -33,11 +34,13 @@ export function sinSesion() {
  */
 export function renderPantalla(ui, { path = "/", ruta = "/" } = {}) {
   return render(
-    <MemoryRouter initialEntries={[ruta]}>
-      <Routes>
-        <Route path={path} element={ui} />
-      </Routes>
-    </MemoryRouter>,
+    <SessionProvider>
+      <MemoryRouter initialEntries={[ruta]}>
+        <Routes>
+          <Route path={path} element={ui} />
+        </Routes>
+      </MemoryRouter>
+    </SessionProvider>,
   );
 }
 

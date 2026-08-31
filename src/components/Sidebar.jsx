@@ -24,6 +24,7 @@ import {
     SIDEBAR_WIDTH_EXPANDED,
     SIDEBAR_WIDTH_COLLAPSED,
 } from '../store/useSidebarStore';
+import { useSesion } from '../shared/auth';
 
 const iconMap = {
     'Inicio': MdDashboard,
@@ -43,7 +44,6 @@ const iconMap = {
     'Estatus de Unidades': MdTrendingUp,
 };
 
-const ADMIN_TYPES = new Set(["admin"]);
 const MANAGEMENT_ITEM = { name: 'Gestor de Acceso', route: '/access-manager' };
 const menuItems = [ ...menuItemsConfig, MANAGEMENT_ITEM ];
 
@@ -76,7 +76,6 @@ const Sidebar = () => {
   const isVisuallyExpanded = isPinnedExpanded || isHovered;
   const railWidth = isPinnedExpanded ? SIDEBAR_WIDTH_EXPANDED : SIDEBAR_WIDTH_COLLAPSED;
 
-  const tipoUsuario = String(user?.tipo_usuario || user?.type || '').trim().toLowerCase();
 
   useEffect(() => {
     if (user?.id) {
@@ -103,7 +102,7 @@ const Sidebar = () => {
       });
   }, [currentPath]);
 
-  const isAdmin = ADMIN_TYPES.has(tipoUsuario);
+  const { esTotal: isAdmin } = useSesion();
 
   const isSectionAllowed = useCallback((item, visibleSubs = true) => {
       if (item.name === MANAGEMENT_ITEM.name) return isAdmin;

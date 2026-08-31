@@ -26,6 +26,15 @@ Los reintentos tampoco aportan nada cuando <code>fetch</code> está simulado.</p
 almacenes cambian de vez en cuando, no dentro de una sesión de trabajo: no
 tiene sentido volver a pedirlos en cada pantalla que los use.</p>
 </dd>
+<dt><a href="#TODOS_LOS_PERMISOS">TODOS_LOS_PERMISOS</a> : <code>Array.&lt;string&gt;</code></dt>
+<dd><p>Todos los permisos existentes, sin repetir.</p>
+</dd>
+<dt><a href="#ROLES_TOTALES">ROLES_TOTALES</a> : <code>Set.&lt;string&gt;</code></dt>
+<dd><p>Roles que ven toda la aplicación sin pasar por la comprobación de permisos.</p>
+<p>Es deliberadamente un solo rol. Sustituye los cinco <code>ADMIN_TYPES</code> sueltos que
+hoy están declarados por separado en <code>useAuthStore</code>, <code>Sidebar</code>, <code>AccessManager</code>,
+<code>AdminGastos</code> y <code>AdminOrdenesServicio</code>.</p>
+</dd>
 <dt><a href="#API_BASE">API_BASE</a> : <code>string</code></dt>
 <dd><p>URL base de la API PHP, sin barra final.</p>
 <p>Es el único punto del proyecto que lee <code>VITE_API_HOST</code>. Cuando el hosting
@@ -127,6 +136,36 @@ veces y solo retrasaría el mensaje.</p>
 <p>Se crea con una función y no como constante de módulo para que cada test
 pueda tener el suyo: una caché compartida entre tests los vuelve dependientes
 del orden en que corren.</p>
+</dd>
+<dt><a href="#calcularPermisosEfectivos">calcularPermisosEfectivos(rol, [ajustesUsuario])</a> ⇒ <code>Set.&lt;string&gt;</code></dt>
+<dd><p>Calcula los permisos que realmente tiene una persona.</p>
+<p>La fórmula es <code>paquete del rol ∪/∖ ajustes del usuario</code>:</p>
+<ol>
+<li>El <strong>rol</strong> da el paquete de arranque.</li>
+<li>Los <strong>ajustes por usuario</strong> de <code>features.php</code> mandan encima, y pueden tanto
+conceder algo que el rol no trae como quitar algo que sí traía. Un flag en
+<code>false</code> es una negación explícita, no una ausencia.</li>
+<li>Un rol total (hoy solo Administrador) ve todo y no pasa por lo anterior.</li>
+</ol>
+<p>Ese orden importa para migrar sin sustos: mientras los ajustes por usuario
+sigan existiendo, cambiar el paquete de un rol no le quita nada a nadie que ya
+lo tuviera concedido a mano.</p>
+</dd>
+<dt><a href="#crearComprobador">crearComprobador(permisosEfectivos, [esTotal])</a> ⇒ <code>function</code></dt>
+<dd><p>Construye la función <code>can</code> que usan los componentes.</p>
+<p>Devolver una función en vez de exponer el <code>Set</code> mantiene a los componentes
+ignorantes de cómo se calculan los permisos: el día que la fase 2 los emita en
+un token firmado, <code>can</code> sigue igual.</p>
+</dd>
+<dt><a href="#normalizarRol">normalizarRol(crudo)</a> ⇒ <code>string</code></dt>
+<dd><p>Normaliza un valor de rol al catálogo canónico.</p>
+<p>Es el mismo patrón que <code>normalizarSubcategoria</code> en el backend, y por la misma
+razón: deja la aplicación consistente <strong>hoy</strong> sin depender de que la base de
+datos migre primero, que en producción no tiene red de seguridad. Cuando la
+migración ocurra, esta función se queda como camino de lectura hasta que ya no
+aplique a nadie y entonces se borra.</p>
+<p>Un valor desconocido cae a <code>CONSULTA</code>, el rol de <strong>menor</strong> privilegio: un rol
+que nadie reconoce no debe abrir puertas.</p>
 </dd>
 <dt><a href="#obtenerCompanias">obtenerCompanias([opciones])</a> ⇒ <code>Promise.&lt;Array&gt;</code></dt>
 <dd><p>Compañías dadas de alta.</p>
@@ -262,6 +301,75 @@ qué mostrar según la causa, sin tener que leer el texto del mensaje.
 
 **Kind**: global enum  
 **Read only**: true  
+<a name="PERMISOS"></a>
+
+## PERMISOS : <code>enum</code>
+Catálogo de permisos de IMA.
+
+Las claves son **exactamente** las que guarda `features.php` hoy. No se
+renombran a `modulo.accion` todavía: son el formato de red, y cambiarlas
+rompería la app móvil, que consume los mismos endpoints. El nombre nuevo vive
+en la migración de base de datos (`docs/sql/`), para la fase 3.
+
+Lo que sí gana el frontend desde ya es que ningún componente vuelva a escribir
+la cadena a mano: el día que cambien, se cambian aquí.
+
+**Kind**: global enum  
+**Read only**: true  
+<a name="MODULOS"></a>
+
+## MODULOS : <code>enum</code>
+Los permisos agrupados por módulo, para las pantallas de administración y para
+armar los paquetes de cada rol sin escribir 38 constantes a mano.
+
+**Kind**: global enum  
+**Read only**: true  
+<a name="ROLES"></a>
+
+## ROLES : <code>enum</code>
+Catálogo canónico de roles.
+
+Sale de los valores que existen de verdad en `Users_credentials.type`
+(`Admin` 3, `Administrativo` 12, `Driver` 16 al 2026-08-31), con los nombres
+que se acordaron: `Admin` pasa a **Administrador** y `Driver` a **Operador**.
+`Administrativo` se subdivide en roles por área.
+
+**Kind**: global enum  
+**Read only**: true  
+<a name="NOMBRE_ROL"></a>
+
+## NOMBRE\_ROL : <code>enum</code>
+Nombre de cada rol tal como se le muestra a una persona.
+
+**Kind**: global enum  
+**Read only**: true  
+<a name="PERMISOS_POR_ROL"></a>
+
+## PERMISOS\_POR\_ROL : <code>enum</code>
+Permisos que trae cada rol de fábrica.
+
+Es el **paquete de arranque**, no la última palabra: encima siguen mandando
+los permisos por usuario de `features.php`, que pueden conceder o quitar casos
+puntuales. Sirve para no tener que palomear 38 casillas cada vez que entra
+alguien nuevo, que es lo que pasa hoy.
+
+`ADMINISTRATIVO` existe a propósito con el paquete mínimo: es el destino del
+`Administrativo` actual mientras no se decida en qué área cae cada persona.
+Nadie pierde accesos al migrar porque sus flags individuales siguen mandando.
+
+**Kind**: global enum  
+**Read only**: true  
+<a name="ALIAS_ROL"></a>
+
+## ALIAS\_ROL : <code>enum</code>
+Traduce el valor crudo de `Users_credentials.type` al catálogo canónico.
+
+Los valores reales en producción al 2026-08-31 son `Admin`, `Administrativo` y
+`Driver`. El mapa acepta además variantes de escritura que podrían aparecer al
+dar de alta a alguien a mano.
+
+**Kind**: global enum  
+**Read only**: true  
 <a name="FRECUENCIA_PAGO"></a>
 
 ## FRECUENCIA\_PAGO : <code>enum</code>
@@ -296,6 +404,22 @@ Los reintentos tampoco aportan nada cuando `fetch` está simulado.
 Tiempo que un catálogo se considera fresco. Conductores, camiones, cajas y
 almacenes cambian de vez en cuando, no dentro de una sesión de trabajo: no
 tiene sentido volver a pedirlos en cada pantalla que los use.
+
+**Kind**: global constant  
+<a name="TODOS_LOS_PERMISOS"></a>
+
+## TODOS\_LOS\_PERMISOS : <code>Array.&lt;string&gt;</code>
+Todos los permisos existentes, sin repetir.
+
+**Kind**: global constant  
+<a name="ROLES_TOTALES"></a>
+
+## ROLES\_TOTALES : <code>Set.&lt;string&gt;</code>
+Roles que ven toda la aplicación sin pasar por la comprobación de permisos.
+
+Es deliberadamente un solo rol. Sustituye los cinco `ADMIN_TYPES` sueltos que
+hoy están declarados por separado en `useAuthStore`, `Sidebar`, `AccessManager`,
+`AdminGastos` y `AdminOrdenesServicio`.
 
 **Kind**: global constant  
 <a name="API_BASE"></a>
@@ -609,6 +733,69 @@ del orden en que corren.
 
 **Kind**: global function  
 **Returns**: <code>object</code> - Cliente de TanStack Query listo para el provider.  
+<a name="calcularPermisosEfectivos"></a>
+
+## calcularPermisosEfectivos(rol, [ajustesUsuario]) ⇒ <code>Set.&lt;string&gt;</code>
+Calcula los permisos que realmente tiene una persona.
+
+La fórmula es `paquete del rol ∪/∖ ajustes del usuario`:
+
+1. El **rol** da el paquete de arranque.
+2. Los **ajustes por usuario** de `features.php` mandan encima, y pueden tanto
+   conceder algo que el rol no trae como quitar algo que sí traía. Un flag en
+   `false` es una negación explícita, no una ausencia.
+3. Un rol total (hoy solo Administrador) ve todo y no pasa por lo anterior.
+
+Ese orden importa para migrar sin sustos: mientras los ajustes por usuario
+sigan existiendo, cambiar el paquete de un rol no le quita nada a nadie que ya
+lo tuviera concedido a mano.
+
+**Kind**: global function  
+**Returns**: <code>Set.&lt;string&gt;</code> - Los permisos efectivos.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| rol | <code>string</code> | Rol canónico, ya normalizado. |
+| [ajustesUsuario] | <code>object</code> | Mapa `clave -> boolean` de `features.php`. |
+
+<a name="crearComprobador"></a>
+
+## crearComprobador(permisosEfectivos, [esTotal]) ⇒ <code>function</code>
+Construye la función `can` que usan los componentes.
+
+Devolver una función en vez de exponer el `Set` mantiene a los componentes
+ignorantes de cómo se calculan los permisos: el día que la fase 2 los emita en
+un token firmado, `can` sigue igual.
+
+**Kind**: global function  
+**Returns**: <code>function</code> - `(permiso) => boolean`.  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| permisosEfectivos | <code>Set.&lt;string&gt;</code> |  | Resultado de [calcularPermisosEfectivos](#calcularPermisosEfectivos). |
+| [esTotal] | <code>boolean</code> | <code>false</code> | Si el rol ve todo sin comprobar. |
+
+<a name="normalizarRol"></a>
+
+## normalizarRol(crudo) ⇒ <code>string</code>
+Normaliza un valor de rol al catálogo canónico.
+
+Es el mismo patrón que `normalizarSubcategoria` en el backend, y por la misma
+razón: deja la aplicación consistente **hoy** sin depender de que la base de
+datos migre primero, que en producción no tiene red de seguridad. Cuando la
+migración ocurra, esta función se queda como camino de lectura hasta que ya no
+aplique a nadie y entonces se borra.
+
+Un valor desconocido cae a `CONSULTA`, el rol de **menor** privilegio: un rol
+que nadie reconoce no debe abrir puertas.
+
+**Kind**: global function  
+**Returns**: <code>string</code> - Un valor de `ROLES`.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| crudo | <code>\*</code> | Valor de `type` tal como viene de la API. |
+
 <a name="obtenerCompanias"></a>
 
 ## obtenerCompanias([opciones]) ⇒ <code>Promise.&lt;Array&gt;</code>

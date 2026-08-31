@@ -10,8 +10,8 @@ import {
 } from '../../styles/estilosTabla';
 import ServiceOrderAdmin from '../ServiceOrderAdmin.jsx';
 import StockAdmin from '../StockAdmin.jsx';
+import { useSesion } from '../../shared/auth';
 
-const ADMIN_TYPES = new Set(['admin']);
 
 const TABS_CONFIG = [
     { id: 'ordenes', label: 'Órdenes de Servicio', permission: 'mant_ordenes_servicio', Component: ServiceOrderAdmin },
@@ -20,8 +20,8 @@ const TABS_CONFIG = [
 
 const AdminOrdenesServicio = () => {
     const navigate = useNavigate();
-    const { user, userPermissions } = useAuthStore();
-    const isAdmin = ADMIN_TYPES.has(user?.tipo_usuario?.toLowerCase());
+    const { userPermissions } = useAuthStore();
+    const { esTotal: isAdmin } = useSesion();
 
     const allowedTabs = useMemo(
         () => TABS_CONFIG.filter(tab => isAdmin || userPermissions?.[tab.permission] === true),

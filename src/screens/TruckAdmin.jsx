@@ -12,6 +12,7 @@ import RequirementConfigModal from '../components/TruckAdmin/RequirementConfigMo
 import TruckMasterFormModal from '../components/TruckAdmin/TruckMasterFormModal';
 
 import { useAuthStore } from '../store/useAuthStore';
+import { useSesion } from '../shared/auth';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 const API_ENDPOINT = 'trucks_v2.php';
@@ -41,7 +42,7 @@ const TruckAdmin = () => {
   const [truckDocs, setTruckDocs] = useState({});
 
   const { user } = useAuthStore();
-  const isAdmin = user?.tipo_usuario?.toLowerCase() === 'admin';
+  const { esTotal: isAdmin } = useSesion();
   
   const fetchData = useCallback(async () => {
     setLoading(true);

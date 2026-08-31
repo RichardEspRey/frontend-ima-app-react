@@ -15,12 +15,13 @@ import {
 } from '@mui/material';
 import { Settings as SettingsIcon, PersonAdd as PersonAddIcon, Group as GroupIcon, Delete as DeleteIcon, Edit as EditIcon, Search as SearchIcon } from '@mui/icons-material';
 import { InputAdornment, Chip } from '@mui/material';
+import { useSesion } from '../shared/auth';
 
 const getSectionsToManage = () => menuItemsConfig;
-const ADMIN_TYPES = new Set(["admin"]);
 
 const ProfileAccessManager = () => {
     const { user, fetchPermissions } = useAuthStore();
+    const { esTotal } = useSesion();
     const apiHost = import.meta.env.VITE_API_HOST;
     const { activeDrivers } = useFetchActiveDrivers();
 
@@ -279,9 +280,8 @@ const ProfileAccessManager = () => {
     };
 
     const handleCloseSnackbar = () => setSnackbar(prev => ({ ...prev, open: false }));
-    const userType = String(user?.tipo_usuario || '').trim().toLowerCase();
 
-    if (!user || !ADMIN_TYPES.has(userType)) {
+    if (!esTotal) {
         return (
             <Container maxWidth="lg" sx={{ mt: 4 }}>
                 <Alert severity="error">Acceso denegado. Solo administradores pueden ver esta sección.</Alert>

@@ -9,7 +9,7 @@ import CreatableSelect from 'react-select/creatable';
 import DatePicker from 'react-datepicker';
 import { selectStyles, getDocumentUrl } from '../../utils/tripFormConstants';
 import ReceiptIcon from '@mui/icons-material/Receipt';
-import { useAuthStore } from '../../store/useAuthStore';
+import { usePermisos, PERMISOS } from '../../shared/auth';
 
 const DocButton = ({ label, doc, onClick, disabled, apiHost }) => (
     <Box sx={{ mb: 1 }}>
@@ -52,10 +52,8 @@ const StageCard = ({
     apiHost,
     handleOpenInvoiceModal
 }) => {
-    const user = useAuthStore(state => state.user);
-    const userPermissions = useAuthStore(state => state.userPermissions);
-    const isAdmin = String(user?.tipo_usuario || '').trim().toLowerCase() === 'admin';
-    const canManageInvoice = isAdmin || userPermissions['viajes_invoice_fields'] === true;
+    const { can } = usePermisos();
+    const canManageInvoice = can(PERMISOS.VIAJES_INVOICES);
 
     const getHeaderInfo = () => {
         switch (etapa.stageType) {

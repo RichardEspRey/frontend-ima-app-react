@@ -9,7 +9,7 @@ import InsertDriveFileOutlinedIcon from '@mui/icons-material/InsertDriveFileOutl
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import FmdGoodOutlinedIcon from '@mui/icons-material/FmdGoodOutlined';
 import dayjs from 'dayjs';
-import { useAuthStore } from '../../store/useAuthStore';
+import { usePermisos, PERMISOS } from '../../shared/auth';
 
 const formatTime = (timeStr) => {
     if (!timeStr) return '';
@@ -17,10 +17,8 @@ const formatTime = (timeStr) => {
 };
 
 export const StageUpcomingCard = ({ etapa, getDocumentUrl }) => {
-    const user = useAuthStore(state => state.user);
-    const userPermissions = useAuthStore(state => state.userPermissions);
-    const isAdmin = String(user?.tipo_usuario || '').trim().toLowerCase() === 'admin';
-    const canManageInvoice = isAdmin || userPermissions['viajes_invoice_fields'] === true;
+    const { can } = usePermisos();
+    const canManageInvoice = can(PERMISOS.VIAJES_INVOICES);
 
     const departureDate = etapa.date_of_departure
         ? dayjs(etapa.date_of_departure).format("DD/MM/YYYY")

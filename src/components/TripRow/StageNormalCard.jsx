@@ -7,7 +7,7 @@ import InsertDriveFileOutlinedIcon from '@mui/icons-material/InsertDriveFileOutl
 import ReceiptOutlinedIcon from '@mui/icons-material/ReceiptOutlined';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import dayjs from 'dayjs';
-import { useAuthStore } from '../../store/useAuthStore';
+import { usePermisos, PERMISOS } from '../../shared/auth';
 
 const formatTime = (timeStr) => {
   if (!timeStr) return '';
@@ -46,10 +46,8 @@ const TintedBadge = ({ tone, icon, label, component, href, target }) => {
 };
 
 export const StageNormalCard = ({ etapa, getDocumentUrl, isCompleted }) => {
-  const user = useAuthStore(state => state.user);
-  const userPermissions = useAuthStore(state => state.userPermissions);
-  const isAdmin = String(user?.tipo_usuario || '').trim().toLowerCase() === 'admin';
-  const canManageInvoice = isAdmin || userPermissions['viajes_invoice_fields'] === true;
+  const { can } = usePermisos();
+  const canManageInvoice = can(PERMISOS.VIAJES_INVOICES);
 
   // 1. Separamos SOLO el BL Firmado
   const mainBLDocs = Array.isArray(etapa.documentos_adjuntos)

@@ -11,7 +11,7 @@ import ColumnConfigModal from '../components/TrailerAdmin/ColumnConfigModal';
 import RequirementConfigModal from '../components/TrailerAdmin/RequirementConfigModal';
 import TrailerMasterFormModal from '../components/TrailerAdmin/TrailerMasterFormModal';
 
-import { useAuthStore } from '../store/useAuthStore';
+import { useSesion } from '../shared/auth';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 const API_ENDPOINT = 'cajas_v2.php';
@@ -40,9 +40,7 @@ const TrailerAdmin = () => {
   const [newField, setNewField] = useState({ label: '', categoria: 'USA', tipo: 'file', tiene_vencimiento: true });
   const [trailerData, setTrailerData] = useState({});
   const [trailerDocs, setTrailerDocs] = useState({});
-
-  const { user } = useAuthStore();
-  const isAdmin = user?.tipo_usuario?.toLowerCase() === 'admin';
+  const { esTotal: isAdmin } = useSesion();
   
   const fetchData = useCallback(async () => {
     setLoading(true);
