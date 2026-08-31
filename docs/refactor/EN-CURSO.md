@@ -18,15 +18,16 @@ por decisión confirmada.
 
 ## Próximo módulo a mover
 
-Incremento 2 — capa de API. Son **archivos nuevos** (`src/shared/api/`,
-`src/entities/`): no se mueve nada de `screens/` ni de `components/` todavía.
-El único módulo existente que se toca es el piloto, `screens/Nomina/PersonalAdmin.jsx`,
-que ninguno de los dos ha tocado en 4 meses.
+Incremento 3 — `shared/ui`: DataTable, Modal, FormField, notify. Son **archivos
+nuevos**; no se mueve nada de `screens/` ni de `components/`.
 
-Ojo, Richard: se eliminó **Redux** (nadie lo usaba) y se borraron 9 archivos huérfanos.
-Si tu rama importa alguno de estos, avísame:
-`ServicerderScreenOld`, `DriverProfile`, `printService`, `PermissionModal`, `DetailRow`,
-`InfoGeneral`, `AuthContext`, `redux/store`, `redux/menuSlice`.
+Ojo, Richard, lo que ya cambió:
+- Se eliminó **Redux** (nadie lo usaba) y 9 archivos huérfanos.
+- Los 10 hooks `useFetchX` de `src/hooks/` siguen ahí y devuelven **exactamente lo
+  mismo**, pero por dentro ya usan TanStack Query: si dos pantallas piden el mismo
+  catálogo, ahora se hace una sola petición. No tienes que cambiar nada.
+- Hay una capa de API en `src/shared/api/`. Para código nuevo, úsala en vez de
+  `fetch()` directo: `post(ENDPOINTS.x, 'op', {campos})`. Ver `docs/API-ENDPOINTS.md`.
 
 ## Cómo leer esto
 
