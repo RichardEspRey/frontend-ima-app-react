@@ -18,8 +18,15 @@ por decisión confirmada.
 
 ## Próximo módulo a mover
 
-Incremento 1 — limpieza de código muerto: los 9 archivos huérfanos,
-`src/auth/AuthContext.jsx` y `src/redux/`. Solo se **borra**, no se mueve nada.
+Incremento 2 — capa de API. Son **archivos nuevos** (`src/shared/api/`,
+`src/entities/`): no se mueve nada de `screens/` ni de `components/` todavía.
+El único módulo existente que se toca es el piloto, `screens/Nomina/PersonalAdmin.jsx`,
+que ninguno de los dos ha tocado en 4 meses.
+
+Ojo, Richard: se eliminó **Redux** (nadie lo usaba) y se borraron 9 archivos huérfanos.
+Si tu rama importa alguno de estos, avísame:
+`ServicerderScreenOld`, `DriverProfile`, `printService`, `PermissionModal`, `DetailRow`,
+`InfoGeneral`, `AuthContext`, `redux/store`, `redux/menuSlice`.
 
 ## Cómo leer esto
 

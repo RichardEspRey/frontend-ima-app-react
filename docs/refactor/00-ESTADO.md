@@ -15,8 +15,9 @@
 
 ## Dónde vamos
 
-**Fase 1 (frontend) — incremento 0 terminado e integrado con `origin/main`.**
-La rama `refactor-00-cimientos` está lista para mergear a `main` (sin push todavía).
+**Fase 1 (frontend) — incrementos 0 y 1 terminados.**
+Todo vive en la rama larga **`refactor-fase-1`**, con un tag por incremento
+(`incremento-0`, `incremento-1`). No se mergea a `main` hasta estar probada al 100 %.
 
 - Fase 1 · Frontend — EN CURSO
 - Fase 2 · Backend PHP — no empezada
@@ -24,8 +25,8 @@ La rama `refactor-00-cimientos` está lista para mergear a `main` (sin push toda
 
 | # | Incremento | Estado | Rama |
 |---|---|---|---|
-| 0 | Red de seguridad + Electron + fronteras ESLint + base de documentación | **hecho**, listo para mergear | `refactor-00-cimientos` |
-| 1 | Limpieza sin riesgo (huérfanos, redux, AuthContext) | pendiente | — |
+| 0 | Red de seguridad + Electron + fronteras ESLint + base de documentación | **hecho** | tag `incremento-0` |
+| 1 | Limpieza sin riesgo (huérfanos, redux, AuthContext) | **hecho** | tag `incremento-1` |
 | 2 | Capa de API (`shared/api` + TanStack Query) | pendiente | — |
 | 3 | Biblioteca de UI compartida (`shared/ui`) | pendiente | — |
 | 4 | Sesión y permisos (`shared/auth`) | pendiente | — |
@@ -43,11 +44,22 @@ git rev-list --left-right --count Emiliano...refactor-00-cimientos
 
 | Fecha | Commits de divergencia | Semanas sin integrar |
 |---|---:|---:|
-| 2026-08-31 | 10 | 0 |
+| 2026-08-31 | 15 | 0 |
 
 **Tripwire: 40 commits o 6 semanas.** Al llegar a cualquiera de los dos, se para de agregar
 incrementos y se consolida. La rama `refactor` de abril llegó a 116 sin que nadie mirara
 el número.
+
+## Arreglos listos para cherry-pick a `Emiliano`
+
+Bugs de producción que el refactor destapó. Viven en commits `fix()` propios, sin
+mezclar con el refactor, para que se puedan llevar a `Emiliano` sin arrastrar nada.
+**Emiliano decide cuándo; el refactor no toca su rama.**
+
+| Commit | Qué arregla |
+|---|---|
+| `6294534` | `TicketPayment` se va a blanco si el fetch falla; `ExpenseEdit` revienta con fecha inválida (mezclado con cambios del harness de tests — extraer solo los 5 renglones de `src/screens/`) |
+| `2af9ecd` | `Emptystage.jsx` importado como `./EmptyStage`: el build falla en Linux. Commit limpio, cherry-pick directo |
 
 ## Decisiones ya tomadas
 
