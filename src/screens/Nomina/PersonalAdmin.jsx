@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
     Container, Paper, Typography, Button, Table, TableHead, TableRow, TableCell, 
     TableBody, Stack, IconButton, Dialog, DialogTitle, DialogContent, TextField, 
@@ -11,34 +11,39 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
+import {
+    usePersonal,
+    useGuardarEmpleado,
+    useEliminarEmpleado,
+    validarFormularioEmpleado,
+} from '../../entities/personal';
 
-const apiHost = import.meta.env.VITE_API_HOST;
+const FORMULARIO_VACIO = { id: null, nombre: '', puesto: '', sueldo: '', frecuencia_pago: 'Semanal', tipo_nomina: 'MX' };
 
+/**
+ * Catálogo de personal de nómina: alta, edición y baja de empleados.
+ *
+ * @returns {JSX.Element} La pantalla.
+ */
 export default function PersonalAdmin() {
     const navigate = useNavigate();
-    const [personal, setPersonal] = useState([]);
+    const { data: personal = [], isLoading, isError, error } = usePersonal();
+    const guardar = useGuardarEmpleado();
+    const eliminar = useEliminarEmpleado();
     const [open, setOpen] = useState(false);
-    const [form, setForm] = useState({ id: null, nombre: '', puesto: '', sueldo: '', frecuencia_pago: 'Semanal', tipo_nomina: 'MX' });
-
-    const fetchPersonal = async () => {
-        const fd = new FormData(); fd.append('op', 'getAll');
-        const res = await fetch(`${apiHost}/personal_admin.php`, { method: 'POST', body: fd });
-        const json = await res.json();
-        if (json.status === 'success') setPersonal(json.data);
-    };
-
-    useEffect(() => { fetchPersonal(); }, []);
+    const [form, setForm] = useState(FORMULARIO_VACIO);
 
     const handleSubmit = async () => {
-        if (!form.nombre || !form.sueldo) return Swal.fire('Atención', 'Nombre y sueldo son obligatorios', 'warning');
-        
-        const fd = new FormData();
-        fd.append('op', form.id ? 'update' : 'add');
-        Object.entries(form).forEach(([k, v]) => fd.append(k, v));
-        
-        await fetch(`${apiHost}/personal_admin.php`, { method: 'POST', body: fd });
-        Swal.fire('Éxito', 'Guardado correctamente', 'success');
-        setOpen(false); fetchPersonal();
+        const validacion = validarFormularioEmpleado(form);
+        if (!validacion.valido) return Swal.fire('Atención', validacion.mensaje, 'warning');
+
+        try {
+            await guardar.mutateAsync(validacion.datos);
+            setOpen(false);
+            Swal.fire('Éxito', 'Guardado correctamente', 'success');
+        } catch (e) {
+            Swal.fire('No se pudo guardar', e.message, 'error');
+        }
     };
 
     const handleDelete = async (id) => {
@@ -46,16 +51,16 @@ export default function PersonalAdmin() {
             title: '¿Eliminar empleado?', text: 'El historial de pagos previos se mantendrá intacto.', icon: 'warning', 
             showCancelButton: true, confirmButtonText: 'Sí, eliminar', confirmButtonColor: '#d32f2f' 
         });
-        if(confirm.isConfirmed) {
-            const fd = new FormData(); fd.append('op', 'delete'); fd.append('id', id);
-            await fetch(`${apiHost}/personal_admin.php`, { method: 'POST', body: fd });
-            fetchPersonal();
+        if (!confirm.isConfirmed) return;
+        try {
+            await eliminar.mutateAsync(id);
+        } catch (e) {
+            Swal.fire('No se pudo eliminar', e.message, 'error');
         }
     };
 
     const openModal = (data = null) => {
-        if (data) setForm(data);
-        else setForm({ id: null, nombre: '', puesto: '', sueldo: '', frecuencia_pago: 'Semanal', tipo_nomina: 'MX' });
+        setForm(data ?? FORMULARIO_VACIO);
         setOpen(true);
     };
 
@@ -134,7 +139,13 @@ export default function PersonalAdmin() {
                                 </TableCell>
                             </TableRow>
                         ))}
-                        {personal.length === 0 && (
+                        {isLoading && (
+                            <TableRow><TableCell colSpan={6} align="center" sx={{ py: 3 }}><Typography fontStyle="italic" color="text.secondary">Cargando personal…</Typography></TableCell></TableRow>
+                        )}
+                        {isError && (
+                            <TableRow><TableCell colSpan={6} align="center" sx={{ py: 3 }}><Typography fontStyle="italic" color="error.main">{error.message}</Typography></TableCell></TableRow>
+                        )}
+                        {!isLoading && !isError && personal.length === 0 && (
                             <TableRow><TableCell colSpan={6} align="center" sx={{ py: 3 }}><Typography fontStyle="italic" color="text.secondary">No hay personal registrado activo.</Typography></TableCell></TableRow>
                         )}
                     </TableBody>
@@ -174,7 +185,9 @@ export default function PersonalAdmin() {
                 </DialogContent>
                 <DialogActions sx={{ p: 3, borderTop: '1px solid #e0e0e0' }}>
                     <Button onClick={() => setOpen(false)} sx={{ textTransform: 'none', fontWeight: 600 }}>Cancelar</Button>
-                    <Button variant="contained" onClick={handleSubmit} sx={{ textTransform: 'none', fontWeight: 600, px: 4 }}>Guardar Empleado</Button>
+                    <Button variant="contained" onClick={handleSubmit} disabled={guardar.isPending} sx={{ textTransform: 'none', fontWeight: 600, px: 4 }}>
+                        {guardar.isPending ? 'Guardando…' : 'Guardar Empleado'}
+                    </Button>
                 </DialogActions>
             </Dialog>
         </Container>

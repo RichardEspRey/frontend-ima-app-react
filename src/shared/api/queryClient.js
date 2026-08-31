@@ -1,0 +1,54 @@
+import { QueryClient } from "@tanstack/react-query"
+import { ApiError } from "./errors"
+
+/**
+ * Decide si TanStack Query debe reintentar una consulta fallida.
+ *
+ * Solo se reintenta lo que puede arreglarse solo —red caída, tiempo agotado—.
+ * Un error de negocio ("ese empleado ya existe") daría el mismo resultado tres
+ * veces y solo retrasaría el mensaje.
+ *
+ * @param {number} intentosPrevios Cuántas veces ya se reintentó.
+ * @param {*} error El error que lanzó la consulta.
+ * @returns {boolean} `true` si debe reintentarse.
+ */
+export function debeReintentar(intentosPrevios, error) {
+  if (intentosPrevios >= 2) return false
+  return error instanceof ApiError ? error.esReintentable : false
+}
+
+/**
+ * Crea el cliente de TanStack Query con la configuración del proyecto.
+ *
+ * Se crea con una función y no como constante de módulo para que cada test
+ * pueda tener el suyo: una caché compartida entre tests los vuelve dependientes
+ * del orden en que corren.
+ *
+ * @returns {object} Cliente de TanStack Query listo para el provider.
+ */
+export function crearQueryClient() {
+  return new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: 5 * 60 * 1000,
+        gcTime: 10 * 60 * 1000,
+        retry: debeReintentar,
+        retryDelay: (intento) => Math.min(1000 * 2 ** intento, 8000),
+        refetchOnWindowFocus: false,
+        placeholderData: (anterior) => anterior,
+      },
+      mutations: {
+        retry: false,
+      },
+    },
+  })
+}
+
+/**
+ * Tiempo que un catálogo se considera fresco. Conductores, camiones, cajas y
+ * almacenes cambian de vez en cuando, no dentro de una sesión de trabajo: no
+ * tiene sentido volver a pedirlos en cada pantalla que los use.
+ *
+ * @type {number}
+ */
+export const FRESCURA_CATALOGO_MS = 30 * 60 * 1000

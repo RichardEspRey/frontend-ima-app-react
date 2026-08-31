@@ -3,6 +3,7 @@ import AppRouter from './navigation/AppRouter';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import notiSound from '../src/assets/sounds/Update2.mp3';
+import { QueryProvider } from './app/providers/QueryProvider';
 
 // Contexto temporal para pasar si hay update
 export const UpdateContext = React.createContext();
@@ -24,6 +25,7 @@ const App = () => {
 
   return (
     <UpdateContext.Provider value={{ updateDisponible }}>
+      <QueryProvider>
         <AppRouter />
         <ToastContainer position="top-right"
           autoClose={5000}
@@ -36,6 +38,7 @@ const App = () => {
           pauseOnHover
           theme="light"
            />
+      </QueryProvider>
     </UpdateContext.Provider>
   );
 };

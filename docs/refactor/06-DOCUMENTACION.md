@@ -44,14 +44,8 @@ export function calcularTotalGasto(gasto, tipoCambio) { … }
  * filtros y conserva la página anterior mientras llega la nueva, para que la tabla no
  * parpadee al filtrar.
  *
- * @param {import('./tipos').FiltrosGasto} filtros Filtros activos de la vista.
- * @returns {{
- *   gastos: import('./tipos').Gasto[],
- *   isLoading: boolean,
- *   isError: boolean,
- *   error: import('@/shared/api/errors').ApiError | null,
- *   refetch: () => void
- * }}
+ * @param {FiltrosGasto} filtros Filtros activos de la vista.
+ * @returns {object} El resultado de `useQuery`: `{data, isLoading, isError, error, refetch}`.
  */
 export function useGastos(filtros) { … }
 ```
@@ -63,13 +57,13 @@ export function useGastos(filtros) { … }
  * Tabla genérica con orden por columna, paginación y estados de carga, error y vacío.
  * Las columnas son declarativas: agregar una columna no requiere editar este componente.
  *
- * @param {object} props
- * @param {object[]} props.rows                Filas a pintar.
- * @param {import('./tipos').Columna[]} props.columns  Definición declarativa de columnas.
- * @param {string} [props.rowKey='id']         Campo que identifica cada fila.
- * @param {boolean} [props.loading=false]      Muestra el esqueleto de carga.
- * @param {(row: object) => void} [props.onRowClick] Se dispara al hacer clic en una fila.
- * @returns {JSX.Element}
+ * @param {object} props Propiedades del componente.
+ * @param {Array.<object>} props.rows       Filas a pintar.
+ * @param {Array.<Columna>} props.columns   Definición declarativa de columnas.
+ * @param {string} [props.rowKey='id']      Campo que identifica cada fila.
+ * @param {boolean} [props.loading=false]   Muestra el esqueleto de carga.
+ * @param {Function} [props.onRowClick]     Se dispara al hacer clic en una fila.
+ * @returns {object} El elemento renderizado.
  *
  * @example
  * <DataTable rows={gastos} columns={columnasGasto} onRowClick={abrirDetalle} />
@@ -87,8 +81,8 @@ existir como referencia de la API PHP.
  * Trae todos los gastos no borrados que cumplen los filtros.
  *
  * @endpoint POST save_expense.php · op=getAllGastos
- * @param {import('./tipos').FiltrosGasto} filtros
- * @returns {Promise<import('./tipos').Gasto[]>} Gastos normalizados y validados con zod.
+ * @param {FiltrosGasto} filtros Filtros activos.
+ * @returns {Promise.<Array.<Gasto>>} Gastos normalizados y validados con zod.
  * @throws {ApiError} Si la API responde `status: 'error'` o la forma no valida.
  */
 export const getGastos = (filtros) => post(ENDPOINTS.gastos, 'getAllGastos', filtros)
@@ -102,12 +96,34 @@ export const getGastos = (filtros) => post(ENDPOINTS.gastos, 'getAllGastos', fil
  * Se persiste en localStorage bajo la llave `auth-storage`.
  *
  * @typedef {object} SesionState
- * @property {import('@/entities/user/tipos').Usuario | null} user
- * @property {string[]} permissions  Permisos efectivos en formato `modulo.accion`.
- * @property {(credenciales: {usuario: string, password: string}) => Promise<void>} login
- * @property {() => void} logout  Limpia zustand, la caché de react-query y el token push.
+ * @property {(Usuario|null)} user Usuario autenticado.
+ * @property {Array.<string>} permissions Permisos efectivos, en formato `modulo.accion`.
+ * @property {Function} login Recibe `{usuario, password}` y abre la sesión.
+ * @property {Function} logout Limpia zustand, la caché de react-query y el token push.
  */
 ```
+
+### Sintaxis: JSDoc, no TypeScript
+
+`jsdoc` no entiende la sintaxis de tipos de TypeScript, y ESLint **sí la acepta**, así
+que el error no sale hasta que corres `npm run docs:api`. Verificado el 2026-08-31
+migrando el módulo piloto.
+
+| No uses | Usa |
+|---|---|
+| `{readonly string[]}` | `{Array.<string>}` |
+| `{string[]}` | `{Array.<string>}` |
+| `{Promise<Foo>}` | `{Promise.<Foo>}` |
+| `{Record<string, unknown>}` | `{object}` |
+| `{unknown}` | `{*}` |
+| `{import('./x').Foo}` | un `@typedef` con nombre propio, referenciado como `{Foo}` |
+| `@typedef {z.infer<typeof esquema>} Foo` | `@typedef {object} Foo` con sus `@property` |
+
+Lo último no es solo una limitación: escribir las `@property` a mano documenta la forma
+para quien lee, cosa que `z.infer<...>` no hace.
+
+Tampoco uses un guion bajo al principio del nombre de un archivo: `jsdoc` los excluye por
+omisión y no aparecerán en `docs/api/`.
 
 ### Reglas de estilo
 
@@ -224,11 +240,15 @@ primeros ya están decididos en estos documentos; solo hay que extraerlos.
 
 ## 4. Referencia generada
 
-`jsdoc-to-markdown` genera `docs/api/` desde los bloques JSDoc:
+`jsdoc-to-markdown` genera `docs/api/README.md` desde los bloques JSDoc:
 
-```json
-"docs:api": "jsdoc2md \"src/{shared,entities,features}/**/*.{js,jsx}\" --files > docs/api/README.md"
+```bash
+npm run docs:api
 ```
+
+Detrás hay un script (`scripts/docs-api.sh`) y no una redirección directa: con un `>`, la
+shell vacía el destino **antes** de que el generador corra, así que un fallo dejaba el
+archivo en blanco. El script escribe a un temporal y solo mueve si hubo salida.
 
 Se corre al cerrar cada incremento. No se edita a mano — se edita el JSDoc.
 
