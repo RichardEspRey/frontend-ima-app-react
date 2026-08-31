@@ -20,9 +20,9 @@ export function debeReintentar(intentosPrevios, error) {
 /**
  * Bajo test, la caché se recolecta de inmediato y no se reintenta nada.
  *
- * El smoke test monta las 61 rutas, y cada montaje crea su propio cliente: con
- * la recolección normal de 10 minutos, esos temporizadores se acumulan y la
- * suite deja de terminar. Verificado el 2026-08-31, pasó de 6 s a no acabar.
+ * El smoke test monta las 61 rutas en la misma sesión; sin esto, la caché de una
+ * ruta sobrevive a la siguiente y los tests dependen del orden en que corren.
+ * Los reintentos tampoco aportan nada cuando `fetch` está simulado.
  *
  * @type {boolean}
  */

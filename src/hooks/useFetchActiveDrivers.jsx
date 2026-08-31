@@ -1,43 +1,30 @@
-// hooks/useFetchActiveDrivers.js
-import { useState, useEffect } from 'react';
+import { useMemo } from "react"
+import { useConductoresActivos } from "../entities/driver"
 
-function useFetchActiveDrivers() {
-  const apiHost = import.meta.env.VITE_API_HOST;
-  const [activeDrivers, setActiveDrivers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+const VACIO = []
 
-  useEffect(() => {
-    const fetchActiveDrivers = async () => {
-      try {
-        const response = await fetch(`${apiHost}/drivers.php`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: 'op=getDriversActivos',
-        });
-        const data = await response.json();
-
-        if (data.status === 'success' && data.drivers) {
-          const formattedActiveDrivers = data.drivers.map(driver => ({
-            driver_id: driver.driver_id,
-            nombre: driver.nombre, 
-          }));
-          setActiveDrivers(formattedActiveDrivers);
-          setLoading(false);
-        } else {
-          setError(data.message || 'Error al obtener los conductores activos');
-          setLoading(false);
-        }
-      } catch (err) {
-        setError('Error de red al obtener los conductores activos');
-        setLoading(false);
-      }
-    };
-
-    fetchActiveDrivers();
-  }, [apiHost]);
-
-  return { activeDrivers, loading, error };
+/**
+ * @deprecated Puente temporal. Usa `useConductoresActivos` de `entities/driver` directamente.
+ *
+ * Mantiene intacta la forma `{ activeDrivers, loading, error }` que esperan las pantallas
+ * sin migrar, pero por debajo ya usa TanStack Query: la petición se cachea y se
+ * comparte con cualquier otra pantalla que pida el mismo catálogo, en vez de
+ * repetirse una vez por componente que monte.
+ * Conserva la proyección del original (`driver_id`, `nombre`) para que ningún
+ * consumidor reciba campos que antes no le llegaban.
+ *
+ *
+ * La lista va memoizada y el vacío es una constante de módulo. No es cosmético:
+ * hay 14 consumidores con `useEffect(..., [activeDrivers])` que llaman a un
+ * `setState` dentro. Devolver un arreglo nuevo en cada render dispara ese efecto
+ * en bucle infinito. El hook original no tenía el problema porque guardaba la
+ * lista en `useState`, donde la identidad es estable.
+ *
+ * @returns {object} `{ activeDrivers, loading, error }`.
+ */
+export default function useFetchActiveDrivers() {
+  const { data, isLoading, error } = useConductoresActivos()
+  const activeDrivers = useMemo(() => (data ?? VACIO).map(({ driver_id, nombre }) => ({ driver_id, nombre })), [data])
+  const mensaje = error ? error.message : null
+  return { activeDrivers, loading: isLoading, error: mensaje }
 }
-
-export default useFetchActiveDrivers;

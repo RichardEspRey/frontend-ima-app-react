@@ -1,47 +1,30 @@
-// hooks/useFetchActiveCajas.js
-import { useState, useEffect, useCallback } from 'react'; 
+import { useMemo } from "react"
+import { useCajasExternasActivas } from "../entities/trailer"
 
-function useFetchActiveExternalTrailers() {
-  const apiHost = import.meta.env.VITE_API_HOST;
-  const [activeExternalTrailers, setActiveExternalTrailers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+const VACIO = []
 
-
-  const fetchActiveCajas = useCallback(async () => {
-    setLoading(true); 
-    setError(null);   
-    try {
-      const response = await fetch(`${apiHost}/caja_externa.php`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: 'op=getCajasExternasActivas',
-      });
-      const data = await response.json();
-
-      if (data.status === 'success' && data.cajas) {
-        const formattedActiveExternalTrailers = data.cajas.map(caja_externa => ({
-            caja_externa_id: caja_externa.caja_externa_id, 
-            no_caja: caja_externa.no_caja
-        }));
-        setActiveExternalTrailers(formattedActiveExternalTrailers);
-      } else {
-        setError(data.message || 'Error al obtener las cajas activas');
-      }
-    } catch (err) {
-      setError('Error de red al obtener las cajas activas');
-    } finally {
-   
-        setLoading(false);
-    }
-  }, [apiHost]); 
-
-  useEffect(() => {
-    fetchActiveCajas();
-  }, [fetchActiveCajas]);
-
-
-  return { activeExternalTrailers, loading, error, refetch: fetchActiveCajas };
+/**
+ * @deprecated Puente temporal. Usa `useCajasExternasActivas` de `entities/trailer` directamente.
+ *
+ * Mantiene intacta la forma `{ activeExternalTrailers, loading, error, refetch }` que esperan las pantallas
+ * sin migrar, pero por debajo ya usa TanStack Query: la petición se cachea y se
+ * comparte con cualquier otra pantalla que pida el mismo catálogo, en vez de
+ * repetirse una vez por componente que monte.
+ * Conserva la proyección del original (`caja_externa_id`, `no_caja`) para que ningún
+ * consumidor reciba campos que antes no le llegaban.
+ *
+ *
+ * La lista va memoizada y el vacío es una constante de módulo. No es cosmético:
+ * hay 14 consumidores con `useEffect(..., [activeExternalTrailers])` que llaman a un
+ * `setState` dentro. Devolver un arreglo nuevo en cada render dispara ese efecto
+ * en bucle infinito. El hook original no tenía el problema porque guardaba la
+ * lista en `useState`, donde la identidad es estable.
+ *
+ * @returns {object} `{ activeExternalTrailers, loading, error, refetch }`.
+ */
+export default function useFetchActiveExternalTrailers() {
+  const { data, isLoading, error, refetch } = useCajasExternasActivas()
+  const activeExternalTrailers = useMemo(() => (data ?? VACIO).map(({ caja_externa_id, no_caja }) => ({ caja_externa_id, no_caja })), [data])
+  const mensaje = error ? error.message : null
+  return { activeExternalTrailers, loading: isLoading, error: mensaje, refetch: refetch }
 }
-
-export default useFetchActiveExternalTrailers;

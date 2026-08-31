@@ -1,39 +1,27 @@
-// hooks/useFetchCompanies.js
-import { useState, useEffect } from 'react';
+import { useMemo } from "react"
+import { useCompanias } from "../entities/company"
 
-function useFetchCompanies() {
-  const apiHost = import.meta.env.VITE_API_HOST;
-  const [activeCompanies, setActiveCompanies] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+const VACIO = []
 
-  const fetchCompanies = async () => { // <-- Esta función ahora puede ser llamada externamente
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await fetch(`${apiHost}/companies.php`, { // Ajusta la URL si es diferente
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: 'op=getCompanies', // Asumiendo que esta es tu operación para obtener todas las compañías
-      });
-      const data = await response.json();
-      if (data.status === 'success' && data.companies) { // Asegúrate que la respuesta tenga 'companies'
-        setActiveCompanies(data.companies);
-      } else {
-        setError(data.message || 'Error al obtener compañías.');
-      }
-    } catch (err) {
-      setError(err.message || 'Error de red al cargar compañías.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchCompanies(); // Se ejecuta al montar el componente
-  }, []);
-
-  return { activeCompanies, loading, error, refetchCompanies: fetchCompanies }; // ###Agregar: Devuelve la función de refetch
+/**
+ * @deprecated Puente temporal. Usa `useCompanias` de `entities/company` directamente.
+ *
+ * Mantiene intacta la forma `{ activeCompanies, loading, error, refetchCompanies }` que esperan las pantallas
+ * sin migrar, pero por debajo ya usa TanStack Query: la petición se cachea y se
+ * comparte con cualquier otra pantalla que pida el mismo catálogo, en vez de
+ * repetirse una vez por componente que monte.
+ *
+ * La lista va memoizada y el vacío es una constante de módulo. No es cosmético:
+ * hay 14 consumidores con `useEffect(..., [activeCompanies])` que llaman a un
+ * `setState` dentro. Devolver un arreglo nuevo en cada render dispara ese efecto
+ * en bucle infinito. El hook original no tenía el problema porque guardaba la
+ * lista en `useState`, donde la identidad es estable.
+ *
+ * @returns {object} `{ activeCompanies, loading, error, refetchCompanies }`.
+ */
+export default function useFetchCompanies() {
+  const { data, isLoading, error, refetch } = useCompanias()
+  const activeCompanies = useMemo(() => data ?? VACIO, [data])
+  const mensaje = error ? error.message : null
+  return { activeCompanies, loading: isLoading, error: mensaje, refetchCompanies: refetch }
 }
-
-export default useFetchCompanies;

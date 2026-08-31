@@ -1,43 +1,30 @@
-// hooks/useFetchActiveCajas.js
-import { useState, useEffect } from 'react';
+import { useMemo } from "react"
+import { useCajasActivasCompletas } from "../../entities/trailer"
 
-function useFetchActiveTrailers() {
-  const apiHost = import.meta.env.VITE_API_HOST;
-  const [activeTrailers, setActiveTrailers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+const VACIO = []
 
-  useEffect(() => {
-    const fetchActiveCajas = async () => {
-      try {
-        const response = await fetch(`${apiHost}/cajas.php`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: 'op=getCajasActivasComplete',
-        });
-        const data = await response.json();
-
-        if (data.status === 'success' && data.cajas) {
-            const formattedActiveTrailers = data.cajas.map(caja =>({
-                caja_id: caja.caja_id, 
-                no_caja: caja.no_caja
-            }))
-            setActiveTrailers(formattedActiveTrailers); // Ajusta el mapeo si es necesario
-          setLoading(false);
-        } else {
-          setError(data.message || 'Error al obtener las cajas activas');
-          setLoading(false);
-        }
-      } catch (err) {
-        setError('Error de red al obtener las cajas activas');
-        setLoading(false);
-      }
-    };
-
-    fetchActiveCajas();
-  }, []);
-
-  return { activeTrailers, loading, error };
+/**
+ * @deprecated Puente temporal. Usa `useCajasActivasCompletas` de `entities/trailer` directamente.
+ *
+ * Mantiene intacta la forma `{ activeTrailers, loading, error }` que esperan las pantallas
+ * sin migrar, pero por debajo ya usa TanStack Query: la petición se cachea y se
+ * comparte con cualquier otra pantalla que pida el mismo catálogo, en vez de
+ * repetirse una vez por componente que monte.
+ * Conserva la proyección del original (`caja_id`, `no_caja`) para que ningún
+ * consumidor reciba campos que antes no le llegaban.
+ *
+ *
+ * La lista va memoizada y el vacío es una constante de módulo. No es cosmético:
+ * hay 14 consumidores con `useEffect(..., [activeTrailers])` que llaman a un
+ * `setState` dentro. Devolver un arreglo nuevo en cada render dispara ese efecto
+ * en bucle infinito. El hook original no tenía el problema porque guardaba la
+ * lista en `useState`, donde la identidad es estable.
+ *
+ * @returns {object} `{ activeTrailers, loading, error }`.
+ */
+export default function useFetchActiveTrailers() {
+  const { data, isLoading, error } = useCajasActivasCompletas()
+  const activeTrailers = useMemo(() => (data ?? VACIO).map(({ caja_id, no_caja }) => ({ caja_id, no_caja })), [data])
+  const mensaje = error ? error.message : null
+  return { activeTrailers, loading: isLoading, error: mensaje }
 }
-
-export default useFetchActiveTrailers;
