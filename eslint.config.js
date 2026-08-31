@@ -106,8 +106,13 @@ export default [
             allow: { to: { element: { types: { anyOf: ['entities', 'shared'] } } } },
           },
           {
+            // Se permite entities -> entities a propósito. `payroll` y `personal`
+            // comparten vocabulario del dominio de nómina (tipo de nómina,
+            // frecuencia de pago); prohibirlo obligaría a duplicar esas verdades
+            // en dos sitios, que es peor que el acoplamiento que evita. Es la
+            // misma relajación que contempla FSD con su notación `@x`.
             from: { element: { type: 'entities' } },
-            allow: { to: { element: { type: 'shared' } } },
+            allow: { to: { element: { types: { anyOf: ['entities', 'shared'] } } } },
           },
           {
             from: { element: { type: 'shared' } },
