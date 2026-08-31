@@ -15,7 +15,7 @@
 
 ## Dónde vamos
 
-**Fase 1 (frontend) — incrementos 0, 1 y 2 terminados.**
+**Fase 1 (frontend) — incrementos 0, 1, 2 y 3 terminados.**
 Todo vive en la rama larga **`refactor-fase-1`**, con un tag por incremento
 (`incremento-0`, `incremento-1`). No se mergea a `main` hasta estar probada al 100 %.
 
@@ -28,8 +28,8 @@ Todo vive en la rama larga **`refactor-fase-1`**, con un tag por incremento
 | 0 | Red de seguridad + Electron + fronteras ESLint + base de documentación | **hecho** | tag `incremento-0` |
 | 1 | Limpieza sin riesgo (huérfanos, redux, AuthContext) | **hecho** | tag `incremento-1` |
 | 2 | Capa de API (`shared/api` + TanStack Query) | **hecho** | tag `incremento-2` |
-| 3 | Biblioteca de UI compartida (`shared/ui`) | **siguiente** | — |
-| 4 | Sesión y permisos (`shared/auth`) | pendiente | — |
+| 3 | Biblioteca de UI compartida (`shared/ui`) | **hecho** | tag `incremento-3` |
+| 4 | Sesión y permisos (`shared/auth`) | **siguiente** — bloqueado, ver abajo | — |
 | 5 | Módulo Gastos → `features/gastos` (patrón de referencia) | pendiente | — |
 | 6+ | Resto de módulos, uno por uno | pendiente | — |
 | N | Deduplicar formularios (~4 000 líneas) | pendiente | — |
@@ -44,7 +44,7 @@ git rev-list --left-right --count Emiliano...refactor-00-cimientos
 
 | Fecha | Commits de divergencia | Semanas sin integrar |
 |---|---:|---:|
-| 2026-08-31 | 24 | 0 |
+| 2026-08-31 | 26 | 0 |
 
 **Tripwire: 40 commits o 6 semanas.** Al llegar a cualquiera de los dos, se para de agregar
 incrementos y se consolida. La rama `refactor` de abril llegó a 116 sin que nadie mirara
@@ -97,6 +97,21 @@ Se integró con **merge, no rebase**: los 18 commits de la rama `Emiliano` ya es
 `origin/Emiliano` y rebasarlos crearía duplicados con hash nuevo. La regla de "rebase
 diario" del `04-SINCRONIZACION.md` aplica a los commits propios del refactor, no a
 reescribir historia ya publicada de otra rama.
+
+## Bloqueante del incremento 4
+
+El siguiente incremento es **sesión y permisos**, y necesita saber qué valores de rol
+existen de verdad en producción antes de escribir el mapa de alias. Sin eso, un
+normalizador escrito a ciegas puede quitarle accesos a alguien.
+
+```sql
+SELECT type, COUNT(*) FROM Users_credentials GROUP BY type;
+```
+
+Más el esquema de `Users_credentials` y de cualquier tabla de roles o permisos.
+
+Si prefieres no parar, se puede adelantar el incremento 5 (Nómina) y volver al 4 cuando
+tengas los datos.
 
 ## Pendiente de Emiliano
 

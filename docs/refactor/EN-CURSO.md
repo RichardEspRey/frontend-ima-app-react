@@ -18,16 +18,17 @@ por decisión confirmada.
 
 ## Próximo módulo a mover
 
-Incremento 3 — `shared/ui`: DataTable, Modal, FormField, notify. Son **archivos
-nuevos**; no se mueve nada de `screens/` ni de `components/`.
+Incremento 4 — sesión y permisos (`src/shared/auth/`). Este **sí toca código existente**:
+sustituye las ~57 comparaciones literales de `"admin"` repartidas por los componentes, y
+`config/menuConfig.js`. Richard: avísame si estás en `menuConfig` o en `useAuthStore`.
 
-Ojo, Richard, lo que ya cambió:
-- Se eliminó **Redux** (nadie lo usaba) y 9 archivos huérfanos.
-- Los 10 hooks `useFetchX` de `src/hooks/` siguen ahí y devuelven **exactamente lo
-  mismo**, pero por dentro ya usan TanStack Query: si dos pantallas piden el mismo
-  catálogo, ahora se hace una sola petición. No tienes que cambiar nada.
-- Hay una capa de API en `src/shared/api/`. Para código nuevo, úsala en vez de
-  `fetch()` directo: `post(ENDPOINTS.x, 'op', {campos})`. Ver `docs/API-ENDPOINTS.md`.
+Lo que ya cambió y puedes usar desde hoy:
+- **`src/shared/api/`** — para código nuevo, `post(ENDPOINTS.x, 'op', {campos})` en vez de
+  `fetch()` directo. Catálogo completo en `docs/API-ENDPOINTS.md`.
+- **`src/shared/ui/`** — `DataTable` (columnas declarativas, orden y los tres estados),
+  `PageHeader`, `ErrorBoundary`, `notify`. Ver `src/shared/ui/README.md`.
+- Los 10 hooks `useFetchX` devuelven lo mismo de siempre, pero ahora cachean.
+- Se eliminó **Redux** y 9 archivos huérfanos.
 
 ## Cómo leer esto
 
