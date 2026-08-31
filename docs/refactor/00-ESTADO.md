@@ -116,14 +116,38 @@ Mientras tanto **nadie pierde ni gana accesos**: sus flags individuales siguen m
 Electron pasó de 35 a 44 y jspdf de 3 a 4. `npm run humo:electron` comprueba que la app
 arranque, pero no cubre estos flujos. **Antes de que esto llegue a `main`:**
 
+- ~~Abrir el Mapa y ver que carguen los tiles~~ ✅ **verificado el 2026-08-31 en Chrome**:
+  las unidades cargan con posición y velocidad, el geocoding resuelve direcciones, y la
+  consola sale limpia. La CSP no bloquea nada.
 - Exportar un PDF desde Resumen de viaje, Ticket de pago e IFTA (cambió jspdf).
-- Abrir el Mapa y ver que carguen los tiles (la CSP nueva los permite explícitamente).
 - Abrir el modal de PC Miller, que lee PDFs (cambió pdfjs-dist).
 - Empaquetar con `npm run dist` y probar el instalador en Windows.
 - Probar el flujo de actualización automática (`electron-updater`).
 
 Si alguna pantalla deja de cargar en la app empaquetada pero funciona en `npm run dev`,
 lo más probable es que falte un origen en la CSP de `vite.config.js`.
+
+## Bug encontrado al verificar el mapa (no es del refactor)
+
+`src/screens/Mapas/Tracking.jsx:651` pide los tiles a CartoDB:
+
+```jsx
+<TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" />
+```
+
+Carto ya exige API key para sus basemaps y devuelve los tiles **estampados con
+"API KEY REQUIRED"** por todo el mapa. Responde 200, así que no hay error en consola ni
+petición bloqueada: simplemente se ve mal. **Está pasando en producción ahora mismo**, es
+anterior al refactor.
+
+Las otras tres pantallas con mapa —`TripAdmin` y `Cotizacion` ×2— usan
+`tile.openstreetmap.org`, que no pide llave y funciona. Opciones:
+
+1. Sacar una API key de Carto y ponerla (conserva el estilo Voyager, más limpio).
+2. Usar los mismos tiles de OSM que las otras tres (una línea, consistente, pero cambia
+   el aspecto del mapa).
+
+Es decisión de producto por el cambio visual, así que se deja sin tocar.
 
 ## Decisión pendiente
 
