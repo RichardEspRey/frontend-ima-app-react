@@ -366,7 +366,7 @@ const AccessDrawer = ({
 
     useEffect(() => {
         if (user) {
-            setForm({ name: user.name || '', user: user.user || '', pass: user.pass || '', type: user.type || '', active: user.active ?? '1', driver_id: user.driver_id || '' });
+            setForm({ name: user.name || '', user: user.user || '', pass: '', type: user.type || '', active: user.active ?? '1', driver_id: user.driver_id || '' });
         }
     }, [user]);
 
