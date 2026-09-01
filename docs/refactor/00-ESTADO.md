@@ -39,7 +39,7 @@ Todo vive en la rama larga **`refactor-fase-1`**, con un tag por incremento
 | 9b | Afinaciones + Autonomía | **siguiente** | — |
 | 9c | Reparaciones en ruta + Inspecciones | pendiente | — |
 | 6+ | Resto de módulos, uno por uno | pendiente | — |
-| N | Deduplicar formularios (~4 000 líneas) | pendiente | — |
+| — | Deduplicar: **cada par en el incremento de su módulo**, no al final | ver `05-INCREMENTOS.md` | — |
 
 Detalle de cada uno en `05-INCREMENTOS.md`.
 

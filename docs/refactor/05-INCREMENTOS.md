@@ -315,15 +315,57 @@ capa de API, dejar puentes, borrar los puentes del incremento anterior.
 
 ## Incremento final — Deduplicación
 
-Con todo ya en la estructura nueva se pueden fusionar los duplicados sin pelearse con la
-organización de archivos:
+**Medido el 2026-09-01**, no estimado. Cada par se comparó con `diff`:
 
-- `BorderCrossingForm` (987) + `BorderCrossingFormNew` (1016) + `BorderCrossingFormNew2` (358)
-- `TripForm` (1008) + `TripFormNew` (749)
+| Par | Líneas | Común | Dónde se paga |
+|---|---:|---:|---|
+| `TripFormMX` / `TripFormUSA` | 352 + 352 | **97 %** | incremento 15 · Viajes |
+| `BorderCrossingForm` / `...New` | 987 + 1017 | **92 %** | incremento 15 · Viajes |
+| `NuevaOrdenPage` / `EditarOrdenPage` | 419 + 441 | **61 %** | **incremento 9a** ✅ ya movidas |
+| `TripForm` / `TripFormNew` | 1009 + 750 | **50 %** | incremento 15 · Viajes |
+| `BorderCrossingFormNew` / `...New2` | 1017 + 359 | 11 % | — no son duplicados, pese al nombre |
 
-≈ 4 100 líneas → un componente configurable por variante. Es el último porque necesita que
-Viajes ya esté migrado y porque es el cambio con más riesgo de regresión de negocio: hay
-que comparar los tres formularios campo por campo antes de fusionar.
+**~4 000 líneas** de las que sobra más de la mitad.
+
+### La regla: cada duplicado se paga en el incremento de su módulo
+
+No hay un "incremento final de deduplicación" separado, y esto corrige el plan original.
+Fusionar dos formularios de viajes **desde fuera** del incremento de Viajes obliga a
+entender ese módulo dos veces, y a hacerlo sin la entidad ni los tests que ese mismo
+incremento crea. Sale más barato al final del incremento que ya tocó esos archivos.
+
+Así que:
+
+- **Los cuatro pares de viajes** se fusionan al cerrar el **incremento 15**, cuando ya
+  existan `entities/trip` y sus tests.
+- **`NuevaOrdenPage` / `EditarOrdenPage`** se fusionan al cerrar **9a** (ver abajo).
+
+### Cómo se fusiona sin romper nada
+
+1. **Diff primero, campo por campo.** Un 97 % de coincidencia esconde diferencias que sí
+   importan: en `TripFormMX` / `TripFormUSA` cambia el país por omisión y qué campos son
+   obligatorios. Ese 3 % es el requisito de negocio.
+2. **Lo que cambia se vuelve configuración**, no una copia. Un objeto por variante con sus
+   campos, sus obligatorios y sus valores por omisión.
+3. **Nunca fusionar sin tests del comportamiento actual.** Es el único cambio del refactor
+   que puede alterar reglas de negocio sin que se note, porque las dos copias pudieron
+   divergir a propósito.
+4. **Verificar las dos variantes en el navegador**, no solo una.
+
+### Pendiente de 9a
+
+`NuevaOrdenPage` y `EditarOrdenPage` comparten el 61 %: los mismos selectores de camión,
+de tipo de reparación, la misma captura de refacciones y mano de obra, y el mismo cálculo
+de totales. Difieren en que una parte vacía y la otra carga con `getOrderById`, y en que
+una llama a `AltaOrden` y la otra a `UpdateOrder`.
+
+La forma que ya funcionó en Nómina: un `features/service-order/ui/FormularioOrden.jsx` con
+la captura y el cálculo, y dos páginas delgadas que le pasan los valores iniciales y qué
+hacer al guardar.
+
+**No se hizo en 9a** porque el incremento ya movía cinco archivos y fusionar formularios
+es donde más fácil se pierde una regla de negocio sin que ningún test lo note. Se hace
+como paso propio antes de 9b, con su verificación en el navegador.
 
 ---
 
