@@ -214,6 +214,10 @@ Estos cinco aparecieron en Nómina y es probable que estén en los demás:
   ve ningún test**: jsdom no valida anidamiento. Salió dos veces en Nómina, una de ellas
   dentro del propio `DataTable`. Se arregla con `component="div"`.
 - **"Cargando o no hay datos"** — el estado de carga y el vacío confundidos en un mensaje.
+- **Nombres de campo que no son los que uno supondría.** En Accesos, la plataforma viaja
+  en `plataform`, sin la segunda "a". Escribí el filtro contra `app` y el drawer se quedó
+  sin permisos; **ningún test lo vio**, porque los tests simulan la respuesta y reproducían
+  mi suposición. Antes de escribir un filtro, mirar la respuesta real con `curl`.
 
 > **Por qué no Gastos, que era el plan original.** Gastos es el módulo **más caliente de
 > los dos desarrolladores** (40 toques en 4 meses). Con una rama de refactor de vida larga,
