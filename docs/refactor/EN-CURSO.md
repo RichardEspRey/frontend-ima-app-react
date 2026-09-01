@@ -18,13 +18,17 @@ por decisión confirmada.
 
 ## Próximo módulo a mover
 
-Incremento 5 — **Nómina** entero a la estructura nueva. Es el módulo con 0 toques de
-ambos en 4 meses, así que no compite con nadie.
+Incremento 6 — **AccessManager / Usuarios**. Cero toques de ambos en 4 meses.
 
-**Richard, del incremento 4b:** subieron Electron (35 → 44), jspdf (3 → 4) y pdfjs-dist.
-Corre `npm install` al jalar. Si algo deja de cargar en la app **empaquetada** pero
-funciona en `npm run dev`, probablemente falta un origen en la CSP de `vite.config.js`.
-Para comprobar que la app arranca: `npm run build && npm run humo:electron`.
+**Richard, del incremento 5:** el módulo de Nómina se movió.
+`screens/Nomina/{Nomina,DetallePago,PersonalAdmin}.jsx` ahora son
+`pages/nomina/{NominaPage,DetallePagoPage,PersonalPage}.jsx`. El router ya está
+actualizado; si tu rama los toca, el merge lo resuelve solo porque el movimiento fue un
+commit limpio de `git mv`.
+
+Si quieres ver cómo queda un módulo migrado, ese es el ejemplo. La receta paso a paso
+está en `docs/refactor/05-INCREMENTOS.md` y las reglas del módulo en
+`docs/MODULOS/nomina.md`.
 
 ## Cómo leer esto
 

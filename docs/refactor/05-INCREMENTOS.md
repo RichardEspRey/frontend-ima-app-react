@@ -168,9 +168,45 @@ llamadas a la API— así que el patrón que salga de aquí sirve para todos los
 
 Ningún archivo del módulo pasa de 250 líneas al terminar.
 
-**Terminado cuando**: el módulo entero está en la estructura nueva y este documento tiene
-la receta paso a paso que los demás módulos van a seguir, con su `README.md`,
-`docs/MODULOS/nomina.md` y JSDoc completo.
+**HECHO** el 2026-08-31. La receta que salió, para los diez módulos siguientes:
+
+### La receta
+
+**1. Leer el módulo entero antes de tocar nada.** Las tres pantallas, sus llamadas a la
+API, qué campos usan. Salieron cinco bugs solo de leer con atención.
+
+**2. La entidad primero, y solo agrega.** `entities/<x>/model` con los esquemas zod y los
+cálculos que estaban inline en el JSX; `entities/<x>/api` con las queries. Con sus tests.
+Nada de esto rompe nada porque todavía no lo usa nadie. **Commit.**
+
+**3. Mover con `git mv`, en un commit aparte y sin editar.** Verificar con
+`git diff --cached -M --stat` que git diga *rename* y no *delete + create*: si no, cada
+línea que llegue de `Emiliano` sobre esos archivos será un conflicto manual. Actualizar el
+router. **Commit.**
+
+**4. Ahora sí, reescribir las pantallas.** Sin `fetch`, sin `Swal`, sin tabla a mano: la
+entidad da los datos y `shared/ui` la presentación. Ojo con no cambiar el aspecto sin
+querer — el `<Container maxWidth="xl">` que traen las pantallas no lo da el layout.
+
+**5. Verificarlo en el navegador, no solo con `npm test`.** Los tests corren en jsdom y no
+vieron ni el `Grid` roto ni el HTML inválido. Ambos salieron de abrir la pantalla y mirar
+la consola.
+
+**6. Documentar el módulo** en `docs/MODULOS/<x>.md`: reglas de negocio, lo que sorprende,
+y los bugs que se corrigieron de camino.
+
+### Lo que hay que buscar en cada módulo
+
+Estos cinco aparecieron en Nómina y es probable que estén en los demás:
+
+- **Pantallas de detalle que dependen de `useLocation().state`** — su enlace directo está
+  roto y recargar la página las tumba. `grep -rn "useLocation" src`
+- **Mutaciones que no miran la respuesta** — el `try/catch` solo atrapa fallos de red, así
+  que un `{status:'error'}` muestra igual el mensaje de éxito.
+- **`<Grid item xs={...}>`** — MUI v7 lo ignora. Quedan 265 en el proyecto.
+- **Componentes que renderizan `div` dentro de `p`** — un `<Chip>` dentro de un
+  `<Typography>` con variante de texto. Lo avisa la consola del navegador.
+- **"Cargando o no hay datos"** — el estado de carga y el vacío confundidos en un mensaje.
 
 > **Por qué no Gastos, que era el plan original.** Gastos es el módulo **más caliente de
 > los dos desarrolladores** (40 toques en 4 meses). Con una rama de refactor de vida larga,

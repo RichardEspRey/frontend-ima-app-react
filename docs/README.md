@@ -26,7 +26,8 @@ docs/
   API-ENDPOINTS.md     Catálogo de la API PHP
   ROLES-Y-PERMISOS.md  Roles, permisos y su migración
   sql/                 Migraciones propuestas; ninguna se ha corrido
-  MODULOS/             Un archivo por módulo funcional       (se llena por incremento)
+  MODULOS/             Un archivo por módulo funcional
+                       nomina.md · el módulo de referencia del refactor
   DECISIONES/          ADRs: por qué se decidió cada cosa
                        0005 · proveedor de tiles: riesgo aceptado y alternativas
   api/                 Referencia generada desde JSDoc — NO editar a mano
