@@ -10,8 +10,12 @@ export const ENDPOINTS = {
   afinaciones: "afinaciones.php",
   auth: "Auth.php",
   autonomia: "autonomia.php",
+  // Conviven dos generaciones. La v2 es la que usan las pantallas vivas del
+  // menú —expediente de documentos con requisitos configurables—; la v1 solo la
+  // usan las altas antiguas, a las que ya no lleva ningún enlace.
   cajas: "cajas.php",
   cajasDocs: "cajas_docs.php",
+  cajasV2: "cajas_v2.php",
   cajaExterna: "caja_externa.php",
   charts: "charts.php",
   companies: "companies.php",
@@ -22,6 +26,7 @@ export const ENDPOINTS = {
   documentosV2: "IMA_Docsv2.php",
   drivers: "drivers.php",
   driversDocs: "drivers_docs.php",
+  driversV2: "drivers_v2.php",
   estatusUnidades: "estatus_unidades.php",
   features: "features.php",
   formularios: "formularios.php",
@@ -45,6 +50,7 @@ export const ENDPOINTS = {
   trips: "trips.php",
   trucks: "trucks.php",
   trucksDocs: "trucks_docs.php",
+  trucksV2: "trucks_v2.php",
   updateInvoices: "update_invoices.php",
   warehouses: "warehouses.php",
 }
