@@ -42,6 +42,7 @@ Todo vive en la rama larga **`refactor-fase-1`**, con un tag por incremento
 | 11 | Safety / IFTA | **hecho** | tag `incremento-11` |
 | 12 | Dispatch (crear y editar viaje) | **hecho** | tag `incremento-12` |
 | 13 | Mapas / Tracking | **hecho** | tag `incremento-13` |
+| 14 | Unidades (camiones, cajas, conductores) | **hecho** | tag `incremento-14` |
 | 6+ | Resto de módulos, uno por uno | pendiente | — |
 | — | Deduplicar: **cada par en el incremento de su módulo**, no al final | ver `05-INCREMENTOS.md` | — |
 
@@ -66,9 +67,12 @@ Si la red vuelve a filtrar SSH, el remoto por HTTPS suele pasar:
 ## Al retomar
 
 El incremento 9 está partido en **9a, 9b y 9c** (ver `05-INCREMENTOS.md`).
-Incrementos 9 a 13 completos. Sigue el **14: Unidades** (Drivers, Trucks, Trailers y
-EstatusUnidades: 10 archivos sueltos, ~2 800 líneas; medir duplicación con `diff` antes
-de migrar).
+Incrementos 9 a 14 completos. Sigue el **15: Viajes** (`EditTripComplete`, `EditTripForm`,
+`ResumenTrip` y `screens/Viajes/`, ~1 200 líneas sueltas más el formulario de etapas).
+
+**Pendiente de decisión (incremento 14):** seis pantallas huérfanas de unidades, ~1 800
+líneas, sin ningún enlace que lleve a ellas. Ver la tabla al final de
+`docs/MODULOS/unidades.md`.
 
 Lo primero al volver, sobre todo si pasaron días: `npm run refactor:sync`. Si la red no
 deja hacer fetch, el script sigue con lo local y lo avisa.
