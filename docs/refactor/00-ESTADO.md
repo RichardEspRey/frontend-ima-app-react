@@ -43,6 +43,22 @@ Todo vive en la rama larga **`refactor-fase-1`**, con un tag por incremento
 
 Detalle de cada uno en `05-INCREMENTOS.md`.
 
+## PENDIENTE: publicar
+
+La rama local va **adelante de `origin/refactor-fase-1`**: la red colegial del 2026-09-01
+bloquea el handshake SSH (el puerto 22 responde, pero el intercambio de banner se corta).
+Todo está commiteado, solo falta el push.
+
+Desde otra red:
+
+```bash
+git push origin refactor-fase-1
+git push origin incremento-9a
+```
+
+Si la red vuelve a filtrar SSH, el remoto por HTTPS suele pasar:
+`git remote set-url origin https://github.com/RichardEspRey/frontend-ima-app-react.git`
+
 ## Al retomar
 
 El incremento 9 está partido en **9a, 9b y 9c** (ver `05-INCREMENTOS.md`).
