@@ -13,6 +13,12 @@ import {
   Typography,
 } from "@mui/material"
 import { ordenarPor, siguienteOrden } from "../lib/orden"
+import {
+  CELL_SX,
+  HEADER_CELL_SX,
+  HEADER_ROW_SX,
+  TABLE_CONTAINER_SX,
+} from "./estilos"
 
 /**
  * Definición de una columna. Agregar una columna es agregar uno de estos objetos
@@ -32,6 +38,10 @@ import { ordenarPor, siguienteOrden } from "../lib/orden"
 /**
  * Fila que ocupa toda la tabla para los estados de carga, error y vacío.
  *
+ * El `Typography` va como `div` y no como su `p` por omisión: el estado de carga
+ * mete dentro un `Box` con el spinner, y un `div` dentro de un `p` es HTML
+ * inválido. React lo avisa en consola pero ningún test en jsdom lo detecta.
+ *
  * @param {object} props Propiedades del componente.
  * @param {number} props.columnas Cuántas columnas abarcar.
  * @param {object} props.children Contenido a centrar.
@@ -42,7 +52,7 @@ function FilaMensaje({ columnas, children, color = "text.secondary" }) {
   return (
     <TableRow>
       <TableCell colSpan={columnas} align="center" sx={{ py: 4 }}>
-        <Typography fontStyle="italic" color={color}>
+        <Typography component="div" fontStyle="italic" color={color}>
           {children}
         </Typography>
       </TableCell>
@@ -59,6 +69,12 @@ function FilaMensaje({ columnas, children, color = "text.secondary" }) {
  * misma semántica que ya usaba el Expense Manager: ciclo ascendente → descendente
  * → sin orden, y los valores vacíos siempre al final.
  *
+ * Trae de fábrica los tokens de `shared/ui/estilos`, que son los que ya usan el
+ * Expense Manager y el Administrador de viajes: cabecera en mayúsculas espaciadas
+ * sobre gris claro, borde fino en vez de sombra. Así un módulo que migra hereda el
+ * aspecto sin copiar una sola regla de estilo, y cambiar el diseño de todas las
+ * tablas del proyecto es editar `estilos.js`.
+ *
  * El orden se lleva por dentro salvo que se pase `orden` y `onOrdenChange`, para
  * que una pantalla que necesite conservarlo entre navegaciones pueda hacerlo.
  *
@@ -73,7 +89,8 @@ function FilaMensaje({ columnas, children, color = "text.secondary" }) {
  * @param {*} [props.contexto] Se pasa a los `valor()` de las columnas calculadas.
  * @param {object} [props.orden] Orden controlado, `{campo, dir}`.
  * @param {Function} [props.onOrdenChange] `(nuevoOrden) => void`; requiere `orden`.
- * @param {string} [props.colorBorde] Color de la línea superior de la tabla.
+ * @param {string} [props.colorBorde] Acento fino en el borde superior. Opcional:
+ *   sin él la tabla usa el estilo neutro del resto del sistema.
  * @returns {object} La tabla renderizada.
  *
  * @example
@@ -130,17 +147,20 @@ export function DataTable({
   return (
     <TableContainer
       component={Paper}
-      elevation={3}
-      sx={{ borderRadius: 2, ...(colorBorde ? { borderTop: `4px solid ${colorBorde}` } : {}) }}
+      elevation={0}
+      sx={{
+        ...TABLE_CONTAINER_SX,
+        ...(colorBorde ? { borderTop: `3px solid ${colorBorde}` } : {}),
+      }}
     >
       <Table>
         <TableHead>
-          <TableRow sx={{ bgcolor: "#f0f4f8" }}>
+          <TableRow sx={HEADER_ROW_SX}>
             {columnas.map((columna) => (
               <TableCell
                 key={columna.id}
                 align={columna.align ?? "left"}
-                sx={{ fontWeight: 700, whiteSpace: "nowrap" }}
+                sx={{ ...HEADER_CELL_SX, whiteSpace: "nowrap" }}
                 sortDirection={orden.campo === columna.id ? orden.dir : false}
               >
                 {columna.ordenable ? (
@@ -189,7 +209,11 @@ export function DataTable({
                 sx={onFilaClick ? { cursor: "pointer" } : undefined}
               >
                 {columnas.map((columna) => (
-                  <TableCell key={columna.id} align={columna.align ?? "left"} sx={columna.sx}>
+                  <TableCell
+                    key={columna.id}
+                    align={columna.align ?? "left"}
+                    sx={{ ...CELL_SX, ...columna.sx }}
+                  >
                     {columna.render ? columna.render(fila) : fila[columna.id]}
                   </TableCell>
                 ))}

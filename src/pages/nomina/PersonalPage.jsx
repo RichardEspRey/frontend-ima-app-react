@@ -10,6 +10,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import { useNavigate } from 'react-router-dom';
 import { DataTable, PageHeader, notify } from '../../shared/ui';
+import { CHIP_SX, DARK_BTN_SX, GHOST_BTN_SX, CELL_STRONG_SX, ICON_BTN_SX } from '../../shared/ui/estilos';
 import {
     usePersonal,
     useGuardarEmpleado,
@@ -65,7 +66,7 @@ export default function PersonalAdmin() {
     };
 
     const columnas = [
-        { id: 'nombre', label: 'Nombre', ordenable: true, sx: { fontWeight: 600 } },
+        { id: 'nombre', label: 'Nombre', ordenable: true, sx: CELL_STRONG_SX },
         { id: 'puesto', label: 'Puesto', ordenable: true },
         {
             id: 'sueldo', label: 'Sueldo', ordenable: true, align: 'right',
@@ -74,7 +75,7 @@ export default function PersonalAdmin() {
         },
         {
             id: 'frecuencia_pago', label: 'Frecuencia', ordenable: true,
-            render: (e) => <Chip label={e.frecuencia_pago} size="small" variant="outlined" />,
+            render: (e) => <Chip label={e.frecuencia_pago} size="small" variant="outlined" sx={CHIP_SX} />,
         },
         {
             id: 'tipo_nomina', label: 'Divisa / Nómina', ordenable: true, align: 'center',
@@ -82,8 +83,7 @@ export default function PersonalAdmin() {
                 <Chip
                     label={e.tipo_nomina === 'MX' ? 'Pesos (MXN)' : 'Dólares (USD)'}
                     size="small"
-                    color={e.tipo_nomina === 'MX' ? 'success' : 'primary'}
-                    sx={{ fontWeight: 'bold' }}
+                    sx={e.tipo_nomina === 'MX' ? { ...CHIP_SX, bgcolor: "#f0fdf4", color: "#15803d", border: "1px solid #bbf7d0" } : { ...CHIP_SX, bgcolor: "#eff6ff", color: "#1d4ed8", border: "1px solid #bfdbfe" }}
                 />
             ),
         },
@@ -91,10 +91,10 @@ export default function PersonalAdmin() {
             id: 'acciones', label: '', align: 'right',
             render: (e) => (
                 <>
-                    <IconButton onClick={() => openModal(e)} color="primary" title="Editar">
+                    <IconButton onClick={() => openModal(e)} size="small" sx={{ ...ICON_BTN_SX, mr: 1 }} title="Editar">
                         <EditIcon />
                     </IconButton>
-                    <IconButton onClick={() => handleDelete(e.id)} color="error" title="Eliminar">
+                    <IconButton onClick={() => handleDelete(e.id)} size="small" sx={{ ...ICON_BTN_SX, color: '#b91c1c' }} title="Eliminar">
                         <DeleteIcon />
                     </IconButton>
                 </>
@@ -105,21 +105,22 @@ export default function PersonalAdmin() {
     return (
         <Container maxWidth="xl" sx={{ py: 4, pb: 10 }}>
             <PageHeader
+                seccion="Nómina"
                 titulo="Catálogo de Personal"
                 descripcion="Gestiona los empleados, sus sueldos y la divisa de su nómina."
                 acciones={
                     <>
                         <Button
-                            variant="outlined" color="inherit" startIcon={<ArrowBackIcon />}
+                            variant="outlined" startIcon={<ArrowBackIcon />}
                             onClick={() => navigate(-1)}
-                            sx={{ fontWeight: 600, textTransform: 'none', bgcolor: 'white' }}
+                            sx={GHOST_BTN_SX}
                         >
                             Volver a Pagos
                         </Button>
                         <Button
-                            variant="contained" color="primary" startIcon={<AddIcon />}
+                            variant="contained" startIcon={<AddIcon />}
                             onClick={() => openModal()}
-                            sx={{ fontWeight: 600, textTransform: 'none' }}
+                            sx={DARK_BTN_SX}
                         >
                             Agregar Empleado
                         </Button>
@@ -133,7 +134,6 @@ export default function PersonalAdmin() {
                 cargando={isLoading}
                 error={isError ? error.message : null}
                 vacio="No hay personal registrado activo."
-                colorBorde="#9c27b0"
             />
 
             {/* MODAL (DIALOG) */}

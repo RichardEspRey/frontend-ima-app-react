@@ -5,7 +5,8 @@ import MonetizationOnIcon from "@mui/icons-material/MonetizationOn"
 import PeopleAltIcon from "@mui/icons-material/PeopleAlt"
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong"
 
-import { DataTable } from "../../shared/ui"
+import { DataTable, PageHeader } from "../../shared/ui"
+import { CARD_SX, CHIP_SX, CELL_STRONG_SX, GHOST_BTN_SX } from "../../shared/ui/estilos"
 import {
   ESTADO_PERIODO,
   etiquetaPeriodo,
@@ -33,7 +34,7 @@ function TarjetaResumen({ titulo, valor, pie, color, fondo, icono }) {
   return (
     <Paper
       elevation={0}
-      sx={{ p: 3, borderLeft: `5px solid ${color}`, bgcolor: fondo, borderRadius: 2, height: "100%" }}
+      sx={{ ...CARD_SX, borderLeft: `3px solid ${color}`, bgcolor: fondo, height: "100%" }}
     >
       <Typography
         variant="subtitle2"
@@ -99,13 +100,13 @@ export default function DetallePagoPage() {
   }
 
   const columnas = [
-    { id: "nombre", label: "Nombre del empleado", ordenable: true, sx: { fontWeight: 600 } },
+    { id: "nombre", label: "Nombre del empleado", ordenable: true, sx: CELL_STRONG_SX },
     { id: "puesto", label: "Puesto", ordenable: true },
     {
       id: "frecuencia_pago",
       label: "Frecuencia",
       ordenable: true,
-      render: (d) => <Chip label={d.frecuencia_pago} size="small" variant="outlined" sx={{ fontWeight: 500 }} />,
+      render: (d) => <Chip label={d.frecuencia_pago} size="small" variant="outlined" sx={CHIP_SX} />,
     },
     {
       id: "tipo_nomina",
@@ -115,8 +116,7 @@ export default function DetallePagoPage() {
         <Chip
           label={d.tipo_nomina === "MX" ? "MXN" : "USD"}
           size="small"
-          color={d.tipo_nomina === "MX" ? "success" : "primary"}
-          sx={{ fontWeight: "bold" }}
+          sx={d.tipo_nomina === "MX" ? { ...CHIP_SX, bgcolor: "#f0fdf4", color: "#15803d", border: "1px solid #bbf7d0" } : { ...CHIP_SX, bgcolor: "#eff6ff", color: "#1d4ed8", border: "1px solid #bfdbfe" }}
         />
       ),
     },
@@ -170,7 +170,7 @@ export default function DetallePagoPage() {
               label={periodo.estado}
               size="small"
               color={periodo.estado === ESTADO_PERIODO.AUTORIZADO ? "default" : "warning"}
-              sx={{ ml: 1, fontWeight: "bold", height: 20 }}
+              sx={{ ...CHIP_SX, ml: 1 }}
             />
           </Typography>
         </Box>
@@ -178,7 +178,7 @@ export default function DetallePagoPage() {
           variant="outlined"
           startIcon={<ArrowBackIcon />}
           onClick={() => navigate("/nomina")}
-          sx={{ color: "text.secondary", borderColor: "divider", fontWeight: 600, textTransform: "none", bgcolor: "white" }}
+          sx={GHOST_BTN_SX}
         >
           Volver a pagos
         </Button>

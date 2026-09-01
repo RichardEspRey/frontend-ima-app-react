@@ -7,6 +7,7 @@ import PeopleAltIcon from "@mui/icons-material/PeopleAlt"
 import VisibilityIcon from "@mui/icons-material/Visibility"
 
 import { DataTable, PageHeader, notify } from "../../shared/ui"
+import { CHIP_SX, DARK_BTN_SX, CELL_STRONG_SX } from "../../shared/ui/estilos"
 import {
   estaPendiente,
   etiquetaPeriodo,
@@ -51,7 +52,7 @@ export default function NominaPage() {
       valor: (p) => p.anio * 100 + p.semana,
       render: (p) => (
         <>
-          <Typography fontWeight={800} color="primary.main">
+          <Typography sx={CELL_STRONG_SX} fontWeight={700}>
             {etiquetaPeriodo(p)}
           </Typography>
           <Typography variant="caption" color="text.secondary" fontWeight={600}>
@@ -70,7 +71,7 @@ export default function NominaPage() {
           icon={<PeopleAltIcon />}
           label={p.emps_mx}
           size="small"
-          sx={{ fontWeight: 600, bgcolor: "#e8f5e9", color: "#2e7d32" }}
+          sx={{ ...CHIP_SX, bgcolor: "#f0fdf4", color: "#15803d", border: "1px solid #bbf7d0" }}
         />
       ),
     },
@@ -95,7 +96,7 @@ export default function NominaPage() {
           icon={<PeopleAltIcon />}
           label={p.emps_us}
           size="small"
-          sx={{ fontWeight: 600, bgcolor: "#e3f2fd", color: "#0288d1" }}
+          sx={{ ...CHIP_SX, bgcolor: "#eff6ff", color: "#1d4ed8", border: "1px solid #bfdbfe" }}
         />
       ),
     },
@@ -129,7 +130,7 @@ export default function NominaPage() {
             Autorizar pago
           </Button>
         ) : (
-          <Chip label="Cerrado" icon={<LockIcon />} size="small" sx={{ fontWeight: 600 }} />
+          <Chip label="Cerrado" icon={<LockIcon />} size="small" sx={CHIP_SX} />
         ),
     },
     {
@@ -154,15 +155,15 @@ export default function NominaPage() {
   return (
     <Container maxWidth="xl" sx={{ py: 4, pb: 10 }}>
       <PageHeader
+        seccion="Finanzas"
         titulo="Nómina Administrativa"
         descripcion="Control de nómina semanal y autorización de pagos."
         acciones={
           <Button
             variant="contained"
-            color="secondary"
             startIcon={<ManageAccountsIcon />}
             onClick={() => navigate("/personal")}
-            sx={{ fontWeight: 600, textTransform: "none", px: 3, py: 1 }}
+            sx={DARK_BTN_SX}
           >
             Administrar personal
           </Button>
@@ -176,7 +177,6 @@ export default function NominaPage() {
         cargando={isLoading}
         error={isError ? error.message : null}
         vacio="No hay semanas de nómina registradas."
-        colorBorde="#1976d2"
       />
     </Container>
   )
