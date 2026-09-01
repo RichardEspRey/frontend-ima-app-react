@@ -118,8 +118,11 @@ pieza de `shared/ui` importa nada de `entities/` o `features/`.
 3. `menuConfig` deja de tener `rolesPermitidos` con nombres propios; el menú se deriva de
    los permisos.
 4. Retirar `useAuthStore.checkAccess`.
-5. Revalidar permisos al arrancar la app, no solo al hacer login (arregla el bug de que
-   quitar un permiso no surte efecto hasta cerrar sesión).
+5. ~~Revalidar permisos al arrancar~~ **Ya se revalidan**: `DashboardLayout` llama a
+   `fetchPermissions` cada 15 s con un `setInterval`. Yo había escrito que solo se pedían
+   al hacer login y que quitar un permiso no surtía efecto hasta cerrar sesión; es falso.
+   Lo que sí queda pendiente es sustituir ese `setInterval` por un `refetchInterval` de
+   TanStack Query, que cancela solo al desmontar y no dispara si la ventana está oculta.
 6. Caducidad local de sesión y logout que limpie zustand + caché de react-query + token push.
 7. Escribir `docs/GLOSARIO.md` y documentar el modelo de roles y permisos resultante.
 

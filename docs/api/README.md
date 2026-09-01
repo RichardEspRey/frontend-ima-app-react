@@ -44,6 +44,10 @@ no en las 96 pantallas que antes lo leían por su cuenta.</p>
 <dt><a href="#TIMEOUT_PETICION_MS">TIMEOUT_PETICION_MS</a> : <code>number</code></dt>
 <dd><p>Milisegundos que espera una petición antes de abortarse.</p>
 </dd>
+<dt><a href="#ZOOM_MAXIMO_TILES">ZOOM_MAXIMO_TILES</a> : <code>number</code></dt>
+<dd><p>Zoom máximo que sirven los tiles de OpenStreetMap. Pedir más devuelve 404 y
+deja el mapa en gris.</p>
+</dd>
 <dt><a href="#esVacio">esVacio</a> ⇒ <code>boolean</code></dt>
 <dd><p>Indica si un valor debe tratarse como vacío al ordenar.</p>
 </dd>
@@ -72,6 +76,36 @@ llamadas en 56 archivos), <code>react-toastify</code> (una) y <code>@pablothebli
 otras dos se puedan ir retirando módulo por módulo y para que cambiar de
 librería sea editar este archivo en vez de 56.</p>
 <p>Cada función devuelve una promesa, así que se puede esperar el cierre.</p>
+</dd>
+<dt><a href="#LLAVE_PERIODOS">LLAVE_PERIODOS</a> : <code>Array.&lt;string&gt;</code></dt>
+<dd><p>Llave de caché de los periodos de nómina.</p>
+</dd>
+<dt><a href="#llaveDetalle">llaveDetalle</a> ⇒ <code>Array.&lt;string&gt;</code></dt>
+<dd><p>Llave de caché del desglose de un periodo.</p>
+</dd>
+<dt><a href="#tipoNomina">tipoNomina</a></dt>
+<dd><p>Normaliza el tipo de nómina igual que en <code>entities/personal</code>: <code>MX</code>, o <code>US</code>
+para todo lo demás. Está aquí también porque <code>pagos_admin.php</code> es otro
+endpoint y podría devolver el campo con otra forma.</p>
+</dd>
+<dt><a href="#esquemaPeriodo">esquemaPeriodo</a></dt>
+<dd><p>Semana de nómina, tal como la devuelve <code>pagos_admin.php</code> · <code>get_weeks</code>.</p>
+<p><code>fecha_corte</code> llega como <code>&quot;2026-08-31 00:00:00&quot;</code> y se recorta al día: la
+pantalla solo muestra la fecha, y el código anterior hacía
+<code>fecha_corte.split(&#39; &#39;)[0]</code> sin comprobar que existiera — con un corte nulo,
+la tabla entera reventaba.</p>
+</dd>
+<dt><a href="#esquemaDetallePago">esquemaDetallePago</a></dt>
+<dd><p>Renglón del desglose de una semana, de <code>pagos_admin.php</code> · <code>get_details</code>.</p>
+</dd>
+<dt><a href="#estaPendiente">estaPendiente</a> ⇒ <code>boolean</code></dt>
+<dd><p>Indica si una semana todavía admite cambios.</p>
+</dd>
+<dt><a href="#plantillaTotal">plantillaTotal</a> ⇒ <code>number</code></dt>
+<dd><p>Suma la plantilla de una semana, sin importar la divisa.</p>
+</dd>
+<dt><a href="#etiquetaPeriodo">etiquetaPeriodo</a> ⇒ <code>string</code></dt>
+<dd><p>Etiqueta legible de una semana, para encabezados y confirmaciones.</p>
 </dd>
 <dt><a href="#LLAVE_PERSONAL">LLAVE_PERSONAL</a> : <code>Array.&lt;string&gt;</code></dt>
 <dd><p>Llave de caché de la lista de personal. Las mutaciones la invalidan para que
@@ -194,6 +228,29 @@ petición en lugar de una cada una.</p>
 todas las pantallas que lo pidan, así que varias a la vez hacen una sola
 petición en lugar de una cada una.</p>
 </dd>
+<dt><a href="#obtenerPeriodos">obtenerPeriodos([opciones])</a> ⇒ <code>Promise.&lt;Array.&lt;Periodo&gt;&gt;</code></dt>
+<dd><p>Trae todas las semanas de nómina, validadas.</p>
+</dd>
+<dt><a href="#obtenerDetalle">obtenerDetalle(parametros)</a> ⇒ <code>Promise.&lt;Array.&lt;DetallePago&gt;&gt;</code></dt>
+<dd><p>Trae el desglose por empleado de una semana.</p>
+</dd>
+<dt><a href="#autorizarPeriodo">autorizarPeriodo(periodo)</a> ⇒ <code>Promise.&lt;object&gt;</code></dt>
+<dd><p>Cierra el corte de una semana. <strong>Es irreversible desde la app.</strong></p>
+</dd>
+<dt><a href="#usePeriodos">usePeriodos()</a> ⇒ <code>object</code></dt>
+<dd><p>Semanas de nómina, cacheadas.</p>
+</dd>
+<dt><a href="#useDetallePeriodo">useDetallePeriodo(periodo)</a> ⇒ <code>object</code></dt>
+<dd><p>Desglose de una semana. No se dispara hasta tener los datos del periodo.</p>
+</dd>
+<dt><a href="#useAutorizarPeriodo">useAutorizarPeriodo()</a> ⇒ <code>object</code></dt>
+<dd><p>Autoriza una semana y refresca la lista al terminar.</p>
+</dd>
+<dt><a href="#normalizarLista">normalizarLista(filas, esquema)</a> ⇒ <code>Object</code></dt>
+<dd><p>Valida una lista descartando lo que no cumple lo mínimo.</p>
+<p>Un registro roto se omite y se cuenta, en vez de dejar pasar <code>undefined</code> hacia
+el render y tumbar la pantalla entera por una fila mala.</p>
+</dd>
 <dt><a href="#obtenerPersonal">obtenerPersonal([opciones])</a> ⇒ <code>Promise.&lt;Array.&lt;Empleado&gt;&gt;</code></dt>
 <dd><p>Trae todo el personal de nómina, validado.</p>
 </dd>
@@ -280,6 +337,12 @@ petición en lugar de una cada una.</p>
 ## Typedefs
 
 <dl>
+<dt><a href="#Periodo">Periodo</a> : <code>object</code></dt>
+<dd><p>Un periodo de nómina ya validado.</p>
+</dd>
+<dt><a href="#DetallePago">DetallePago</a> : <code>object</code></dt>
+<dd><p>Un renglón del desglose por empleado.</p>
+</dd>
 <dt><a href="#Empleado">Empleado</a> : <code>object</code></dt>
 <dd><p>Empleado de nómina ya normalizado y validado.</p>
 </dd>
@@ -370,6 +433,43 @@ dar de alta a alguien a mano.
 
 **Kind**: global enum  
 **Read only**: true  
+<a name="TILES_BASE"></a>
+
+## TILES\_BASE : <code>enum</code>
+Capa base de los mapas, en un solo lugar.
+
+Son datos planos a propósito, no un componente: así `shared/config` no importa
+react-leaflet y ninguna pantalla que no dibuje mapas arrastra leaflet en su
+bundle. Se usa esparciéndolo sobre el `TileLayer`:
+
+```jsx
+import { TILES_BASE } from "../../shared/config/mapa";
+<TileLayer {...TILES_BASE} />
+```
+
+Existe porque las cuatro pantallas con mapa lo tenían cada una por su cuenta y
+se desincronizaron: tres usaban OpenStreetMap con atribución y `Tracking` usaba
+CartoDB **sin** atribución. Carto empezó a exigir API key y devuelve los tiles
+estampados con "API KEY REQUIRED" — con HTTP 200, así que no salta ningún error
+en consola: el mapa simplemente se ve mal.
+
+Antes de cambiar de proveedor, lee `docs/DECISIONES/0005-proveedor-de-tiles-de-mapa.md`:
+está el porqué de OpenStreetMap, el riesgo que se aceptó a sabiendas, las señales de
+que toca migrar y la tabla de alternativas. Y acuérdate de actualizar el `img-src` de
+la CSP en `vite.config.js`, o el proveedor nuevo se bloquea sin explicación visible.
+
+**Kind**: global enum  
+**Read only**: true  
+<a name="ESTADO_PERIODO"></a>
+
+## ESTADO\_PERIODO : <code>enum</code>
+Estados de un periodo de nómina.
+
+`Pendiente` admite cambios; `Autorizado` cierra el corte y ya no se le pueden
+agregar pagos. Es una operación irreversible desde la app.
+
+**Kind**: global enum  
+**Read only**: true  
 <a name="FRECUENCIA_PAGO"></a>
 
 ## FRECUENCIA\_PAGO : <code>enum</code>
@@ -436,6 +536,13 @@ no en las 96 pantallas que antes lo leían por su cuenta.
 
 ## TIMEOUT\_PETICION\_MS : <code>number</code>
 Milisegundos que espera una petición antes de abortarse.
+
+**Kind**: global constant  
+<a name="ZOOM_MAXIMO_TILES"></a>
+
+## ZOOM\_MAXIMO\_TILES : <code>number</code>
+Zoom máximo que sirven los tiles de OpenStreetMap. Pedir más devuelve 404 y
+deja el mapa en gris.
 
 **Kind**: global constant  
 <a name="esVacio"></a>
@@ -585,6 +692,85 @@ no tenga que conocer la forma `{ isConfirmed }` de la librería.
 | [opciones.confirmar] | <code>string</code> | <code>&quot;&#x27;Sí, continuar&#x27;&quot;</code> | Texto del botón de aceptar. |
 | [opciones.cancelar] | <code>string</code> | <code>&quot;&#x27;Cancelar&#x27;&quot;</code> | Texto del botón de cancelar. |
 | [opciones.peligroso] | <code>boolean</code> | <code>true</code> | Pinta de rojo el botón de aceptar. |
+
+<a name="LLAVE_PERIODOS"></a>
+
+## LLAVE\_PERIODOS : <code>Array.&lt;string&gt;</code>
+Llave de caché de los periodos de nómina.
+
+**Kind**: global constant  
+<a name="llaveDetalle"></a>
+
+## llaveDetalle ⇒ <code>Array.&lt;string&gt;</code>
+Llave de caché del desglose de un periodo.
+
+**Kind**: global constant  
+**Returns**: <code>Array.&lt;string&gt;</code> - La llave para `useQuery`.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| periodId | <code>string</code> | Identificador del periodo. |
+
+<a name="tipoNomina"></a>
+
+## tipoNomina
+Normaliza el tipo de nómina igual que en `entities/personal`: `MX`, o `US`
+para todo lo demás. Está aquí también porque `pagos_admin.php` es otro
+endpoint y podría devolver el campo con otra forma.
+
+**Kind**: global constant  
+<a name="esquemaPeriodo"></a>
+
+## esquemaPeriodo
+Semana de nómina, tal como la devuelve `pagos_admin.php` · `get_weeks`.
+
+`fecha_corte` llega como `"2026-08-31 00:00:00"` y se recorta al día: la
+pantalla solo muestra la fecha, y el código anterior hacía
+`fecha_corte.split(' ')[0]` sin comprobar que existiera — con un corte nulo,
+la tabla entera reventaba.
+
+**Kind**: global constant  
+<a name="esquemaDetallePago"></a>
+
+## esquemaDetallePago
+Renglón del desglose de una semana, de `pagos_admin.php` · `get_details`.
+
+**Kind**: global constant  
+<a name="estaPendiente"></a>
+
+## estaPendiente ⇒ <code>boolean</code>
+Indica si una semana todavía admite cambios.
+
+**Kind**: global constant  
+**Returns**: <code>boolean</code> - `true` si sigue pendiente de autorizar.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| periodo | [<code>Periodo</code>](#Periodo) | El periodo a evaluar. |
+
+<a name="plantillaTotal"></a>
+
+## plantillaTotal ⇒ <code>number</code>
+Suma la plantilla de una semana, sin importar la divisa.
+
+**Kind**: global constant  
+**Returns**: <code>number</code> - Empleados en total.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| periodo | [<code>Periodo</code>](#Periodo) | El periodo a evaluar. |
+
+<a name="etiquetaPeriodo"></a>
+
+## etiquetaPeriodo ⇒ <code>string</code>
+Etiqueta legible de una semana, para encabezados y confirmaciones.
+
+**Kind**: global constant  
+**Returns**: <code>string</code> - Por ejemplo `Semana 35 (2026)`.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| periodo | [<code>Periodo</code>](#Periodo) | El periodo a nombrar. |
 
 <a name="LLAVE_PERSONAL"></a>
 
@@ -883,6 +1069,104 @@ petición en lugar de una cada una.
 
 **Kind**: global function  
 **Returns**: <code>object</code> - El resultado de `useQuery`: `{data, isLoading, isError, error}`.  
+<a name="obtenerPeriodos"></a>
+
+## obtenerPeriodos([opciones]) ⇒ <code>Promise.&lt;Array.&lt;Periodo&gt;&gt;</code>
+Trae todas las semanas de nómina, validadas.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;Array.&lt;Periodo&gt;&gt;</code> - Los periodos normalizados.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la API falla.
+
+**Endpoint**: POST pagos_admin.php · op=get_weeks  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [opciones] | <code>object</code> | Ajustes de la petición. |
+| [opciones.signal] | <code>AbortSignal</code> | Señal de cancelación. |
+
+<a name="obtenerDetalle"></a>
+
+## obtenerDetalle(parametros) ⇒ <code>Promise.&lt;Array.&lt;DetallePago&gt;&gt;</code>
+Trae el desglose por empleado de una semana.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;Array.&lt;DetallePago&gt;&gt;</code> - El desglose normalizado.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la API falla.
+
+**Endpoint**: POST pagos_admin.php · op=get_details  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| parametros | <code>object</code> | Datos del periodo. |
+| parametros.periodId | <code>string</code> | Identificador del periodo. |
+| parametros.fechaCorte | <code>string</code> | Fecha de corte de la semana. |
+| parametros.estado | <code>string</code> | Estado del periodo. |
+| [parametros.signal] | <code>AbortSignal</code> | Señal de cancelación. |
+
+<a name="autorizarPeriodo"></a>
+
+## autorizarPeriodo(periodo) ⇒ <code>Promise.&lt;object&gt;</code>
+Cierra el corte de una semana. **Es irreversible desde la app.**
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;object&gt;</code> - La respuesta de la API.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la API rechaza la operación.
+
+**Endpoint**: POST pagos_admin.php · op=authorize  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| periodo | [<code>Periodo</code>](#Periodo) | La semana a autorizar. |
+
+<a name="usePeriodos"></a>
+
+## usePeriodos() ⇒ <code>object</code>
+Semanas de nómina, cacheadas.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useQuery`: `{data, isLoading, isError, error}`.  
+<a name="useDetallePeriodo"></a>
+
+## useDetallePeriodo(periodo) ⇒ <code>object</code>
+Desglose de una semana. No se dispara hasta tener los datos del periodo.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useQuery`: `{data, isLoading, isError, error}`.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| periodo | [<code>Periodo</code>](#Periodo) \| <code>undefined</code> | La semana de la que se quiere el desglose. |
+
+<a name="useAutorizarPeriodo"></a>
+
+## useAutorizarPeriodo() ⇒ <code>object</code>
+Autoriza una semana y refresca la lista al terminar.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useMutation`: `{mutateAsync, isPending, error}`.  
+<a name="normalizarLista"></a>
+
+## normalizarLista(filas, esquema) ⇒ <code>Object</code>
+Valida una lista descartando lo que no cumple lo mínimo.
+
+Un registro roto se omite y se cuenta, en vez de dejar pasar `undefined` hacia
+el render y tumbar la pantalla entera por una fila mala.
+
+**Kind**: global function  
+**Returns**: <code>Object</code> - Los que pasaron y cuántos no.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| filas | <code>Array</code> | Lo que vino en la respuesta. |
+| esquema | <code>object</code> | Esquema zod con el que validar cada fila. |
+
 <a name="obtenerPersonal"></a>
 
 ## obtenerPersonal([opciones]) ⇒ <code>Promise.&lt;Array.&lt;Empleado&gt;&gt;</code>
@@ -1158,6 +1442,42 @@ petición en lugar de una cada una.
 
 **Kind**: global function  
 **Returns**: <code>object</code> - El resultado de `useQuery`: `{data, isLoading, isError, error}`.  
+<a name="Periodo"></a>
+
+## Periodo : <code>object</code>
+Un periodo de nómina ya validado.
+
+**Kind**: global typedef  
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| period_id | <code>string</code> | Identificador del periodo. |
+| semana | <code>number</code> | Número de semana del año. |
+| anio | <code>number</code> | Año al que pertenece la semana. |
+| fecha_corte | <code>string</code> | Fecha de corte, solo el día (`YYYY-MM-DD`). |
+| emps_mx | <code>number</code> | Empleados en nómina mexicana. |
+| total_mx | <code>number</code> | Total a pagar en pesos. |
+| emps_us | <code>number</code> | Empleados en nómina estadounidense. |
+| total_us | <code>number</code> | Total a pagar en dólares. |
+| estado | <code>string</code> | `Pendiente` o `Autorizado`. |
+
+<a name="DetallePago"></a>
+
+## DetallePago : <code>object</code>
+Un renglón del desglose por empleado.
+
+**Kind**: global typedef  
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| nombre | <code>string</code> | Nombre del empleado. |
+| puesto | <code>string</code> | Puesto; cadena vacía si no se capturó. |
+| frecuencia_pago | <code>string</code> | Semanal, Quincenal o Mensual. |
+| tipo_nomina | <code>string</code> | `MX` o `US`. |
+| sueldo | <code>number</code> | Monto a pagar en la divisa de su nómina. |
+
 <a name="Empleado"></a>
 
 ## Empleado : <code>object</code>
