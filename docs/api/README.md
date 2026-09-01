@@ -135,6 +135,25 @@ librería sea editar este archivo en vez de 56.</p>
 <p>Los tres campos son opcionales: un requisito de texto no trae <code>url_pdf</code>, y uno
 sin vencimiento no trae fecha.</p>
 </dd>
+<dt><a href="#LLAVE_INSPECCIONES">LLAVE_INSPECCIONES</a> : <code>Array.&lt;string&gt;</code></dt>
+<dd><p>Llave de caché de las inspecciones.</p>
+</dd>
+<dt><a href="#esquemaReporte">esquemaReporte</a></dt>
+<dd><p>Un reporte dentro de una inspección: cada violación levantada.</p>
+</dd>
+<dt><a href="#esquemaInspeccion">esquemaInspeccion</a></dt>
+<dd><p>Una inspección operativa hecha a un camión en ruta.</p>
+<p>Las multas se separan en dos: lo que paga IMA y lo que paga el conductor. El
+<code>total</code> lo calcula el backend sumando ambas.</p>
+</dd>
+<dt><a href="#sinMulta">sinMulta</a> ⇒ <code>boolean</code></dt>
+<dd><p>Indica si una inspección salió sin multa.</p>
+<p>Es lo normal: al 2026-09-01 las tres inspecciones registradas están en 0. Una
+inspección limpia no es un dato faltante.</p>
+</dd>
+<dt><a href="#cuentaViolaciones">cuentaViolaciones</a> ⇒ <code>number</code></dt>
+<dd><p>Cuenta las violaciones de una inspección.</p>
+</dd>
 <dt><a href="#LLAVE_INVENTARIO">LLAVE_INVENTARIO</a> : <code>Array.&lt;string&gt;</code></dt>
 <dd><p>Llave de caché del inventario.</p>
 </dd>
@@ -235,6 +254,32 @@ ocurre aquí y no en el JSX. Es lógica de negocio, no de presentación.</p>
 </dd>
 <dt><a href="#ultimosMeses">ultimosMeses</a> ⇒ <code>Array</code></dt>
 <dd><p>Se queda con los últimos N meses de una serie ya ordenada.</p>
+</dd>
+<dt><a href="#LLAVE_REPARACIONES">LLAVE_REPARACIONES</a> : <code>Array.&lt;string&gt;</code></dt>
+<dd><p>Llave de caché de las reparaciones en ruta.</p>
+</dd>
+<dt><a href="#esquemaDocumento">esquemaDocumento</a></dt>
+<dd><p>Un documento adjunto a una reparación.</p>
+</dd>
+<dt><a href="#esquemaReparacion">esquemaReparacion</a></dt>
+<dd><p>Una reparación en ruta: lo que le pasó a un camión durante un viaje.</p>
+<p>Ojo con las dos fechas, que no son lo mismo:</p>
+<ul>
+<li><code>fecha_suceso</code> es <strong>cuándo ocurrió</strong> la avería.</li>
+<li><code>fecha_registro</code> es <strong>cuándo se capturó</strong> en el sistema.</li>
+</ul>
+<p><code>fecha_suceso</code> se agregó después y admite nulos a propósito: la app móvil
+también da de alta reparaciones, y el UPDATE del backend solo toca la columna
+si el campo llegó en el POST, para que un cliente que no la mande no borre la
+fecha existente. Al 2026-09-01 está nula en todos los registros.</p>
+</dd>
+<dt><a href="#fechaRelevante">fechaRelevante</a> ⇒ <code>string</code></dt>
+<dd><p>La fecha con la que conviene mostrar una reparación.</p>
+<p>Prefiere cuándo ocurrió; si no se capturó, cae a cuándo se registró. Así la
+lista siempre tiene una fecha que enseñar aunque falte la del suceso.</p>
+</dd>
+<dt><a href="#tieneDocumentos">tieneDocumentos</a> ⇒ <code>boolean</code></dt>
+<dd><p>Indica si una reparación tiene comprobantes adjuntos.</p>
 </dd>
 <dt><a href="#LLAVE_ORDENES">LLAVE_ORDENES</a> : <code>Array.&lt;string&gt;</code></dt>
 <dd><p>Llave de caché de las órdenes de servicio.</p>
@@ -459,6 +504,38 @@ petición en lugar de una cada una.</p>
 todas las pantallas que lo pidan, así que varias a la vez hacen una sola
 petición en lugar de una cada una.</p>
 </dd>
+<dt><a href="#obtenerInspecciones">obtenerInspecciones([opciones])</a> ⇒ <code>Promise.&lt;Array&gt;</code></dt>
+<dd><p>Trae todas las inspecciones con sus reportes y documentos.</p>
+<p>Los reportes llegan ya parseados en <code>reportes</code>; el campo <code>reportes_json</code> es la
+misma información como cadena y no hace falta tocarlo.</p>
+</dd>
+<dt><a href="#guardarInspeccion">guardarInspeccion(datos)</a> ⇒ <code>Promise.&lt;object&gt;</code></dt>
+<dd><p>Guarda una inspección, nueva o existente.</p>
+</dd>
+<dt><a href="#obtenerDescripciones">obtenerDescripciones([opciones])</a> ⇒ <code>Promise.&lt;Array&gt;</code></dt>
+<dd><p>Trae el catálogo de descripciones de violación.</p>
+</dd>
+<dt><a href="#eliminarDocumento">eliminarDocumento(documentoId)</a> ⇒ <code>Promise.&lt;object&gt;</code></dt>
+<dd><p>Elimina un documento adjunto de una inspección.</p>
+</dd>
+<dt><a href="#useInspecciones">useInspecciones()</a> ⇒ <code>object</code></dt>
+<dd><p>Inspecciones, cacheadas.</p>
+</dd>
+<dt><a href="#useDescripciones">useDescripciones()</a> ⇒ <code>object</code></dt>
+<dd><p>Catálogo de descripciones. Se cachea más tiempo: cambia poco.</p>
+</dd>
+<dt><a href="#useGuardarInspeccion">useGuardarInspeccion()</a> ⇒ <code>object</code></dt>
+<dd><p>Guarda una inspección y refresca la lista.</p>
+</dd>
+<dt><a href="#useEliminarDocumentoInspeccion">useEliminarDocumentoInspeccion()</a> ⇒ <code>object</code></dt>
+<dd><p>Elimina un documento y refresca la lista.</p>
+</dd>
+<dt><a href="#totalCuadra">totalCuadra(inspeccion, [tolerancia])</a> ⇒ <code>boolean</code></dt>
+<dd><p>Comprueba que el total cuadre con la suma de las dos multas.</p>
+</dd>
+<dt><a href="#normalizarInspecciones">normalizarInspecciones(filas)</a> ⇒ <code>Object</code></dt>
+<dd><p>Valida la lista de inspecciones descartando lo que no cumple.</p>
+</dd>
 <dt><a href="#obtenerInventario">obtenerInventario([opciones])</a> ⇒ <code>Promise.&lt;Array&gt;</code></dt>
 <dd><p>Trae el inventario completo, ya cruzado con sus categorías.</p>
 <p>Ojo con el nombre de la operación: es <code>getFullInventoryList</code>, no <code>getAll</code>.
@@ -536,6 +613,35 @@ of undefined&quot; que hay repartidos por el proyecto.</p>
 <dd><p>Varias gráficas a la vez.</p>
 <p>Se piden en paralelo y cada una llega cuando puede, así que una lenta no
 retrasa a las demás. Antes eran seis <code>useEffect</code> y doce <code>useState</code>.</p>
+</dd>
+<dt><a href="#obtenerReparaciones">obtenerReparaciones([opciones])</a> ⇒ <code>Promise.&lt;Array&gt;</code></dt>
+<dd><p>Trae todas las reparaciones en ruta con sus documentos.</p>
+</dd>
+<dt><a href="#guardarReparacion">guardarReparacion(datos)</a> ⇒ <code>Promise.&lt;object&gt;</code></dt>
+<dd><p>Guarda una reparación, nueva o existente.</p>
+<p><strong><code>fecha_suceso</code> solo viaja si trae valor.</strong> El UPDATE del backend solo toca la
+columna si el campo llegó en el POST, para que un cliente que no la mande —la
+app móvil, por ejemplo— no borre la fecha que ya estaba.</p>
+</dd>
+<dt><a href="#eliminarDocumento">eliminarDocumento(documentoId)</a> ⇒ <code>Promise.&lt;object&gt;</code></dt>
+<dd><p>Elimina un documento adjunto de una reparación.</p>
+</dd>
+<dt><a href="#useReparaciones">useReparaciones()</a> ⇒ <code>object</code></dt>
+<dd><p>Reparaciones en ruta, cacheadas.</p>
+</dd>
+<dt><a href="#useGuardarReparacion">useGuardarReparacion()</a> ⇒ <code>object</code></dt>
+<dd><p>Guarda una reparación y refresca la lista.</p>
+</dd>
+<dt><a href="#useEliminarDocumentoReparacion">useEliminarDocumentoReparacion()</a> ⇒ <code>object</code></dt>
+<dd><p>Elimina un documento y refresca la lista.</p>
+</dd>
+<dt><a href="#totalCuadra">totalCuadra(reparacion, [tolerancia])</a> ⇒ <code>boolean</code></dt>
+<dd><p>Comprueba que el total cuadre con la suma de sus partes.</p>
+<p>El backend lo calcula, así que aquí no se recalcula —serían dos verdades que
+pueden discrepar—, pero sí se puede detectar cuando no cuadra.</p>
+</dd>
+<dt><a href="#normalizarReparaciones">normalizarReparaciones(filas)</a> ⇒ <code>Object</code></dt>
+<dd><p>Valida la lista de reparaciones descartando lo que no cumple.</p>
 </dd>
 <dt><a href="#obtenerOrdenes">obtenerOrdenes([opciones])</a> ⇒ <code>Promise.&lt;Array&gt;</code></dt>
 <dd><p>Trae todas las órdenes con sus servicios anidados.</p>
@@ -761,6 +867,9 @@ petición en lugar de una cada una.</p>
 <dt><a href="#Requisito">Requisito</a> : <code>object</code></dt>
 <dd><p>Un requisito documental ya validado.</p>
 </dd>
+<dt><a href="#Inspeccion">Inspeccion</a> : <code>object</code></dt>
+<dd><p>Una inspección ya validada.</p>
+</dd>
 <dt><a href="#Articulo">Articulo</a> : <code>object</code></dt>
 <dd><p>Un artículo de inventario ya validado.</p>
 </dd>
@@ -772,6 +881,9 @@ petición en lugar de una cada una.</p>
 </dd>
 <dt><a href="#Empleado">Empleado</a> : <code>object</code></dt>
 <dd><p>Empleado de nómina ya normalizado y validado.</p>
+</dd>
+<dt><a href="#Reparacion">Reparacion</a> : <code>object</code></dt>
+<dd><p>Una reparación en ruta ya validada.</p>
 </dd>
 <dt><a href="#Orden">Orden</a> : <code>object</code></dt>
 <dd><p>Una orden de servicio ya validada.</p>
@@ -1337,6 +1449,54 @@ Los tres campos son opcionales: un requisito de texto no trae `url_pdf`, y uno
 sin vencimiento no trae fecha.
 
 **Kind**: global constant  
+<a name="LLAVE_INSPECCIONES"></a>
+
+## LLAVE\_INSPECCIONES : <code>Array.&lt;string&gt;</code>
+Llave de caché de las inspecciones.
+
+**Kind**: global constant  
+<a name="esquemaReporte"></a>
+
+## esquemaReporte
+Un reporte dentro de una inspección: cada violación levantada.
+
+**Kind**: global constant  
+<a name="esquemaInspeccion"></a>
+
+## esquemaInspeccion
+Una inspección operativa hecha a un camión en ruta.
+
+Las multas se separan en dos: lo que paga IMA y lo que paga el conductor. El
+`total` lo calcula el backend sumando ambas.
+
+**Kind**: global constant  
+<a name="sinMulta"></a>
+
+## sinMulta ⇒ <code>boolean</code>
+Indica si una inspección salió sin multa.
+
+Es lo normal: al 2026-09-01 las tres inspecciones registradas están en 0. Una
+inspección limpia no es un dato faltante.
+
+**Kind**: global constant  
+**Returns**: <code>boolean</code> - `true` si no hay multa para nadie.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| inspeccion | [<code>Inspeccion</code>](#Inspeccion) | La inspección a evaluar. |
+
+<a name="cuentaViolaciones"></a>
+
+## cuentaViolaciones ⇒ <code>number</code>
+Cuenta las violaciones de una inspección.
+
+**Kind**: global constant  
+**Returns**: <code>number</code> - Cuántos reportes tiene.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| inspeccion | [<code>Inspeccion</code>](#Inspeccion) | La inspección a evaluar. |
+
 <a name="LLAVE_INVENTARIO"></a>
 
 ## LLAVE\_INVENTARIO : <code>Array.&lt;string&gt;</code>
@@ -1607,6 +1767,60 @@ Se queda con los últimos N meses de una serie ya ordenada.
 | --- | --- | --- |
 | serie | <code>Array</code> | Filas ordenadas cronológicamente. |
 | meses | <code>number</code> | Cuántos meses conservar. |
+
+<a name="LLAVE_REPARACIONES"></a>
+
+## LLAVE\_REPARACIONES : <code>Array.&lt;string&gt;</code>
+Llave de caché de las reparaciones en ruta.
+
+**Kind**: global constant  
+<a name="esquemaDocumento"></a>
+
+## esquemaDocumento
+Un documento adjunto a una reparación.
+
+**Kind**: global constant  
+<a name="esquemaReparacion"></a>
+
+## esquemaReparacion
+Una reparación en ruta: lo que le pasó a un camión durante un viaje.
+
+Ojo con las dos fechas, que no son lo mismo:
+- `fecha_suceso` es **cuándo ocurrió** la avería.
+- `fecha_registro` es **cuándo se capturó** en el sistema.
+
+`fecha_suceso` se agregó después y admite nulos a propósito: la app móvil
+también da de alta reparaciones, y el UPDATE del backend solo toca la columna
+si el campo llegó en el POST, para que un cliente que no la mande no borre la
+fecha existente. Al 2026-09-01 está nula en todos los registros.
+
+**Kind**: global constant  
+<a name="fechaRelevante"></a>
+
+## fechaRelevante ⇒ <code>string</code>
+La fecha con la que conviene mostrar una reparación.
+
+Prefiere cuándo ocurrió; si no se capturó, cae a cuándo se registró. Así la
+lista siempre tiene una fecha que enseñar aunque falte la del suceso.
+
+**Kind**: global constant  
+**Returns**: <code>string</code> - La fecha, o cadena vacía si no hay ninguna.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| reparacion | [<code>Reparacion</code>](#Reparacion) | La reparación a evaluar. |
+
+<a name="tieneDocumentos"></a>
+
+## tieneDocumentos ⇒ <code>boolean</code>
+Indica si una reparación tiene comprobantes adjuntos.
+
+**Kind**: global constant  
+**Returns**: <code>boolean</code> - `true` si tiene al menos un documento.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| reparacion | [<code>Reparacion</code>](#Reparacion) | La reparación a evaluar. |
 
 <a name="LLAVE_ORDENES"></a>
 
@@ -2258,6 +2472,132 @@ petición en lugar de una cada una.
 
 **Kind**: global function  
 **Returns**: <code>object</code> - El resultado de `useQuery`: `{data, isLoading, isError, error}`.  
+<a name="obtenerInspecciones"></a>
+
+## obtenerInspecciones([opciones]) ⇒ <code>Promise.&lt;Array&gt;</code>
+Trae todas las inspecciones con sus reportes y documentos.
+
+Los reportes llegan ya parseados en `reportes`; el campo `reportes_json` es la
+misma información como cadena y no hace falta tocarlo.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;Array&gt;</code> - Las inspecciones normalizadas.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la API falla.
+
+**Endpoint**: POST inspecciones.php · op=getAll  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [opciones] | <code>object</code> | Ajustes de la petición. |
+| [opciones.signal] | <code>AbortSignal</code> | Señal de cancelación. |
+
+<a name="guardarInspeccion"></a>
+
+## guardarInspeccion(datos) ⇒ <code>Promise.&lt;object&gt;</code>
+Guarda una inspección, nueva o existente.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;object&gt;</code> - La respuesta de la API.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la API rechaza la operación.
+
+**Endpoint**: POST inspecciones.php · op=save  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| datos | <code>object</code> | Los campos de la inspección. |
+
+<a name="obtenerDescripciones"></a>
+
+## obtenerDescripciones([opciones]) ⇒ <code>Promise.&lt;Array&gt;</code>
+Trae el catálogo de descripciones de violación.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;Array&gt;</code> - Las descripciones.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la API falla.
+
+**Endpoint**: POST inspecciones.php · op=get_descriptions  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [opciones] | <code>object</code> | Ajustes de la petición. |
+| [opciones.signal] | <code>AbortSignal</code> | Señal de cancelación. |
+
+<a name="eliminarDocumento"></a>
+
+## eliminarDocumento(documentoId) ⇒ <code>Promise.&lt;object&gt;</code>
+Elimina un documento adjunto de una inspección.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;object&gt;</code> - La respuesta de la API.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la API rechaza la operación.
+
+**Endpoint**: POST inspecciones.php · op=delete_doc  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| documentoId | <code>string</code> | Documento a borrar. |
+
+<a name="useInspecciones"></a>
+
+## useInspecciones() ⇒ <code>object</code>
+Inspecciones, cacheadas.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useQuery`.  
+<a name="useDescripciones"></a>
+
+## useDescripciones() ⇒ <code>object</code>
+Catálogo de descripciones. Se cachea más tiempo: cambia poco.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useQuery`.  
+<a name="useGuardarInspeccion"></a>
+
+## useGuardarInspeccion() ⇒ <code>object</code>
+Guarda una inspección y refresca la lista.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useMutation`.  
+<a name="useEliminarDocumentoInspeccion"></a>
+
+## useEliminarDocumentoInspeccion() ⇒ <code>object</code>
+Elimina un documento y refresca la lista.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useMutation`.  
+<a name="totalCuadra"></a>
+
+## totalCuadra(inspeccion, [tolerancia]) ⇒ <code>boolean</code>
+Comprueba que el total cuadre con la suma de las dos multas.
+
+**Kind**: global function  
+**Returns**: <code>boolean</code> - `true` si el total coincide.  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| inspeccion | [<code>Inspeccion</code>](#Inspeccion) |  | La inspección a evaluar. |
+| [tolerancia] | <code>number</code> | <code>0.01</code> | Margen para los redondeos de MySQL. |
+
+<a name="normalizarInspecciones"></a>
+
+## normalizarInspecciones(filas) ⇒ <code>Object</code>
+Valida la lista de inspecciones descartando lo que no cumple.
+
+**Kind**: global function  
+**Returns**: <code>Object</code> - Las válidas y cuántas se cayeron.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| filas | <code>Array</code> | Lo que vino en la respuesta. |
+
 <a name="obtenerInventario"></a>
 
 ## obtenerInventario([opciones]) ⇒ <code>Promise.&lt;Array&gt;</code>
@@ -2560,6 +2900,111 @@ retrasa a las demás. Antes eran seis `useEffect` y doce `useState`.
 | Param | Type | Description |
 | --- | --- | --- |
 | peticiones | <code>Array.&lt;object&gt;</code> | Lista de `{op, parametros}`. |
+
+<a name="obtenerReparaciones"></a>
+
+## obtenerReparaciones([opciones]) ⇒ <code>Promise.&lt;Array&gt;</code>
+Trae todas las reparaciones en ruta con sus documentos.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;Array&gt;</code> - Las reparaciones normalizadas.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la API falla.
+
+**Endpoint**: POST roadside_repairs.php · op=getAll  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [opciones] | <code>object</code> | Ajustes de la petición. |
+| [opciones.signal] | <code>AbortSignal</code> | Señal de cancelación. |
+
+<a name="guardarReparacion"></a>
+
+## guardarReparacion(datos) ⇒ <code>Promise.&lt;object&gt;</code>
+Guarda una reparación, nueva o existente.
+
+**`fecha_suceso` solo viaja si trae valor.** El UPDATE del backend solo toca la
+columna si el campo llegó en el POST, para que un cliente que no la mande —la
+app móvil, por ejemplo— no borre la fecha que ya estaba.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;object&gt;</code> - La respuesta de la API.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la API rechaza la operación.
+
+**Endpoint**: POST roadside_repairs.php · op=save  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| datos | <code>object</code> | Los campos de la reparación. |
+
+<a name="eliminarDocumento"></a>
+
+## eliminarDocumento(documentoId) ⇒ <code>Promise.&lt;object&gt;</code>
+Elimina un documento adjunto de una reparación.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;object&gt;</code> - La respuesta de la API.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la API rechaza la operación.
+
+**Endpoint**: POST roadside_repairs.php · op=delete_doc  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| documentoId | <code>string</code> | Documento a borrar. |
+
+<a name="useReparaciones"></a>
+
+## useReparaciones() ⇒ <code>object</code>
+Reparaciones en ruta, cacheadas.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useQuery`.  
+<a name="useGuardarReparacion"></a>
+
+## useGuardarReparacion() ⇒ <code>object</code>
+Guarda una reparación y refresca la lista.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useMutation`.  
+<a name="useEliminarDocumentoReparacion"></a>
+
+## useEliminarDocumentoReparacion() ⇒ <code>object</code>
+Elimina un documento y refresca la lista.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useMutation`.  
+<a name="totalCuadra"></a>
+
+## totalCuadra(reparacion, [tolerancia]) ⇒ <code>boolean</code>
+Comprueba que el total cuadre con la suma de sus partes.
+
+El backend lo calcula, así que aquí no se recalcula —serían dos verdades que
+pueden discrepar—, pero sí se puede detectar cuando no cuadra.
+
+**Kind**: global function  
+**Returns**: <code>boolean</code> - `true` si el total coincide con la suma.  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| reparacion | [<code>Reparacion</code>](#Reparacion) |  | La reparación a evaluar. |
+| [tolerancia] | <code>number</code> | <code>0.01</code> | Margen para los redondeos de MySQL. |
+
+<a name="normalizarReparaciones"></a>
+
+## normalizarReparaciones(filas) ⇒ <code>Object</code>
+Valida la lista de reparaciones descartando lo que no cumple.
+
+**Kind**: global function  
+**Returns**: <code>Object</code> - Las válidas y cuántas se cayeron.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| filas | <code>Array</code> | Lo que vino en la respuesta. |
 
 <a name="obtenerOrdenes"></a>
 
@@ -3416,6 +3861,25 @@ Un requisito documental ya validado.
 | tiene_vencimiento | <code>boolean</code> | Si se le controla fecha de caducidad. |
 | activo | <code>boolean</code> | Si sigue vigente. |
 
+<a name="Inspeccion"></a>
+
+## Inspeccion : <code>object</code>
+Una inspección ya validada.
+
+**Kind**: global typedef  
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| id_inspeccion | <code>string</code> | Identificador. |
+| fecha_inspeccion | <code>string</code> | Cuándo se hizo la inspección. |
+| nombre_camion | <code>string</code> | Unidad inspeccionada. |
+| operador | <code>string</code> | Conductor. |
+| multa_ima | <code>number</code> | Multa que paga la empresa. |
+| multa_driver | <code>number</code> | Multa que paga el conductor. |
+| total | <code>number</code> | Suma de ambas multas. |
+| reportes | <code>Array</code> | Violaciones levantadas. |
+
 <a name="Articulo"></a>
 
 ## Articulo : <code>object</code>
@@ -3484,6 +3948,26 @@ Empleado de nómina ya normalizado y validado.
 | sueldo | <code>number</code> | Sueldo a pagar, ya convertido a número. |
 | frecuencia_pago | <code>string</code> | Semanal, Quincenal o Mensual. |
 | tipo_nomina | <code>string</code> | `MX` (pesos) o `US` (dólares). |
+
+<a name="Reparacion"></a>
+
+## Reparacion : <code>object</code>
+Una reparación en ruta ya validada.
+
+**Kind**: global typedef  
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| id_reparacion | <code>string</code> | Identificador. |
+| fecha_registro | <code>string</code> | Cuándo se capturó. |
+| fecha_suceso | <code>string</code> \| <code>null</code> | Cuándo ocurrió; puede faltar. |
+| nombre_camion | <code>string</code> | Unidad afectada. |
+| operador | <code>string</code> | Conductor que reportó. |
+| costo_reparacion | <code>number</code> | Mano de obra. |
+| costo_refacciones | <code>number</code> | Refacciones. |
+| total | <code>number</code> | Suma de ambos. |
+| documentos | <code>Array</code> | Comprobantes adjuntos. |
 
 <a name="Orden"></a>
 

@@ -4,21 +4,31 @@ import {
     TableHead, TableRow, IconButton, CircularProgress, Chip, Stack
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
-import { fechaCorta } from '../utils/fechas';
+import { fechaCorta } from '../../utils/fechas';
 import EditIcon from '@mui/icons-material/Edit';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
-import InspectionModal from '../components/InspectionModal';
+import InspectionModal from '../../features/inspections/ui/InspeccionModal';
 import {
     PAGE_SHELL_SX, PAGE_OVERLINE_SX, PAGE_TITLE_SX, HEADER_ROW_SX, HEADER_CELL_SX,
     TABLE_CONTAINER_SX, DARK_BTN_SX, CHIP_SX, CHIP_DANGER_SX, ICON_BTN_SX,
     CELL_STRONG_SX, CELL_MUTED_SX,
-} from '../styles/estilosTabla';
+} from '../../shared/ui/estilos';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
 const formatMoney = (val) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val || 0);
 
-const InspectionsAdmin = ({ embedded = false }) => {
+/**
+ * Inspecciones operativas hechas a los camiones en ruta.
+ *
+ * Igual que las reparaciones, sirve a dos módulos: como pantalla en
+ * `/inspecciones` y embebida como pestaña dentro de Safety.
+ *
+ * @param {object} props Propiedades del componente.
+ * @param {boolean} [props.embedded=false] Si se pinta dentro de otra pantalla.
+ * @returns {object} La pantalla.
+ */
+const InspeccionesPage = ({ embedded = false }) => {
     const [inspections, setInspections] = useState([]);
     const [loading, setLoading] = useState(true);
     const [modalOpen, setModalOpen] = useState(false);
@@ -195,4 +205,4 @@ const InspectionsAdmin = ({ embedded = false }) => {
     );
 };
 
-export default InspectionsAdmin;
+export default InspeccionesPage;

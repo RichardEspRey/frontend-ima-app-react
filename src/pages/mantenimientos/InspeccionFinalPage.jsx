@@ -16,7 +16,12 @@ const OPS = {
   DETAIL_TRIP_PARAM: 'trip_id',     
 };
 
-const Inspeccion_final = () => {
+/**
+ * Inspección final de un viaje, antes de cerrarlo.
+ *
+ * @returns {object} La pantalla.
+ */
+const InspeccionFinalPage = () => {
   const navigate = useNavigate();
   const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -279,4 +284,4 @@ const Inspeccion_final = () => {
   );
 };
 
-export default Inspeccion_final;
+export default InspeccionFinalPage;

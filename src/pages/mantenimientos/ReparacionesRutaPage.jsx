@@ -4,21 +4,31 @@ import {
     TableHead, TableRow, IconButton, CircularProgress, Chip, Stack
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
-import { fechaCorta } from '../utils/fechas';
+import { fechaCorta } from '../../utils/fechas';
 import EditIcon from '@mui/icons-material/Edit';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
-import RoadRepairModal from '../components/RoadRepairModal';
+import RoadRepairModal from '../../features/inspections/ui/ReparacionModal';
 import {
     PAGE_SHELL_SX, PAGE_OVERLINE_SX, PAGE_TITLE_SX, HEADER_ROW_SX, HEADER_CELL_SX,
     TABLE_CONTAINER_SX, DARK_BTN_SX, CHIP_SX, CHIP_DANGER_SX, ICON_BTN_SX,
     CELL_STRONG_SX, CELL_MUTED_SX,
-} from '../styles/estilosTabla';
+} from '../../shared/ui/estilos';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
 const money = (val) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val || 0);
 
-const RoadRepairsAdmin = ({ embedded = false }) => {
+/**
+ * Reparaciones en ruta: averías atendidas durante un viaje.
+ *
+ * Sirve a dos módulos. Como pantalla propia en `/road-repairs`, y embebida como
+ * pestaña dentro de Safety pasándole `embedded`, que oculta su encabezado.
+ *
+ * @param {object} props Propiedades del componente.
+ * @param {boolean} [props.embedded=false] Si se pinta dentro de otra pantalla.
+ * @returns {object} La pantalla.
+ */
+const ReparacionesRutaPage = ({ embedded = false }) => {
     const [repairs, setRepairs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [modalOpen, setModalOpen] = useState(false);
@@ -183,4 +193,4 @@ const RoadRepairsAdmin = ({ embedded = false }) => {
     );
 };
 
-export default RoadRepairsAdmin;
+export default ReparacionesRutaPage;

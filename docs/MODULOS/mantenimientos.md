@@ -92,7 +92,47 @@ partes (9a, 9b, 9c en `docs/refactor/05-INCREMENTOS.md`).
 - Las tres operaciones de escritura no aparecían al buscar `append('op', …)` en la
   pantalla: van por una función común que recibe el `op` como parámetro.
 
-## 9c — pendiente
+## 9c — Reparaciones en ruta e inspecciones · migrado
 
-Reparaciones en ruta + Inspecciones (`roadside_repairs.php`, `inspecciones.php`,
-`formularios.php`). Van al final porque son lo que Emiliano tocó más reciente.
+| Ruta | Archivo |
+|---|---|
+| `/road-repairs` | `pages/mantenimientos/ReparacionesRutaPage.jsx` |
+| `/inspecciones` | `pages/mantenimientos/InspeccionesPage.jsx` |
+| `/Inspeccion-final` | `pages/mantenimientos/InspeccionFinalPage.jsx` |
+
+Los modales viven en `features/inspections/ui/`: `ReparacionModal` e `InspeccionModal`.
+
+### Entidades
+
+- **`entities/roadside-repair`** — `roadside_repairs.php`
+- **`entities/inspection`** — `inspecciones.php`
+
+Ambos endpoints tienen las mismas cinco operaciones: `getAll`, `save`, `delete_doc`,
+`get_trips` y `get_trucks`; inspecciones añade `get_descriptions`.
+
+### Reglas de negocio
+
+- **Las reparaciones tienen dos fechas y no son lo mismo**: `fecha_suceso` es cuándo
+  ocurrió la avería y `fecha_registro` cuándo se capturó.
+- `fecha_suceso` **solo viaja al backend si trae valor**. El UPDATE solo toca la columna si
+  el campo llegó en el POST, para que la app móvil —que también da de alta reparaciones—
+  no borre la fecha existente al no mandarla.
+- El `total` lo calcula el backend. La entidad no lo recalcula, pero `totalCuadra()`
+  permite detectar cuando no coincide con la suma de sus partes.
+- Las multas de una inspección se separan en la que paga IMA y la que paga el conductor.
+- **Una inspección sin multa es lo normal**, no un dato faltante.
+
+### Cosas que sorprenden
+
+- **`ReparacionesRutaPage` e `InspeccionesPage` sirven a dos módulos**: como pantalla
+  propia y como pestaña embebida dentro de Safety, con la prop `embedded`. Al moverlas hay
+  que actualizar `Safety.jsx`, que no salía al buscar por la ruta.
+- Los modales también los usa **Viajes**: `TripAdmin` los abre con `initialTrip` para dejar
+  el viaje preseleccionado.
+- **`fecha_suceso` está nula en las cinco reparaciones** al 2026-09-01: la columna existe
+  pero nadie la llena. Por eso `fechaRelevante()` cae a `fecha_registro`; en la pantalla se
+  ve como guiones en la columna FECHA.
+- Los reportes de una inspección llegan **ya parseados** en `reportes`; `reportes_json` es
+  lo mismo como cadena.
+- Las operaciones de escritura viven en los modales, no en las pantallas: buscar `op` en
+  `ReparacionesRutaPage` solo encuentra `getAll`.

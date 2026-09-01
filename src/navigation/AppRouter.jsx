@@ -28,7 +28,7 @@ import GastosAdmin from '../screens/Gastos/GastosAdmin.jsx';
 import GastosDetalle from '../screens/Gastos/GastosDetalle.jsx';
 import GastosEditor from '../screens/Gastos/GastosEditor.jsx';
 import AdminGastosGeneral from '../screens/Gastos/AdminGastos.jsx';
-import Inspeccion_final from '../screens/Mantenimientos/Inspeccion_final.jsx';
+import InspeccionFinalPage from '../pages/mantenimientos/InspeccionFinalPage.jsx';
 import ExpenseEdit from '../screens/Gastos/ExpenseEdit.jsx';
 import NuevaOrdenPage from '../pages/mantenimientos/NuevaOrdenPage.jsx';
 import EditarOrdenPage from '../pages/mantenimientos/EditarOrdenPage.jsx';
@@ -54,10 +54,10 @@ import Ifta from '../screens/Safety/IFTA.jsx';
 import NominaPage from '../pages/nomina/NominaPage.jsx';
 import PersonalPage from '../pages/nomina/PersonalPage.jsx';
 import DetallePagoPage from '../pages/nomina/DetallePagoPage.jsx';
-import RoadRepairsAdmin from '../screens/RoadRepairsAdmin.jsx';
+import ReparacionesRutaPage from '../pages/mantenimientos/ReparacionesRutaPage.jsx';
 import Cotizador from '../screens/Viajes/Cotizacion.jsx';
 import DocumentosPage from '../pages/documentos/DocumentosPage.jsx';
-import InspectionsAdmin from '../screens/InspectionsAdmin.jsx';
+import InspeccionesPage from '../pages/mantenimientos/InspeccionesPage.jsx';
 
 const AppRouter = () => {
   const { user, loading } = useAuthStore();
@@ -99,7 +99,7 @@ const AppRouter = () => {
             <Route path="/edit-trip-complete/:tripId" element={<EditTripComplete />} />
             <Route path="/edit-trip-upcoming/:tripId" element={<EditTripUpcoming />} />
             <Route path="/edit-trailer/:trailerId" element={<TrailerEdit />} />
-            <Route path="/Inspeccion-final" element={<Inspeccion_final />} />
+            <Route path="/Inspeccion-final" element={<InspeccionFinalPage />} />
             <Route path="/edit-expense/:id_gasto" element={<ExpenseEdit />} />
             <Route path="/view-inventory" element={<OrdenesServicioPage />} />
             <Route path="/new-service-order" element={<NuevaOrdenPage />} />
@@ -125,11 +125,11 @@ const AppRouter = () => {
             <Route path="/nomina" element={<NominaPage />} />
             <Route path="/personal" element={<PersonalPage />} />
             <Route path="/detalle-pago/:period_id" element={<DetallePagoPage />} />
-            <Route path="/road-repairs" element={<RoadRepairsAdmin />} />
+            <Route path="/road-repairs" element={<ReparacionesRutaPage />} />
              <Route path="/cotizador" element={<Cotizador />} />
             <Route path="*" element={<Navigate to="/home" replace />} /> 
             <Route path="/ima-manager" element={<DocumentosPage />} />
-            <Route path="/inspecciones" element={<InspectionsAdmin />} />
+            <Route path="/inspecciones" element={<InspeccionesPage />} />
           </Route>
         )}
       </Routes>

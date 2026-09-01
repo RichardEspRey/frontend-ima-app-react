@@ -9,16 +9,31 @@ import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Swal from 'sweetalert2';
-import FieldLabel from './Gastos/FieldLabel';
+import FieldLabel from '../../../components/Gastos/FieldLabel';
 import {
     DIALOG_PAPER_SX, DIALOG_TITLE_SX, DIALOG_CONTENT_SX, DIALOG_ACTIONS_SX,
     CARD_SX, SECTION_LABEL_SX, PAGE_OVERLINE_SX, INPUT_SX,
     GHOST_BTN_SX, DARK_BTN_SX, CHIP_SX,
-} from '../styles/estilosTabla';
+} from '../../../shared/ui/estilos';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
-const RoadRepairModal = ({ open, onClose, onSuccess, editData, initialTrip, onDocumentsChanged }) => {
+/**
+ * Alta y edición de una reparación en ruta.
+ *
+ * Sirve al módulo de mantenimientos y también a Viajes, que lo abre desde una
+ * fila de viaje con `initialTrip` para dejar el viaje ya seleccionado.
+ *
+ * @param {object} props Propiedades del componente.
+ * @param {boolean} props.open Si el modal está visible.
+ * @param {Function} props.onClose Se llama al cerrar.
+ * @param {Function} props.onSuccess Se llama tras guardar con éxito.
+ * @param {object} [props.editData] Registro a editar; ausente para un alta.
+ * @param {object} [props.initialTrip] Viaje preseleccionado.
+ * @param {Function} [props.onDocumentsChanged] Se llama al agregar o borrar un adjunto.
+ * @returns {object} El modal renderizado.
+ */
+const ReparacionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDocumentsChanged }) => {
     const [trucks, setTrucks] = useState([]);
     
     // 🚨 Agregamos trip_id y formatted_trip al estado
@@ -471,4 +486,4 @@ const RoadRepairModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
     );
 };
 
-export default RoadRepairModal;
+export default ReparacionModal;
