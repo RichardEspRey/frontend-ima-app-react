@@ -1,165 +1,147 @@
-import React, { useEffect, useState, useCallback } from "react";
+import { useMemo, useState } from "react"
 import {
-  Box, Paper, Typography, Grid, Chip, CircularProgress, Stack, TextField, InputAdornment, MenuItem 
-} from "@mui/material";
-import FilterListIcon from '@mui/icons-material/FilterList';
-import Swal from 'sweetalert2';
+  Alert,
+  Box,
+  Chip,
+  CircularProgress,
+  Grid,
+  InputAdornment,
+  MenuItem,
+  Paper,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material"
+import FilterListIcon from "@mui/icons-material/FilterList"
+import { useQuery } from "@tanstack/react-query"
 
-import UnitCard from "../components/UnitCard";
-import TankConfigModal from "../components/TankConfigModal";
+import TankConfigModal from "../../components/TankConfigModal"
+import UnitCard from "../../components/UnitCard"
+import {
+  ESTATUS_SIN_VIAJE,
+  ESTATUS_TABLERO,
+  ESTATUS_TODOS,
+  filtrarPorEstatus,
+  lecturaTanqueSospechosa,
+  obtenerTablero,
+  useGuardarTanque,
+} from "../../entities/tracking"
+import { PageHeader, notify } from "../../shared/ui"
 
-const apiHost = import.meta.env.VITE_API_HOST;
+/**
+ * Tablero de combustible: niveles, autonomía y estatus de cada unidad.
+ *
+ * Es la misma telemetría que alimenta el mapa, vista como fichas en vez de como
+ * mapa, para revisar la flota de un vistazo sin buscar unidad por unidad.
+ *
+ * @returns {object} La pantalla renderizada.
+ */
+export default function TableroCombustiblePage() {
+  const [estatus, setEstatus] = useState(ESTATUS_TODOS)
+  const [enConfiguracion, setEnConfiguracion] = useState(null)
 
-export default function EstatusUnidades() {
-    const [units, setUnits] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [statusFilter, setStatusFilter] = useState('All'); 
+  const { data: unidades = [], isLoading } = useQuery({
+    queryKey: ["tracking", "tablero"],
+    queryFn: ({ signal }) => obtenerTablero({ signal }),
+  })
 
-    const [openModal, setOpenModal] = useState(false);
-    const [selectedTruck, setSelectedTruck] = useState(null);
+  const guardarTanque = useGuardarTanque()
 
-    const fetchDashboard = useCallback(async () => {
-        setLoading(true);
-        try {
-            const fd = new FormData();
-            fd.append('op', 'get_dashboard');
-            const res = await fetch(`${apiHost}/estatus_unidades.php`, { method: 'POST', body: fd });
-            const json = await res.json();
-            if (json.status === 'success') {
-                setUnits(json.data);
-            } else {
-                console.error("Error data:", json);
-            }
-        } catch (e) {
-            console.error(e);
-        } finally {
-            setLoading(false);
+  const visibles = useMemo(() => filtrarPorEstatus(unidades, estatus), [unidades, estatus])
+
+  // El indicador acota lo que dibuja, así que una lectura imposible se ve como
+  // un tanque lleno o vacío perfectamente normal. Se nombra aquí para que quien
+  // mire el tablero sepa de qué unidades no fiarse.
+  const sospechosas = useMemo(() => unidades.filter(lecturaTanqueSospechosa), [unidades])
+
+  const guardar = async (truckId, galones, capacidad) => {
+    try {
+      await guardarTanque.mutateAsync({ truckId, galones, capacidad })
+      notify.exito("Telemetría actualizada.")
+      return true
+    } catch (fallo) {
+      notify.error(fallo)
+      return false
+    }
+  }
+
+  return (
+    <Box sx={{ p: 3 }}>
+      <PageHeader
+        seccion="Unidades"
+        titulo="Tablero de Combustible"
+        descripcion="Monitoreo de niveles, autonomía y estatus de viajes activos."
+        acciones={
+          <Stack direction="row" spacing={2} alignItems="center">
+            <Chip label="Tiempo Real" color="success" size="small" variant="outlined" />
+            <TextField
+              select
+              label="Filtrar por Estatus"
+              size="small"
+              value={estatus}
+              onChange={(e) => setEstatus(e.target.value)}
+              sx={{ minWidth: 220 }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <FilterListIcon fontSize="small" />
+                  </InputAdornment>
+                ),
+              }}
+            >
+              {ESTATUS_TABLERO.map((opcion) => (
+                <MenuItem key={opcion} value={opcion}>
+                  {opcion === ESTATUS_SIN_VIAJE ? "Sin Viaje Asignado" : opcion}
+                </MenuItem>
+              ))}
+            </TextField>
+          </Stack>
         }
-    }, []);
+      />
 
-    useEffect(() => {
-        fetchDashboard();
-    }, [fetchDashboard]);
+      {sospechosas.length > 0 && (
+        <Alert severity="warning" sx={{ mb: 3 }}>
+          Lecturas de tanque imposibles en{" "}
+          {sospechosas.length === 1 ? "la unidad" : "las unidades"}{" "}
+          {sospechosas.map((u) => u.unidad).join(", ")}:{" "}
+          {sospechosas
+            .map((u) => `${u.current_fuel} gal en un tanque de ${u.tank_capacity}`)
+            .join("; ")}
+          . El nivel que se dibuja está acotado; el dato de origen está mal.
+        </Alert>
+      )}
 
-    const handleUpdateTruck = async (truckId, currentFuel, capacity) => {
-        try {
-            const fd = new FormData();
-            fd.append('op', 'update_config');
-            fd.append('truck_id', truckId);
-            fd.append('current_fuel', currentFuel);
-            fd.append('tank_capacity', capacity);
-
-            const res = await fetch(`${apiHost}/estatus_unidades.php`, { method: 'POST', body: fd });
-            const json = await res.json();
-
-            if (json.status === 'success') {
-                setUnits(prev => prev.map(u => 
-                    u.truck_id === truckId ? { ...u, current_fuel: Number(currentFuel), tank_capacity: Number(capacity) } : u
-                ));
-                const Toast = Swal.mixin({
-                    toast: true, position: 'top-end', showConfirmButton: false, timer: 1500, timerProgressBar: true
-                });
-                Toast.fire({ icon: 'success', title: 'Actualizado' });
-                return true; // Éxito
-            }
-        } catch (e) {
-            Swal.fire('Error', 'No se pudo actualizar', 'error');
-        }
-        return false;
-    };
-
-    const openConfig = (truck) => {
-        setSelectedTruck(truck);
-        setOpenModal(true);
-    };
-
-    const handleSaveConfig = async (truckId, currentFuel, newCapacity) => {
-        await handleUpdateTruck(truckId, currentFuel, newCapacity);
-    };
-
-    const filteredUnits = units.filter(unit => {
-        if (statusFilter === 'All') return true;
-        if (statusFilter === 'Sin Viaje') return !unit.trip_number;
-        return (unit.status || '').toLowerCase() === statusFilter.toLowerCase();
-    });
-
-    return (
-        <Box sx={{ p: 3 }}>
-            <Stack direction={{ xs: 'column', sm: 'row' }} alignItems="center" justifyContent="space-between" mb={3} spacing={2}>
-                <Box>
-                    <Stack direction="row" alignItems="center" spacing={2}>
-                        <Typography variant="h4" fontWeight={700}>
-                            Tablero de Combustible
-                        </Typography>
-                        <Chip label="Tiempo Real" color="success" size="small" variant="outlined" />
-                    </Stack>
-                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                        Monitoreo de niveles, autonomía y estatus de viajes activos.
-                    </Typography>
-                </Box>
-
-                <Box sx={{ minWidth: 200 }}>
-                    <TextField
-                        select
-                        label="Filtrar por Estatus"
-                        size="small"
-                        fullWidth
-                        value={statusFilter}
-                        onChange={(e) => setStatusFilter(e.target.value)}
-                        InputProps={{
-                            startAdornment: (
-                                <InputAdornment position="start">
-                                    <FilterListIcon fontSize="small" />
-                                </InputAdornment>
-                            ),
-                        }}
-                    >
-                        <MenuItem value="All">Todos</MenuItem>
-                        <MenuItem value="In Transit">In Transit</MenuItem>
-                        <MenuItem value="Up Coming">Up Coming</MenuItem>
-                        <MenuItem value="Almost Over">Almost Over</MenuItem>
-                        <MenuItem value="Completed">Completed</MenuItem>
-                        <MenuItem value="Sin Viaje">Sin Viaje Asignado</MenuItem> 
-                    </TextField>
-                </Box>
-            </Stack>
-
-            {loading ? (
-                <Box display="flex" justifyContent="center" mt={5}>
-                    <CircularProgress />
-                    <Typography sx={{ml:2}}>Cargando unidades...</Typography>
-                </Box>
-            ) : (
-                <Grid container spacing={3}>
-                    {filteredUnits.length > 0 ? (
-                        filteredUnits.map(truck => (
-                            <Grid item xs={12} sm={6} md={4} lg={3} key={truck.truck_id}>
-                                <UnitCard 
-                                    truck={truck} 
-                                    onUpdate={handleUpdateTruck} 
-                                    onConfig={openConfig} 
-                                />
-                            </Grid>
-                        ))
-                    ) : (
-                        <Grid item xs={12}>
-                            <Paper sx={{ p: 4, textAlign: 'center', bgcolor: '#f5f5f5' }}>
-                                <Typography color="text.secondary">
-                                    No hay unidades con el estatus "{statusFilter}"
-                                </Typography>
-                            </Paper>
-                        </Grid>
-                    )}
-                </Grid>
-            )}
-
-            {/* Modal de Configuración */}
-            <TankConfigModal 
-                open={openModal} 
-                onClose={() => setOpenModal(false)}
-                onSave={handleSaveConfig}
-                truck={selectedTruck}
-            />
+      {isLoading ? (
+        <Box display="flex" justifyContent="center" alignItems="center" gap={2} mt={5}>
+          <CircularProgress />
+          <Typography>Cargando unidades...</Typography>
         </Box>
-    );
+      ) : (
+        <Grid container spacing={3}>
+          {visibles.map((unidad) => (
+            <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={unidad.truck_id}>
+              <UnitCard truck={unidad} onUpdate={guardar} onConfig={setEnConfiguracion} />
+            </Grid>
+          ))}
+
+          {visibles.length === 0 && (
+            <Grid size={{ xs: 12 }}>
+              <Paper sx={{ p: 4, textAlign: "center", bgcolor: "#f5f5f5" }}>
+                <Typography color="text.secondary">
+                  No hay unidades con el estatus &quot;{estatus}&quot;
+                </Typography>
+              </Paper>
+            </Grid>
+          )}
+        </Grid>
+      )}
+
+      <TankConfigModal
+        open={Boolean(enConfiguracion)}
+        onClose={() => setEnConfiguracion(null)}
+        onSave={guardar}
+        truck={enConfiguracion}
+      />
+    </Box>
+  )
 }

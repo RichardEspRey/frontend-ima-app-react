@@ -12,6 +12,10 @@ export {
   lecturaTanqueSospechosa,
   filtrarFlota,
   normalizarUnidadesGps,
+  ESTATUS_TODOS,
+  ESTATUS_SIN_VIAJE,
+  ESTATUS_TABLERO,
+  filtrarPorEstatus,
 } from "./model/flota"
 
 export {

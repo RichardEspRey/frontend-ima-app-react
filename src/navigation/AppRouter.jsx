@@ -6,17 +6,17 @@ import { useAuthStore } from '../store/useAuthStore';
 
 import LoginScreen from '../screens/Login/Login.jsx';
 import DashboardLayout from '../layouts/DashboardLayout';
-import DriverAdmin from '../screens/DriverAdmin.jsx';
+import ConductoresPage from '../pages/unidades/ConductoresPage.jsx';
 import DriverEditor from '../screens/DriverEditor.jsx';
 import TripAdmin from '../screens/Viajes/TripAdmin.jsx';
 import TripScreen from '../screens/Viajes/TripsScreen.jsx';
 import TripScreenNew from '../screens/Viajes/TripsScreenNew.jsx';
 import DriverScreen from '../screens/DriverScreen.jsx';
-import TruckAdmin from '../screens/TruckAdmin.jsx';
+import CamionesPage from '../pages/unidades/CamionesPage.jsx';
 import TruckScreen from '../screens/TruckScreen.jsx';
 import TrucksEditor from '../screens/TrucksEditor.jsx';
 import TrailerScreen from '../screens/TrailerScreen.jsx';
-import TrailerAdmin from '../screens/TrailerAdmin.jsx';
+import CajasPage from '../pages/unidades/CajasPage.jsx';
 import TrailerEdit from '../screens/TrailerEdit.jsx';
 import EditTripForm from '../screens/EditTripForm.jsx';
 import EditTripComplete from '../screens/EditTripComplete.jsx';
@@ -45,7 +45,7 @@ import PagosConductoresPage from '../pages/finanzas/PagosConductoresPage.jsx';
 import TarifasConductorPage from '../pages/finanzas/TarifasConductorPage.jsx';
 import TicketPagoPage from '../pages/finanzas/TicketPagoPage.jsx';
 import AutonomiaPage from '../pages/mantenimientos/AutonomiaPage.jsx';
-import EstatusUnidades from '../screens/EstatusUnidades.jsx';
+import TableroCombustiblePage from '../pages/unidades/TableroCombustiblePage.jsx';
 import AfinacionesPage from '../pages/mantenimientos/AfinacionesPage.jsx';
 import AfinacionesHistorialPage from '../pages/mantenimientos/AfinacionesHistorialPage.jsx';
 import CrearViajePage from '../pages/dispatch/CrearViajePage.jsx';
@@ -77,13 +77,13 @@ const AppRouter = () => {
             <Route index element={<Navigate to="/home" replace />} /> 
             <Route path="/home" element={<InicioPage />} />
             <Route path="/drivers" element={<DriverScreen />} />
-            <Route path="/admin-drivers" element={<DriverAdmin />} />
+            <Route path="/admin-drivers" element={<ConductoresPage />} />
             <Route path="/editor-drivers/:id" element={<DriverEditor />} />
             <Route path="/trucks" element={<TruckScreen />} />
-            <Route path="/admin-trucks" element={<TruckAdmin />} />
+            <Route path="/admin-trucks" element={<CamionesPage />} />
             <Route path="/editor-trucks/:id" element={<TrucksEditor />} /> 
             <Route path="/trailers" element={<TrailerScreen />} />
-            <Route path="/admin-trailers" element={<TrailerAdmin />} />
+            <Route path="/admin-trailers" element={<CajasPage />} />
             <Route path="/editor-trailers/:id" element={<TrailerEdit />} /> 
             <Route path="/trips" element={<TripScreen />} />
             <Route path="/trips-new" element={<TripScreenNew />} />
@@ -120,7 +120,7 @@ const AppRouter = () => {
             <Route path="/autonomia" element={<AutonomiaPage />} />
             <Route path="/afinaciones" element={<AfinacionesPage />} />
             <Route path="/registros-afinaciones" element={<AfinacionesHistorialPage />} />
-            <Route path="/estatus-unidades" element={<EstatusUnidades />} />
+            <Route path="/estatus-unidades" element={<TableroCombustiblePage />} />
             <Route path="/CrearViaje" element={<CrearViajePage />} />
             <Route path="/nomina" element={<NominaPage />} />
             <Route path="/personal" element={<PersonalPage />} />

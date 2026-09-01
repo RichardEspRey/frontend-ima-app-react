@@ -287,14 +287,22 @@ export function porcentajeTanque(galones, capacidad) {
 /**
  * Indica si la lectura del tanque es imposible.
  *
- * Un tanque no puede tener más de lo que le cabe. Cuando pasa, el dato de origen
- * está mal y conviene decirlo en vez de pintar una barra llena como si nada.
+ * Un tanque no puede tener más de lo que le cabe ni menos que nada. En
+ * producción pasan las dos cosas: la unidad 5 reporta 850 galones en un tanque
+ * de 270 y la 7 reporta −33. Conviene decirlo en vez de pintar una barra llena
+ * o vacía como si el dato fuera bueno.
  *
  * @param {object} unidad La unidad a revisar.
- * @returns {boolean} `true` si hay más galones que capacidad.
+ * @returns {boolean} `true` si la lectura no puede ser cierta.
  */
-export const lecturaTanqueSospechosa = (unidad) =>
-  Number(unidad?.tank_capacity) > 0 && Number(unidad?.current_fuel) > Number(unidad?.tank_capacity)
+export function lecturaTanqueSospechosa(unidad) {
+  const galones = Number(unidad?.current_fuel)
+  const capacidad = Number(unidad?.tank_capacity)
+
+  if (Number.isNaN(galones)) return false
+  if (galones < 0) return true
+  return capacidad > 0 && galones > capacidad
+}
 
 /**
  * Filtra la flota por nombre, como escribe la persona.
@@ -329,4 +337,50 @@ export function normalizarUnidadesGps(filas = []) {
   }
 
   return { unidades, descartadas }
+}
+
+/**
+ * Opción del filtro que no descarta nada.
+ *
+ * @type {string}
+ */
+export const ESTATUS_TODOS = "Todos"
+
+/**
+ * Opción del filtro para las unidades sin viaje asignado.
+ *
+ * No es un estatus de la base: es la ausencia de viaje, y por eso se resuelve
+ * aparte en vez de comparar contra la columna.
+ *
+ * @type {string}
+ */
+export const ESTATUS_SIN_VIAJE = "Sin Viaje"
+
+/**
+ * Los estatus por los que se puede filtrar el tablero, en el orden del ciclo.
+ *
+ * @type {Array.<string>}
+ */
+export const ESTATUS_TABLERO = [
+  ESTATUS_TODOS,
+  "In Transit",
+  "Up Coming",
+  "Almost Over",
+  "Completed",
+  ESTATUS_SIN_VIAJE,
+]
+
+/**
+ * Filtra las unidades del tablero por el estatus de su viaje.
+ *
+ * @param {Array} [unidades] Las unidades del tablero.
+ * @param {string} estatus Un valor de `ESTATUS_TABLERO`.
+ * @returns {Array} Las unidades que corresponden.
+ */
+export function filtrarPorEstatus(unidades = [], estatus) {
+  if (estatus === ESTATUS_TODOS) return unidades
+  if (estatus === ESTATUS_SIN_VIAJE) return unidades.filter((unidad) => !unidad?.trip_number)
+  return unidades.filter(
+    (unidad) => String(unidad?.status ?? "").toLowerCase() === String(estatus).toLowerCase(),
+  )
 }

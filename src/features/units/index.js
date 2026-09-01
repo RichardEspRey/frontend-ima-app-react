@@ -1,0 +1,7 @@
+export { AdminUnidades } from "./ui/AdminUnidades"
+export { TablaUnidades } from "./ui/TablaUnidades"
+export { EstadoDocumento } from "./ui/EstadoDocumento"
+export { ModalUnidad } from "./ui/ModalUnidad"
+export { ModalRequisitos } from "./ui/ModalRequisitos"
+export { ModalColumnas } from "./ui/ModalColumnas"
+export { ModalBaja } from "./ui/ModalBaja"

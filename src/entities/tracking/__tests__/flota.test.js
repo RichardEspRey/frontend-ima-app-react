@@ -171,14 +171,24 @@ describe("porcentajeTanque", () => {
 })
 
 describe("lecturaTanqueSospechosa", () => {
-  it("detecta la unidad real con más galones que capacidad", () => {
+  it("detecta las dos lecturas imposibles de producción: 850 gal en 270, y −33", () => {
     const flota = combinarFlota(GPS, TABLERO)
     const sospechosas = flota.filter(lecturaTanqueSospechosa).map((u) => u.unidad)
-    expect(sospechosas).toEqual(["5"])
+    expect(sospechosas).toEqual(["5", "7"])
   })
 
   it("una lectura normal no es sospechosa", () => {
     expect(lecturaTanqueSospechosa({ current_fuel: 100, tank_capacity: 200 })).toBe(false)
+    expect(lecturaTanqueSospechosa({ current_fuel: 200, tank_capacity: 200 })).toBe(false)
+  })
+
+  it("un tanque con galones negativos también es imposible", () => {
+    expect(lecturaTanqueSospechosa({ current_fuel: -33.35, tank_capacity: 200 })).toBe(true)
+  })
+
+  it("sin lectura no hay nada que sospechar", () => {
+    expect(lecturaTanqueSospechosa({})).toBe(false)
+    expect(lecturaTanqueSospechosa()).toBe(false)
   })
 })
 
