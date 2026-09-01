@@ -297,11 +297,29 @@ reducir la ventana en que un merge entrante puede chocar con él.
 | 9a | Órdenes de servicio + Inventario | 0 |
 | 9b | Afinaciones + Autonomía | 0 |
 | 9c | Reparaciones en ruta + Inspecciones | 0 |
-| 10 | Safety / IFTA | 1 |
-| 11 | Finanzas | 4 |
+| 10 | Finanzas | 4 |
+| 11 | Safety / IFTA | 1 |
 | 12 | Dispatch | 6 |
 | 13 | Mapas / Tracking (916 líneas) | 11 |
-| 14 | Drivers / Trucks / Trailers | 15 |
+| 14 | Drivers / Trucks / Trailers · Viajes sueltos | 15 |
+
+### Qué contiene el 14, que es el que recoge lo que queda suelto
+
+Al terminar el 13 quedan **13 archivos sueltos en `screens/`**, y todos caen aquí o en el
+15. Conviene tenerlos listados para que no parezca que se olvidaron:
+
+**Unidades — incremento 14** (`DriverAdmin`, `DriverScreen`, `DriverEditor`,
+`TruckAdmin`, `TruckScreen`, `TrucksEditor`, `TrailerAdmin`, `TrailerScreen`,
+`TrailerEdit`, `EstatusUnidades`) · ~2 800 líneas. Son tres módulos con la misma forma
+—admin, listado y editor por cada tipo de unidad—, así que probablemente comparten más
+código del que parece; hay que medirlo con `diff` antes de migrarlos.
+
+**Viajes — incremento 15** (`EditTripComplete`, `EditTripForm`, `ResumenTrip`) · ~1 200
+líneas. Van con el resto de Viajes porque comparten el formulario de etapas.
+
+> **Nota del 2026-09-01.** Finanzas se hizo antes que Safety por un descuido al numerar,
+> no por una decisión. Se deja así: los dos tienen la misma actividad baja, y renumerar
+> los tags publicados costaría más de lo que aclara.
 | 15 | **Viajes** + `TripRow` + `trip-form` | 44 |
 | 16 | **Gastos** — el más caliente de todos | 40 |
 
