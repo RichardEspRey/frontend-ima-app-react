@@ -6,7 +6,6 @@ import { useAuthStore } from '../store/useAuthStore';
 
 import LoginScreen from '../screens/Login/Login.jsx';
 import DashboardLayout from '../layouts/DashboardLayout';
-import HomeScreen from '../screens/Reports.jsx';
 import DriverAdmin from '../screens/DriverAdmin.jsx';
 import DriverEditor from '../screens/DriverEditor.jsx';
 import TripAdmin from '../screens/Viajes/TripAdmin.jsx';
@@ -41,9 +40,9 @@ import Finanzas from '../screens/Finanzas.jsx';
 import ResumenTrip from '../screens/ResumenTrip.jsx';
 import ResiduoTrip from '../screens/Finanzas/ResiduosTrips.jsx';
 import AccesosPage from '../pages/accesos/AccesosPage.jsx';
-import Reports from '../screens/Reports.jsx';
+import ReportsPage from '../pages/reports/ReportsPage.jsx';
 import Tracking from '../screens/Mapas/Tracking.jsx';
-import { Welcome } from '../screens/Welcome.jsx';
+import { InicioPage } from '../pages/inicio/InicioPage.jsx';
 import MargenScreen from '../screens/MargenScreen.jsx';
 import PaymentDrivers from '../screens/Finanzas/PaymentDrivers.jsx';
 import MillasDriversTable from '../screens/Finanzas/MillasDriversTable.jsx';
@@ -79,7 +78,7 @@ const AppRouter = () => {
         ) : (
           <Route path="/" element={<DashboardLayout />}> 
             <Route index element={<Navigate to="/home" replace />} /> 
-            <Route path="/home" element={<Welcome/>} />
+            <Route path="/home" element={<InicioPage />} />
             <Route path="/drivers" element={<DriverScreen />} />
             <Route path="/admin-drivers" element={<DriverAdmin />} />
             <Route path="/editor-drivers/:id" element={<DriverEditor />} />
@@ -115,7 +114,7 @@ const AppRouter = () => {
             <Route path="/ResumenTrip/:tripId" element={<ResumenTrip />} />
             <Route path="/access-manager" element={<AccesosPage />} />
             <Route path="/ResiduoTrip" element={<ResiduoTrip />} />  
-            <Route path="/reports" element={<Reports />} />
+            <Route path="/reports" element={<ReportsPage />} />
             <Route path="/safety" element={<Safety />} />  
             <Route path="/Ifta" element={<Ifta />} />  
             <Route path="/tracking" element={<Tracking />} />  

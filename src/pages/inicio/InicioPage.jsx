@@ -13,7 +13,7 @@ import TireRepairOutlinedIcon from '@mui/icons-material/TireRepairOutlined';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import CloseIcon from '@mui/icons-material/Close';
 
-import logoWhite from '../assets/images/logo_white.png';
+import logoWhite from '../../assets/images/logo_white.png';
 
 // Las 6 tarjetas van en una sola retícula para que el número de columnas
 // siempre divida exacto a 6 y no quede ninguna huérfana a media fila.
@@ -104,7 +104,7 @@ const PolicyDialogHeader = ({ icon, accent, tint, title, onClose }) => (
   </Stack>
 );
 
-export const Welcome = () => {
+export const InicioPage = () => {
   const [openPolicy, setOpenPolicy] = useState(null);
   const closePolicy = () => setOpenPolicy(null);
 
