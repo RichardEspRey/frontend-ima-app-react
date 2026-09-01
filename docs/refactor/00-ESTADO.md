@@ -114,18 +114,6 @@ GROUP BY u.id;
 Con eso se agrupan por lo que de verdad usan, en vez de inventar los roles.
 Mientras tanto **nadie pierde ni gana accesos**: sus flags individuales siguen mandando.
 
-## Falta probar a mano (incremento 8)
-
-`/ima-manager` es **el único módulo migrado sin verificar en el navegador**: la extensión
-de Chrome se desconectó a media revisión. Lo que conviene mirar:
-
-- Que las tarjetas de México y USA se pinten y los estados de vigencia cuadren.
-- Subir un documento y comprobar que se guarda.
-- Crear y retirar un requisito.
-
-El resto está cubierto: 24 tests de la entidad, 6 de ellos contra una fixture con la
-respuesta real de la API.
-
 ## Falta probar a mano (incremento 4b)
 
 Electron pasó de 35 a 44 y jspdf de 3 a 4. `npm run humo:electron` comprueba que la app

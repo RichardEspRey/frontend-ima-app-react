@@ -50,3 +50,7 @@ Migrado en el incremento 8 (2026-09-01).
 - **Bug de vencimientos**: el cálculo anterior comparaba contra la hora actual, así que un
   documento que vencía **hoy** salía como "Vencido" desde el primer minuto del día.
 - Es el primer módulo con **fixture de la respuesta real** de la API en sus tests.
+
+Verificado en Chrome el 2026-09-01: 7 requisitos USA y 1 de México con sus estados
+correctos —`CAAT` vencido en rojo, `Permiso KYU` faltante, el resto vigente—, el modal de
+gestión abre con el documento y la fecha ya cargados, y la consola sale limpia.
