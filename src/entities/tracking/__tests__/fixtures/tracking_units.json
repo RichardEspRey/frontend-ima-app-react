@@ -1,0 +1,181 @@
+{
+ "status": "success",
+ "units": [
+  {
+   "nm": "IMA 01",
+   "id": 402161382,
+   "pos": {
+    "t": 1781537504,
+    "f": 1,
+    "lc": 0,
+    "y": 27.3938916,
+    "x": -99.550355,
+    "c": 6,
+    "z": 141,
+    "s": 0,
+    "sc": 18
+   },
+   "address": "Calle José María Pino Suárez, Granjas Regina, Nuevo Laredo, Tamaulipas, México"
+  },
+  {
+   "nm": "IMA 02",
+   "id": 402249222,
+   "pos": {
+    "t": 1783976272,
+    "f": 3,
+    "lc": 0,
+    "y": 27.430265,
+    "x": -99.5374916,
+    "c": 0,
+    "z": 136.7,
+    "s": 0,
+    "sc": 25
+   },
+   "address": "Calle Mar de las Antillas, Nuevo Laredo, Tamaulipas, 88298, México"
+  },
+  {
+   "nm": "IMA 04",
+   "id": 402029958,
+   "pos": {
+    "t": 1788284263,
+    "f": 1,
+    "lc": 0,
+    "y": 29.08844,
+    "x": -98.9586633,
+    "c": 229,
+    "z": 190,
+    "s": 107,
+    "sc": 14
+   },
+   "address": "16871, Purple Heart Trail, Frio County, Texas, 78057, United States"
+  },
+  {
+   "nm": "IMA 05",
+   "id": 402177723,
+   "pos": {
+    "t": 1788284212,
+    "f": 1,
+    "lc": 0,
+    "y": 27.5148466,
+    "x": -99.5712499,
+    "c": 332,
+    "z": 156,
+    "s": 0,
+    "sc": 19
+   },
+   "address": "Avenida Río Loira, Voluntad y Trabajo 3, Nuevo Laredo, Tamaulipas, 88136, México"
+  },
+  {
+   "nm": "IMA 06",
+   "id": 402327427,
+   "pos": {
+    "t": 1788284251,
+    "f": 1,
+    "lc": 0,
+    "y": 25.5636316,
+    "x": -103.4645583,
+    "c": 153,
+    "z": 1140,
+    "s": 0,
+    "sc": 20
+   },
+   "address": "Calle Guanaceví, Gómez Palacio, Durango, 27140, México"
+  },
+  {
+   "nm": "IMA 07",
+   "id": 402225954,
+   "pos": {
+    "t": 1788283724,
+    "f": 1,
+    "lc": 0,
+    "y": 27.430435,
+    "x": -99.5367933,
+    "c": 178,
+    "z": 127,
+    "s": 0,
+    "sc": 19
+   },
+   "address": "Calle Mar de las Antillas, Nuevo Laredo, Tamaulipas, 88298, México"
+  },
+  {
+   "nm": "IMA 08",
+   "id": 402161356,
+   "pos": {
+    "t": 1788284253,
+    "f": 1,
+    "lc": 0,
+    "y": 43.070105,
+    "x": -93.3432033,
+    "c": 178,
+    "z": 372,
+    "s": 114,
+    "sc": 22
+   },
+   "address": "I 35, Mount Vernon Township, Cerro Gordo County, Iowa, United States"
+  },
+  {
+   "nm": "IMA 09",
+   "id": 402177782,
+   "pos": {
+    "t": 1788282623,
+    "f": 1,
+    "lc": 0,
+    "y": 27.4304266,
+    "x": -99.5368766,
+    "c": 71,
+    "z": 154,
+    "s": 0,
+    "sc": 18
+   },
+   "address": "Calle Mar de las Antillas, Nuevo Laredo, Tamaulipas, 88298, México"
+  },
+  {
+   "nm": "IMA 10",
+   "id": 401963433,
+   "pos": {
+    "t": 1788284265,
+    "f": 1,
+    "lc": 0,
+    "y": 28.4175933,
+    "x": -99.7121866,
+    "c": 305,
+    "z": 187,
+    "s": 116,
+    "sc": 22
+   },
+   "address": "Texas Vietnam Veterans Memorial Highway, Asherton, Dimmit County, Texas, United States"
+  },
+  {
+   "nm": "IMA 11",
+   "id": 402029885,
+   "pos": {
+    "t": 1788284254,
+    "f": 1,
+    "lc": 0,
+    "y": 35.37062,
+    "x": -109.041325,
+    "c": 50,
+    "z": 1889,
+    "s": 110,
+    "sc": 14
+   },
+   "address": "I 40, McKinley County, New Mexico, 86508, United States"
+  },
+  {
+   "nm": "IMA 12",
+   "id": 402368074,
+   "pos": {
+    "t": 1788283209,
+    "f": 1,
+    "lc": 0,
+    "y": 27.4302883,
+    "x": -99.5380916,
+    "c": 284,
+    "z": 121,
+    "s": 0,
+    "sc": 20
+   },
+   "address": "Calle Mar de las Antillas, Nuevo Laredo, Tamaulipas, 88298, México"
+  }
+ ]
+}

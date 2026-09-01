@@ -1,0 +1,68 @@
+[
+ {
+  "trip_number": "193-US-26",
+  "stage_number": "1",
+  "stops_in_transit": [
+   {
+    "stop_id": "129",
+    "location": "Kenansville, NC 28349",
+    "stop_order": "1",
+    "time_of_delivery": "09:00:00",
+    "bl_firmado_doc": {
+     "document_id": "5976",
+     "nombre_archivo": "BOL IBL037 KEN NC.pdf",
+     "path_servidor_real": "Uploads/Trips/1787414126_e6fc4d37_BOLIBL037KENNC.pdf",
+     "fecha_vencimiento": null
+    }
+   }
+  ]
+ },
+ {
+  "trip_number": "191-US-56T2-26",
+  "stage_number": "1",
+  "stops_in_transit": [
+   {
+    "stop_id": "128",
+    "location": "Laredo, TX 78045",
+    "stop_order": "1",
+    "time_of_delivery": null,
+    "bl_firmado_doc": {
+     "document_id": "5943",
+     "nombre_archivo": "BOL 101 TX.pdf",
+     "path_servidor_real": "Uploads/Trips/1786997506_bbfc84b1_BOL101TX.pdf",
+     "fecha_vencimiento": null
+    }
+   }
+  ]
+ },
+ {
+  "trip_number": "180-US-51T2-26",
+  "stage_number": "1",
+  "stops_in_transit": [
+   {
+    "stop_id": "125",
+    "location": "Tucker, GA",
+    "stop_order": "1",
+    "time_of_delivery": "10:00:00",
+    "bl_firmado_doc": {
+     "document_id": "5629",
+     "nombre_archivo": "BOL 102 GA.pdf",
+     "path_servidor_real": "Uploads/Trips/1785774592_a1c0ef02_BOL102GA.pdf",
+     "fecha_vencimiento": null
+    }
+   },
+   {
+    "stop_id": "126",
+    "location": "Indianapolis, IN 46229",
+    "stop_order": "2",
+    "time_of_delivery": "07:00:00",
+    "bl_firmado_doc": {
+     "document_id": "5641",
+     "nombre_archivo": "BOL 102 IND IN.pdf",
+     "path_servidor_real": "Uploads/Trips/1785856613_83c94979_BOL102INDIN.pdf",
+     "fecha_vencimiento": null
+    }
+   }
+  ]
+ }
+]
