@@ -30,6 +30,23 @@ Si quieres ver cómo queda un módulo migrado, ese es el ejemplo. La receta paso
 está en `docs/refactor/05-INCREMENTOS.md` y las reglas del módulo en
 `docs/MODULOS/nomina.md`.
 
+## Dos carpetas, una por rama
+
+Desde el 2026-08-31 el repo tiene dos worktrees, para que nadie le cambie el código al
+otro bajo los pies:
+
+| Carpeta | Rama | De quién |
+|---|---|---|
+| `~/Desktop/Work/IMA/ima-emiliano` | `Emiliano` | Emiliano: features y demos |
+| `~/Desktop/Work/IMA/frontend-ima-app-react` | `refactor-fase-1` | el refactor |
+
+Cada una tiene su `node_modules` y su `.env`. Ojo con levantar dos `npm run dev` a la vez:
+Vite toma el siguiente puerto libre, así que conviene mirar cuál es cuál antes de enseñar
+algo. Si una pantalla no se ve como esperas, lo primero es comprobar desde qué carpeta
+está corriendo el servidor.
+
+Los worktrees se listan con `git worktree list` y se quitan con `git worktree remove`.
+
 ## Cómo leer esto
 
 - Si tu módulo no aparece aquí, trabaja normal.
