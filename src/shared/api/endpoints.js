@@ -30,7 +30,10 @@ export const ENDPOINTS = {
   inspecciones: "inspecciones.php",
   inventario: "inventory.php",
   movil: "Mobile.php",
+  // Conviven dos versiones. La v2 la usan 12 archivos —todo el alta y edición de
+  // viajes nuevos—; la v1 sigue viva en las pantallas de edición antiguas.
   nuevosViajes: "new_trips.php",
+  nuevosViajesV2: "new_tripsv2.php",
   pagosAdmin: "pagos_admin.php",
   personalAdmin: "personal_admin.php",
   programacionViajes: "Programacion_viajes.php",
