@@ -9,6 +9,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  TablePagination,
   TableSortLabel,
   Typography,
 } from "@mui/material"
@@ -17,6 +18,7 @@ import {
   CELL_SX,
   HEADER_CELL_SX,
   HEADER_ROW_SX,
+  PAGINATION_SX,
   TABLE_CONTAINER_SX,
 } from "./estilos"
 
@@ -91,6 +93,8 @@ function FilaMensaje({ columnas, children, color = "text.secondary" }) {
  * @param {Function} [props.onOrdenChange] `(nuevoOrden) => void`; requiere `orden`.
  * @param {string} [props.colorBorde] Acento fino en el borde superior. Opcional:
  *   sin él la tabla usa el estilo neutro del resto del sistema.
+ * @param {number} [props.porPagina] Filas por página. Sin este valor no pagina:
+ *   una tabla de diez filas no necesita controles que estorben.
  * @returns {object} La tabla renderizada.
  *
  * @example
@@ -116,8 +120,11 @@ export function DataTable({
   orden: ordenControlado,
   onOrdenChange,
   colorBorde,
+  porPagina,
 }) {
   const [ordenInterno, setOrdenInterno] = useState({ campo: null, dir: null })
+  const [pagina, setPagina] = useState(0)
+  const [tamanoPagina, setTamanoPagina] = useState(porPagina ?? 10)
   const controlado = ordenControlado !== undefined
   const orden = controlado ? ordenControlado : ordenInterno
 
@@ -142,7 +149,12 @@ export function DataTable({
     else setOrdenInterno(nuevo)
   }
 
-  const hayFilas = ordenadas.length > 0
+  const pagina_ = Math.min(pagina, Math.max(0, Math.ceil(ordenadas.length / tamanoPagina) - 1))
+  const visibles = porPagina
+    ? ordenadas.slice(pagina_ * tamanoPagina, pagina_ * tamanoPagina + tamanoPagina)
+    : ordenadas
+
+  const hayFilas = visibles.length > 0
 
   return (
     <TableContainer
@@ -201,7 +213,7 @@ export function DataTable({
 
           {!cargando &&
             !error &&
-            ordenadas.map((fila, indice) => (
+            visibles.map((fila, indice) => (
               <TableRow
                 key={fila[claveFila] ?? indice}
                 hover
@@ -221,6 +233,24 @@ export function DataTable({
             ))}
         </TableBody>
       </Table>
+
+      {porPagina && ordenadas.length > tamanoPagina && (
+        <TablePagination
+          component="div"
+          count={ordenadas.length}
+          page={pagina_}
+          onPageChange={(_evento, nueva) => setPagina(nueva)}
+          rowsPerPage={tamanoPagina}
+          onRowsPerPageChange={(evento) => {
+            setTamanoPagina(Number(evento.target.value))
+            setPagina(0)
+          }}
+          rowsPerPageOptions={[10, 25, 50]}
+          labelRowsPerPage="Filas por página"
+          labelDisplayedRows={({ from, to, count }) => `${from}–${to} de ${count}`}
+          sx={PAGINATION_SX}
+        />
+      )}
     </TableContainer>
   )
 }

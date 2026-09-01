@@ -351,7 +351,27 @@ const FeatureSection = ({ features, userId, onToggleFeature }) => {
     );
 };
 
-const AccessDrawer = ({
+/**
+ * Panel lateral para gestionar los datos y los permisos de un usuario.
+ *
+ * Los permisos van por plataforma —escritorio y móvil— porque la app móvil
+ * consume los mismos endpoints con su propio juego de permisos. El árbol se
+ * arma desde `menuItemsConfig`, así que una sección nueva del menú aparece aquí
+ * sin tocar este archivo.
+ *
+ * @param {object} props Propiedades del componente.
+ * @param {boolean} props.open Si el panel está visible.
+ * @param {Function} props.handleClose Se llama al cerrar.
+ * @param {object} props.user Usuario que se está gestionando.
+ * @param {Array} props.featuresDesktop Permisos de escritorio del usuario.
+ * @param {Array} props.featuresMobile Permisos móviles del usuario.
+ * @param {boolean} props.featuresLoading Si los permisos siguen cargando.
+ * @param {Function} props.onToggleFeature `(userId, featureId, plataforma, concedido)`.
+ * @param {Function} props.onUpdateUser `(userId, datos)` al guardar los datos del usuario.
+ * @param {Array} props.sectionsToManage Árbol del menú con las secciones a gestionar.
+ * @returns {object} El panel renderizado.
+ */
+const PermisosDrawer = ({
     open, handleClose, user, sectionsToManage,
     featuresDesktop, featuresMobile, featuresLoading, onToggleFeature,
     onUpdateUser
@@ -527,4 +547,4 @@ const AccessDrawer = ({
     );
 };
 
-export default AccessDrawer;
+export default PermisosDrawer;

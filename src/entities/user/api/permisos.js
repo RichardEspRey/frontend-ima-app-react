@@ -40,9 +40,11 @@ export async function obtenerPermisosUsuario({ userId, signal }) {
     signal,
   })
 
+  // El campo se llama `plataform`, sin la segunda "a". Está así en la API y en la
+  // base; corregirlo aquí rompería la app móvil, que lee el mismo endpoint.
   return {
-    escritorio: features.filter((f) => f.app === PLATAFORMA.ESCRITORIO),
-    movil: features.filter((f) => f.app === PLATAFORMA.MOVIL),
+    escritorio: features.filter((f) => f.plataform === PLATAFORMA.ESCRITORIO),
+    movil: features.filter((f) => f.plataform === PLATAFORMA.MOVIL),
   }
 }
 
@@ -52,17 +54,16 @@ export async function obtenerPermisosUsuario({ userId, signal }) {
  * @endpoint POST features.php · op=toggle_user_feature
  * @param {object} parametros Datos del cambio.
  * @param {string} parametros.userId Usuario afectado.
- * @param {string} parametros.featureId Permiso a cambiar.
- * @param {string} parametros.plataforma `Desktop` o `Mobile`.
+ * @param {string} parametros.featureId Permiso a cambiar. Identifica ya la
+ *   plataforma, así que el endpoint no necesita recibirla.
  * @param {boolean} parametros.concedido Si queda habilitado.
  * @returns {Promise.<object>} La respuesta de la API.
  * @throws {ApiError} Si la API rechaza la operación.
  */
-export function cambiarPermisoUsuario({ userId, featureId, plataforma, concedido }) {
+export function cambiarPermisoUsuario({ userId, featureId, concedido }) {
   return post(ENDPOINTS.features, "toggle_user_feature", {
     user_id: userId,
     feature_id: featureId,
-    app: plataforma,
     enabled: concedido ? 1 : 0,
   })
 }
@@ -82,15 +83,44 @@ export function usePermisosUsuario(userId) {
 }
 
 /**
- * Cambia un permiso y refresca los del usuario afectado.
+ * Cambia un permiso, con actualización optimista.
+ *
+ * El interruptor se mueve de inmediato y se revierte si la API falla: son 55
+ * permisos por usuario y esperar la respuesta en cada clic hacía la pantalla
+ * lenta de usar. Al terminar se revalida contra el servidor.
  *
  * @returns {object} El resultado de `useMutation`.
  */
 export function useCambiarPermisoUsuario() {
   const cliente = useQueryClient()
+
   return useMutation({
     mutationFn: cambiarPermisoUsuario,
-    onSuccess: (_datos, variables) =>
+
+    onMutate: async ({ userId, featureId, concedido }) => {
+      const llave = llavePermisosUsuario(userId)
+      await cliente.cancelQueries({ queryKey: llave })
+      const previo = cliente.getQueryData(llave)
+
+      const aplicar = (lista = []) =>
+        lista.map((f) =>
+          String(f.feature_id) === String(featureId) ? { ...f, enabled: concedido ? 1 : 0 } : f,
+        )
+
+      cliente.setQueryData(llave, (actual) =>
+        actual
+          ? { escritorio: aplicar(actual.escritorio), movil: aplicar(actual.movil) }
+          : actual,
+      )
+
+      return { previo, llave }
+    },
+
+    onError: (_error, _variables, contexto) => {
+      if (contexto?.previo) cliente.setQueryData(contexto.llave, contexto.previo)
+    },
+
+    onSettled: (_datos, _error, variables) =>
       cliente.invalidateQueries({ queryKey: llavePermisosUsuario(variables.userId) }),
   })
 }
