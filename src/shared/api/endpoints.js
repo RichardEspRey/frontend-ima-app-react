@@ -16,7 +16,10 @@ export const ENDPOINTS = {
   charts: "charts.php",
   companies: "companies.php",
   cotizaciones: "Cotizaciones.php",
+  // Conviven dos versiones: la v2 la usa el Centro de Documentos y la v1 sigue
+  // viva porque el Sidebar lee de ella para el contador de pendientes.
   documentos: "IMA_Docs.php",
+  documentosV2: "IMA_Docsv2.php",
   drivers: "drivers.php",
   driversDocs: "drivers_docs.php",
   estatusUnidades: "estatus_unidades.php",

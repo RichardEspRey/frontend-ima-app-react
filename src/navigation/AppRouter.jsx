@@ -21,8 +21,6 @@ import TrailerEdit from '../screens/TrailerEdit.jsx';
 import EditTripForm from '../screens/EditTripForm.jsx';
 import EditTripComplete from '../screens/EditTripComplete.jsx';
 import EditTripUpcoming from '../screens//Dispatch/EditUpcoming.jsx';
-import ImaScreen from '../screens/ImaScreen.jsx';
-import ImaAdmin from '../screens/ImaAdmin.jsx';
 import DieselAdmin from '../screens/Gastos/DieselAdmin.jsx';
 import DieselDetalle from '../screens/Gastos/DieselDetalle.jsx';
 import DieselEditor from '../screens/Gastos/DieselEditor.jsx';
@@ -102,8 +100,6 @@ const AppRouter = () => {
             <Route path="/edit-trip-complete/:tripId" element={<EditTripComplete />} />
             <Route path="/edit-trip-upcoming/:tripId" element={<EditTripUpcoming />} />
             <Route path="/edit-trailer/:trailerId" element={<TrailerEdit />} />
-            <Route path="/ImaAdmin" element={<ImaAdmin />} />
-            <Route path="/ImaScreen" element={<ImaScreen />} />
             <Route path="/Inspeccion-final" element={<Inspeccion_final />} />
             <Route path="/edit-expense/:id_gasto" element={<ExpenseEdit />} />
             <Route path="/view-inventory" element={<StockAdmin />} />

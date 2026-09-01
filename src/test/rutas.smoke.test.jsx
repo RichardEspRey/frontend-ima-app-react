@@ -18,8 +18,6 @@ import { useAuthStore } from "../store/useAuthStore";
 const RUTAS = [
   "/CrearViaje",
   "/Ifta",
-  "/ImaAdmin",
-  "/ImaScreen",
   "/Inspeccion-final",
   "/ResiduoTrip",
   "/ResumenTrip/1",
