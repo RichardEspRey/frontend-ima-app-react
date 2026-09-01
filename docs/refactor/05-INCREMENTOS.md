@@ -197,7 +197,13 @@ tokens del sistema. No escribas colores ni tamaños a mano: si algo no está cub
 importa el token de `shared/ui/estilos`. Si el módulo traía un aspecto propio, se sustituye
 por el del sistema — es el mismo del Expense Manager y el Administrador de viajes.
 
-**7. Documentar el módulo** en `docs/MODULOS/<x>.md`: reglas de negocio, lo que sorprende,
+**7. Guarda una fixture de la respuesta real.** `curl` al endpoint, el JSON a
+`__tests__/fixtures/`, y unos tests contra él. Los tests que simulan la respuesta
+reproducen la suposición de quien los escribe: así se descubrió tarde que el campo era
+`plataform` y no `app`. En Documentos ya evitó un error — `valores` llega como objeto
+indexado, no como lista, y `postLista` habría devuelto vacío.
+
+**8. Documentar el módulo** en `docs/MODULOS/<x>.md`: reglas de negocio, lo que sorprende,
 y los bugs que se corrigieron de camino.
 
 ### Lo que hay que buscar en cada módulo

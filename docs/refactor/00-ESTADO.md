@@ -15,7 +15,7 @@
 
 ## Dónde vamos
 
-**Fase 1 (frontend) — incrementos 0 a 7 terminados.**
+**Fase 1 (frontend) — incrementos 0 a 8 terminados.**
 Todo vive en la rama larga **`refactor-fase-1`**, con un tag por incremento
 (`incremento-0`, `incremento-1`). No se mergea a `main` hasta estar probada al 100 %.
 
@@ -34,7 +34,8 @@ Todo vive en la rama larga **`refactor-fase-1`**, con un tag por incremento
 | 5 | **Nómina** completo (patrón de referencia) | **hecho** | tag `incremento-5` |
 | 6 | AccessManager / Usuarios | **hecho** | tag `incremento-6` |
 | 7 | Reports / Inicio | **hecho** | tag `incremento-7` |
-| 8 | IMA Manager (documentos) | **siguiente** | — |
+| 8 | IMA Manager (documentos) | **hecho** | tag `incremento-8` |
+| 9 | Mantenimientos / Órdenes de servicio | **siguiente** | — |
 | 6+ | Resto de módulos, uno por uno | pendiente | — |
 | N | Deduplicar formularios (~4 000 líneas) | pendiente | — |
 
@@ -112,6 +113,18 @@ GROUP BY u.id;
 
 Con eso se agrupan por lo que de verdad usan, en vez de inventar los roles.
 Mientras tanto **nadie pierde ni gana accesos**: sus flags individuales siguen mandando.
+
+## Falta probar a mano (incremento 8)
+
+`/ima-manager` es **el único módulo migrado sin verificar en el navegador**: la extensión
+de Chrome se desconectó a media revisión. Lo que conviene mirar:
+
+- Que las tarjetas de México y USA se pinten y los estados de vigencia cuadren.
+- Subir un documento y comprobar que se guarda.
+- Crear y retirar un requisito.
+
+El resto está cubierto: 24 tests de la entidad, 6 de ellos contra una fixture con la
+respuesta real de la API.
 
 ## Falta probar a mano (incremento 4b)
 
