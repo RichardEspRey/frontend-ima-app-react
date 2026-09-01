@@ -41,6 +41,7 @@ Todo vive en la rama larga **`refactor-fase-1`**, con un tag por incremento
 | 10 | Finanzas | **hecho** | tag `incremento-10` |
 | 11 | Safety / IFTA | **hecho** | tag `incremento-11` |
 | 12 | Dispatch (crear y editar viaje) | **hecho** | tag `incremento-12` |
+| 13 | Mapas / Tracking | **hecho** | tag `incremento-13` |
 | 6+ | Resto de módulos, uno por uno | pendiente | — |
 | — | Deduplicar: **cada par en el incremento de su módulo**, no al final | ver `05-INCREMENTOS.md` | — |
 
@@ -65,7 +66,9 @@ Si la red vuelve a filtrar SSH, el remoto por HTTPS suele pasar:
 ## Al retomar
 
 El incremento 9 está partido en **9a, 9b y 9c** (ver `05-INCREMENTOS.md`).
-Incrementos 9 a 12 completos. Sigue el **13: Mapas / Tracking** (917 líneas, 24 hooks).
+Incrementos 9 a 13 completos. Sigue el **14: Unidades** (Drivers, Trucks, Trailers y
+EstatusUnidades: 10 archivos sueltos, ~2 800 líneas; medir duplicación con `diff` antes
+de migrar).
 
 Lo primero al volver, sobre todo si pasaron días: `npm run refactor:sync`. Si la red no
 deja hacer fetch, el script sigue con lo local y lo avisa.
