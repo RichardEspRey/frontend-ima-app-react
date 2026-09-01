@@ -8,7 +8,8 @@ gasto, un viaje o un empleado. Si un componente necesita saberlo, va en `feature
 | Pieza | Qué resuelve |
 |---|---|
 | `DataTable` | Tabla con columnas declarativas, orden por columna y los tres estados (cargando, error, vacío). Sustituye el patrón copiado en **45 archivos**. |
-| `PageHeader` | Título, descripción y acciones. Estaba copiado con variaciones en casi todas las pantallas. |
+| `PageHeader` | Sección, título, descripción y acciones. Estaba copiado con variaciones en casi todas las pantallas. |
+| `StatCard` | Tarjeta de cifra: etiqueta, número grande y nota al pie. |
 | `ErrorBoundary` | Aísla el fallo de una pantalla para que no deje la app en blanco. Se monta **por página**, no una vez arriba. |
 | `notify` | Avisos y confirmaciones. Envuelve una sola librería. |
 | `estilos` | Los tokens del sistema de diseño: cabeceras, tarjetas, botones, chips. |
@@ -74,6 +75,25 @@ sola regla de estilo. Cambiar el diseño de todas las tablas del proyecto es edi
 
 Para lo que no cubran esos componentes —botones, tarjetas, chips— se importan los tokens
 directo: `import { DARK_BTN_SX } from "../../shared/ui/estilos"`. Nada de colores a mano.
+
+## StatCard
+
+```jsx
+<StatCard
+  etiqueta="Nómina total (MXN)"
+  valor="$18,800.00"
+  pie="Pagado a 7 empleado(s)"
+  acento="#15803d"
+  icono={<MonetizationOnIcon fontSize="small" />}
+/>
+```
+
+**Tarjeta blanca con borde fino, y el color solo en la cifra.** No lleva fondo de color ni
+barra lateral gruesa: eso compite con el dato en vez de destacarlo, y es lo que hacía que
+el Desglose de Nómina no se pareciera al resto de la app.
+
+El icono va junto a la etiqueta y no junto al número, para que una fila de tarjetas se lea
+de un vistazo por sus cifras.
 
 ## Cuidado con `<Typography>` y los `div`
 
