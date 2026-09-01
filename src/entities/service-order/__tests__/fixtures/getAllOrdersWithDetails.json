@@ -1,0 +1,1151 @@
+{
+ "status": "success",
+ "data": [
+  {
+   "id_orden": "353",
+   "fecha_orden": "2026-06-22",
+   "estatus": "Abierta",
+   "truck_id": "12",
+   "tipo_cambio": null,
+   "nombre_camion": "11",
+   "servicios": [
+    {
+     "id_servicio": "838",
+     "id_orden": "353",
+     "tipo_mantenimiento": "Correctivo",
+     "tipo_reparacion": "Rotacion de llantas delanteras",
+     "estatus": "Abierta",
+     "fecha_termino": "2026-06-30 09:51:26",
+     "detalles": [
+      {
+       "id_detalle": "1078",
+       "id_servicio": "838",
+       "id_articulo": null,
+       "tipo_detalle": "Mano de Obra",
+       "descripcion": "Mano de Obra",
+       "cantidad": "1.00",
+       "costo": "300.00"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id_orden": "352",
+   "fecha_orden": "2026-06-23",
+   "estatus": "Abierta",
+   "truck_id": "10",
+   "tipo_cambio": null,
+   "nombre_camion": "10",
+   "servicios": [
+    {
+     "id_servicio": "837",
+     "id_orden": "352",
+     "tipo_mantenimiento": "Preventivo",
+     "tipo_reparacion": "Afinacion",
+     "estatus": "Abierta",
+     "fecha_termino": "2026-06-30 09:49:27",
+     "detalles": [
+      {
+       "id_detalle": "1077",
+       "id_servicio": "837",
+       "id_articulo": "474",
+       "tipo_detalle": "Consumible",
+       "descripcion": "Delvac 5GA",
+       "cantidad": "2.00",
+       "costo": "74.69"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id_orden": "351",
+   "fecha_orden": "2026-06-17",
+   "estatus": "Abierta",
+   "truck_id": "10",
+   "tipo_cambio": null,
+   "nombre_camion": "10",
+   "servicios": [
+    {
+     "id_servicio": "836",
+     "id_orden": "351",
+     "tipo_mantenimiento": "Correctivo",
+     "tipo_reparacion": "Cambio de llantas delanteras",
+     "estatus": "Abierta",
+     "fecha_termino": "2026-06-30 09:46:29",
+     "detalles": [
+      {
+       "id_detalle": "1075",
+       "id_servicio": "836",
+       "id_articulo": null,
+       "tipo_detalle": "Mano de Obra",
+       "descripcion": "Mano de Obra",
+       "cantidad": "1.00",
+       "costo": "300.00"
+      },
+      {
+       "id_detalle": "1076",
+       "id_servicio": "836",
+       "id_articulo": "450",
+       "tipo_detalle": "Refaccion",
+       "descripcion": "11-R 22.5 (18) Serna #1",
+       "cantidad": "2.00",
+       "costo": "3294.00"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id_orden": "350",
+   "fecha_orden": "2026-06-24",
+   "estatus": "Abierta",
+   "truck_id": "7",
+   "tipo_cambio": null,
+   "nombre_camion": "7",
+   "servicios": [
+    {
+     "id_servicio": "835",
+     "id_orden": "350",
+     "tipo_mantenimiento": "Preventivo",
+     "tipo_reparacion": "Afinacion",
+     "estatus": "Abierta",
+     "fecha_termino": "2026-06-30 09:42:05",
+     "detalles": [
+      {
+       "id_detalle": "1073",
+       "id_servicio": "835",
+       "id_articulo": "455",
+       "tipo_detalle": "Refaccion",
+       "descripcion": "Filtro de aceite P7505",
+       "cantidad": "1.00",
+       "costo": "577.37"
+      },
+      {
+       "id_detalle": "1074",
+       "id_servicio": "835",
+       "id_articulo": "258",
+       "tipo_detalle": "Consumible",
+       "descripcion": "Delvac 2.5 galones",
+       "cantidad": "2.00",
+       "costo": "39.02"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id_orden": "349",
+   "fecha_orden": "2026-06-13",
+   "estatus": "Abierta",
+   "truck_id": "7",
+   "tipo_cambio": null,
+   "nombre_camion": "7",
+   "servicios": [
+    {
+     "id_servicio": "834",
+     "id_orden": "349",
+     "tipo_mantenimiento": "Correctivo",
+     "tipo_reparacion": "Revision y relleno de anticongelante",
+     "estatus": "Abierta",
+     "fecha_termino": "2026-06-30 09:33:47",
+     "detalles": [
+      {
+       "id_detalle": "1072",
+       "id_servicio": "834",
+       "id_articulo": "467",
+       "tipo_detalle": "Refaccion",
+       "descripcion": "Anticongelante walmart",
+       "cantidad": "1.00",
+       "costo": "11.94"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id_orden": "348",
+   "fecha_orden": "2026-06-18",
+   "estatus": "Abierta",
+   "truck_id": "6",
+   "tipo_cambio": null,
+   "nombre_camion": "6",
+   "servicios": [
+    {
+     "id_servicio": "832",
+     "id_orden": "348",
+     "tipo_mantenimiento": "Correctivo",
+     "tipo_reparacion": "Cambio de luz de placa ",
+     "estatus": "Abierta",
+     "fecha_termino": "2026-06-30 09:30:31",
+     "detalles": [
+      {
+       "id_detalle": "1070",
+       "id_servicio": "832",
+       "id_articulo": "548",
+       "tipo_detalle": "Refaccion",
+       "descripcion": "Truck Parts luz de placa",
+       "cantidad": "1.00",
+       "costo": "180.36"
+      }
+     ]
+    },
+    {
+     "id_servicio": "833",
+     "id_orden": "348",
+     "tipo_mantenimiento": "Correctivo",
+     "tipo_reparacion": "Soldadura de base porta placa ",
+     "estatus": "Abierta",
+     "fecha_termino": "2026-06-30 09:30:31",
+     "detalles": [
+      {
+       "id_detalle": "1071",
+       "id_servicio": "833",
+       "id_articulo": null,
+       "tipo_detalle": "Mano de Obra",
+       "descripcion": "Mano de Obra",
+       "cantidad": "1.00",
+       "costo": "200.00"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id_orden": "347",
+   "fecha_orden": "2026-06-17",
+   "estatus": "Completado",
+   "truck_id": "6",
+   "tipo_cambio": null,
+   "nombre_camion": "6",
+   "servicios": [
+    {
+     "id_servicio": "829",
+     "id_orden": "347",
+     "tipo_mantenimiento": "Correctivo",
+     "tipo_reparacion": "Cambio de brazo limpiaparabrisas",
+     "estatus": "Completado",
+     "fecha_termino": "2026-06-30 09:23:08",
+     "detalles": [
+      {
+       "id_detalle": "1067",
+       "id_servicio": "829",
+       "id_articulo": "546",
+       "tipo_detalle": "Refaccion",
+       "descripcion": "Brazo limpiaparabrisas",
+       "cantidad": "1.00",
+       "costo": "500.00"
+      }
+     ]
+    },
+    {
+     "id_servicio": "830",
+     "id_orden": "347",
+     "tipo_mantenimiento": "Correctivo",
+     "tipo_reparacion": "Cambio de conexiones de sam chasis",
+     "estatus": "Abierta",
+     "fecha_termino": "2026-06-30 09:23:08",
+     "detalles": [
+      {
+       "id_detalle": "1068",
+       "id_servicio": "830",
+       "id_articulo": "547",
+       "tipo_detalle": "Refaccion",
+       "descripcion": "Conexiones de sam chasis",
+       "cantidad": "1.00",
+       "costo": "500.00"
+      }
+     ]
+    },
+    {
+     "id_servicio": "831",
+     "id_orden": "347",
+     "tipo_mantenimiento": "Correctivo",
+     "tipo_reparacion": "Cambio de gomas limpiaparabrisas",
+     "estatus": "Abierta",
+     "fecha_termino": "2026-06-30 09:23:08",
+     "detalles": [
+      {
+       "id_detalle": "1069",
+       "id_servicio": "831",
+       "id_articulo": "475",
+       "tipo_detalle": "Refaccion",
+       "descripcion": "Sams-Limpiaparabrisas",
+       "cantidad": "2.00",
+       "costo": "10.69"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id_orden": "346",
+   "fecha_orden": "2026-06-11",
+   "estatus": "Abierta",
+   "truck_id": "6",
+   "tipo_cambio": null,
+   "nombre_camion": "6",
+   "servicios": [
+    {
+     "id_servicio": "828",
+     "id_orden": "346",
+     "tipo_mantenimiento": "Correctivo",
+     "tipo_reparacion": "Revision de A/C",
+     "estatus": "Abierta",
+     "fecha_termino": "2026-06-30 09:17:40",
+     "detalles": []
+    }
+   ]
+  },
+  {
+   "id_orden": "345",
+   "fecha_orden": "2026-06-25",
+   "estatus": "Completado",
+   "truck_id": "5",
+   "tipo_cambio": null,
+   "nombre_camion": "5",
+   "servicios": [
+    {
+     "id_servicio": "825",
+     "id_orden": "345",
+     "tipo_mantenimiento": "Correctivo",
+     "tipo_reparacion": "Cambio de 4 llantas ",
+     "estatus": "Abierta",
+     "fecha_termino": "2026-06-30 09:11:33",
+     "detalles": [
+      {
+       "id_detalle": "1064",
+       "id_servicio": "825",
+       "id_articulo": null,
+       "tipo_detalle": "Mano de Obra",
+       "descripcion": "Mano de Obra",
+       "cantidad": "1.00",
+       "costo": "600.00"
+      }
+     ]
+    },
+    {
+     "id_servicio": "826",
+     "id_orden": "345",
+     "tipo_mantenimiento": "Correctivo",
+     "tipo_reparacion": "Cambio de rotochamber y reten",
+     "estatus": "Completado",
+     "fecha_termino": "2026-06-30 09:11:33",
+     "detalles": [
+      {
+       "id_detalle": "1065",
+       "id_servicio": "826",
+       "id_articulo": "536",
+       "tipo_detalle": "Refaccion",
+       "descripcion": "Técnica Diesel Rotochamber",
+       "cantidad": "1.00",
+       "costo": "1080.00"
+      }
+     ]
+    },
+    {
+     "id_servicio": "827",
+     "id_orden": "345",
+     "tipo_mantenimiento": "Correctivo",
+     "tipo_reparacion": "Cambio de bolsa de aire",
+     "estatus": "Abierta",
+     "fecha_termino": "2026-06-30 09:11:33",
+     "detalles": [
+      {
+       "id_detalle": "1066",
+       "id_servicio": "827",
+       "id_articulo": "532",
+       "tipo_detalle": "Refaccion",
+       "descripcion": "Técnica diesel-Bolsa de aire",
+       "cantidad": "1.00",
+       "costo": "1620.00"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id_orden": "344",
+   "fecha_orden": "2026-06-20",
+   "estatus": "Abierta",
+   "truck_id": "5",
+   "tipo_cambio": "17.52",
+   "nombre_camion": "5",
+   "servicios": [
+    {
+     "id_servicio": "824",
+     "id_orden": "344",
+     "tipo_mantenimiento": "Correctivo",
+     "tipo_reparacion": "Cambio de llanta pos.3 durante viaje",
+     "estatus": "Abierta",
+     "fecha_termino": "2026-06-30 08:58:51",
+     "detalles": [
+      {
+       "id_detalle": "1063",
+       "id_servicio": "824",
+       "id_articulo": null,
+       "tipo_detalle": "Mano de Obra",
+       "descripcion": "Mano de Obra",
+       "cantidad": "1.00",
+       "costo": "413.28"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id_orden": "343",
+   "fecha_orden": "2026-06-19",
+   "estatus": "Pendiente",
+   "truck_id": "4",
+   "tipo_cambio": null,
+   "nombre_camion": "4",
+   "servicios": [
+    {
+     "id_servicio": "819",
+     "id_orden": "343",
+     "tipo_mantenimiento": "Correctivo",
+     "tipo_reparacion": "Cambio de deposito de anticongelante}",
+     "estatus": "Abierta",
+     "fecha_termino": "2026-06-29 08:02:44",
+     "detalles": [
+      {
+       "id_detalle": "1060",
+       "id_servicio": "819",
+       "id_articulo": "419",
+       "tipo_detalle": "Refaccion",
+       "descripcion": "Deposito de Anticongelante/Agua EBAY",
+       "cantidad": "1.00",
+       "costo": "74.78"
+      }
+     ]
+    },
+    {
+     "id_servicio": "820",
+     "id_orden": "343",
+     "tipo_mantenimiento": "Correctivo",
+     "tipo_reparacion": "Cambio de mangueras de servicio",
+     "estatus": "Abierta",
+     "fecha_termino": "2026-06-29 08:02:44",
+     "detalles": []
+    },
+    {
+     "id_servicio": "821",
+     "id_orden": "343",
+     "tipo_mantenimiento": "Correctivo",
+     "tipo_reparacion": "Revision y relleno de anticongelante ",
+     "estatus": "Abierta",
+     "fecha_termino": "2026-06-29 08:02:44",
+     "detalles": []
+    },
+    {
+     "id_servicio": "822",
+     "id_orden": "343",
+     "tipo_mantenimiento": "Correctivo",
+     "tipo_reparacion": "Soldadura de tubo del sistema de enfriamiento",
+     "estatus": "Abierta",
+     "fecha_termino": "2026-06-29 08:02:44",
+     "detalles": [
+      {
+       "id_detalle": "1061",
+       "id_servicio": "822",
+       "id_articulo": null,
+       "tipo_detalle": "Mano de Obra",
+       "descripcion": "Mano de Obra",
+       "cantidad": "1.00",
+       "costo": "200.00"
+      }
+     ]
+    },
+    {
+     "id_servicio": "823",
+     "id_orden": "343",
+     "tipo_mantenimiento": "Correctivo",
+     "tipo_reparacion": "Cambio de sensor de refrigerante",
+     "estatus": "Pendiente",
+     "fecha_termino": "2026-06-29 08:27:16",
+     "detalles": [
+      {
+       "id_detalle": "1062",
+       "id_servicio": "823",
+       "id_articulo": "457",
+       "tipo_detalle": "Refaccion",
+       "descripcion": "Sensor refrigerante (cone-0206)",
+       "cantidad": "1.00",
+       "costo": "748.98"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id_orden": "342",
+   "fecha_orden": "2026-06-11",
+   "estatus": "Abierta",
+   "truck_id": "2",
+   "tipo_cambio": null,
+   "nombre_camion": "2",
+   "servicios": [
+    {
+     "id_servicio": "816",
+     "id_orden": "342",
+     "tipo_mantenimiento": "Correctivo",
+     "tipo_reparacion": "Reparacion de inyectores",
+     "estatus": "Abierta",
+     "fecha_termino": "2026-06-29 07:26:58",
+     "detalles": [
+      {
+       "id_detalle": "1055",
+       "id_servicio": "816",
+       "id_articulo": "500",
+       "tipo_detalle": "Refaccion",
+       "descripcion": "Reparacion de inyectores",
+       "cantidad": "1.00",
+       "costo": "6000.00"
+      }
+     ]
+    },
+    {
+     "id_servicio": "817",
+     "id_orden": "342",
+     "tipo_mantenimiento": "Correctivo",
+     "tipo_reparacion": "Cambio de valvula de frenos",
+     "estatus": "Abierta",
+     "fecha_termino": "2026-06-29 07:26:58",
+     "detalles": [
+      {
+       "id_detalle": "1056",
+       "id_servicio": "817",
+       "id_articulo": "424",
+       "tipo_detalle": "Refaccion",
+       "descripcion": "Valvula QR-1C automann TDL",
+       "cantidad": "1.00",
+       "costo": "340.64"
+      }
+     ]
+    },
+    {
+     "id_servicio": "818",
+     "id_orden": "342",
+     "tipo_mantenimiento": "Correctivo",
+     "tipo_reparacion": "Mantenimiento de A/C",
+     "estatus": "Abierta",
+     "fecha_termino": "2026-06-29 07:26:58",
+     "detalles": [
+      {
+       "id_detalle": "1057",
+       "id_servicio": "818",
+       "id_articulo": "54",
+       "tipo_detalle": "Consumible",
+       "descripcion": "Gas refrigerante 1k JOMAR",
+       "cantidad": "1.00",
+       "costo": "199.89"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id_orden": "341",
+   "fecha_orden": "2026-05-22",
+   "estatus": "Abierta",
+   "truck_id": "9",
+   "tipo_cambio": null,
+   "nombre_camion": "9",
+   "servicios": [
+    {
+     "id_servicio": "815",
+     "id_orden": "341",
+     "tipo_mantenimiento": "Correctivo",
+     "tipo_reparacion": "Cambio de manguera de calefaccion",
+     "estatus": "Abierta",
+     "fecha_termino": "2026-06-28 16:52:39",
+     "detalles": [
+      {
+       "id_detalle": "1053",
+       "id_servicio": "815",
+       "id_articulo": "361",
+       "tipo_detalle": "Refaccion",
+       "descripcion": "Manguera de calefaccion Tornilleria del sur",
+       "cantidad": "1.00",
+       "costo": "235.44"
+      },
+      {
+       "id_detalle": "1054",
+       "id_servicio": "815",
+       "id_articulo": "360",
+       "tipo_detalle": "Refaccion",
+       "descripcion": "Mangueras de calefaccion",
+       "cantidad": "1.00",
+       "costo": "388.80"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id_orden": "340",
+   "fecha_orden": "2026-03-18",
+   "estatus": "Abierta",
+   "truck_id": "10",
+   "tipo_cambio": null,
+   "nombre_camion": "10",
+   "servicios": [
+    {
+     "id_servicio": "814",
+     "id_orden": "340",
+     "tipo_mantenimiento": "Correctivo",
+     "tipo_reparacion": "Mantenimiento del sistema de combustible",
+     "estatus": "Abierta",
+     "fecha_termino": "2026-06-25 19:56:42",
+     "detalles": [
+      {
+       "id_detalle": "1047",
+       "id_servicio": "814",
+       "id_articulo": "495",
+       "tipo_detalle": "Refaccion",
+       "descripcion": "Filtro secador RBR",
+       "cantidad": "1.00",
+       "costo": "216.49"
+      },
+      {
+       "id_detalle": "1048",
+       "id_servicio": "814",
+       "id_articulo": "496",
+       "tipo_detalle": "Refaccion",
+       "descripcion": "Manguera de descarga",
+       "cantidad": "1.00",
+       "costo": "97.41"
+      },
+      {
+       "id_detalle": "1049",
+       "id_servicio": "814",
+       "id_articulo": "497",
+       "tipo_detalle": "Refaccion",
+       "descripcion": "Nylon 8 pulgadas",
+       "cantidad": "1.00",
+       "costo": "7.56"
+      },
+      {
+       "id_detalle": "1050",
+       "id_servicio": "814",
+       "id_articulo": "498",
+       "tipo_detalle": "Consumible",
+       "descripcion": "Cinta de teflon",
+       "cantidad": "1.00",
+       "costo": "1.72"
+      },
+      {
+       "id_detalle": "1051",
+       "id_servicio": "814",
+       "id_articulo": "494",
+       "tipo_detalle": "Refaccion",
+       "descripcion": "Filtro de diesel fleet pride",
+       "cantidad": "1.00",
+       "costo": "97.77"
+      },
+      {
+       "id_detalle": "1052",
+       "id_servicio": "814",
+       "id_articulo": "499",
+       "tipo_detalle": "Refaccion",
+       "descripcion": "Valvula check Birmingham",
+       "cantidad": "1.00",
+       "costo": "12.21"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id_orden": "339",
+   "fecha_orden": "2026-06-26",
+   "estatus": "Abierta",
+   "truck_id": "10",
+   "tipo_cambio": null,
+   "nombre_camion": "10",
+   "servicios": [
+    {
+     "id_servicio": "813",
+     "id_orden": "339",
+     "tipo_mantenimiento": "Correctivo",
+     "tipo_reparacion": "Cambio de radiadoy y baterias",
+     "estatus": "Abierta",
+     "fecha_termino": "2026-06-25 18:16:30",
+     "detalles": [
+      {
+       "id_detalle": "1041",
+       "id_servicio": "813",
+       "id_articulo": null,
+       "tipo_detalle": "Mano de Obra",
+       "descripcion": "Mano de Obra",
+       "cantidad": "1.00",
+       "costo": "1243.23"
+      },
+      {
+       "id_detalle": "1042",
+       "id_servicio": "813",
+       "id_articulo": "488",
+       "tipo_detalle": "Refaccion",
+       "descripcion": "Radiador 2401000LW",
+       "cantidad": "1.00",
+       "costo": "925.00"
+      },
+      {
+       "id_detalle": "1043",
+       "id_servicio": "813",
+       "id_articulo": "489",
+       "tipo_detalle": "Consumible",
+       "descripcion": "Anticongelante rojo",
+       "cantidad": "14.00",
+       "costo": "9.99"
+      },
+      {
+       "id_detalle": "1044",
+       "id_servicio": "813",
+       "id_articulo": "490",
+       "tipo_detalle": "Refaccion",
+       "descripcion": "Suministros BH1382",
+       "cantidad": "1.00",
+       "costo": "26.99"
+      },
+      {
+       "id_detalle": "1045",
+       "id_servicio": "813",
+       "id_articulo": "491",
+       "tipo_detalle": "Refaccion",
+       "descripcion": "Baterias 31BH",
+       "cantidad": "4.00",
+       "costo": "106.59"
+      },
+      {
+       "id_detalle": "1046",
+       "id_servicio": "813",
+       "id_articulo": "492",
+       "tipo_detalle": "Refaccion",
+       "descripcion": "31BHC",
+       "cantidad": "4.00",
+       "costo": "14.00"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id_orden": "338",
+   "fecha_orden": "2026-04-28",
+   "estatus": "Abierta",
+   "truck_id": "12",
+   "tipo_cambio": null,
+   "nombre_camion": "11",
+   "servicios": [
+    {
+     "id_servicio": "812",
+     "id_orden": "338",
+     "tipo_mantenimiento": "Correctivo",
+     "tipo_reparacion": "Cambio de espejo lateral",
+     "estatus": "Abierta",
+     "fecha_termino": "2026-06-15 09:43:04",
+     "detalles": [
+      {
+       "id_detalle": "1038",
+       "id_servicio": "812",
+       "id_articulo": "431",
+       "tipo_detalle": "Refaccion",
+       "descripcion": "Vidrio plano",
+       "cantidad": "1.00",
+       "costo": "62.28"
+      },
+      {
+       "id_detalle": "1039",
+       "id_servicio": "812",
+       "id_articulo": "432",
+       "tipo_detalle": "Refaccion",
+       "descripcion": "Carcasa con bisel de espejo",
+       "cantidad": "1.00",
+       "costo": "74.70"
+      },
+      {
+       "id_detalle": "1040",
+       "id_servicio": "812",
+       "id_articulo": "433",
+       "tipo_detalle": "Refaccion",
+       "descripcion": "Espejo convexo",
+       "cantidad": "1.00",
+       "costo": "27.08"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id_orden": "337",
+   "fecha_orden": "2026-04-21",
+   "estatus": "Abierta",
+   "truck_id": "12",
+   "tipo_cambio": null,
+   "nombre_camion": "11",
+   "servicios": [
+    {
+     "id_servicio": "811",
+     "id_orden": "337",
+     "tipo_mantenimiento": "Correctivo",
+     "tipo_reparacion": "Cambio de conexion de aire",
+     "estatus": "Abierta",
+     "fecha_termino": "2026-06-15 09:07:40",
+     "detalles": [
+      {
+       "id_detalle": "1037",
+       "id_servicio": "811",
+       "id_articulo": "430",
+       "tipo_detalle": "Refaccion",
+       "descripcion": "Conexion rapida de bolsas de aire",
+       "cantidad": "1.00",
+       "costo": "15.23"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id_orden": "336",
+   "fecha_orden": "2026-04-13",
+   "estatus": "Abierta",
+   "truck_id": "9",
+   "tipo_cambio": null,
+   "nombre_camion": "9",
+   "servicios": [
+    {
+     "id_servicio": "808",
+     "id_orden": "336",
+     "tipo_mantenimiento": "Correctivo",
+     "tipo_reparacion": "Cambio de secador de aire",
+     "estatus": "Abierta",
+     "fecha_termino": "2026-06-12 15:42:23",
+     "detalles": [
+      {
+       "id_detalle": "1032",
+       "id_servicio": "808",
+       "id_articulo": "281",
+       "tipo_detalle": "Refaccion",
+       "descripcion": "Secador de aire",
+       "cantidad": "1.00",
+       "costo": "205.55"
+      }
+     ]
+    },
+    {
+     "id_servicio": "809",
+     "id_orden": "336",
+     "tipo_mantenimiento": "Correctivo",
+     "tipo_reparacion": "Cambio de tubo de descarga de aire ",
+     "estatus": "Abierta",
+     "fecha_termino": "2026-06-12 15:42:23",
+     "detalles": [
+      {
+       "id_detalle": "1033",
+       "id_servicio": "809",
+       "id_articulo": "427",
+       "tipo_detalle": "Refaccion",
+       "descripcion": "Tubo metalico de descarga de aire",
+       "cantidad": "1.00",
+       "costo": "221.17"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id_orden": "335",
+   "fecha_orden": "2026-06-01",
+   "estatus": "Abierta",
+   "truck_id": "12",
+   "tipo_cambio": null,
+   "nombre_camion": "11",
+   "servicios": [
+    {
+     "id_servicio": "801",
+     "id_orden": "335",
+     "tipo_mantenimiento": "Preventivo",
+     "tipo_reparacion": "Ajuste de balatas",
+     "estatus": "Abierta",
+     "fecha_termino": "2026-06-11 07:32:13",
+     "detalles": []
+    },
+    {
+     "id_servicio": "802",
+     "id_orden": "335",
+     "tipo_mantenimiento": "Preventivo",
+     "tipo_reparacion": "Relleno de niveles",
+     "estatus": "Abierta",
+     "fecha_termino": "2026-06-11 07:32:13",
+     "detalles": []
+    },
+    {
+     "id_servicio": "803",
+     "id_orden": "335",
+     "tipo_mantenimiento": "Preventivo",
+     "tipo_reparacion": "Ajuste de espejo copiloto ",
+     "estatus": "Abierta",
+     "fecha_termino": "2026-06-11 07:32:13",
+     "detalles": []
+    },
+    {
+     "id_servicio": "804",
+     "id_orden": "335",
+     "tipo_mantenimiento": "Preventivo",
+     "tipo_reparacion": "Lavado de unidad",
+     "estatus": "Abierta",
+     "fecha_termino": "2026-06-11 07:32:13",
+     "detalles": []
+    },
+    {
+     "id_servicio": "805",
+     "id_orden": "335",
+     "tipo_mantenimiento": "Preventivo",
+     "tipo_reparacion": "Mantenimiento de Luces",
+     "estatus": "Abierta",
+     "fecha_termino": "2026-06-11 07:32:13",
+     "detalles": []
+    }
+   ]
+  },
+  {
+   "id_orden": "334",
+   "fecha_orden": "2026-06-09",
+   "estatus": "Abierta",
+   "truck_id": "10",
+   "tipo_cambio": null,
+   "nombre_camion": "10",
+   "servicios": [
+    {
+     "id_servicio": "800",
+     "id_orden": "334",
+     "tipo_mantenimiento": "Preventivo",
+     "tipo_reparacion": "Lavado de unidad",
+     "estatus": "Abierta",
+     "fecha_termino": "2026-06-11 07:27:13",
+     "detalles": []
+    }
+   ]
+  },
+  {
+   "id_orden": "333",
+   "fecha_orden": "2026-06-04",
+   "estatus": "Abierta",
+   "truck_id": "10",
+   "tipo_cambio": null,
+   "nombre_camion": "10",
+   "servicios": [
+    {
+     "id_servicio": "797",
+     "id_orden": "333",
+     "tipo_mantenimiento": "Correctivo",
+     "tipo_reparacion": "Cambio de bolsa de aire posc.2",
+     "estatus": "Abierta",
+     "fecha_termino": "2026-06-11 07:25:43",
+     "detalles": []
+    },
+    {
+     "id_servicio": "798",
+     "id_orden": "333",
+     "tipo_mantenimiento": "Preventivo",
+     "tipo_reparacion": "Ajuste de balatas",
+     "estatus": "Abierta",
+     "fecha_termino": "2026-06-11 07:25:43",
+     "detalles": []
+    },
+    {
+     "id_servicio": "799",
+     "id_orden": "333",
+     "tipo_mantenimiento": "Preventivo",
+     "tipo_reparacion": "Engrasado de quinta y chasis",
+     "estatus": "Abierta",
+     "fecha_termino": "2026-06-11 07:25:43",
+     "detalles": []
+    }
+   ]
+  },
+  {
+   "id_orden": "332",
+   "fecha_orden": "2026-06-09",
+   "estatus": "Abierta",
+   "truck_id": "9",
+   "tipo_cambio": null,
+   "nombre_camion": "9",
+   "servicios": [
+    {
+     "id_servicio": "795",
+     "id_orden": "332",
+     "tipo_mantenimiento": "Correctivo",
+     "tipo_reparacion": "Cambio de manguera de calefaccion",
+     "estatus": "Abierta",
+     "fecha_termino": "2026-06-10 14:51:28",
+     "detalles": []
+    }
+   ]
+  },
+  {
+   "id_orden": "331",
+   "fecha_orden": "2026-06-06",
+   "estatus": "Abierta",
+   "truck_id": "9",
+   "tipo_cambio": null,
+   "nombre_camion": "9",
+   "servicios": [
+    {
+     "id_servicio": "793",
+     "id_orden": "331",
+     "tipo_mantenimiento": "Preventivo",
+     "tipo_reparacion": "Afinacion",
+     "estatus": "Abierta",
+     "fecha_termino": "2026-06-10 14:49:55",
+     "detalles": [
+      {
+       "id_detalle": "1022",
+       "id_servicio": "793",
+       "id_articulo": "422",
+       "tipo_detalle": "Consumible",
+       "descripcion": "Delvac lata 5 galones",
+       "cantidad": "2.00",
+       "costo": "74.69"
+      },
+      {
+       "id_detalle": "1023",
+       "id_servicio": "793",
+       "id_articulo": "417",
+       "tipo_detalle": "Refaccion",
+       "descripcion": "Filtro de aceite P7505 TDL",
+       "cantidad": "1.00",
+       "costo": "577.37"
+      }
+     ]
+    },
+    {
+     "id_servicio": "794",
+     "id_orden": "331",
+     "tipo_mantenimiento": "Correctivo",
+     "tipo_reparacion": "Cambo de conector de foco de luz baja",
+     "estatus": "Abierta",
+     "fecha_termino": "2026-06-10 14:49:55",
+     "detalles": []
+    }
+   ]
+  },
+  {
+   "id_orden": "330",
+   "fecha_orden": "2026-06-05",
+   "estatus": "Pendiente",
+   "truck_id": "8",
+   "tipo_cambio": null,
+   "nombre_camion": "8",
+   "servicios": [
+    {
+     "id_servicio": "789",
+     "id_orden": "330",
+     "tipo_mantenimiento": "Preventivo",
+     "tipo_reparacion": "Afinacion",
+     "estatus": "Abierta",
+     "fecha_termino": "2026-06-10 14:29:00",
+     "detalles": [
+      {
+       "id_detalle": "1018",
+       "id_servicio": "789",
+       "id_articulo": "417",
+       "tipo_detalle": "Refaccion",
+       "descripcion": "Filtro de aceite P7505 TDL",
+       "cantidad": "1.00",
+       "costo": "577.37"
+      },
+      {
+       "id_detalle": "1019",
+       "id_servicio": "789",
+       "id_articulo": "422",
+       "tipo_detalle": "Consumible",
+       "descripcion": "Delvac lata 5 galones",
+       "cantidad": "2.00",
+       "costo": "74.69"
+      }
+     ]
+    },
+    {
+     "id_servicio": "790",
+     "id_orden": "330",
+     "tipo_mantenimiento": "Correctivo",
+     "tipo_reparacion": "cambio de 1 bateria",
+     "estatus": "Abierta",
+     "fecha_termino": "2026-06-10 14:29:00",
+     "detalles": [
+      {
+       "id_detalle": "1020",
+       "id_servicio": "790",
+       "id_articulo": "224",
+       "tipo_detalle": "Refaccion",
+       "descripcion": "Baterias yonke Ldo.Tex.",
+       "cantidad": "1.00",
+       "costo": "50.00"
+      }
+     ]
+    },
+    {
+     "id_servicio": "791",
+     "id_orden": "330",
+     "tipo_mantenimiento": "Preventivo",
+     "tipo_reparacion": "Lavado de unidad",
+     "estatus": "Abierta",
+     "fecha_termino": "2026-06-10 14:29:00",
+     "detalles": []
+    },
+    {
+     "id_servicio": "792",
+     "id_orden": "330",
+     "tipo_mantenimiento": "Preventivo",
+     "tipo_reparacion": "Cambio de filtro de aire CA6790",
+     "estatus": "Pendiente",
+     "fecha_termino": "2026-06-10 14:31:34",
+     "detalles": [
+      {
+       "id_detalle": "1021",
+       "id_servicio": "792",
+       "id_articulo": "62",
+       "tipo_detalle": "Refaccion",
+       "descripcion": "Filtro de aire CA5790 cascadia EBAY",
+       "cantidad": "1.00",
+       "costo": "48.13"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id_orden": "329",
+   "fecha_orden": "2026-06-05",
+   "estatus": "Abierta",
+   "truck_id": "7",
+   "tipo_cambio": null,
+   "nombre_camion": "7",
+   "servicios": [
+    {
+     "id_servicio": "788",
+     "id_orden": "329",
+     "tipo_mantenimiento": "Correctivo",
+     "tipo_reparacion": "Programacion de computadora",
+     "estatus": "Abierta",
+     "fecha_termino": "2026-06-10 14:03:57",
+     "detalles": [
+      {
+       "id_detalle": "1014",
+       "id_servicio": "788",
+       "id_articulo": null,
+       "tipo_detalle": "Mano de Obra",
+       "descripcion": "Mano de Obra",
+       "cantidad": "1.00",
+       "costo": "5500.00"
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

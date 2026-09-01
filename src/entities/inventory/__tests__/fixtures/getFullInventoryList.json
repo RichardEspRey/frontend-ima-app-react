@@ -1,0 +1,215 @@
+{
+ "status": "success",
+ "data": [
+  {
+   "id_articulo": "408",
+   "nombre_articulo": "COMAPA Nvo. Laredo",
+   "cantidad_stock": "1",
+   "nombre_subcategoria": "Agua",
+   "nombre_categoria": "Basicos"
+  },
+  {
+   "id_articulo": "744",
+   "nombre_articulo": "",
+   "cantidad_stock": "0",
+   "nombre_subcategoria": "Desengrasante",
+   "nombre_categoria": "Consumibles"
+  },
+  {
+   "id_articulo": "661",
+   "nombre_articulo": "",
+   "cantidad_stock": "1",
+   "nombre_subcategoria": "Otros (nombre)",
+   "nombre_categoria": "Consumibles"
+  },
+  {
+   "id_articulo": "468",
+   "nombre_articulo": "14.35",
+   "cantidad_stock": "1",
+   "nombre_subcategoria": "Otros (nombre)",
+   "nombre_categoria": "Consumibles"
+  },
+  {
+   "id_articulo": "164",
+   "nombre_articulo": "15w40 Delo bottle",
+   "cantidad_stock": "0",
+   "nombre_subcategoria": "Aceite",
+   "nombre_categoria": "Consumibles"
+  },
+  {
+   "id_articulo": "472",
+   "nombre_articulo": "16 oz 48 oz",
+   "cantidad_stock": "1",
+   "nombre_subcategoria": "Otros (nombre)",
+   "nombre_categoria": "Consumibles"
+  },
+  {
+   "id_articulo": "698",
+   "nombre_articulo": "16OZ motor",
+   "cantidad_stock": "5",
+   "nombre_subcategoria": "Aceite",
+   "nombre_categoria": "Consumibles"
+  },
+  {
+   "id_articulo": "176",
+   "nombre_articulo": "Abrillantador para llantas CG diablo walmart",
+   "cantidad_stock": "1",
+   "nombre_subcategoria": "Otros (nombre)",
+   "nombre_categoria": "Consumibles"
+  },
+  {
+   "id_articulo": "57",
+   "nombre_articulo": "Aceite A/C refrigerante 237ml TDL",
+   "cantidad_stock": "0",
+   "nombre_subcategoria": "Otros (nombre)",
+   "nombre_categoria": "Consumibles"
+  },
+  {
+   "id_articulo": "410",
+   "nombre_articulo": "Aceite A/C TDL",
+   "cantidad_stock": "0",
+   "nombre_subcategoria": "Otros (nombre)",
+   "nombre_categoria": "Consumibles"
+  },
+  {
+   "id_articulo": "124",
+   "nombre_articulo": "Aceite de motor",
+   "cantidad_stock": "2",
+   "nombre_subcategoria": "Aceite",
+   "nombre_categoria": "Consumibles"
+  },
+  {
+   "id_articulo": "260",
+   "nombre_articulo": "Aceite de motor QS 5W20",
+   "cantidad_stock": "1",
+   "nombre_subcategoria": "Aceite",
+   "nombre_categoria": "Consumibles"
+  },
+  {
+   "id_articulo": "146",
+   "nombre_articulo": "Aceite de relleno",
+   "cantidad_stock": "1",
+   "nombre_subcategoria": "Aceite",
+   "nombre_categoria": "Consumibles"
+  },
+  {
+   "id_articulo": "449",
+   "nombre_articulo": "Aceite de relleno delvac 2.5",
+   "cantidad_stock": "1",
+   "nombre_subcategoria": "Aceite",
+   "nombre_categoria": "Consumibles"
+  },
+  {
+   "id_articulo": "174",
+   "nombre_articulo": "Aceite de relleno refacciones Bryan",
+   "cantidad_stock": "2",
+   "nombre_subcategoria": "Aceite",
+   "nombre_categoria": "Consumibles"
+  },
+  {
+   "id_articulo": "147",
+   "nombre_articulo": "Aceite de relleno(a granel)",
+   "cantidad_stock": "2",
+   "nombre_subcategoria": "Aceite",
+   "nombre_categoria": "Consumibles"
+  },
+  {
+   "id_articulo": "85",
+   "nombre_articulo": "Aceite de transmision 90 bardhal TDL",
+   "cantidad_stock": "1",
+   "nombre_subcategoria": "Aceite",
+   "nombre_categoria": "Consumibles"
+  },
+  {
+   "id_articulo": "129",
+   "nombre_articulo": "Aceite de transmision castrol 1L",
+   "cantidad_stock": "0",
+   "nombre_subcategoria": "Aceite",
+   "nombre_categoria": "Consumibles"
+  },
+  {
+   "id_articulo": "199",
+   "nombre_articulo": "Aceite de transmision D2 TDL",
+   "cantidad_stock": "0",
+   "nombre_subcategoria": "Aceite",
+   "nombre_categoria": "Consumibles"
+  },
+  {
+   "id_articulo": "464",
+   "nombre_articulo": "Aceite de transmision Flying",
+   "cantidad_stock": "1",
+   "nombre_subcategoria": "Aceite",
+   "nombre_categoria": "Consumibles"
+  },
+  {
+   "id_articulo": "513",
+   "nombre_articulo": "Aceite de transmisión Home Depot",
+   "cantidad_stock": "1",
+   "nombre_subcategoria": "Aceite",
+   "nombre_categoria": "Consumibles"
+  },
+  {
+   "id_articulo": "103",
+   "nombre_articulo": "Aceite hidraulico chevron ATF KW",
+   "cantidad_stock": "2",
+   "nombre_subcategoria": "Aceite",
+   "nombre_categoria": "Consumibles"
+  },
+  {
+   "id_articulo": "107",
+   "nombre_articulo": "Aceite para diferenciales 19 lts.  quaker sae 140 TRAC-THOR",
+   "cantidad_stock": "0",
+   "nombre_subcategoria": "Aceite",
+   "nombre_categoria": "Consumibles"
+  },
+  {
+   "id_articulo": "43",
+   "nombre_articulo": "Aceite para transmision 140 Gonher TDL",
+   "cantidad_stock": "0",
+   "nombre_subcategoria": "Aceite",
+   "nombre_categoria": "Consumibles"
+  },
+  {
+   "id_articulo": "330",
+   "nombre_articulo": "Aceite STP",
+   "cantidad_stock": "1",
+   "nombre_subcategoria": "Aceite",
+   "nombre_categoria": "Consumibles"
+  },
+  {
+   "id_articulo": "675",
+   "nombre_articulo": "Aceite y adictivo",
+   "cantidad_stock": "1",
+   "nombre_subcategoria": "Aceite",
+   "nombre_categoria": "Consumibles"
+  },
+  {
+   "id_articulo": "134",
+   "nombre_articulo": "Aditivo para diesel",
+   "cantidad_stock": "0",
+   "nombre_subcategoria": "Otros (nombre)",
+   "nombre_categoria": "Consumibles"
+  },
+  {
+   "id_articulo": "353",
+   "nombre_articulo": "Aditivo para diesel Pilot",
+   "cantidad_stock": "6",
+   "nombre_subcategoria": "Otros (nombre)",
+   "nombre_categoria": "Consumibles"
+  },
+  {
+   "id_articulo": "259",
+   "nombre_articulo": "Aditivo para inyectores",
+   "cantidad_stock": "1",
+   "nombre_subcategoria": "Otros (nombre)",
+   "nombre_categoria": "Consumibles"
+  },
+  {
+   "id_articulo": "722",
+   "nombre_articulo": "ADITIVOS Y MOTOR",
+   "cantidad_stock": "1",
+   "nombre_subcategoria": "Otros (nombre)",
+   "nombre_categoria": "Consumibles"
+  }
+ ]
+}
