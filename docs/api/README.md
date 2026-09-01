@@ -135,6 +135,48 @@ librería sea editar este archivo en vez de 56.</p>
 <p>Los tres campos son opcionales: un requisito de texto no trae <code>url_pdf</code>, y uno
 sin vencimiento no trae fecha.</p>
 </dd>
+<dt><a href="#LLAVE_FINANZAS">LLAVE_FINANZAS</a> : <code>Array.&lt;string&gt;</code></dt>
+<dd><p>Llave de caché de los viajes vistos desde finanzas.</p>
+</dd>
+<dt><a href="#LLAVE_PAGOS">LLAVE_PAGOS</a> : <code>Array.&lt;string&gt;</code></dt>
+<dd><p>Llave de caché de los pagos a conductores.</p>
+</dd>
+<dt><a href="#LLAVE_TARIFAS">LLAVE_TARIFAS</a> : <code>Array.&lt;string&gt;</code></dt>
+<dd><p>Llave de caché de las tarifas por milla.</p>
+</dd>
+<dt><a href="#METODOS_PAGO">METODOS_PAGO</a> : <code>Array.&lt;string&gt;</code></dt>
+<dd><p>Formas de pago que acepta una etapa de viaje.</p>
+</dd>
+<dt><a href="#esquemaEtapa">esquemaEtapa</a></dt>
+<dd><p>Una etapa de viaje con su cobro.</p>
+</dd>
+<dt><a href="#esquemaViajeFinanzas">esquemaViajeFinanzas</a></dt>
+<dd><p>Un viaje visto desde finanzas: lo que se cobra y lo que ya se pagó.</p>
+</dd>
+<dt><a href="#esquemaPagoConductor">esquemaPagoConductor</a></dt>
+<dd><p>El pago pendiente a un conductor por un viaje.</p>
+</dd>
+<dt><a href="#esquemaTarifaConductor">esquemaTarifaConductor</a></dt>
+<dd><p>La tarifa por milla de un conductor.</p>
+</dd>
+<dt><a href="#normalizarEstadoCobro">normalizarEstadoCobro</a> ⇒ <code>number</code></dt>
+<dd><p>Normaliza un estado de cobro, tratando el nulo como pendiente.</p>
+</dd>
+<dt><a href="#etiquetaCobro">etiquetaCobro</a> ⇒ <code>Object</code></dt>
+<dd><p>Cómo mostrar el estado de cobro de un viaje.</p>
+</dd>
+<dt><a href="#estaPagado">estaPagado</a> ⇒ <code>boolean</code></dt>
+<dd><p>Indica si un viaje ya está cobrado por completo.</p>
+</dd>
+<dt><a href="#saldoPendiente">saldoPendiente</a> ⇒ <code>number</code></dt>
+<dd><p>Lo que falta por cobrar de un viaje.</p>
+</dd>
+<dt><a href="#estaAutorizado">estaAutorizado</a> ⇒ <code>boolean</code></dt>
+<dd><p>Indica si el pago a un conductor está autorizado pero sin pagar.</p>
+</dd>
+<dt><a href="#estaPagadoConductor">estaPagadoConductor</a> ⇒ <code>boolean</code></dt>
+<dd><p>Indica si al conductor ya se le pagó.</p>
+</dd>
 <dt><a href="#LLAVE_INSPECCIONES">LLAVE_INSPECCIONES</a> : <code>Array.&lt;string&gt;</code></dt>
 <dd><p>Llave de caché de las inspecciones.</p>
 </dd>
@@ -503,6 +545,42 @@ petición en lugar de una cada una.</p>
 <p>Es un catálogo: se cachea <a href="#FRESCURA_CATALOGO_MS">FRESCURA_CATALOGO_MS</a> y se comparte entre
 todas las pantallas que lo pidan, así que varias a la vez hacen una sola
 petición en lugar de una cada una.</p>
+</dd>
+<dt><a href="#obtenerViajesFinanzas">obtenerViajesFinanzas([opciones])</a> ⇒ <code>Promise.&lt;Array&gt;</code></dt>
+<dd><p>Trae los viajes con su cobro y sus etapas anidadas.</p>
+</dd>
+<dt><a href="#obtenerPagosConductores">obtenerPagosConductores([opciones])</a> ⇒ <code>Promise.&lt;Array&gt;</code></dt>
+<dd><p>Trae los pagos pendientes a conductores.</p>
+</dd>
+<dt><a href="#obtenerTarifasConductor">obtenerTarifasConductor([opciones])</a> ⇒ <code>Promise.&lt;Array&gt;</code></dt>
+<dd><p>Trae la tarifa por milla de cada conductor.</p>
+</dd>
+<dt><a href="#guardarTarifasConductor">guardarTarifasConductor(tarifas)</a> ⇒ <code>Promise.&lt;object&gt;</code></dt>
+<dd><p>Guarda varias tarifas por milla de una vez.</p>
+</dd>
+<dt><a href="#registrarCobrosEtapas">registrarCobrosEtapas(pagos)</a> ⇒ <code>Promise.&lt;object&gt;</code></dt>
+<dd><p>Registra el cobro de varias etapas a la vez.</p>
+</dd>
+<dt><a href="#useViajesFinanzas">useViajesFinanzas()</a> ⇒ <code>object</code></dt>
+<dd><p>Viajes de finanzas, cacheados.</p>
+</dd>
+<dt><a href="#usePagosConductores">usePagosConductores()</a> ⇒ <code>object</code></dt>
+<dd><p>Pagos a conductores, cacheados.</p>
+</dd>
+<dt><a href="#useTarifasConductor">useTarifasConductor()</a> ⇒ <code>object</code></dt>
+<dd><p>Tarifas por milla. Es un catálogo: se cachea más tiempo.</p>
+</dd>
+<dt><a href="#useGuardarTarifasConductor">useGuardarTarifasConductor()</a> ⇒ <code>object</code></dt>
+<dd><p>Guarda las tarifas y refresca su lista.</p>
+</dd>
+<dt><a href="#useRegistrarCobrosEtapas">useRegistrarCobrosEtapas()</a> ⇒ <code>object</code></dt>
+<dd><p>Registra cobros y refresca los viajes de finanzas.</p>
+</dd>
+<dt><a href="#totalesFinanzas">totalesFinanzas(viajes)</a> ⇒ <code>Object</code></dt>
+<dd><p>Suma tarifa y cobrado de una lista de viajes.</p>
+</dd>
+<dt><a href="#normalizarLista">normalizarLista(filas, esquema)</a> ⇒ <code>Object</code></dt>
+<dd><p>Valida una lista con el esquema dado, descartando lo que no cumple.</p>
 </dd>
 <dt><a href="#obtenerInspecciones">obtenerInspecciones([opciones])</a> ⇒ <code>Promise.&lt;Array&gt;</code></dt>
 <dd><p>Trae todas las inspecciones con sus reportes y documentos.</p>
@@ -1029,6 +1107,33 @@ Estado de un documento respecto a su vencimiento.
 
 **Kind**: global enum  
 **Read only**: true  
+<a name="ESTADO_COBRO"></a>
+
+## ESTADO\_COBRO : <code>enum</code>
+Estados de cobro de un viaje, en el orden del ciclo.
+
+Los valores son los que guarda la base. `null` significa lo mismo que 0: hay
+9 viajes reales sin estado y son pendientes de cobrar, no un caso aparte.
+
+**Kind**: global enum  
+**Read only**: true  
+<a name="ETIQUETA_COBRO"></a>
+
+## ETIQUETA\_COBRO : <code>enum</code>
+Cómo se muestra cada estado de cobro.
+
+Sale de `constants/finances.js`, que ya lo tenía. Se mantiene el mismo texto y
+el mismo color para no cambiar lo que la gente ya reconoce.
+
+**Kind**: global enum  
+**Read only**: true  
+<a name="ESTADO_PAGO_CONDUCTOR"></a>
+
+## ESTADO\_PAGO\_CONDUCTOR : <code>enum</code>
+Estados del pago a un conductor.
+
+**Kind**: global enum  
+**Read only**: true  
 <a name="ESTADO_PERIODO"></a>
 
 ## ESTADO\_PERIODO : <code>enum</code>
@@ -1449,6 +1554,126 @@ Los tres campos son opcionales: un requisito de texto no trae `url_pdf`, y uno
 sin vencimiento no trae fecha.
 
 **Kind**: global constant  
+<a name="LLAVE_FINANZAS"></a>
+
+## LLAVE\_FINANZAS : <code>Array.&lt;string&gt;</code>
+Llave de caché de los viajes vistos desde finanzas.
+
+**Kind**: global constant  
+<a name="LLAVE_PAGOS"></a>
+
+## LLAVE\_PAGOS : <code>Array.&lt;string&gt;</code>
+Llave de caché de los pagos a conductores.
+
+**Kind**: global constant  
+<a name="LLAVE_TARIFAS"></a>
+
+## LLAVE\_TARIFAS : <code>Array.&lt;string&gt;</code>
+Llave de caché de las tarifas por milla.
+
+**Kind**: global constant  
+<a name="METODOS_PAGO"></a>
+
+## METODOS\_PAGO : <code>Array.&lt;string&gt;</code>
+Formas de pago que acepta una etapa de viaje.
+
+**Kind**: global constant  
+<a name="esquemaEtapa"></a>
+
+## esquemaEtapa
+Una etapa de viaje con su cobro.
+
+**Kind**: global constant  
+<a name="esquemaViajeFinanzas"></a>
+
+## esquemaViajeFinanzas
+Un viaje visto desde finanzas: lo que se cobra y lo que ya se pagó.
+
+**Kind**: global constant  
+<a name="esquemaPagoConductor"></a>
+
+## esquemaPagoConductor
+El pago pendiente a un conductor por un viaje.
+
+**Kind**: global constant  
+<a name="esquemaTarifaConductor"></a>
+
+## esquemaTarifaConductor
+La tarifa por milla de un conductor.
+
+**Kind**: global constant  
+<a name="normalizarEstadoCobro"></a>
+
+## normalizarEstadoCobro ⇒ <code>number</code>
+Normaliza un estado de cobro, tratando el nulo como pendiente.
+
+**Kind**: global constant  
+**Returns**: <code>number</code> - Un valor de `ESTADO_COBRO`.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| estado | <code>\*</code> | El valor crudo de `status_trip`. |
+
+<a name="etiquetaCobro"></a>
+
+## etiquetaCobro ⇒ <code>Object</code>
+Cómo mostrar el estado de cobro de un viaje.
+
+**Kind**: global constant  
+**Returns**: <code>Object</code> - Texto y color.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| viaje | <code>object</code> | El viaje a evaluar. |
+
+<a name="estaPagado"></a>
+
+## estaPagado ⇒ <code>boolean</code>
+Indica si un viaje ya está cobrado por completo.
+
+**Kind**: global constant  
+**Returns**: <code>boolean</code> - `true` si está pagado.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| viaje | <code>object</code> | El viaje a evaluar. |
+
+<a name="saldoPendiente"></a>
+
+## saldoPendiente ⇒ <code>number</code>
+Lo que falta por cobrar de un viaje.
+
+**Kind**: global constant  
+**Returns**: <code>number</code> - La diferencia; 0 si ya se cobró de más o completo.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| viaje | <code>object</code> | El viaje a evaluar. |
+
+<a name="estaAutorizado"></a>
+
+## estaAutorizado ⇒ <code>boolean</code>
+Indica si el pago a un conductor está autorizado pero sin pagar.
+
+**Kind**: global constant  
+**Returns**: <code>boolean</code> - `true` si está autorizado.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| pago | <code>object</code> | El pago a evaluar. |
+
+<a name="estaPagadoConductor"></a>
+
+## estaPagadoConductor ⇒ <code>boolean</code>
+Indica si al conductor ya se le pagó.
+
+**Kind**: global constant  
+**Returns**: <code>boolean</code> - `true` si está pagado.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| pago | <code>object</code> | El pago a evaluar. |
+
 <a name="LLAVE_INSPECCIONES"></a>
 
 ## LLAVE\_INSPECCIONES : <code>Array.&lt;string&gt;</code>
@@ -2472,6 +2697,154 @@ petición en lugar de una cada una.
 
 **Kind**: global function  
 **Returns**: <code>object</code> - El resultado de `useQuery`: `{data, isLoading, isError, error}`.  
+<a name="obtenerViajesFinanzas"></a>
+
+## obtenerViajesFinanzas([opciones]) ⇒ <code>Promise.&lt;Array&gt;</code>
+Trae los viajes con su cobro y sus etapas anidadas.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;Array&gt;</code> - Los viajes normalizados.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la API falla.
+
+**Endpoint**: POST formularios.php · op=All_finanzas  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [opciones] | <code>object</code> | Ajustes de la petición. |
+| [opciones.signal] | <code>AbortSignal</code> | Señal de cancelación. |
+
+<a name="obtenerPagosConductores"></a>
+
+## obtenerPagosConductores([opciones]) ⇒ <code>Promise.&lt;Array&gt;</code>
+Trae los pagos pendientes a conductores.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;Array&gt;</code> - Los pagos normalizados.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la API falla.
+
+**Endpoint**: POST formularios.php · op=All_paymentDrivers  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [opciones] | <code>object</code> | Ajustes de la petición. |
+| [opciones.signal] | <code>AbortSignal</code> | Señal de cancelación. |
+
+<a name="obtenerTarifasConductor"></a>
+
+## obtenerTarifasConductor([opciones]) ⇒ <code>Promise.&lt;Array&gt;</code>
+Trae la tarifa por milla de cada conductor.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;Array&gt;</code> - Las tarifas normalizadas.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la API falla.
+
+**Endpoint**: POST formularios.php · op=get_millasDriver  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [opciones] | <code>object</code> | Ajustes de la petición. |
+| [opciones.signal] | <code>AbortSignal</code> | Señal de cancelación. |
+
+<a name="guardarTarifasConductor"></a>
+
+## guardarTarifasConductor(tarifas) ⇒ <code>Promise.&lt;object&gt;</code>
+Guarda varias tarifas por milla de una vez.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;object&gt;</code> - La respuesta de la API.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la API rechaza la operación.
+
+**Endpoint**: POST formularios.php · op=I_update_millasDriverBulk  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| tarifas | <code>Array</code> | Las tarifas a guardar. |
+
+<a name="registrarCobrosEtapas"></a>
+
+## registrarCobrosEtapas(pagos) ⇒ <code>Promise.&lt;object&gt;</code>
+Registra el cobro de varias etapas a la vez.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;object&gt;</code> - La respuesta de la API.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la API rechaza la operación.
+
+**Endpoint**: POST formularios.php · op=I_pago_stage_bulk  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| pagos | <code>Array</code> | Los cobros a registrar. |
+
+<a name="useViajesFinanzas"></a>
+
+## useViajesFinanzas() ⇒ <code>object</code>
+Viajes de finanzas, cacheados.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useQuery`.  
+<a name="usePagosConductores"></a>
+
+## usePagosConductores() ⇒ <code>object</code>
+Pagos a conductores, cacheados.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useQuery`.  
+<a name="useTarifasConductor"></a>
+
+## useTarifasConductor() ⇒ <code>object</code>
+Tarifas por milla. Es un catálogo: se cachea más tiempo.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useQuery`.  
+<a name="useGuardarTarifasConductor"></a>
+
+## useGuardarTarifasConductor() ⇒ <code>object</code>
+Guarda las tarifas y refresca su lista.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useMutation`.  
+<a name="useRegistrarCobrosEtapas"></a>
+
+## useRegistrarCobrosEtapas() ⇒ <code>object</code>
+Registra cobros y refresca los viajes de finanzas.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useMutation`.  
+<a name="totalesFinanzas"></a>
+
+## totalesFinanzas(viajes) ⇒ <code>Object</code>
+Suma tarifa y cobrado de una lista de viajes.
+
+**Kind**: global function  
+**Returns**: <code>Object</code> - Los totales.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| viajes | <code>Array</code> | Los viajes a sumar. |
+
+<a name="normalizarLista"></a>
+
+## normalizarLista(filas, esquema) ⇒ <code>Object</code>
+Valida una lista con el esquema dado, descartando lo que no cumple.
+
+**Kind**: global function  
+**Returns**: <code>Object</code> - Los que pasaron y cuántos no.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| filas | <code>Array</code> | Lo que vino en la respuesta. |
+| esquema | <code>object</code> | Esquema zod con el que validar cada fila. |
+
 <a name="obtenerInspecciones"></a>
 
 ## obtenerInspecciones([opciones]) ⇒ <code>Promise.&lt;Array&gt;</code>

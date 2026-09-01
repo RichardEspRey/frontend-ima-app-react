@@ -33,17 +33,17 @@ import ExpenseEdit from '../screens/Gastos/ExpenseEdit.jsx';
 import NuevaOrdenPage from '../pages/mantenimientos/NuevaOrdenPage.jsx';
 import EditarOrdenPage from '../pages/mantenimientos/EditarOrdenPage.jsx';
 import OrdenesServicioPage from '../pages/mantenimientos/OrdenesServicioPage.jsx';
-import Finanzas from '../screens/Finanzas.jsx';
+import FinanzasPage from '../pages/finanzas/FinanzasPage.jsx';
 import ResumenTrip from '../screens/ResumenTrip.jsx';
-import ResiduoTrip from '../screens/Finanzas/ResiduosTrips.jsx';
+import ResiduosPage from '../pages/finanzas/ResiduosPage.jsx';
 import AccesosPage from '../pages/accesos/AccesosPage.jsx';
 import ReportsPage from '../pages/reports/ReportsPage.jsx';
 import Tracking from '../screens/Mapas/Tracking.jsx';
 import { InicioPage } from '../pages/inicio/InicioPage.jsx';
-import MargenScreen from '../screens/MargenScreen.jsx';
-import PaymentDrivers from '../screens/Finanzas/PaymentDrivers.jsx';
-import MillasDriversTable from '../screens/Finanzas/MillasDriversTable.jsx';
-import TicketPayment from '../screens/Finanzas/TicketPayment.jsx';
+import MargenPage from '../pages/finanzas/MargenPage.jsx';
+import PagosConductoresPage from '../pages/finanzas/PagosConductoresPage.jsx';
+import TarifasConductorPage from '../pages/finanzas/TarifasConductorPage.jsx';
+import TicketPagoPage from '../pages/finanzas/TicketPagoPage.jsx';
 import AutonomiaPage from '../pages/mantenimientos/AutonomiaPage.jsx';
 import EstatusUnidades from '../screens/EstatusUnidades.jsx';
 import AfinacionesPage from '../pages/mantenimientos/AfinacionesPage.jsx';
@@ -105,18 +105,18 @@ const AppRouter = () => {
             <Route path="/new-service-order" element={<NuevaOrdenPage />} />
             <Route path="/admin-service-order" element={<OrdenesServicioPage />} />
             <Route path="/editar-orden/:orderId" element={<EditarOrdenPage />} />
-            <Route path="/finanzas" element={<Finanzas />} />
+            <Route path="/finanzas" element={<FinanzasPage />} />
             <Route path="/ResumenTrip/:tripId" element={<ResumenTrip />} />
             <Route path="/access-manager" element={<AccesosPage />} />
-            <Route path="/ResiduoTrip" element={<ResiduoTrip />} />  
+            <Route path="/ResiduoTrip" element={<ResiduosPage />} />  
             <Route path="/reports" element={<ReportsPage />} />
             <Route path="/safety" element={<Safety />} />  
             <Route path="/Ifta" element={<Ifta />} />  
             <Route path="/tracking" element={<Tracking />} />  
-            <Route path="/margen" element={<MargenScreen />} />  
-            <Route path="/paymentDrivers" element ={<PaymentDrivers />} />
-            <Route path='/millasDriversTable' element ={<MillasDriversTable/>} />
-            <Route path='/ticketPayment/:trip_id' element ={<TicketPayment/>} />
+            <Route path="/margen" element={<MargenPage />} />  
+            <Route path="/paymentDrivers" element ={<PagosConductoresPage />} />
+            <Route path='/millasDriversTable' element ={<TarifasConductorPage/>} />
+            <Route path='/ticketPayment/:trip_id' element ={<TicketPagoPage/>} />
             <Route path="/autonomia" element={<AutonomiaPage />} />
             <Route path="/afinaciones" element={<AfinacionesPage />} />
             <Route path="/registros-afinaciones" element={<AfinacionesHistorialPage />} />

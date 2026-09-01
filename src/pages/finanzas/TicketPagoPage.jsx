@@ -17,7 +17,12 @@ import GastosModal from "../../components/GastosModal";
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
-const TicketPayment = () => {
+/**
+ * Ticket de pago de un viaje, con su desglose por etapa.
+ *
+ * @returns {object} La pantalla.
+ */
+const TicketPagoPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { trip_id } = useParams();
@@ -406,4 +411,4 @@ const TicketPayment = () => {
   );
 };
 
-export default TicketPayment;
+export default TicketPagoPage;

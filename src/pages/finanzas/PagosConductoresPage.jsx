@@ -78,7 +78,12 @@ const StatusTrip = ({ value }) => {
   );
 };
 
-const PaymentDrivers = () => {
+/**
+ * Pagos pendientes a conductores por sus viajes.
+ *
+ * @returns {object} La pantalla.
+ */
+const PagosConductoresPage = () => {
   const navigate = useNavigate();
   const [trips, setTrips] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -399,4 +404,4 @@ const PaymentDrivers = () => {
   );
 };
 
-export default PaymentDrivers;
+export default PagosConductoresPage;

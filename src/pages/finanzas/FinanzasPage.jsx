@@ -14,16 +14,21 @@ import ReceiptIcon from '@mui/icons-material/Receipt';
 import BusinessIcon from '@mui/icons-material/Business';
 import Swal from 'sweetalert2';
 
-import { TripFinanceRow } from '../components/TripFinanceRow';
-import { AlertSummaryCards } from '../components/AlertSummaryCards';
-import { getTripStatusSummary, validateStage, buildPayloadItem, collectDirtyStages } from '../utils/financeHelpers';
-import { STATUS_OPTIONS } from '../constants/finances'; 
+import { TripFinanceRow } from '../../components/TripFinanceRow';
+import { AlertSummaryCards } from '../../components/AlertSummaryCards';
+import { getTripStatusSummary, validateStage, buildPayloadItem, collectDirtyStages } from '../../utils/financeHelpers';
+import { STATUS_OPTIONS } from '../../constants/finances'; 
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
 const STATUS_PAID = 3;
 
-const Finanzas = () => {
+/**
+ * Cobranza de viajes: qué se facturó, qué se cobró y qué falta.
+ *
+ * @returns {object} La pantalla.
+ */
+const FinanzasPage = () => {
   const [trips, setTrips] = useState([]);
   const [loading, setLoading] = useState(true);
   
@@ -437,4 +442,4 @@ const Finanzas = () => {
   );
 };
 
-export default Finanzas;
+export default FinanzasPage;

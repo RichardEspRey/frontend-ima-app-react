@@ -62,7 +62,7 @@ Si la red vuelve a filtrar SSH, el remoto por HTTPS suele pasar:
 ## Al retomar
 
 El incremento 9 está partido en **9a, 9b y 9c** (ver `05-INCREMENTOS.md`).
-El incremento 9 está **completo** (9a, 9b y 9c). Sigue el **10: Finanzas**.
+Incrementos 9 y 10 completos. Sigue el **11: Mapas / Tracking**.
 
 Lo primero al volver, sobre todo si pasaron días: `npm run refactor:sync`. Si la red no
 deja hacer fetch, el script sigue con lo local y lo avisa.

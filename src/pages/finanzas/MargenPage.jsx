@@ -6,7 +6,7 @@ import {
 } from '@mui/material';
 import Swal from 'sweetalert2';
 
-import { MargenRow } from '../components/MargenRow'; 
+import { MargenRow } from '../../components/MargenRow'; 
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -14,7 +14,12 @@ const money = (v) =>
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, currencyDisplay: 'symbol' })
     .format(Number(v || 0));
 
-const MargenScreen = () => {
+/**
+ * Margen por viaje: lo que se cobró contra lo que costó.
+ *
+ * @returns {object} La pantalla.
+ */
+const MargenPage = () => {
   const [trips, setTrips] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -193,4 +198,4 @@ const MargenScreen = () => {
   );
 };
 
-export default MargenScreen;
+export default MargenPage;

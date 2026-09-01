@@ -6,11 +6,21 @@ import {
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
-/** $#,###.## sin prefijo de MX */
+/**
+ * Formatea una cantidad como `$#,###.##`, sin el prefijo MX.
+ *
+ * @param {number} v La cantidad.
+ * @returns {string} La cantidad formateada.
+ */
 const money = (v) =>
   `$${Number(v || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-const ResiduosTrips = () => {
+/**
+ * Residuos de viaje: lo que quedó sin conciliar al cerrarlos.
+ *
+ * @returns {object} La pantalla.
+ */
+const ResiduosPage = () => {
   const [rows, setRows] = useState([]);      // [{ trip_id, trip_number, status, creation_date, nombre, rate_tarifa, diesel, gastos }]
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -146,4 +156,4 @@ const ResiduosTrips = () => {
   );
 };
 
-export default ResiduosTrips;
+export default ResiduosPage;

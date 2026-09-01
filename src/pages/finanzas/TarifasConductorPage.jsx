@@ -13,7 +13,12 @@ import SearchIcon from '@mui/icons-material/Search';
 import PersonIcon from '@mui/icons-material/Person';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 
-const MillasDriversTable = () => {
+/**
+ * Tarifa por milla de cada conductor.
+ *
+ * @returns {object} La pantalla.
+ */
+const TarifasConductorPage = () => {
   const navigate = useNavigate();
   const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -232,4 +237,4 @@ const MillasDriversTable = () => {
   );
 };
 
-export default MillasDriversTable;
+export default TarifasConductorPage;
