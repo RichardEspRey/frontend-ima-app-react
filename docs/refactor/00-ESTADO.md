@@ -43,6 +43,7 @@ Todo vive en la rama larga **`refactor-fase-1`**, con un tag por incremento
 | 12 | Dispatch (crear y editar viaje) | **hecho** | tag `incremento-12` |
 | 13 | Mapas / Tracking | **hecho** | tag `incremento-13` |
 | 14 | Unidades (camiones, cajas, conductores) | **hecho** | tag `incremento-14` |
+| 15 | Viajes (admin, cotizador, editores, resumen) | **hecho** | tag `incremento-15` |
 | 6+ | Resto de módulos, uno por uno | pendiente | — |
 | — | Deduplicar: **cada par en el incremento de su módulo**, no al final | ver `05-INCREMENTOS.md` | — |
 
@@ -67,12 +68,14 @@ Si alguna red vuelve a filtrar SSH, el remoto por HTTPS suele pasar:
 ## Al retomar
 
 El incremento 9 está partido en **9a, 9b y 9c** (ver `05-INCREMENTOS.md`).
-Incrementos 9 a 14 completos. Sigue el **15: Viajes** (`EditTripComplete`, `EditTripForm`,
-`ResumenTrip` y `screens/Viajes/`, ~1 200 líneas sueltas más el formulario de etapas).
+Incrementos 9 a 15 completos. Sigue el **16: Gastos**, el módulo más caliente que queda
+(`screens/Gastos/`: 8 archivos, ~2 800 líneas, con `ExpenseEdit` de 727 y `AdminGastos` de
+616). Es el único que todavía tiene una prueba propia en `screens/`, así que hay que
+moverla con él.
 
-**Pendiente de decisión (incremento 14):** seis pantallas huérfanas de unidades, ~1 800
-líneas, sin ningún enlace que lleve a ellas. Ver la tabla al final de
-`docs/MODULOS/unidades.md`.
+**Pendiente de decisión:** ocho pantallas huérfanas, ~2 150 líneas, sin ningún enlace que
+lleve a ellas — seis de unidades y dos de viajes. Ver el final de `docs/MODULOS/unidades.md`
+y de `docs/MODULOS/viajes.md`.
 
 Lo primero al volver, sobre todo si pasaron días: `npm run refactor:sync`. Si la red no
 deja hacer fetch, el script sigue con lo local y lo avisa.
