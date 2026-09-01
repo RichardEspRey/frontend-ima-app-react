@@ -48,21 +48,21 @@ Todo vive en la rama larga **`refactor-fase-1`**, con un tag por incremento
 
 Detalle de cada uno en `05-INCREMENTOS.md`.
 
-## PENDIENTE: publicar
+## Publicación
 
-La rama local va **adelante de `origin/refactor-fase-1`**: la red colegial del 2026-09-01
-bloquea el handshake SSH (el puerto 22 responde, pero el intercambio de banner se corta).
-Todo está commiteado, solo falta el push.
-
-Desde otra red:
+`origin/refactor-fase-1` está **al día** desde el 2026-09-01, con los tags
+`incremento-0` a `incremento-14`.
 
 ```bash
-git push origin refactor-fase-1
-git push origin --tags
+git push origin refactor-fase-1 && git push origin --tags
 ```
 
-Si la red vuelve a filtrar SSH, el remoto por HTTPS suele pasar:
+Si alguna red vuelve a filtrar SSH, el remoto por HTTPS suele pasar:
 `git remote set-url origin https://github.com/RichardEspRey/frontend-ima-app-react.git`
+
+> **Ojo con las 136 vulnerabilidades.** GitHub las sigue avisando en cada push porque las
+> cuenta sobre `main`, que es la rama por omisión. En `refactor-fase-1` están en cero desde
+> el incremento 4b; el aviso se apagará cuando el refactor llegue a `main`.
 
 ## Al retomar
 
