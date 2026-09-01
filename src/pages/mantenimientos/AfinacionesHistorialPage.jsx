@@ -27,7 +27,12 @@ const apiHost = import.meta.env.VITE_API_HOST;
 // Helper número
 const numberFmt = (n) => new Intl.NumberFormat('en-US').format(Number(n).toFixed(0));
 
-export default function AfinacionesHistory() {
+/**
+ * Historial de afinaciones ya registradas.
+ *
+ * @returns {object} La pantalla.
+ */
+export default function AfinacionesHistorialPage() {
   const navigate = useNavigate();
 
   // --- States ---

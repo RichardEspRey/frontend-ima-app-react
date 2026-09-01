@@ -5,15 +5,24 @@ import HistoryIcon from '@mui/icons-material/History';
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom"; 
 
-import { AfinacionesTable } from "../components/Afinaciones/AfinacionesTable";
+import { AfinacionesTable } from "../../components/Afinaciones/AfinacionesTable";
 import { 
     ResetModal, ManualUpdateModal, LimitModal, 
     CorrectOdometerModal, HistoryModal, PhotoModal 
-} from "../components/Afinaciones/AfinacionesModals";
+} from "../../components/Afinaciones/AfinacionesModals";
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
-export default function Afinaciones() {
+/**
+ * Estado de afinación de la flota.
+ *
+ * Muestra cuántas millas lleva cada camión desde su última afinación y permite
+ * registrarla, cambiar el límite de millas o corregir una lectura de odómetro
+ * mal capturada.
+ *
+ * @returns {object} La pantalla.
+ */
+export default function AfinacionesPage() {
   const navigate = useNavigate(); 
   const [trucksStatus, setTrucksStatus] = useState([]);
   const [loading, setLoading] = useState(true);

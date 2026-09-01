@@ -44,10 +44,10 @@ import MargenScreen from '../screens/MargenScreen.jsx';
 import PaymentDrivers from '../screens/Finanzas/PaymentDrivers.jsx';
 import MillasDriversTable from '../screens/Finanzas/MillasDriversTable.jsx';
 import TicketPayment from '../screens/Finanzas/TicketPayment.jsx';
-import Autonomia from '../screens/Autonomia.jsx';
+import AutonomiaPage from '../pages/mantenimientos/AutonomiaPage.jsx';
 import EstatusUnidades from '../screens/EstatusUnidades.jsx';
-import Afinaciones from '../screens/Afinaciones.jsx';
-import AfinacionesHistory from '../screens/AfinacionesHistory.jsx';
+import AfinacionesPage from '../pages/mantenimientos/AfinacionesPage.jsx';
+import AfinacionesHistorialPage from '../pages/mantenimientos/AfinacionesHistorialPage.jsx';
 import CrearViaje from '../screens/Dispatch/CrearViaje.jsx';
 import Safety from '../screens/Safety/Safety.jsx';
 import Ifta from '../screens/Safety/IFTA.jsx';
@@ -117,9 +117,9 @@ const AppRouter = () => {
             <Route path="/paymentDrivers" element ={<PaymentDrivers />} />
             <Route path='/millasDriversTable' element ={<MillasDriversTable/>} />
             <Route path='/ticketPayment/:trip_id' element ={<TicketPayment/>} />
-            <Route path="/autonomia" element={<Autonomia />} />
-            <Route path="/afinaciones" element={<Afinaciones />} />
-            <Route path="/registros-afinaciones" element={<AfinacionesHistory />} />
+            <Route path="/autonomia" element={<AutonomiaPage />} />
+            <Route path="/afinaciones" element={<AfinacionesPage />} />
+            <Route path="/registros-afinaciones" element={<AfinacionesHistorialPage />} />
             <Route path="/estatus-unidades" element={<EstatusUnidades />} />
             <Route path="/CrearViaje" element={<CrearViaje />} />
             <Route path="/nomina" element={<NominaPage />} />

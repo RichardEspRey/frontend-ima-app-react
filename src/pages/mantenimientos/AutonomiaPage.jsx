@@ -15,7 +15,12 @@ const getPerformanceColor = (mpg) => {
     return 'error'; // Malo
 };
 
-export default function Autonomia() {
+/**
+ * Rendimiento de la flota: millas por galón de cada camión.
+ *
+ * @returns {object} La pantalla.
+ */
+export default function AutonomiaPage() {
   const [trucks, setTrucks] = useState([]);
   const [loading, setLoading] = useState(true);
 

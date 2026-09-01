@@ -99,6 +99,19 @@ otras dos se puedan ir retirando módulo por módulo y para que cambiar de
 librería sea editar este archivo en vez de 56.</p>
 <p>Cada función devuelve una promesa, así que se puede esperar el cierre.</p>
 </dd>
+<dt><a href="#LLAVE_AUTONOMIA">LLAVE_AUTONOMIA</a> : <code>Array.&lt;string&gt;</code></dt>
+<dd><p>Llave de caché de la autonomía de la flota.</p>
+</dd>
+<dt><a href="#esquemaRegistroAutonomia">esquemaRegistroAutonomia</a></dt>
+<dd><p>Un registro de rendimiento: cuánto recorrió el camión con cuántos galones.</p>
+</dd>
+<dt><a href="#esquemaAutonomia">esquemaAutonomia</a></dt>
+<dd><p>La autonomía de un camión, con sus registros de rendimiento anidados.</p>
+</dd>
+<dt><a href="#ultimoRegistro">ultimoRegistro</a> ⇒ <code>object</code> | <code>null</code></dt>
+<dd><p>El registro más reciente de un camión.</p>
+<p>Los registros vienen ordenados del más reciente al más antiguo.</p>
+</dd>
 <dt><a href="#LLAVE_DOCUMENTOS">LLAVE_DOCUMENTOS</a> : <code>Array.&lt;string&gt;</code></dt>
 <dd><p>Llave de caché de los documentos corporativos.</p>
 </dd>
@@ -244,6 +257,39 @@ aparte. <code>tipo_cambio</code> viene nulo cuando la orden es en pesos.</p>
 <dt><a href="#llaveMiembros">llaveMiembros</a> ⇒ <code>Array.&lt;string&gt;</code></dt>
 <dd><p>Llave de caché de los miembros de un equipo.</p>
 </dd>
+<dt><a href="#LLAVE_AFINACIONES">LLAVE_AFINACIONES</a> : <code>Array.&lt;string&gt;</code></dt>
+<dd><p>Llave de caché del estado de afinaciones.</p>
+</dd>
+<dt><a href="#LLAVE_HISTORIAL">LLAVE_HISTORIAL</a> : <code>Array.&lt;string&gt;</code></dt>
+<dd><p>Llave de caché del historial de afinaciones.</p>
+</dd>
+<dt><a href="#useRegistrarAfinacion">useRegistrarAfinacion</a> ⇒ <code>object</code></dt>
+<dd><p>Registra una afinación y refresca la flota.</p>
+</dd>
+<dt><a href="#useActualizarLimite">useActualizarLimite</a> ⇒ <code>object</code></dt>
+<dd><p>Cambia el límite de un camión y refresca la flota.</p>
+</dd>
+<dt><a href="#useCorregirOdometro">useCorregirOdometro</a> ⇒ <code>object</code></dt>
+<dd><p>Corrige un odómetro y refresca la flota.</p>
+</dd>
+<dt><a href="#UMBRAL_PROXIMA">UMBRAL_PROXIMA</a> : <code>number</code></dt>
+<dd><p>Proporción del límite a partir de la cual una afinación se considera próxima.</p>
+</dd>
+<dt><a href="#esquemaRegistroDiesel">esquemaRegistroDiesel</a></dt>
+<dd><p>Una carga de diesel, que es de donde sale la lectura del odómetro.</p>
+</dd>
+<dt><a href="#esquemaAfinacion">esquemaAfinacion</a></dt>
+<dd><p>El estado de afinación de un camión.</p>
+<p><code>millas_acumuladas</code> las calcula el backend restando el odómetro base al último
+registrado, así que aquí se toma tal cual y no se recalcula: hacerlo daría dos
+verdades que pueden discrepar.</p>
+</dd>
+<dt><a href="#esquemaHistorial">esquemaHistorial</a></dt>
+<dd><p>Un registro histórico de afinación.</p>
+</dd>
+<dt><a href="#millasRestantes">millasRestantes</a> ⇒ <code>number</code></dt>
+<dd><p>Millas que faltan para la próxima afinación.</p>
+</dd>
 <dt><a href="#llavePermisosUsuario">llavePermisosUsuario</a> ⇒ <code>Array.&lt;string&gt;</code></dt>
 <dd><p>Llave de caché de los permisos de un usuario.</p>
 </dd>
@@ -327,6 +373,23 @@ migración ocurra, esta función se queda como camino de lectura hasta que ya no
 aplique a nadie y entonces se borra.</p>
 <p>Un valor desconocido cae a <code>CONSULTA</code>, el rol de <strong>menor</strong> privilegio: un rol
 que nadie reconoce no debe abrir puertas.</p>
+</dd>
+<dt><a href="#obtenerAutonomia">obtenerAutonomia([opciones])</a> ⇒ <code>Promise.&lt;Array&gt;</code></dt>
+<dd><p>Trae el rendimiento de cada camión con sus registros anidados.</p>
+</dd>
+<dt><a href="#useAutonomia">useAutonomia()</a> ⇒ <code>object</code></dt>
+<dd><p>Autonomía de la flota, cacheada.</p>
+</dd>
+<dt><a href="#promedioMpg">promedioMpg(autonomia)</a> ⇒ <code>number</code></dt>
+<dd><p>Promedio de millas por galón de un camión.</p>
+<p>Ignora los registros con rendimiento 0 o negativo: son cargas sin recorrido
+asociado, y meterlas en el promedio lo hunde sin que nada haya pasado.</p>
+</dd>
+<dt><a href="#totales">totales(autonomia)</a> ⇒ <code>Object</code></dt>
+<dd><p>Totales de distancia y galones de un camión.</p>
+</dd>
+<dt><a href="#normalizarAutonomias">normalizarAutonomias(filas)</a> ⇒ <code>Object</code></dt>
+<dd><p>Valida la lista de autonomías descartando lo que no cumple.</p>
 </dd>
 <dt><a href="#obtenerCompanias">obtenerCompanias([opciones])</a> ⇒ <code>Promise.&lt;Array&gt;</code></dt>
 <dd><p>Compañías dadas de alta.</p>
@@ -589,6 +652,50 @@ petición en lugar de una cada una.</p>
 todas las pantallas que lo pidan, así que varias a la vez hacen una sola
 petición en lugar de una cada una.</p>
 </dd>
+<dt><a href="#obtenerAfinaciones">obtenerAfinaciones([opciones])</a> ⇒ <code>Promise.&lt;Array&gt;</code></dt>
+<dd><p>Trae el estado de afinación de cada camión.</p>
+</dd>
+<dt><a href="#obtenerHistorial">obtenerHistorial([opciones])</a> ⇒ <code>Promise.&lt;Array&gt;</code></dt>
+<dd><p>Trae el historial de afinaciones hechas.</p>
+</dd>
+<dt><a href="#registrarAfinacion">registrarAfinacion(datos)</a> ⇒ <code>Promise.&lt;object&gt;</code></dt>
+<dd><p>Registra una afinación y reinicia el contador de millas del camión.</p>
+</dd>
+<dt><a href="#actualizarLimite">actualizarLimite(datos)</a> ⇒ <code>Promise.&lt;object&gt;</code></dt>
+<dd><p>Cambia cada cuántas millas se afina un camión.</p>
+</dd>
+<dt><a href="#corregirOdometro">corregirOdometro(datos)</a> ⇒ <code>Promise.&lt;object&gt;</code></dt>
+<dd><p>Corrige una lectura de odómetro mal capturada.</p>
+<p>Existe porque pasa: en los datos reales hay lecturas con un dígito de menos
+entre valores de un millón y medio.</p>
+</dd>
+<dt><a href="#useAfinaciones">useAfinaciones()</a> ⇒ <code>object</code></dt>
+<dd><p>Estado de afinación de la flota, cacheado.</p>
+</dd>
+<dt><a href="#useHistorialAfinaciones">useHistorialAfinaciones()</a> ⇒ <code>object</code></dt>
+<dd><p>Historial de afinaciones, cacheado.</p>
+</dd>
+<dt><a href="#crearMutacion">crearMutacion(mutationFn)</a> ⇒ <code>function</code></dt>
+<dd><p>Crea una mutación que refresca las afinaciones al terminar.</p>
+<p>Las tres invalidan lo mismo, así que comparten fábrica.</p>
+</dd>
+<dt><a href="#progresoAfinacion">progresoAfinacion(afinacion)</a> ⇒ <code>number</code></dt>
+<dd><p>Qué proporción del límite lleva recorrida un camión.</p>
+</dd>
+<dt><a href="#estadoAfinacion">estadoAfinacion(afinacion)</a> ⇒ <code>string</code></dt>
+<dd><p>Clasifica a un camión según lo cerca que esté de su afinación.</p>
+</dd>
+<dt><a href="#lecturasSospechosas">lecturasSospechosas(registros)</a> ⇒ <code>Array</code></dt>
+<dd><p>Detecta una lectura de odómetro que se salga del orden esperado.</p>
+<p>El odómetro solo puede subir, así que una lectura menor que la anterior es un
+error de captura. Pasa: en los datos reales hay un registro con 149 946 entre
+lecturas de 1,5 millones — un dígito perdido al teclear. Por eso el backend
+tiene la operación <code>correct_odometer</code>.</p>
+<p>Los registros vienen del más reciente al más antiguo.</p>
+</dd>
+<dt><a href="#normalizarLista">normalizarLista(filas, esquema)</a> ⇒ <code>Object</code></dt>
+<dd><p>Valida una lista con el esquema dado, descartando lo que no cumple.</p>
+</dd>
 <dt><a href="#obtenerPermisosUsuario">obtenerPermisosUsuario(parametros)</a> ⇒ <code>Promise.&lt;object&gt;</code></dt>
 <dd><p>Trae todos los permisos de un usuario, separados por plataforma.</p>
 </dd>
@@ -648,6 +755,9 @@ petición en lugar de una cada una.</p>
 ## Typedefs
 
 <dl>
+<dt><a href="#Autonomia">Autonomia</a> : <code>object</code></dt>
+<dd><p>La autonomía de un camión, ya validada.</p>
+</dd>
 <dt><a href="#Requisito">Requisito</a> : <code>object</code></dt>
 <dd><p>Un requisito documental ya validado.</p>
 </dd>
@@ -665,6 +775,9 @@ petición en lugar de una cada una.</p>
 </dd>
 <dt><a href="#Orden">Orden</a> : <code>object</code></dt>
 <dd><p>Una orden de servicio ya validada.</p>
+</dd>
+<dt><a href="#Afinacion">Afinacion</a> : <code>object</code></dt>
+<dd><p>El estado de afinación de un camión, ya validado.</p>
 </dd>
 <dt><a href="#Usuario">Usuario</a> : <code>object</code></dt>
 <dd><p>Usuario ya validado y normalizado.</p>
@@ -853,6 +966,13 @@ Estados por los que pasa una orden de servicio y cada uno de sus servicios.
 
 Verificado contra la API el 2026-09-01: son los tres únicos valores que
 aparecen, tanto en órdenes como en servicios.
+
+**Kind**: global enum  
+**Read only**: true  
+<a name="ESTADO_AFINACION"></a>
+
+## ESTADO\_AFINACION : <code>enum</code>
+Estado de un camión respecto a su próxima afinación.
 
 **Kind**: global enum  
 **Read only**: true  
@@ -1136,6 +1256,38 @@ no tenga que conocer la forma `{ isConfirmed }` de la librería.
 | [opciones.confirmar] | <code>string</code> | <code>&quot;&#x27;Sí, continuar&#x27;&quot;</code> | Texto del botón de aceptar. |
 | [opciones.cancelar] | <code>string</code> | <code>&quot;&#x27;Cancelar&#x27;&quot;</code> | Texto del botón de cancelar. |
 | [opciones.peligroso] | <code>boolean</code> | <code>true</code> | Pinta de rojo el botón de aceptar. |
+
+<a name="LLAVE_AUTONOMIA"></a>
+
+## LLAVE\_AUTONOMIA : <code>Array.&lt;string&gt;</code>
+Llave de caché de la autonomía de la flota.
+
+**Kind**: global constant  
+<a name="esquemaRegistroAutonomia"></a>
+
+## esquemaRegistroAutonomia
+Un registro de rendimiento: cuánto recorrió el camión con cuántos galones.
+
+**Kind**: global constant  
+<a name="esquemaAutonomia"></a>
+
+## esquemaAutonomia
+La autonomía de un camión, con sus registros de rendimiento anidados.
+
+**Kind**: global constant  
+<a name="ultimoRegistro"></a>
+
+## ultimoRegistro ⇒ <code>object</code> \| <code>null</code>
+El registro más reciente de un camión.
+
+Los registros vienen ordenados del más reciente al más antiguo.
+
+**Kind**: global constant  
+**Returns**: <code>object</code> \| <code>null</code> - El último registro, o `null` si no hay ninguno.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| autonomia | [<code>Autonomia</code>](#Autonomia) | El camión a evaluar. |
 
 <a name="LLAVE_DOCUMENTOS"></a>
 
@@ -1509,6 +1661,79 @@ Llave de caché de los miembros de un equipo.
 | --- | --- | --- |
 | teamId | <code>string</code> | Identificador del equipo. |
 
+<a name="LLAVE_AFINACIONES"></a>
+
+## LLAVE\_AFINACIONES : <code>Array.&lt;string&gt;</code>
+Llave de caché del estado de afinaciones.
+
+**Kind**: global constant  
+<a name="LLAVE_HISTORIAL"></a>
+
+## LLAVE\_HISTORIAL : <code>Array.&lt;string&gt;</code>
+Llave de caché del historial de afinaciones.
+
+**Kind**: global constant  
+<a name="useRegistrarAfinacion"></a>
+
+## useRegistrarAfinacion ⇒ <code>object</code>
+Registra una afinación y refresca la flota.
+
+**Kind**: global constant  
+**Returns**: <code>object</code> - El resultado de `useMutation`.  
+<a name="useActualizarLimite"></a>
+
+## useActualizarLimite ⇒ <code>object</code>
+Cambia el límite de un camión y refresca la flota.
+
+**Kind**: global constant  
+**Returns**: <code>object</code> - El resultado de `useMutation`.  
+<a name="useCorregirOdometro"></a>
+
+## useCorregirOdometro ⇒ <code>object</code>
+Corrige un odómetro y refresca la flota.
+
+**Kind**: global constant  
+**Returns**: <code>object</code> - El resultado de `useMutation`.  
+<a name="UMBRAL_PROXIMA"></a>
+
+## UMBRAL\_PROXIMA : <code>number</code>
+Proporción del límite a partir de la cual una afinación se considera próxima.
+
+**Kind**: global constant  
+<a name="esquemaRegistroDiesel"></a>
+
+## esquemaRegistroDiesel
+Una carga de diesel, que es de donde sale la lectura del odómetro.
+
+**Kind**: global constant  
+<a name="esquemaAfinacion"></a>
+
+## esquemaAfinacion
+El estado de afinación de un camión.
+
+`millas_acumuladas` las calcula el backend restando el odómetro base al último
+registrado, así que aquí se toma tal cual y no se recalcula: hacerlo daría dos
+verdades que pueden discrepar.
+
+**Kind**: global constant  
+<a name="esquemaHistorial"></a>
+
+## esquemaHistorial
+Un registro histórico de afinación.
+
+**Kind**: global constant  
+<a name="millasRestantes"></a>
+
+## millasRestantes ⇒ <code>number</code>
+Millas que faltan para la próxima afinación.
+
+**Kind**: global constant  
+**Returns**: <code>number</code> - Las millas restantes; 0 si ya se pasó.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| afinacion | [<code>Afinacion</code>](#Afinacion) | El camión a evaluar. |
+
 <a name="llavePermisosUsuario"></a>
 
 ## llavePermisosUsuario ⇒ <code>Array.&lt;string&gt;</code>
@@ -1715,6 +1940,70 @@ que nadie reconoce no debe abrir puertas.
 | Param | Type | Description |
 | --- | --- | --- |
 | crudo | <code>\*</code> | Valor de `type` tal como viene de la API. |
+
+<a name="obtenerAutonomia"></a>
+
+## obtenerAutonomia([opciones]) ⇒ <code>Promise.&lt;Array&gt;</code>
+Trae el rendimiento de cada camión con sus registros anidados.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;Array&gt;</code> - Las autonomías normalizadas.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la API falla.
+
+**Endpoint**: POST autonomia.php · op=get_truck_autonomy  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [opciones] | <code>object</code> | Ajustes de la petición. |
+| [opciones.signal] | <code>AbortSignal</code> | Señal de cancelación. |
+
+<a name="useAutonomia"></a>
+
+## useAutonomia() ⇒ <code>object</code>
+Autonomía de la flota, cacheada.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useQuery`.  
+<a name="promedioMpg"></a>
+
+## promedioMpg(autonomia) ⇒ <code>number</code>
+Promedio de millas por galón de un camión.
+
+Ignora los registros con rendimiento 0 o negativo: son cargas sin recorrido
+asociado, y meterlas en el promedio lo hunde sin que nada haya pasado.
+
+**Kind**: global function  
+**Returns**: <code>number</code> - El promedio, o 0 si no hay registros útiles.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| autonomia | [<code>Autonomia</code>](#Autonomia) | El camión a evaluar. |
+
+<a name="totales"></a>
+
+## totales(autonomia) ⇒ <code>Object</code>
+Totales de distancia y galones de un camión.
+
+**Kind**: global function  
+**Returns**: <code>Object</code> - Los totales.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| autonomia | [<code>Autonomia</code>](#Autonomia) | El camión a evaluar. |
+
+<a name="normalizarAutonomias"></a>
+
+## normalizarAutonomias(filas) ⇒ <code>Object</code>
+Valida la lista de autonomías descartando lo que no cumple.
+
+**Kind**: global function  
+**Returns**: <code>Object</code> - Las válidas y cuántas se cayeron.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| filas | <code>Array</code> | Lo que vino en la respuesta. |
 
 <a name="obtenerCompanias"></a>
 
@@ -2712,6 +3001,187 @@ petición en lugar de una cada una.
 
 **Kind**: global function  
 **Returns**: <code>object</code> - El resultado de `useQuery`: `{data, isLoading, isError, error}`.  
+<a name="obtenerAfinaciones"></a>
+
+## obtenerAfinaciones([opciones]) ⇒ <code>Promise.&lt;Array&gt;</code>
+Trae el estado de afinación de cada camión.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;Array&gt;</code> - Las afinaciones normalizadas.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la API falla.
+
+**Endpoint**: POST afinaciones.php · op=get_maintenance_status  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [opciones] | <code>object</code> | Ajustes de la petición. |
+| [opciones.signal] | <code>AbortSignal</code> | Señal de cancelación. |
+
+<a name="obtenerHistorial"></a>
+
+## obtenerHistorial([opciones]) ⇒ <code>Promise.&lt;Array&gt;</code>
+Trae el historial de afinaciones hechas.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;Array&gt;</code> - El historial normalizado.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la API falla.
+
+**Endpoint**: POST afinaciones.php · op=get_history  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [opciones] | <code>object</code> | Ajustes de la petición. |
+| [opciones.signal] | <code>AbortSignal</code> | Señal de cancelación. |
+
+<a name="registrarAfinacion"></a>
+
+## registrarAfinacion(datos) ⇒ <code>Promise.&lt;object&gt;</code>
+Registra una afinación y reinicia el contador de millas del camión.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;object&gt;</code> - La respuesta de la API.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la API rechaza la operación.
+
+**Endpoint**: POST afinaciones.php · op=reset_counter  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| datos | <code>object</code> | Datos de la afinación. |
+| datos.truckId | <code>string</code> | Camión afinado. |
+| datos.millasAcumuladas | <code>number</code> | Millas que llevaba al afinarse. |
+| datos.porcentajeAceite | <code>number</code> | Porcentaje de aceite registrado. |
+
+<a name="actualizarLimite"></a>
+
+## actualizarLimite(datos) ⇒ <code>Promise.&lt;object&gt;</code>
+Cambia cada cuántas millas se afina un camión.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;object&gt;</code> - La respuesta de la API.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la API rechaza la operación.
+
+**Endpoint**: POST afinaciones.php · op=update_limit  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| datos | <code>object</code> | Datos del cambio. |
+| datos.truckId | <code>string</code> | Camión afectado. |
+| datos.limite | <code>number</code> | Millas entre afinaciones. |
+
+<a name="corregirOdometro"></a>
+
+## corregirOdometro(datos) ⇒ <code>Promise.&lt;object&gt;</code>
+Corrige una lectura de odómetro mal capturada.
+
+Existe porque pasa: en los datos reales hay lecturas con un dígito de menos
+entre valores de un millón y medio.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;object&gt;</code> - La respuesta de la API.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la API rechaza la operación.
+
+**Endpoint**: POST afinaciones.php · op=correct_odometer  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| datos | <code>object</code> | Datos de la corrección. |
+| datos.dieselId | <code>string</code> | Registro de diesel a corregir. |
+| datos.odometro | <code>number</code> | Lectura correcta. |
+
+<a name="useAfinaciones"></a>
+
+## useAfinaciones() ⇒ <code>object</code>
+Estado de afinación de la flota, cacheado.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useQuery`.  
+<a name="useHistorialAfinaciones"></a>
+
+## useHistorialAfinaciones() ⇒ <code>object</code>
+Historial de afinaciones, cacheado.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useQuery`.  
+<a name="crearMutacion"></a>
+
+## crearMutacion(mutationFn) ⇒ <code>function</code>
+Crea una mutación que refresca las afinaciones al terminar.
+
+Las tres invalidan lo mismo, así que comparten fábrica.
+
+**Kind**: global function  
+**Returns**: <code>function</code> - Un hook de mutación.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| mutationFn | <code>function</code> | La operación a ejecutar. |
+
+<a name="progresoAfinacion"></a>
+
+## progresoAfinacion(afinacion) ⇒ <code>number</code>
+Qué proporción del límite lleva recorrida un camión.
+
+**Kind**: global function  
+**Returns**: <code>number</code> - Entre 0 y 1 normalmente; pasa de 1 si ya se venció.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| afinacion | [<code>Afinacion</code>](#Afinacion) | El camión a evaluar. |
+
+<a name="estadoAfinacion"></a>
+
+## estadoAfinacion(afinacion) ⇒ <code>string</code>
+Clasifica a un camión según lo cerca que esté de su afinación.
+
+**Kind**: global function  
+**Returns**: <code>string</code> - Un valor de `ESTADO_AFINACION`.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| afinacion | [<code>Afinacion</code>](#Afinacion) | El camión a evaluar. |
+
+<a name="lecturasSospechosas"></a>
+
+## lecturasSospechosas(registros) ⇒ <code>Array</code>
+Detecta una lectura de odómetro que se salga del orden esperado.
+
+El odómetro solo puede subir, así que una lectura menor que la anterior es un
+error de captura. Pasa: en los datos reales hay un registro con 149 946 entre
+lecturas de 1,5 millones — un dígito perdido al teclear. Por eso el backend
+tiene la operación `correct_odometer`.
+
+Los registros vienen del más reciente al más antiguo.
+
+**Kind**: global function  
+**Returns**: <code>Array</code> - Los registros cuya lectura rompe el orden.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| registros | <code>Array</code> | Las cargas de diesel del camión. |
+
+<a name="normalizarLista"></a>
+
+## normalizarLista(filas, esquema) ⇒ <code>Object</code>
+Valida una lista con el esquema dado, descartando lo que no cumple.
+
+**Kind**: global function  
+**Returns**: <code>Object</code> - Los que pasaron y cuántos no.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| filas | <code>Array</code> | Lo que vino en la respuesta. |
+| esquema | <code>object</code> | Esquema zod con el que validar cada fila. |
+
 <a name="obtenerPermisosUsuario"></a>
 
 ## obtenerPermisosUsuario(parametros) ⇒ <code>Promise.&lt;object&gt;</code>
@@ -2913,6 +3383,21 @@ petición en lugar de una cada una.
 
 **Kind**: global function  
 **Returns**: <code>object</code> - El resultado de `useQuery`: `{data, isLoading, isError, error}`.  
+<a name="Autonomia"></a>
+
+## Autonomia : <code>object</code>
+La autonomía de un camión, ya validada.
+
+**Kind**: global typedef  
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| truck_id | <code>string</code> | Identificador del camión. |
+| unidad | <code>string</code> | Número de unidad. |
+| placa | <code>string</code> \| <code>null</code> | Placa del camión. |
+| registros | <code>Array</code> | Registros de rendimiento, del más reciente al más antiguo. |
+
 <a name="Requisito"></a>
 
 ## Requisito : <code>object</code>
@@ -3017,6 +3502,25 @@ Una orden de servicio ya validada.
 | nombre_camion | <code>string</code> | Número de unidad. |
 | tipo_cambio | <code>number</code> \| <code>null</code> | Tipo de cambio, o `null` si es en pesos. |
 | servicios | <code>Array</code> | Los servicios de la orden. |
+
+<a name="Afinacion"></a>
+
+## Afinacion : <code>object</code>
+El estado de afinación de un camión, ya validado.
+
+**Kind**: global typedef  
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| truck_id | <code>string</code> | Identificador del camión. |
+| unidad | <code>string</code> | Número de unidad. |
+| ultima_afinacion_fecha | <code>string</code> | Fecha de la última afinación. |
+| odometro_base | <code>number</code> | Odómetro cuando se afinó por última vez. |
+| limite_afinacion | <code>number</code> | Millas entre afinaciones. |
+| millas_acumuladas | <code>number</code> | Millas recorridas desde la última. |
+| requiere_actualizacion | <code>boolean</code> | Si el backend pide revisar el dato. |
+| ultimos_registros | <code>Array</code> | Últimas cargas de diesel del camión. |
 
 <a name="Usuario"></a>
 

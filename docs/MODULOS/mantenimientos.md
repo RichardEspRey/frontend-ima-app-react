@@ -51,8 +51,48 @@ partes (9a, 9b, 9c en `docs/refactor/05-INCREMENTOS.md`).
   distintas de 848). **Candidatas a fusionarse**, pendiente para el incremento de
   deduplicación.
 
-## 9b y 9c — pendientes
+## 9b — Afinaciones y autonomía · migrado
 
-- **9b**: Afinaciones + Autonomía (`afinaciones.php`, `autonomia.php`)
-- **9c**: Reparaciones en ruta + Inspecciones (`roadside_repairs.php`, `inspecciones.php`,
-  `formularios.php`). Van al final porque son lo que Emiliano tocó más reciente.
+| Ruta | Archivo |
+|---|---|
+| `/afinaciones` | `pages/mantenimientos/AfinacionesPage.jsx` |
+| `/registros-afinaciones` | `pages/mantenimientos/AfinacionesHistorialPage.jsx` |
+| `/autonomia` | `pages/mantenimientos/AutonomiaPage.jsx` |
+
+### Entidades
+
+- **`entities/tuning`** — `afinaciones.php`
+- **`entities/autonomy`** — `autonomia.php`
+
+| op | Qué hace |
+|---|---|
+| `get_maintenance_status` | Estado de afinación de cada camión, con sus últimas cargas |
+| `get_history` | Afinaciones ya registradas |
+| `reset_counter` | Registra una afinación y reinicia el contador |
+| `update_limit` | Cambia cada cuántas millas se afina un camión |
+| `correct_odometer` | Corrige una lectura mal capturada |
+| `get_truck_autonomy` | Rendimiento por camión, con registros anidados |
+
+### Reglas de negocio
+
+- Un camión está **al día**, **próxima** (80 % del límite o más) o **vencida** (100 % o más).
+- El límite es por camión, no global: se cambia con `update_limit`.
+- `millas_acumuladas` **las calcula el backend**. La entidad las toma tal cual y no las
+  recalcula: hacerlo daría dos verdades que pueden discrepar.
+- El promedio de MPG **ignora los registros con rendimiento 0**: son cargas sin recorrido
+  asociado y hundían el promedio sin que nada hubiera pasado.
+
+### Cosas que sorprenden
+
+- **Hay lecturas de odómetro mal capturadas en producción.** Un registro tiene 149 946
+  entre valores de 1,5 millones — un dígito perdido al teclear. Por eso existe
+  `correct_odometer`, y por eso la entidad tiene `lecturasSospechosas()`, que compara cada
+  lectura contra **sus dos vecinos**: así distingue un error de captura de un odómetro que
+  de verdad se reinició.
+- Las tres operaciones de escritura no aparecían al buscar `append('op', …)` en la
+  pantalla: van por una función común que recibe el `op` como parámetro.
+
+## 9c — pendiente
+
+Reparaciones en ruta + Inspecciones (`roadside_repairs.php`, `inspecciones.php`,
+`formularios.php`). Van al final porque son lo que Emiliano tocó más reciente.

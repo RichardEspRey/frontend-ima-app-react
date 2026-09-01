@@ -36,8 +36,8 @@ Todo vive en la rama larga **`refactor-fase-1`**, con un tag por incremento
 | 7 | Reports / Inicio | **hecho** | tag `incremento-7` |
 | 8 | IMA Manager (documentos) | **hecho** | tag `incremento-8` |
 | 9a | Órdenes de servicio + Inventario | **hecho** | tag `incremento-9a` |
-| 9b | Afinaciones + Autonomía | **siguiente** | — |
-| 9c | Reparaciones en ruta + Inspecciones | pendiente | — |
+| 9b | Afinaciones + Autonomía | **hecho** | tag `incremento-9b` |
+| 9c | Reparaciones en ruta + Inspecciones | **siguiente** | — |
 | 6+ | Resto de módulos, uno por uno | pendiente | — |
 | — | Deduplicar: **cada par en el incremento de su módulo**, no al final | ver `05-INCREMENTOS.md` | — |
 
@@ -62,7 +62,7 @@ Si la red vuelve a filtrar SSH, el remoto por HTTPS suele pasar:
 ## Al retomar
 
 El incremento 9 está partido en **9a, 9b y 9c** (ver `05-INCREMENTOS.md`).
-9a hecho; sigue **9b: afinaciones y autonomía**.
+9a y 9b hechos; sigue **9c: reparaciones en ruta e inspecciones**.
 
 Lo primero al volver, sobre todo si pasaron días: `npm run refactor:sync`. Si la red no
 deja hacer fetch, el script sigue con lo local y lo avisa.
