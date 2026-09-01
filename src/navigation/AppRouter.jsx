@@ -40,7 +40,6 @@ import AdminOrdenesServicio from '../screens/Mantenimientos/AdminOrdenesServicio
 import Finanzas from '../screens/Finanzas.jsx';
 import ResumenTrip from '../screens/ResumenTrip.jsx';
 import ResiduoTrip from '../screens/Finanzas/ResiduosTrips.jsx';
-import ProfileAccessManager from '../screens/ProfileAccessManager.jsx';
 import AccessManager from '../screens/AccessManager.jsx';
 import Reports from '../screens/Reports.jsx';
 import Tracking from '../screens/Mapas/Tracking.jsx';
