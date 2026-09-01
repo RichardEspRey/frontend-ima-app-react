@@ -38,6 +38,9 @@ Todo vive en la rama larga **`refactor-fase-1`**, con un tag por incremento
 | 9a | Órdenes de servicio + Inventario | **hecho** | tag `incremento-9a` |
 | 9b | Afinaciones + Autonomía | **hecho** | tag `incremento-9b` |
 | 9c | Reparaciones en ruta + Inspecciones | **hecho** | tag `incremento-9c` |
+| 10 | Finanzas | **hecho** | tag `incremento-10` |
+| 11 | Safety / IFTA | **hecho** | tag `incremento-11` |
+| 12 | Dispatch (crear y editar viaje) | **hecho** | tag `incremento-12` |
 | 6+ | Resto de módulos, uno por uno | pendiente | — |
 | — | Deduplicar: **cada par en el incremento de su módulo**, no al final | ver `05-INCREMENTOS.md` | — |
 
@@ -53,7 +56,7 @@ Desde otra red:
 
 ```bash
 git push origin refactor-fase-1
-git push origin incremento-9a
+git push origin --tags
 ```
 
 Si la red vuelve a filtrar SSH, el remoto por HTTPS suele pasar:
@@ -62,7 +65,7 @@ Si la red vuelve a filtrar SSH, el remoto por HTTPS suele pasar:
 ## Al retomar
 
 El incremento 9 está partido en **9a, 9b y 9c** (ver `05-INCREMENTOS.md`).
-Incrementos 9, 10 y 11 completos. Sigue el **12: Dispatch**.
+Incrementos 9 a 12 completos. Sigue el **13: Mapas / Tracking** (917 líneas, 24 hooks).
 
 Lo primero al volver, sobre todo si pasaron días: `npm run refactor:sync`. Si la red no
 deja hacer fetch, el script sigue con lo local y lo avisa.
