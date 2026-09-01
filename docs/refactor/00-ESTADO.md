@@ -73,9 +73,9 @@ Incrementos 9 a 15 completos. Sigue el **16: Gastos**, el módulo más caliente 
 616). Es el único que todavía tiene una prueba propia en `screens/`, así que hay que
 moverla con él.
 
-**Pendiente de decisión:** ocho pantallas huérfanas, ~2 150 líneas, sin ningún enlace que
-lleve a ellas — seis de unidades y dos de viajes. Ver el final de `docs/MODULOS/unidades.md`
-y de `docs/MODULOS/viajes.md`.
+Las **ocho pantallas sin uso** (~2 150 líneas) están en cuarentena en `src/no-usadas/`,
+con sus rutas todavía registradas para no romper un marcador guardado. No se borran
+todavía: se revisa dentro de unos meses. Ver `src/no-usadas/README.md`.
 
 Lo primero al volver, sobre todo si pasaron días: `npm run refactor:sync`. Si la red no
 deja hacer fetch, el script sigue con lo local y lo avisa.

@@ -83,10 +83,9 @@ Cubre todo el ciclo de un viaje, desde que se cotiza hasta que se cierra y se re
   repartidas entre el cotizador, el administrador de viajes y el centro de comando.
 - Los **nueve filtros** eran nueve bloques de JSX casi idénticos.
 
-## Pantallas huérfanas que quedaron fuera
+## Pantallas sin uso
 
-`screens/Viajes/TripsScreen.jsx` (`/trips`) y `screens/Viajes/TripsScreenNew.jsx`
-(`/trips-new`) son versiones antiguas del alta de viaje, contra los endpoints v1. **No las
-alcanza ningún enlace**: no están en el menú y nadie navega a ellas. `CrearViajePage` las
-sustituyó en el incremento 12. Son 353 líneas, y caen en la misma decisión pendiente que
-las seis de unidades.
+`TripsScreen` (`/trips`) y `TripsScreenNew` (`/trips-new`) son versiones antiguas del alta
+de viaje, contra los endpoints v1, que `CrearViajePage` sustituyó en el incremento 12. No
+las alcanza ningún enlace: están en cuarentena en **`src/no-usadas/`**, con sus rutas
+todavía registradas. Ver `src/no-usadas/README.md`.

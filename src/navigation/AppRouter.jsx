@@ -7,17 +7,9 @@ import { useAuthStore } from '../store/useAuthStore';
 import LoginScreen from '../screens/Login/Login.jsx';
 import DashboardLayout from '../layouts/DashboardLayout';
 import ConductoresPage from '../pages/unidades/ConductoresPage.jsx';
-import DriverEditor from '../screens/DriverEditor.jsx';
 import AdminViajesPage from '../pages/viajes/AdminViajesPage.jsx';
-import TripScreen from '../screens/Viajes/TripsScreen.jsx';
-import TripScreenNew from '../screens/Viajes/TripsScreenNew.jsx';
-import DriverScreen from '../screens/DriverScreen.jsx';
 import CamionesPage from '../pages/unidades/CamionesPage.jsx';
-import TruckScreen from '../screens/TruckScreen.jsx';
-import TrucksEditor from '../screens/TrucksEditor.jsx';
-import TrailerScreen from '../screens/TrailerScreen.jsx';
 import CajasPage from '../pages/unidades/CajasPage.jsx';
-import TrailerEdit from '../screens/TrailerEdit.jsx';
 import EditarViajePage from '../pages/viajes/EditarViajePage.jsx';
 import EditarViajeCompletoPage from '../pages/viajes/EditarViajeCompletoPage.jsx';
 import EditarViajeProximoPage from '../pages/dispatch/EditarViajeProximoPage.jsx';
@@ -59,6 +51,19 @@ import CotizadorPage from '../pages/viajes/CotizadorPage.jsx';
 import DocumentosPage from '../pages/documentos/DocumentosPage.jsx';
 import InspeccionesPage from '../pages/mantenimientos/InspeccionesPage.jsx';
 
+
+// Pantallas sin uso: no hay enlace en la aplicación que lleve a ellas, pero las
+// rutas siguen registradas para que un marcador guardado siga funcionando.
+// Ver src/no-usadas/README.md antes de tocarlas.
+import DriverEditor from '../no-usadas/DriverEditor.jsx';
+import TripScreen from '../no-usadas/TripsScreen.jsx';
+import TripScreenNew from '../no-usadas/TripsScreenNew.jsx';
+import DriverScreen from '../no-usadas/DriverScreen.jsx';
+import TruckScreen from '../no-usadas/TruckScreen.jsx';
+import TrucksEditor from '../no-usadas/TrucksEditor.jsx';
+import TrailerScreen from '../no-usadas/TrailerScreen.jsx';
+import TrailerEdit from '../no-usadas/TrailerEdit.jsx';
+
 const AppRouter = () => {
   const { user, loading } = useAuthStore();
 
@@ -76,17 +81,9 @@ const AppRouter = () => {
           <Route path="/" element={<DashboardLayout />}> 
             <Route index element={<Navigate to="/home" replace />} /> 
             <Route path="/home" element={<InicioPage />} />
-            <Route path="/drivers" element={<DriverScreen />} />
             <Route path="/admin-drivers" element={<ConductoresPage />} />
-            <Route path="/editor-drivers/:id" element={<DriverEditor />} />
-            <Route path="/trucks" element={<TruckScreen />} />
             <Route path="/admin-trucks" element={<CamionesPage />} />
-            <Route path="/editor-trucks/:id" element={<TrucksEditor />} /> 
-            <Route path="/trailers" element={<TrailerScreen />} />
             <Route path="/admin-trailers" element={<CajasPage />} />
-            <Route path="/editor-trailers/:id" element={<TrailerEdit />} /> 
-            <Route path="/trips" element={<TripScreen />} />
-            <Route path="/trips-new" element={<TripScreenNew />} />
             <Route path="/admin-trips" element={<AdminViajesPage />} />
             <Route path="/admin-diesel" element={<DieselAdmin />} />
             <Route path="/detalle-diesel/:tripId" element={<DieselDetalle />} />
@@ -98,7 +95,6 @@ const AppRouter = () => {
             <Route path="/edit-trip/:tripId" element={<EditarViajePage />} />
             <Route path="/edit-trip-complete/:tripId" element={<EditarViajeCompletoPage />} />
             <Route path="/edit-trip-upcoming/:tripId" element={<EditarViajeProximoPage />} />
-            <Route path="/edit-trailer/:trailerId" element={<TrailerEdit />} />
             <Route path="/Inspeccion-final" element={<InspeccionFinalPage />} />
             <Route path="/edit-expense/:id_gasto" element={<ExpenseEdit />} />
             <Route path="/view-inventory" element={<OrdenesServicioPage />} />
@@ -127,6 +123,19 @@ const AppRouter = () => {
             <Route path="/detalle-pago/:period_id" element={<DetallePagoPage />} />
             <Route path="/road-repairs" element={<ReparacionesRutaPage />} />
              <Route path="/cotizador" element={<CotizadorPage />} />
+
+            {/* Rutas sin uso. Ninguna pantalla lleva aquí; siguen vivas solo para
+                que un marcador guardado no se rompa. Ver src/no-usadas/README.md. */}
+            <Route path="/drivers" element={<DriverScreen />} />
+            <Route path="/editor-drivers/:id" element={<DriverEditor />} />
+            <Route path="/trucks" element={<TruckScreen />} />
+            <Route path="/editor-trucks/:id" element={<TrucksEditor />} />
+            <Route path="/trailers" element={<TrailerScreen />} />
+            <Route path="/editor-trailers/:id" element={<TrailerEdit />} />
+            <Route path="/edit-trailer/:trailerId" element={<TrailerEdit />} />
+            <Route path="/trips" element={<TripScreen />} />
+            <Route path="/trips-new" element={<TripScreenNew />} />
+
             <Route path="*" element={<Navigate to="/home" replace />} /> 
             <Route path="/ima-manager" element={<DocumentosPage />} />
             <Route path="/inspecciones" element={<InspeccionesPage />} />

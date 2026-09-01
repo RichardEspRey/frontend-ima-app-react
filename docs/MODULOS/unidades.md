@@ -70,20 +70,9 @@ Las tres páginas tienen **once líneas**: eligen el tipo y montan `AdminUnidade
   en un tanque de 270, y la 7 reporta −33. El indicador acota lo que dibuja, así que sin
   avisar se ven como un tanque lleno y uno vacío normales.
 
-## Pantallas huérfanas que quedaron fuera
+## Pantallas sin uso
 
-Seis archivos de `src/screens/` **no los alcanza ningún enlace de la aplicación**: no están
-en `menuConfig.js` y ningún componente navega a ellos. Solo se llega escribiendo la URL.
-
-| Archivo | Ruta | Qué hace |
-|---|---|---|
-| `TruckScreen.jsx` | `/trucks` | Alta de camión contra `trucks.php` (v1) |
-| `TrailerScreen.jsx` | `/trailers` | Alta de caja contra `cajas.php` (v1) |
-| `DriverScreen.jsx` | `/drivers` | Alta de conductor contra `drivers.php` (v1) |
-| `TrucksEditor.jsx` | `/editor-trucks/:id` | Editor antiguo |
-| `TrailerEdit.jsx` | `/editor-trailers/:id`, `/edit-trailer/:id` | Editor antiguo |
-| `DriverEditor.jsx` | `/editor-drivers/:id` | Editor antiguo |
-
-Son ~1 800 líneas que hacen, contra los endpoints v1, lo que las pantallas del menú ya
-hacen contra los v2. **No se tocaron**: decidir si se borran es de Emiliano, no del
-refactor. Mientras existan, el módulo no está cerrado del todo.
+Seis archivos de este módulo no los alcanza ningún enlace de la aplicación. Están en
+cuarentena en **`src/no-usadas/`**, con sus rutas todavía registradas para no romper un
+marcador guardado. El detalle de cada uno, de por qué dejó de usarse y de las doce
+comprobaciones que se hicieron está en `src/no-usadas/README.md`.
