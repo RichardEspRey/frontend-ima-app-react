@@ -49,8 +49,8 @@ import EstatusUnidades from '../screens/EstatusUnidades.jsx';
 import AfinacionesPage from '../pages/mantenimientos/AfinacionesPage.jsx';
 import AfinacionesHistorialPage from '../pages/mantenimientos/AfinacionesHistorialPage.jsx';
 import CrearViaje from '../screens/Dispatch/CrearViaje.jsx';
-import Safety from '../screens/Safety/Safety.jsx';
-import Ifta from '../screens/Safety/IFTA.jsx';
+import SafetyPage from '../pages/safety/SafetyPage.jsx';
+import IftaPage from '../pages/safety/IftaPage.jsx';
 import NominaPage from '../pages/nomina/NominaPage.jsx';
 import PersonalPage from '../pages/nomina/PersonalPage.jsx';
 import DetallePagoPage from '../pages/nomina/DetallePagoPage.jsx';
@@ -110,8 +110,8 @@ const AppRouter = () => {
             <Route path="/access-manager" element={<AccesosPage />} />
             <Route path="/ResiduoTrip" element={<ResiduosPage />} />  
             <Route path="/reports" element={<ReportsPage />} />
-            <Route path="/safety" element={<Safety />} />  
-            <Route path="/Ifta" element={<Ifta />} />  
+            <Route path="/safety" element={<SafetyPage />} />  
+            <Route path="/Ifta" element={<IftaPage />} />  
             <Route path="/tracking" element={<Tracking />} />  
             <Route path="/margen" element={<MargenPage />} />  
             <Route path="/paymentDrivers" element ={<PagosConductoresPage />} />

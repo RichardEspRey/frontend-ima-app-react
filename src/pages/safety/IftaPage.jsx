@@ -19,7 +19,15 @@ const fmt = (n) => Number(n).toLocaleString('en-US', { minimumFractionDigits: 1,
 const fmtDate = (d) => d ? d.split('T')[0] : '—';
 
 // ── Component ─────────────────────────────────────────────────────────────────
-export default function IFTA() {
+/**
+ * IFTA: millas recorridas y combustible cargado por estado.
+ *
+ * El impuesto se paga por la diferencia entre dónde se recorrió y dónde se compró
+ * el combustible, así que lo que importa de cada estado es esa relación.
+ *
+ * @returns {object} La pantalla.
+ */
+export default function IftaPage() {
     const [tabValue, setTabValue] = useState(0);
 
     // ── Tab 0: Por Viaje ──────────────────────────────────────────────────────

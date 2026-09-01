@@ -177,6 +177,22 @@ sin vencimiento no trae fecha.</p>
 <dt><a href="#estaPagadoConductor">estaPagadoConductor</a> ⇒ <code>boolean</code></dt>
 <dd><p>Indica si al conductor ya se le pagó.</p>
 </dd>
+<dt><a href="#LLAVE_PERIODOS_IFTA">LLAVE_PERIODOS_IFTA</a> : <code>Array.&lt;string&gt;</code></dt>
+<dd><p>Llave de caché de los periodos IFTA.</p>
+</dd>
+<dt><a href="#llaveTotalesIfta">llaveTotalesIfta</a> ⇒ <code>Array</code></dt>
+<dd><p>Llave de caché de los totales por estado.</p>
+<p>Los filtros entran en la llave para que cada combinación tenga su propio
+resultado en vez de pisar el anterior.</p>
+</dd>
+<dt><a href="#esquemaPeriodoIfta">esquemaPeriodoIfta</a></dt>
+<dd><p>Millas recorridas y galones cargados en un estado, dentro de un periodo.</p>
+<p><code>periodo</code> viene vacío en la respuesta real: el corte se decide con <code>trip_year</code>
+y los filtros de fecha, no con ese campo.</p>
+</dd>
+<dt><a href="#esquemaTotalEstado">esquemaTotalEstado</a></dt>
+<dd><p>Millas totales por estado, con cuántos viajes las produjeron.</p>
+</dd>
 <dt><a href="#LLAVE_INSPECCIONES">LLAVE_INSPECCIONES</a> : <code>Array.&lt;string&gt;</code></dt>
 <dd><p>Llave de caché de las inspecciones.</p>
 </dd>
@@ -322,6 +338,23 @@ lista siempre tiene una fecha que enseñar aunque falte la del suceso.</p>
 </dd>
 <dt><a href="#tieneDocumentos">tieneDocumentos</a> ⇒ <code>boolean</code></dt>
 <dd><p>Indica si una reparación tiene comprobantes adjuntos.</p>
+</dd>
+<dt><a href="#LLAVE_SAFETY">LLAVE_SAFETY</a> : <code>Array.&lt;string&gt;</code></dt>
+<dd><p>Llave de caché de los viajes de cumplimiento.</p>
+</dd>
+<dt><a href="#esquemaViajeSafety">esquemaViajeSafety</a></dt>
+<dd><p>Un viaje visto desde cumplimiento: qué documentos tiene y cuáles le faltan.</p>
+<p>Los tres documentos llegan como una URL o como <code>null</code>. Un <code>null</code> significa que
+falta, no que haya un error.</p>
+</dd>
+<dt><a href="#tieneDocumento">tieneDocumento</a> ⇒ <code>boolean</code></dt>
+<dd><p>Indica si un viaje tiene subido un documento concreto.</p>
+</dd>
+<dt><a href="#documentosFaltantes">documentosFaltantes</a> ⇒ <code>Array.&lt;string&gt;</code></dt>
+<dd><p>Los documentos que le faltan a un viaje.</p>
+</dd>
+<dt><a href="#cumplimientoCompleto">cumplimientoCompleto</a> ⇒ <code>boolean</code></dt>
+<dd><p>Indica si un viaje tiene toda su documentación.</p>
 </dd>
 <dt><a href="#LLAVE_ORDENES">LLAVE_ORDENES</a> : <code>Array.&lt;string&gt;</code></dt>
 <dd><p>Llave de caché de las órdenes de servicio.</p>
@@ -582,6 +615,37 @@ petición en lugar de una cada una.</p>
 <dt><a href="#normalizarLista">normalizarLista(filas, esquema)</a> ⇒ <code>Object</code></dt>
 <dd><p>Valida una lista con el esquema dado, descartando lo que no cumple.</p>
 </dd>
+<dt><a href="#obtenerPeriodosIfta">obtenerPeriodosIfta([opciones])</a> ⇒ <code>Promise.&lt;Array&gt;</code></dt>
+<dd><p>Trae millas y galones por estado y año fiscal.</p>
+</dd>
+<dt><a href="#obtenerTotalesPorEstado">obtenerTotalesPorEstado([filtros])</a> ⇒ <code>Promise.&lt;Array&gt;</code></dt>
+<dd><p>Trae las millas totales por estado, con filtros opcionales.</p>
+<p>Cada filtro solo viaja si trae valor: mandar un rango vacío cambiaría el
+resultado en vez de dejarlo sin filtrar.</p>
+</dd>
+<dt><a href="#obtenerViajesIfta">obtenerViajesIfta([filtros])</a> ⇒ <code>Promise.&lt;Array&gt;</code></dt>
+<dd><p>Trae los viajes que componen un total de IFTA.</p>
+</dd>
+<dt><a href="#usePeriodosIfta">usePeriodosIfta()</a> ⇒ <code>object</code></dt>
+<dd><p>Periodos IFTA, cacheados. Cambian poco: se cachean más tiempo.</p>
+</dd>
+<dt><a href="#useTotalesPorEstado">useTotalesPorEstado([filtros])</a> ⇒ <code>object</code></dt>
+<dd><p>Totales por estado según los filtros activos.</p>
+</dd>
+<dt><a href="#rendimientoEstado">rendimientoEstado(registro)</a> ⇒ <code>number</code></dt>
+<dd><p>Rendimiento de un estado: millas recorridas por galón cargado.</p>
+<p>Es el número que importa para IFTA, porque el impuesto se paga por la
+diferencia entre dónde se recorrió y dónde se compró el combustible.</p>
+</dd>
+<dt><a href="#totalesIfta">totalesIfta(registros)</a> ⇒ <code>Object</code></dt>
+<dd><p>Suma millas y galones de una lista de estados.</p>
+</dd>
+<dt><a href="#agruparPorAnio">agruparPorAnio(registros)</a> ⇒ <code>Array.&lt;{anio: string, registros: Array}&gt;</code></dt>
+<dd><p>Agrupa los registros por año fiscal, del más reciente al más antiguo.</p>
+</dd>
+<dt><a href="#normalizarLista">normalizarLista(filas, esquema)</a> ⇒ <code>Object</code></dt>
+<dd><p>Valida una lista con el esquema dado, descartando lo que no cumple.</p>
+</dd>
 <dt><a href="#obtenerInspecciones">obtenerInspecciones([opciones])</a> ⇒ <code>Promise.&lt;Array&gt;</code></dt>
 <dd><p>Trae todas las inspecciones con sus reportes y documentos.</p>
 <p>Los reportes llegan ya parseados en <code>reportes</code>; el campo <code>reportes_json</code> es la
@@ -720,6 +784,23 @@ pueden discrepar—, pero sí se puede detectar cuando no cuadra.</p>
 </dd>
 <dt><a href="#normalizarReparaciones">normalizarReparaciones(filas)</a> ⇒ <code>Object</code></dt>
 <dd><p>Valida la lista de reparaciones descartando lo que no cumple.</p>
+</dd>
+<dt><a href="#obtenerViajesSafety">obtenerViajesSafety([opciones])</a> ⇒ <code>Promise.&lt;Array&gt;</code></dt>
+<dd><p>Trae los viajes con el estado de su documentación.</p>
+</dd>
+<dt><a href="#useViajesSafety">useViajesSafety()</a> ⇒ <code>object</code></dt>
+<dd><p>Viajes de cumplimiento, cacheados.</p>
+</dd>
+<dt><a href="#separarPorCumplimiento">separarPorCumplimiento(viajes)</a> ⇒ <code>Object</code></dt>
+<dd><p>Separa los viajes entre los que cumplen y los que no.</p>
+<p>Es lo que alimenta las dos primeras pestañas de la pantalla.</p>
+</dd>
+<dt><a href="#contarFaltantes">contarFaltantes(viajes)</a> ⇒ <code>object</code></dt>
+<dd><p>Cuenta cuántos viajes carecen de cada documento.</p>
+<p>Alimenta los contadores rojos junto a cada columna.</p>
+</dd>
+<dt><a href="#normalizarViajesSafety">normalizarViajesSafety(filas)</a> ⇒ <code>Object</code></dt>
+<dd><p>Valida la lista de viajes descartando lo que no cumple.</p>
 </dd>
 <dt><a href="#obtenerOrdenes">obtenerOrdenes([opciones])</a> ⇒ <code>Promise.&lt;Array&gt;</code></dt>
 <dd><p>Trae todas las órdenes con sus servicios anidados.</p>
@@ -963,6 +1044,9 @@ petición en lugar de una cada una.</p>
 <dt><a href="#Reparacion">Reparacion</a> : <code>object</code></dt>
 <dd><p>Una reparación en ruta ya validada.</p>
 </dd>
+<dt><a href="#ViajeSafety">ViajeSafety</a> : <code>object</code></dt>
+<dd><p>Un viaje con su estado de documentación.</p>
+</dd>
 <dt><a href="#Orden">Orden</a> : <code>object</code></dt>
 <dd><p>Una orden de servicio ya validada.</p>
 </dd>
@@ -1173,6 +1257,22 @@ línea aquí, no otra copia del mismo `fetch`.
 
 Las claves de cada respuesta están verificadas contra la API real el
 2026-08-31, no supuestas.
+
+**Kind**: global enum  
+**Read only**: true  
+<a name="DOCUMENTOS_REQUERIDOS"></a>
+
+## DOCUMENTOS\_REQUERIDOS : <code>enum</code>
+Los tres documentos que un viaje debe tener al cerrarse.
+
+El orden es el de las columnas en pantalla.
+
+**Kind**: global enum  
+**Read only**: true  
+<a name="NOMBRE_DOCUMENTO"></a>
+
+## NOMBRE\_DOCUMENTO : <code>enum</code>
+Cómo se llama cada documento en pantalla.
 
 **Kind**: global enum  
 **Read only**: true  
@@ -1674,6 +1774,42 @@ Indica si al conductor ya se le pagó.
 | --- | --- | --- |
 | pago | <code>object</code> | El pago a evaluar. |
 
+<a name="LLAVE_PERIODOS_IFTA"></a>
+
+## LLAVE\_PERIODOS\_IFTA : <code>Array.&lt;string&gt;</code>
+Llave de caché de los periodos IFTA.
+
+**Kind**: global constant  
+<a name="llaveTotalesIfta"></a>
+
+## llaveTotalesIfta ⇒ <code>Array</code>
+Llave de caché de los totales por estado.
+
+Los filtros entran en la llave para que cada combinación tenga su propio
+resultado en vez de pisar el anterior.
+
+**Kind**: global constant  
+**Returns**: <code>Array</code> - La llave para `useQuery`.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [filtros] | <code>object</code> | Estado y rango de fechas. |
+
+<a name="esquemaPeriodoIfta"></a>
+
+## esquemaPeriodoIfta
+Millas recorridas y galones cargados en un estado, dentro de un periodo.
+
+`periodo` viene vacío en la respuesta real: el corte se decide con `trip_year`
+y los filtros de fecha, no con ese campo.
+
+**Kind**: global constant  
+<a name="esquemaTotalEstado"></a>
+
+## esquemaTotalEstado
+Millas totales por estado, con cuántos viajes las produjeron.
+
+**Kind**: global constant  
 <a name="LLAVE_INSPECCIONES"></a>
 
 ## LLAVE\_INSPECCIONES : <code>Array.&lt;string&gt;</code>
@@ -2046,6 +2182,58 @@ Indica si una reparación tiene comprobantes adjuntos.
 | Param | Type | Description |
 | --- | --- | --- |
 | reparacion | [<code>Reparacion</code>](#Reparacion) | La reparación a evaluar. |
+
+<a name="LLAVE_SAFETY"></a>
+
+## LLAVE\_SAFETY : <code>Array.&lt;string&gt;</code>
+Llave de caché de los viajes de cumplimiento.
+
+**Kind**: global constant  
+<a name="esquemaViajeSafety"></a>
+
+## esquemaViajeSafety
+Un viaje visto desde cumplimiento: qué documentos tiene y cuáles le faltan.
+
+Los tres documentos llegan como una URL o como `null`. Un `null` significa que
+falta, no que haya un error.
+
+**Kind**: global constant  
+<a name="tieneDocumento"></a>
+
+## tieneDocumento ⇒ <code>boolean</code>
+Indica si un viaje tiene subido un documento concreto.
+
+**Kind**: global constant  
+**Returns**: <code>boolean</code> - `true` si el documento está.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| viaje | [<code>ViajeSafety</code>](#ViajeSafety) | El viaje a evaluar. |
+| documento | <code>string</code> | Una clave de `DOCUMENTOS_REQUERIDOS`. |
+
+<a name="documentosFaltantes"></a>
+
+## documentosFaltantes ⇒ <code>Array.&lt;string&gt;</code>
+Los documentos que le faltan a un viaje.
+
+**Kind**: global constant  
+**Returns**: <code>Array.&lt;string&gt;</code> - Las claves de los documentos faltantes.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| viaje | [<code>ViajeSafety</code>](#ViajeSafety) | El viaje a evaluar. |
+
+<a name="cumplimientoCompleto"></a>
+
+## cumplimientoCompleto ⇒ <code>boolean</code>
+Indica si un viaje tiene toda su documentación.
+
+**Kind**: global constant  
+**Returns**: <code>boolean</code> - `true` si no le falta ninguno.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| viaje | [<code>ViajeSafety</code>](#ViajeSafety) | El viaje a evaluar. |
 
 <a name="LLAVE_ORDENES"></a>
 
@@ -2845,6 +3033,140 @@ Valida una lista con el esquema dado, descartando lo que no cumple.
 | filas | <code>Array</code> | Lo que vino en la respuesta. |
 | esquema | <code>object</code> | Esquema zod con el que validar cada fila. |
 
+<a name="obtenerPeriodosIfta"></a>
+
+## obtenerPeriodosIfta([opciones]) ⇒ <code>Promise.&lt;Array&gt;</code>
+Trae millas y galones por estado y año fiscal.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;Array&gt;</code> - Los periodos normalizados.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la API falla.
+
+**Endpoint**: POST IFTA.php · op=periodos  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [opciones] | <code>object</code> | Ajustes de la petición. |
+| [opciones.signal] | <code>AbortSignal</code> | Señal de cancelación. |
+
+<a name="obtenerTotalesPorEstado"></a>
+
+## obtenerTotalesPorEstado([filtros]) ⇒ <code>Promise.&lt;Array&gt;</code>
+Trae las millas totales por estado, con filtros opcionales.
+
+Cada filtro solo viaja si trae valor: mandar un rango vacío cambiaría el
+resultado en vez de dejarlo sin filtrar.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;Array&gt;</code> - Los totales por estado.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la API falla.
+
+**Endpoint**: POST IFTA.php · op=get_ifta_totals_by_state  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [filtros] | <code>object</code> | Ajustes de la consulta. |
+| [filtros.estado] | <code>string</code> | Código del estado, por ejemplo `TX`. |
+| [filtros.desde] | <code>string</code> | Fecha inicial, `YYYY-MM-DD`. |
+| [filtros.hasta] | <code>string</code> | Fecha final, `YYYY-MM-DD`. |
+| [filtros.signal] | <code>AbortSignal</code> | Señal de cancelación. |
+
+<a name="obtenerViajesIfta"></a>
+
+## obtenerViajesIfta([filtros]) ⇒ <code>Promise.&lt;Array&gt;</code>
+Trae los viajes que componen un total de IFTA.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;Array&gt;</code> - Los viajes.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la API falla.
+
+**Endpoint**: POST IFTA.php · op=get_ifta_trips  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [filtros] | <code>object</code> | Ajustes de la consulta. |
+| [filtros.estado] | <code>string</code> | Código del estado, por ejemplo `TX`. |
+| [filtros.desde] | <code>string</code> | Fecha inicial, `YYYY-MM-DD`. |
+| [filtros.hasta] | <code>string</code> | Fecha final, `YYYY-MM-DD`. |
+| [filtros.signal] | <code>AbortSignal</code> | Señal de cancelación. |
+
+<a name="usePeriodosIfta"></a>
+
+## usePeriodosIfta() ⇒ <code>object</code>
+Periodos IFTA, cacheados. Cambian poco: se cachean más tiempo.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useQuery`.  
+<a name="useTotalesPorEstado"></a>
+
+## useTotalesPorEstado([filtros]) ⇒ <code>object</code>
+Totales por estado según los filtros activos.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useQuery`.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [filtros] | <code>object</code> | Estado y rango de fechas. |
+
+<a name="rendimientoEstado"></a>
+
+## rendimientoEstado(registro) ⇒ <code>number</code>
+Rendimiento de un estado: millas recorridas por galón cargado.
+
+Es el número que importa para IFTA, porque el impuesto se paga por la
+diferencia entre dónde se recorrió y dónde se compró el combustible.
+
+**Kind**: global function  
+**Returns**: <code>number</code> - Millas por galón, o 0 si no se cargó combustible ahí.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| registro | <code>object</code> | El registro del estado. |
+
+<a name="totalesIfta"></a>
+
+## totalesIfta(registros) ⇒ <code>Object</code>
+Suma millas y galones de una lista de estados.
+
+**Kind**: global function  
+**Returns**: <code>Object</code> - Los totales.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| registros | <code>Array</code> | Los registros a sumar. |
+
+<a name="agruparPorAnio"></a>
+
+## agruparPorAnio(registros) ⇒ <code>Array.&lt;{anio: string, registros: Array}&gt;</code>
+Agrupa los registros por año fiscal, del más reciente al más antiguo.
+
+**Kind**: global function  
+**Returns**: <code>Array.&lt;{anio: string, registros: Array}&gt;</code> - Los grupos.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| registros | <code>Array</code> | Los registros a agrupar. |
+
+<a name="normalizarLista"></a>
+
+## normalizarLista(filas, esquema) ⇒ <code>Object</code>
+Valida una lista con el esquema dado, descartando lo que no cumple.
+
+**Kind**: global function  
+**Returns**: <code>Object</code> - Los que pasaron y cuántos no.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| filas | <code>Array</code> | Lo que vino en la respuesta. |
+| esquema | <code>object</code> | Esquema zod con el que validar cada fila. |
+
 <a name="obtenerInspecciones"></a>
 
 ## obtenerInspecciones([opciones]) ⇒ <code>Promise.&lt;Array&gt;</code>
@@ -3374,6 +3696,71 @@ Valida la lista de reparaciones descartando lo que no cumple.
 
 **Kind**: global function  
 **Returns**: <code>Object</code> - Las válidas y cuántas se cayeron.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| filas | <code>Array</code> | Lo que vino en la respuesta. |
+
+<a name="obtenerViajesSafety"></a>
+
+## obtenerViajesSafety([opciones]) ⇒ <code>Promise.&lt;Array&gt;</code>
+Trae los viajes con el estado de su documentación.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;Array&gt;</code> - Los viajes normalizados.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la API falla.
+
+**Endpoint**: POST safety.php · op=get_safety_trips  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [opciones] | <code>object</code> | Ajustes de la petición. |
+| [opciones.signal] | <code>AbortSignal</code> | Señal de cancelación. |
+
+<a name="useViajesSafety"></a>
+
+## useViajesSafety() ⇒ <code>object</code>
+Viajes de cumplimiento, cacheados.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useQuery`.  
+<a name="separarPorCumplimiento"></a>
+
+## separarPorCumplimiento(viajes) ⇒ <code>Object</code>
+Separa los viajes entre los que cumplen y los que no.
+
+Es lo que alimenta las dos primeras pestañas de la pantalla.
+
+**Kind**: global function  
+**Returns**: <code>Object</code> - Los dos grupos.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| viajes | [<code>Array.&lt;ViajeSafety&gt;</code>](#ViajeSafety) | Los viajes a separar. |
+
+<a name="contarFaltantes"></a>
+
+## contarFaltantes(viajes) ⇒ <code>object</code>
+Cuenta cuántos viajes carecen de cada documento.
+
+Alimenta los contadores rojos junto a cada columna.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - Un conteo por cada clave de `DOCUMENTOS_REQUERIDOS`.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| viajes | [<code>Array.&lt;ViajeSafety&gt;</code>](#ViajeSafety) | Los viajes a contar. |
+
+<a name="normalizarViajesSafety"></a>
+
+## normalizarViajesSafety(filas) ⇒ <code>Object</code>
+Valida la lista de viajes descartando lo que no cumple.
+
+**Kind**: global function  
+**Returns**: <code>Object</code> - Los válidos y cuántos se cayeron.  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -4341,6 +4728,24 @@ Una reparación en ruta ya validada.
 | costo_refacciones | <code>number</code> | Refacciones. |
 | total | <code>number</code> | Suma de ambos. |
 | documentos | <code>Array</code> | Comprobantes adjuntos. |
+
+<a name="ViajeSafety"></a>
+
+## ViajeSafety : <code>object</code>
+Un viaje con su estado de documentación.
+
+**Kind**: global typedef  
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| trip_id | <code>string</code> | Identificador. |
+| trip_number | <code>string</code> | Número visible del viaje. |
+| driver_nombre | <code>string</code> | Conductor. |
+| truck_unidad | <code>string</code> | Unidad. |
+| libro_electronico | <code>string</code> \| <code>null</code> | URL del documento, o `null` si falta. |
+| reporte_diesel | <code>string</code> \| <code>null</code> | URL del documento, o `null` si falta. |
+| reporte_pcmiller | <code>string</code> \| <code>null</code> | URL del documento, o `null` si falta. |
 
 <a name="Orden"></a>
 

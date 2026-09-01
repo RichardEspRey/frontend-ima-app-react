@@ -15,7 +15,7 @@ import {
   PAGE_SHELL_SX, PAGE_OVERLINE_SX, PAGE_TITLE_SX, TABS_WRAPPER_SX, TAB_SX,
   CARD_SX, SECTION_LABEL_SX, HEADER_ROW_SX, HEADER_CELL_SX, TABLE_CONTAINER_SX,
   PAGINATION_BOX_SX, PAGINATION_SX, CHIP_DANGER_SX,
-} from "../../styles/estilosTabla";
+} from "../../shared/ui/estilos";
 import TablaReparaciones from "../../features/inspections/ui/TablaReparaciones.jsx";
 import TablaInspecciones from "../../features/inspections/ui/TablaInspecciones.jsx";
 
@@ -27,7 +27,16 @@ const DOC_NAMES = {
   reporte_pcmiller: 'Reporte PC Miller',
 };
 
-export default function Safety() {
+/**
+ * Safety y cumplimiento: qué documentación falta en los viajes cerrados.
+ *
+ * Cuatro pestañas: viajes pendientes de documentación, los que ya cumplen, y las
+ * tablas de reparaciones en ruta e inspecciones, que viven en
+ * `features/inspections` porque también son pantallas propias de mantenimientos.
+ *
+ * @returns {object} La pantalla.
+ */
+export default function SafetyPage() {
   const [trips, setTrips] = useState([]);
   const [loading, setLoading] = useState(true);
   const [tabValue, setTabValue] = useState(0);
