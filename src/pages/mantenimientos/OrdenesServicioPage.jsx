@@ -7,18 +7,27 @@ import { useAuthStore } from '../../store/useAuthStore';
 import {
     PAGE_SHELL_SX, PAGE_OVERLINE_SX, PAGE_TITLE_SX,
     TABS_WRAPPER_SX, TAB_SX, DARK_BTN_SX,
-} from '../../styles/estilosTabla';
-import ServiceOrderAdmin from '../ServiceOrderAdmin.jsx';
-import StockAdmin from '../StockAdmin.jsx';
+} from '../../shared/ui/estilos';
+import TablaOrdenes from '../../features/service-order/ui/TablaOrdenes.jsx';
+import TablaInventario from '../../features/service-order/ui/TablaInventario.jsx';
 import { useSesion } from '../../shared/auth';
 
 
 const TABS_CONFIG = [
-    { id: 'ordenes', label: 'Órdenes de Servicio', permission: 'mant_ordenes_servicio', Component: ServiceOrderAdmin },
-    { id: 'inventario', label: 'Inventario', permission: 'mant_inventario', Component: StockAdmin },
+    { id: 'ordenes', label: 'Órdenes de Servicio', permission: 'mant_ordenes_servicio', Component: TablaOrdenes },
+    { id: 'inventario', label: 'Inventario', permission: 'mant_inventario', Component: TablaInventario },
 ];
 
-const AdminOrdenesServicio = () => {
+/**
+ * Órdenes de servicio e inventario, en pestañas.
+ *
+ * Cada pestaña declara el permiso que la habilita, así que un usuario solo ve las
+ * que le tocan y la primera visible se selecciona sola. Se montan de forma
+ * perezosa: la de inventario no pide sus 745 artículos hasta que se abre.
+ *
+ * @returns {object} La pantalla.
+ */
+const OrdenesServicioPage = () => {
     const navigate = useNavigate();
     const { userPermissions } = useAuthStore();
     const { esTotal: isAdmin } = useSesion();
@@ -108,4 +117,4 @@ const AdminOrdenesServicio = () => {
     );
 };
 
-export default AdminOrdenesServicio;
+export default OrdenesServicioPage;

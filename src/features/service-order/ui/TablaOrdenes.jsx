@@ -15,20 +15,29 @@ import dayjs from 'dayjs';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 
-import useFetchRepairTypes from '../hooks/service_order/useFetchRepairTypes.jsx';
-import EditDetailModal from '../components/EditDetailModa';
-import { OrderRow } from '../components/OrderRow';
+import useFetchRepairTypes from '../../../hooks/service_order/useFetchRepairTypes.jsx';
+import EditDetailModal from '../../../components/EditDetailModa';
+import { OrderRow } from '../../../components/OrderRow';
 import {
     HEADER_ROW_SX, HEADER_CELL_SX, TABLE_CONTAINER_SX, CARD_SX,
     SECTION_LABEL_SX, PAGINATION_BOX_SX, PAGINATION_SX, GHOST_BTN_SX,
-} from '../styles/estilosTabla';
+} from '../../../shared/ui/estilos';
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
-const ServiceOrderAdmin = () => {
+/**
+ * Tabla de órdenes de servicio con sus servicios desplegables.
+ *
+ * Es la otra pestaña de la pantalla de órdenes. Las órdenes llegan con sus
+ * servicios ya anidados desde la API, así que expandir una fila no dispara otra
+ * petición.
+ *
+ * @returns {object} La tabla renderizada.
+ */
+const TablaOrdenes = () => {
     const navigate = useNavigate();
     
     // --- ESTADOS DE DATOS ---
@@ -355,4 +364,4 @@ const ServiceOrderAdmin = () => {
     );
 };
 
-export default ServiceOrderAdmin;
+export default TablaOrdenes;

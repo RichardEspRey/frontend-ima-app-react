@@ -30,10 +30,9 @@ import GastosEditor from '../screens/Gastos/GastosEditor.jsx';
 import AdminGastosGeneral from '../screens/Gastos/AdminGastos.jsx';
 import Inspeccion_final from '../screens/Mantenimientos/Inspeccion_final.jsx';
 import ExpenseEdit from '../screens/Gastos/ExpenseEdit.jsx';
-import StockAdmin  from '../screens/StockAdmin.jsx';
-import ServiceOrderScreen from '../screens/ServiceOrderScreen.jsx';
-import ServiceOrderScreenEdit from '../screens/ServiceOrderScreenEdit.jsx';
-import AdminOrdenesServicio from '../screens/Mantenimientos/AdminOrdenesServicio.jsx';
+import NuevaOrdenPage from '../pages/mantenimientos/NuevaOrdenPage.jsx';
+import EditarOrdenPage from '../pages/mantenimientos/EditarOrdenPage.jsx';
+import OrdenesServicioPage from '../pages/mantenimientos/OrdenesServicioPage.jsx';
 import Finanzas from '../screens/Finanzas.jsx';
 import ResumenTrip from '../screens/ResumenTrip.jsx';
 import ResiduoTrip from '../screens/Finanzas/ResiduosTrips.jsx';
@@ -102,10 +101,10 @@ const AppRouter = () => {
             <Route path="/edit-trailer/:trailerId" element={<TrailerEdit />} />
             <Route path="/Inspeccion-final" element={<Inspeccion_final />} />
             <Route path="/edit-expense/:id_gasto" element={<ExpenseEdit />} />
-            <Route path="/view-inventory" element={<StockAdmin />} />
-            <Route path="/new-service-order" element={<ServiceOrderScreen />} />
-            <Route path="/admin-service-order" element={<AdminOrdenesServicio />} />
-            <Route path="/editar-orden/:orderId" element={<ServiceOrderScreenEdit />} />
+            <Route path="/view-inventory" element={<OrdenesServicioPage />} />
+            <Route path="/new-service-order" element={<NuevaOrdenPage />} />
+            <Route path="/admin-service-order" element={<OrdenesServicioPage />} />
+            <Route path="/editar-orden/:orderId" element={<EditarOrdenPage />} />
             <Route path="/finanzas" element={<Finanzas />} />
             <Route path="/ResumenTrip/:tripId" element={<ResumenTrip />} />
             <Route path="/access-manager" element={<AccesosPage />} />

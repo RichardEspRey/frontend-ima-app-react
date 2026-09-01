@@ -10,7 +10,11 @@ const idDePhp = z.coerce.string()
  */
 export const esquemaArticulo = z.object({
   id_articulo: idDePhp,
-  nombre_articulo: z.string().min(1),
+  // NO se exige nombre. Hay artículos sin nombre en producción —uno con stock 1— y
+  // la pantalla ya los pinta como "Sin nombre". Descartarlos escondería existencias
+  // reales del inventario, que es peor que mostrar una fila fea. Lo que sí se hace
+  // es marcarlos para que se puedan encontrar y corregir.
+  nombre_articulo: z.string().catch(""),
   cantidad_stock: z.coerce.number().catch(0),
   nombre_subcategoria: z.string().catch(""),
   nombre_categoria: z.string().catch(""),
@@ -45,6 +49,17 @@ export function normalizarArticulos(filas = []) {
 
   return { articulos, descartados }
 }
+
+/**
+ * Indica si a un artículo le falta el nombre.
+ *
+ * Existen en la base y la pantalla los muestra como "Sin nombre". Marcarlos
+ * permite filtrarlos para limpiarlos, sin esconder sus existencias.
+ *
+ * @param {Articulo} articulo El artículo a evaluar.
+ * @returns {boolean} `true` si no tiene nombre.
+ */
+export const sinNombre = (articulo) => !String(articulo?.nombre_articulo ?? "").trim()
 
 /**
  * Indica si un artículo está agotado.

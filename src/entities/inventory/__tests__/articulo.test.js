@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest"
 import { readFileSync } from "node:fs"
-import { normalizarArticulos, estaAgotado, agruparPorCategoria } from "../model/articulo"
+import { normalizarArticulos, estaAgotado, agruparPorCategoria, sinNombre } from "../model/articulo"
 
 const REAL = JSON.parse(
   readFileSync("src/entities/inventory/__tests__/fixtures/getFullInventoryList.json", "utf8"),
@@ -14,13 +14,14 @@ describe("normalizarArticulos", () => {
     expect(articulos[0].cantidad_stock).toBe(7)
   })
 
-  it("exige nombre: sin él la fila no se puede ni pintar", () => {
+  it("conserva los artículos sin nombre en vez de descartarlos", () => {
     const { articulos, descartados } = normalizarArticulos([
       { id_articulo: "1", nombre_articulo: "Filtro", cantidad_stock: "1" },
-      { id_articulo: "2" },
+      { id_articulo: "2", nombre_articulo: "", cantidad_stock: "3" },
     ])
-    expect(articulos).toHaveLength(1)
-    expect(descartados).toBe(1)
+    expect(articulos).toHaveLength(2)
+    expect(descartados).toBe(0)
+    expect(sinNombre(articulos[1])).toBe(true)
   })
 
   it("un stock ausente cae a 0, no a NaN", () => {
@@ -65,17 +66,18 @@ describe("agruparPorCategoria", () => {
 })
 
 describe("contra la respuesta real de la API", () => {
-  it("descarta exactamente los artículos con nombre vacío que hay en producción", () => {
-    // No es un fallo del esquema: en la base hay artículos sin nombre, uno de
-    // ellos con stock 1. Se descartan a propósito, porque una fila sin nombre no
-    // se puede ni pintar ni buscar. Si este número cambia, alguien limpió la base
-    // o metió más registros rotos, y en ambos casos conviene enterarse.
-    const sinNombre = REAL.data.filter((a) => !String(a.nombre_articulo ?? "").trim()).length
+  it("no pierde ningún artículo, ni los que no tienen nombre", () => {
     const { articulos, descartados } = normalizarArticulos(REAL.data)
+    expect(articulos).toHaveLength(REAL.data.length)
+    expect(descartados).toBe(0)
+  })
 
-    expect(sinNombre).toBeGreaterThan(0)
-    expect(descartados).toBe(sinNombre)
-    expect(articulos).toHaveLength(REAL.data.length - sinNombre)
+  it("hay artículos sin nombre en producción y quedan marcados", () => {
+    // Uno de ellos tiene stock 1: son existencias reales que no se pueden
+    // esconder. Marcarlos permite encontrarlos para limpiar la base.
+    const { articulos } = normalizarArticulos(REAL.data)
+    const rotos = articulos.filter(sinNombre)
+    expect(rotos.length).toBeGreaterThan(0)
   })
 
   it("el stock queda como número en todos", () => {

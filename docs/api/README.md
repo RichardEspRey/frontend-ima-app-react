@@ -26,6 +26,28 @@ Los reintentos tampoco aportan nada cuando <code>fetch</code> está simulado.</p
 almacenes cambian de vez en cuando, no dentro de una sesión de trabajo: no
 tiene sentido volver a pedirlos en cada pantalla que los use.</p>
 </dd>
+<dt><a href="#idPhp">idPhp</a> ⇒ <code>object</code></dt>
+<dd><p>Un identificador: siempre cadena, aunque PHP lo mande como número.</p>
+</dd>
+<dt><a href="#numeroPhp">numeroPhp</a> ⇒ <code>object</code></dt>
+<dd><p>Un número que puede llegar como cadena. MySQL devuelve los <code>DECIMAL</code> así.</p>
+</dd>
+<dt><a href="#booleanoPhp">booleanoPhp</a> ⇒ <code>object</code></dt>
+<dd><p>Un booleano que llega como <code>&quot;1&quot;</code> o <code>&quot;0&quot;</code>.</p>
+</dd>
+<dt><a href="#nullable">nullable</a> ⇒ <code>object</code></dt>
+<dd><p>Un campo que puede venir nulo, <strong>conservando el nulo</strong>.</p>
+<p><code>z.coerce.number()</code> convierte <code>null</code> en <code>0</code> y <code>z.coerce.string()</code> en la cadena
+<code>&quot;null&quot;</code>; ambas cosas cambian el significado del dato. Un <code>tipo_cambio</code> de 0 no
+es &quot;orden en pesos&quot;, y un <code>driver_id</code> de <code>&quot;null&quot;</code> acaba viajando así al backend.
+Por eso el nullable va <strong>antes</strong> que la coacción en la unión.</p>
+</dd>
+<dt><a href="#fechaDia">fechaDia</a> ⇒ <code>object</code></dt>
+<dd><p>Una fecha de la que solo interesa el día.</p>
+<p>La API devuelve <code>&quot;2026-08-31 00:00:00&quot;</code> y las pantallas solo muestran la fecha.
+Recortarla aquí evita el <code>fecha.split(&#39; &#39;)[0]</code> repartido por el JSX, que
+revienta cuando la fecha viene nula.</p>
+</dd>
 <dt><a href="#TODOS_LOS_PERMISOS">TODOS_LOS_PERMISOS</a> : <code>Array.&lt;string&gt;</code></dt>
 <dd><p>Todos los permisos existentes, sin repetir.</p>
 </dd>
@@ -99,6 +121,22 @@ librería sea editar este archivo en vez de 56.</p>
 <dd><p>El valor capturado de un requisito.</p>
 <p>Los tres campos son opcionales: un requisito de texto no trae <code>url_pdf</code>, y uno
 sin vencimiento no trae fecha.</p>
+</dd>
+<dt><a href="#LLAVE_INVENTARIO">LLAVE_INVENTARIO</a> : <code>Array.&lt;string&gt;</code></dt>
+<dd><p>Llave de caché del inventario.</p>
+</dd>
+<dt><a href="#esquemaArticulo">esquemaArticulo</a></dt>
+<dd><p>Un artículo del inventario con su categoría y subcategoría.</p>
+<p>La API los devuelve ya cruzados con los catálogos, así que no hay que unir
+nada del lado del cliente.</p>
+</dd>
+<dt><a href="#sinNombre">sinNombre</a> ⇒ <code>boolean</code></dt>
+<dd><p>Indica si a un artículo le falta el nombre.</p>
+<p>Existen en la base y la pantalla los muestra como &quot;Sin nombre&quot;. Marcarlos
+permite filtrarlos para limpiarlos, sin esconder sus existencias.</p>
+</dd>
+<dt><a href="#estaAgotado">estaAgotado</a> ⇒ <code>boolean</code></dt>
+<dd><p>Indica si un artículo está agotado.</p>
 </dd>
 <dt><a href="#LLAVE_PERIODOS">LLAVE_PERIODOS</a> : <code>Array.&lt;string&gt;</code></dt>
 <dd><p>Llave de caché de los periodos de nómina.</p>
@@ -184,6 +222,21 @@ ocurre aquí y no en el JSX. Es lógica de negocio, no de presentación.</p>
 </dd>
 <dt><a href="#ultimosMeses">ultimosMeses</a> ⇒ <code>Array</code></dt>
 <dd><p>Se queda con los últimos N meses de una serie ya ordenada.</p>
+</dd>
+<dt><a href="#LLAVE_ORDENES">LLAVE_ORDENES</a> : <code>Array.&lt;string&gt;</code></dt>
+<dd><p>Llave de caché de las órdenes de servicio.</p>
+</dd>
+<dt><a href="#esquemaServicio">esquemaServicio</a></dt>
+<dd><p>Un servicio dentro de una orden: qué se le hizo al camión.</p>
+<p><code>detalles</code> son las refacciones y la mano de obra; puede venir vacío.</p>
+</dd>
+<dt><a href="#esquemaOrden">esquemaOrden</a></dt>
+<dd><p>Una orden de servicio con sus servicios anidados.</p>
+<p>La API los devuelve así, en una sola llamada: no hay que pedir el detalle
+aparte. <code>tipo_cambio</code> viene nulo cuando la orden es en pesos.</p>
+</dd>
+<dt><a href="#estaAbierta">estaAbierta</a> ⇒ <code>boolean</code></dt>
+<dd><p>Indica si una orden sigue abierta al trabajo.</p>
 </dd>
 <dt><a href="#LLAVE_EQUIPOS">LLAVE_EQUIPOS</a> : <code>Array.&lt;string&gt;</code></dt>
 <dd><p>Llave de caché de la lista de equipos.</p>
@@ -343,6 +396,20 @@ petición en lugar de una cada una.</p>
 todas las pantallas que lo pidan, así que varias a la vez hacen una sola
 petición en lugar de una cada una.</p>
 </dd>
+<dt><a href="#obtenerInventario">obtenerInventario([opciones])</a> ⇒ <code>Promise.&lt;Array&gt;</code></dt>
+<dd><p>Trae el inventario completo, ya cruzado con sus categorías.</p>
+<p>Ojo con el nombre de la operación: es <code>getFullInventoryList</code>, no <code>getAll</code>.
+<code>inventory.php</code> responde &quot;Operación no válida&quot; ante cualquier otra.</p>
+</dd>
+<dt><a href="#useInventario">useInventario()</a> ⇒ <code>object</code></dt>
+<dd><p>Inventario completo, cacheado.</p>
+</dd>
+<dt><a href="#normalizarArticulos">normalizarArticulos(filas)</a> ⇒ <code>Object</code></dt>
+<dd><p>Valida la lista de artículos descartando los que no cumplen lo mínimo.</p>
+</dd>
+<dt><a href="#agruparPorCategoria">agruparPorCategoria(articulos)</a> ⇒ <code>Array.&lt;{categoria: string, articulos: Array.&lt;Articulo&gt;}&gt;</code></dt>
+<dd><p>Agrupa los artículos por categoría, conservando el orden alfabético.</p>
+</dd>
 <dt><a href="#obtenerPeriodos">obtenerPeriodos([opciones])</a> ⇒ <code>Promise.&lt;Array.&lt;Periodo&gt;&gt;</code></dt>
 <dd><p>Trae todas las semanas de nómina, validadas.</p>
 </dd>
@@ -406,6 +473,41 @@ of undefined&quot; que hay repartidos por el proyecto.</p>
 <dd><p>Varias gráficas a la vez.</p>
 <p>Se piden en paralelo y cada una llega cuando puede, así que una lenta no
 retrasa a las demás. Antes eran seis <code>useEffect</code> y doce <code>useState</code>.</p>
+</dd>
+<dt><a href="#obtenerOrdenes">obtenerOrdenes([opciones])</a> ⇒ <code>Promise.&lt;Array&gt;</code></dt>
+<dd><p>Trae todas las órdenes con sus servicios anidados.</p>
+<p>Vienen en una sola llamada: la API anida los servicios dentro de cada orden,
+así que no hay que pedir el detalle aparte.</p>
+</dd>
+<dt><a href="#obtenerOrden">obtenerOrden(parametros)</a> ⇒ <code>Promise.&lt;object&gt;</code></dt>
+<dd><p>Trae una orden concreta para editarla.</p>
+</dd>
+<dt><a href="#obtenerCamionesDeOrden">obtenerCamionesDeOrden([opciones])</a> ⇒ <code>Promise.&lt;Array&gt;</code></dt>
+<dd><p>Camiones disponibles para asignar una orden.</p>
+<p>Ya vienen con la forma <code>{value, label}</code> que espera react-select.</p>
+</dd>
+<dt><a href="#cambiarEstatusServicio">cambiarEstatusServicio(parametros)</a> ⇒ <code>Promise.&lt;object&gt;</code></dt>
+<dd><p>Cambia el estatus de un servicio dentro de una orden.</p>
+</dd>
+<dt><a href="#useOrdenes">useOrdenes()</a> ⇒ <code>object</code></dt>
+<dd><p>Órdenes de servicio, cacheadas.</p>
+</dd>
+<dt><a href="#useCamionesDeOrden">useCamionesDeOrden()</a> ⇒ <code>object</code></dt>
+<dd><p>Camiones para el formulario de orden. Es un catálogo: se cachea más tiempo.</p>
+</dd>
+<dt><a href="#useCambiarEstatusServicio">useCambiarEstatusServicio()</a> ⇒ <code>object</code></dt>
+<dd><p>Cambia el estatus de un servicio y refresca las órdenes.</p>
+</dd>
+<dt><a href="#normalizarOrdenes">normalizarOrdenes(filas)</a> ⇒ <code>Object</code></dt>
+<dd><p>Valida una lista de órdenes descartando las que no cumplen lo mínimo.</p>
+</dd>
+<dt><a href="#resumenServicios">resumenServicios(orden)</a> ⇒ <code>Object</code></dt>
+<dd><p>Cuenta los servicios de una orden por estatus.</p>
+<p>Sirve para el resumen de la fila sin recorrer los servicios en el JSX.</p>
+</dd>
+<dt><a href="#todoCompletado">todoCompletado(orden)</a> ⇒ <code>boolean</code></dt>
+<dd><p>Indica si todos los servicios de una orden están completados.</p>
+<p>Una orden sin servicios <strong>no</strong> cuenta como completa: no hay nada hecho todavía.</p>
 </dd>
 <dt><a href="#obtenerEquipos">obtenerEquipos([opciones])</a> ⇒ <code>Promise.&lt;Array&gt;</code></dt>
 <dd><p>Trae todos los equipos.</p>
@@ -549,6 +651,9 @@ petición en lugar de una cada una.</p>
 <dt><a href="#Requisito">Requisito</a> : <code>object</code></dt>
 <dd><p>Un requisito documental ya validado.</p>
 </dd>
+<dt><a href="#Articulo">Articulo</a> : <code>object</code></dt>
+<dd><p>Un artículo de inventario ya validado.</p>
+</dd>
 <dt><a href="#Periodo">Periodo</a> : <code>object</code></dt>
 <dd><p>Un periodo de nómina ya validado.</p>
 </dd>
@@ -557,6 +662,9 @@ petición en lugar de una cada una.</p>
 </dd>
 <dt><a href="#Empleado">Empleado</a> : <code>object</code></dt>
 <dd><p>Empleado de nómina ya normalizado y validado.</p>
+</dd>
+<dt><a href="#Orden">Orden</a> : <code>object</code></dt>
+<dd><p>Una orden de servicio ya validada.</p>
 </dd>
 <dt><a href="#Usuario">Usuario</a> : <code>object</code></dt>
 <dd><p>Usuario ya validado y normalizado.</p>
@@ -738,6 +846,16 @@ Las claves de cada respuesta están verificadas contra la API real el
 
 **Kind**: global enum  
 **Read only**: true  
+<a name="ESTATUS_ORDEN"></a>
+
+## ESTATUS\_ORDEN : <code>enum</code>
+Estados por los que pasa una orden de servicio y cada uno de sus servicios.
+
+Verificado contra la API el 2026-09-01: son los tres únicos valores que
+aparecen, tanto en órdenes como en servicios.
+
+**Kind**: global enum  
+**Read only**: true  
 <a name="PLATAFORMA"></a>
 
 ## PLATAFORMA : <code>enum</code>
@@ -778,6 +896,60 @@ almacenes cambian de vez en cuando, no dentro de una sesión de trabajo: no
 tiene sentido volver a pedirlos en cada pantalla que los use.
 
 **Kind**: global constant  
+<a name="idPhp"></a>
+
+## idPhp ⇒ <code>object</code>
+Un identificador: siempre cadena, aunque PHP lo mande como número.
+
+**Kind**: global constant  
+**Returns**: <code>object</code> - El esquema de zod.  
+<a name="numeroPhp"></a>
+
+## numeroPhp ⇒ <code>object</code>
+Un número que puede llegar como cadena. MySQL devuelve los `DECIMAL` así.
+
+**Kind**: global constant  
+**Returns**: <code>object</code> - El esquema de zod.  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| [porOmision] | <code>number</code> | <code>0</code> | Valor si el campo falta o no es numérico. |
+
+<a name="booleanoPhp"></a>
+
+## booleanoPhp ⇒ <code>object</code>
+Un booleano que llega como `"1"` o `"0"`.
+
+**Kind**: global constant  
+**Returns**: <code>object</code> - El esquema de zod.  
+<a name="nullable"></a>
+
+## nullable ⇒ <code>object</code>
+Un campo que puede venir nulo, **conservando el nulo**.
+
+`z.coerce.number()` convierte `null` en `0` y `z.coerce.string()` en la cadena
+`"null"`; ambas cosas cambian el significado del dato. Un `tipo_cambio` de 0 no
+es "orden en pesos", y un `driver_id` de `"null"` acaba viajando así al backend.
+Por eso el nullable va **antes** que la coacción en la unión.
+
+**Kind**: global constant  
+**Returns**: <code>object</code> - El esquema de zod, que devuelve `null` si no hay valor.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| esquema | <code>object</code> | El esquema a aplicar cuando sí hay valor. |
+
+<a name="fechaDia"></a>
+
+## fechaDia ⇒ <code>object</code>
+Una fecha de la que solo interesa el día.
+
+La API devuelve `"2026-08-31 00:00:00"` y las pantallas solo muestran la fecha.
+Recortarla aquí evita el `fecha.split(' ')[0]` repartido por el JSX, que
+revienta cuando la fecha viene nula.
+
+**Kind**: global constant  
+**Returns**: <code>object</code> - El esquema de zod.  
 <a name="TODOS_LOS_PERMISOS"></a>
 
 ## TODOS\_LOS\_PERMISOS : <code>Array.&lt;string&gt;</code>
@@ -1013,6 +1185,48 @@ Los tres campos son opcionales: un requisito de texto no trae `url_pdf`, y uno
 sin vencimiento no trae fecha.
 
 **Kind**: global constant  
+<a name="LLAVE_INVENTARIO"></a>
+
+## LLAVE\_INVENTARIO : <code>Array.&lt;string&gt;</code>
+Llave de caché del inventario.
+
+**Kind**: global constant  
+<a name="esquemaArticulo"></a>
+
+## esquemaArticulo
+Un artículo del inventario con su categoría y subcategoría.
+
+La API los devuelve ya cruzados con los catálogos, así que no hay que unir
+nada del lado del cliente.
+
+**Kind**: global constant  
+<a name="sinNombre"></a>
+
+## sinNombre ⇒ <code>boolean</code>
+Indica si a un artículo le falta el nombre.
+
+Existen en la base y la pantalla los muestra como "Sin nombre". Marcarlos
+permite filtrarlos para limpiarlos, sin esconder sus existencias.
+
+**Kind**: global constant  
+**Returns**: <code>boolean</code> - `true` si no tiene nombre.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| articulo | [<code>Articulo</code>](#Articulo) | El artículo a evaluar. |
+
+<a name="estaAgotado"></a>
+
+## estaAgotado ⇒ <code>boolean</code>
+Indica si un artículo está agotado.
+
+**Kind**: global constant  
+**Returns**: <code>boolean</code> - `true` si no quedan existencias.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| articulo | [<code>Articulo</code>](#Articulo) | El artículo a evaluar. |
+
 <a name="LLAVE_PERIODOS"></a>
 
 ## LLAVE\_PERIODOS : <code>Array.&lt;string&gt;</code>
@@ -1241,6 +1455,41 @@ Se queda con los últimos N meses de una serie ya ordenada.
 | --- | --- | --- |
 | serie | <code>Array</code> | Filas ordenadas cronológicamente. |
 | meses | <code>number</code> | Cuántos meses conservar. |
+
+<a name="LLAVE_ORDENES"></a>
+
+## LLAVE\_ORDENES : <code>Array.&lt;string&gt;</code>
+Llave de caché de las órdenes de servicio.
+
+**Kind**: global constant  
+<a name="esquemaServicio"></a>
+
+## esquemaServicio
+Un servicio dentro de una orden: qué se le hizo al camión.
+
+`detalles` son las refacciones y la mano de obra; puede venir vacío.
+
+**Kind**: global constant  
+<a name="esquemaOrden"></a>
+
+## esquemaOrden
+Una orden de servicio con sus servicios anidados.
+
+La API los devuelve así, en una sola llamada: no hay que pedir el detalle
+aparte. `tipo_cambio` viene nulo cuando la orden es en pesos.
+
+**Kind**: global constant  
+<a name="estaAbierta"></a>
+
+## estaAbierta ⇒ <code>boolean</code>
+Indica si una orden sigue abierta al trabajo.
+
+**Kind**: global constant  
+**Returns**: <code>boolean</code> - `true` si no está completada.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| orden | [<code>Orden</code>](#Orden) | La orden a evaluar. |
 
 <a name="LLAVE_EQUIPOS"></a>
 
@@ -1720,6 +1969,58 @@ petición en lugar de una cada una.
 
 **Kind**: global function  
 **Returns**: <code>object</code> - El resultado de `useQuery`: `{data, isLoading, isError, error}`.  
+<a name="obtenerInventario"></a>
+
+## obtenerInventario([opciones]) ⇒ <code>Promise.&lt;Array&gt;</code>
+Trae el inventario completo, ya cruzado con sus categorías.
+
+Ojo con el nombre de la operación: es `getFullInventoryList`, no `getAll`.
+`inventory.php` responde "Operación no válida" ante cualquier otra.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;Array&gt;</code> - Los artículos normalizados.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la API falla.
+
+**Endpoint**: POST inventory.php · op=getFullInventoryList  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [opciones] | <code>object</code> | Ajustes de la petición. |
+| [opciones.signal] | <code>AbortSignal</code> | Señal de cancelación. |
+
+<a name="useInventario"></a>
+
+## useInventario() ⇒ <code>object</code>
+Inventario completo, cacheado.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useQuery`: `{data, isLoading, isError, error}`.  
+<a name="normalizarArticulos"></a>
+
+## normalizarArticulos(filas) ⇒ <code>Object</code>
+Valida la lista de artículos descartando los que no cumplen lo mínimo.
+
+**Kind**: global function  
+**Returns**: <code>Object</code> - Los válidos y cuántos se cayeron.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| filas | <code>Array</code> | Lo que vino en la respuesta. |
+
+<a name="agruparPorCategoria"></a>
+
+## agruparPorCategoria(articulos) ⇒ <code>Array.&lt;{categoria: string, articulos: Array.&lt;Articulo&gt;}&gt;</code>
+Agrupa los artículos por categoría, conservando el orden alfabético.
+
+**Kind**: global function  
+**Returns**: <code>Array.&lt;{categoria: string, articulos: Array.&lt;Articulo&gt;}&gt;</code> - Los grupos.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| articulos | [<code>Array.&lt;Articulo&gt;</code>](#Articulo) | Los artículos ya validados. |
+
 <a name="obtenerPeriodos"></a>
 
 ## obtenerPeriodos([opciones]) ⇒ <code>Promise.&lt;Array.&lt;Periodo&gt;&gt;</code>
@@ -1970,6 +2271,146 @@ retrasa a las demás. Antes eran seis `useEffect` y doce `useState`.
 | Param | Type | Description |
 | --- | --- | --- |
 | peticiones | <code>Array.&lt;object&gt;</code> | Lista de `{op, parametros}`. |
+
+<a name="obtenerOrdenes"></a>
+
+## obtenerOrdenes([opciones]) ⇒ <code>Promise.&lt;Array&gt;</code>
+Trae todas las órdenes con sus servicios anidados.
+
+Vienen en una sola llamada: la API anida los servicios dentro de cada orden,
+así que no hay que pedir el detalle aparte.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;Array&gt;</code> - Las órdenes normalizadas.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la API falla.
+
+**Endpoint**: POST service_order.php · op=getAllOrdersWithDetails  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [opciones] | <code>object</code> | Ajustes de la petición. |
+| [opciones.signal] | <code>AbortSignal</code> | Señal de cancelación. |
+
+<a name="obtenerOrden"></a>
+
+## obtenerOrden(parametros) ⇒ <code>Promise.&lt;object&gt;</code>
+Trae una orden concreta para editarla.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;object&gt;</code> - La orden tal como la devuelve la API.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la API falla.
+
+**Endpoint**: POST service_order.php · op=getOrderById  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| parametros | <code>object</code> | Datos de la consulta. |
+| parametros.ordenId | <code>string</code> | Identificador de la orden. |
+| [parametros.signal] | <code>AbortSignal</code> | Señal de cancelación. |
+
+<a name="obtenerCamionesDeOrden"></a>
+
+## obtenerCamionesDeOrden([opciones]) ⇒ <code>Promise.&lt;Array&gt;</code>
+Camiones disponibles para asignar una orden.
+
+Ya vienen con la forma `{value, label}` que espera react-select.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;Array&gt;</code> - Los camiones.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la API falla.
+
+**Endpoint**: POST service_order.php · op=getTrucks  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [opciones] | <code>object</code> | Ajustes de la petición. |
+| [opciones.signal] | <code>AbortSignal</code> | Señal de cancelación. |
+
+<a name="cambiarEstatusServicio"></a>
+
+## cambiarEstatusServicio(parametros) ⇒ <code>Promise.&lt;object&gt;</code>
+Cambia el estatus de un servicio dentro de una orden.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;object&gt;</code> - La respuesta de la API.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la API rechaza la operación.
+
+**Endpoint**: POST service_order.php · op=updateDetailStatus  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| parametros | <code>object</code> | Datos del cambio. |
+| parametros.servicioId | <code>string</code> | Servicio a cambiar. |
+| parametros.estatus | <code>string</code> | Nuevo estatus. |
+
+<a name="useOrdenes"></a>
+
+## useOrdenes() ⇒ <code>object</code>
+Órdenes de servicio, cacheadas.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useQuery`: `{data, isLoading, isError, error}`.  
+<a name="useCamionesDeOrden"></a>
+
+## useCamionesDeOrden() ⇒ <code>object</code>
+Camiones para el formulario de orden. Es un catálogo: se cachea más tiempo.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useQuery`.  
+<a name="useCambiarEstatusServicio"></a>
+
+## useCambiarEstatusServicio() ⇒ <code>object</code>
+Cambia el estatus de un servicio y refresca las órdenes.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useMutation`.  
+<a name="normalizarOrdenes"></a>
+
+## normalizarOrdenes(filas) ⇒ <code>Object</code>
+Valida una lista de órdenes descartando las que no cumplen lo mínimo.
+
+**Kind**: global function  
+**Returns**: <code>Object</code> - Las válidas y cuántas se cayeron.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| filas | <code>Array</code> | Lo que vino en la respuesta. |
+
+<a name="resumenServicios"></a>
+
+## resumenServicios(orden) ⇒ <code>Object</code>
+Cuenta los servicios de una orden por estatus.
+
+Sirve para el resumen de la fila sin recorrer los servicios en el JSX.
+
+**Kind**: global function  
+**Returns**: <code>Object</code> - El conteo.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| orden | [<code>Orden</code>](#Orden) | La orden a resumir. |
+
+<a name="todoCompletado"></a>
+
+## todoCompletado(orden) ⇒ <code>boolean</code>
+Indica si todos los servicios de una orden están completados.
+
+Una orden sin servicios **no** cuenta como completa: no hay nada hecho todavía.
+
+**Kind**: global function  
+**Returns**: <code>boolean</code> - `true` si tiene servicios y todos están completados.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| orden | [<code>Orden</code>](#Orden) | La orden a evaluar. |
 
 <a name="obtenerEquipos"></a>
 
@@ -2490,6 +2931,22 @@ Un requisito documental ya validado.
 | tiene_vencimiento | <code>boolean</code> | Si se le controla fecha de caducidad. |
 | activo | <code>boolean</code> | Si sigue vigente. |
 
+<a name="Articulo"></a>
+
+## Articulo : <code>object</code>
+Un artículo de inventario ya validado.
+
+**Kind**: global typedef  
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| id_articulo | <code>string</code> | Identificador. |
+| nombre_articulo | <code>string</code> | Nombre del artículo. |
+| cantidad_stock | <code>number</code> | Existencias. |
+| nombre_subcategoria | <code>string</code> | Subcategoría a la que pertenece. |
+| nombre_categoria | <code>string</code> | Categoría a la que pertenece. |
+
 <a name="Periodo"></a>
 
 ## Periodo : <code>object</code>
@@ -2542,6 +2999,24 @@ Empleado de nómina ya normalizado y validado.
 | sueldo | <code>number</code> | Sueldo a pagar, ya convertido a número. |
 | frecuencia_pago | <code>string</code> | Semanal, Quincenal o Mensual. |
 | tipo_nomina | <code>string</code> | `MX` (pesos) o `US` (dólares). |
+
+<a name="Orden"></a>
+
+## Orden : <code>object</code>
+Una orden de servicio ya validada.
+
+**Kind**: global typedef  
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| id_orden | <code>string</code> | Identificador. |
+| fecha_orden | <code>string</code> | Fecha, solo el día. |
+| estatus | <code>string</code> | `Abierta`, `Pendiente` o `Completado`. |
+| truck_id | <code>string</code> | Camión al que pertenece. |
+| nombre_camion | <code>string</code> | Número de unidad. |
+| tipo_cambio | <code>number</code> \| <code>null</code> | Tipo de cambio, o `null` si es en pesos. |
+| servicios | <code>Array</code> | Los servicios de la orden. |
 
 <a name="Usuario"></a>
 

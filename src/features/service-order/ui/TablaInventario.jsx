@@ -25,7 +25,7 @@ import {
 import {
     HEADER_ROW_SX, HEADER_CELL_SX, TABLE_CONTAINER_SX, CARD_SX, SECTION_LABEL_SX,
     PAGINATION_BOX_SX, PAGINATION_SX, GHOST_BTN_SX, CELL_STRONG_SX, CELL_MUTED_SX, CHIP_SX,
-} from '../styles/estilosTabla';
+} from '../../../shared/ui/estilos';
 
 // **Definición de las categorías para el filtro**
 const CATEGORIES = ['Todas', 'Consumibles', 'Refacciones', 'Herramientas'];
@@ -48,7 +48,15 @@ const tonoStock = (cantidad) => (
 );
 
 
-const StockAdmin = () => {
+/**
+ * Tabla del inventario de refacciones y consumibles.
+ *
+ * Es una pestaña dentro de la pantalla de órdenes de servicio, no una pantalla
+ * propia: por eso vive en `features/` y no en `pages/`.
+ *
+ * @returns {object} La tabla renderizada.
+ */
+const TablaInventario = () => {
     const [inventoryList, setInventoryList] = useState([]);
     const apiHost = import.meta.env.VITE_API_HOST;
     const [searchTerm, setSearchTerm] = useState('');
@@ -302,4 +310,4 @@ const StockAdmin = () => {
     );
 };
 
-export default StockAdmin;
+export default TablaInventario;

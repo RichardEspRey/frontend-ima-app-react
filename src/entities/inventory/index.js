@@ -2,6 +2,7 @@ export {
   esquemaArticulo,
   normalizarArticulos,
   estaAgotado,
+  sinNombre,
   agruparPorCategoria,
 } from "./model/articulo"
 
