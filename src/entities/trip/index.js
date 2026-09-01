@@ -18,3 +18,31 @@ export {
 } from "./model/resumen"
 
 export { llaveResumenViaje, obtenerResumenViaje, useResumenViaje } from "./api/resumen"
+
+export {
+  PREFIJO_ID_NUEVO,
+  esNuevo,
+  idParaGuardar,
+  normalizarTipoDocumento,
+  nombreDeArchivo,
+  documentoDesdeApi,
+  documentosDeEtapa,
+  paradasDesdeApi,
+  metadatosDocumentos,
+  paradasParaGuardar,
+  etapaParaGuardar,
+  etapasEliminadas,
+  archivosNuevos,
+  etapasDesdeApi,
+  TIPO_ETAPA_POR_OMISION,
+} from "./model/edicion"
+
+export {
+  OP_GUARDADO,
+  llaveViajeUpcoming,
+  obtenerViajePorId,
+  guardarViajeUpcoming,
+  guardarInvoices,
+  useViajeUpcoming,
+  useGuardarViajeUpcoming,
+} from "./api/edicion"

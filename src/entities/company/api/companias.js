@@ -1,5 +1,5 @@
-import { useQuery } from "@tanstack/react-query"
-import { ENDPOINTS, postLista, FRESCURA_CATALOGO_MS } from "../../../shared/api"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { ENDPOINTS, post, postLista, FRESCURA_CATALOGO_MS } from "../../../shared/api"
 
 /**
  * Compañías dadas de alta.
@@ -28,5 +28,35 @@ export function useCompanias() {
     queryKey: ["companias"],
     queryFn: ({ signal }) => obtenerCompanias({ signal }),
     staleTime: FRESCURA_CATALOGO_MS,
+  })
+}
+
+/**
+ * Da de alta una compañía desde el propio selector.
+ *
+ * Quien está capturando un viaje descubre que la compañía no está dada de alta
+ * justo cuando la necesita; poder crearla ahí evita abandonar el formulario a
+ * medias.
+ *
+ * @endpoint POST companies.php · op=CreateCompany
+ * @param {string} nombre Nombre de la compañía.
+ * @returns {Promise.<object>} La compañía creada, con su id.
+ * @throws {ApiError} Si la API rechaza el alta.
+ */
+export async function crearCompania(nombre) {
+  const cuerpo = await post(ENDPOINTS.companies, "CreateCompany", { nombre_compania: nombre })
+  return cuerpo?.company
+}
+
+/**
+ * Da de alta una compañía y refresca el catálogo.
+ *
+ * @returns {object} El resultado de `useMutation`.
+ */
+export function useCrearCompania() {
+  const cliente = useQueryClient()
+  return useMutation({
+    mutationFn: crearCompania,
+    onSuccess: () => cliente.invalidateQueries({ queryKey: ["companias"] }),
   })
 }

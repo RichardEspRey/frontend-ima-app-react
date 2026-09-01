@@ -27,14 +27,30 @@ export async function obtenerViajePorId({ tripId, signal }) {
 }
 
 /**
- * Guarda los cambios de un viaje próximo, con sus etapas y archivos nuevos.
+ * Las tres formas de guardar un viaje, según desde qué pantalla se edite.
+ *
+ * Son operaciones distintas del mismo endpoint: cada una acepta editar unas
+ * cosas y no otras. `Update_complete` es la que no tiene restricciones.
+ *
+ * @readonly
+ * @enum {string}
+ */
+export const OP_GUARDADO = {
+  PROXIMO: "UpdateUpcoming",
+  NORMAL: "Update",
+  COMPLETO: "Update_complete",
+}
+
+/**
+ * Guarda los cambios de un viaje, con sus etapas y sus archivos nuevos.
  *
  * Los campos escalares del viaje van sueltos, las etapas como JSON, y cada
  * archivo nuevo en un campo propio nombrado por su posición.
  *
- * @endpoint POST new_trips.php · op=UpdateUpcoming
+ * @endpoint POST new_trips.php · op=UpdateUpcoming | Update | Update_complete
  * @param {object} parametros Datos del guardado.
  * @param {string} parametros.tripId Viaje a actualizar.
+ * @param {string} [parametros.op] Un valor de `OP_GUARDADO`; por omisión, el de próximos.
  * @param {object} parametros.datosViaje Campos del viaje.
  * @param {Array} parametros.etapas Las etapas en pantalla.
  * @param {Array} [parametros.etapasIniciales] Las etapas como llegaron, para detectar las borradas.
@@ -44,6 +60,7 @@ export async function obtenerViajePorId({ tripId, signal }) {
  */
 export function guardarViajeUpcoming({
   tripId,
+  op = OP_GUARDADO.PROXIMO,
   datosViaje,
   etapas,
   etapasIniciales = [],
@@ -51,7 +68,7 @@ export function guardarViajeUpcoming({
 }) {
   const eliminadas = etapasEliminadas(etapasIniciales, etapas)
 
-  return post(ENDPOINTS.nuevosViajes, "UpdateUpcoming", {
+  return post(ENDPOINTS.nuevosViajes, op, {
     trip_id: tripId,
     ...datosViaje,
     etapas: etapas.map((etapa) => etapaParaGuardar(etapa, formatearFecha)),

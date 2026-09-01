@@ -7,15 +7,17 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack"
 import {
   PAIS,
   anioDosDigitos,
-  etapasDesdeApi,
-  guardarInvoices,
   paisOpuesto as calcularPaisOpuesto,
   siguienteMovimiento,
-  useGuardarViajeUpcoming,
-  useViajeUpcoming,
   useViajesTransnacionales,
   valorViajeTransnacional,
 } from "../../entities/dispatch"
+import {
+  etapasDesdeApi,
+  guardarInvoices,
+  useGuardarViajeUpcoming,
+  useViajeUpcoming,
+} from "../../entities/trip"
 import { FormulariosViaje, PanelConfiguracionViaje } from "../../features/dispatch"
 import { PageHeader, notify } from "../../shared/ui"
 import { NORMAL_TRIP_DOCS_BY_COUNTRY, initialBorderCrossingDocs } from "../../utils/tripFormConstants"

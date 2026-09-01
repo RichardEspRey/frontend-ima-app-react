@@ -8,4 +8,6 @@ export {
 export {
   obtenerCajasExternasActivas,
   useCajasExternasActivas,
+  crearCajaExterna,
+  useCrearCajaExterna,
 } from "./api/cajasExternas"

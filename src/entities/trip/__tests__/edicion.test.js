@@ -154,6 +154,16 @@ describe("etapaParaGuardar", () => {
     expect(etapa.loading_date).toBe("2026-09-01")
     expect(etapa.delivery_date).toBeNull()
   })
+
+  it("incluye la fecha de salida, que solo usan las pantallas de edición", () => {
+    const conSalida = etapaParaGuardar({ trip_stage_id: "1", date_of_departure: new Date() }, sinFormato)
+    expect(conSalida.date_of_departure).toBe("2026-09-01")
+  })
+
+  it("una etapa sin fecha de salida la manda nula, y el cliente la omite", () => {
+    const sinSalida = etapaParaGuardar({ trip_stage_id: "1" }, sinFormato)
+    expect(sinSalida.date_of_departure).toBeNull()
+  })
 })
 
 describe("etapasEliminadas", () => {

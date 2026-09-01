@@ -1,1 +1,1 @@
-export { obtenerCompanias, useCompanias } from "./api/companias"
+export { obtenerCompanias, useCompanias, crearCompania, useCrearCompania } from "./api/companias"

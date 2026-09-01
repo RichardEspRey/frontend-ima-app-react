@@ -1,5 +1,5 @@
-import { useQuery } from "@tanstack/react-query"
-import { ENDPOINTS, postLista, FRESCURA_CATALOGO_MS } from "../../../shared/api"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { ENDPOINTS, post, postLista, FRESCURA_CATALOGO_MS } from "../../../shared/api"
 
 /**
  * Bodegas dadas de alta.
@@ -28,5 +28,31 @@ export function useBodegas() {
     queryKey: ["bodegas"],
     queryFn: ({ signal }) => obtenerBodegas({ signal }),
     staleTime: FRESCURA_CATALOGO_MS,
+  })
+}
+
+/**
+ * Da de alta una bodega desde el propio selector.
+ *
+ * @endpoint POST warehouses.php · op=CreateWarehouse
+ * @param {string} nombre Nombre de la bodega.
+ * @returns {Promise.<object>} La bodega creada, con su id.
+ * @throws {ApiError} Si la API rechaza el alta.
+ */
+export async function crearBodega(nombre) {
+  const cuerpo = await post(ENDPOINTS.warehouses, "CreateWarehouse", { nombre_almacen: nombre })
+  return cuerpo?.warehouse
+}
+
+/**
+ * Da de alta una bodega y refresca el catálogo.
+ *
+ * @returns {object} El resultado de `useMutation`.
+ */
+export function useCrearBodega() {
+  const cliente = useQueryClient()
+  return useMutation({
+    mutationFn: crearBodega,
+    onSuccess: () => cliente.invalidateQueries({ queryKey: ["bodegas"] }),
   })
 }
