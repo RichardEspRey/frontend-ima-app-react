@@ -100,7 +100,26 @@ partes (9a, 9b, 9c en `docs/refactor/05-INCREMENTOS.md`).
 | `/inspecciones` | `pages/mantenimientos/InspeccionesPage.jsx` |
 | `/Inspeccion-final` | `pages/mantenimientos/InspeccionFinalPage.jsx` |
 
-Los modales viven en `features/inspections/ui/`: `ReparacionModal` e `InspeccionModal`.
+En `features/inspections/ui/` viven las dos tablas —`TablaReparaciones` y
+`TablaInspecciones`— y los dos modales, `ReparacionModal` e `InspeccionModal`.
+
+### Por qué la tabla va aparte de la página
+
+Safety monta estas dos tablas como pestañas suyas. Antes lo hacía pasándole `embedded` a
+la pantalla completa, y esa prop **solo quitaba el contenedor de página**: el encabezado se
+seguía pintando, así que dentro de Safety aparecían dos títulos apilados —"Safety &
+Cumplimiento" y debajo "Reparaciones en Carretera"—.
+
+Ahora cada cosa está en su sitio:
+
+- **`features/inspections/ui/TablaX`** — la tabla, sus modales y el botón de agregar. Sin
+  encabezado ni contenedor.
+- **`pages/mantenimientos/XPage`** — el encabezado más esa tabla.
+- **Safety** monta la tabla directamente.
+
+La prop `embedded` desapareció: cuando el encabezado es de quien compone, no hace falta
+avisarle al hijo dónde está. Es el mismo patrón que usa `OrdenesServicioPage` con sus
+pestañas.
 
 ### Entidades
 
@@ -124,9 +143,8 @@ Ambos endpoints tienen las mismas cinco operaciones: `getAll`, `save`, `delete_d
 
 ### Cosas que sorprenden
 
-- **`ReparacionesRutaPage` e `InspeccionesPage` sirven a dos módulos**: como pantalla
-  propia y como pestaña embebida dentro de Safety, con la prop `embedded`. Al moverlas hay
-  que actualizar `Safety.jsx`, que no salía al buscar por la ruta.
+- **Las tablas sirven a dos módulos**: a su pantalla propia y a una pestaña de Safety. Al
+  moverlas hay que actualizar `Safety.jsx`, que no sale al buscar por la ruta en el router.
 - Los modales también los usa **Viajes**: `TripAdmin` los abre con `initialTrip` para dejar
   el viaje preseleccionado.
 - **`fecha_suceso` está nula en las cinco reparaciones** al 2026-09-01: la columna existe

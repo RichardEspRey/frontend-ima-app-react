@@ -16,8 +16,8 @@ import {
   CARD_SX, SECTION_LABEL_SX, HEADER_ROW_SX, HEADER_CELL_SX, TABLE_CONTAINER_SX,
   PAGINATION_BOX_SX, PAGINATION_SX, CHIP_DANGER_SX,
 } from "../../styles/estilosTabla";
-import ReparacionesRutaPage from "../../pages/mantenimientos/ReparacionesRutaPage.jsx";
-import InspeccionesPage from "../../pages/mantenimientos/InspeccionesPage.jsx";
+import TablaReparaciones from "../../features/inspections/ui/TablaReparaciones.jsx";
+import TablaInspecciones from "../../features/inspections/ui/TablaInspecciones.jsx";
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -332,9 +332,9 @@ export default function Safety() {
         </>
       )}
 
-      {tabValue === 2 && <ReparacionesRutaPage embedded />}
+      {tabValue === 2 && <TablaReparaciones />}
 
-      {tabValue === 3 && <InspeccionesPage embedded />}
+      {tabValue === 3 && <TablaInspecciones />}
     </Box>
   );
 }
