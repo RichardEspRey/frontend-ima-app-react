@@ -77,6 +77,29 @@ otras dos se puedan ir retirando módulo por módulo y para que cambiar de
 librería sea editar este archivo en vez de 56.</p>
 <p>Cada función devuelve una promesa, así que se puede esperar el cierre.</p>
 </dd>
+<dt><a href="#LLAVE_DOCUMENTOS">LLAVE_DOCUMENTOS</a> : <code>Array.&lt;string&gt;</code></dt>
+<dd><p>Llave de caché de los documentos corporativos.</p>
+</dd>
+<dt><a href="#useGuardarDocumento">useGuardarDocumento</a> ⇒ <code>object</code></dt>
+<dd><p>Guarda el valor de un requisito y refresca el panel.</p>
+</dd>
+<dt><a href="#useCrearRequisito">useCrearRequisito</a> ⇒ <code>object</code></dt>
+<dd><p>Crea un requisito y refresca el panel.</p>
+</dd>
+<dt><a href="#useEliminarRequisito">useEliminarRequisito</a> ⇒ <code>object</code></dt>
+<dd><p>Retira un requisito y refresca el panel.</p>
+</dd>
+<dt><a href="#DIAS_POR_VENCER">DIAS_POR_VENCER</a> : <code>number</code></dt>
+<dd><p>Días de antelación con los que un vencimiento se considera próximo.</p>
+</dd>
+<dt><a href="#esquemaRequisito">esquemaRequisito</a></dt>
+<dd><p>Un requisito documental: qué documento hace falta y cómo se captura.</p>
+</dd>
+<dt><a href="#esquemaValor">esquemaValor</a></dt>
+<dd><p>El valor capturado de un requisito.</p>
+<p>Los tres campos son opcionales: un requisito de texto no trae <code>url_pdf</code>, y uno
+sin vencimiento no trae fecha.</p>
+</dd>
 <dt><a href="#LLAVE_PERIODOS">LLAVE_PERIODOS</a> : <code>Array.&lt;string&gt;</code></dt>
 <dd><p>Llave de caché de los periodos de nómina.</p>
 </dd>
@@ -260,6 +283,47 @@ que nadie reconoce no debe abrir puertas.</p>
 <p>Es un catálogo: se cachea <a href="#FRESCURA_CATALOGO_MS">FRESCURA_CATALOGO_MS</a> y se comparte entre
 todas las pantallas que lo pidan, así que varias a la vez hacen una sola
 petición en lugar de una cada una.</p>
+</dd>
+<dt><a href="#obtenerDocumentos">obtenerDocumentos([opciones])</a> ⇒ <code>Promise.&lt;object&gt;</code></dt>
+<dd><p>Trae los requisitos documentales y lo capturado para cada uno.</p>
+<p>La respuesta trae dos cosas distintas: <code>requisitos</code> es una lista y <code>valores</code> un
+<strong>objeto indexado por <code>key_name</code></strong>. Por eso usa <code>post</code> y no <code>postLista</code>.</p>
+</dd>
+<dt><a href="#guardarDocumento">guardarDocumento(datos)</a> ⇒ <code>Promise.&lt;object&gt;</code></dt>
+<dd><p>Guarda el valor de un requisito: sube el archivo, el texto y la vigencia.</p>
+</dd>
+<dt><a href="#crearRequisito">crearRequisito(datos)</a> ⇒ <code>Promise.&lt;object&gt;</code></dt>
+<dd><p>Crea un requisito documental nuevo.</p>
+</dd>
+<dt><a href="#eliminarRequisito">eliminarRequisito(keyName)</a> ⇒ <code>Promise.&lt;object&gt;</code></dt>
+<dd><p>Retira un requisito del panel.</p>
+<p>No borra lo capturado: el documento se conserva y solo deja de pedirse.</p>
+</dd>
+<dt><a href="#useDocumentos">useDocumentos()</a> ⇒ <code>object</code></dt>
+<dd><p>Requisitos y valores, cacheados.</p>
+</dd>
+<dt><a href="#crearMutacion">crearMutacion(mutationFn)</a> ⇒ <code>function</code></dt>
+<dd><p>Crea una mutación que refresca los documentos al terminar.</p>
+<p>Las tres operaciones invalidan lo mismo, así que comparten fábrica en vez de
+repetir el <code>onSuccess</code> tres veces.</p>
+</dd>
+<dt><a href="#diasRestantes">diasRestantes(fecha, [hoy])</a> ⇒ <code>number</code> | <code>null</code></dt>
+<dd><p>Días que faltan para una fecha, contando desde hoy.</p>
+<p>Compara a medianoche para que un documento que vence hoy dé 0 y no un número
+negativo por unas horas.</p>
+</dd>
+<dt><a href="#estadoDocumento">estadoDocumento(requisito, [valor], [hoy])</a> ⇒ <code>string</code></dt>
+<dd><p>Clasifica un documento según su captura y su vencimiento.</p>
+<p>Un requisito sin control de vencimiento nunca sale como vencido: solo importa
+si está capturado o no.</p>
+</dd>
+<dt><a href="#normalizarDocumentos">normalizarDocumentos(respuesta)</a> ⇒ <code>Object</code></dt>
+<dd><p>Valida los requisitos y deja los valores listos para consultarlos por clave.</p>
+<p><code>valores</code> llega como <strong>objeto indexado por <code>key_name</code></strong>, no como arreglo: es lo
+que devuelve <code>IMA_Docsv2.php</code> y tratarlo como lista da siempre vacío.</p>
+</dd>
+<dt><a href="#porRegion">porRegion(requisitos)</a> ⇒ <code>Object</code></dt>
+<dd><p>Separa los requisitos activos por región, que es como se pintan.</p>
 </dd>
 <dt><a href="#obtenerConductoresActivos">obtenerConductoresActivos([opciones])</a> ⇒ <code>Promise.&lt;Array&gt;</code></dt>
 <dd><p>Conductores activos, para los selectores de viaje.</p>
@@ -482,6 +546,9 @@ petición en lugar de una cada una.</p>
 ## Typedefs
 
 <dl>
+<dt><a href="#Requisito">Requisito</a> : <code>object</code></dt>
+<dd><p>Un requisito documental ya validado.</p>
+</dd>
 <dt><a href="#Periodo">Periodo</a> : <code>object</code></dt>
 <dd><p>Un periodo de nómina ya validado.</p>
 </dd>
@@ -605,6 +672,27 @@ Antes de cambiar de proveedor, lee `docs/DECISIONES/0005-proveedor-de-tiles-de-m
 está el porqué de OpenStreetMap, el riesgo que se aceptó a sabiendas, las señales de
 que toca migrar y la tabla de alternativas. Y acuérdate de actualizar el `img-src` de
 la CSP en `vite.config.js`, o el proveedor nuevo se bloquea sin explicación visible.
+
+**Kind**: global enum  
+**Read only**: true  
+<a name="REGION"></a>
+
+## REGION : <code>enum</code>
+Regiones a las que pertenece un requisito documental.
+
+**Kind**: global enum  
+**Read only**: true  
+<a name="TIPO_REQUISITO"></a>
+
+## TIPO\_REQUISITO : <code>enum</code>
+Cómo se captura un requisito: subiendo un archivo o escribiendo un valor.
+
+**Kind**: global enum  
+**Read only**: true  
+<a name="ESTADO_DOCUMENTO"></a>
+
+## ESTADO\_DOCUMENTO : <code>enum</code>
+Estado de un documento respecto a su vencimiento.
 
 **Kind**: global enum  
 **Read only**: true  
@@ -877,6 +965,54 @@ no tenga que conocer la forma `{ isConfirmed }` de la librería.
 | [opciones.cancelar] | <code>string</code> | <code>&quot;&#x27;Cancelar&#x27;&quot;</code> | Texto del botón de cancelar. |
 | [opciones.peligroso] | <code>boolean</code> | <code>true</code> | Pinta de rojo el botón de aceptar. |
 
+<a name="LLAVE_DOCUMENTOS"></a>
+
+## LLAVE\_DOCUMENTOS : <code>Array.&lt;string&gt;</code>
+Llave de caché de los documentos corporativos.
+
+**Kind**: global constant  
+<a name="useGuardarDocumento"></a>
+
+## useGuardarDocumento ⇒ <code>object</code>
+Guarda el valor de un requisito y refresca el panel.
+
+**Kind**: global constant  
+**Returns**: <code>object</code> - El resultado de `useMutation`.  
+<a name="useCrearRequisito"></a>
+
+## useCrearRequisito ⇒ <code>object</code>
+Crea un requisito y refresca el panel.
+
+**Kind**: global constant  
+**Returns**: <code>object</code> - El resultado de `useMutation`.  
+<a name="useEliminarRequisito"></a>
+
+## useEliminarRequisito ⇒ <code>object</code>
+Retira un requisito y refresca el panel.
+
+**Kind**: global constant  
+**Returns**: <code>object</code> - El resultado de `useMutation`.  
+<a name="DIAS_POR_VENCER"></a>
+
+## DIAS\_POR\_VENCER : <code>number</code>
+Días de antelación con los que un vencimiento se considera próximo.
+
+**Kind**: global constant  
+<a name="esquemaRequisito"></a>
+
+## esquemaRequisito
+Un requisito documental: qué documento hace falta y cómo se captura.
+
+**Kind**: global constant  
+<a name="esquemaValor"></a>
+
+## esquemaValor
+El valor capturado de un requisito.
+
+Los tres campos son opcionales: un requisito de texto no trae `url_pdf`, y uno
+sin vencimiento no trae fecha.
+
+**Kind**: global constant  
 <a name="LLAVE_PERIODOS"></a>
 
 ## LLAVE\_PERIODOS : <code>Array.&lt;string&gt;</code>
@@ -1360,6 +1496,172 @@ petición en lugar de una cada una.
 
 **Kind**: global function  
 **Returns**: <code>object</code> - El resultado de `useQuery`: `{data, isLoading, isError, error}`.  
+<a name="obtenerDocumentos"></a>
+
+## obtenerDocumentos([opciones]) ⇒ <code>Promise.&lt;object&gt;</code>
+Trae los requisitos documentales y lo capturado para cada uno.
+
+La respuesta trae dos cosas distintas: `requisitos` es una lista y `valores` un
+**objeto indexado por `key_name`**. Por eso usa `post` y no `postLista`.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;object&gt;</code> - `{requisitos, valores}` ya validados.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la API falla.
+
+**Endpoint**: POST IMA_Docsv2.php · op=getAll  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [opciones] | <code>object</code> | Ajustes de la petición. |
+| [opciones.signal] | <code>AbortSignal</code> | Señal de cancelación. |
+
+<a name="guardarDocumento"></a>
+
+## guardarDocumento(datos) ⇒ <code>Promise.&lt;object&gt;</code>
+Guarda el valor de un requisito: sube el archivo, el texto y la vigencia.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;object&gt;</code> - La respuesta de la API.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la API rechaza la operación.
+
+**Endpoint**: POST IMA_Docsv2.php · op=Alta  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| datos | <code>object</code> | Lo capturado. |
+| datos.keyName | <code>string</code> | Clave del requisito. |
+| [datos.valorTexto] | <code>string</code> | Valor, si el requisito es de tipo texto. |
+| [datos.fechaVencimiento] | <code>string</code> | Vigencia en formato `YYYY-MM-DD`. |
+| [datos.archivo] | <code>File</code> | Documento a subir. |
+
+<a name="crearRequisito"></a>
+
+## crearRequisito(datos) ⇒ <code>Promise.&lt;object&gt;</code>
+Crea un requisito documental nuevo.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;object&gt;</code> - La respuesta de la API.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la API rechaza la operación.
+
+**Endpoint**: POST IMA_Docsv2.php · op=addConfig  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| datos | <code>object</code> | Definición del requisito. |
+| datos.label | <code>string</code> | Nombre visible. |
+| datos.region | <code>string</code> | `MEX` o `USA`. |
+| datos.tipo | <code>string</code> | `file` o `text`. |
+| datos.tieneVencimiento | <code>boolean</code> | Si se le controla vigencia. |
+
+<a name="eliminarRequisito"></a>
+
+## eliminarRequisito(keyName) ⇒ <code>Promise.&lt;object&gt;</code>
+Retira un requisito del panel.
+
+No borra lo capturado: el documento se conserva y solo deja de pedirse.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;object&gt;</code> - La respuesta de la API.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la API rechaza la operación.
+
+**Endpoint**: POST IMA_Docsv2.php · op=deleteConfig  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| keyName | <code>string</code> | Clave del requisito. |
+
+<a name="useDocumentos"></a>
+
+## useDocumentos() ⇒ <code>object</code>
+Requisitos y valores, cacheados.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useQuery`: `{data, isLoading, isError, error}`.  
+<a name="crearMutacion"></a>
+
+## crearMutacion(mutationFn) ⇒ <code>function</code>
+Crea una mutación que refresca los documentos al terminar.
+
+Las tres operaciones invalidan lo mismo, así que comparten fábrica en vez de
+repetir el `onSuccess` tres veces.
+
+**Kind**: global function  
+**Returns**: <code>function</code> - Un hook de mutación listo para usar.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| mutationFn | <code>function</code> | La operación a ejecutar. |
+
+<a name="diasRestantes"></a>
+
+## diasRestantes(fecha, [hoy]) ⇒ <code>number</code> \| <code>null</code>
+Días que faltan para una fecha, contando desde hoy.
+
+Compara a medianoche para que un documento que vence hoy dé 0 y no un número
+negativo por unas horas.
+
+**Kind**: global function  
+**Returns**: <code>number</code> \| <code>null</code> - Los días restantes, o `null` si no hay fecha válida.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| fecha | <code>string</code> \| <code>null</code> | Fecha en formato `YYYY-MM-DD`. |
+| [hoy] | <code>Date</code> | Fecha de referencia; existe para poder probarlo. |
+
+<a name="estadoDocumento"></a>
+
+## estadoDocumento(requisito, [valor], [hoy]) ⇒ <code>string</code>
+Clasifica un documento según su captura y su vencimiento.
+
+Un requisito sin control de vencimiento nunca sale como vencido: solo importa
+si está capturado o no.
+
+**Kind**: global function  
+**Returns**: <code>string</code> - Un valor de `ESTADO_DOCUMENTO`.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| requisito | [<code>Requisito</code>](#Requisito) | El requisito a evaluar. |
+| [valor] | <code>object</code> | Lo capturado para ese requisito. |
+| [hoy] | <code>Date</code> | Fecha de referencia; existe para poder probarlo. |
+
+<a name="normalizarDocumentos"></a>
+
+## normalizarDocumentos(respuesta) ⇒ <code>Object</code>
+Valida los requisitos y deja los valores listos para consultarlos por clave.
+
+`valores` llega como **objeto indexado por `key_name`**, no como arreglo: es lo
+que devuelve `IMA_Docsv2.php` y tratarlo como lista da siempre vacío.
+
+**Kind**: global function  
+**Returns**: <code>Object</code> - Lo normalizado.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| respuesta | <code>object</code> | Lo que devolvió la API. |
+| [respuesta.requisitos] | <code>Array</code> | Los requisitos. |
+| [respuesta.valores] | <code>object</code> | Los valores, indexados por `key_name`. |
+
+<a name="porRegion"></a>
+
+## porRegion(requisitos) ⇒ <code>Object</code>
+Separa los requisitos activos por región, que es como se pintan.
+
+**Kind**: global function  
+**Returns**: <code>Object</code> - Los activos de cada región.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| requisitos | [<code>Array.&lt;Requisito&gt;</code>](#Requisito) | Los requisitos ya validados. |
+
 <a name="obtenerConductoresActivos"></a>
 
 ## obtenerConductoresActivos([opciones]) ⇒ <code>Promise.&lt;Array&gt;</code>
@@ -2170,6 +2472,24 @@ petición en lugar de una cada una.
 
 **Kind**: global function  
 **Returns**: <code>object</code> - El resultado de `useQuery`: `{data, isLoading, isError, error}`.  
+<a name="Requisito"></a>
+
+## Requisito : <code>object</code>
+Un requisito documental ya validado.
+
+**Kind**: global typedef  
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| id_requisito | <code>string</code> | Identificador. |
+| key_name | <code>string</code> | Clave con la que se indexa su valor. |
+| label | <code>string</code> | Nombre visible. |
+| region | <code>string</code> | `MEX` o `USA`. |
+| tipo | <code>string</code> | `file` o `text`. |
+| tiene_vencimiento | <code>boolean</code> | Si se le controla fecha de caducidad. |
+| activo | <code>boolean</code> | Si sigue vigente. |
+
 <a name="Periodo"></a>
 
 ## Periodo : <code>object</code>
