@@ -46,3 +46,23 @@ export {
   useViajeUpcoming,
   useGuardarViajeUpcoming,
 } from "./api/edicion"
+
+export {
+  PESTANAS_VIAJES,
+  PESTANA_PROGRAMACION,
+  PESTANA_PROXIMOS,
+  pestanasPermitidas,
+  pestanaDeReemplazo,
+  FILTROS_VIAJES,
+  DIRECCION_TODAS,
+  filtrosActivos,
+} from "./model/pestanas"
+
+export {
+  llaveViajes,
+  ACCION_VIAJE,
+  obtenerViajes,
+  ejecutarAccionViaje,
+  useViajes,
+  useAccionViaje,
+} from "./api/viajes"
