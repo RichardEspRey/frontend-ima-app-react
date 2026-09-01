@@ -9,9 +9,9 @@ import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 
 import Swal from 'sweetalert2';
 
-import DocumentCard from '../components/ImaManager/DocumentCard';
-import ConfigRequirementModal from '../components/ImaManager/ConfigRequirementModal';
-import EditValueModal from '../components/ImaManager/EditValueModal';
+import DocumentCard from '../../features/documentos/ui/DocumentCard';
+import ConfigRequirementModal from '../../features/documentos/ui/ConfigRequirementModal';
+import EditValueModal from '../../features/documentos/ui/EditValueModal';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
