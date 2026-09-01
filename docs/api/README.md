@@ -133,6 +133,57 @@ ahí el valor sale de un select controlado.</p>
 <dd><p>Valida los datos del formulario antes de mandarlos.</p>
 <p><code>id</code> ausente significa alta; presente, edición.</p>
 </dd>
+<dt><a href="#llaveGrafica">llaveGrafica</a> ⇒ <code>Array</code></dt>
+<dd><p>Llave de caché de una gráfica.</p>
+<p>Los parámetros entran en la llave para que cambiar el periodo traiga su propio
+resultado en vez de pisar el anterior.</p>
+</dd>
+<dt><a href="#aDia">aDia</a> ⇒ <code>string</code></dt>
+<dd><p>Recorta una fecha ISO al día.</p>
+</dd>
+<dt><a href="#aMes">aMes</a> ⇒ <code>string</code></dt>
+<dd><p>Recorta una fecha ISO al mes, que es como se agrupan las gráficas.</p>
+</dd>
+<dt><a href="#etiquetaMes">etiquetaMes</a> ⇒ <code>string</code></dt>
+<dd><p>Convierte <code>2026-08</code> en <code>ago 2026</code>, para los ejes.</p>
+</dd>
+<dt><a href="#normalizarFinanzas">normalizarFinanzas</a> ⇒ <code>Array</code></dt>
+<dd><p>Normaliza las series de rate contra pagado, que comparten forma.</p>
+<p>La usan <code>chart_finances</code> y <code>chart_finances_rts</code>: mismas claves, distinto origen.</p>
+</dd>
+<dt><a href="#normalizarMantenimiento">normalizarMantenimiento</a> ⇒ <code>Array</code></dt>
+<dd><p>Normaliza el costo de mantenimiento por mes.</p>
+</dd>
+<dt><a href="#agruparDieselPorMes">agruparDieselPorMes</a> ⇒ <code>Array</code></dt>
+<dd><p>Agrupa las cargas de diesel por mes, sumando monto y fleetone.</p>
+<p>La API devuelve una fila por carga; la gráfica es mensual, así que la suma
+ocurre aquí y no en el JSX. Es lógica de negocio, no de presentación.</p>
+</dd>
+<dt><a href="#ultimosMeses">ultimosMeses</a> ⇒ <code>Array</code></dt>
+<dd><p>Se queda con los últimos N meses de una serie ya ordenada.</p>
+</dd>
+<dt><a href="#LLAVE_EQUIPOS">LLAVE_EQUIPOS</a> : <code>Array.&lt;string&gt;</code></dt>
+<dd><p>Llave de caché de la lista de equipos.</p>
+</dd>
+<dt><a href="#llaveMiembros">llaveMiembros</a> ⇒ <code>Array.&lt;string&gt;</code></dt>
+<dd><p>Llave de caché de los miembros de un equipo.</p>
+</dd>
+<dt><a href="#llavePermisosUsuario">llavePermisosUsuario</a> ⇒ <code>Array.&lt;string&gt;</code></dt>
+<dd><p>Llave de caché de los permisos de un usuario.</p>
+</dd>
+<dt><a href="#LLAVE_USUARIOS">LLAVE_USUARIOS</a> : <code>Array.&lt;string&gt;</code></dt>
+<dd><p>Llave de caché de la lista de usuarios.</p>
+</dd>
+<dt><a href="#esquemaUsuario">esquemaUsuario</a></dt>
+<dd><p>Usuario del sistema, tal como lo devuelve <code>features.php</code> · <code>get_users</code>.</p>
+<p><strong>No incluye <code>pass</code> a propósito.</strong> El endpoint devuelve la contraseña en claro
+de cada usuario; dejarla fuera del esquema evita que llegue al estado de la
+aplicación, se pinte por accidente o acabe en un log. No arregla el endpoint
+—eso es de backend— pero corta la propagación en el frontend.</p>
+</dd>
+<dt><a href="#estaActivo">estaActivo</a> ⇒ <code>boolean</code></dt>
+<dd><p>Indica si un usuario está activo.</p>
+</dd>
 </dl>
 
 ## Functions
@@ -281,6 +332,55 @@ of undefined&quot; que hay repartidos por el proyecto.</p>
 <dt><a href="#validarFormularioEmpleado">validarFormularioEmpleado(formulario)</a> ⇒ <code>Object</code></dt>
 <dd><p>Comprueba el formulario y devuelve el primer mensaje de error, si lo hay.</p>
 </dd>
+<dt><a href="#obtenerGrafica">obtenerGrafica(argumentos)</a> ⇒ <code>Promise.&lt;Array&gt;</code></dt>
+<dd><p>Trae los datos de una gráfica.</p>
+</dd>
+<dt><a href="#useGrafica">useGrafica(op, [parametros])</a> ⇒ <code>object</code></dt>
+<dd><p>Datos de una gráfica, cacheados.</p>
+</dd>
+<dt><a href="#useGraficas">useGraficas(peticiones)</a> ⇒ <code>Array.&lt;object&gt;</code></dt>
+<dd><p>Varias gráficas a la vez.</p>
+<p>Se piden en paralelo y cada una llega cuando puede, así que una lenta no
+retrasa a las demás. Antes eran seis <code>useEffect</code> y doce <code>useState</code>.</p>
+</dd>
+<dt><a href="#obtenerEquipos">obtenerEquipos([opciones])</a> ⇒ <code>Promise.&lt;Array&gt;</code></dt>
+<dd><p>Trae todos los equipos.</p>
+</dd>
+<dt><a href="#obtenerMiembros">obtenerMiembros(parametros)</a> ⇒ <code>Promise.&lt;Array.&lt;string&gt;&gt;</code></dt>
+<dd><p>Trae los identificadores de los miembros de un equipo.</p>
+</dd>
+<dt><a href="#crearEquipo">crearEquipo(datos)</a> ⇒ <code>Promise.&lt;object&gt;</code></dt>
+<dd><p>Crea un equipo.</p>
+</dd>
+<dt><a href="#editarEquipo">editarEquipo(parametros)</a> ⇒ <code>Promise.&lt;object&gt;</code></dt>
+<dd><p>Renombra o redescribe un equipo.</p>
+</dd>
+<dt><a href="#eliminarEquipo">eliminarEquipo(teamId)</a> ⇒ <code>Promise.&lt;object&gt;</code></dt>
+<dd><p>Elimina un equipo. No borra a sus miembros, solo la agrupación.</p>
+</dd>
+<dt><a href="#guardarMiembros">guardarMiembros(parametros)</a> ⇒ <code>Promise.&lt;object&gt;</code></dt>
+<dd><p>Reemplaza por completo la lista de miembros de un equipo.</p>
+<p>No es incremental: manda la lista final, así que un id que falte queda fuera
+del equipo.</p>
+</dd>
+<dt><a href="#useEquipos">useEquipos()</a> ⇒ <code>object</code></dt>
+<dd><p>Lista de equipos, cacheada.</p>
+</dd>
+<dt><a href="#useMiembros">useMiembros(teamId)</a> ⇒ <code>object</code></dt>
+<dd><p>Miembros de un equipo. No consulta hasta tener un equipo seleccionado.</p>
+</dd>
+<dt><a href="#useCrearEquipo">useCrearEquipo()</a> ⇒ <code>object</code></dt>
+<dd><p>Crea un equipo y refresca la lista.</p>
+</dd>
+<dt><a href="#useEditarEquipo">useEditarEquipo()</a> ⇒ <code>object</code></dt>
+<dd><p>Edita un equipo y refresca la lista.</p>
+</dd>
+<dt><a href="#useEliminarEquipo">useEliminarEquipo()</a> ⇒ <code>object</code></dt>
+<dd><p>Elimina un equipo y refresca la lista.</p>
+</dd>
+<dt><a href="#useGuardarMiembros">useGuardarMiembros()</a> ⇒ <code>object</code></dt>
+<dd><p>Guarda los miembros de un equipo y refresca ese equipo.</p>
+</dd>
 <dt><a href="#obtenerCajasActivas">obtenerCajasActivas([opciones])</a> ⇒ <code>Promise.&lt;Array&gt;</code></dt>
 <dd><p>Cajas propias activas.</p>
 </dd>
@@ -323,6 +423,51 @@ petición en lugar de una cada una.</p>
 todas las pantallas que lo pidan, así que varias a la vez hacen una sola
 petición en lugar de una cada una.</p>
 </dd>
+<dt><a href="#obtenerPermisosUsuario">obtenerPermisosUsuario(parametros)</a> ⇒ <code>Promise.&lt;object&gt;</code></dt>
+<dd><p>Trae todos los permisos de un usuario, separados por plataforma.</p>
+</dd>
+<dt><a href="#cambiarPermisoUsuario">cambiarPermisoUsuario(parametros)</a> ⇒ <code>Promise.&lt;object&gt;</code></dt>
+<dd><p>Concede o quita un permiso a un usuario.</p>
+</dd>
+<dt><a href="#usePermisosUsuario">usePermisosUsuario(userId)</a> ⇒ <code>object</code></dt>
+<dd><p>Permisos de un usuario. No consulta hasta tener un usuario.</p>
+</dd>
+<dt><a href="#useCambiarPermisoUsuario">useCambiarPermisoUsuario()</a> ⇒ <code>object</code></dt>
+<dd><p>Cambia un permiso, con actualización optimista.</p>
+<p>El interruptor se mueve de inmediato y se revierte si la API falla: son 55
+permisos por usuario y esperar la respuesta en cada clic hacía la pantalla
+lenta de usar. Al terminar se revalida contra el servidor.</p>
+</dd>
+<dt><a href="#obtenerUsuarios">obtenerUsuarios([opciones])</a> ⇒ <code>Promise.&lt;Array&gt;</code></dt>
+<dd><p>Trae todos los usuarios del sistema, sin sus contraseñas.</p>
+<p>El endpoint las devuelve en claro; el esquema no las incluye, así que no
+llegan al estado de la aplicación. Ver <code>entities/user/model/usuario.js</code>.</p>
+</dd>
+<dt><a href="#crearUsuario">crearUsuario(datos)</a> ⇒ <code>Promise.&lt;object&gt;</code></dt>
+<dd><p>Da de alta un usuario.</p>
+</dd>
+<dt><a href="#actualizarUsuario">actualizarUsuario(parametros)</a> ⇒ <code>Promise.&lt;object&gt;</code></dt>
+<dd><p>Actualiza un usuario.</p>
+<p><code>pass</code> solo viaja si trae algo: vacío significa &quot;no cambiar la contraseña&quot;, y
+el backend no toca el campo si no lo recibe.</p>
+</dd>
+<dt><a href="#useUsuarios">useUsuarios()</a> ⇒ <code>object</code></dt>
+<dd><p>Lista de usuarios, cacheada.</p>
+</dd>
+<dt><a href="#useCrearUsuario">useCrearUsuario()</a> ⇒ <code>object</code></dt>
+<dd><p>Crea un usuario y refresca la lista.</p>
+</dd>
+<dt><a href="#useActualizarUsuario">useActualizarUsuario()</a> ⇒ <code>object</code></dt>
+<dd><p>Actualiza un usuario y refresca la lista.</p>
+</dd>
+<dt><a href="#normalizarUsuarios">normalizarUsuarios(filas)</a> ⇒ <code>Object</code></dt>
+<dd><p>Valida la lista de usuarios y les agrega su rol canónico.</p>
+</dd>
+<dt><a href="#validarFormularioUsuario">validarFormularioUsuario(formulario, [opciones])</a> ⇒ <code>Object</code></dt>
+<dd><p>Valida el formulario de alta o edición de un usuario.</p>
+<p><code>pass</code> es opcional al editar: vacío significa &quot;no cambiar la contraseña&quot;, y el
+campo solo viaja si trae algo. Al <strong>crear</strong>, en cambio, es obligatorio.</p>
+</dd>
 <dt><a href="#obtenerBodegas">obtenerBodegas([opciones])</a> ⇒ <code>Promise.&lt;Array&gt;</code></dt>
 <dd><p>Bodegas dadas de alta.</p>
 </dd>
@@ -345,6 +490,9 @@ petición en lugar de una cada una.</p>
 </dd>
 <dt><a href="#Empleado">Empleado</a> : <code>object</code></dt>
 <dd><p>Empleado de nómina ya normalizado y validado.</p>
+</dd>
+<dt><a href="#Usuario">Usuario</a> : <code>object</code></dt>
+<dd><p>Usuario ya validado y normalizado.</p>
 </dd>
 </dl>
 
@@ -485,6 +633,42 @@ Tipos de nómina, por divisa.
 Toda la app decide con `tipo_nomina === 'MX'` y trata cualquier otro valor
 como dólares; el único punto que escribe el campo es el select del formulario,
 que manda `US`. Por eso el dominio real son estos dos valores y no más.
+
+**Kind**: global enum  
+**Read only**: true  
+<a name="GRAFICAS"></a>
+
+## GRAFICAS : <code>enum</code>
+Las gráficas del tablero, con el `op` que las alimenta.
+
+Todas salen de `charts.php` cambiando solo el `op`, así que en vez de seis
+funciones idénticas hay una tabla de datos. Agregar una gráfica es agregar una
+línea aquí, no otra copia del mismo `fetch`.
+
+Las claves de cada respuesta están verificadas contra la API real el
+2026-08-31, no supuestas.
+
+**Kind**: global enum  
+**Read only**: true  
+<a name="PLATAFORMA"></a>
+
+## PLATAFORMA : <code>enum</code>
+Plataformas para las que se conceden permisos.
+
+La app móvil consume los mismos endpoints y tiene su propio juego de permisos,
+por eso cada `feature` viaja con su plataforma.
+
+**Kind**: global enum  
+**Read only**: true  
+<a name="TIPO_USUARIO_API"></a>
+
+## TIPO\_USUARIO\_API : <code>enum</code>
+Valores de `type` que la API acepta al crear o editar un usuario.
+
+Son los que existen hoy en `Users_credentials`, no los del catálogo canónico:
+el backend guarda este campo tal cual, así que mandarle un valor normalizado
+lo cambiaría en la base. La normalización es **de lectura**, para decidir en el
+frontend; lo que viaja al servidor es el valor crudo.
 
 **Kind**: global enum  
 **Read only**: true  
@@ -816,6 +1000,171 @@ Valida los datos del formulario antes de mandarlos.
 `id` ausente significa alta; presente, edición.
 
 **Kind**: global constant  
+<a name="llaveGrafica"></a>
+
+## llaveGrafica ⇒ <code>Array</code>
+Llave de caché de una gráfica.
+
+Los parámetros entran en la llave para que cambiar el periodo traiga su propio
+resultado en vez de pisar el anterior.
+
+**Kind**: global constant  
+**Returns**: <code>Array</code> - La llave para `useQuery`.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| op | <code>string</code> | Operación de la gráfica. |
+| [parametros] | <code>object</code> | Parámetros que modifican el resultado. |
+
+<a name="aDia"></a>
+
+## aDia ⇒ <code>string</code>
+Recorta una fecha ISO al día.
+
+**Kind**: global constant  
+**Returns**: <code>string</code> - `YYYY-MM-DD`, o cadena vacía si no vino.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| iso | <code>string</code> | Fecha como la devuelve la API. |
+
+<a name="aMes"></a>
+
+## aMes ⇒ <code>string</code>
+Recorta una fecha ISO al mes, que es como se agrupan las gráficas.
+
+**Kind**: global constant  
+**Returns**: <code>string</code> - `YYYY-MM`, o cadena vacía si no vino.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| iso | <code>string</code> | Fecha como la devuelve la API. |
+
+<a name="etiquetaMes"></a>
+
+## etiquetaMes ⇒ <code>string</code>
+Convierte `2026-08` en `ago 2026`, para los ejes.
+
+**Kind**: global constant  
+**Returns**: <code>string</code> - El mes legible, o un guion si la clave no sirve.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| clave | <code>string</code> | Mes en formato `YYYY-MM`. |
+
+<a name="normalizarFinanzas"></a>
+
+## normalizarFinanzas ⇒ <code>Array</code>
+Normaliza las series de rate contra pagado, que comparten forma.
+
+La usan `chart_finances` y `chart_finances_rts`: mismas claves, distinto origen.
+
+**Kind**: global constant  
+**Returns**: <code>Array</code> - Filas con `periodo`, `label`, `rate` y `paid`.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| filas | <code>Array</code> | Filas con `periodo`, `total_rate` y `total_paid`. |
+
+<a name="normalizarMantenimiento"></a>
+
+## normalizarMantenimiento ⇒ <code>Array</code>
+Normaliza el costo de mantenimiento por mes.
+
+**Kind**: global constant  
+**Returns**: <code>Array</code> - Filas con `periodo`, `label` y `total`.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| filas | <code>Array</code> | Filas con `periodo` y `total`. |
+
+<a name="agruparDieselPorMes"></a>
+
+## agruparDieselPorMes ⇒ <code>Array</code>
+Agrupa las cargas de diesel por mes, sumando monto y fleetone.
+
+La API devuelve una fila por carga; la gráfica es mensual, así que la suma
+ocurre aquí y no en el JSX. Es lógica de negocio, no de presentación.
+
+**Kind**: global constant  
+**Returns**: <code>Array</code> - Una fila por mes, ordenada cronológicamente.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| filas | <code>Array</code> | Cargas con `fecha`, `monto`, `galones` y `fleetone`. |
+
+<a name="ultimosMeses"></a>
+
+## ultimosMeses ⇒ <code>Array</code>
+Se queda con los últimos N meses de una serie ya ordenada.
+
+**Kind**: global constant  
+**Returns**: <code>Array</code> - Los últimos `meses` elementos.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| serie | <code>Array</code> | Filas ordenadas cronológicamente. |
+| meses | <code>number</code> | Cuántos meses conservar. |
+
+<a name="LLAVE_EQUIPOS"></a>
+
+## LLAVE\_EQUIPOS : <code>Array.&lt;string&gt;</code>
+Llave de caché de la lista de equipos.
+
+**Kind**: global constant  
+<a name="llaveMiembros"></a>
+
+## llaveMiembros ⇒ <code>Array.&lt;string&gt;</code>
+Llave de caché de los miembros de un equipo.
+
+**Kind**: global constant  
+**Returns**: <code>Array.&lt;string&gt;</code> - La llave para `useQuery`.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| teamId | <code>string</code> | Identificador del equipo. |
+
+<a name="llavePermisosUsuario"></a>
+
+## llavePermisosUsuario ⇒ <code>Array.&lt;string&gt;</code>
+Llave de caché de los permisos de un usuario.
+
+**Kind**: global constant  
+**Returns**: <code>Array.&lt;string&gt;</code> - La llave para `useQuery`.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| userId | <code>string</code> | Identificador del usuario. |
+
+<a name="LLAVE_USUARIOS"></a>
+
+## LLAVE\_USUARIOS : <code>Array.&lt;string&gt;</code>
+Llave de caché de la lista de usuarios.
+
+**Kind**: global constant  
+<a name="esquemaUsuario"></a>
+
+## esquemaUsuario
+Usuario del sistema, tal como lo devuelve `features.php` · `get_users`.
+
+**No incluye `pass` a propósito.** El endpoint devuelve la contraseña en claro
+de cada usuario; dejarla fuera del esquema evita que llegue al estado de la
+aplicación, se pinte por accidente o acabe en un log. No arregla el endpoint
+—eso es de backend— pero corta la propagación en el frontend.
+
+**Kind**: global constant  
+<a name="estaActivo"></a>
+
+## estaActivo ⇒ <code>boolean</code>
+Indica si un usuario está activo.
+
+**Kind**: global constant  
+**Returns**: <code>boolean</code> - `true` si la cuenta está habilitada.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| usuario | [<code>Usuario</code>](#Usuario) | El usuario a evaluar. |
+
 <a name="construirFormData"></a>
 
 ## construirFormData(op, [payload]) ⇒ <code>FormData</code>
@@ -1272,6 +1621,213 @@ Comprueba el formulario y devuelve el primer mensaje de error, si lo hay.
 | --- | --- | --- |
 | formulario | <code>Record.&lt;string, unknown&gt;</code> | Datos capturados en el modal. |
 
+<a name="obtenerGrafica"></a>
+
+## obtenerGrafica(argumentos) ⇒ <code>Promise.&lt;Array&gt;</code>
+Trae los datos de una gráfica.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;Array&gt;</code> - Las filas de la gráfica, o `[]`.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la API falla.
+
+**Endpoint**: POST charts.php · op=chart_*  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| argumentos | <code>object</code> | Datos de la consulta. |
+| argumentos.op | <code>string</code> | Operación, un valor de `GRAFICAS`. |
+| [argumentos.parametros] | <code>object</code> | Parámetros como `period`. |
+| [argumentos.signal] | <code>AbortSignal</code> | Señal de cancelación. |
+
+<a name="useGrafica"></a>
+
+## useGrafica(op, [parametros]) ⇒ <code>object</code>
+Datos de una gráfica, cacheados.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useQuery`: `{data, isLoading, isError, error}`.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| op | <code>string</code> | Operación, un valor de `GRAFICAS`. |
+| [parametros] | <code>object</code> | Parámetros como `period`. |
+
+<a name="useGraficas"></a>
+
+## useGraficas(peticiones) ⇒ <code>Array.&lt;object&gt;</code>
+Varias gráficas a la vez.
+
+Se piden en paralelo y cada una llega cuando puede, así que una lenta no
+retrasa a las demás. Antes eran seis `useEffect` y doce `useState`.
+
+**Kind**: global function  
+**Returns**: <code>Array.&lt;object&gt;</code> - Un resultado de `useQuery` por petición, en el mismo orden.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| peticiones | <code>Array.&lt;object&gt;</code> | Lista de `{op, parametros}`. |
+
+<a name="obtenerEquipos"></a>
+
+## obtenerEquipos([opciones]) ⇒ <code>Promise.&lt;Array&gt;</code>
+Trae todos los equipos.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;Array&gt;</code> - Los equipos.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la API falla.
+
+**Endpoint**: POST teams.php · op=get_teams  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [opciones] | <code>object</code> | Ajustes de la petición. |
+| [opciones.signal] | <code>AbortSignal</code> | Señal de cancelación. |
+
+<a name="obtenerMiembros"></a>
+
+## obtenerMiembros(parametros) ⇒ <code>Promise.&lt;Array.&lt;string&gt;&gt;</code>
+Trae los identificadores de los miembros de un equipo.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;Array.&lt;string&gt;&gt;</code> - Los ids de los miembros.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la API falla.
+
+**Endpoint**: POST teams.php · op=get_team_users  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| parametros | <code>object</code> | Datos de la consulta. |
+| parametros.teamId | <code>string</code> | Identificador del equipo. |
+| [parametros.signal] | <code>AbortSignal</code> | Señal de cancelación. |
+
+<a name="crearEquipo"></a>
+
+## crearEquipo(datos) ⇒ <code>Promise.&lt;object&gt;</code>
+Crea un equipo.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;object&gt;</code> - La respuesta de la API.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la API rechaza la operación.
+
+**Endpoint**: POST teams.php · op=create_team  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| datos | <code>object</code> | Nombre y descripción. |
+
+<a name="editarEquipo"></a>
+
+## editarEquipo(parametros) ⇒ <code>Promise.&lt;object&gt;</code>
+Renombra o redescribe un equipo.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;object&gt;</code> - La respuesta de la API.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la API rechaza la operación.
+
+**Endpoint**: POST teams.php · op=edit_team  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| parametros | <code>object</code> | Datos de la edición. |
+| parametros.teamId | <code>string</code> | Identificador del equipo. |
+| parametros.datos | <code>object</code> | Nombre y descripción nuevos. |
+
+<a name="eliminarEquipo"></a>
+
+## eliminarEquipo(teamId) ⇒ <code>Promise.&lt;object&gt;</code>
+Elimina un equipo. No borra a sus miembros, solo la agrupación.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;object&gt;</code> - La respuesta de la API.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la API rechaza la operación.
+
+**Endpoint**: POST teams.php · op=delete_team  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| teamId | <code>string</code> | Identificador del equipo. |
+
+<a name="guardarMiembros"></a>
+
+## guardarMiembros(parametros) ⇒ <code>Promise.&lt;object&gt;</code>
+Reemplaza por completo la lista de miembros de un equipo.
+
+No es incremental: manda la lista final, así que un id que falte queda fuera
+del equipo.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;object&gt;</code> - La respuesta de la API.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la API rechaza la operación.
+
+**Endpoint**: POST teams.php · op=save_team_users  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| parametros | <code>object</code> | Datos a guardar. |
+| parametros.teamId | <code>string</code> | Identificador del equipo. |
+| parametros.miembros | <code>Array.&lt;string&gt;</code> | Ids de los miembros finales. |
+
+<a name="useEquipos"></a>
+
+## useEquipos() ⇒ <code>object</code>
+Lista de equipos, cacheada.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useQuery`: `{data, isLoading, isError, error}`.  
+<a name="useMiembros"></a>
+
+## useMiembros(teamId) ⇒ <code>object</code>
+Miembros de un equipo. No consulta hasta tener un equipo seleccionado.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useQuery`: `{data, isLoading, isError, error}`.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| teamId | <code>string</code> \| <code>undefined</code> | Identificador del equipo. |
+
+<a name="useCrearEquipo"></a>
+
+## useCrearEquipo() ⇒ <code>object</code>
+Crea un equipo y refresca la lista.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useMutation`.  
+<a name="useEditarEquipo"></a>
+
+## useEditarEquipo() ⇒ <code>object</code>
+Edita un equipo y refresca la lista.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useMutation`.  
+<a name="useEliminarEquipo"></a>
+
+## useEliminarEquipo() ⇒ <code>object</code>
+Elimina un equipo y refresca la lista.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useMutation`.  
+<a name="useGuardarMiembros"></a>
+
+## useGuardarMiembros() ⇒ <code>object</code>
+Guarda los miembros de un equipo y refresca ese equipo.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useMutation`.  
 <a name="obtenerCajasActivas"></a>
 
 ## obtenerCajasActivas([opciones]) ⇒ <code>Promise.&lt;Array&gt;</code>
@@ -1413,6 +1969,178 @@ petición en lugar de una cada una.
 
 **Kind**: global function  
 **Returns**: <code>object</code> - El resultado de `useQuery`: `{data, isLoading, isError, error}`.  
+<a name="obtenerPermisosUsuario"></a>
+
+## obtenerPermisosUsuario(parametros) ⇒ <code>Promise.&lt;object&gt;</code>
+Trae todos los permisos de un usuario, separados por plataforma.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;object&gt;</code> - `{escritorio, movil}`, cada uno una lista de permisos.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la API falla.
+
+**Endpoint**: POST features.php · op=get_all_user_features  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| parametros | <code>object</code> | Datos de la consulta. |
+| parametros.userId | <code>string</code> | Identificador del usuario. |
+| [parametros.signal] | <code>AbortSignal</code> | Señal de cancelación. |
+
+<a name="cambiarPermisoUsuario"></a>
+
+## cambiarPermisoUsuario(parametros) ⇒ <code>Promise.&lt;object&gt;</code>
+Concede o quita un permiso a un usuario.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;object&gt;</code> - La respuesta de la API.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la API rechaza la operación.
+
+**Endpoint**: POST features.php · op=toggle_user_feature  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| parametros | <code>object</code> | Datos del cambio. |
+| parametros.userId | <code>string</code> | Usuario afectado. |
+| parametros.featureId | <code>string</code> | Permiso a cambiar. Identifica ya la   plataforma, así que el endpoint no necesita recibirla. |
+| parametros.concedido | <code>boolean</code> | Si queda habilitado. |
+
+<a name="usePermisosUsuario"></a>
+
+## usePermisosUsuario(userId) ⇒ <code>object</code>
+Permisos de un usuario. No consulta hasta tener un usuario.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useQuery`: `{data, isLoading, isError, error}`.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| userId | <code>string</code> \| <code>undefined</code> | Identificador del usuario. |
+
+<a name="useCambiarPermisoUsuario"></a>
+
+## useCambiarPermisoUsuario() ⇒ <code>object</code>
+Cambia un permiso, con actualización optimista.
+
+El interruptor se mueve de inmediato y se revierte si la API falla: son 55
+permisos por usuario y esperar la respuesta en cada clic hacía la pantalla
+lenta de usar. Al terminar se revalida contra el servidor.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useMutation`.  
+<a name="obtenerUsuarios"></a>
+
+## obtenerUsuarios([opciones]) ⇒ <code>Promise.&lt;Array&gt;</code>
+Trae todos los usuarios del sistema, sin sus contraseñas.
+
+El endpoint las devuelve en claro; el esquema no las incluye, así que no
+llegan al estado de la aplicación. Ver `entities/user/model/usuario.js`.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;Array&gt;</code> - Usuarios normalizados, con su rol canónico.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la API falla.
+
+**Endpoint**: POST features.php · op=get_users  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [opciones] | <code>object</code> | Ajustes de la petición. |
+| [opciones.signal] | <code>AbortSignal</code> | Señal de cancelación. |
+
+<a name="crearUsuario"></a>
+
+## crearUsuario(datos) ⇒ <code>Promise.&lt;object&gt;</code>
+Da de alta un usuario.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;object&gt;</code> - La respuesta de la API.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la API rechaza la operación.
+
+**Endpoint**: POST features.php · op=create_user  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| datos | <code>object</code> | Nombre, usuario, contraseña, tipo y conductor asociado. |
+
+<a name="actualizarUsuario"></a>
+
+## actualizarUsuario(parametros) ⇒ <code>Promise.&lt;object&gt;</code>
+Actualiza un usuario.
+
+`pass` solo viaja si trae algo: vacío significa "no cambiar la contraseña", y
+el backend no toca el campo si no lo recibe.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;object&gt;</code> - La respuesta de la API.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la API rechaza la operación.
+
+**Endpoint**: POST features.php · op=update_user  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| parametros | <code>object</code> | Datos de la edición. |
+| parametros.userId | <code>string</code> | Identificador del usuario. |
+| parametros.datos | <code>object</code> | Campos a guardar. |
+
+<a name="useUsuarios"></a>
+
+## useUsuarios() ⇒ <code>object</code>
+Lista de usuarios, cacheada.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useQuery`: `{data, isLoading, isError, error}`.  
+<a name="useCrearUsuario"></a>
+
+## useCrearUsuario() ⇒ <code>object</code>
+Crea un usuario y refresca la lista.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useMutation`.  
+<a name="useActualizarUsuario"></a>
+
+## useActualizarUsuario() ⇒ <code>object</code>
+Actualiza un usuario y refresca la lista.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useMutation`.  
+<a name="normalizarUsuarios"></a>
+
+## normalizarUsuarios(filas) ⇒ <code>Object</code>
+Valida la lista de usuarios y les agrega su rol canónico.
+
+**Kind**: global function  
+**Returns**: <code>Object</code> - Los válidos y cuántos se cayeron.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| filas | <code>Array</code> | Lo que vino en la respuesta. |
+
+<a name="validarFormularioUsuario"></a>
+
+## validarFormularioUsuario(formulario, [opciones]) ⇒ <code>Object</code>
+Valida el formulario de alta o edición de un usuario.
+
+`pass` es opcional al editar: vacío significa "no cambiar la contraseña", y el
+campo solo viaja si trae algo. Al **crear**, en cambio, es obligatorio.
+
+**Kind**: global function  
+**Returns**: <code>Object</code> - Resultado de la validación.  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| formulario | <code>object</code> |  | Datos capturados. |
+| [opciones] | <code>object</code> |  | Ajustes de la validación. |
+| [opciones.esAlta] | <code>boolean</code> | <code>false</code> | Si es un alta y no una edición. |
+
 <a name="obtenerBodegas"></a>
 
 ## obtenerBodegas([opciones]) ⇒ <code>Promise.&lt;Array&gt;</code>
@@ -1494,4 +2222,23 @@ Empleado de nómina ya normalizado y validado.
 | sueldo | <code>number</code> | Sueldo a pagar, ya convertido a número. |
 | frecuencia_pago | <code>string</code> | Semanal, Quincenal o Mensual. |
 | tipo_nomina | <code>string</code> | `MX` (pesos) o `US` (dólares). |
+
+<a name="Usuario"></a>
+
+## Usuario : <code>object</code>
+Usuario ya validado y normalizado.
+
+**Kind**: global typedef  
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| id | <code>string</code> | Identificador. |
+| name | <code>string</code> | Nombre completo. |
+| user | <code>string</code> | Nombre de acceso. |
+| type | <code>string</code> | Valor crudo de `Users_credentials.type`. |
+| active | <code>number</code> | 1 si la cuenta está activa. |
+| driver_id | <code>string</code> \| <code>null</code> | Conductor asociado, si el usuario es de tipo Driver. |
+| rol | <code>string</code> | Rol canónico derivado de `type`. |
+| nombreRol | <code>string</code> | Nombre del rol para mostrar. |
 

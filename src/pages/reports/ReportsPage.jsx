@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useCallback } from "react";
+import { useMemo, useState } from "react";
 import {
   Box, Paper, Typography, Stack,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, 
@@ -12,8 +12,16 @@ import TableViewIcon from '@mui/icons-material/TableView';
 import TimelineIcon from '@mui/icons-material/Timeline'; 
 import BuildIcon from '@mui/icons-material/Build'; 
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+import {
+  GRAFICAS,
+  agruparDieselPorMes,
+  etiquetaMes,
+  normalizarFinanzas,
+  normalizarMantenimiento,
+  ultimosMeses,
+  useGraficas,
+} from "../../entities/report";
 
-const apiHost = import.meta.env.VITE_API_HOST;
 
 const valueFormatter = (v) =>
   new Intl.NumberFormat('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
@@ -27,180 +35,56 @@ const chartSetting = {
   margin: { top: 20, right: 20, bottom: 40, left: 70 },
 };
 
-const toDayLabel = (iso) => (iso || '').slice(0, 10);
-const toMonthKey = (iso) => (iso || '').slice(0, 7);
+const toMonthLabel = etiquetaMes;
 
-const toMonthLabel = (mKey) => {
-  const [y, m] = (mKey || '').split('-').map(Number);
-  if (!y || !m) return mKey || '—';
-  return new Date(y, m - 1, 1).toLocaleDateString('es-MX', { year: 'numeric', month: 'short' });
-};
-
-export default function Reports() {
-  
-  // --- ESTADO PARA EL FILTRO DE HISTORIAL (6 o 12 meses) ---
+/**
+ * Reportes financieros: diesel, finanzas y mantenimiento.
+ *
+ * Las seis gráficas se piden en paralelo con `useGraficas`, así que una lenta no
+ * retrasa a las demás y cada una muestra su propio estado de carga. Antes eran
+ * seis funciones de fetch casi idénticas, doce `useState` y dos `useEffect`.
+ *
+ * @returns {object} La pantalla.
+ */
+export default function ReportsPage() {
   const [historyMonths, setHistoryMonths] = useState(12);
+  const [costPeriod, setCostPeriod] = useState('month');
 
-  const [rows, setRows] = useState([]);
-  const [chartLoading, setChartLoading] = useState(true);
-  const [tableRows, setTableRows] = useState([]);
-  const [tableLoading, setTableLoading] = useState(true);
+  const [
+    diesel,
+    dieselTabla,
+    finanzas,
+    rts,
+    mantenimiento,
+    dieselCosto,
+  ] = useGraficas([
+    { op: GRAFICAS.DIESEL },
+    { op: GRAFICAS.DIESEL_TABLA },
+    { op: GRAFICAS.FINANZAS },
+    { op: GRAFICAS.FINANZAS_RTS },
+    { op: GRAFICAS.MANTENIMIENTO },
+    { op: GRAFICAS.DIESEL_COSTO, parametros: { period: costPeriod } },
+  ]);
 
-  const [costData, setCostData] = useState([]);
-  const [costLoading, setCostLoading] = useState(true);
-  const [costPeriod, setCostPeriod] = useState('month'); 
+  const rows = diesel.data ?? [];
+  const chartLoading = diesel.isLoading;
+  const tableRows = dieselTabla.data ?? [];
+  const tableLoading = dieselTabla.isLoading;
+  const costData = dieselCosto.data ?? [];
+  const costLoading = dieselCosto.isLoading;
 
-  const [financesData, setFinancesData] = useState([]);
-  const [financesLoading, setFinancesLoading] = useState(true);
-  const [rtsData, setRtsData] = useState([]);
-  const [rtsLoading, setRtsLoading] = useState(true);
-
-  const [maintData, setMaintData] = useState([]);
-  const [maintLoading, setMaintLoading] = useState(true);
-
-  // --- FETCHERS ---
-  const fetchChart = useCallback(async () => {
-    setChartLoading(true);
-    try {
-      const fd = new FormData();
-      fd.append('op', 'chart_diesel');
-      const res = await fetch(`${apiHost}/charts.php`, { method: 'POST', body: fd });
-      const json = await res.json();
-      if (json.status === 'success' && Array.isArray(json.data)) setRows(json.data);
-      else setRows([]);
-    } catch (err) { console.error(err); setRows([]); } 
-    finally { setChartLoading(false); }
-  }, []);
-
-  const fetchTable = useCallback(async () => {
-    setTableLoading(true);
-    try {
-      const fd = new FormData();
-      fd.append('op', 'chart_diesel_table');
-      const res = await fetch(`${apiHost}/charts.php`, { method: 'POST', body: fd });
-      const json = await res.json();
-      if (json.status === 'success' && Array.isArray(json.data)) setTableRows(json.data);
-      else setTableRows([]);
-    } catch (err) { console.error(err); setTableRows([]); } 
-    finally { setTableLoading(false); }
-  }, []);
-
-  const fetchDieselCost = useCallback(async () => {
-    setCostLoading(true);
-    try {
-        const fd = new FormData();
-        fd.append('op', 'chart_diesel_cost');
-        fd.append('period', costPeriod); 
-        
-        const res = await fetch(`${apiHost}/charts.php`, { method: 'POST', body: fd });
-        const json = await res.json();
-        if (json.status === 'success' && Array.isArray(json.data)) {
-            setCostData(json.data);
-        } else {
-            setCostData([]);
-        }
-    } catch (e) {
-        console.error("Error fetching cost data", e);
-        setCostData([]);
-    } finally {
-        setCostLoading(false);
-    }
-  }, [costPeriod]); 
-
-  const fetchFinances = useCallback(async () => {
-    setFinancesLoading(true);
-    try {
-        const fd = new FormData();
-        fd.append('op', 'chart_finances');
-        const res = await fetch(`${apiHost}/charts.php`, { method: 'POST', body: fd });
-        const json = await res.json();
-        if (json.status === 'success' && Array.isArray(json.data)) {
-            const mapped = json.data.map(item => ({
-                periodo: item.periodo,
-                label: toMonthLabel(item.periodo),
-                rate: Number(item.total_rate),
-                paid: Number(item.total_paid)
-            }));
-            setFinancesData(mapped);
-        } else { setFinancesData([]); }
-    } catch (e) { setFinancesData([]); } 
-    finally { setFinancesLoading(false); }
-  }, []);
-
-  const fetchRTS = useCallback(async () => {
-    setRtsLoading(true);
-    try {
-        const fd = new FormData();
-        fd.append('op', 'chart_finances_rts');
-        const res = await fetch(`${apiHost}/charts.php`, { method: 'POST', body: fd });
-        const json = await res.json();
-        if (json.status === 'success' && Array.isArray(json.data)) {
-            const mapped = json.data.map(item => ({
-                periodo: item.periodo,
-                label: toMonthLabel(item.periodo),
-                rate: Number(item.total_rate),
-                paid: Number(item.total_paid)
-            }));
-            setRtsData(mapped);
-        } else { setRtsData([]); }
-    } catch (e) { setRtsData([]); } 
-    finally { setRtsLoading(false); }
-  }, []);
-
-  const fetchMaintenance = useCallback(async () => {
-    setMaintLoading(true);
-    try {
-        const fd = new FormData();
-        fd.append('op', 'chart_maintenance_costs');
-        const res = await fetch(`${apiHost}/charts.php`, { method: 'POST', body: fd });
-        const json = await res.json();
-        if (json.status === 'success' && Array.isArray(json.data)) {
-            const mapped = json.data.map(item => ({
-                periodo: item.periodo,
-                label: toMonthLabel(item.periodo),
-                total: Number(item.total)
-            }));
-            setMaintData(mapped);
-        } else { setMaintData([]); }
-    } catch (e) { setMaintData([]); } 
-    finally { setMaintLoading(false); }
-  }, []);
-
-  useEffect(() => {
-    fetchChart();
-    fetchTable();
-    fetchFinances();
-    fetchRTS();
-    fetchMaintenance(); 
-  }, [fetchChart, fetchTable, fetchFinances, fetchRTS, fetchMaintenance]);
-
-  useEffect(() => {
-      fetchDieselCost();
-  }, [fetchDieselCost]); 
+  const financesData = useMemo(() => normalizarFinanzas(finanzas.data), [finanzas.data]);
+  const financesLoading = finanzas.isLoading;
+  const rtsData = useMemo(() => normalizarFinanzas(rts.data), [rts.data]);
+  const rtsLoading = rts.isLoading;
+  const maintData = useMemo(() => normalizarMantenimiento(mantenimiento.data), [mantenimiento.data]);
+  const maintLoading = mantenimiento.isLoading;
 
   // --- PROCESSING ---
-  const base = useMemo(() => {
-    return rows.map(r => ({
-      fecha: r.fecha,
-      monto: Number(r.monto ?? 0),
-      galones: Number(r.galones ?? 0),
-      fleetone: Number(r.fleetone ?? 0),
-      month: toMonthKey(r.fecha),
-    }));
-  }, [rows]);
-
-  const datasetDiesel = useMemo(() => {
-    const acc = {};
-    for (const r of base) {
-      const k = r.month || '—';
-      if (!acc[k]) acc[k] = { month: k, label: k, monto: 0, fleetone: 0 };
-      acc[k].monto += r.monto;
-      acc[k].fleetone += r.fleetone;
-    }
-    const out = Object.values(acc).sort((a, b) => a.label.localeCompare(b.label));
-    out.forEach(o => o.label = toMonthLabel(o.month));
-    return out;
-  }, [base]);
+  const datasetDiesel = useMemo(
+    () => agruparDieselPorMes(rows).map((f) => ({ ...f, label: etiquetaMes(f.month) })),
+    [rows],
+  );
 
   const xAxisDiesel = [{ dataKey: 'label', label: 'Mes', scaleType: 'band' }];
 
@@ -232,11 +116,7 @@ export default function Reports() {
 
   // --- HELPER PARA FILTRAR EL HISTORIAL ---
   // Toma los últimos N elementos del array (si hay menos, los toma todos)
-  const sliceData = (data) => {
-    if (!Array.isArray(data)) return [];
-    if (historyMonths === 0) return data; // Opción 'Todos' si quisieras agregarla
-    return data.slice(-historyMonths);
-  };
+  const sliceData = (data) => ultimosMeses(Array.isArray(data) ? data : [], historyMonths);
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
