@@ -21,6 +21,8 @@ const tieneEnCodigo = (rol, permiso) =>
 
 /**
  * Lee la matriz del documento como `{permiso: {rol: boolean}}`.
+ *
+ * @returns {object} La matriz que declara el documento.
  */
 const matrizDelDoc = () => {
   const matriz = {}

@@ -12,8 +12,6 @@ const paresDelSql = () => {
   return pares
 }
 
-const clavesDeclaradas = (bloque) =>
-  new Set([...SQL.matchAll(new RegExp(`\\('(${bloque})[a-z_]*'`, "g"))].map((m) => m[0]))
 
 describe("el SQL y el catálogo de JS no pueden discrepar", () => {
   it("cada par rol-permiso del SQL existe en PERMISOS_POR_ROL", () => {
