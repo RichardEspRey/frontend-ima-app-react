@@ -1,0 +1,285 @@
+{
+ "status": "success",
+ "data": [
+  {
+   "estado": "AL",
+   "periodo": "",
+   "total_millas": 45240.4,
+   "galones": "12163.02",
+   "trip_year": "26"
+  },
+  {
+   "estado": "AR",
+   "periodo": "",
+   "total_millas": 13194.2,
+   "galones": "3570.99",
+   "trip_year": "26"
+  },
+  {
+   "estado": "CO",
+   "periodo": "",
+   "total_millas": 1800.5,
+   "galones": "1489.58",
+   "trip_year": "26"
+  },
+  {
+   "estado": "CT",
+   "periodo": "",
+   "total_millas": 1185.5,
+   "galones": "508.63",
+   "trip_year": "26"
+  },
+  {
+   "estado": "DE",
+   "periodo": "",
+   "total_millas": 365.4,
+   "galones": "920.38",
+   "trip_year": "26"
+  },
+  {
+   "estado": "FL",
+   "periodo": "",
+   "total_millas": 247,
+   "galones": "90.01",
+   "trip_year": "26"
+  },
+  {
+   "estado": "GA",
+   "periodo": "",
+   "total_millas": 27895,
+   "galones": "11408.98",
+   "trip_year": "26"
+  },
+  {
+   "estado": "IA",
+   "periodo": "",
+   "total_millas": 171.2,
+   "galones": "148.57",
+   "trip_year": "26"
+  },
+  {
+   "estado": "ID",
+   "periodo": "",
+   "total_millas": 7147.4,
+   "galones": "1489.58",
+   "trip_year": "26"
+  },
+  {
+   "estado": "IL",
+   "periodo": "",
+   "total_millas": 6641.8,
+   "galones": "2802.88",
+   "trip_year": "26"
+  },
+  {
+   "estado": "IN",
+   "periodo": "",
+   "total_millas": 8826,
+   "galones": "2654.31",
+   "trip_year": "26"
+  },
+  {
+   "estado": "KY",
+   "periodo": "",
+   "total_millas": 9823.2,
+   "galones": "2363.26",
+   "trip_year": "26"
+  },
+  {
+   "estado": "LA",
+   "periodo": "",
+   "total_millas": 42545.1,
+   "galones": "12163.02",
+   "trip_year": "26"
+  },
+  {
+   "estado": "MA",
+   "periodo": "",
+   "total_millas": 798.5,
+   "galones": "508.63",
+   "trip_year": "26"
+  },
+  {
+   "estado": "MD",
+   "periodo": "",
+   "total_millas": 1912.7,
+   "galones": "1131.50",
+   "trip_year": "26"
+  },
+  {
+   "estado": "MI",
+   "periodo": "",
+   "total_millas": 3699.7,
+   "galones": "2041.77",
+   "trip_year": "26"
+  },
+  {
+   "estado": "MO",
+   "periodo": "",
+   "total_millas": 12244.5,
+   "galones": "2802.88",
+   "trip_year": "26"
+  },
+  {
+   "estado": "MS",
+   "periodo": "",
+   "total_millas": 22923.4,
+   "galones": "12163.02",
+   "trip_year": "26"
+  },
+  {
+   "estado": "NC",
+   "periodo": "",
+   "total_millas": 495,
+   "galones": "401.42",
+   "trip_year": "26"
+  },
+  {
+   "estado": "NH",
+   "periodo": "",
+   "total_millas": 501.5,
+   "galones": "508.63",
+   "trip_year": "26"
+  },
+  {
+   "estado": "NJ",
+   "periodo": "",
+   "total_millas": 1335.1,
+   "galones": "920.38",
+   "trip_year": "26"
+  },
+  {
+   "estado": "NM",
+   "periodo": "",
+   "total_millas": 13067.6,
+   "galones": "1489.58",
+   "trip_year": "26"
+  },
+  {
+   "estado": "NY",
+   "periodo": "",
+   "total_millas": 235.5,
+   "galones": "508.63",
+   "trip_year": "26"
+  },
+  {
+   "estado": "OH",
+   "periodo": "",
+   "total_millas": 4713,
+   "galones": "3260.60",
+   "trip_year": "26"
+  },
+  {
+   "estado": "OK",
+   "periodo": "",
+   "total_millas": 17168.8,
+   "galones": "5177.99",
+   "trip_year": "26"
+  },
+  {
+   "estado": "OR",
+   "periodo": "",
+   "total_millas": 6866.8,
+   "galones": "1489.58",
+   "trip_year": "26"
+  },
+  {
+   "estado": "PA",
+   "periodo": "",
+   "total_millas": 994.3,
+   "galones": "1131.50",
+   "trip_year": "26"
+  },
+  {
+   "estado": "SC",
+   "periodo": "",
+   "total_millas": 10878.4,
+   "galones": "5879.07",
+   "trip_year": "26"
+  },
+  {
+   "estado": "TN",
+   "periodo": "",
+   "total_millas": 12520.8,
+   "galones": "4034.96",
+   "trip_year": "26"
+  },
+  {
+   "estado": "TX",
+   "periodo": "",
+   "total_millas": 192192.4,
+   "galones": "21327.63",
+   "trip_year": "26"
+  },
+  {
+   "estado": "UT",
+   "periodo": "",
+   "total_millas": 10848.5,
+   "galones": "1489.58",
+   "trip_year": "26"
+  },
+  {
+   "estado": "VA",
+   "periodo": "",
+   "total_millas": 7108.6,
+   "galones": "1131.50",
+   "trip_year": "26"
+  },
+  {
+   "estado": "WA",
+   "periodo": "",
+   "total_millas": 6731.2,
+   "galones": "1489.58",
+   "trip_year": "26"
+  },
+  {
+   "estado": "WI",
+   "periodo": "",
+   "total_millas": 161.6,
+   "galones": "148.57",
+   "trip_year": "26"
+  },
+  {
+   "estado": "WV",
+   "periodo": "",
+   "total_millas": 26.4,
+   "galones": "211.12",
+   "trip_year": "26"
+  },
+  {
+   "estado": "AL",
+   "periodo": "Q1",
+   "total_millas": 70740.3,
+   "galones": "20434.82",
+   "trip_year": "26"
+  },
+  {
+   "estado": "AR",
+   "periodo": "Q1",
+   "total_millas": 46914.8,
+   "galones": "12635.31",
+   "trip_year": "26"
+  },
+  {
+   "estado": "AZ",
+   "periodo": "Q1",
+   "total_millas": 1199.1,
+   "galones": "391.51",
+   "trip_year": "26"
+  },
+  {
+   "estado": "CO",
+   "periodo": "Q1",
+   "total_millas": 969.5,
+   "galones": "817.31",
+   "trip_year": "26"
+  },
+  {
+   "estado": "CT",
+   "periodo": "Q1",
+   "total_millas": 9181.2,
+   "galones": "5711.77",
+   "trip_year": "26"
+  }
+ ]
+}

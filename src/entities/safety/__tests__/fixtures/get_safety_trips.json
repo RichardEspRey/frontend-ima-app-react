@@ -1,0 +1,275 @@
+{
+ "status": "success",
+ "data": [
+  {
+   "trip_id": "492",
+   "trip_number": "197-US-26",
+   "driver_nombre": "Juan Manuel Ruiz Torres",
+   "truck_unidad": "9",
+   "libro_electronico": null,
+   "reporte_diesel": null,
+   "reporte_pcmiller": null
+  },
+  {
+   "trip_id": "491",
+   "trip_number": "196-US-58T2-26",
+   "driver_nombre": "Alejandro Zablah Ruiz",
+   "truck_unidad": "7",
+   "libro_electronico": null,
+   "reporte_diesel": null,
+   "reporte_pcmiller": null
+  },
+  {
+   "trip_id": "489",
+   "trip_number": "195-US-26",
+   "driver_nombre": "Morgan Rojas Perdomo",
+   "truck_unidad": "11",
+   "libro_electronico": null,
+   "reporte_diesel": null,
+   "reporte_pcmiller": null
+  },
+  {
+   "trip_id": "488",
+   "trip_number": "194-US-59T2-26",
+   "driver_nombre": "Luis Enrique Mellado Zuñiga",
+   "truck_unidad": "10",
+   "libro_electronico": null,
+   "reporte_diesel": null,
+   "reporte_pcmiller": "488_reporte_pcmiller_1787762808.pdf"
+  },
+  {
+   "trip_id": "486",
+   "trip_number": "193-US-26",
+   "driver_nombre": "Ruben Adolfo Alvarez Aldana",
+   "truck_unidad": "8",
+   "libro_electronico": null,
+   "reporte_diesel": null,
+   "reporte_pcmiller": null
+  },
+  {
+   "trip_id": "482",
+   "trip_number": "192-US-57T2-26",
+   "driver_nombre": "Luis Enrique Mellado Zuñiga",
+   "truck_unidad": "10",
+   "libro_electronico": "482_libro_electronico_1788195165.pdf",
+   "reporte_diesel": null,
+   "reporte_pcmiller": "482_reporte_pcmiller_1787599492.pdf"
+  },
+  {
+   "trip_id": "481",
+   "trip_number": "191-US-56T2-26",
+   "driver_nombre": "Juan Manuel Ruiz Torres",
+   "truck_unidad": "9",
+   "libro_electronico": "481_libro_electronico_1788195157.pdf",
+   "reporte_diesel": "481_reporte_diesel_1787681917.pdf",
+   "reporte_pcmiller": "481_reporte_pcmiller_1787599484.pdf"
+  },
+  {
+   "trip_id": "480",
+   "trip_number": "190-US-26",
+   "driver_nombre": "Morgan Rojas Perdomo",
+   "truck_unidad": "11",
+   "libro_electronico": "480_libro_electronico_1787348461.pdf",
+   "reporte_diesel": null,
+   "reporte_pcmiller": "480_reporte_pcmiller_1787166080.pdf"
+  },
+  {
+   "trip_id": "479",
+   "trip_number": "189-US-26",
+   "driver_nombre": "Ruben Adolfo Alvarez Aldana",
+   "truck_unidad": "8",
+   "libro_electronico": "479_libro_electronico_1787348454.pdf",
+   "reporte_diesel": "479_reporte_diesel_1787681861.pdf",
+   "reporte_pcmiller": "479_reporte_pcmiller_1787166070.pdf"
+  },
+  {
+   "trip_id": "476",
+   "trip_number": "188-US-55T2-26",
+   "driver_nombre": "Alejandro Zablah Ruiz",
+   "truck_unidad": "7",
+   "libro_electronico": "476_libro_electronico_1787348449.pdf",
+   "reporte_diesel": null,
+   "reporte_pcmiller": "476_reporte_pcmiller_1787328446.pdf"
+  },
+  {
+   "trip_id": "475",
+   "trip_number": "187-US-54T2-26",
+   "driver_nombre": "Juan Manuel Ruiz Torres",
+   "truck_unidad": "9",
+   "libro_electronico": "475_libro_electronico_1787348436.pdf",
+   "reporte_diesel": null,
+   "reporte_pcmiller": "475_reporte_pcmiller_1787166056.pdf"
+  },
+  {
+   "trip_id": "473",
+   "trip_number": "186-US-26",
+   "driver_nombre": "Alejandro Zablah Ruiz",
+   "truck_unidad": "7",
+   "libro_electronico": "473_libro_electronico_1787348443.pdf",
+   "reporte_diesel": null,
+   "reporte_pcmiller": "473_reporte_pcmiller_1787166046.pdf"
+  },
+  {
+   "trip_id": "466",
+   "trip_number": "185-US-49T2-26",
+   "driver_nombre": "Alberto Cruz Galindo",
+   "truck_unidad": "8",
+   "libro_electronico": "466_libro_electronico_1787348430.pdf",
+   "reporte_diesel": "466_reporte_diesel_1787681814.pdf",
+   "reporte_pcmiller": "466_reporte_pcmiller_1787165862.pdf"
+  },
+  {
+   "trip_id": "465",
+   "trip_number": "184-US-53T2-26",
+   "driver_nombre": "Luis Enrique Mellado Zuñiga",
+   "truck_unidad": "10",
+   "libro_electronico": "465_libro_electronico_1787348422.pdf",
+   "reporte_diesel": null,
+   "reporte_pcmiller": "465_reporte_pcmiller_1787165817.pdf"
+  },
+  {
+   "trip_id": "464",
+   "trip_number": "183-US-26",
+   "driver_nombre": "Juan Manuel Ruiz Torres",
+   "truck_unidad": "9",
+   "libro_electronico": "464_libro_electronico_1787348416.pdf",
+   "reporte_diesel": "464_reporte_diesel_1787243010.pdf",
+   "reporte_pcmiller": "464_reporte_pcmiller_1787165846.pdf"
+  },
+  {
+   "trip_id": "463",
+   "trip_number": "182-US-26",
+   "driver_nombre": "Alejandro Zablah Ruiz",
+   "truck_unidad": "7",
+   "libro_electronico": "463_libro_electronico_1787348410.pdf",
+   "reporte_diesel": null,
+   "reporte_pcmiller": "463_reporte_pcmiller_1786652811.pdf"
+  },
+  {
+   "trip_id": "461",
+   "trip_number": "181-US-52T2-26",
+   "driver_nombre": "Morgan Rojas Perdomo",
+   "truck_unidad": "5",
+   "libro_electronico": "461_libro_electronico_1787348405.pdf",
+   "reporte_diesel": "461_reporte_diesel_1787242953.pdf",
+   "reporte_pcmiller": "461_reporte_pcmiller_1787165795.pdf"
+  },
+  {
+   "trip_id": "458",
+   "trip_number": "180-US-51T2-26",
+   "driver_nombre": "Luis Enrique Mellado Zuñiga",
+   "truck_unidad": "10",
+   "libro_electronico": "458_libro_electronico_1787348400.pdf",
+   "reporte_diesel": "458_reporte_diesel_1786653190.pdf",
+   "reporte_pcmiller": "458_reporte_pcmiller_1786652783.pdf"
+  },
+  {
+   "trip_id": "457",
+   "trip_number": "179-US-26",
+   "driver_nombre": "Juan Manuel Ruiz Torres",
+   "truck_unidad": "9",
+   "libro_electronico": "457_libro_electronico_1787348393.pdf",
+   "reporte_diesel": "457_reporte_diesel_1787166320.pdf",
+   "reporte_pcmiller": "457_reporte_pcmiller_1786653049.pdf"
+  },
+  {
+   "trip_id": "456",
+   "trip_number": "178-US-26",
+   "driver_nombre": "Ruben Adolfo Alvarez Aldana",
+   "truck_unidad": "11",
+   "libro_electronico": "456_libro_electronico_1787348386.pdf",
+   "reporte_diesel": "456_reporte_diesel_1787166598.pdf",
+   "reporte_pcmiller": "456_reporte_pcmiller_1786052920.pdf"
+  },
+  {
+   "trip_id": "452",
+   "trip_number": "177-US-50T2-26",
+   "driver_nombre": "Morgan Rojas Perdomo",
+   "truck_unidad": "5",
+   "libro_electronico": "452_libro_electronico_1787348381.pdf",
+   "reporte_diesel": "452_reporte_diesel_1787329283.pdf",
+   "reporte_pcmiller": "452_reporte_pcmiller_1786052738.pdf"
+  },
+  {
+   "trip_id": "451",
+   "trip_number": "176-US-26",
+   "driver_nombre": "Sergio Marcos Cibrian Alvarez",
+   "truck_unidad": "4",
+   "libro_electronico": "451_libro_electronico_1787348376.pdf",
+   "reporte_diesel": null,
+   "reporte_pcmiller": "451_reporte_pcmiller_1786052718.pdf"
+  },
+  {
+   "trip_id": "450",
+   "trip_number": "175-US-26",
+   "driver_nombre": "Alberto Cruz Galindo",
+   "truck_unidad": "8",
+   "libro_electronico": "450_libro_electronico_1787348370.pdf",
+   "reporte_diesel": "450_reporte_diesel_1787166186.pdf",
+   "reporte_pcmiller": "450_reporte_pcmiller_1786652707.pdf"
+  },
+  {
+   "trip_id": "449",
+   "trip_number": "174-US-48T2-26",
+   "driver_nombre": "Alejandro Zablah Ruiz",
+   "truck_unidad": "7",
+   "libro_electronico": "449_libro_electronico_1787348365.pdf",
+   "reporte_diesel": null,
+   "reporte_pcmiller": "449_reporte_pcmiller_1786052691.pdf"
+  },
+  {
+   "trip_id": "445",
+   "trip_number": "173-US-43T2-26",
+   "driver_nombre": "Ruben Adolfo Alvarez Aldana",
+   "truck_unidad": "11",
+   "libro_electronico": "445_libro_electronico_1787348359.pdf",
+   "reporte_diesel": "445_reporte_diesel_1786653011.pdf",
+   "reporte_pcmiller": "445_reporte_pcmiller_1786052671.pdf"
+  },
+  {
+   "trip_id": "444",
+   "trip_number": "172-US-26",
+   "driver_nombre": "Luis Enrique Mellado Zuñiga",
+   "truck_unidad": "10",
+   "libro_electronico": "444_libro_electronico_1787348351.pdf",
+   "reporte_diesel": "444_reporte_diesel_1786055119.pdf",
+   "reporte_pcmiller": "444_reporte_pcmiller_1786052649.pdf"
+  },
+  {
+   "trip_id": "443",
+   "trip_number": "171-US-47T2-26",
+   "driver_nombre": "Juan Manuel Ruiz Torres",
+   "truck_unidad": "9",
+   "libro_electronico": "443_libro_electronico_1787348345.pdf",
+   "reporte_diesel": "443_reporte_diesel_1786814441.pdf",
+   "reporte_pcmiller": "443_reporte_pcmiller_1786814342.pdf"
+  },
+  {
+   "trip_id": "441",
+   "trip_number": "170-US-46T2-26",
+   "driver_nombre": "Sergio Marcos Cibrian Alvarez",
+   "truck_unidad": "4",
+   "libro_electronico": "441_libro_electronico_1787348339.pdf",
+   "reporte_diesel": null,
+   "reporte_pcmiller": "441_reporte_pcmiller_1786814325.pdf"
+  },
+  {
+   "trip_id": "438",
+   "trip_number": "169-US-26",
+   "driver_nombre": "Morgan Rojas Perdomo",
+   "truck_unidad": "5",
+   "libro_electronico": "438_libro_electronico_1787077488.pdf",
+   "reporte_diesel": "438_reporte_diesel_1787328515.pdf",
+   "reporte_pcmiller": "438_reporte_pcmiller_1785885803.pdf"
+  },
+  {
+   "trip_id": "437",
+   "trip_number": "168-US-39T2-26",
+   "driver_nombre": "Luis Enrique Mellado Zuñiga",
+   "truck_unidad": "10",
+   "libro_electronico": "437_libro_electronico_1787077506.pdf",
+   "reporte_diesel": "437_reporte_diesel_1787166764.pdf",
+   "reporte_pcmiller": "437_reporte_pcmiller_1785885822.pdf"
+  }
+ ]
+}
