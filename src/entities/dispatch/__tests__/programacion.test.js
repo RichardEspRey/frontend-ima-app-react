@@ -8,6 +8,9 @@ import {
   anioDosDigitos,
   agruparPorCruce,
   normalizarViajesTransnacionales,
+  etiquetaViajeTransnacional,
+  valorViajeTransnacional,
+  siguienteMovimiento,
 } from "../model/programacion"
 
 const REAL = JSON.parse(
@@ -104,5 +107,48 @@ describe("contra la respuesta real de la API", () => {
     const v = viajes[0]
     expect(formatearNumeroViaje({ numero: v.trip_number, pais: v.country_code, anio: v.trip_year }))
       .toMatch(/^\d+-(MX|US)-\d+$/)
+  })
+})
+
+describe("el selector de cruces", () => {
+  it("etiqueta un viaje con su cruce y movimiento", () => {
+    const texto = etiquetaViajeTransnacional({
+      trip_number: "197", country_code: "US", transnational_number: "63",
+      movement_number: 2, trip_year: "26",
+    })
+    expect(texto).toBe("197-US-63T2-26")
+  })
+
+  it("un viaje sin cruce se muestra por su número", () => {
+    expect(etiquetaViajeTransnacional({ trip_number: "197", country_code: "US" })).toBe("197")
+  })
+
+  it("nunca deja la opción sin texto", () => {
+    expect(etiquetaViajeTransnacional({})).toBe("Viaje")
+    expect(etiquetaViajeTransnacional()).toBe("Viaje")
+  })
+
+  it("identifica el viaje por su cruce, y si no por su número", () => {
+    expect(valorViajeTransnacional({ transnational_number: "63", trip_number: "197" })).toBe("63")
+    expect(valorViajeTransnacional({ transnational_number: null, trip_number: "197" })).toBe("197")
+    expect(valorViajeTransnacional()).toBe("")
+  })
+
+  it("propone el movimiento siguiente al del viaje que continúa", () => {
+    expect(siguienteMovimiento({ movement_number: 2 })).toBe("3")
+    expect(siguienteMovimiento({ movement_number: "2" })).toBe("3")
+  })
+
+  it("sin movimiento previo no propone ninguno", () => {
+    expect(siguienteMovimiento({ movement_number: null })).toBe("")
+    expect(siguienteMovimiento({})).toBe("")
+  })
+
+  it("etiqueta los viajes reales sin dejar ninguno vacío", () => {
+    const { viajes } = normalizarViajesTransnacionales(REAL.data)
+    for (const viaje of viajes) {
+      expect(etiquetaViajeTransnacional(viaje)).not.toBe("")
+      expect(etiquetaViajeTransnacional(viaje)).not.toContain("undefined")
+    }
   })
 })

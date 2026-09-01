@@ -237,3 +237,42 @@ export function archivosNuevos(etapas = []) {
 
   return campos
 }
+
+/**
+ * El tipo de etapa por omisión cuando la API no lo dice.
+ *
+ * @type {string}
+ */
+export const TIPO_ETAPA_POR_OMISION = "normalTrip"
+
+/**
+ * Convierte las etapas que devuelve la API al estado del formulario.
+ *
+ * La plantilla de documentos depende del tipo de etapa y del país, que es algo
+ * que solo saben las constantes del formulario: se recibe como función para que
+ * el dominio no dependa de ellas.
+ *
+ * @param {Array} [etapas] Las etapas como vinieron de la API.
+ * @param {object} conversores Cómo resolver lo que el dominio no sabe.
+ * @param {Function} conversores.plantillaDocumentos Recibe `(tipoEtapa, pais)` y devuelve los tipos admitidos.
+ * @param {Function} conversores.parsearFecha Convierte la fecha de la API en `Date`.
+ * @param {string} conversores.pais País del viaje.
+ * @returns {Array} Las etapas listas para el formulario.
+ */
+export function etapasDesdeApi(etapas = [], { plantillaDocumentos, parsearFecha, pais }) {
+  return (Array.isArray(etapas) ? etapas : []).map((etapa) => {
+    const tipo = etapa.stageType || TIPO_ETAPA_POR_OMISION
+
+    return {
+      ...etapa,
+      stageType: tipo,
+      invoice_number: etapa.invoice_number || "",
+      loading_date: etapa.loading_date ? parsearFecha(etapa.loading_date) : null,
+      delivery_date: etapa.delivery_date ? parsearFecha(etapa.delivery_date) : null,
+      documentos: documentosDeEtapa(plantillaDocumentos(tipo, pais), etapa.documentos_adjuntos),
+      stops_in_transit: paradasDesdeApi(etapa.stops_in_transit),
+      comments: etapa.comments || "",
+      time_of_delivery: etapa.time_of_delivery || "",
+    }
+  })
+}

@@ -115,3 +115,43 @@ export function normalizarViajesTransnacionales(filas = []) {
 
   return { viajes, descartados }
 }
+
+/**
+ * Cómo se lista un viaje al vincular un cruce.
+ *
+ * El formato completo —`197-US-63T2-26`— solo se puede armar si el viaje tiene
+ * número de cruce; sin él se muestra el número a secas, que es lo único que lo
+ * identifica.
+ *
+ * @param {ViajeTransnacional} viaje El viaje a describir.
+ * @returns {string} El texto de la opción.
+ */
+export function etiquetaViajeTransnacional(viaje) {
+  const { trip_number: numero, country_code: pais, transnational_number: cruce } = viaje ?? {}
+  if (!numero || !pais || !cruce) return numero || "Viaje"
+  return `${numero}-${pais}-${cruce}T${viaje.movement_number}-${viaje.trip_year}`
+}
+
+/**
+ * El valor con el que se identifica un viaje en el selector de cruces.
+ *
+ * @param {ViajeTransnacional} viaje El viaje a identificar.
+ * @returns {string} Su número de cruce, o el del viaje si aún no tiene.
+ */
+export const valorViajeTransnacional = (viaje) =>
+  viaje?.transnational_number ?? viaje?.trip_number ?? ""
+
+/**
+ * El movimiento que le toca a la continuación de un viaje.
+ *
+ * Cada mitad de un cruce lleva su número de movimiento; la que se está creando
+ * continúa la anterior. Si el viaje elegido no trae movimiento, se deja vacío
+ * para que la persona lo escriba.
+ *
+ * @param {ViajeTransnacional} viaje El viaje que se continúa.
+ * @returns {string} El siguiente movimiento, o cadena vacía.
+ */
+export function siguienteMovimiento(viaje) {
+  if (viaje?.movement_number === null || viaje?.movement_number === undefined) return ""
+  return String(Number(viaje.movement_number) + 1)
+}

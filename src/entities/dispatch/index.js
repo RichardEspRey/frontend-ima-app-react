@@ -6,6 +6,9 @@ export {
   anioDosDigitos,
   agruparPorCruce,
   normalizarViajesTransnacionales,
+  etiquetaViajeTransnacional,
+  valorViajeTransnacional,
+  siguienteMovimiento,
 } from "./model/programacion"
 
 export {
@@ -33,6 +36,8 @@ export {
   etapaParaGuardar,
   etapasEliminadas,
   archivosNuevos,
+  etapasDesdeApi,
+  TIPO_ETAPA_POR_OMISION,
 } from "./model/edicion"
 
 export {
@@ -43,3 +48,11 @@ export {
   useViajeUpcoming,
   useGuardarViajeUpcoming,
 } from "./api/edicion"
+
+export {
+  resolverIdDeCatalogo,
+  companiaDePrograma,
+  almacenDePrograma,
+  datosInicialesDesdePrograma,
+  etapaInicialDesdePrograma,
+} from "./model/preset"

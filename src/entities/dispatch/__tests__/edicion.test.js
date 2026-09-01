@@ -11,6 +11,7 @@ import {
   etapaParaGuardar,
   etapasEliminadas,
   archivosNuevos,
+  etapasDesdeApi,
 } from "../model/edicion"
 
 const sinFormato = (fecha) => (fecha ? "2026-09-01" : null)
@@ -206,5 +207,47 @@ describe("archivosNuevos", () => {
   it("sin archivos nuevos no manda nada", () => {
     expect(archivosNuevos([{ documentos: {} }])).toEqual({})
     expect(archivosNuevos()).toEqual({})
+  })
+})
+
+describe("etapasDesdeApi", () => {
+  const conversores = {
+    plantillaDocumentos: (tipo) =>
+      tipo === "borderCrossing" ? { orden_retiro: null } : { bill_of_lading: null },
+    parsearFecha: (texto) => new Date(`${texto}T00:00:00`),
+    pais: "US",
+  }
+
+  it("usa la plantilla del tipo de etapa", () => {
+    const [normal, cruce] = etapasDesdeApi(
+      [{ trip_stage_id: "1" }, { trip_stage_id: "2", stageType: "borderCrossing" }],
+      conversores,
+    )
+    expect(normal.stageType).toBe("normalTrip")
+    expect(normal.documentos).toHaveProperty("bill_of_lading")
+    expect(cruce.documentos).toHaveProperty("orden_retiro")
+  })
+
+  it("convierte las fechas y deja null las que no vienen", () => {
+    const [etapa] = etapasDesdeApi([{ loading_date: "2026-09-15", delivery_date: null }], conversores)
+    expect(etapa.loading_date).toBeInstanceOf(Date)
+    expect(etapa.delivery_date).toBeNull()
+  })
+
+  it("conserva los campos que no toca", () => {
+    const [etapa] = etapasDesdeApi([{ origin: "Laredo", rate_tarifa: "1200" }], conversores)
+    expect(etapa.origin).toBe("Laredo")
+    expect(etapa.rate_tarifa).toBe("1200")
+  })
+
+  it("nunca deja null en los campos de texto libre", () => {
+    const [etapa] = etapasDesdeApi([{ comments: null, invoice_number: null }], conversores)
+    expect(etapa.comments).toBe("")
+    expect(etapa.invoice_number).toBe("")
+  })
+
+  it("sin etapas devuelve lista vacía", () => {
+    expect(etapasDesdeApi(undefined, conversores)).toEqual([])
+    expect(etapasDesdeApi(null, conversores)).toEqual([])
   })
 })

@@ -20,7 +20,7 @@ import TrailerAdmin from '../screens/TrailerAdmin.jsx';
 import TrailerEdit from '../screens/TrailerEdit.jsx';
 import EditTripForm from '../screens/EditTripForm.jsx';
 import EditTripComplete from '../screens/EditTripComplete.jsx';
-import EditTripUpcoming from '../screens//Dispatch/EditUpcoming.jsx';
+import EditarViajeProximoPage from '../pages/dispatch/EditarViajeProximoPage.jsx';
 import DieselAdmin from '../screens/Gastos/DieselAdmin.jsx';
 import DieselDetalle from '../screens/Gastos/DieselDetalle.jsx';
 import DieselEditor from '../screens/Gastos/DieselEditor.jsx';
@@ -48,7 +48,7 @@ import AutonomiaPage from '../pages/mantenimientos/AutonomiaPage.jsx';
 import EstatusUnidades from '../screens/EstatusUnidades.jsx';
 import AfinacionesPage from '../pages/mantenimientos/AfinacionesPage.jsx';
 import AfinacionesHistorialPage from '../pages/mantenimientos/AfinacionesHistorialPage.jsx';
-import CrearViaje from '../screens/Dispatch/CrearViaje.jsx';
+import CrearViajePage from '../pages/dispatch/CrearViajePage.jsx';
 import SafetyPage from '../pages/safety/SafetyPage.jsx';
 import IftaPage from '../pages/safety/IftaPage.jsx';
 import NominaPage from '../pages/nomina/NominaPage.jsx';
@@ -97,7 +97,7 @@ const AppRouter = () => {
             <Route path="/admin-gastos-generales" element={<AdminGastosGeneral />} />
             <Route path="/edit-trip/:tripId" element={<EditTripForm />} />
             <Route path="/edit-trip-complete/:tripId" element={<EditTripComplete />} />
-            <Route path="/edit-trip-upcoming/:tripId" element={<EditTripUpcoming />} />
+            <Route path="/edit-trip-upcoming/:tripId" element={<EditarViajeProximoPage />} />
             <Route path="/edit-trailer/:trailerId" element={<TrailerEdit />} />
             <Route path="/Inspeccion-final" element={<InspeccionFinalPage />} />
             <Route path="/edit-expense/:id_gasto" element={<ExpenseEdit />} />
@@ -121,7 +121,7 @@ const AppRouter = () => {
             <Route path="/afinaciones" element={<AfinacionesPage />} />
             <Route path="/registros-afinaciones" element={<AfinacionesHistorialPage />} />
             <Route path="/estatus-unidades" element={<EstatusUnidades />} />
-            <Route path="/CrearViaje" element={<CrearViaje />} />
+            <Route path="/CrearViaje" element={<CrearViajePage />} />
             <Route path="/nomina" element={<NominaPage />} />
             <Route path="/personal" element={<PersonalPage />} />
             <Route path="/detalle-pago/:period_id" element={<DetallePagoPage />} />

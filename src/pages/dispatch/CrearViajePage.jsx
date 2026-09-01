@@ -1,361 +1,209 @@
-import React, { useEffect, useState, useCallback } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react"
+import { useQueryClient } from "@tanstack/react-query"
+import { Alert, Button, Container, IconButton } from "@mui/material"
+import { useLocation, useNavigate } from "react-router-dom"
+import ArrowBackIcon from "@mui/icons-material/ArrowBack"
+import CloseIcon from "@mui/icons-material/Close"
+
+import { useCompanias } from "../../entities/company"
 import {
-  Box, Typography, Paper, TextField, Stack, Tabs, Tab, MenuItem,
-  Checkbox, FormControlLabel, Container, Grid, Divider, Alert,
-  Button, IconButton
-} from "@mui/material";
+  PAIS,
+  anioDosDigitos,
+  datosInicialesDesdePrograma,
+  etapaInicialDesdePrograma,
+  paisOpuesto as calcularPaisOpuesto,
+  siguienteMovimiento,
+  useEliminarProgramacion,
+  useSiguienteNumero,
+  useViajesTransnacionales,
+  valorViajeTransnacional,
+} from "../../entities/dispatch"
+import { useEquipos } from "../../entities/team"
+import { useBodegas } from "../../entities/warehouse"
+import { FormulariosViaje, PanelConfiguracionViaje } from "../../features/dispatch"
+import { PageHeader, notify } from "../../shared/ui"
 
-// Iconos
-import LocalShippingIcon from "@mui/icons-material/LocalShipping";
-import LanguageIcon from "@mui/icons-material/Language";
-import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
-import NumbersIcon from "@mui/icons-material/Numbers";
-import GroupIcon from "@mui/icons-material/Group";
+const AVISO_PROGRAMACION =
+  "El viaje se creó, pero no se pudo eliminar la programación aprobada. Elimínala manualmente desde el tab de Programación."
 
-import { useNavigate, useLocation } from "react-router-dom";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import CloseIcon from "@mui/icons-material/Close";
-import Swal from "sweetalert2";
+/**
+ * Alta de un viaje: configuración general y el formulario del país elegido.
+ *
+ * Puede abrirse en blanco o desde una programación aprobada, que llega en el
+ * estado de la navegación y precarga conductor, unidad, caja y primera etapa.
+ * Cuando el viaje se crea a partir de una programación, esa programación se
+ * elimina: ya se convirtió en viaje y dejarla duplica el trabajo del despacho.
+ *
+ * @returns {object} La pantalla renderizada.
+ */
+export default function CrearViajePage() {
+  const navigate = useNavigate()
+  const location = useLocation()
 
-// Componentes Hijos
-import TripFormUSA from "../../components/TripFormUSA";
-import TripFormMX from "../../components/TripFormMX";
-import BorderCrossingFormNew2 from "../../components/BorderCrossingFormNew2";
-import useFetchCompanies from "../../hooks/useFetchCompanies";
-import useFetchWarehouses from "../../hooks/useFetchWarehouses";
+  const [programacion, setProgramacion] = useState(location.state?.presetTrip ?? null)
 
-const CrearViaje = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const apiHost = import.meta.env.VITE_API_HOST;
-  const currentYear = new Date().getFullYear();
+  const [pais, setPais] = useState("")
+  const [anio, setAnio] = useState(new Date().getFullYear())
+  const [equipo, setEquipo] = useState("")
 
-  // Viaje programado que se está "aprobando" (viene del tab Programación de Viajes)
-  const [presetTrip, setPresetTrip] = useState(location.state?.presetTrip || null);
+  const [esTransnacional, setEsTransnacional] = useState(false)
+  const [esContinuacion, setEsContinuacion] = useState(false)
+  const [cruce, setCruce] = useState("")
+  const [movimiento, setMovimiento] = useState("")
 
-  // Catálogos usados para resolver company_id / warehouse_id del preset por nombre,
-  // ya que la fila de programación no siempre trae el id (solo nombre_compania/destino).
-  const { activeCompanies } = useFetchCompanies();
-  const { activeWarehouses } = useFetchWarehouses();
+  const [pestana, setPestana] = useState(0)
+  const [versionFormulario, setVersionFormulario] = useState(1)
 
-  const resolvedCompanyId = presetTrip ? (
-    activeCompanies.find(c => String(c.company_id) === String(presetTrip.company_id))?.company_id
-    ?? activeCompanies.find(c => c.nombre_compania === presetTrip.nombre_compania)?.company_id
-    ?? null
-  ) : null;
+  const anioApi = anioDosDigitos(anio)
+  const paisOpuesto = pais ? calcularPaisOpuesto(pais) : ""
 
-  const resolvedWarehouseId = presetTrip ? (
-    activeWarehouses.find(w => String(w.warehouse_id) === String(presetTrip.warehouse_id))?.warehouse_id
-    ?? activeWarehouses.find(w => w.nombre_almacen === presetTrip.nombre_almacen)?.warehouse_id
-    ?? null
-  ) : null;
+  const { data: companias } = useCompanias()
+  const { data: bodegas } = useBodegas()
+  const { data: equipos = [] } = useEquipos()
+  const { data: numeroViaje = "" } = useSiguienteNumero(pais, anioApi)
+  const { data: viajesTransnacionales = [] } = useViajesTransnacionales(
+    esTransnacional && esContinuacion ? paisOpuesto : "",
+    anioApi,
+  )
+  const eliminarProgramacion = useEliminarProgramacion()
+  const clienteConsultas = useQueryClient()
 
-  const initialFormDataOverrides = presetTrip ? {
-    driver_id: presetTrip.driver_id ? String(presetTrip.driver_id) : '',
-    driver_nombre: presetTrip.driver_nombre || '',
-    truck_id: presetTrip.truck_id ? String(presetTrip.truck_id) : '',
-    truck_unidad: presetTrip.truck_unidad || '',
-    caja_id: !presetTrip.caja_externa_id && presetTrip.caja_id ? String(presetTrip.caja_id) : '',
-    caja_no_caja: !presetTrip.caja_externa_id ? (presetTrip.caja_numero || '') : '',
-    caja_externa_id: presetTrip.caja_externa_id ? String(presetTrip.caja_externa_id) : '',
-    caja_externa_no_caja: presetTrip.caja_externa_id ? (presetTrip.caja_externa_numero || '') : '',
-  } : undefined;
+  const datosIniciales = useMemo(
+    () => datosInicialesDesdePrograma(programacion),
+    [programacion],
+  )
 
-  const initialStageOverrides = presetTrip ? {
-    company_id: resolvedCompanyId,
-    destination: presetTrip.destino || '',
-    warehouse_destination_id: resolvedWarehouseId,
-    loading_date: presetTrip.salida ? new Date(presetTrip.salida) : new Date(),
-  } : undefined;
-
-  // Estados base
-  const [pais, setPais] = useState("");
-  const [anio, setAnio] = useState(currentYear);
-  const [tripNumber, setTripNumber] = useState("");
-  
-  const [teams, setTeams] = useState([]);
-  const [selectedTeam, setSelectedTeam] = useState("");
-
-  // Transnacional
-  const [viajeTransnacional, setViajeTransnacional] = useState(false);
-  const [isContinuation, setIsContinuation] = useState(false);
-  const [transnationalTrips, setTransnationalTrips] = useState([]);
-  const [selectedTransnational, setSelectedTransnational] = useState("");
-  const [movementNumber, setMovementNumber] = useState("");
-
-  // Tabs (0: Cruce, 1: Normal)
-  const [activeForm, setActiveForm] = useState(0);
-  const [formKey, setFormKey] = useState(1);
-
-  const tripYear2Digits = anio.toString().slice(-2);
-  const oppositeCountry = pais === "MX" ? "US" : pais === "US" ? "MX" : "";
+  const etapaInicial = useMemo(
+    () => etapaInicialDesdePrograma(programacion, { companias, almacenes: bodegas }),
+    [programacion, companias, bodegas],
+  )
 
   useEffect(() => {
-    if (pais === "MX") setActiveForm(0);
-    else if (pais === "US" && presetTrip) setActiveForm(1);
-  }, [pais, presetTrip]);
+    if (pais === PAIS.MEXICO) setPestana(0)
+    else if (pais === PAIS.USA && programacion) setPestana(1)
+  }, [pais, programacion])
 
-  useEffect(() => {
-    const fd = new FormData();
-    fd.append("op", "get_teams");
-    fetch(`${apiHost}/teams.php`, { method: "POST", body: fd })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.status === "success") setTeams(data.data);
-      })
-      .catch((err) => console.error("Error cargando equipos:", err));
-  }, [apiHost]);
+  const limpiarFormulario = useCallback(() => {
+    clienteConsultas.invalidateQueries({ queryKey: ["dispatch"] })
+    setEsTransnacional(false)
+    setEsContinuacion(false)
+    setCruce("")
+    setMovimiento("")
+    setEquipo("")
+    setVersionFormulario((version) => version + 1)
+  }, [clienteConsultas])
 
-  // Obtener siguiente número de viaje
-  useEffect(() => {
-    if (!pais || !anio) return;
-    const formData = new FormData();
-    formData.append("op", "get_next_trip_number");
-    formData.append("country_code", pais);
-    formData.append("trip_year", tripYear2Digits);
-
-    fetch(`${apiHost}/new_tripsv2.php`, { method: "POST", body: formData })
-      .then((res) => res.json())
-      .then((data) => {
-        setTripNumber(data.status === "success" ? data.next_trip_number : "");
-      })
-      .catch(() => setTripNumber(""));
-  }, [apiHost, pais, anio, tripYear2Digits]);
-
-  // Obtener viajes transnacionales
-  useEffect(() => {
-    if (!viajeTransnacional || !isContinuation || !oppositeCountry || !anio) return;
-    const formData = new FormData();
-    formData.append("op", "get_transnational_trips");
-    formData.append("country_code", oppositeCountry);
-    formData.append("trip_year", tripYear2Digits);
-
-    fetch(`${apiHost}/new_tripsv2.php`, { method: "POST", body: formData })
-      .then((res) => res.json())
-      .then((data) => {
-        setTransnationalTrips(data.status === "success" ? data.data || [] : []);
-      })
-      .catch(() => setTransnationalTrips([]));
-  }, [apiHost, viajeTransnacional, isContinuation, oppositeCountry, anio, tripYear2Digits]);
-
-  const handleFormSuccess = useCallback(async () => {
-    if (presetTrip?.id) {
+  const alCrearViaje = useCallback(async () => {
+    if (programacion?.id) {
       try {
-        const fd = new FormData();
-        fd.append("op", "delete");
-        fd.append("id", presetTrip.id);
-        const res = await fetch(`${apiHost}/Programacion_viajes.php`, { method: "POST", body: fd });
-        const result = await res.json().catch(() => ({}));
-        if (!(res.ok && result.status === "success")) {
-          Swal.fire("Aviso", "El viaje se creó, pero no se pudo eliminar la programación aprobada. Elimínala manualmente desde el tab de Programación.", "warning");
-        }
+        await eliminarProgramacion.mutateAsync(programacion.id)
       } catch {
-        Swal.fire("Aviso", "El viaje se creó, pero no se pudo eliminar la programación aprobada. Elimínala manualmente desde el tab de Programación.", "warning");
+        notify.aviso(AVISO_PROGRAMACION, "Aviso")
       }
-      setPresetTrip(null);
+      setProgramacion(null)
     }
+    limpiarFormulario()
+  }, [programacion, eliminarProgramacion, limpiarFormulario])
 
-    setTripNumber("");
-    setViajeTransnacional(false);
-    setIsContinuation(false);
-    setSelectedTransnational("");
-    setMovementNumber("");
-    setSelectedTeam("");
-    setFormKey((prev) => prev + 1);
-  }, [presetTrip, apiHost]);
-
-  const handleTransnationalChange = (e) => {
-    const checked = e.target.checked;
-    setViajeTransnacional(checked);
-    if (!checked) {
-      setIsContinuation(false);
-      setSelectedTransnational("");
-      setMovementNumber("");
-      setTransnationalTrips([]);
+  const alCambiarTransnacional = (activo) => {
+    setEsTransnacional(activo)
+    if (!activo) {
+      setEsContinuacion(false)
+      setCruce("")
+      setMovimiento("")
     }
-  };
+  }
 
-  const handleContinuationChange = (e) => {
-    const checked = e.target.checked;
-    setIsContinuation(checked);
-    if (!checked) setSelectedTransnational("");
-  };
+  const alCambiarContinuacion = (activo) => {
+    setEsContinuacion(activo)
+    if (!activo) setCruce("")
+  }
 
-  const handleTransnationalTripChange = (e) => {
-    const value = e.target.value;
-    setSelectedTransnational(value);
+  const alElegirCruce = (valor) => {
+    setCruce(valor)
+    const elegido = viajesTransnacionales.find((viaje) => valorViajeTransnacional(viaje) === valor)
+    setMovimiento(siguienteMovimiento(elegido))
+  }
 
-    const selectedTrip = transnationalTrips.find(
-      (t) => (t.transnational_number ?? t.trip_number) === value
-    );
-
-    if (selectedTrip && selectedTrip.movement_number != null) {
-      setMovementNumber(String(Number(selectedTrip.movement_number) + 1));
-    } else {
-      setMovementNumber("");
-    }
-  };
+  const propsFormulario = {
+    key: `viaje-${versionFormulario}`,
+    teamId: equipo,
+    tripNumber: numeroViaje,
+    countryCode: pais,
+    tripYear: anio,
+    isTransnational: esTransnacional,
+    isContinuation: esContinuacion,
+    transnationalNumber: cruce,
+    movementNumber: movimiento,
+    onSuccess: alCrearViaje,
+    initialFormDataOverrides: datosIniciales,
+    initialStageOverrides: etapaInicial,
+  }
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
-      <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ xs: 'flex-start', sm: 'center' }} sx={{ mb: 4 }} spacing={2}>
-        <Box>
-          <Typography variant="h4" fontWeight={800} color="primary.main" gutterBottom>
-            Crear Nuevo Viaje
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Configura los parámetros iniciales y selecciona el tipo de operación.
-          </Typography>
-        </Box>
-        <Button 
-            variant="outlined" 
-            startIcon={<ArrowBackIcon />} 
-            onClick={() => navigate('/admin-trips')}
-            sx={{ fontWeight: 600, bgcolor: 'white', borderColor: '#cbd5e1', color: '#475569' }}
-        >
+      <PageHeader
+        seccion="Despacho"
+        titulo="Crear Nuevo Viaje"
+        descripcion="Configura los parámetros iniciales y selecciona el tipo de operación."
+        acciones={
+          <Button
+            variant="outlined"
+            startIcon={<ArrowBackIcon />}
+            onClick={() => navigate("/admin-trips")}
+            sx={{ fontWeight: 600, bgcolor: "white", borderColor: "#cbd5e1", color: "#475569" }}
+          >
             Volver a Viajes
-        </Button>
-      </Stack>
+          </Button>
+        }
+      />
 
-      {presetTrip && (
+      {programacion && (
         <Alert
           severity="info"
           sx={{ mb: 3 }}
           action={
-            <IconButton size="small" onClick={() => setPresetTrip(null)}>
+            <IconButton size="small" onClick={() => setProgramacion(null)}>
               <CloseIcon fontSize="small" />
             </IconButton>
           }
         >
-          Datos precargados desde la programación de viaje: <strong>{presetTrip.nombre_compania}</strong>
-          {presetTrip.destino ? ` → ${presetTrip.destino}` : ''}
-          {presetTrip.salida ? ` — salida ${presetTrip.salida}` : ''}. Selecciona el país y confirma el resto de los datos.
+          Datos precargados desde la programación de viaje:{" "}
+          <strong>{programacion.nombre_compania}</strong>
+          {programacion.destino ? ` → ${programacion.destino}` : ""}
+          {programacion.salida ? ` — salida ${programacion.salida}` : ""}. Selecciona el país y
+          confirma el resto de los datos.
         </Alert>
       )}
 
-      {/* Panel de Configuración */}
-      <Paper elevation={3} sx={{ p: 3, mb: 4, borderRadius: 3 }}>
-        <Typography variant="h6" fontWeight={700} gutterBottom sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <LocalShippingIcon color="primary" /> Configuración General
-        </Typography>
-        <Divider sx={{ mb: 3 }} />
+      <PanelConfiguracionViaje
+        pais={pais}
+        onPaisChange={setPais}
+        anio={anio}
+        onAnioChange={setAnio}
+        numeroViaje={numeroViaje}
+        anioDosDigitos={anioApi}
+        esTransnacional={esTransnacional}
+        onTransnacionalChange={alCambiarTransnacional}
+        esContinuacion={esContinuacion}
+        onContinuacionChange={alCambiarContinuacion}
+        cruceSeleccionado={cruce}
+        onCruceChange={alElegirCruce}
+        viajesTransnacionales={viajesTransnacionales}
+        paisOpuesto={paisOpuesto}
+        movimiento={movimiento}
+        onMovimientoChange={setMovimiento}
+        equipos={equipos}
+        equipoSeleccionado={equipo}
+        onEquipoChange={setEquipo}
+      />
 
-        <Grid container spacing={3} alignItems="flex-start">
-          
-          <Grid item xs={12} md={3}>
-            <TextField select label="País Base" value={pais} onChange={(e) => setPais(e.target.value)} fullWidth size="small" InputProps={{ startAdornment: <LanguageIcon fontSize="small" sx={{ mr: 1 }} /> }}>
-              <MenuItem value="MX">México (MX)</MenuItem>
-              <MenuItem value="US">Estados Unidos (US)</MenuItem>
-            </TextField>
-          </Grid>
-
-          <Grid item xs={12} md={2}>
-            <TextField label="Año" type="number" value={anio} onChange={(e) => setAnio(Number(e.target.value))} fullWidth size="small" InputProps={{ startAdornment: <CalendarTodayIcon fontSize="small" sx={{ mr: 1 }} /> }} />
-          </Grid>
-
-          <Grid item xs={12} md={4}>
-            <TextField label="Trip Number" value={tripNumber} fullWidth size="small" disabled helperText={pais && tripNumber ? `ID Final: ${pais}${tripYear2Digits}-${tripNumber}` : "Seleccione país y año"} InputProps={{ startAdornment: <NumbersIcon fontSize="small" sx={{ mr: 1 }} /> }} />
-          </Grid>
-
-          <Grid item xs={12} md={3}>
-            <TextField select label="Asignar a Equipo" value={selectedTeam} onChange={(e) => setSelectedTeam(e.target.value)} fullWidth size="small" sx={{ minWidth: '150px' }} InputProps={{ startAdornment: <GroupIcon fontSize="small" sx={{ mr: 1 }} /> }}>
-              <MenuItem value=""><em>-- Visible para todos --</em></MenuItem>
-              {teams.map((t) => (
-                <MenuItem key={t.team_id} value={t.team_id}>{t.name}</MenuItem>
-              ))}
-            </TextField>
-          </Grid>
-
-          {/* ====== TRANSNACIONAL ====== */}
-          <Grid item xs={12}>
-            <Paper variant="outlined" sx={{ p: 2, bgcolor: "#f8f9fa", borderRadius: 2 }}>
-              <Stack spacing={1}>
-                <FormControlLabel control={<Checkbox checked={viajeTransnacional} onChange={handleTransnationalChange} />} label="Viaje transnacional" />
-                {viajeTransnacional && (
-                  <Box sx={{ pl: 3 }}>
-                    <FormControlLabel control={<Checkbox checked={isContinuation} onChange={handleContinuationChange} size="small" />} label={`Continuación (${oppositeCountry})`} />
-                    {isContinuation && (
-                      <TextField select label={`Vincular con Viaje ${oppositeCountry}`} value={selectedTransnational} onChange={handleTransnationalTripChange} fullWidth size="small" margin="dense">
-                        <MenuItem value="">-- Seleccione --</MenuItem>
-                        {transnationalTrips.map((t) => (
-                          <MenuItem key={t.transnational_number ?? t.trip_id ?? `${t.trip_number}-${t.trip_year}`} value={t.transnational_number ?? t.trip_number}>
-                            {t.trip_number && t.country_code && t.transnational_number ? `${t.trip_number}-${t.country_code}-${t.transnational_number}T${t.movement_number}-${t.trip_year}` : (t.trip_number ?? "Viaje")}
-                          </MenuItem>
-                        ))}
-                      </TextField>
-                    )}
-                    <TextField label="Movimiento" value={movementNumber} onChange={(e) => setMovementNumber(e.target.value)} fullWidth size="small" margin="dense" placeholder="Opcional" />
-                  </Box>
-                )}
-              </Stack>
-            </Paper>
-          </Grid>
-        </Grid>
-      </Paper>
-
-      {/* Tabs */}
-      <Paper sx={{ mb: 3 }}>
-        <Tabs value={activeForm} onChange={(e, val) => setActiveForm(val)}>
-          {pais === "US" && <Tab label="Cruce Fronterizo (Transfer)" />}
-          <Tab label="Viaje Normal (Carretera)" />
-        </Tabs>
-      </Paper>
-
-      {/* Formularios */}
-      <Box>
-        {!pais && <Alert severity="info">Selecciona un país para comenzar.</Alert>}
-        
-        {pais === "US" && activeForm === 0 && (
-          <BorderCrossingFormNew2
-            key={`bc-${formKey}`}
-            teamId={selectedTeam} 
-            tripNumber={tripNumber}
-            countryCode={pais}
-            tripYear={anio}
-            isTransnational={viajeTransnacional}
-            isContinuation={isContinuation}
-            transnationalNumber={selectedTransnational}
-            movementNumber={movementNumber}
-            onSuccess={handleFormSuccess}
-          />
-        )}
-
-        {pais && ((pais === "US" && activeForm === 1) || (pais === "MX" && activeForm === 0)) && (
-          pais === "MX" ? (
-            <TripFormMX
-              key={`tn-${formKey}`}
-              teamId={selectedTeam}
-              tripNumber={tripNumber}
-              countryCode={pais}
-              tripYear={anio}
-              isTransnational={viajeTransnacional}
-              isContinuation={isContinuation}
-              transnationalNumber={selectedTransnational}
-              movementNumber={movementNumber}
-              onSuccess={handleFormSuccess}
-              initialFormDataOverrides={initialFormDataOverrides}
-              initialStageOverrides={initialStageOverrides}
-            />
-          ) : (
-            <TripFormUSA
-              key={`tn-${formKey}`}
-              teamId={selectedTeam}
-              tripNumber={tripNumber}
-              countryCode={pais}
-              tripYear={anio}
-              isTransnational={viajeTransnacional}
-              isContinuation={isContinuation}
-              transnationalNumber={selectedTransnational}
-              movementNumber={movementNumber}
-              onSuccess={handleFormSuccess}
-              initialFormDataOverrides={initialFormDataOverrides}
-              initialStageOverrides={initialStageOverrides}
-            />
-          )
-        )}
-      </Box>
+      <FormulariosViaje
+        pais={pais}
+        pestana={pestana}
+        onPestanaChange={setPestana}
+        propsFormulario={propsFormulario}
+      />
     </Container>
-  );
-};
-
-export default CrearViaje;
+  )
+}
