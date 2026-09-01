@@ -1,11 +1,15 @@
 # Pantallas sin uso
 
-Ocho pantallas a las que **no lleva ningún enlace de la aplicación**. Siguen funcionando si
-alguien escribe la URL o tiene un marcador guardado; lo que no hay es forma de llegar a
-ellas desde el menú ni desde ninguna otra pantalla.
+Ocho pantallas a las que **no llevaba ningún enlace de la aplicación**. Solo se llegaba a
+ellas escribiendo la URL a mano.
+
+**Sus rutas ya no están registradas.** Una URL vieja ahora cae en el comodín del router y
+va a parar a `/home`, sin pantalla en blanco ni error. Al no importarlas nadie, estos
+archivos tampoco entran ya en el paquete que se compila.
 
 Están aquí en cuarentena, no borradas: si en unos meses nadie las echa de menos, se borran.
-Si alguien las necesita, se devuelven a `pages/` y se migran como las demás.
+Si alguien las necesita, se devuelven a `pages/`, se vuelve a registrar su ruta y se migran
+como las demás.
 
 ## Qué hay y por qué dejó de usarse
 
@@ -42,21 +46,19 @@ Doce comprobaciones, todas el 2026-09-01:
    de golpe a cinco archivos: una corrección en bloque, no trabajo sobre esa pantalla.
 10. El router tiene un comodín `path="*"` que manda a `/home`, así que una URL vieja nunca
     deja una pantalla en blanco.
-11. Las rutas **siguen registradas a propósito**: un marcador guardado sigue funcionando.
-12. Se comprobó contra producción que **v1 y v2 escriben en la misma tabla** —los 7
+11. Se comprobó contra producción que **v1 y v2 escriben en la misma tabla** —los 7
     conductores que lista `drivers.php` son los mismos que `drivers_v2.php`, que además
-    lista los 25 dados de baja—. Es decir: si alguien diera de alta desde una de estas
-    pantallas, el registro **sí** aparecería en la pantalla nueva. No hay riesgo de datos
-    partidos por dejarlas accesibles.
+    lista los 25 dados de baja—. Es decir: si alguien hubiera dado de alta desde una de
+    estas pantallas, el registro **sí** habría aparecido en la pantalla nueva. Nunca hubo
+    datos partidos por su culpa.
 
-Lo único que no se puede comprobar desde el repositorio es si alguien tiene un marcador en
-su navegador. Por eso están en cuarentena y no borradas, y por eso las rutas siguen vivas.
+Doce comprobaciones, no una: `menuConfig`, importaciones, `navigate()`, plantillas,
+`Link`/`href`, Electron, documentación, historia de los enlaces, historia de los archivos,
+comodín del router, y la tabla compartida entre v1 y v2.
 
-## Antes de borrarlas
+## Antes de borrarlas del todo
 
-- Preguntar a Richard y a Emiliano si alguien usa esas URLs a mano.
-- Quitar las rutas de `navigation/AppRouter.jsx`.
-- Quitar sus entradas de `src/test/rutas.smoke.test.jsx`.
+- Preguntar a Richard y a Emiliano si alguien usaba esas URLs a mano.
 - Revisar si los endpoints v1 quedan sin ningún consumidor **en este repositorio** — ojo:
   la aplicación móvil consume la misma API y no se ve desde aquí, así que que el front deje
   de usarlos no significa que se puedan borrar del backend.

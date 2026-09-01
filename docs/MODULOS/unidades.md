@@ -72,7 +72,7 @@ Las tres páginas tienen **once líneas**: eligen el tipo y montan `AdminUnidade
 
 ## Pantallas sin uso
 
-Seis archivos de este módulo no los alcanza ningún enlace de la aplicación. Están en
-cuarentena en **`src/no-usadas/`**, con sus rutas todavía registradas para no romper un
-marcador guardado. El detalle de cada uno, de por qué dejó de usarse y de las doce
-comprobaciones que se hicieron está en `src/no-usadas/README.md`.
+Seis archivos de este módulo no los alcanzaba ningún enlace de la aplicación. Están en
+cuarentena en **`src/no-usadas/`** y sus rutas ya no están registradas: una URL vieja cae
+en el comodín del router y va a `/home`. El detalle de cada uno, de por qué dejó de usarse
+y de las doce comprobaciones que se hicieron está en `src/no-usadas/README.md`.

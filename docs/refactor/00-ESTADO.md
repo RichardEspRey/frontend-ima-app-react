@@ -74,8 +74,8 @@ Incrementos 9 a 15 completos. Sigue el **16: Gastos**, el módulo más caliente 
 moverla con él.
 
 Las **ocho pantallas sin uso** (~2 150 líneas) están en cuarentena en `src/no-usadas/`,
-con sus rutas todavía registradas para no romper un marcador guardado. No se borran
-todavía: se revisa dentro de unos meses. Ver `src/no-usadas/README.md`.
+fuera del router y fuera del paquete compilado. No se borran todavía: se revisa dentro de
+unos meses. Ver `src/no-usadas/README.md`.
 
 Lo primero al volver, sobre todo si pasaron días: `npm run refactor:sync`. Si la red no
 deja hacer fetch, el script sigue con lo local y lo avisa.

@@ -87,5 +87,5 @@ Cubre todo el ciclo de un viaje, desde que se cotiza hasta que se cierra y se re
 
 `TripsScreen` (`/trips`) y `TripsScreenNew` (`/trips-new`) son versiones antiguas del alta
 de viaje, contra los endpoints v1, que `CrearViajePage` sustituyó en el incremento 12. No
-las alcanza ningún enlace: están en cuarentena en **`src/no-usadas/`**, con sus rutas
-todavía registradas. Ver `src/no-usadas/README.md`.
+las alcanzaba ningún enlace: están en cuarentena en **`src/no-usadas/`** y sus rutas ya no
+están registradas. Ver `src/no-usadas/README.md`.
