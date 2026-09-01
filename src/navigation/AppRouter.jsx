@@ -18,8 +18,8 @@ import TrucksEditor from '../screens/TrucksEditor.jsx';
 import TrailerScreen from '../screens/TrailerScreen.jsx';
 import CajasPage from '../pages/unidades/CajasPage.jsx';
 import TrailerEdit from '../screens/TrailerEdit.jsx';
-import EditTripForm from '../screens/EditTripForm.jsx';
-import EditTripComplete from '../screens/EditTripComplete.jsx';
+import EditarViajePage from '../pages/viajes/EditarViajePage.jsx';
+import EditarViajeCompletoPage from '../pages/viajes/EditarViajeCompletoPage.jsx';
 import EditarViajeProximoPage from '../pages/dispatch/EditarViajeProximoPage.jsx';
 import DieselAdmin from '../screens/Gastos/DieselAdmin.jsx';
 import DieselDetalle from '../screens/Gastos/DieselDetalle.jsx';
@@ -95,8 +95,8 @@ const AppRouter = () => {
             <Route path="/detalle-gastos/:tripId" element={<GastosDetalle />} />
             <Route path="/editor-gastos/:id/:trip_id" element={<GastosEditor />} />
             <Route path="/admin-gastos-generales" element={<AdminGastosGeneral />} />
-            <Route path="/edit-trip/:tripId" element={<EditTripForm />} />
-            <Route path="/edit-trip-complete/:tripId" element={<EditTripComplete />} />
+            <Route path="/edit-trip/:tripId" element={<EditarViajePage />} />
+            <Route path="/edit-trip-complete/:tripId" element={<EditarViajeCompletoPage />} />
             <Route path="/edit-trip-upcoming/:tripId" element={<EditarViajeProximoPage />} />
             <Route path="/edit-trailer/:trailerId" element={<TrailerEdit />} />
             <Route path="/Inspeccion-final" element={<InspeccionFinalPage />} />
