@@ -232,6 +232,57 @@ Estos cinco aparecieron en Nómina y es probable que estén en los demás:
 
 ---
 
+## Incremento 9 — Mantenimientos, partido en tres
+
+Es el módulo más grande: **11 pantallas, 2 777 líneas y 6 endpoints distintos**. No es un
+módulo, son varios que comparten sección en el menú. Se parte para que cada trozo sea
+verificable por su cuenta y el radio de un error sea menor.
+
+Medido el 2026-09-01: **Richard no ha tocado ninguna de estas pantallas en 6 meses**.
+Emiliano sí, y por eso lo que él tocó más reciente va al final.
+
+### 9a — Órdenes de servicio e inventario
+
+| Pantalla | Líneas | Endpoint |
+|---|---:|---|
+| `Mantenimientos/AdminOrdenesServicio.jsx` | 111 | — (contenedor de pestañas) |
+| `ServiceOrderAdmin.jsx` | 357 | `service_order.php` |
+| `StockAdmin.jsx` | 304 | `inventory.php` |
+| `ServiceOrderScreen.jsx` | 413 | `service_order.php` |
+| `ServiceOrderScreenEdit.jsx` | 435 | `service_order.php` |
+
+`AdminOrdenesServicio` **ya está bien hecho** —usa el sistema de estilos, `useSesion` y
+permisos declarativos, y es de agosto de 2026—. Se mueve y se le quitan los residuos
+(`useAuthStore` para permisos, el import del puente de estilos), no se reescribe.
+
+Ojo: `ServiceOrderScreen` y `ServiceOrderScreenEdit` son alta y edición de lo mismo;
+comparar antes de migrar por si comparten más de lo que parece.
+
+### 9b — Afinaciones y autonomía
+
+| Pantalla | Líneas | Endpoint |
+|---|---:|---|
+| `Afinaciones.jsx` | 128 | `afinaciones.php` |
+| `AfinacionesHistory.jsx` | 213 | `afinaciones.php` |
+| `Autonomia.jsx` | 153 | `autonomia.php` |
+
+### 9c — Reparaciones en ruta e inspecciones
+
+| Pantalla | Líneas | Endpoint |
+|---|---:|---|
+| `RoadRepairsAdmin.jsx` | 185 | `roadside_repairs.php` |
+| `InspectionsAdmin.jsx` | 197 | `inspecciones.php` |
+| `Mantenimientos/Inspeccion_final.jsx` | 281 | `formularios.php` |
+
+**Va al final a propósito**: son las que Emiliano tocó más recientemente —8 y 6 commits,
+el último el 2026-08-30—, así que es donde más probable es que llegue trabajo nuevo desde
+su rama mientras tanto.
+
+Recordar de la fase de datos: `roadside_repairs` tiene la columna `fecha_suceso` que la
+app móvil también escribe, y el UPDATE del backend solo la toca si llega en el POST.
+
+---
+
 ## Incrementos 6 a N — Resto de módulos, de frío a caliente
 
 Uno por rama, en este orden — **de frío a caliente según el mapa de calor combinado** de
@@ -243,7 +294,9 @@ reducir la ventana en que un merge entrante puede chocar con él.
 | 6 | AccessManager / Usuarios | 0 |
 | 7 | Reports / Welcome | 0 |
 | 8 | IMA Manager (documentos) | 0 |
-| 9 | Mantenimientos / Órdenes de servicio | 1 |
+| 9a | Órdenes de servicio + Inventario | 0 |
+| 9b | Afinaciones + Autonomía | 0 |
+| 9c | Reparaciones en ruta + Inspecciones | 0 |
 | 10 | Safety / IFTA | 1 |
 | 11 | Finanzas | 4 |
 | 12 | Dispatch | 6 |

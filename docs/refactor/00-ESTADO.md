@@ -35,11 +35,21 @@ Todo vive en la rama larga **`refactor-fase-1`**, con un tag por incremento
 | 6 | AccessManager / Usuarios | **hecho** | tag `incremento-6` |
 | 7 | Reports / Inicio | **hecho** | tag `incremento-7` |
 | 8 | IMA Manager (documentos) | **hecho** | tag `incremento-8` |
-| 9 | Mantenimientos / Órdenes de servicio | **siguiente** | — |
+| 9a | Órdenes de servicio + Inventario | **siguiente** | — |
+| 9b | Afinaciones + Autonomía | pendiente | — |
+| 9c | Reparaciones en ruta + Inspecciones | pendiente | — |
 | 6+ | Resto de módulos, uno por uno | pendiente | — |
 | N | Deduplicar formularios (~4 000 líneas) | pendiente | — |
 
 Detalle de cada uno en `05-INCREMENTOS.md`.
+
+## Al retomar
+
+El incremento 9 está partido en **9a, 9b y 9c** (ver `05-INCREMENTOS.md`), acordado con
+Emiliano el 2026-09-01. Empezar por **9a: órdenes de servicio e inventario**.
+
+Lo primero al volver, sobre todo si pasaron días: `npm run refactor:sync`. Si la red no
+deja hacer fetch, el script sigue con lo local y lo avisa.
 
 ## Salud del refactor (revisar cada semana)
 
