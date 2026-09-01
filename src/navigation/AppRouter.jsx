@@ -40,7 +40,7 @@ import AdminOrdenesServicio from '../screens/Mantenimientos/AdminOrdenesServicio
 import Finanzas from '../screens/Finanzas.jsx';
 import ResumenTrip from '../screens/ResumenTrip.jsx';
 import ResiduoTrip from '../screens/Finanzas/ResiduosTrips.jsx';
-import AccessManager from '../screens/AccessManager.jsx';
+import AccesosPage from '../pages/accesos/AccesosPage.jsx';
 import Reports from '../screens/Reports.jsx';
 import Tracking from '../screens/Mapas/Tracking.jsx';
 import { Welcome } from '../screens/Welcome.jsx';
@@ -113,7 +113,7 @@ const AppRouter = () => {
             <Route path="/editar-orden/:orderId" element={<ServiceOrderScreenEdit />} />
             <Route path="/finanzas" element={<Finanzas />} />
             <Route path="/ResumenTrip/:tripId" element={<ResumenTrip />} />
-            <Route path="/access-manager" element={<AccessManager />} />
+            <Route path="/access-manager" element={<AccesosPage />} />
             <Route path="/ResiduoTrip" element={<ResiduoTrip />} />  
             <Route path="/reports" element={<Reports />} />
             <Route path="/safety" element={<Safety />} />  

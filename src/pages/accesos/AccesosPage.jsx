@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import Flashy from '@pablotheblink/flashyjs';
-import { useAuthStore } from '../store/useAuthStore';
-import { menuItemsConfig } from '../config/menuConfig';
-import TableUser from '../components/TableUser';
-import AccessDrawer from '../components/AccessDrawer';
-import useFetchActiveDrivers from '../hooks/useFetchActiveDrivers';
+import { useAuthStore } from '../../store/useAuthStore';
+import { menuItemsConfig } from '../../config/menuConfig';
+import TablaUsuarios from '../../features/access-manager/ui/TablaUsuarios';
+import PermisosDrawer from '../../features/access-manager/ui/PermisosDrawer';
+import useFetchActiveDrivers from '../../hooks/useFetchActiveDrivers';
 import {
     Container, Typography, Box, CircularProgress,
     Alert, Snackbar, Button, Dialog, DialogTitle,
@@ -15,7 +15,7 @@ import {
 } from '@mui/material';
 import { Settings as SettingsIcon, PersonAdd as PersonAddIcon, Group as GroupIcon, Delete as DeleteIcon, Edit as EditIcon, Search as SearchIcon } from '@mui/icons-material';
 import { InputAdornment, Chip } from '@mui/material';
-import { useSesion } from '../shared/auth';
+import { useSesion } from '../../shared/auth';
 
 const getSectionsToManage = () => menuItemsConfig;
 
@@ -315,9 +315,9 @@ const ProfileAccessManager = () => {
             </Box>
 
             {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
-            <TableUser users={users} onEditUser={handleOpenDrawer} />
+            <TablaUsuarios users={users} onEditUser={handleOpenDrawer} />
 
-            <AccessDrawer
+            <PermisosDrawer
                 open={isDrawerOpen}
                 handleClose={handleCloseDrawer}
                 user={selectedUser}
