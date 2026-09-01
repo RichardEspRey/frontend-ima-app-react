@@ -162,19 +162,40 @@ export function emparejarUnidad(nombreGps, unidadesTablero = []) {
 }
 
 /**
+ * Textos con los que el GPS dice "no pude resolver la calle".
+ *
+ * Vienen en el campo de la dirección como si fueran una, así que hay que
+ * reconocerlos: si no, la pantalla enseña `Unknown address` en las once unidades
+ * en lugar de las coordenadas, que sí sirven para localizar el camión.
+ *
+ * @type {Array.<string>}
+ */
+const SIN_DIRECCION = ["unknown address", "n/a", "-"]
+
+/**
+ * Indica si lo que llegó es una dirección de verdad.
+ *
+ * @param {*} texto Lo que vino en el campo.
+ * @returns {boolean} `true` si se puede mostrar como dirección.
+ */
+const esDireccionReal = (texto) =>
+  Boolean(texto) && !SIN_DIRECCION.includes(String(texto).trim().toLowerCase())
+
+/**
  * La dirección que se muestra de una unidad.
  *
- * El GPS no siempre resuelve la calle. Cuando no la trae, es mejor enseñar las
- * coordenadas que un hueco: sirven para buscar el punto a mano.
+ * El GPS no siempre resuelve la calle. Cuando no la trae —o cuando manda un
+ * marcador de que no pudo—, es mejor enseñar las coordenadas que un texto
+ * inútil: con ellas se puede buscar el punto a mano.
  *
  * @param {object} unidadGps La unidad como la reporta el GPS.
  * @returns {string} La dirección, las coordenadas, o un aviso de que sigue resolviéndose.
  */
 export function direccionDeUnidad(unidadGps) {
   const { address, location, pos } = unidadGps ?? {}
-  if (address) return address
-  if (location) return location
-  if (pos?.a) return pos.a
+  if (esDireccionReal(address)) return address
+  if (esDireccionReal(location)) return location
+  if (esDireccionReal(pos?.a)) return pos.a
   if (pos) return `Coordenadas: ${pos.y}, ${pos.x}`
   return "Dirección satelital resolviendo..."
 }

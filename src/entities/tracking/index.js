@@ -35,6 +35,7 @@ export {
 
 export {
   REFRESCO_FLOTA_MS,
+  TIMEOUT_GPS_MS,
   LLAVE_FLOTA,
   llaveParadas,
   obtenerUnidadesGps,

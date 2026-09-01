@@ -113,6 +113,38 @@ describe("post", () => {
     expect(error.esReintentable).toBe(true)
   })
 
+  it("una cancelación desde fuera no se cuenta como servidor lento", async () => {
+    global.fetch = vi.fn((_url, { signal }) =>
+      new Promise((_resolver, rechazar) => {
+        signal.addEventListener("abort", () => rechazar(new DOMException("Aborted", "AbortError")))
+      }),
+    )
+    const control = new AbortController()
+    const promesa = post(ENDPOINTS.personalAdmin, "getAll", {}, { signal: control.signal })
+    control.abort()
+
+    const error = await promesa.catch((e) => e)
+    expect(error.causa).toBe(CAUSA_ERROR.CANCELADA)
+    expect(error.fueCancelada).toBe(true)
+    expect(error.esReintentable).toBe(false)
+  })
+
+  it("una señal ya abortada tampoco es un tiempo agotado", async () => {
+    global.fetch = vi.fn((_url, { signal }) =>
+      new Promise((_resolver, rechazar) => {
+        const abortar = () => rechazar(new DOMException("Aborted", "AbortError"))
+        if (signal.aborted) abortar()
+        else signal.addEventListener("abort", abortar)
+      }),
+    )
+    const control = new AbortController()
+    control.abort()
+
+    const error = await post(ENDPOINTS.personalAdmin, "getAll", {}, { signal: control.signal })
+      .catch((e) => e)
+    expect(error.causa).toBe(CAUSA_ERROR.CANCELADA)
+  })
+
   it("conserva el endpoint y la op en el error, para el log", async () => {
     global.fetch = responder({ status: "error", message: "falló" })
     const error = await post(ENDPOINTS.gastos, "deleteExpense").catch((e) => e)

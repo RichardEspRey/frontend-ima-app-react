@@ -87,6 +87,21 @@ describe("direccionDeUnidad", () => {
   it("sin posición avisa en vez de dejar el hueco", () => {
     expect(direccionDeUnidad({})).toBe("Dirección satelital resolviendo...")
   })
+
+  it('"Unknown address" no es una dirección: enseña las coordenadas', () => {
+    expect(direccionDeUnidad({ address: "Unknown address", pos: { y: 27.39, x: -99.55 } }))
+      .toBe("Coordenadas: 27.39, -99.55")
+  })
+
+  it("cuando el GPS no resuelve ninguna calle, ninguna unidad queda sin dato útil", () => {
+    const flota = combinarFlota(
+      GPS.map((u) => ({ ...u, address: "Unknown address" })),
+      TABLERO,
+    )
+    for (const unidad of flota) {
+      expect(unidad.address).toMatch(/^Coordenadas: /)
+    }
+  })
 })
 
 describe("combinarFlota, contra los datos reales", () => {

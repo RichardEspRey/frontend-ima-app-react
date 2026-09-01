@@ -38,7 +38,7 @@ import ResumenTrip from '../screens/ResumenTrip.jsx';
 import ResiduosPage from '../pages/finanzas/ResiduosPage.jsx';
 import AccesosPage from '../pages/accesos/AccesosPage.jsx';
 import ReportsPage from '../pages/reports/ReportsPage.jsx';
-import Tracking from '../screens/Mapas/Tracking.jsx';
+import TrackingPage from '../pages/tracking/TrackingPage.jsx';
 import { InicioPage } from '../pages/inicio/InicioPage.jsx';
 import MargenPage from '../pages/finanzas/MargenPage.jsx';
 import PagosConductoresPage from '../pages/finanzas/PagosConductoresPage.jsx';
@@ -112,7 +112,7 @@ const AppRouter = () => {
             <Route path="/reports" element={<ReportsPage />} />
             <Route path="/safety" element={<SafetyPage />} />  
             <Route path="/Ifta" element={<IftaPage />} />  
-            <Route path="/tracking" element={<Tracking />} />  
+            <Route path="/tracking" element={<TrackingPage />} />  
             <Route path="/margen" element={<MargenPage />} />  
             <Route path="/paymentDrivers" element ={<PagosConductoresPage />} />
             <Route path='/millasDriversTable' element ={<TarifasConductorPage/>} />

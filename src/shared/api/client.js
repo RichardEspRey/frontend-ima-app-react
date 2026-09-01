@@ -49,7 +49,10 @@ export function construirFormData(op, payload = {}) {
  * @param {number} [opciones.timeoutMs] Sobrescribe el timeout por omisión.
  * @returns {Promise.<object>} El cuerpo de la respuesta ya parseado.
  * @throws {ApiError} Si falla la red, se agota el tiempo, el HTTP no es 2xx,
- *   el cuerpo no es JSON, o la API responde `status: 'error'`.
+ *   el cuerpo no es JSON, o la API responde `status: 'error'`. Una cancelación
+ *   desde fuera —cambiar de pantalla, `StrictMode`— llega con causa
+ *   `CANCELADA`, no como tiempo agotado: son cosas distintas y confundirlas
+ *   hacía que un cambio de pantalla se registrara como servidor lento.
  *
  * @example
  * const respuesta = await post(ENDPOINTS.personalAdmin, 'getAll')
@@ -75,6 +78,9 @@ export async function post(endpoint, op, payload = {}, opciones = {}) {
       signal: control.signal,
     })
   } catch (error) {
+    if (signal?.aborted) {
+      throw fallar("La operación se canceló.", CAUSA_ERROR.CANCELADA, error)
+    }
     if (control.signal.aborted) {
       throw fallar(
         "La operación tardó demasiado. Revisa tu conexión e inténtalo de nuevo.",
@@ -136,12 +142,13 @@ export async function post(endpoint, op, payload = {}, opciones = {}) {
  * @param {string} [opciones.campo='data'] Clave del arreglo dentro de la respuesta.
  * @param {object} [opciones.payload] Campos del POST.
  * @param {AbortSignal} [opciones.signal] Señal de cancelación.
+ * @param {number} [opciones.timeoutMs] Sobrescribe el timeout por omisión.
  * @returns {Promise.<Array>} La lista, o `[]` si la clave no vino.
  * @throws {ApiError} Lo mismo que {@link post}.
  */
 export async function postLista(endpoint, op, opciones = {}) {
-  const { campo = "data", payload, signal } = opciones
-  const cuerpo = await post(endpoint, op, payload, { signal })
+  const { campo = "data", payload, signal, timeoutMs } = opciones
+  const cuerpo = await post(endpoint, op, payload, { signal, timeoutMs })
   const lista = cuerpo?.[campo]
   return Array.isArray(lista) ? lista : []
 }

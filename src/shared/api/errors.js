@@ -8,6 +8,7 @@
 export const CAUSA_ERROR = {
   RED: "red",
   TIEMPO_AGOTADO: "tiempo_agotado",
+  CANCELADA: "cancelada",
   HTTP: "http",
   RESPUESTA_INVALIDA: "respuesta_invalida",
   NEGOCIO: "negocio",
@@ -49,6 +50,19 @@ export class ApiError extends Error {
    */
   get esReintentable() {
     return this.causa === CAUSA_ERROR.RED || this.causa === CAUSA_ERROR.TIEMPO_AGOTADO
+  }
+
+  /**
+   * Indica si la petición se canceló en vez de fallar.
+   *
+   * Una cancelación no es un error que contarle a nadie: pasa cada vez que se
+   * cambia de pantalla con una petición en vuelo, y en desarrollo en cada
+   * montaje por el doble render de `StrictMode`.
+   *
+   * @returns {boolean} `true` si se canceló desde fuera.
+   */
+  get fueCancelada() {
+    return this.causa === CAUSA_ERROR.CANCELADA
   }
 
   /**

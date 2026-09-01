@@ -14,6 +14,18 @@ import { estadoDeParadas } from "../model/paradas"
 export const REFRESCO_FLOTA_MS = 50_000
 
 /**
+ * Cuánto se le espera al GPS antes de darlo por perdido.
+ *
+ * `Tracking.php` tarda unos **21 segundos** medidos contra producción, por
+ * encima del tiempo que la app da por omisión: con el límite general, el mapa se
+ * quedaba cargando y fallaba sin que nada explicara por qué. Se le da margen
+ * propio en lugar de subir el de toda la aplicación.
+ *
+ * @type {number}
+ */
+export const TIMEOUT_GPS_MS = 45_000
+
+/**
  * Llave de caché de la flota.
  *
  * @type {Array}
@@ -51,7 +63,12 @@ export const llaveParadas = (viaje, etapa, paradaActual) => [
  * @throws {ApiError} Si la petición falla.
  */
 export async function obtenerUnidadesGps(opciones = {}) {
-  const cuerpo = await post(ENDPOINTS.tracking, "", {}, { signal: opciones.signal })
+  const cuerpo = await post(
+    ENDPOINTS.tracking,
+    "",
+    {},
+    { signal: opciones.signal, timeoutMs: TIMEOUT_GPS_MS },
+  )
   const { unidades, descartadas } = normalizarUnidadesGps(cuerpo?.units)
 
   if (descartadas > 0) {
@@ -77,8 +94,12 @@ export function obtenerTablero(opciones = {}) {
 /**
  * La flota completa: dónde está cada unidad y qué sabe IMA de ella.
  *
- * Las dos peticiones van en paralelo porque no dependen una de otra, y se
- * combinan aquí para que la pantalla reciba una sola lista.
+ * El tablero se pide **primero** aunque no dependa del GPS: contesta en décimas
+ * de segundo y el GPS tarda veinte veces más, así que lanzarlos juntos solo
+ * conseguía que el rápido esperara detrás del lento.
+ *
+ * Si el tablero falla, se dibujan las posiciones sin telemetría: un mapa con
+ * camiones y sin galones sigue sirviendo; sin posiciones no hay pantalla.
  *
  * @param {object} [opciones] Ajustes de la petición.
  * @param {AbortSignal} [opciones.signal] Señal de cancelación.
@@ -86,13 +107,13 @@ export function obtenerTablero(opciones = {}) {
  * @throws {ApiError} Si falla la petición del GPS.
  */
 export async function obtenerFlota(opciones = {}) {
-  const [gps, tablero] = await Promise.all([
-    obtenerUnidadesGps(opciones),
-    obtenerTablero(opciones).catch((fallo) => {
-      console.warn("No se pudo leer la telemetría; se muestran las posiciones solas.", fallo)
-      return []
-    }),
-  ])
+  const tablero = await obtenerTablero(opciones).catch((fallo) => {
+    if (fallo?.fueCancelada) throw fallo
+    console.warn("No se pudo leer la telemetría; se muestran las posiciones solas.", fallo)
+    return []
+  })
+
+  const gps = await obtenerUnidadesGps(opciones)
 
   return combinarFlota(gps, tablero)
 }
