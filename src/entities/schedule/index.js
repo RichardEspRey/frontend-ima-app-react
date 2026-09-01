@@ -1,4 +1,5 @@
 export {
+  NUEVO_LAREDO,
   PREFIJO_CAJA,
   valorCaja,
   leerValorCaja,

@@ -79,4 +79,39 @@ export const notify = {
     })
     return resultado.isConfirmed === true
   },
+
+  /**
+   * Pide elegir entre dos caminos, o cancelar.
+   *
+   * No es una confirmación: son dos acciones distintas que no se pueden
+   * plantear como "sí o no". Reactivar un viaje, por ejemplo, es distinto según
+   * se reactive para administrativos o para operadores.
+   *
+   * @param {object} opciones Textos del diálogo.
+   * @param {string} opciones.titulo Pregunta principal.
+   * @param {string} [opciones.mensaje] Detalle de la elección.
+   * @param {Array.<{valor: *, texto: string}>} opciones.opciones Las dos opciones, en orden.
+   * @param {string} [opciones.cancelar='Cancelar'] Texto del botón de cancelar.
+   * @returns {Promise.<*>} El valor elegido, o `null` si se canceló.
+   */
+  async elegir({ titulo, mensaje, opciones, cancelar = "Cancelar" }) {
+    const [primera, segunda] = opciones
+
+    const resultado = await Swal.fire({
+      icon: "question",
+      title: titulo,
+      text: mensaje,
+      showDenyButton: true,
+      showCancelButton: true,
+      confirmButtonText: primera.texto,
+      denyButtonText: segunda.texto,
+      cancelButtonText: cancelar,
+      confirmButtonColor: AZUL_IMA,
+      denyButtonColor: ROJO_PELIGRO,
+    })
+
+    if (resultado.isConfirmed) return primera.valor
+    if (resultado.isDenied) return segunda.valor
+    return null
+  },
 }

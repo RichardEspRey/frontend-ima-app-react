@@ -8,7 +8,7 @@ import LoginScreen from '../screens/Login/Login.jsx';
 import DashboardLayout from '../layouts/DashboardLayout';
 import ConductoresPage from '../pages/unidades/ConductoresPage.jsx';
 import DriverEditor from '../screens/DriverEditor.jsx';
-import TripAdmin from '../screens/Viajes/TripAdmin.jsx';
+import AdminViajesPage from '../pages/viajes/AdminViajesPage.jsx';
 import TripScreen from '../screens/Viajes/TripsScreen.jsx';
 import TripScreenNew from '../screens/Viajes/TripsScreenNew.jsx';
 import DriverScreen from '../screens/DriverScreen.jsx';
@@ -87,7 +87,7 @@ const AppRouter = () => {
             <Route path="/editor-trailers/:id" element={<TrailerEdit />} /> 
             <Route path="/trips" element={<TripScreen />} />
             <Route path="/trips-new" element={<TripScreenNew />} />
-            <Route path="/admin-trips" element={<TripAdmin />} />
+            <Route path="/admin-trips" element={<AdminViajesPage />} />
             <Route path="/admin-diesel" element={<DieselAdmin />} />
             <Route path="/detalle-diesel/:tripId" element={<DieselDetalle />} />
             <Route path="/editor-diesel/:id/:trip_id" element={<DieselEditor />} />

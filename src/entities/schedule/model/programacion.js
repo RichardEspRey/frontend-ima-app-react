@@ -1,4 +1,14 @@
 /**
+ * El patio desde donde salen y a donde vuelven los viajes.
+ *
+ * Todas las distancias que se muestran al programar se miden contra este punto:
+ * qué tan lejos está cada camión de poder empezar el siguiente viaje.
+ *
+ * @type {{lat: number, lon: number}}
+ */
+export const NUEVO_LAREDO = { lat: 27.4849, lon: -99.5164 }
+
+/**
  * Prefijos con los que se distingue una caja propia de una externa en el selector.
  *
  * El selector de caja mezcla las dos flotas en una sola lista, y sus ids se
