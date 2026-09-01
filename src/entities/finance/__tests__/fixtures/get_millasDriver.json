@@ -1,0 +1,59 @@
+{
+ "status": "success",
+ "data": [
+  {
+   "driver_id": "3",
+   "nombre": "Luis Enrique Mellado Zuñiga",
+   "activo": "1",
+   "valor_milla": "0.45"
+  },
+  {
+   "driver_id": "4",
+   "nombre": "Morgan Rojas Perdomo",
+   "activo": "1",
+   "valor_milla": "0.45"
+  },
+  {
+   "driver_id": "6",
+   "nombre": "Ruben Adolfo Alvarez Aldana",
+   "activo": "1",
+   "valor_milla": "0.45"
+  },
+  {
+   "driver_id": "8",
+   "nombre": "Alberto Cruz Galindo",
+   "activo": "1",
+   "valor_milla": "0.45"
+  },
+  {
+   "driver_id": "9",
+   "nombre": "Israel de la Garza García ",
+   "activo": "1",
+   "valor_milla": "0.45"
+  },
+  {
+   "driver_id": "22",
+   "nombre": "Juan Manuel Ruiz Torres",
+   "activo": "1",
+   "valor_milla": null
+  },
+  {
+   "driver_id": "29",
+   "nombre": "Alejandro Zablah Ruiz",
+   "activo": "1",
+   "valor_milla": null
+  },
+  {
+   "driver_id": "31",
+   "nombre": "Cesar Fierro Santamaría ",
+   "activo": "1",
+   "valor_milla": null
+  },
+  {
+   "driver_id": "32",
+   "nombre": "Florencio Martinez Crisostomo",
+   "activo": "1",
+   "valor_milla": null
+  }
+ ]
+}
