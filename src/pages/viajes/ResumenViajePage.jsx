@@ -1,358 +1,478 @@
-import React, { useMemo, useRef, useState, useEffect } from 'react';
+import { useRef } from "react"
 import {
-  Box, Paper, Typography, Stack, Chip, CircularProgress,
-  Grid, Card, CardContent,
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  Button
-} from '@mui/material';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import DownloadIcon from '@mui/icons-material/Download';
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Chip,
+  CircularProgress,
+  Grid,
+  Paper,
+  Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Typography,
+} from "@mui/material"
+import ArrowBackIcon from "@mui/icons-material/ArrowBack"
+import DownloadIcon from "@mui/icons-material/Download"
+import { useNavigate, useParams } from "react-router-dom"
 
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
-import { useParams, useNavigate } from 'react-router-dom';
-import { getStatusColor } from '../components/TripStatusIndicator';
+import {
+  colorEstadoViaje,
+  dieselDeResumen,
+  etapasDeResumen,
+  etiquetaTipoEtapa,
+  gastosDeResumen,
+  totalesViaje,
+  useResumenViaje,
+} from "../../entities/trip"
+import { CLASE_NO_IMPRIMIR, exportarElementoAPdf } from "../../shared/lib/pdf"
+import { decimales, fechaHora, moneda, soloFecha, soloHora } from "../../shared/lib/formato"
+import { notify } from "../../shared/ui"
 
-const apiHost = import.meta.env.VITE_API_HOST;
+const FILA_RESUMEN = { border: "none", borderBottom: "1px solid #f1f5f9", py: 1.2 }
+const NOTA_BD = { color: "#94a3b8", fontStyle: "italic", fontSize: "0.75rem" }
 
-const money = (v, c = 'USD') =>
-  new Intl.NumberFormat('es-MX', {
-    style: 'currency',
-    currency: c,
-    minimumFractionDigits: 2
-  }).format(Number(v || 0));
+const COLOR_DIRECCION = { "Going Up": "#16a34a", "Going Down": "#d97706" }
 
-const stageTypeLabel = (t) => {
-  const k = String(t || '').toLowerCase();
-  if (k === 'bordercrossing') return 'Cruce';
-  if (k === 'emptymileage') return 'Etapa de Millaje Vacío';
-  if (k === 'normaltrip') return 'Normal';
-  return t || '—';
-};
+/**
+ * Barra de acento y título, para separar las secciones del resumen.
+ *
+ * @param {object} props Propiedades del componente.
+ * @param {string} props.color Color de la barra.
+ * @param {object} props.children El texto del título.
+ * @returns {object} El título renderizado.
+ */
+function TituloSeccion({ color, children }) {
+  return (
+    <Stack direction="row" alignItems="center" spacing={1.2} sx={{ mb: 1.5, mt: 3.5 }}>
+      <Box sx={{ width: 4, height: 22, bgcolor: color, borderRadius: 1 }} />
+      <Typography variant="subtitle1" fontWeight={800} color="#0f172a">
+        {children}
+      </Typography>
+    </Stack>
+  )
+}
 
-const fmtDate = (d) => (d ? new Date(d).toLocaleString('es-MX') : '—');
-const fmtDateOnly = (d) => (d ? new Date(d).toLocaleDateString('es-MX') : '—');
-const fmtTime = (t) => (t ? t.slice(0, 5) : null);
+/**
+ * La ficha de una etapa del viaje.
+ *
+ * Una etapa de millaje vacío no tiene compañía ni tarifa: lo que importa de ella
+ * son las millas, así que se dibuja distinta.
+ *
+ * @param {object} props Propiedades del componente.
+ * @param {object} props.etapa La etapa a mostrar.
+ * @returns {object} La ficha renderizada.
+ */
+function FichaEtapa({ etapa }) {
+  const esVacia = String(etapa.stageType ?? "").toLowerCase() === "emptymileage"
+  const titulo = `E${etapa.stage_number || "—"} (${etiquetaTipoEtapa(etapa.stageType)})`
 
-// Barra de acento + título, mismo lenguaje visual que el resto del rediseño
-// de la app (Reports.jsx, etc.), para separar las secciones del resumen.
-const SectionTitle = ({ color, children }) => (
-  <Stack direction="row" alignItems="center" spacing={1.2} sx={{ mb: 1.5, mt: 3.5 }}>
-    <Box sx={{ width: 4, height: 22, bgcolor: color, borderRadius: 1 }} />
-    <Typography variant="subtitle1" fontWeight={800} color="#0f172a">{children}</Typography>
-  </Stack>
-);
+  const recorrido =
+    etapa.origin && etapa.destination
+      ? `${etapa.origin} → ${etapa.destination}${etapa.travel_direction ? ` (${etapa.travel_direction})` : ""}`
+      : etapa.travel_direction
+        ? `(${etapa.travel_direction})`
+        : ""
 
-const summaryRowSx = { border: 'none', borderBottom: '1px solid #f1f5f9', py: 1.2 };
+  const hora = soloHora(etapa.time_of_delivery)
+  const fechas =
+    etapa.loading_date || etapa.delivery_date || etapa.time_of_delivery
+      ? `Carga: ${soloFecha(etapa.loading_date)} • Entrega: ${soloFecha(etapa.delivery_date)}${hora ? ` - ${hora} hrs` : ""}`
+      : ""
 
-export default function ResumenTrip() {
-  const navigate = useNavigate();
-  const { tripId } = useParams();
-  const [summary, setSummary] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const printRef = useRef();
+  return (
+    <Card
+      variant="outlined"
+      sx={{
+        height: "100%",
+        borderRadius: 2,
+        borderColor: "#e2e8f0",
+        borderLeft: `3px solid ${COLOR_DIRECCION[etapa.travel_direction] ?? "#cbd5e1"}`,
+      }}
+    >
+      <CardContent sx={{ p: 2 }}>
+        <Typography variant="subtitle2" fontWeight={800} color="#0f172a">
+          {titulo}
+        </Typography>
+        {recorrido && (
+          <Typography variant="body2" color="#64748b" sx={{ mb: 1.2 }}>
+            {recorrido}
+          </Typography>
+        )}
 
-  const fetchSummary = async (id) => {
-    setLoading(true);
+        {!esVacia && (
+          <Box sx={{ bgcolor: "#f1f5f9", borderRadius: 1.5, p: 1.4, mb: 1.2 }}>
+            <Stack spacing={0.4}>
+              <Typography variant="caption" sx={{ fontSize: "0.72rem", color: "#334155" }}>
+                <strong>Compañía:</strong> {etapa.nombre_compania || "—"}
+              </Typography>
+              <Typography variant="caption" sx={{ fontSize: "0.72rem", color: "#334155" }}>
+                <strong>Bodega Origen:</strong> {etapa.warehouse_origin_name || "—"}
+              </Typography>
+              <Typography variant="caption" sx={{ fontSize: "0.72rem", color: "#334155" }}>
+                <strong>Bodega Destino:</strong> {etapa.warehouse_destination_name || "—"}
+              </Typography>
+              <Typography variant="caption" sx={{ fontSize: "0.72rem", color: "#334155" }}>
+                <strong>Millas:</strong>{" "}
+                {etapa.millas_pcmiller ?? etapa.millas_pcmiller_practicas ?? "—"}
+              </Typography>
+            </Stack>
+          </Box>
+        )}
+
+        {etapa.ci_number && (
+          <Typography variant="caption" color="#94a3b8" sx={{ display: "block", mb: 0.5 }}>
+            CI: {etapa.ci_number}
+          </Typography>
+        )}
+        {fechas && (
+          <Typography variant="caption" color="#94a3b8" sx={{ display: "block", mb: 1 }}>
+            {fechas}
+          </Typography>
+        )}
+
+        {esVacia ? (
+          <Box sx={{ bgcolor: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 1.5, p: 1.2 }}>
+            <Typography variant="subtitle2" fontWeight={700} color="#1d4ed8">
+              {titulo}
+            </Typography>
+            <Typography variant="body2" color="#1e3a8a">
+              Millas PC*Miler: {etapa.millas_pcmiller ?? "—"}
+            </Typography>
+            <Typography variant="body2" color="#1e3a8a">
+              Millas Prácticas: {etapa.millas_pcmiller_practicas ?? "—"}
+            </Typography>
+          </Box>
+        ) : (
+          <Box
+            sx={{
+              display: "inline-block",
+              bgcolor: "#f0fdf4",
+              border: "1px solid #16a34a33",
+              borderRadius: 1,
+              px: 1.2,
+              py: 0.5,
+            }}
+          >
+            <Typography
+              variant="body2"
+              fontWeight={800}
+              color="#16a34a"
+              sx={{ fontVariantNumeric: "tabular-nums" }}
+            >
+              Rate: {moneda(etapa.rate_tarifa)}
+            </Typography>
+          </Box>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
+
+/**
+ * Una fila del cuadro de totales.
+ *
+ * @param {object} props Propiedades del componente.
+ * @param {string} props.concepto Qué se está sumando.
+ * @param {number} props.importe Cuánto.
+ * @param {string} [props.nota] De dónde sale el dato.
+ * @param {boolean} [props.ultima] Si es la última, para quitarle la línea.
+ * @returns {object} La fila renderizada.
+ */
+function FilaTotal({ concepto, importe, nota = "Dato de la Base de datos", ultima }) {
+  const estilo = ultima ? { border: "none", py: 1.2 } : FILA_RESUMEN
+
+  return (
+    <TableRow>
+      <TableCell sx={{ ...estilo, fontWeight: 700, width: 360, color: "#0f172a" }}>
+        {concepto}
+      </TableCell>
+      <TableCell
+        sx={{ ...estilo, fontWeight: 800, color: "#0f172a", fontVariantNumeric: "tabular-nums" }}
+      >
+        {moneda(importe)}
+      </TableCell>
+      <TableCell sx={{ ...estilo, ...NOTA_BD }}>{nota}</TableCell>
+    </TableRow>
+  )
+}
+
+/**
+ * Resumen de un viaje: etapas, diesel, gastos y totales, listo para imprimir.
+ *
+ * Se llega desde el administrador de viajes y su razón de ser es el PDF: es el
+ * documento que se manda cuando alguien pregunta qué se hizo y qué costó.
+ *
+ * @returns {object} La pantalla renderizada.
+ */
+export default function ResumenViajePage() {
+  const { tripId } = useParams()
+  const navigate = useNavigate()
+  const paraImprimir = useRef(null)
+
+  const { data: resumen, isLoading, error } = useResumenViaje(tripId)
+
+  const descargar = async () => {
     try {
-      const fd = new FormData();
-      fd.append('op', 'trip_summary');
-      fd.append('trip_id', String(id));
-
-      const res = await fetch(`${apiHost}/trips.php`, { method: 'POST', body: fd });
-      const json = await res.json();
-
-      console.log(json)
-
-      if (json.status === 'success' && json.data) {
-        setSummary(json.data);
-      } else {
-        console.error(json.message || 'Respuesta no exitosa.');
-        setSummary(null);
-      }
-    } catch (e) {
-      console.error('Error cargando trip_summary:', e);
-      setSummary(null);
-    } finally {
-      setLoading(false);
+      await exportarElementoAPdf({
+        elemento: paraImprimir.current,
+        nombreArchivo: `Resumen_Viaje_${resumen?.trip?.trip_number || "NA"}`,
+      })
+    } catch (fallo) {
+      notify.error(fallo)
     }
-  };
+  }
 
-  useEffect(() => {
-    if (tripId) fetchSummary(tripId);
-  }, [tripId]);
-
-  const totals = useMemo(() => {
-    if (!summary) return { invoice: 0, diesel: 0, expenses: 0, driverPay: 0, total: 0 };
-
-    const inv = Number(summary?.totales?.rate || 0);
-    const diesel = Number(summary?.diesel?.total_monto || 0);
-    const expenses = Number(summary?.expenses?.total_monto || 0);
-
-    const driver = Number(summary?.driver_payments?.total_monto || 0);
-
-    const total = inv - diesel - expenses - driver;
-    return { invoice: inv, diesel, expenses, driverPay: driver, total };
-  }, [summary]);
-
- const generatePDF = async () => {
-  const elementsToHide = document.querySelectorAll('.no-print');
-  elementsToHide.forEach(el => el.style.display = 'none');
-
-  const element = printRef.current;
-  const canvas = await html2canvas(element, { scale: 2, useCORS: true, logging: false });
-  const imgData = canvas.toDataURL('image/jpeg', 1.0);
-
-  const pdf = new jsPDF('p', 'mm', 'a4');
-  const pageW = pdf.internal.pageSize.getWidth();
-  const pageH = pdf.internal.pageSize.getHeight();
-
-  const margin = { top: 5, right: 8, bottom: 0, left: 8 };
-
-  const imgW = pageW - margin.left - margin.right;
-  const imgH = (imgW / canvas.width) * canvas.height;
-
-  pdf.addImage(imgData, 'JPEG', margin.left, margin.top, imgW, imgH);
-
-  pdf.output('dataurlnewwindow', {
-    filename: `Resumen_Viaje_${summary?.trip?.trip_number || 'NA'}.pdf`
-  });
-
-  elementsToHide.forEach(el => el.style.display = '');
-};
-
-  if (loading || !summary) {
+  if (isLoading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "50vh" }}>
         <CircularProgress />
         <Typography ml={2}>Cargando resumen del viaje...</Typography>
       </Box>
-    );
+    )
   }
 
-  const header = summary.trip || {};
-  const stages = Array.isArray(summary.stages) ? summary.stages : [];
-  const dieselItems = Array.isArray(summary.diesel?.items) ? summary.diesel.items : [];
-  const expenseItems = Array.isArray(summary.expenses?.items) ? summary.expenses.items : [];
-  const statusColor = getStatusColor(header.status);
+  if (error || !resumen) {
+    return (
+      <Box sx={{ p: 4, textAlign: "center" }}>
+        <Typography color="text.secondary" mb={2}>
+          {error?.message ?? "No se pudo cargar el resumen de este viaje."}
+        </Typography>
+        <Button variant="outlined" startIcon={<ArrowBackIcon />} onClick={() => navigate(-1)}>
+          Volver
+        </Button>
+      </Box>
+    )
+  }
+
+  const viaje = resumen.trip ?? {}
+  const etapas = etapasDeResumen(resumen)
+  const cargas = dieselDeResumen(resumen)
+  const gastos = gastosDeResumen(resumen)
+  const totales = totalesViaje(resumen)
+  const colorEstado = colorEstadoViaje(viaje.status)
 
   return (
-    <Paper elevation={0} sx={{ p: { xs: 2, md: 3 }, m: 2, borderRadius: 3, border: '1px solid #e2e8f0', bgcolor: '#fff' }}>
-      <Box sx={{ mb: 2 }} className="no-print">
+    <Paper
+      elevation={0}
+      sx={{ p: { xs: 2, md: 3 }, m: 2, borderRadius: 3, border: "1px solid #e2e8f0", bgcolor: "#fff" }}
+    >
+      <Box sx={{ mb: 2 }} className={CLASE_NO_IMPRIMIR}>
         <Button
           variant="outlined"
           startIcon={<ArrowBackIcon />}
           onClick={() => navigate(-1)}
           color="inherit"
-          sx={{ textTransform: 'none', fontWeight: 600, borderRadius: 1.5, borderColor: '#cbd5e1', color: '#334155' }}
+          sx={{
+            textTransform: "none",
+            fontWeight: 600,
+            borderRadius: 1.5,
+            borderColor: "#cbd5e1",
+            color: "#334155",
+          }}
         >
           Volver a TripAdmin
         </Button>
       </Box>
 
-      <div ref={printRef}>
-        {/* ENCABEZADO */}
-        <Box sx={{
-          p: 2.5, borderRadius: 2, border: '1px solid #e2e8f0', bgcolor: '#f8fafc',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2, mb: 1
-        }}>
+      <div ref={paraImprimir}>
+        <Box
+          sx={{
+            p: 2.5,
+            borderRadius: 2,
+            border: "1px solid #e2e8f0",
+            bgcolor: "#f8fafc",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: 2,
+            mb: 1,
+          }}
+        >
           <Box>
             <Typography variant="h5" fontWeight={800} color="#0f172a" sx={{ lineHeight: 1.2 }}>
-              {header.trip_number || '—'}
+              {viaje.trip_number || "—"}
             </Typography>
-            <Typography variant="body2" color="#64748b">{header.nombre || 'Sin nombre de viaje'}</Typography>
+            <Typography variant="body2" color="#64748b">
+              {viaje.nombre || "Sin nombre de viaje"}
+            </Typography>
           </Box>
           <Stack direction="row" spacing={1.5} alignItems="center">
             <Chip
-              label={fmtDate(header.creation_date)}
+              label={fechaHora(viaje.creation_date)}
               size="small"
-              sx={{ bgcolor: '#fff', border: '1px solid #e2e8f0', color: '#475569', fontWeight: 600 }}
+              sx={{ bgcolor: "#fff", border: "1px solid #e2e8f0", color: "#475569", fontWeight: 600 }}
             />
             <Chip
-              label={header.status || '—'}
+              label={viaje.status || "—"}
               size="small"
-              sx={{ bgcolor: `${statusColor}1a`, color: statusColor, fontWeight: 700, border: `1px solid ${statusColor}55` }}
+              sx={{
+                bgcolor: `${colorEstado}1a`,
+                color: colorEstado,
+                fontWeight: 700,
+                border: `1px solid ${colorEstado}55`,
+              }}
             />
           </Stack>
         </Box>
 
-        {/* ETAPAS */}
-        <SectionTitle color="#2563eb">Detalles de Etapas y Documentos</SectionTitle>
+        <TituloSeccion color="#2563eb">Detalles de Etapas y Documentos</TituloSeccion>
         <Grid container spacing={2}>
-          {stages.map((s) => {
-            const isEmpty = String(s.stageType || '').toLowerCase() === 'emptymileage';
-            const title = `E${s.stage_number || '—'} (${stageTypeLabel(s.stageType)})`;
-            const subtitle = s.origin && s.destination
-              ? `${s.origin} → ${s.destination}${s.travel_direction ? ` (${s.travel_direction})` : ''}`
-              : s.travel_direction ? `(${s.travel_direction})` : '';
-            const pickupText = (s.loading_date || s.delivery_date || s.time_of_delivery)
-              ? `Carga: ${fmtDateOnly(s.loading_date)} • Entrega: ${fmtDateOnly(s.delivery_date)}${fmtTime(s.time_of_delivery) ? ` - ${fmtTime(s.time_of_delivery)} hrs` : ''}`
-              : '';
-            const directionColor = s.travel_direction === 'Going Up' ? '#16a34a' : (s.travel_direction === 'Going Down' ? '#d97706' : '#cbd5e1');
-
-            return (
-              <Grid key={s.trip_stage_id} item xs={12} md={4}>
-                <Card variant="outlined" sx={{ height: '100%', borderRadius: 2, borderColor: '#e2e8f0', borderLeft: `3px solid ${directionColor}` }}>
-                  <CardContent sx={{ p: 2 }}>
-                    <Typography variant="subtitle2" fontWeight={800} color="#0f172a">{title}</Typography>
-                    {subtitle && <Typography variant="body2" color="#64748b" sx={{ mb: 1.2 }}>{subtitle}</Typography>}
-
-                    {!isEmpty && (
-                      <Box sx={{ bgcolor: '#f1f5f9', borderRadius: 1.5, p: 1.4, mb: 1.2 }}>
-                        <Stack spacing={0.4}>
-                          <Typography variant="caption" sx={{ fontSize: '0.72rem', color: '#334155' }}><strong>Compañía:</strong> {s.nombre_compania || '—'}</Typography>
-                          <Typography variant="caption" sx={{ fontSize: '0.72rem', color: '#334155' }}><strong>Bodega Origen:</strong> {s.warehouse_origin_name || '—'}</Typography>
-                          <Typography variant="caption" sx={{ fontSize: '0.72rem', color: '#334155' }}><strong>Bodega Destino:</strong> {s.warehouse_destination_name || '—'}</Typography>
-                          <Typography variant="caption" sx={{ fontSize: '0.72rem', color: '#334155' }}><strong>Millas:</strong> {s.millas_pcmiller ?? s.millas_pcmiller_practicas ?? '—'}</Typography>
-                        </Stack>
-                      </Box>
-                    )}
-
-                    {s.ci_number && <Typography variant="caption" color="#94a3b8" sx={{ display: 'block', mb: 0.5 }}>CI: {s.ci_number}</Typography>}
-                    {pickupText && <Typography variant="caption" color="#94a3b8" sx={{ display: 'block', mb: 1 }}>{pickupText}</Typography>}
-
-                    {!isEmpty ? (
-                      <Box sx={{ display: 'inline-block', bgcolor: '#f0fdf4', border: '1px solid #16a34a33', borderRadius: 1, px: 1.2, py: 0.5 }}>
-                        <Typography variant="body2" fontWeight={800} color="#16a34a" sx={{ fontVariantNumeric: 'tabular-nums' }}>
-                          Rate: {money(s.rate_tarifa || 0, 'USD')}
-                        </Typography>
-                      </Box>
-                    ) : (
-                      <Box sx={{ bgcolor: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 1.5, p: 1.2 }}>
-                        <Typography variant="subtitle2" fontWeight={700} color="#1d4ed8">{title}</Typography>
-                        <Typography variant="body2" color="#1e3a8a">Millas PC*Miler: {s.millas_pcmiller ?? '—'}</Typography>
-                        <Typography variant="body2" color="#1e3a8a">Millas Prácticas: {s.millas_pcmiller_practicas ?? '—'}</Typography>
-                      </Box>
-                    )}
-                  </CardContent>
-                </Card>
-              </Grid>
-            );
-          })}
+          {etapas.map((etapa) => (
+            <Grid key={etapa.trip_stage_id} size={{ xs: 12, md: 4 }}>
+              <FichaEtapa etapa={etapa} />
+            </Grid>
+          ))}
         </Grid>
 
-        {/* DIESEL */}
-        <SectionTitle color="#d97706">Diesel</SectionTitle>
-        <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden', borderColor: '#e2e8f0' }}>
+        <TituloSeccion color="#d97706">Diesel</TituloSeccion>
+        <TableContainer
+          component={Paper}
+          variant="outlined"
+          sx={{ borderRadius: 2, overflow: "hidden", borderColor: "#e2e8f0" }}
+        >
           <Table size="small">
-            <TableHead sx={{ bgcolor: '#f1f5f9' }}>
+            <TableHead sx={{ bgcolor: "#f1f5f9" }}>
               <TableRow>
-                <TableCell sx={{ fontWeight: 700, color: '#475569' }}>No</TableCell>
-                <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Trip number</TableCell>
-                <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Fecha</TableCell>
-                <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Odómetro</TableCell>
-                <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Galones</TableCell>
-                <TableCell sx={{ fontWeight: 700, color: '#475569', textAlign: 'right' }}>Monto</TableCell>
-                <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Driver</TableCell>
+                {["No", "Trip number", "Fecha", "Odómetro", "Galones"].map((titulo) => (
+                  <TableCell key={titulo} sx={{ fontWeight: 700, color: "#475569" }}>
+                    {titulo}
+                  </TableCell>
+                ))}
+                <TableCell sx={{ fontWeight: 700, color: "#475569", textAlign: "right" }}>
+                  Monto
+                </TableCell>
+                <TableCell sx={{ fontWeight: 700, color: "#475569" }}>Driver</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {dieselItems.map((r, idx) => (
-                <TableRow key={`${r.fecha}-${idx}`} hover>
-                  <TableCell>{idx + 1}</TableCell>
-                  <TableCell>{header.trip_number || '—'}</TableCell>
-                  <TableCell>{fmtDate(r.fecha)}</TableCell>
-                  <TableCell>{r.odometro || '—'}</TableCell>
-                  <TableCell>{Number(r.galones ?? 0).toFixed(2)} gal</TableCell>
-                  <TableCell sx={{ textAlign: 'right', fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>{money(r.monto || 0, 'USD')}</TableCell>
-                  <TableCell>{r.nombre || '—'}</TableCell>
+              {cargas.map((carga, indice) => (
+                <TableRow key={carga.diesel_id ?? `${carga.fecha}-${indice}`} hover>
+                  <TableCell>{indice + 1}</TableCell>
+                  <TableCell>{viaje.trip_number || "—"}</TableCell>
+                  <TableCell>{fechaHora(carga.fecha)}</TableCell>
+                  <TableCell>{carga.odometro || "—"}</TableCell>
+                  <TableCell>{decimales(carga.galones)} gal</TableCell>
+                  <TableCell
+                    sx={{ textAlign: "right", fontWeight: 600, fontVariantNumeric: "tabular-nums" }}
+                  >
+                    {moneda(carga.monto)}
+                  </TableCell>
+                  <TableCell>{carga.nombre || "—"}</TableCell>
                 </TableRow>
               ))}
-              {dieselItems.length === 0 && (
-                <TableRow><TableCell colSpan={7} align="center" sx={{ py: 3, color: '#94a3b8', fontStyle: 'italic' }}>Sin registros</TableCell></TableRow>
+              {cargas.length === 0 && (
+                <TableRow>
+                  <TableCell
+                    colSpan={7}
+                    align="center"
+                    sx={{ py: 3, color: "#94a3b8", fontStyle: "italic" }}
+                  >
+                    Sin registros
+                  </TableCell>
+                </TableRow>
               )}
             </TableBody>
           </Table>
         </TableContainer>
 
-        {/* GASTOS VIAJE */}
-        <SectionTitle color="#dc2626">Gastos viaje</SectionTitle>
-        <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden', borderColor: '#e2e8f0' }}>
+        <TituloSeccion color="#dc2626">Gastos viaje</TituloSeccion>
+        <TableContainer
+          component={Paper}
+          variant="outlined"
+          sx={{ borderRadius: 2, overflow: "hidden", borderColor: "#e2e8f0" }}
+        >
           <Table size="small">
-            <TableHead sx={{ bgcolor: '#f1f5f9' }}>
+            <TableHead sx={{ bgcolor: "#f1f5f9" }}>
               <TableRow>
-                <TableCell sx={{ fontWeight: 700, color: '#475569' }}>No</TableCell>
-                <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Trip number</TableCell>
-                <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Fecha</TableCell>
-                <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Tipo de gasto</TableCell>
-                <TableCell sx={{ fontWeight: 700, color: '#475569', textAlign: 'right' }}>Monto</TableCell>
-                <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Driver</TableCell>
+                {["No", "Trip number", "Fecha", "Tipo de gasto"].map((titulo) => (
+                  <TableCell key={titulo} sx={{ fontWeight: 700, color: "#475569" }}>
+                    {titulo}
+                  </TableCell>
+                ))}
+                <TableCell sx={{ fontWeight: 700, color: "#475569", textAlign: "right" }}>
+                  Monto
+                </TableCell>
+                <TableCell sx={{ fontWeight: 700, color: "#475569" }}>Driver</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {expenseItems.map((r, idx) => (
-                <TableRow key={`${r.fecha}-${idx}`} hover>
-                  <TableCell>{idx + 1}</TableCell>
-                  <TableCell>{header.trip_number || '—'}</TableCell>
-                  <TableCell>{fmtDate(r.fecha)}</TableCell>
-                  <TableCell>{r.tipo_gasto || '—'}</TableCell>
-                  <TableCell sx={{ textAlign: 'right', fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>{money(r.monto || 0, 'USD')}</TableCell>
-                  <TableCell>{r.nombre || '—'}</TableCell>
+              {gastos.map((gasto, indice) => (
+                <TableRow key={gasto.expense_id ?? `${gasto.fecha}-${indice}`} hover>
+                  <TableCell>{indice + 1}</TableCell>
+                  <TableCell>{viaje.trip_number || "—"}</TableCell>
+                  <TableCell>{fechaHora(gasto.fecha)}</TableCell>
+                  <TableCell>{gasto.tipo_gasto || "—"}</TableCell>
+                  <TableCell
+                    sx={{ textAlign: "right", fontWeight: 600, fontVariantNumeric: "tabular-nums" }}
+                  >
+                    {moneda(gasto.monto)}
+                  </TableCell>
+                  <TableCell>{gasto.nombre || "—"}</TableCell>
                 </TableRow>
               ))}
-              {expenseItems.length === 0 && (
-                <TableRow><TableCell colSpan={6} align="center" sx={{ py: 3, color: '#94a3b8', fontStyle: 'italic' }}>Sin registros</TableCell></TableRow>
+              {gastos.length === 0 && (
+                <TableRow>
+                  <TableCell
+                    colSpan={6}
+                    align="center"
+                    sx={{ py: 3, color: "#94a3b8", fontStyle: "italic" }}
+                  >
+                    Sin registros
+                  </TableCell>
+                </TableRow>
               )}
             </TableBody>
           </Table>
         </TableContainer>
 
-        {/* TRIP SUMMARY */}
-        <SectionTitle color="#0f172a">Trip Summary</SectionTitle>
-        <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 2, borderColor: '#e2e8f0' }}>
+        <TituloSeccion color="#0f172a">Trip Summary</TituloSeccion>
+        <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 2, borderColor: "#e2e8f0" }}>
           <Table size="small">
             <TableBody>
-              <TableRow>
-                <TableCell sx={{ ...summaryRowSx, fontWeight: 700, width: 360, color: '#0f172a' }}>
-                  Total invoice (suma de los rates de las etapas del viaje)
-                </TableCell>
-                <TableCell sx={{ ...summaryRowSx, fontWeight: 800, color: '#0f172a', fontVariantNumeric: 'tabular-nums' }}>
-                  {money(totals.invoice, 'USD')}
-                </TableCell>
-                <TableCell sx={{ ...summaryRowSx, color: '#94a3b8', fontStyle: 'italic', fontSize: '0.75rem' }}>
-                  Dato de la Base de datos (totales.rate)
-                </TableCell>
-              </TableRow>
-
-              <TableRow>
-                <TableCell sx={{ ...summaryRowSx, fontWeight: 700, color: '#0f172a' }}>Diesel (suma de las cargas de diesel del viaje)</TableCell>
-                <TableCell sx={{ ...summaryRowSx, fontWeight: 800, color: '#0f172a', fontVariantNumeric: 'tabular-nums' }}>{money(totals.diesel, 'USD')}</TableCell>
-                <TableCell sx={{ ...summaryRowSx, color: '#94a3b8', fontStyle: 'italic', fontSize: '0.75rem' }}>Dato de la Base de datos</TableCell>
-              </TableRow>
-
-              <TableRow>
-                <TableCell sx={{ ...summaryRowSx, fontWeight: 700, color: '#0f172a' }}>Driver Pay (Pagos Autorizados)</TableCell>
-                <TableCell sx={{ ...summaryRowSx, fontWeight: 800, color: '#0f172a', fontVariantNumeric: 'tabular-nums' }}>{money(totals.driverPay, 'USD')}</TableCell>
-                <TableCell sx={{ ...summaryRowSx, color: '#94a3b8', fontStyle: 'italic', fontSize: '0.75rem' }}>Dato de la Base de datos</TableCell>
-              </TableRow>
-
-              <TableRow>
-                <TableCell sx={{ fontWeight: 700, color: '#0f172a', border: 'none', py: 1.2 }}>Expenses (suma de los gastos misc del viaje)</TableCell>
-                <TableCell sx={{ fontWeight: 800, color: '#0f172a', border: 'none', py: 1.2, fontVariantNumeric: 'tabular-nums' }}>{money(totals.expenses, 'USD')}</TableCell>
-                <TableCell sx={{ color: '#94a3b8', fontStyle: 'italic', fontSize: '0.75rem', border: 'none', py: 1.2 }}>Dato de la Base de datos</TableCell>
-              </TableRow>
-
-              {/* <TableRow sx={{ bgcolor: '#f1f8e9' }}>
-                 <TableCell sx={{ fontWeight: 700 }}>Utilidad Estimada</TableCell>
-                 <TableCell sx={{ fontWeight: 700, fontSize: '1.1rem' }}>{money(totals.total, 'USD')}</TableCell>
-                 <TableCell>Calculado</TableCell>
-              </TableRow> */}
-
+              <FilaTotal
+                concepto="Total invoice (suma de los rates de las etapas del viaje)"
+                importe={totales.tarifa}
+                nota="Dato de la Base de datos (totales.rate)"
+              />
+              <FilaTotal
+                concepto="Diesel (suma de las cargas de diesel del viaje)"
+                importe={totales.diesel}
+              />
+              <FilaTotal concepto="Driver Pay (Pagos Autorizados)" importe={totales.pagoConductor} />
+              <FilaTotal
+                concepto="Expenses (suma de los gastos misc del viaje)"
+                importe={totales.gastos}
+                ultima
+              />
             </TableBody>
           </Table>
         </Paper>
       </div>
 
-      <Box sx={{ mt: 3, pb: 1, display: 'flex', justifyContent: 'flex-end' }} className="no-print">
+      <Box sx={{ mt: 3, pb: 1, display: "flex", justifyContent: "flex-end" }} className={CLASE_NO_IMPRIMIR}>
         <Button
           variant="contained"
           startIcon={<DownloadIcon />}
-          onClick={generatePDF}
-          sx={{ bgcolor: '#0f172a', fontWeight: 700, borderRadius: 1.5, textTransform: 'none', px: 3, '&:hover': { bgcolor: '#1e293b' } }}
+          onClick={descargar}
+          sx={{
+            bgcolor: "#0f172a",
+            fontWeight: 700,
+            borderRadius: 1.5,
+            textTransform: "none",
+            px: 3,
+            "&:hover": { bgcolor: "#1e293b" },
+          }}
         >
           Descargar PDF
         </Button>
       </Box>
     </Paper>
-  );
+  )
 }

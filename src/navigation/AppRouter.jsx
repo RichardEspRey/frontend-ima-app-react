@@ -34,7 +34,7 @@ import NuevaOrdenPage from '../pages/mantenimientos/NuevaOrdenPage.jsx';
 import EditarOrdenPage from '../pages/mantenimientos/EditarOrdenPage.jsx';
 import OrdenesServicioPage from '../pages/mantenimientos/OrdenesServicioPage.jsx';
 import FinanzasPage from '../pages/finanzas/FinanzasPage.jsx';
-import ResumenTrip from '../screens/ResumenTrip.jsx';
+import ResumenViajePage from '../pages/viajes/ResumenViajePage.jsx';
 import ResiduosPage from '../pages/finanzas/ResiduosPage.jsx';
 import AccesosPage from '../pages/accesos/AccesosPage.jsx';
 import ReportsPage from '../pages/reports/ReportsPage.jsx';
@@ -106,7 +106,7 @@ const AppRouter = () => {
             <Route path="/admin-service-order" element={<OrdenesServicioPage />} />
             <Route path="/editar-orden/:orderId" element={<EditarOrdenPage />} />
             <Route path="/finanzas" element={<FinanzasPage />} />
-            <Route path="/ResumenTrip/:tripId" element={<ResumenTrip />} />
+            <Route path="/ResumenTrip/:tripId" element={<ResumenViajePage />} />
             <Route path="/access-manager" element={<AccesosPage />} />
             <Route path="/ResiduoTrip" element={<ResiduosPage />} />  
             <Route path="/reports" element={<ReportsPage />} />
