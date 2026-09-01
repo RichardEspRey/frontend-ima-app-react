@@ -192,7 +192,12 @@ querer — el `<Container maxWidth="xl">` que traen las pantallas no lo da el la
 vieron ni el `Grid` roto ni el HTML inválido. Ambos salieron de abrir la pantalla y mirar
 la consola.
 
-**6. Documentar el módulo** en `docs/MODULOS/<x>.md`: reglas de negocio, lo que sorprende,
+**6. El estilo sale gratis si usas `shared/ui`.** `DataTable` y `PageHeader` ya traen los
+tokens del sistema. No escribas colores ni tamaños a mano: si algo no está cubierto,
+importa el token de `shared/ui/estilos`. Si el módulo traía un aspecto propio, se sustituye
+por el del sistema — es el mismo del Expense Manager y el Administrador de viajes.
+
+**7. Documentar el módulo** en `docs/MODULOS/<x>.md`: reglas de negocio, lo que sorprende,
 y los bugs que se corrigieron de camino.
 
 ### Lo que hay que buscar en cada módulo
@@ -204,8 +209,10 @@ Estos cinco aparecieron en Nómina y es probable que estén en los demás:
 - **Mutaciones que no miran la respuesta** — el `try/catch` solo atrapa fallos de red, así
   que un `{status:'error'}` muestra igual el mensaje de éxito.
 - **`<Grid item xs={...}>`** — MUI v7 lo ignora. Quedan 265 en el proyecto.
-- **Componentes que renderizan `div` dentro de `p`** — un `<Chip>` dentro de un
-  `<Typography>` con variante de texto. Lo avisa la consola del navegador.
+- **Componentes que renderizan `div` dentro de `p`** — un `<Chip>` o un `<Box>` dentro de
+  un `<Typography>`, que por omisión es `<p>`. Lo avisa la consola del navegador y **no lo
+  ve ningún test**: jsdom no valida anidamiento. Salió dos veces en Nómina, una de ellas
+  dentro del propio `DataTable`. Se arregla con `component="div"`.
 - **"Cargando o no hay datos"** — el estado de carga y el vacío confundidos en un mensaje.
 
 > **Por qué no Gastos, que era el plan original.** Gastos es el módulo **más caliente de

@@ -11,6 +11,7 @@ gasto, un viaje o un empleado. Si un componente necesita saberlo, va en `feature
 | `PageHeader` | Título, descripción y acciones. Estaba copiado con variaciones en casi todas las pantallas. |
 | `ErrorBoundary` | Aísla el fallo de una pantalla para que no deje la app en blanco. Se monta **por página**, no una vez arriba. |
 | `notify` | Avisos y confirmaciones. Envuelve una sola librería. |
+| `estilos` | Los tokens del sistema de diseño: cabeceras, tarjetas, botones, chips. |
 
 ## DataTable
 
@@ -56,6 +57,31 @@ const acepto = await notify.confirmar({     // devuelve booleano, no {isConfirme
 llamadas en 56 archivos), `react-toastify` (una) y `@pablotheblink/flashyjs` (nueve).
 `notify` envuelve sweetalert2, que es la que domina, para que las otras dos se retiren
 módulo por módulo y para que cambiar de librería sea editar un archivo en vez de 56.
+
+## estilos
+
+Los tokens del sistema: `HEADER_ROW_SX`, `HEADER_CELL_SX`, `TABLE_CONTAINER_SX`,
+`DARK_BTN_SX`, `GHOST_BTN_SX`, `CHIP_SX`, `CARD_SX`, `ICON_BTN_SX`, `CELL_STRONG_SX`…
+
+Vivían en `src/styles/estilosTabla.js` y los usaban 11 archivos; se movieron aquí porque
+son interfaz compartida. Ese archivo quedó como puente `@deprecated` mientras los
+consumidores viejos pasan por su incremento.
+
+**`DataTable` y `PageHeader` ya los aplican de fábrica.** Una pantalla que use esos dos
+componentes se ve como el Expense Manager y el Administrador de viajes sin escribir una
+sola regla de estilo. Cambiar el diseño de todas las tablas del proyecto es editar
+`estilos.js`.
+
+Para lo que no cubran esos componentes —botones, tarjetas, chips— se importan los tokens
+directo: `import { DARK_BTN_SX } from "../../shared/ui/estilos"`. Nada de colores a mano.
+
+## Cuidado con `<Typography>` y los `div`
+
+`Typography` renderiza `<p>` por omisión. Un `<Chip>`, un `<Box>` o cualquier `div`
+dentro de él es HTML inválido: React lo avisa en consola y **ningún test en jsdom lo
+detecta**. Si vas a meter un componente dentro, pásale `component="div"`.
+
+Pasó dos veces en el incremento 5, una de ellas en este mismo `DataTable`.
 
 ## Regla
 
