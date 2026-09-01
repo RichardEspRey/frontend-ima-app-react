@@ -54,13 +54,17 @@ describe("coordenadasDeRuta", () => {
 
 describe("resumenRuta", () => {
   it("pasa metros y segundos a kilómetros y minutos", () => {
-    expect(resumenRuta({ distance: 254300, duration: 10800 })).toEqual({
-      distancia: "254.3",
-      duracion: 180,
-    })
+    const resumen = resumenRuta({ distance: 254300, duration: 10800 })
+    expect(resumen.distancia).toBe("254.3")
+    expect(resumen.duracion).toBe(180)
+  })
+
+  it("también da millas, que es como se cotiza", () => {
+    expect(resumenRuta({ distance: 1609.344 }).millas).toBeCloseTo(1, 6)
+    expect(resumenRuta({ distance: 160934.4 }).millas).toBeCloseTo(100, 4)
   })
 
   it("una ruta vacía da ceros, no NaN", () => {
-    expect(resumenRuta({})).toEqual({ distancia: "0.0", duracion: 0 })
+    expect(resumenRuta({})).toEqual({ distancia: "0.0", duracion: 0, millas: 0 })
   })
 })

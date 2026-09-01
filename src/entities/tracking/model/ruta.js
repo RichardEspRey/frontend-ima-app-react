@@ -90,17 +90,32 @@ export function coordenadasDeRuta(ruta) {
 }
 
 /**
+ * Cuántos metros tiene una milla.
+ *
+ * Las tarifas de IMA se cotizan por milla aunque el servicio de rutas conteste
+ * en metros, así que la conversión aparece en cada pantalla que calcula un
+ * precio.
+ *
+ * @type {number}
+ */
+export const METROS_POR_MILLA = 1609.344
+
+/**
  * El resumen de una ruta, en las unidades en que se lee.
  *
- * El servicio contesta en metros y segundos; en pantalla se leen kilómetros y
- * minutos.
+ * El servicio contesta en metros y segundos. En pantalla se leen kilómetros y
+ * minutos, y para cotizar, millas.
  *
  * @param {object} ruta La ruta que devolvió el servicio.
- * @returns {{distancia: string, duracion: number}} Kilómetros con un decimal y minutos enteros.
+ * @returns {{distancia: string, duracion: number, millas: number}} Kilómetros con un
+ *   decimal, minutos enteros y millas sin redondear.
  */
 export function resumenRuta(ruta) {
+  const metros = Number(ruta?.distance ?? 0)
+
   return {
-    distancia: (Number(ruta?.distance ?? 0) / 1000).toFixed(1),
+    distancia: (metros / 1000).toFixed(1),
     duracion: Math.round(Number(ruta?.duration ?? 0) / 60),
+    millas: metros / METROS_POR_MILLA,
   }
 }

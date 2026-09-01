@@ -55,7 +55,7 @@ import NominaPage from '../pages/nomina/NominaPage.jsx';
 import PersonalPage from '../pages/nomina/PersonalPage.jsx';
 import DetallePagoPage from '../pages/nomina/DetallePagoPage.jsx';
 import ReparacionesRutaPage from '../pages/mantenimientos/ReparacionesRutaPage.jsx';
-import Cotizador from '../screens/Viajes/Cotizacion.jsx';
+import CotizadorPage from '../pages/viajes/CotizadorPage.jsx';
 import DocumentosPage from '../pages/documentos/DocumentosPage.jsx';
 import InspeccionesPage from '../pages/mantenimientos/InspeccionesPage.jsx';
 
@@ -126,7 +126,7 @@ const AppRouter = () => {
             <Route path="/personal" element={<PersonalPage />} />
             <Route path="/detalle-pago/:period_id" element={<DetallePagoPage />} />
             <Route path="/road-repairs" element={<ReparacionesRutaPage />} />
-             <Route path="/cotizador" element={<Cotizador />} />
+             <Route path="/cotizador" element={<CotizadorPage />} />
             <Route path="*" element={<Navigate to="/home" replace />} /> 
             <Route path="/ima-manager" element={<DocumentosPage />} />
             <Route path="/inspecciones" element={<InspeccionesPage />} />

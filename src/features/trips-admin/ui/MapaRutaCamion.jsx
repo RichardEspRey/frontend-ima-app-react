@@ -1,58 +1,14 @@
-import { useEffect, useRef } from "react"
 import { Alert, Box, CircularProgress, Paper, Stack, Typography } from "@mui/material"
-import { MapContainer, Marker, Polyline, Popup, TileLayer, useMap } from "react-leaflet"
-import L from "leaflet"
+import { MapContainer, Marker, Polyline, Popup, TileLayer } from "react-leaflet"
 import "leaflet/dist/leaflet.css"
 
 import { NUEVO_LAREDO } from "../../../entities/schedule"
 import { TILES_BASE } from "../../../shared/config/mapa"
+import { EncuadrarRuta, iconoPunto } from "../../../shared/ui"
 
 const COLOR_CAMION = "#9c27b0"
 const COLOR_DESTINO = "#f44336"
 const COLOR_RUTA = "#1976d2"
-
-/**
- * Un punto de color, para marcar el camión y el destino.
- *
- * @param {string} color Color del punto.
- * @param {number} [tamano=14] Diámetro en píxeles.
- * @returns {object} El icono de Leaflet.
- */
-function iconoPunto(color, tamano = 14) {
-  return L.divIcon({
-    className: "",
-    html: `<div style="width:${tamano}px;height:${tamano}px;border-radius:50%;background:${color};border:2.5px solid white;box-shadow:0 1px 5px rgba(0,0,0,.45)"></div>`,
-    iconSize: [tamano, tamano],
-    iconAnchor: [tamano / 2, tamano / 2],
-  })
-}
-
-/**
- * Encuadra el mapa sobre la ruta trazada.
- *
- * Solo reencuadra cuando la ruta cambia de verdad: sin esa comprobación, cada
- * repintado volvía a mover el mapa y no se podía navegar por él.
- *
- * @param {object} props Propiedades del componente.
- * @param {Array} props.coordenadas El trazo de la ruta.
- * @returns {null} No dibuja nada.
- */
-function Encuadrar({ coordenadas }) {
-  const mapa = useMap()
-  const anterior = useRef(null)
-
-  useEffect(() => {
-    if (!coordenadas || coordenadas.length === 0) return
-
-    const firma = `${coordenadas[0]}|${coordenadas[coordenadas.length - 1]}`
-    if (firma === anterior.current) return
-
-    anterior.current = firma
-    mapa.fitBounds(L.latLngBounds(coordenadas), { padding: [40, 40] })
-  }, [coordenadas, mapa])
-
-  return null
-}
 
 /**
  * Una entrada de la leyenda del mapa.
@@ -155,7 +111,7 @@ export function MapaRutaCamion({ unidad, posicionCamion, trazo, cargando, error 
         >
           <TileLayer {...TILES_BASE} />
 
-          {trazo?.length > 0 && <Encuadrar coordenadas={trazo} />}
+          {trazo?.length > 0 && <EncuadrarRuta coordenadas={trazo} />}
           {trazo?.length > 0 && (
             <Polyline positions={trazo} pathOptions={{ color: COLOR_RUTA, weight: 4, opacity: 0.9 }} />
           )}

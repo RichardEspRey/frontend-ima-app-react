@@ -35,6 +35,7 @@ export {
   puntoDesdeUnidad,
   coordenadasDeRuta,
   resumenRuta,
+  METROS_POR_MILLA,
 } from "./model/ruta"
 
 export {
@@ -57,6 +58,8 @@ export {
   SERVICIO_LUGARES,
   MAXIMO_LUGARES,
   buscarLugares,
+  ubicarLugar,
+  nombreCortoDeLugar,
   trazarRuta,
   useTrazarRuta,
 } from "./api/geo"
