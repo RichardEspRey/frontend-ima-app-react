@@ -18,17 +18,20 @@ por decisión confirmada.
 
 ## Próximo módulo a mover
 
-Incremento 6 — **AccessManager / Usuarios**. Cero toques de ambos en 4 meses.
+Incremento 8 — IMA Manager (documentos). Sigue el orden de frío a caliente.
 
-**Richard, del incremento 5:** el módulo de Nómina se movió.
-`screens/Nomina/{Nomina,DetallePago,PersonalAdmin}.jsx` ahora son
-`pages/nomina/{NominaPage,DetallePagoPage,PersonalPage}.jsx`. El router ya está
-actualizado; si tu rama los toca, el merge lo resuelve solo porque el movimiento fue un
-commit limpio de `git mv`.
+**Richard, lo movido hasta ahora:**
 
-Si quieres ver cómo queda un módulo migrado, ese es el ejemplo. La receta paso a paso
-está en `docs/refactor/05-INCREMENTOS.md` y las reglas del módulo en
-`docs/MODULOS/nomina.md`.
+| Antes | Ahora |
+|---|---|
+| `screens/Nomina/*` | `pages/nomina/*` |
+| `screens/AccessManager.jsx` | `pages/accesos/AccesosPage.jsx` |
+| `components/AccessDrawer.jsx` | `features/access-manager/ui/PermisosDrawer.jsx` |
+| `screens/Reports.jsx` | `pages/reports/ReportsPage.jsx` |
+| `screens/Welcome.jsx` | `pages/inicio/InicioPage.jsx` |
+
+Todos con `git mv` limpio, así que si tu rama los toca el merge lo resuelve solo.
+Borrados por no tener ruta: `ProfileAccessManager.jsx`, `components/TableUser.jsx`.
 
 ## Dos carpetas, una por rama
 

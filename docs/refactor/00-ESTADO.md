@@ -15,7 +15,7 @@
 
 ## Dónde vamos
 
-**Fase 1 (frontend) — incrementos 0 a 6 terminados.**
+**Fase 1 (frontend) — incrementos 0 a 7 terminados.**
 Todo vive en la rama larga **`refactor-fase-1`**, con un tag por incremento
 (`incremento-0`, `incremento-1`). No se mergea a `main` hasta estar probada al 100 %.
 
@@ -33,7 +33,8 @@ Todo vive en la rama larga **`refactor-fase-1`**, con un tag por incremento
 | 4b | Dependencias y vulnerabilidades | **hecho** — 0 vulnerabilidades | tag `incremento-4b` |
 | 5 | **Nómina** completo (patrón de referencia) | **hecho** | tag `incremento-5` |
 | 6 | AccessManager / Usuarios | **hecho** | tag `incremento-6` |
-| 7 | Reports / Welcome | **siguiente** | — |
+| 7 | Reports / Inicio | **hecho** | tag `incremento-7` |
+| 8 | IMA Manager (documentos) | **siguiente** | — |
 | 6+ | Resto de módulos, uno por uno | pendiente | — |
 | N | Deduplicar formularios (~4 000 líneas) | pendiente | — |
 
