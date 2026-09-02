@@ -19,7 +19,7 @@ import { AlertSummaryCards } from '../../components/AlertSummaryCards';
 import { getTripStatusSummary, validateStage, buildPayloadItem, collectDirtyStages } from '../../utils/financeHelpers';
 import { STATUS_OPTIONS } from '../../constants/finances'; 
 import { COLOR } from '../../shared/ui/tokens';
-import { Pestanas } from '../../shared/ui';
+import { Pestanas, PageHeader, PAGE_SHELL_SX, TABLE_CONTAINER_SX, HEADER_ROW_SX, HEADER_CELL_SX, PAGINATION_BOX_SX, PAGINATION_SX } from '../../shared/ui';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -248,12 +248,12 @@ const FinanzasPage = () => {
   };
 
   return (
-    <Paper sx={{ m: 2, p: 3, minHeight: '85vh' }}>
-      
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h4" fontWeight={800} color="text.primary">Administrador de Finanzas</Typography>
-        <Typography variant="body2" color="text.secondary">Gestión de cobros y pagos de viajes</Typography>
-      </Box>
+    <Box sx={PAGE_SHELL_SX}>
+      <PageHeader
+        seccion="Finanzas · Cobranza"
+        titulo="Administrador de Finanzas"
+        descripcion="Gestión de cobros y pagos de viajes."
+      />
 
       <Pestanas
         valor={tabValue}
@@ -385,17 +385,17 @@ const FinanzasPage = () => {
         </Grid>
       </Paper>
 
-      <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 2 }}>
+      <TableContainer component={Paper} elevation={0} sx={TABLE_CONTAINER_SX}>
         <Table stickyHeader size="small">
           <TableHead>
-            <TableRow>
-              <TableCell width={50} sx={{ bgcolor: COLOR.BLANCO }} />
-              <TableCell sx={{ fontWeight: 700, fontSize: '0.9rem', bgcolor: COLOR.BLANCO }}>Trip Number</TableCell>
-              <TableCell sx={{ fontWeight: 700, fontSize: '0.9rem', bgcolor: COLOR.BLANCO }}>Stages</TableCell>
-              <TableCell sx={{ fontWeight: 700, fontSize: '0.9rem', bgcolor: COLOR.BLANCO, textAlign: 'right' }}>Total Rate</TableCell>
-              <TableCell sx={{ fontWeight: 700, fontSize: '0.9rem', bgcolor: COLOR.BLANCO, textAlign: 'right' }}>Total Pagado</TableCell>
-              <TableCell sx={{ fontWeight: 700, fontSize: '0.9rem', bgcolor: COLOR.BLANCO }}>Estatus General</TableCell>
-              <TableCell sx={{ fontWeight: 700, fontSize: '0.9rem', bgcolor: COLOR.BLANCO, textAlign: 'center' }}>Alertas</TableCell>
+            <TableRow sx={HEADER_ROW_SX}>
+              <TableCell width={50} sx={HEADER_CELL_SX} />
+              <TableCell sx={HEADER_CELL_SX}>Trip Number</TableCell>
+              <TableCell sx={HEADER_CELL_SX}>Stages</TableCell>
+              <TableCell align="right" sx={HEADER_CELL_SX}>Total Rate</TableCell>
+              <TableCell align="right" sx={HEADER_CELL_SX}>Total Pagado</TableCell>
+              <TableCell sx={HEADER_CELL_SX}>Estatus General</TableCell>
+              <TableCell align="center" sx={HEADER_CELL_SX}>Alertas</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -436,7 +436,7 @@ const FinanzasPage = () => {
         onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }}
         labelRowsPerPage="Filas:"
       />
-    </Paper>
+    </Box>
   );
 };
 

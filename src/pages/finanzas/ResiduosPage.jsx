@@ -3,7 +3,7 @@ import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
   TablePagination, TextField, Box, Typography, Button
 } from '@mui/material';
-import { FilasEsqueleto } from '../../shared/ui';
+import { FilasEsqueleto, PageHeader, PAGE_SHELL_SX, TABLE_CONTAINER_SX, HEADER_ROW_SX, HEADER_CELL_SX, PAGINATION_BOX_SX, PAGINATION_SX } from '../../shared/ui';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -81,32 +81,38 @@ const ResiduosPage = () => {
   const pageRows = filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   return (
-    <Paper sx={{ m: 2, p: 2 }}>
-      <Box sx={{ display: 'flex', gap: 1, justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography variant="h4">Residuo Trips</Typography>
-        <Box sx={{ display: 'flex', gap: 1 }}>
-          <TextField
-            size="small"
-            placeholder="Buscar por Trip number"
-            value={search}
-            onChange={(e) => { setSearch(e.target.value); setPage(0); }}
-          />
-          <Button variant="outlined" onClick={fetchResiduoTrips}>Recargar</Button>
-        </Box>
+    <Box sx={PAGE_SHELL_SX}>
+      <PageHeader
+        seccion="Finanzas"
+        titulo="Residuo Trips"
+        descripcion="Viajes con saldo pendiente de conciliar."
+        acciones={
+          <>
+            <TextField
+              size="small"
+              placeholder="Buscar por Trip number"
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); setPage(0); }}
+            />
+            <Button variant="outlined" onClick={fetchResiduoTrips}>Recargar</Button>
+          </>
+        }
+      />
+      <Box>
       </Box>
 
-      <TableContainer>
+      <TableContainer component={Paper} elevation={0} sx={TABLE_CONTAINER_SX}>
         <Table stickyHeader size="small">
           <TableHead>
-            <TableRow>
-              <TableCell>Trip #</TableCell>
-              <TableCell>Conductor</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Creado</TableCell>
-              <TableCell align="right">Rate</TableCell>
-              <TableCell align="right">Diesel</TableCell>
-              <TableCell align="right">Gastos</TableCell>
-              <TableCell align="right">Utilidad</TableCell>
+            <TableRow sx={HEADER_ROW_SX}>
+              <TableCell sx={HEADER_CELL_SX}>Trip #</TableCell>
+              <TableCell sx={HEADER_CELL_SX}>Conductor</TableCell>
+              <TableCell sx={HEADER_CELL_SX}>Status</TableCell>
+              <TableCell sx={HEADER_CELL_SX}>Creado</TableCell>
+              <TableCell align="right" sx={HEADER_CELL_SX}>Rate</TableCell>
+              <TableCell align="right" sx={HEADER_CELL_SX}>Diesel</TableCell>
+              <TableCell align="right" sx={HEADER_CELL_SX}>Gastos</TableCell>
+              <TableCell align="right" sx={HEADER_CELL_SX}>Utilidad</TableCell>
             </TableRow>
           </TableHead>
 
@@ -146,7 +152,7 @@ const ResiduosPage = () => {
         onPageChange={(e, newPage) => setPage(newPage)}
         onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }}
       />
-    </Paper>
+    </Box>
   );
 };
 

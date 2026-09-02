@@ -16,7 +16,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import Swal from "sweetalert2";
 import { useNavigate } from 'react-router-dom';
 import { COLOR } from '../../shared/ui/tokens';
-import { FilasEsqueleto, Pestanas } from '../../shared/ui';
+import { FilasEsqueleto, Pestanas, PageHeader, PAGE_SHELL_SX, TABLE_CONTAINER_SX, HEADER_ROW_SX, HEADER_CELL_SX, PAGINATION_BOX_SX, PAGINATION_SX, GHOST_BTN_SX } from '../../shared/ui';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -216,70 +216,61 @@ const PagosConductoresPage = () => {
   const pageTrips = filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   return (
-    <Paper sx={{ m: 2, p: 3, minHeight: '85vh' }}>
-      
-      {/* Header */}
-      <Box sx={{ mb: 2 }}>
-        <Typography variant="h4" fontWeight={800} color="text.primary">Pago a Operadores</Typography>
-        <Typography variant="body2" color="text.secondary">Gestión de nómina y pagos de viajes</Typography>
-      </Box>
+    <Box sx={PAGE_SHELL_SX}>
+      <PageHeader
+        seccion="Finanzas · Nómina"
+        titulo="Pago a Operadores"
+        descripcion="Gestión de nómina y pagos de viajes."
+        acciones={
+          <Button
+            variant="outlined"
+            startIcon={<AssignmentIndIcon />}
+            onClick={() => navigate(`/millasDriversTable`)}
+            sx={GHOST_BTN_SX}
+          >
+            Administrar Drivers
+          </Button>
+        }
+      />
 
-      {/* Pestañas */}
-      <Paper elevation={0} variant="outlined" sx={{ mb: 3, bgcolor: COLOR.LIENZO, borderRadius: 2, overflow: 'hidden' }}>
-        <Pestanas
-            valor={tabValue}
-            onChange={(valor) => handleTabChange(null, valor)}
-            pestanas={[
-              { etiqueta: 'Pendientes de Pago', icono: <PendingActionsIcon fontSize="small" /> },
-              { etiqueta: 'Historial Pagados', icono: <CheckCircleIcon fontSize="small" /> },
-            ]}
-        />
-      </Paper>
+      <Pestanas
+        valor={tabValue}
+        onChange={(valor) => handleTabChange(null, valor)}
+        pestanas={[
+          { etiqueta: 'Pendientes de Pago', icono: <PendingActionsIcon fontSize="small" /> },
+          { etiqueta: 'Historial Pagados', icono: <CheckCircleIcon fontSize="small" /> },
+        ]}
+      />
 
-      {/* Barra de Herramientas */}
-      <Paper elevation={0} sx={{ p: 2, mb: 3, bgcolor: COLOR.LIENZO, borderRadius: 2, border: `1px solid ${COLOR.BORDE}` }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
-            <TextField 
-                size="small" 
-                placeholder="Buscar Trip o Conductor..." 
-                value={search} 
-                onChange={(e) => { setSearch(e.target.value); setPage(0); }} 
-                InputProps={{
-                    startAdornment: (
-                    <InputAdornment position="start">
-                        <SearchIcon fontSize="small" sx={{ color: 'text.secondary' }} />
-                    </InputAdornment>
-                    ),
-                    sx: { bgcolor: 'white' }
-                }}
-                sx={{ minWidth: 300, flexGrow: 1 }}
-            />
-            
-            <Button 
-                variant="outlined" 
-                color="primary"
-                startIcon={<AssignmentIndIcon />}
-                onClick={() => navigate(`/millasDriversTable`)}
-                sx={{ textTransform: 'none', fontWeight: 600, bgcolor: 'white' }}
-            >
-                Administrar Drivers
-            </Button>
-        </Box>
-      </Paper>
+      <TextField
+        size="small"
+        placeholder="Buscar Trip o Conductor..."
+        value={search}
+        onChange={(e) => { setSearch(e.target.value); setPage(0); }}
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <SearchIcon fontSize="small" sx={{ color: COLOR.APAGADO }} />
+            </InputAdornment>
+          ),
+          sx: { bgcolor: COLOR.BLANCO },
+        }}
+        sx={{ minWidth: 320, mb: 3 }}
+      />
 
       {/* Tabla de Resultados */}
-      <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 2 }}>
+      <TableContainer component={Paper} elevation={0} sx={TABLE_CONTAINER_SX}>
         <Table stickyHeader size="small">
           <TableHead>
-            <TableRow>
-              <TableCell sx={{ fontWeight: 700, bgcolor: COLOR.BLANCO }}>Trip #</TableCell>
-              <TableCell sx={{ fontWeight: 700, bgcolor: COLOR.BLANCO }}>Conductor</TableCell>
-              <TableCell sx={{ fontWeight: 700, bgcolor: COLOR.BLANCO, textAlign:'center' }}>Etapas</TableCell>
-              <TableCell sx={{ fontWeight: 700, bgcolor: COLOR.BLANCO, textAlign:'right' }}>Millas</TableCell>
-              <TableCell sx={{ fontWeight: 700, bgcolor: COLOR.BLANCO, textAlign:'right' }}>Monto Pago</TableCell>
-              <TableCell sx={{ fontWeight: 700, bgcolor: COLOR.BLANCO }}>Estatus Pago</TableCell>
-              <TableCell sx={{ fontWeight: 700, bgcolor: COLOR.BLANCO }}>Estatus Viaje</TableCell>
-              <TableCell sx={{ fontWeight: 700, bgcolor: COLOR.BLANCO, textAlign:'center' }}>Acciones</TableCell>
+            <TableRow sx={HEADER_ROW_SX}>
+              <TableCell sx={HEADER_CELL_SX}>Trip #</TableCell>
+              <TableCell sx={HEADER_CELL_SX}>Conductor</TableCell>
+              <TableCell align="center" sx={HEADER_CELL_SX}>Etapas</TableCell>
+              <TableCell align="right" sx={HEADER_CELL_SX}>Millas</TableCell>
+              <TableCell align="right" sx={HEADER_CELL_SX}>Monto Pago</TableCell>
+              <TableCell sx={HEADER_CELL_SX}>Estatus Pago</TableCell>
+              <TableCell sx={HEADER_CELL_SX}>Estatus Viaje</TableCell>
+              <TableCell align="center" sx={HEADER_CELL_SX}>Acciones</TableCell>
             </TableRow>
           </TableHead>
 
@@ -382,20 +373,24 @@ const PagosConductoresPage = () => {
         </Table>
       </TableContainer>
 
-      <TablePagination
-        rowsPerPageOptions={[25, 50, 100]}
-        component="div"
-        count={filtered.length}
-        rowsPerPage={rowsPerPage}
-        page={page}
-        onPageChange={(e, newPage) => setPage(newPage)}
-        onRowsPerPageChange={(e) => {
-          setRowsPerPage(parseInt(e.target.value, 10));
-          setPage(0);
-        }}
-        labelRowsPerPage="Filas:"
-      />
-    </Paper>
+      <Box sx={PAGINATION_BOX_SX}>
+        <TablePagination
+          rowsPerPageOptions={[25, 50, 100]}
+          component="div"
+          count={filtered.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={(e, newPage) => setPage(newPage)}
+          onRowsPerPageChange={(e) => {
+            setRowsPerPage(parseInt(e.target.value, 10));
+            setPage(0);
+          }}
+          labelRowsPerPage="Filas por página"
+          labelDisplayedRows={({ from, to, count }) => `${from}–${to} de ${count}`}
+          sx={PAGINATION_SX}
+        />
+      </Box>
+    </Box>
   );
 };
 
