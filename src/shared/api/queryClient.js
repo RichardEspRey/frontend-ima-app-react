@@ -1,4 +1,4 @@
-import { QueryClient } from "@tanstack/react-query"
+import { QueryCache, QueryClient } from "@tanstack/react-query"
 import { ApiError } from "./errors"
 
 /**
@@ -35,10 +35,26 @@ const EN_PRUEBAS = import.meta.env?.MODE === "test"
  * pueda tener el suyo: una caché compartida entre tests los vuelve dependientes
  * del orden en que corren.
  *
+ * @param {object} [opciones] Ajustes del cliente.
+ * @param {Function} [opciones.alFallar] Qué hacer cuando una consulta falla y
+ *   nadie más lo atrapó. Se inyecta para no acoplar la capa de API a la de UI, y
+ *   para que las pruebas puedan comprobar que se llama.
  * @returns {object} Cliente de TanStack Query listo para el provider.
  */
-export function crearQueryClient() {
+export function crearQueryClient({ alFallar } = {}) {
   return new QueryClient({
+    // Ninguna consulta debe fallar en silencio. Una pantalla que no mira su
+    // `error` deja a la persona ante una tabla vacía sin saber si no hay datos o
+    // si la petición se cayó, que son cosas muy distintas. Esto no sustituye al
+    // estado de error de la pantalla: es la red por debajo, para lo que nadie
+    // atrapó. Las cancelaciones no cuentan: cambiar de pantalla no es un fallo.
+    queryCache: new QueryCache({
+      onError: (error) => {
+        if (error instanceof ApiError && error.fueCancelada) return
+        console.error("Consulta fallida:", error)
+        alFallar?.(error)
+      },
+    }),
     defaultOptions: {
       queries: {
         staleTime: EN_PRUEBAS ? 0 : 5 * 60 * 1000,

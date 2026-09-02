@@ -7,7 +7,7 @@ import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 
-import { notify } from '../../shared/ui';
+import { notify, EstadoError } from '../../shared/ui';
 
 import DocumentCard from '../../features/documentos/ui/DocumentCard';
 import ConfigRequirementModal from '../../features/documentos/ui/ConfigRequirementModal';
@@ -46,7 +46,7 @@ const ICONO_POR_ESTADO = {
  * @returns {object} La pantalla.
  */
 const DocumentosPage = () => {
-  const { data, isLoading, isError, error } = useDocumentos();
+  const { data, isLoading, isError, error, refetch } = useDocumentos();
   const requisitos = data?.requisitos ?? [];
   const valores = data?.valores ?? {};
 
@@ -144,7 +144,7 @@ const DocumentosPage = () => {
 
   if (isError) return (
       <Box sx={{ p: 4 }}>
-          <Typography color="error">{error.message}</Typography>
+          <EstadoError error={error} onReintentar={refetch} />
       </Box>
   );
 

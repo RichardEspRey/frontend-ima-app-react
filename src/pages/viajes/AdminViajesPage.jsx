@@ -39,7 +39,7 @@ import {
 } from "../../features/trips-admin"
 import { useAuthStore } from "../../store/useAuthStore"
 import { useViajesFiltrosStore } from "../../store/useViajesFiltrosStore"
-import { notify } from "../../shared/ui"
+import { notify, EstadoError } from "../../shared/ui"
 import { COLOR } from "../../shared/ui/tokens"
 
 /**
@@ -142,7 +142,7 @@ export default function AdminViajesPage() {
     [pestana, pagina, porPagina, filtros, usuario],
   )
 
-  const { data, isFetching, error } = useViajes(consulta, { habilitada: !enProgramacion })
+  const { data, isFetching, error, refetch } = useViajes(consulta, { habilitada: !enProgramacion })
   const accion = useAccionViaje()
 
   const tablero = useTableroProgramacion(enProgramacion)
@@ -531,9 +531,9 @@ export default function AdminViajesPage() {
           />
 
           {error && (
-            <Alert severity="error" sx={{ my: 2 }}>
-              {error.message}
-            </Alert>
+            <Box sx={{ my: 2 }}>
+              <EstadoError error={error} onReintentar={refetch} compacto />
+            </Box>
           )}
 
           <TablaViajes

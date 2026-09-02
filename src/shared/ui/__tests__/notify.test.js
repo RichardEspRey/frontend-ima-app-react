@@ -55,3 +55,29 @@ describe("notify", () => {
     await expect(notify.confirmar({ titulo: "¿Seguro?" })).resolves.toBe(false)
   })
 })
+
+describe("notify.discreto", () => {
+  it("es un aviso que no bloquea: sin botón y con temporizador", async () => {
+    await notify.discreto("No se pudo conectar con el servidor.")
+    const llamada = ultimaLlamada()
+
+    expect(llamada.toast).toBe(true)
+    expect(llamada.showConfirmButton).toBe(false)
+    expect(llamada.timer).toBeGreaterThan(0)
+  })
+
+  it("pasa el icono que se le pide, no una variable inexistente", async () => {
+    await notify.discreto("algo", "warning")
+    expect(ultimaLlamada().icon).toBe("warning")
+  })
+
+  it("usa el icono de error por omisión", async () => {
+    await notify.discreto("algo")
+    expect(ultimaLlamada().icon).toBe("error")
+  })
+
+  it("acepta un Error y saca su mensaje", async () => {
+    await notify.discreto(new Error("se cayó la red"))
+    expect(ultimaLlamada().title).toBe("se cayó la red")
+  })
+})

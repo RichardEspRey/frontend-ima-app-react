@@ -21,7 +21,7 @@ import {
 } from "../../../entities/trip"
 import { useCamionesActivos, useCamionesActivosCompletos } from "../../../entities/truck"
 import { useBodegas, useCrearBodega } from "../../../entities/warehouse"
-import { notify, PantallaEsqueleto } from "../../../shared/ui"
+import { notify, PantallaEsqueleto, EstadoError } from "../../../shared/ui"
 import { initialBorderCrossingDocs, NORMAL_TRIP_DOCS_BY_COUNTRY } from "../../../utils/tripFormConstants"
 import { admiteFacturas, ajustesDe, estadoPorCi, pideVencimiento } from "../model/modos"
 import { useEnlaceTransnacional } from "../model/useEnlaceTransnacional"
@@ -108,7 +108,7 @@ export function EditorViaje({ modo }) {
   const [modalFactura, setModalFactura] = useState(false)
   const [etapaParaFactura, setEtapaParaFactura] = useState(null)
 
-  const { data: viaje, isLoading, error } = useViajeUpcoming(tripId)
+  const { data: viaje, isLoading, error, refetch: recargar } = useViajeUpcoming(tripId)
   const guardarViaje = useGuardarViajeUpcoming()
 
   const conductoresNormales = useConductoresActivos()
@@ -446,7 +446,7 @@ export function EditorViaje({ modo }) {
     )
   }
 
-  if (error) return <Alert severity="error">{error.message}</Alert>
+  if (error) return <EstadoError error={error} onReintentar={recargar} />
 
   const bloqueado = datosViaje.status === "Completed"
   const InfoGeneral = ajustes.editaTransnacional ? GeneralTripInfoComplete : GeneralTripInfo

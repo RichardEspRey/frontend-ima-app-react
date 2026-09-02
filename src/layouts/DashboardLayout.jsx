@@ -2,13 +2,15 @@ import React, { useEffect } from 'react';
 import { Box } from '@mui/material';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 
 import { useAuthStore } from '../store/useAuthStore'; 
 import { COLOR } from '../shared/ui/tokens';
+import { ErrorBoundary } from '../shared/ui';
 
 const DashboardLayout = () => {
   const { user, fetchPermissions } = useAuthStore();
+  const { pathname } = useLocation();
 
   useEffect(() => {
     if (!user?.id) return;
@@ -43,7 +45,9 @@ const DashboardLayout = () => {
             '&::-webkit-scrollbar-track': { bgcolor: 'transparent' }
           }}
         >
-          <Outlet />
+          <ErrorBoundary clave={pathname}>
+            <Outlet />
+          </ErrorBoundary>
         </Box>
       </Box>
     </Box>

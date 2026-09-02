@@ -43,6 +43,34 @@ export const notify = {
   },
 
   /**
+   * Avisa de algo sin interrumpir lo que la persona está haciendo.
+   *
+   * `error` abre un diálogo con un botón, que es lo correcto cuando el fallo es
+   * consecuencia de algo que la persona acaba de pulsar: hay que enterarse antes
+   * de seguir. Para un fallo de fondo —una consulta que se cayó sola, una
+   * promesa rechazada— ese diálogo es peor que el fallo: tapa la pantalla y
+   * obliga a descartarlo para poder seguir trabajando con lo que sí cargó.
+   *
+   * Aparece arriba a la derecha y se va sola.
+   *
+   * @param {(string|Error)} problema Mensaje, o el error capturado.
+   * @param {string} [icono='error'] Icono de sweetalert2.
+   * @returns {Promise} Se resuelve al cerrarse el aviso.
+   */
+  discreto(problema, icono = "error") {
+    const mensaje = problema instanceof Error ? problema.message : problema
+    return Swal.fire({
+      toast: true,
+      position: "top-end",
+      icon: icono,
+      title: mensaje,
+      showConfirmButton: false,
+      timer: 5000,
+      timerProgressBar: true,
+    })
+  },
+
+  /**
    * Advierte de algo que impide continuar, como un campo obligatorio vacío.
    *
    * @param {string} mensaje Qué falta o qué está mal.

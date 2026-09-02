@@ -52,7 +52,7 @@ const TicketPagoPage = () => {
       const res = await fetch(`${apiHost}/formularios.php`, { method: "POST", body: fd });
       const json = await res.json();
 
-      if (json.status === "success") {
+      if (json.status === "success" && json.data?.info_viaje) {
         setInfo(json.data.info_viaje);
         setStages(json.data.stages ?? []);
         setCustomRate(Number(json.data.info_viaje.valor_milla || 0));

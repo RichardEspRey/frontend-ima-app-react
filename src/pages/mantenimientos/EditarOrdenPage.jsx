@@ -99,7 +99,7 @@ export default function EditarOrdenPage() {
             try {
                 const res = await fetch(`${apiHost}/service_order.php`, { method: "POST", body: fd });
                 const json = await res.json();
-                if (json.status === 'success') {
+                if (json.status === 'success' && json.data?.orden) {
                     const o = json.data.orden;
                     setDateForm(o.fecha_orden);
                     setTipoCambioOrden(o.tipo_cambio || "");

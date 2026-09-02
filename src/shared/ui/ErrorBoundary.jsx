@@ -1,13 +1,21 @@
 import { Component } from "react"
-import { Alert, AlertTitle, Box, Button } from "@mui/material"
+import { Box } from "@mui/material"
+import { EstadoError } from "./EstadoError"
 
 /**
  * Aísla el fallo de una pantalla para que no tumbe la aplicación entera.
  *
  * Sin esto, un error de render en cualquier módulo deja al usuario con la
- * ventana en blanco y sin forma de salir salvo reiniciar la app de escritorio.
- * Se monta por página, no una sola vez arriba, para que el resto de la
- * navegación siga funcionando.
+ * ventana en blanco. En el navegador se puede recargar; en la app de escritorio
+ * no hay barra de direcciones, así que la única salida es cerrar y volver a
+ * abrir. Por eso se monta **dentro** del layout, alrededor del contenido de la
+ * página: el menú y la cabecera sobreviven al fallo y se puede navegar a otro
+ * lado sin reiniciar nada.
+ *
+ * @example
+ * <ErrorBoundary clave={location.pathname}>
+ *   <Outlet />
+ * </ErrorBoundary>
  */
 export class ErrorBoundary extends Component {
   /**
@@ -17,7 +25,7 @@ export class ErrorBoundary extends Component {
    */
   constructor(props) {
     super(props)
-    this.state = { error: null }
+    this.state = { error: null, clave: props.clave }
   }
 
   /**
@@ -28,6 +36,25 @@ export class ErrorBoundary extends Component {
    */
   static getDerivedStateFromError(error) {
     return { error }
+  }
+
+  /**
+   * Olvida el error cuando cambia la pantalla.
+   *
+   * Sin esto, un fallo en una pantalla dejaba el mensaje puesto para siempre:
+   * el usuario navegaba a otro módulo y seguía viendo el error del anterior,
+   * porque el componente que falló ya no está pero el estado sí. Es el fallo que
+   * convierte "esta pantalla falló" en "la aplicación se rompió".
+   *
+   * @param {object} props Las props entrantes.
+   * @param {object} estado El estado actual.
+   * @returns {(object|null)} El estado corregido, o `null` si no cambia.
+   */
+  static getDerivedStateFromProps(props, estado) {
+    if (props.clave !== estado.clave) {
+      return { error: null, clave: props.clave }
+    }
+    return null
   }
 
   /**
@@ -42,7 +69,7 @@ export class ErrorBoundary extends Component {
   }
 
   /**
-   * Pinta el mensaje de error, o los hijos si todo va bien.
+   * Pinta el estado de error, o los hijos si todo va bien.
    *
    * @returns {object} El contenido renderizado.
    */
@@ -50,18 +77,12 @@ export class ErrorBoundary extends Component {
     if (!this.state.error) return this.props.children
 
     return (
-      <Box sx={{ p: 4 }}>
-        <Alert
-          severity="error"
-          action={
-            <Button color="inherit" size="small" onClick={() => this.setState({ error: null })}>
-              Reintentar
-            </Button>
-          }
-        >
-          <AlertTitle>Esta pantalla no se pudo mostrar</AlertTitle>
-          {this.state.error.message}
-        </Alert>
+      <Box sx={{ maxWidth: 720, mx: "auto", mt: 4 }}>
+        <EstadoError
+          error={this.state.error}
+          titulo="Esta pantalla no se pudo mostrar"
+          onReintentar={() => this.setState({ error: null })}
+        />
       </Box>
     )
   }
