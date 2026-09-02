@@ -5,6 +5,7 @@ import {
 } from "@mui/material";
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import InfoIcon from '@mui/icons-material/Info';
+import { COLOR } from '../../shared/ui/tokens';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -82,7 +83,7 @@ export default function AutonomiaPage() {
       <Paper elevation={2} sx={{ width: '100%', overflow: 'hidden', borderRadius: 2 }}>
         <TableContainer>
           <Table size="medium">
-            <TableHead sx={{ bgcolor: '#f5f5f5' }}>
+            <TableHead sx={{ bgcolor: COLOR.LIENZO }}>
               <TableRow>
                 <TableCell sx={{ fontWeight: 800, width: 150 }}>Camión</TableCell>
                 {/* Columnas de registros 1 (más reciente) al 5 */}
@@ -91,7 +92,7 @@ export default function AutonomiaPage() {
                         Registro {num}
                     </TableCell>
                 ))}
-                <TableCell align="center" sx={{ fontWeight: 800, bgcolor: '#e3f2fd', color: '#0d47a1', width: 140 }}>
+                <TableCell align="center" sx={{ fontWeight: 800, bgcolor: COLOR.INFO_FONDO, color: COLOR.INFO, width: 140 }}>
                     PROMEDIO
                 </TableCell>
               </TableRow>

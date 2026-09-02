@@ -19,6 +19,7 @@ import {
 import TablaReparaciones from "../../features/inspections/ui/TablaReparaciones.jsx";
 import TablaInspecciones from "../../features/inspections/ui/TablaInspecciones.jsx";
 import { archivoDelEvento } from "../../shared/security";
+import { COLOR } from "../../shared/ui/tokens";
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -182,10 +183,10 @@ export default function SafetyPage() {
           <Typography variant="overline" sx={PAGE_OVERLINE_SX}>
             Safety · Cumplimiento
           </Typography>
-          <Typography variant="h4" fontWeight={800} color="#0f172a" letterSpacing="-0.02em" sx={PAGE_TITLE_SX}>
+          <Typography variant="h4" fontWeight={800} color={COLOR.TINTA} letterSpacing="-0.02em" sx={PAGE_TITLE_SX}>
             Safety &amp; Cumplimiento
           </Typography>
-          <Typography variant="body2" color="#64748b" sx={{ mt: 0.5 }}>
+          <Typography variant="body2" color={COLOR.APAGADO} sx={{ mt: 0.5 }}>
             Control de documentos para viajes completados.
           </Typography>
         </Box>
@@ -224,7 +225,7 @@ export default function SafetyPage() {
                   input: {
                     startAdornment: (
                       <InputAdornment position="start">
-                        <SearchIcon sx={{ fontSize: 18, color: '#94a3b8' }} />
+                        <SearchIcon sx={{ fontSize: 18, color: COLOR.TENUE }} />
                       </InputAdornment>
                     ),
                     sx: { bgcolor: 'white', minWidth: 300 }
@@ -270,10 +271,10 @@ export default function SafetyPage() {
                   ) : pageData.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={4} align="center" sx={{ py: 6 }}>
-                        <Typography variant="body2" color="#64748b" fontWeight={600}>
+                        <Typography variant="body2" color={COLOR.APAGADO} fontWeight={600}>
                           No se encontraron viajes.
                         </Typography>
-                        <Typography variant="caption" color="#94a3b8">
+                        <Typography variant="caption" color={COLOR.TENUE}>
                           Ajusta la búsqueda o revisa otra pestaña.
                         </Typography>
                       </TableCell>
@@ -282,11 +283,11 @@ export default function SafetyPage() {
                     pageData.map((row) => (
                       <TableRow key={row.trip_id} hover>
                         <TableCell>
-                          <Typography variant="body2" fontWeight={700} color="#0f172a">
+                          <Typography variant="body2" fontWeight={700} color={COLOR.TINTA}>
                             {row.trip_number}
                           </Typography>
                           {row.driver_nombre && (
-                            <Typography variant="caption" display="block" color="#64748b">
+                            <Typography variant="caption" display="block" color={COLOR.APAGADO}>
                               {row.driver_nombre}
                             </Typography>
                           )}

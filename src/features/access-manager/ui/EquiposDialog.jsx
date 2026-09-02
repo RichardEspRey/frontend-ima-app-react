@@ -41,6 +41,7 @@ import {
   useMiembros,
 } from "../../../entities/team"
 import { useUsuarios } from "../../../entities/user"
+import { COLOR } from "../../../shared/ui/tokens"
 
 const FORM_VACIO = { name: "", description: "" }
 
@@ -197,7 +198,7 @@ export function EquiposDialog({ abierto, onCerrar }) {
                   <IconButton
                     size="small"
                     title="Eliminar"
-                    sx={{ color: "#b91c1c" }}
+                    sx={{ color: COLOR.PELIGRO }}
                     onClick={() => borrarEquipo(equipo)}
                   >
                     <DeleteIcon fontSize="small" />

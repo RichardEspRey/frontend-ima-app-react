@@ -22,6 +22,7 @@ import {
   money,
   moneyMXN,
 } from "../estilos"
+import { COLOR } from "../../../shared/ui/tokens"
 
 const COLUMNAS = [
   { campo: "id_gasto", etiqueta: "Expense #" },
@@ -69,7 +70,7 @@ function CeldaOrdenable({ campo, etiqueta, orden, onOrdenar, align = "left" }) {
             color: "inherit !important",
             whiteSpace: "nowrap",
             "& .MuiTableSortLabel-icon": {
-              color: "#64748b !important",
+              color: `${COLOR.APAGADO} !important`,
               width: 0,
               mx: 0,
               overflow: "hidden",
@@ -118,7 +119,7 @@ export function TablaGastos({
   const columnas = COLUMNAS.length + 2
 
   return (
-    <Paper elevation={0} sx={{ border: "1px solid #e2e8f0", borderRadius: 2, overflow: "hidden" }}>
+    <Paper elevation={0} sx={{ border: `1px solid ${COLOR.BORDE}`, borderRadius: 2, overflow: "hidden" }}>
       <TableContainer>
         <Table size="small">
           <TableHead>
@@ -148,10 +149,10 @@ export function TablaGastos({
             ) : gastos.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={columnas} align="center" sx={{ py: 6 }}>
-                  <Typography variant="body2" color="#64748b" fontWeight={600}>
+                  <Typography variant="body2" color={COLOR.APAGADO} fontWeight={600}>
                     No se encontraron gastos.
                   </Typography>
-                  <Typography variant="caption" color="#94a3b8">
+                  <Typography variant="caption" color={COLOR.TENUE}>
                     Prueba a quitar algún filtro.
                   </Typography>
                 </TableCell>
@@ -173,27 +174,27 @@ export function TablaGastos({
             <TableFooter>
               <TableRow
                 sx={{
-                  bgcolor: "#f8fafc",
-                  "& td": { borderTop: "2px solid #e2e8f0", borderBottom: "none" },
+                  bgcolor: COLOR.LIENZO,
+                  "& td": { borderTop: `2px solid ${COLOR.BORDE}`, borderBottom: "none" },
                 }}
               >
                 <TableCell colSpan={5} sx={{ py: 1.75 }}>
                   <Typography variant="caption" sx={{ ...SECTION_LABEL_SX, textTransform: "uppercase" }}>
                     Total filtrado
                   </Typography>
-                  <Typography variant="body2" color="#64748b">
+                  <Typography variant="body2" color={COLOR.APAGADO}>
                     {totales.cuantos} gasto{totales.cuantos === 1 ? "" : "s"}
                     {totales.sinConversion > 0 &&
                       ` · ${totales.sinConversion} sin conversión a pesos`}
                   </Typography>
                 </TableCell>
                 <TableCell align="right" sx={{ py: 1.75 }}>
-                  <Typography variant="body2" fontWeight={800} color="#0f172a">
+                  <Typography variant="body2" fontWeight={800} color={COLOR.TINTA}>
                     {money(totales.usd)}
                   </Typography>
                 </TableCell>
                 <TableCell align="right" sx={{ py: 1.75 }}>
-                  <Typography variant="body2" fontWeight={800} color="#0f172a">
+                  <Typography variant="body2" fontWeight={800} color={COLOR.TINTA}>
                     {moneyMXN(totales.mxn)}
                   </Typography>
                 </TableCell>

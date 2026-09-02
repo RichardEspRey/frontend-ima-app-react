@@ -9,6 +9,7 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import dayjs from 'dayjs';
 import { usePermisos, PERMISOS } from '../../shared/auth';
 import { urlSegura } from '../../shared/security';
+import { COLOR } from '../../shared/ui/tokens';
 
 const formatTime = (timeStr) => {
   if (!timeStr) return '';
@@ -20,10 +21,10 @@ const apiHost = import.meta.env.VITE_API_HOST;
 // Mismos tonos semánticos que el resto del rediseño (success/warning/error),
 // en versión "tinted badge" en vez de Chip sólido de MUI.
 const TINTS = {
-  success: { bg: '#f0fdf4', fg: '#16a34a' },
-  warning: { bg: '#fffbeb', fg: '#d97706' },
-  error:   { bg: '#fef2f2', fg: '#dc2626' },
-  info:    { bg: '#eff6ff', fg: '#2563eb' },
+  success: { bg: COLOR.EXITO_FONDO, fg: COLOR.EXITO },
+  warning: { bg: COLOR.AVISO_FONDO, fg: COLOR.AVISO },
+  error:   { bg: COLOR.PELIGRO_FONDO, fg: COLOR.PELIGRO },
+  info:    { bg: COLOR.INFO_FONDO, fg: COLOR.INFO },
 };
 
 const TintedBadge = ({ tone, icon, label, component, href, target }) => {
@@ -83,17 +84,17 @@ export const StageNormalCard = ({ etapa, getDocumentUrl, isCompleted }) => {
   const millasPracticas = parseFloat(etapa.millas_pcmiller_practicas) || 0;
   const rateFinal = millasPracticas > 0 ? (tarifa / millasPracticas) : 0;
 
-  const directionColor = etapa.travel_direction === 'Going Up' ? '#16a34a' : '#d97706';
+  const directionColor = etapa.travel_direction === 'Going Up' ? COLOR.EXITO : COLOR.AVISO;
 
   return (
     <Grid item xs={12} sm={6} md={4}>
-      <Paper elevation={0} sx={{ border: '1px solid #e2e8f0', p: 2, height: '100%', borderRadius: 2, position: 'relative', overflow: 'hidden' }}>
+      <Paper elevation={0} sx={{ border: `1px solid ${COLOR.BORDE}`, p: 2, height: '100%', borderRadius: 2, position: 'relative', overflow: 'hidden' }}>
         <Box sx={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, bgcolor: directionColor }} />
 
         <Stack spacing={1.5} sx={{ pl: 1 }}>
           <Box>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="overline" sx={{ color: '#94a3b8', fontWeight: 700, letterSpacing: '0.06em', fontSize: '0.68rem' }}>
+                <Typography variant="overline" sx={{ color: COLOR.TENUE, fontWeight: 700, letterSpacing: '0.06em', fontSize: '0.68rem' }}>
                   Etapa {etapa.stage_number} • {etapa.travel_direction}
                 </Typography>
 
@@ -102,13 +103,13 @@ export const StageNormalCard = ({ etapa, getDocumentUrl, isCompleted }) => {
                 )}
             </Box>
             <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: 0.5, flexWrap:'wrap' }}>
-              <BusinessIcon sx={{ fontSize: 18, color: '#94a3b8' }} />
-              <Typography variant="subtitle1" fontWeight={700} color="#0f172a" sx={{ lineHeight: 1.2 }}>
+              <BusinessIcon sx={{ fontSize: 18, color: COLOR.TENUE }} />
+              <Typography variant="subtitle1" fontWeight={700} color={COLOR.TINTA} sx={{ lineHeight: 1.2 }}>
                 {etapa.nombre_compania || 'Compañía sin nombre'}
               </Typography>
 
               {canManageInvoice && etapa.ci_number && (
-                <Chip label={`CI: ${etapa.ci_number}`} size="small" sx={{ height: 20, fontSize:'0.7rem', fontWeight: 700, bgcolor: '#f1f5f9', color: '#475569' }} />
+                <Chip label={`CI: ${etapa.ci_number}`} size="small" sx={{ height: 20, fontSize:'0.7rem', fontWeight: 700, bgcolor: COLOR.RELLENO, color: COLOR.TEXTO_SUAVE }} />
               )}
 
               {mainBLDocs.map(doc => (
@@ -146,22 +147,22 @@ export const StageNormalCard = ({ etapa, getDocumentUrl, isCompleted }) => {
             </Stack>
           </Box>
 
-          <Divider sx={{ borderColor: '#f1f5f9' }} />
+          <Divider sx={{ borderColor: COLOR.RELLENO }} />
 
           <Stack direction="row" alignItems="flex-start" spacing={1} sx={{ mt: 1 }}>
-            <RoomOutlinedIcon sx={{ fontSize: 18, color: '#94a3b8', mt: 0.2 }} />
+            <RoomOutlinedIcon sx={{ fontSize: 18, color: COLOR.TENUE, mt: 0.2 }} />
 
             <Grid container spacing={1} alignItems="flex-start">
               {/* ORIGEN */}
               <Grid item xs={5} sx={{ display: 'flex', flexDirection: 'column' }}>
-                <Typography variant="body2" fontWeight={600} color="#334155" sx={{ lineHeight: 1.2 }}>{etapa.origin}</Typography>
+                <Typography variant="body2" fontWeight={600} color={COLOR.TEXTO} sx={{ lineHeight: 1.2 }}>{etapa.origin}</Typography>
                 <Box sx={{ mt: 0.8 }}>
-                    <Typography variant="caption" color="#94a3b8" display="block" sx={{ fontSize: '0.65rem', textTransform: 'uppercase' }}>
+                    <Typography variant="caption" color={COLOR.TENUE} display="block" sx={{ fontSize: '0.65rem', textTransform: 'uppercase' }}>
                       Fecha Salida
                     </Typography>
                     <Stack direction="row" alignItems="center" spacing={0.5}>
-                      <CalendarTodayOutlinedIcon sx={{ fontSize: 12, color: '#94a3b8' }} />
-                      <Typography variant="caption" fontWeight={700} color="#0f172a">
+                      <CalendarTodayOutlinedIcon sx={{ fontSize: 12, color: COLOR.TENUE }} />
+                      <Typography variant="caption" fontWeight={700} color={COLOR.TINTA}>
                         {etapa.date_of_departure
                           ? dayjs(etapa.date_of_departure).format("DD/MM/YY")
                           : (etapa.creation_date ? dayjs(etapa.creation_date).format("DD/MM/YY") : '--')}
@@ -170,12 +171,12 @@ export const StageNormalCard = ({ etapa, getDocumentUrl, isCompleted }) => {
                 </Box>
 
                 <Box sx={{ mt: 0.5 }}>
-                    <Typography variant="caption" color="#94a3b8" display="block" sx={{ fontSize: '0.65rem', textTransform: 'uppercase' }}>
+                    <Typography variant="caption" color={COLOR.TENUE} display="block" sx={{ fontSize: '0.65rem', textTransform: 'uppercase' }}>
                       Fecha Carga
                     </Typography>
                     <Stack direction="row" alignItems="center" spacing={0.5}>
-                      <CalendarTodayOutlinedIcon sx={{ fontSize: 12, color: '#94a3b8' }} />
-                      <Typography variant="caption" fontWeight={500} color="#475569">
+                      <CalendarTodayOutlinedIcon sx={{ fontSize: 12, color: COLOR.TENUE }} />
+                      <Typography variant="caption" fontWeight={500} color={COLOR.TEXTO_SUAVE}>
                         {etapa.loading_date ? dayjs(etapa.loading_date).format("DD/MM/YY") : '--'}
                       </Typography>
                     </Stack>
@@ -183,22 +184,22 @@ export const StageNormalCard = ({ etapa, getDocumentUrl, isCompleted }) => {
               </Grid>
 
               <Grid item xs={2} sx={{ display: 'flex', justifyContent: 'center', pt: 0.5 }}>
-                <ArrowForwardIcon sx={{ fontSize: 16, color: '#cbd5e1' }} />
+                <ArrowForwardIcon sx={{ fontSize: 16, color: COLOR.BORDE_FUERTE }} />
               </Grid>
 
               {/* DESTINO */}
               <Grid item xs={5} sx={{ display: 'flex', flexDirection: 'column' }}>
-                <Typography variant="body2" fontWeight={600} color="#334155" sx={{ lineHeight: 1.2 }}>{etapa.destination}</Typography>
+                <Typography variant="body2" fontWeight={600} color={COLOR.TEXTO} sx={{ lineHeight: 1.2 }}>{etapa.destination}</Typography>
                 <Box sx={{ mt: 0.8 }}>
-                    <Typography variant="caption" color="#94a3b8" display="block" sx={{ fontSize: '0.65rem', textTransform: 'uppercase' }}>Fecha Entrega</Typography>
+                    <Typography variant="caption" color={COLOR.TENUE} display="block" sx={{ fontSize: '0.65rem', textTransform: 'uppercase' }}>Fecha Entrega</Typography>
                     <Stack direction="row" alignItems="center" spacing={1} flexWrap="wrap" useFlexGap sx={{ mt: 0.2 }}>
                       <Stack direction="row" alignItems="center" spacing={0.5}>
-                        <CalendarTodayOutlinedIcon sx={{ fontSize: 12, color: '#94a3b8' }} />
-                        <Typography variant="caption" fontWeight={500} color="#475569">{etapa.delivery_date ? dayjs(etapa.delivery_date).format("DD/MM/YY") : '--'}</Typography>
+                        <CalendarTodayOutlinedIcon sx={{ fontSize: 12, color: COLOR.TENUE }} />
+                        <Typography variant="caption" fontWeight={500} color={COLOR.TEXTO_SUAVE}>{etapa.delivery_date ? dayjs(etapa.delivery_date).format("DD/MM/YY") : '--'}</Typography>
                       </Stack>
 
                       {etapa.time_of_delivery && (
-                        <Stack direction="row" alignItems="center" spacing={0.5} sx={{ bgcolor: '#f8fafc', color: '#475569', border: '1px solid #e2e8f0', borderRadius: 1, px: 0.6, py: 0.1 }}>
+                        <Stack direction="row" alignItems="center" spacing={0.5} sx={{ bgcolor: COLOR.LIENZO, color: COLOR.TEXTO_SUAVE, border: `1px solid ${COLOR.BORDE}`, borderRadius: 1, px: 0.6, py: 0.1 }}>
                           <AccessTimeOutlinedIcon sx={{ fontSize: 11 }} />
                           <Typography variant="caption" fontWeight={700} sx={{ lineHeight: 1, fontSize: '0.7rem' }}>{formatTime(etapa.time_of_delivery)}</Typography>
                         </Stack>
@@ -210,27 +211,27 @@ export const StageNormalCard = ({ etapa, getDocumentUrl, isCompleted }) => {
           </Stack>
 
           {etapa.comments && (
-            <Typography variant="caption" sx={{ fontStyle: 'italic', color: '#64748b', borderLeft: '2px solid #e2e8f0', pl: 1, display: 'block', maxWidth: '45ch', wordWrap: 'break-word', whiteSpace: 'pre-wrap' }}>
+            <Typography variant="caption" sx={{ fontStyle: 'italic', color: COLOR.APAGADO, borderLeft: `2px solid ${COLOR.BORDE}`, pl: 1, display: 'block', maxWidth: '45ch', wordWrap: 'break-word', whiteSpace: 'pre-wrap' }}>
               "{etapa.comments}"
             </Typography>
           )}
 
           {/* PARADAS */}
           {Array.isArray(etapa.stops_in_transit) && etapa.stops_in_transit.length > 0 && (
-            <Box sx={{ mt: 1, pt: 1, borderTop: '1px dashed #e2e8f0' }}>
-              <Typography variant="overline" fontWeight={700} color="#94a3b8" sx={{ fontSize: '0.65rem', letterSpacing: '0.06em' }}>Paradas Adicionales</Typography>
+            <Box sx={{ mt: 1, pt: 1, borderTop: `1px dashed ${COLOR.BORDE}` }}>
+              <Typography variant="overline" fontWeight={700} color={COLOR.TENUE} sx={{ fontSize: '0.65rem', letterSpacing: '0.06em' }}>Paradas Adicionales</Typography>
               <Stack spacing={0.75} sx={{ mt: 0.5 }}>
                 {etapa.stops_in_transit.map((stop, i) => (
                   <Stack key={i} direction="row" alignItems="center" spacing={1} flexWrap="wrap">
                     <Box sx={{
-                      width: 16, height: 16, borderRadius: '50%', bgcolor: '#f1f5f9', color: '#64748b',
+                      width: 16, height: 16, borderRadius: '50%', bgcolor: COLOR.RELLENO, color: COLOR.APAGADO,
                       display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.6rem', fontWeight: 700, flexShrink: 0,
                     }}>
                       {stop.stop_order || i + 1}
                     </Box>
-                    <Typography variant="body2" color="#334155" sx={{ fontSize: '0.8rem' }}>{stop.location}</Typography>
+                    <Typography variant="body2" color={COLOR.TEXTO} sx={{ fontSize: '0.8rem' }}>{stop.location}</Typography>
                     {stop.time_of_delivery && (
-                        <Chip icon={<AccessTimeOutlinedIcon sx={{ fontSize: '12px !important' }} />} label={formatTime(stop.time_of_delivery)} size="small" sx={{ height: 20, fontSize: '0.7rem', bgcolor: '#f8fafc', border: '1px solid #e2e8f0', color: '#64748b' }} />
+                        <Chip icon={<AccessTimeOutlinedIcon sx={{ fontSize: '12px !important' }} />} label={formatTime(stop.time_of_delivery)} size="small" sx={{ height: 20, fontSize: '0.7rem', bgcolor: COLOR.LIENZO, border: `1px solid ${COLOR.BORDE}`, color: COLOR.APAGADO }} />
                     )}
                     {stop.bl_firmado_doc && (
                       <TintedBadge
@@ -264,7 +265,7 @@ export const StageNormalCard = ({ etapa, getDocumentUrl, isCompleted }) => {
                       rel="noopener noreferrer"
                       clickable
                       variant="outlined"
-                      sx={{ fontSize: '0.72rem', fontWeight: 700, borderColor: '#e2e8f0', color: '#475569' }}
+                      sx={{ fontSize: '0.72rem', fontWeight: 700, borderColor: COLOR.BORDE, color: COLOR.TEXTO_SUAVE }}
                   />
               ))}
               </Stack>

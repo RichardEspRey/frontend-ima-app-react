@@ -1,5 +1,6 @@
 import { Box, Paper, Typography } from "@mui/material"
 import { CARD_SX, SECTION_LABEL_SX } from "./estilos"
+import { COLOR } from "./tokens"
 
 /**
  * Tarjeta de cifra: una etiqueta, un número grande y una nota al pie.
@@ -25,14 +26,14 @@ import { CARD_SX, SECTION_LABEL_SX } from "./estilos"
  *   etiqueta="Nómina total (MXN)"
  *   valor="$18,800.00"
  *   pie="Pagado a 7 empleado(s)"
- *   acento="#15803d"
+ *   acento={COLOR.EXITO}
  * />
  */
-export function StatCard({ etiqueta, valor, pie, acento = "#0f172a", icono }) {
+export function StatCard({ etiqueta, valor, pie, acento = COLOR.TINTA, icono }) {
   return (
     <Paper elevation={0} sx={{ ...CARD_SX, height: "100%" }}>
       <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, mb: 1 }}>
-        {icono && <Box sx={{ display: "flex", color: "#94a3b8" }}>{icono}</Box>}
+        {icono && <Box sx={{ display: "flex", color: COLOR.TENUE }}>{icono}</Box>}
         <Typography variant="overline" sx={SECTION_LABEL_SX}>
           {etiqueta}
         </Typography>
@@ -43,7 +44,7 @@ export function StatCard({ etiqueta, valor, pie, acento = "#0f172a", icono }) {
       </Typography>
 
       {pie && (
-        <Typography variant="body2" color="#64748b" sx={{ mt: 0.5 }}>
+        <Typography variant="body2" color={COLOR.APAGADO} sx={{ mt: 0.5 }}>
           {pie}
         </Typography>
       )}

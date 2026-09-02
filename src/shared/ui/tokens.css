@@ -1,0 +1,36 @@
+/*
+ * Los mismos tokens de `tokens.js`, para las hojas de estilo sueltas.
+ *
+ * Existe porque quedan siete archivos `.css` que no pueden importar constantes
+ * de JavaScript, y antes tenían su propia copia de los colores escrita a mano.
+ * Cuando esos archivos terminen de migrarse a MUI, este archivo desaparece.
+ *
+ * Si cambias un valor aquí, cámbialo también en `tokens.js`: son la misma
+ * paleta, no dos.
+ */
+:root {
+  --ima-tinta: #0f172a;
+  --ima-tinta-clara: #1e293b;
+  --ima-texto: #334155;
+  --ima-texto-suave: #475569;
+  --ima-apagado: #64748b;
+  --ima-tenue: #94a3b8;
+  --ima-borde-fuerte: #cbd5e1;
+  --ima-borde: #e2e8f0;
+  --ima-relleno: #f1f5f9;
+  --ima-lienzo: #f8fafc;
+  --ima-blanco: #ffffff;
+
+  --ima-exito: #15803d;
+  --ima-peligro: #b91c1c;
+  --ima-aviso: #b45309;
+  --ima-info: #1d4ed8;
+
+  --ima-marca: #3c48e1;
+  --ima-marca-hover: #4f5bda;
+  --ima-marca-activo: #2b36a0;
+  --ima-marca-profundo: #001f4d;
+
+  --ima-radio: 8px;
+  --ima-radio-grande: 12px;
+}

@@ -1,6 +1,7 @@
 import { TableCell, TableRow, Stack, Tooltip, Chip } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
+import { COLOR } from '../shared/ui/tokens';
 
 // Helpers 
 const money = (v) =>
@@ -74,7 +75,7 @@ export const MargenRow = ({ trip }) => {
 
             <TableCell 
                 align="right" 
-                sx={{ fontWeight: 700, color: isMarginPositive ? '#2e7d32' : '#d32f2f', bgcolor: '#f5f5f5' }}
+                sx={{ fontWeight: 700, color: isMarginPositive ? COLOR.EXITO : COLOR.PELIGRO, bgcolor: COLOR.LIENZO }}
             >
                 {money(currentMargin)}
             </TableCell>

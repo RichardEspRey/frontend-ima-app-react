@@ -4,10 +4,11 @@ import {
     Button, TableCell, TableRow, IconButton, Collapse, Box, Typography, CircularProgress, Chip, Grid, Divider
 } from '@mui/material';
 import { KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
+import { COLOR } from '../shared/ui/tokens';
 
 function Categoria({ titulo, items = [] }) {
   return (
-    <Box sx={{ p: 2, border: '1px solid #ddd', borderRadius: 1, bgcolor: '#f9f9f9' }}>
+    <Box sx={{ p: 2, border: '1px solid #ddd', borderRadius: 1, bgcolor: COLOR.LIENZO }}>
       <Typography variant="h6" fontWeight={600} sx={{ mb: 1, fontSize: '1.05rem' }}>{titulo} ({items.length})</Typography>
       {items.length === 0 ? (
         <Typography variant="body2" color="text.secondary">Sin registros.</Typography>

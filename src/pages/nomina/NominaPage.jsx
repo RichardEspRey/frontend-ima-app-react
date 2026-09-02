@@ -14,6 +14,7 @@ import {
   usePeriodos,
   useAutorizarPeriodo,
 } from "../../entities/payroll"
+import { COLOR } from "../../shared/ui/tokens"
 
 const dinero = (monto, locale) =>
   `$${Number(monto).toLocaleString(locale, { minimumFractionDigits: 2 })}`
@@ -71,7 +72,7 @@ export default function NominaPage() {
           icon={<PeopleAltIcon />}
           label={p.emps_mx}
           size="small"
-          sx={{ ...CHIP_SX, bgcolor: "#f0fdf4", color: "#15803d", border: "1px solid #bbf7d0" }}
+          sx={{ ...CHIP_SX, bgcolor: COLOR.EXITO_FONDO, color: COLOR.EXITO, border: `1px solid ${COLOR.EXITO_BORDE}` }}
         />
       ),
     },
@@ -96,7 +97,7 @@ export default function NominaPage() {
           icon={<PeopleAltIcon />}
           label={p.emps_us}
           size="small"
-          sx={{ ...CHIP_SX, bgcolor: "#eff6ff", color: "#1d4ed8", border: "1px solid #bfdbfe" }}
+          sx={{ ...CHIP_SX, bgcolor: COLOR.INFO_FONDO, color: COLOR.INFO, border: `1px solid ${COLOR.INFO_BORDE}` }}
         />
       ),
     },

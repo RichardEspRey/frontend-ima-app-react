@@ -1,14 +1,15 @@
 import { Box, Typography } from '@mui/material';
+import { COLOR } from '../shared/ui/tokens';
 
 const STATUS_STYLES = {
-    'Completed': '#16a34a',
-    'In Transit': '#d97706',
-    'Almost Over': '#2563eb',
-    'Cancelled': '#dc2626',
+    'Completed': COLOR.EXITO,
+    'In Transit': COLOR.AVISO,
+    'Almost Over': COLOR.INFO,
+    'Cancelled': COLOR.PELIGRO,
     'In Coming': '#0891b2',
 };
 
-export const getStatusColor = (status) => STATUS_STYLES[status || 'In Transit'] || '#64748b';
+export const getStatusColor = (status) => STATUS_STYLES[status || 'In Transit'] || COLOR.APAGADO;
 
 // Barra de acento + punto en vez de un Chip sólido: mismo significado de color
 // que antes, tratamiento más editorial y menos "template".

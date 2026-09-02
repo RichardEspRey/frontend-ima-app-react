@@ -24,11 +24,12 @@ import SellOutlinedIcon from "@mui/icons-material/SellOutlined"
 
 import { TODOS } from "../../../entities/expense"
 import { SECTION_LABEL_SX } from "../estilos"
+import { COLOR } from "../../../shared/ui/tokens"
 
 const MEDIO = { xs: 12, sm: 6, md: 4 }
 const CUARTO = { xs: 12, sm: 6, md: 3 }
 
-const ICONO_SX = { fontSize: 18, color: "#94a3b8" }
+const ICONO_SX = { fontSize: 18, color: COLOR.TENUE }
 
 /**
  * Un selector de filtro con su icono.
@@ -98,8 +99,8 @@ export function FiltrosGastos({
           onClick={onAlternar}
           sx={{
             bgcolor: "white",
-            borderColor: activos > 0 ? "#0f172a" : "#cbd5e1",
-            color: "#334155",
+            borderColor: activos > 0 ? COLOR.TINTA : COLOR.BORDE_FUERTE,
+            color: COLOR.TEXTO,
             fontWeight: 600,
             textTransform: "none",
             borderRadius: 2,
@@ -115,8 +116,8 @@ export function FiltrosGastos({
                 height: 20,
                 px: 0.6,
                 borderRadius: "10px",
-                bgcolor: "#0f172a",
-                color: "#fff",
+                bgcolor: COLOR.TINTA,
+                color: COLOR.BLANCO,
                 fontSize: "0.72rem",
                 fontWeight: 700,
                 display: "inline-flex",
@@ -131,7 +132,7 @@ export function FiltrosGastos({
       </Box>
 
       <Collapse in={abiertos}>
-        <Paper sx={{ p: 3, mb: 3, borderRadius: 2, border: "1px solid #e2e8f0" }} elevation={0}>
+        <Paper sx={{ p: 3, mb: 3, borderRadius: 2, border: `1px solid ${COLOR.BORDE}` }} elevation={0}>
           <Stack spacing={2.5}>
             <Box>
               <Typography variant="overline" sx={SECTION_LABEL_SX}>
@@ -184,7 +185,7 @@ export function FiltrosGastos({
               </Grid>
             </Box>
 
-            <Divider sx={{ borderColor: "#f1f5f9" }} />
+            <Divider sx={{ borderColor: COLOR.RELLENO }} />
 
             <Box>
               <Typography variant="overline" sx={SECTION_LABEL_SX}>
@@ -223,7 +224,7 @@ export function FiltrosGastos({
               </Grid>
             </Box>
 
-            <Divider sx={{ borderColor: "#f1f5f9" }} />
+            <Divider sx={{ borderColor: COLOR.RELLENO }} />
 
             <Box>
               <Typography variant="overline" sx={SECTION_LABEL_SX}>
@@ -260,7 +261,7 @@ export function FiltrosGastos({
                 variant="text"
                 disabled={activos === 0}
                 onClick={onLimpiar}
-                sx={{ textTransform: "none", fontWeight: 600, color: "#64748b" }}
+                sx={{ textTransform: "none", fontWeight: 600, color: COLOR.APAGADO }}
               >
                 Limpiar Filtros
               </Button>

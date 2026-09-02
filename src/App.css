@@ -20,5 +20,5 @@ body, html, #root {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background-color: #f5f5f5;
+  background-color: var(--ima-lienzo);
 }

@@ -37,6 +37,7 @@ import { ModalColumnas } from "./ModalColumnas"
 import { ModalRequisitos } from "./ModalRequisitos"
 import { ModalUnidad } from "./ModalUnidad"
 import { TablaUnidades } from "./TablaUnidades"
+import { COLOR } from "../../../shared/ui/tokens"
 
 const REQUISITO_EN_BLANCO = { label: "", categoria: "USA", tipo: "file", tiene_vencimiento: true }
 const BAJA_EN_BLANCO = { motivo: "", fecha: "", observaciones: "" }
@@ -205,7 +206,7 @@ export function AdminUnidades({ tipo }) {
   }
 
   return (
-    <Box sx={{ p: { xs: 2, md: 4 }, minHeight: "100vh", bgcolor: "#f8fafc" }}>
+    <Box sx={{ p: { xs: 2, md: 4 }, minHeight: "100vh", bgcolor: COLOR.LIENZO }}>
       {error && (
         <Alert severity="error" sx={{ mb: 3 }}>
           {error.message}
@@ -243,7 +244,7 @@ export function AdminUnidades({ tipo }) {
               disableElevation
               startIcon={<AddIcon />}
               onClick={() => abrirEditor(null)}
-              sx={{ bgcolor: "#0f172a", "&:hover": { bgcolor: "#334155" } }}
+              sx={{ bgcolor: COLOR.TINTA, "&:hover": { bgcolor: COLOR.TEXTO } }}
             >
               {descriptor.etiquetas.alta}
             </Button>
@@ -253,7 +254,7 @@ export function AdminUnidades({ tipo }) {
 
       <Paper
         elevation={0}
-        sx={{ mb: 3, border: "1px solid #e2e8f0", borderRadius: 3, overflow: "hidden" }}
+        sx={{ mb: 3, border: `1px solid ${COLOR.BORDE}`, borderRadius: 3, overflow: "hidden" }}
       >
         {descriptor.conBaja && (
           <Box sx={{ borderBottom: 1, borderColor: "divider", bgcolor: "white" }}>

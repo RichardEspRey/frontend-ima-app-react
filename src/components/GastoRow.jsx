@@ -16,6 +16,7 @@ import { esGastoMXN, totalUSD, totalMXN, tipoGastoPrincipal } from '../entities/
 import { money, moneyMXN } from '../features/expense-manager/estilos';
 import Swal from 'sweetalert2';
 import { useAuthStore } from '../store/useAuthStore';
+import { COLOR, TINTE } from '../shared/ui/tokens';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -24,11 +25,11 @@ const fileName = (path = '') => path.split('/').pop() || '';
 
 // Mismo lenguaje visual que el Administrador de Viajes.
 const SUB_HEADER_CELL_SX = {
-  fontWeight: 700, color: '#94a3b8', fontSize: '0.68rem',
-  textTransform: 'uppercase', letterSpacing: '0.06em', borderBottom: '1px solid #e2e8f0',
+  fontWeight: 700, color: COLOR.TENUE, fontSize: '0.68rem',
+  textTransform: 'uppercase', letterSpacing: '0.06em', borderBottom: `1px solid ${COLOR.BORDE}`,
 };
 const MICRO_LABEL_SX = {
-  color: '#94a3b8', fontWeight: 700, letterSpacing: '0.08em', fontSize: '0.68rem',
+  color: COLOR.TENUE, fontWeight: 700, letterSpacing: '0.08em', fontSize: '0.68rem',
 };
 
 const GastoRow = ({ gasto, mxnRate, puedeEliminar = false, onEliminado }) => {
@@ -50,8 +51,8 @@ const GastoRow = ({ gasto, mxnRate, puedeEliminar = false, onEliminado }) => {
   // gasto (según el país elegido al crearlo), la otra columna es solo una conversión.
   const esOriginalUSD = !esMXN;
   const esOriginalMXN = esMXN && !totalMXNEsConvertido;
-  const originalSx = { color: '#15803d', fontWeight: 700 };
-  const secundarioSx = { color: '#64748b', fontWeight: 500 };
+  const originalSx = { color: COLOR.EXITO, fontWeight: 700 };
+  const secundarioSx = { color: COLOR.APAGADO, fontWeight: 500 };
 
   const eliminarGasto = async () => {
     const confirmacion = await Swal.fire({
@@ -61,8 +62,8 @@ const GastoRow = ({ gasto, mxnRate, puedeEliminar = false, onEliminado }) => {
       showCancelButton: true,
       confirmButtonText: 'Sí, eliminar',
       cancelButtonText: 'Cancelar',
-      confirmButtonColor: '#b91c1c',
-      cancelButtonColor: '#64748b',
+      confirmButtonColor: COLOR.PELIGRO,
+      cancelButtonColor: COLOR.APAGADO,
     });
 
     if (!confirmacion.isConfirmed) return;
@@ -93,31 +94,31 @@ const GastoRow = ({ gasto, mxnRate, puedeEliminar = false, onEliminado }) => {
   const lastExpenseType = tipoGastoPrincipal(gasto) || '—';
 
   // Franja de color a la izquierda de la fila según el país del gasto.
-  const accentColor = esMXN ? '#0d9488' : '#4f46e5';
+  const accentColor = esMXN ? TINTE.TEAL.acento : TINTE.INDIGO.acento;
 
   return (
     <>
       <TableRow hover sx={{ '& > *': { borderBottom: 'unset' } }}>
         <TableCell padding="checkbox" sx={{ borderLeft: `3px solid ${accentColor}` }}>
-          <IconButton size="small" onClick={() => setOpen((p) => !p)} sx={{ color: '#64748b' }}>
+          <IconButton size="small" onClick={() => setOpen((p) => !p)} sx={{ color: COLOR.APAGADO }}>
             {open ? <KeyboardArrowUpIcon fontSize="small" /> : <KeyboardArrowDownIcon fontSize="small" />}
           </IconButton>
         </TableCell>
 
         <TableCell>
-          <Typography variant="body2" fontWeight={700} color="#0f172a">#{gasto.id_gasto}</Typography>
+          <Typography variant="body2" fontWeight={700} color={COLOR.TINTA}>#{gasto.id_gasto}</Typography>
           {detalles.length > 1 && (
-            <Typography variant="caption" color="#94a3b8">{detalles.length} conceptos</Typography>
+            <Typography variant="caption" color={COLOR.TENUE}>{detalles.length} conceptos</Typography>
           )}
         </TableCell>
 
         <TableCell>
-          <Typography variant="body2" color="#334155" noWrap sx={{ maxWidth: 220 }} title={lastExpenseType}>
+          <Typography variant="body2" color={COLOR.TEXTO} noWrap sx={{ maxWidth: 220 }} title={lastExpenseType}>
             {lastExpenseType}
           </Typography>
         </TableCell>
 
-        <TableCell sx={{ whiteSpace: 'nowrap', color: '#475569' }}>{gasto.fecha_gasto}</TableCell>
+        <TableCell sx={{ whiteSpace: 'nowrap', color: COLOR.TEXTO_SUAVE }}>{gasto.fecha_gasto}</TableCell>
 
         <TableCell>
           <Chip
@@ -125,8 +126,8 @@ const GastoRow = ({ gasto, mxnRate, puedeEliminar = false, onEliminado }) => {
             label={gasto.pais || '—'}
             sx={{
               height: 22, fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.04em',
-              bgcolor: esMXN ? '#f0fdfa' : '#eef2ff',
-              color: esMXN ? '#0f766e' : '#4338ca',
+              bgcolor: esMXN ? TINTE.TEAL.fondo : TINTE.INDIGO.fondo,
+              color: esMXN ? TINTE.TEAL.texto : TINTE.INDIGO.texto,
               border: `1px solid ${esMXN ? '#99f6e4' : '#e0e7ff'}`,
             }}
           />
@@ -140,10 +141,10 @@ const GastoRow = ({ gasto, mxnRate, puedeEliminar = false, onEliminado }) => {
 
         <TableCell align="right">
           {totalMXNMostrado === null ? (
-            <Typography variant="body2" color="#cbd5e1">—</Typography>
+            <Typography variant="body2" color={COLOR.BORDE_FUERTE}>—</Typography>
           ) : totalMXNEsConvertido ? (
             <Tooltip title="Convertido con la tasa de cambio de hoy (el gasto se registró en USD)">
-              <Box component="span" sx={{ ...secundarioSx, cursor: 'help', borderBottom: '1px dashed #cbd5e1' }}>
+              <Box component="span" sx={{ ...secundarioSx, cursor: 'help', borderBottom: `1px dashed ${COLOR.BORDE_FUERTE}` }}>
                 {moneyMXN(totalMXNMostrado)}
               </Box>
             </Tooltip>
@@ -154,12 +155,12 @@ const GastoRow = ({ gasto, mxnRate, puedeEliminar = false, onEliminado }) => {
           )}
         </TableCell>
 
-        <TableCell sx={{ color: '#475569' }}>{gasto.created_name || '—'}</TableCell>
+        <TableCell sx={{ color: COLOR.TEXTO_SUAVE }}>{gasto.created_name || '—'}</TableCell>
 
         <TableCell>
           {gasto.updated_name
-            ? <Typography variant="body2" color="#475569">{gasto.updated_name}</Typography>
-            : <Typography variant="body2" color="#cbd5e1">—</Typography>}
+            ? <Typography variant="body2" color={COLOR.TEXTO_SUAVE}>{gasto.updated_name}</Typography>
+            : <Typography variant="body2" color={COLOR.BORDE_FUERTE}>—</Typography>}
         </TableCell>
 
         <TableCell align="center">
@@ -168,8 +169,8 @@ const GastoRow = ({ gasto, mxnRate, puedeEliminar = false, onEliminado }) => {
               size="small"
               onClick={() => navigate(`/edit-expense/${gasto.id_gasto}`)}
               sx={{
-                color: '#334155', border: '1px solid #e2e8f0', borderRadius: 1.5,
-                '&:hover': { bgcolor: '#0f172a', color: '#fff', borderColor: '#0f172a' },
+                color: COLOR.TEXTO, border: `1px solid ${COLOR.BORDE}`, borderRadius: 1.5,
+                '&:hover': { bgcolor: COLOR.TINTA, color: COLOR.BLANCO, borderColor: COLOR.TINTA },
               }}
             >
               <EditIcon fontSize="small" />
@@ -185,8 +186,8 @@ const GastoRow = ({ gasto, mxnRate, puedeEliminar = false, onEliminado }) => {
                   disabled={eliminando}
                   sx={{
                     ml: 0.5,
-                    color: '#b91c1c', border: '1px solid #fecaca', borderRadius: 1.5,
-                    '&:hover': { bgcolor: '#b91c1c', color: '#fff', borderColor: '#b91c1c' },
+                    color: COLOR.PELIGRO, border: `1px solid ${COLOR.PELIGRO_BORDE}`, borderRadius: 1.5,
+                    '&:hover': { bgcolor: COLOR.PELIGRO, color: COLOR.BLANCO, borderColor: COLOR.PELIGRO },
                   }}
                 >
                   <DeleteOutlineIcon fontSize="small" />
@@ -200,17 +201,17 @@ const GastoRow = ({ gasto, mxnRate, puedeEliminar = false, onEliminado }) => {
       <TableRow>
         <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={10}>
           <Collapse in={open} timeout="auto" unmountOnExit>
-            <Box sx={{ my: 1.5, mx: 1, p: 2.5, border: '1px solid #e2e8f0', borderRadius: 2, bgcolor: '#fafbfc' }}>
+            <Box sx={{ my: 1.5, mx: 1, p: 2.5, border: `1px solid ${COLOR.BORDE}`, borderRadius: 2, bgcolor: COLOR.CABECERA }}>
               <Typography variant="overline" sx={MICRO_LABEL_SX}>
                 Detalle del gasto #{gasto.id_gasto}
               </Typography>
 
               {detalles.length === 0 ? (
-                <Typography variant="body2" color="#64748b" sx={{ mt: 1 }}>
+                <Typography variant="body2" color={COLOR.APAGADO} sx={{ mt: 1 }}>
                   Sin conceptos registrados.
                 </Typography>
               ) : (
-                <Table size="small" sx={{ mb: 3, mt: 1, bgcolor: 'white', borderRadius: 2, border: '1px solid #e2e8f0' }}>
+                <Table size="small" sx={{ mb: 3, mt: 1, bgcolor: 'white', borderRadius: 2, border: `1px solid ${COLOR.BORDE}` }}>
                   <TableHead>
                     <TableRow>
                       <TableCell sx={SUB_HEADER_CELL_SX}>Expense Type</TableCell>
@@ -230,17 +231,17 @@ const GastoRow = ({ gasto, mxnRate, puedeEliminar = false, onEliminado }) => {
                       
                       return (
                         <TableRow key={d.id_detalle_gasto} hover>
-                          <TableCell sx={{ color: '#0f172a', fontWeight: 600 }}>{d.tipo_gasto || '—'}</TableCell>
-                          <TableCell sx={{ color: '#64748b', fontSize: '0.82rem' }}>
+                          <TableCell sx={{ color: COLOR.TINTA, fontWeight: 600 }}>{d.tipo_gasto || '—'}</TableCell>
+                          <TableCell sx={{ color: COLOR.APAGADO, fontSize: '0.82rem' }}>
                             {d.nombre_categoria || '—'}
                           </TableCell>
-                          <TableCell sx={{ color: '#64748b', fontSize: '0.82rem' }}>
+                          <TableCell sx={{ color: COLOR.APAGADO, fontSize: '0.82rem' }}>
                             {d.nombre_subcategoria || '—'}
                           </TableCell>
-                          <TableCell sx={{ color: '#334155' }}>{d.descripcion_articulo || '—'}</TableCell>
-                          <TableCell align="right" sx={{ color: '#475569' }}>{cant}</TableCell>
-                          <TableCell align="right" sx={{ color: '#475569' }}>{money(pu)}</TableCell>
-                          <TableCell align="right" sx={{ fontWeight: 700, color: '#0f172a' }}>{money(sub)}</TableCell>
+                          <TableCell sx={{ color: COLOR.TEXTO }}>{d.descripcion_articulo || '—'}</TableCell>
+                          <TableCell align="right" sx={{ color: COLOR.TEXTO_SUAVE }}>{cant}</TableCell>
+                          <TableCell align="right" sx={{ color: COLOR.TEXTO_SUAVE }}>{money(pu)}</TableCell>
+                          <TableCell align="right" sx={{ fontWeight: 700, color: COLOR.TINTA }}>{money(sub)}</TableCell>
                         </TableRow>
                       );
                     })}
@@ -253,12 +254,12 @@ const GastoRow = ({ gasto, mxnRate, puedeEliminar = false, onEliminado }) => {
                 <Chip
                   size="small"
                   label={tickets.length}
-                  sx={{ height: 18, fontSize: '0.68rem', fontWeight: 700, bgcolor: '#e2e8f0', color: '#475569' }}
+                  sx={{ height: 18, fontSize: '0.68rem', fontWeight: 700, bgcolor: COLOR.BORDE, color: COLOR.TEXTO_SUAVE }}
                 />
               </Stack>
 
               {tickets.length === 0 ? (
-                <Typography variant="body2" color="#94a3b8">Sin documentos adjuntos.</Typography>
+                <Typography variant="body2" color={COLOR.TENUE}>Sin documentos adjuntos.</Typography>
               ) : (
                 <PhotoProvider>
                   <Stack direction="row" spacing={1.5} sx={{ flexWrap: 'wrap', gap: 1.5 }}>
@@ -269,7 +270,7 @@ const GastoRow = ({ gasto, mxnRate, puedeEliminar = false, onEliminado }) => {
                       return (
                         <Box
                           key={t.id_documento}
-                          sx={{ width: 132, border: '1px solid #e2e8f0', borderRadius: 2, p: 1, textAlign: 'center', bgcolor: '#fff' }}
+                          sx={{ width: 132, border: `1px solid ${COLOR.BORDE}`, borderRadius: 2, p: 1, textAlign: 'center', bgcolor: COLOR.BLANCO }}
                         >
                           {esImg ? (
                             <PhotoView src={url}>
@@ -278,16 +279,16 @@ const GastoRow = ({ gasto, mxnRate, puedeEliminar = false, onEliminado }) => {
                           ) : (
                             <Box sx={{
                               height: 84, display: 'flex', flexDirection: 'column', alignItems: 'center',
-                              justifyContent: 'center', gap: 0.5, borderRadius: 1.5, bgcolor: '#f8fafc',
-                              border: '1px dashed #cbd5e1',
+                              justifyContent: 'center', gap: 0.5, borderRadius: 1.5, bgcolor: COLOR.LIENZO,
+                              border: `1px dashed ${COLOR.BORDE_FUERTE}`,
                             }}>
-                              <InsertDriveFileOutlinedIcon sx={{ fontSize: 22, color: '#94a3b8' }} />
-                              <Typography variant="caption" color="#94a3b8" sx={{ fontSize: '0.65rem' }}>
+                              <InsertDriveFileOutlinedIcon sx={{ fontSize: 22, color: COLOR.TENUE }} />
+                              <Typography variant="caption" color={COLOR.TENUE} sx={{ fontSize: '0.65rem' }}>
                                 {t.tipo_documento || 'Doc'}
                               </Typography>
                             </Box>
                           )}
-                          <Typography variant="caption" noWrap sx={{ display: 'block', mt: 0.75, color: '#64748b', fontSize: '0.65rem' }} title={name}>
+                          <Typography variant="caption" noWrap sx={{ display: 'block', mt: 0.75, color: COLOR.APAGADO, fontSize: '0.65rem' }} title={name}>
                             {name}
                           </Typography>
                           <Button
@@ -295,7 +296,7 @@ const GastoRow = ({ gasto, mxnRate, puedeEliminar = false, onEliminado }) => {
                             href={urlSegura(url)}
                             target="_blank"
                             rel="noopener noreferrer"
-                            sx={{ mt: 0.25, fontSize: '0.65rem', textTransform: 'none', fontWeight: 700, color: '#334155' }}
+                            sx={{ mt: 0.25, fontSize: '0.65rem', textTransform: 'none', fontWeight: 700, color: COLOR.TEXTO }}
                           >
                             Ver
                           </Button>

@@ -22,21 +22,22 @@ import {
   useEliminarRequisito,
   useGuardarDocumento,
 } from '../../entities/document';
+import { COLOR } from '../../shared/ui/tokens';
 
 // Cada estado de vencimiento con su aspecto. Es una tabla porque la lógica de
 // qué estado tiene un documento vive en la entidad; aquí solo se pinta.
 const TEMA_POR_ESTADO = {
-  [ESTADO_DOCUMENTO.SIN_CAPTURAR]: { status: 'Faltante', color: '#64748b', bg: '#f8fafc', border: '#e2e8f0' },
-  [ESTADO_DOCUMENTO.VENCIDO]:      { status: 'Vencido', color: '#ef4444', bg: '#fef2f2', border: '#fca5a5' },
-  [ESTADO_DOCUMENTO.POR_VENCER]:   { status: 'Por Vencer', color: '#f59e0b', bg: '#fffbeb', border: '#fcd34d' },
-  [ESTADO_DOCUMENTO.VIGENTE]:      { status: 'Vigente', color: '#10b981', bg: '#f0fdf4', border: '#6ee7b7' },
+  [ESTADO_DOCUMENTO.SIN_CAPTURAR]: { status: 'Faltante', color: COLOR.APAGADO, bg: COLOR.LIENZO, border: COLOR.BORDE },
+  [ESTADO_DOCUMENTO.VENCIDO]:      { status: 'Vencido', color: COLOR.PELIGRO, bg: COLOR.PELIGRO_FONDO, border: COLOR.PELIGRO_BORDE },
+  [ESTADO_DOCUMENTO.POR_VENCER]:   { status: 'Por Vencer', color: COLOR.AVISO, bg: COLOR.AVISO_FONDO, border: COLOR.AVISO_BORDE },
+  [ESTADO_DOCUMENTO.VIGENTE]:      { status: 'Vigente', color: COLOR.EXITO, bg: COLOR.EXITO_FONDO, border: '#6ee7b7' },
 };
 
 const ICONO_POR_ESTADO = {
-  [ESTADO_DOCUMENTO.SIN_CAPTURAR]: <HelpOutlineIcon sx={{ color: '#94a3b8' }} />,
-  [ESTADO_DOCUMENTO.VENCIDO]:      <ErrorOutlineIcon sx={{ color: '#ef4444' }} />,
-  [ESTADO_DOCUMENTO.POR_VENCER]:   <WarningAmberIcon sx={{ color: '#f59e0b' }} />,
-  [ESTADO_DOCUMENTO.VIGENTE]:      <CheckCircleIcon sx={{ color: '#10b981' }} />,
+  [ESTADO_DOCUMENTO.SIN_CAPTURAR]: <HelpOutlineIcon sx={{ color: COLOR.TENUE }} />,
+  [ESTADO_DOCUMENTO.VENCIDO]:      <ErrorOutlineIcon sx={{ color: COLOR.PELIGRO }} />,
+  [ESTADO_DOCUMENTO.POR_VENCER]:   <WarningAmberIcon sx={{ color: COLOR.AVISO }} />,
+  [ESTADO_DOCUMENTO.VIGENTE]:      <CheckCircleIcon sx={{ color: COLOR.EXITO }} />,
 };
 
 /**
@@ -135,8 +136,8 @@ const DocumentosPage = () => {
   };
 
   if (isLoading) return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '80vh', bgcolor: '#f8fafc' }}> 
-          <CircularProgress size={40} thickness={4} sx={{ color: '#3b82f6', mb: 2 }} /> 
+      <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '80vh', bgcolor: COLOR.LIENZO }}> 
+          <CircularProgress size={40} thickness={4} sx={{ color: COLOR.INFO, mb: 2 }} /> 
           <Typography variant="h6" color="text.secondary" fontWeight={500}>Sincronizando panel...</Typography> 
       </Box>
   );
@@ -150,21 +151,21 @@ const DocumentosPage = () => {
   const { mexico: mexReqs, usa: usaReqs } = porRegion(requisitos);
 
   return (
-    <Box sx={{ p: { xs: 2, md: 4 }, minHeight: '100vh', bgcolor: '#f8fafc' }}>
+    <Box sx={{ p: { xs: 2, md: 4 }, minHeight: '100vh', bgcolor: COLOR.LIENZO }}>
       <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems={{ xs: 'flex-start', md: 'center' }} spacing={2} sx={{ mb: 5 }}>
           <Box>
-            <Typography variant="h4" fontWeight={800} color="#0f172a" letterSpacing="-0.02em">Centro de Documentos</Typography>
-            <Typography variant="subtitle1" color="#64748b">Gestión dinámica de requisitos operativos y corporativos.</Typography>
+            <Typography variant="h4" fontWeight={800} color={COLOR.TINTA} letterSpacing="-0.02em">Centro de Documentos</Typography>
+            <Typography variant="subtitle1" color={COLOR.APAGADO}>Gestión dinámica de requisitos operativos y corporativos.</Typography>
           </Box>
-          <Button variant="contained" disableElevation startIcon={<AddIcon />} onClick={() => setOpenConfigModal(true)} sx={{ bgcolor: '#0f172a', '&:hover': { bgcolor: '#334155' }, borderRadius: 2, fontWeight: 600, px: 3, py: 1 }}>
+          <Button variant="contained" disableElevation startIcon={<AddIcon />} onClick={() => setOpenConfigModal(true)} sx={{ bgcolor: COLOR.TINTA, '&:hover': { bgcolor: COLOR.TEXTO }, borderRadius: 2, fontWeight: 600, px: 3, py: 1 }}>
             Nuevo Requisito
           </Button>
       </Stack>
       
       <Stack spacing={5}>
           <Box>
-              <Typography variant="h6" fontWeight={700} color="#1e293b" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                  Requisitos USA <Chip label={usaReqs.length} size="small" sx={{ bgcolor: '#e2e8f0', fontWeight: 700 }} />
+              <Typography variant="h6" fontWeight={700} color={COLOR.TINTA_CLARA} sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                  Requisitos USA <Chip label={usaReqs.length} size="small" sx={{ bgcolor: COLOR.BORDE, fontWeight: 700 }} />
               </Typography>
               <Grid container spacing={3}>
                   {usaReqs.map((req, i) => (
@@ -178,11 +179,11 @@ const DocumentosPage = () => {
               </Grid>
           </Box>
 
-          <Divider sx={{ borderStyle: 'dashed', borderColor: '#cbd5e1' }} />
+          <Divider sx={{ borderStyle: 'dashed', borderColor: COLOR.BORDE_FUERTE }} />
 
           <Box>
-              <Typography variant="h6" fontWeight={700} color="#1e293b" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                  Requisitos MEX <Chip label={mexReqs.length} size="small" sx={{ bgcolor: '#e2e8f0', fontWeight: 700 }} />
+              <Typography variant="h6" fontWeight={700} color={COLOR.TINTA_CLARA} sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                  Requisitos MEX <Chip label={mexReqs.length} size="small" sx={{ bgcolor: COLOR.BORDE, fontWeight: 700 }} />
               </Typography>
               <Grid container spacing={3}>
                   {mexReqs.map((req, i) => (

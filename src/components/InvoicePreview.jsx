@@ -2,6 +2,7 @@ import React from 'react';
 import { Box, Typography } from '@mui/material';
 
 import templateBg from '../assets/images/invoice_template.png'; 
+import { COLOR } from '../shared/ui/tokens';
 
 const formatCurrency = (amount) => {
     const num = parseFloat(amount);
@@ -67,7 +68,7 @@ const InvoicePreview = ({ data }) => {
         { id: 'rate', value: formattedRate, top: '46%', left: '77%', width: '15%', align: 'right', variant: 'body2', bold: false },
 
         // TOTAL
-        { id: 'total', value: formattedRate, top: '73.5%', left: '77%', width: '15%', align: 'right', variant: 'body2', bold: true, color: '#111827' },
+        { id: 'total', value: formattedRate, top: '73.5%', left: '77%', width: '15%', align: 'right', variant: 'body2', bold: true, color: COLOR.TINTA },
     ];
 
     return (
@@ -94,7 +95,7 @@ const InvoicePreview = ({ data }) => {
                         top: field.top,
                         left: field.left,
                         fontWeight: field.bold ? 800 : 400,
-                        color: field.color || '#374151',
+                        color: field.color || COLOR.TEXTO,
                         
                         width: field.width || 'auto',
                         maxWidth: field.maxWidth || 'none',

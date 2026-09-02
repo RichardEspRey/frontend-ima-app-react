@@ -21,6 +21,7 @@ import {
 import { FormulariosViaje, PanelConfiguracionViaje } from "../../features/dispatch"
 import { PageHeader, notify } from "../../shared/ui"
 import { NORMAL_TRIP_DOCS_BY_COUNTRY, initialBorderCrossingDocs } from "../../utils/tripFormConstants"
+import { COLOR } from "../../shared/ui/tokens"
 
 const DATOS_VIAJE_VACIOS = {
   trip_number: "",
@@ -241,7 +242,7 @@ export default function EditarViajeProximoPage() {
             variant="outlined"
             startIcon={<ArrowBackIcon />}
             onClick={() => navigate(-1)}
-            sx={{ fontWeight: 600, bgcolor: "white", borderColor: "#cbd5e1", color: "#475569" }}
+            sx={{ fontWeight: 600, bgcolor: "white", borderColor: COLOR.BORDE_FUERTE, color: COLOR.TEXTO_SUAVE }}
           >
             Cancelar
           </Button>

@@ -10,6 +10,7 @@ import { StageDetailRow } from './StageDetailRow';
 import { money, countCriticalStages } from '../utils/financeHelpers';
 
 import { useAuthStore } from '../store/useAuthStore';
+import { COLOR } from '../shared/ui/tokens';
 
 const StatusChip = ({ value }) => {
   const meta = STATUS_OPTIONS.find(o => o.value === Number(value));
@@ -18,7 +19,7 @@ const StatusChip = ({ value }) => {
     <Chip
       label={meta.label}
       size="small"
-      sx={{ bgcolor: meta.color, color: ['#fdd835'].includes(meta.color) ? '#000' : '#fff', fontWeight: 600 }}
+      sx={{ bgcolor: meta.color, color: ['#fdd835'].includes(meta.color) ? '#000' : COLOR.BLANCO, fontWeight: 600 }}
     />
   );
 };
@@ -97,7 +98,7 @@ export const TripFinanceRow = ({ trip, isOpen, onToggle, onStageChange }) => {
                     <TableCell sx={{ fontWeight: 600 }}>Método de pago</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Tarifa pagada</TableCell>
                     <TableCell sx={{ fontWeight: 600, textAlign: 'center' }}>Días Crédito</TableCell>
-                    <TableCell sx={{ fontWeight: 600, color: '#d32f2f' }}>% Déficit</TableCell>
+                    <TableCell sx={{ fontWeight: 600, color: COLOR.PELIGRO }}>% Déficit</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
                   </TableRow>
                 </TableHead>

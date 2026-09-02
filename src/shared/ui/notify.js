@@ -1,7 +1,8 @@
 import Swal from "sweetalert2"
+import { COLOR } from "./tokens"
 
-const AZUL_IMA = "#0f172a"
-const ROJO_PELIGRO = "#d32f2f"
+const AZUL_IMA = COLOR.TINTA
+const ROJO_PELIGRO = COLOR.PELIGRO
 
 /**
  * Avisos al usuario, en un solo lugar.

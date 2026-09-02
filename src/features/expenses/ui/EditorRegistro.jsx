@@ -28,6 +28,7 @@ import {
 } from "../../../entities/expense"
 import { API_BASE } from "../../../shared/config/env"
 import { notify } from "../../../shared/ui"
+import { COLOR } from "../../../shared/ui/tokens"
 
 const ES_IMAGEN = /\.(jpe?g|png|webp|gif)$/i
 
@@ -76,7 +77,7 @@ function Tickets({ tickets = [], cargando }) {
                   />
                 ) : (
                   <Stack alignItems="center" justifyContent="center" sx={{ height: 120 }}>
-                    <DescriptionIcon sx={{ fontSize: 34, color: "#94a3b8" }} />
+                    <DescriptionIcon sx={{ fontSize: 34, color: COLOR.TENUE }} />
                     <Typography variant="caption">Ver archivo</Typography>
                   </Stack>
                 )}

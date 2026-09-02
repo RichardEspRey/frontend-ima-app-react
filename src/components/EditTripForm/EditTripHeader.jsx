@@ -1,5 +1,6 @@
 import { Box, Typography, Stack, Button, Paper } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { COLOR } from '../../shared/ui/tokens';
 
 const EditTripHeader = ({ formData, tripId, handleSaveChanges, navigate }) => {
     return (
@@ -46,7 +47,7 @@ const EditTripHeader = ({ formData, tripId, handleSaveChanges, navigate }) => {
                         bgcolor: 'white',
                         px: 3,
                         boxShadow: '0px 1px 2px rgba(0, 0, 0, 0.05)',
-                        '&:hover': { bgcolor: '#f5f5f5', borderColor: '#bdbdbd' }
+                        '&:hover': { bgcolor: COLOR.LIENZO, borderColor: COLOR.BORDE_FUERTE }
                     }}
                 >
                     Cancelar

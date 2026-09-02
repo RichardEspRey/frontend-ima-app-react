@@ -15,6 +15,7 @@ import CreatableSelect from "react-select/creatable";
 
 import useFetchInventoryItems from "../../hooks/expense_hooks/useFetchInventoryItems";
 import useFetchRepairTypes from "../../hooks/service_order/useFetchRepairTypes";
+import { COLOR } from "../../shared/ui/tokens";
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -270,7 +271,7 @@ export default function NuevaOrdenPage() {
                         />
 
                         {usarItems && (
-                            <Box sx={{ mt: 2, p: 2, bgcolor: '#f5f5f5', borderRadius: 2 }}>
+                            <Box sx={{ mt: 2, p: 2, bgcolor: COLOR.LIENZO, borderRadius: 2 }}>
                                 <Grid container spacing={2} alignItems="flex-end">
                                     <Grid item xs={12} md={6}>
                                         <Typography variant="caption">Artículo</Typography>
@@ -355,7 +356,7 @@ export default function NuevaOrdenPage() {
                             ) : (
                                 <Stack spacing={2}>
                                     {services.map((s, idx) => (
-                                        <Paper key={s.id} variant="outlined" sx={{ p: 2, position: 'relative', bgcolor: '#fafafa' }}>
+                                        <Paper key={s.id} variant="outlined" sx={{ p: 2, position: 'relative', bgcolor: COLOR.LIENZO }}>
                                             <IconButton 
                                                 size="small" 
                                                 color="error" 

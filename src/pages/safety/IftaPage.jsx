@@ -11,6 +11,7 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { COLOR } from '../../shared/ui/tokens';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -222,7 +223,7 @@ export default function IftaPage() {
                         <TableContainer component={Paper} variant="outlined">
                             <Table size="small">
                                 <TableHead>
-                                    <TableRow sx={{ bgcolor: '#f5f5f5' }}>
+                                    <TableRow sx={{ bgcolor: COLOR.LIENZO }}>
                                         <TableCell sx={{ fontWeight: 700 }}>Viaje #</TableCell>
                                         <TableCell sx={{ fontWeight: 700 }}>Fecha Carga</TableCell>
                                         <TableCell sx={{ fontWeight: 700 }}>Fecha Entrega</TableCell>
@@ -337,7 +338,7 @@ export default function IftaPage() {
                         <TableContainer component={Paper} variant="outlined">
                             <Table size="small">
                                 <TableHead>
-                                    <TableRow sx={{ bgcolor: '#f5f5f5' }}>
+                                    <TableRow sx={{ bgcolor: COLOR.LIENZO }}>
                                         <TableCell sx={{ fontWeight: 700 }}>Estado</TableCell>
                                         <TableCell sx={{ fontWeight: 700 }} align="right">Total Mi</TableCell>
                                         <TableCell sx={{ fontWeight: 700 }} align="right"># Viajes</TableCell>
@@ -362,7 +363,7 @@ export default function IftaPage() {
                                                 </TableRow>
                                             ))}
                                             {/* Totales footer */}
-                                            <TableRow sx={{ bgcolor: '#f5f5f5' }}>
+                                            <TableRow sx={{ bgcolor: COLOR.LIENZO }}>
                                                 <TableCell sx={{ fontWeight: 700 }}>TOTAL</TableCell>
                                                 <TableCell align="right" sx={{ fontWeight: 700 }}>{fmt(grandTotal)}</TableCell>
                                                 <TableCell />
@@ -455,7 +456,7 @@ export default function IftaPage() {
                         <TableContainer component={Paper} variant="outlined">
                             <Table size="small">
                                 <TableHead>
-                                    <TableRow sx={{ bgcolor: '#f5f5f5' }}>
+                                    <TableRow sx={{ bgcolor: COLOR.LIENZO }}>
                                         <TableCell sx={{ fontWeight: 700 }}>Estado</TableCell>
                                         <TableCell sx={{ fontWeight: 700 }}>Periodo</TableCell>
                                         <TableCell sx={{ fontWeight: 700 }}>Año</TableCell>
@@ -487,7 +488,7 @@ export default function IftaPage() {
                                                     <TableCell align="right">{fmt(row.total_millas)}</TableCell>
                                                 </TableRow>
                                             ))}
-                                            <TableRow sx={{ bgcolor: '#f5f5f5' }}>
+                                            <TableRow sx={{ bgcolor: COLOR.LIENZO }}>
                                                 <TableCell sx={{ fontWeight: 700,  textAlign: 'right' }} colSpan={3}>TOTAL</TableCell>
                                                 <TableCell align="right" sx={{ fontWeight: 700 }}>{fmt(grandTotalPeriodos)}</TableCell>
                                             </TableRow>

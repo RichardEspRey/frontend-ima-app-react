@@ -7,7 +7,7 @@
     }
 
     .accept-button-modal {
-        background-color: #007bff;
+        background-color: var(--ima-info);
         color: white;
         border: none;
         border-radius: 8px;
@@ -19,7 +19,7 @@
     }
 
     .accept-button-modal:hover {
-        background-color: #0056b3;
+        background-color: var(--ima-info);
     }
 
     /* Estilos para Modales */
@@ -37,7 +37,7 @@
     }
 
     .modal-content {
-        background: #fff;
+        background: var(--ima-blanco);
         padding: 2rem;
         border-radius: 12px;
         width: 90%;

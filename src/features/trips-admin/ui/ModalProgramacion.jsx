@@ -34,22 +34,23 @@ import CreatableSelect from "react-select/creatable"
 
 import { estaDisponible, leerValorCaja, valorCaja } from "../../../entities/schedule"
 import { selectStyles } from "../../../utils/tripFormConstants"
+import { COLOR } from "../../../shared/ui/tokens"
 
 const ETIQUETA_SX = {
-  color: "#94a3b8",
+  color: COLOR.TENUE,
   fontWeight: 700,
   letterSpacing: "0.08em",
   fontSize: "0.68rem",
 }
 
 const BOTON_OSCURO_SX = {
-  bgcolor: "#0f172a",
+  bgcolor: COLOR.TINTA,
   fontWeight: 700,
   borderRadius: 2,
   px: 3,
   textTransform: "none",
   boxShadow: "none",
-  "&:hover": { bgcolor: "#1e293b", boxShadow: "0 6px 16px rgba(15,23,42,0.22)" },
+  "&:hover": { bgcolor: COLOR.TINTA_CLARA, boxShadow: "0 6px 16px rgba(15,23,42,0.22)" },
 }
 
 /**
@@ -66,7 +67,7 @@ function Semaforo({ unidad }) {
         width: 8,
         height: 8,
         borderRadius: "50%",
-        bgcolor: estaDisponible(unidad) ? "#22c55e" : "#ef4444",
+        bgcolor: estaDisponible(unidad) ? COLOR.EXITO : COLOR.PELIGRO,
         flexShrink: 0,
       }}
     />
@@ -147,7 +148,7 @@ export function ModalProgramacion({
           <Typography variant="overline" sx={ETIQUETA_SX}>
             Programación de Viajes
           </Typography>
-          <Typography variant="h6" fontWeight={800} color="#0f172a" sx={{ mt: -0.25 }}>
+          <Typography variant="h6" fontWeight={800} color={COLOR.TINTA} sx={{ mt: -0.25 }}>
             {editando ? "Editar Viaje Programado" : "Programar Viaje"}
           </Typography>
         </Box>
@@ -159,7 +160,7 @@ export function ModalProgramacion({
       <DialogContent>
         {cargandoTablero ? (
           <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
-            <CircularProgress size={32} sx={{ color: "#94a3b8" }} />
+            <CircularProgress size={32} sx={{ color: COLOR.TENUE }} />
           </Box>
         ) : (
           <Stack spacing={2.5} sx={{ mt: 0.5 }}>
@@ -169,28 +170,28 @@ export function ModalProgramacion({
                 alignItems="center"
                 spacing={1}
                 flexWrap="wrap"
-                sx={{ p: 1.5, bgcolor: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 2 }}
+                sx={{ p: 1.5, bgcolor: COLOR.LIENZO, border: `1px solid ${COLOR.BORDE}`, borderRadius: 2 }}
               >
                 <Typography
                   variant="body2"
                   fontWeight={600}
-                  color={formulario.operador_id ? "#0f172a" : "#cbd5e1"}
+                  color={formulario.operador_id ? COLOR.TINTA : COLOR.BORDE_FUERTE}
                 >
                   {formulario.operador_id ? nombreOperador(formulario.operador_id) : "Operador"}
                 </Typography>
-                <ArrowForwardIcon sx={{ fontSize: 14, color: "#cbd5e1" }} />
+                <ArrowForwardIcon sx={{ fontSize: 14, color: COLOR.BORDE_FUERTE }} />
                 <Typography
                   variant="body2"
                   fontWeight={600}
-                  color={formulario.camion_id ? "#0f172a" : "#cbd5e1"}
+                  color={formulario.camion_id ? COLOR.TINTA : COLOR.BORDE_FUERTE}
                 >
                   {formulario.camion_id ? unidadCamion(formulario.camion_id) : "Camión"}
                 </Typography>
-                <ArrowForwardIcon sx={{ fontSize: 14, color: "#cbd5e1" }} />
+                <ArrowForwardIcon sx={{ fontSize: 14, color: COLOR.BORDE_FUERTE }} />
                 <Typography
                   variant="body2"
                   fontWeight={600}
-                  color={formulario.caja_id ? "#0f172a" : "#cbd5e1"}
+                  color={formulario.caja_id ? COLOR.TINTA : COLOR.BORDE_FUERTE}
                 >
                   {formulario.caja_id ? etiquetaCaja(formulario.caja_id) : "Caja"}
                 </Typography>
@@ -217,7 +218,7 @@ export function ModalProgramacion({
                       onChange={(e) => onCampoChange("operador_id", e.target.value)}
                       startAdornment={
                         <InputAdornment position="start">
-                          <PersonOutlineIcon sx={{ fontSize: 20, color: "#94a3b8", ml: 0.5 }} />
+                          <PersonOutlineIcon sx={{ fontSize: 20, color: COLOR.TENUE, ml: 0.5 }} />
                         </InputAdornment>
                       }
                       renderValue={(valor) =>
@@ -262,7 +263,7 @@ export function ModalProgramacion({
                       startAdornment={
                         <InputAdornment position="start">
                           <LocalShippingOutlinedIcon
-                            sx={{ fontSize: 20, color: "#94a3b8", ml: 0.5 }}
+                            sx={{ fontSize: 20, color: COLOR.TENUE, ml: 0.5 }}
                           />
                         </InputAdornment>
                       }
@@ -311,8 +312,8 @@ export function ModalProgramacion({
 
                 <Grid size={{ xs: 12 }}>
                   <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 0.5 }}>
-                    <ApartmentOutlinedIcon sx={{ fontSize: 18, color: "#94a3b8" }} />
-                    <Typography variant="body2" fontWeight={600} color="#334155">
+                    <ApartmentOutlinedIcon sx={{ fontSize: 18, color: COLOR.TENUE }} />
+                    <Typography variant="body2" fontWeight={600} color={COLOR.TEXTO}>
                       Compañía
                     </Typography>
                   </Stack>
@@ -334,8 +335,8 @@ export function ModalProgramacion({
 
                 <Grid size={{ xs: 12 }}>
                   <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 1.25 }}>
-                    <Inventory2OutlinedIcon sx={{ fontSize: 18, color: "#94a3b8" }} />
-                    <Typography variant="body2" fontWeight={600} color="#334155">
+                    <Inventory2OutlinedIcon sx={{ fontSize: 18, color: COLOR.TENUE }} />
+                    <Typography variant="body2" fontWeight={600} color={COLOR.TEXTO}>
                       Caja
                     </Typography>
                     <ToggleButtonGroup
@@ -351,12 +352,12 @@ export function ModalProgramacion({
                           fontSize: "0.78rem",
                           px: 1.5,
                           py: 0.3,
-                          color: "#64748b",
-                          borderColor: "#e2e8f0",
+                          color: COLOR.APAGADO,
+                          borderColor: COLOR.BORDE,
                           "&.Mui-selected": {
-                            bgcolor: "#0f172a",
-                            color: "#fff",
-                            "&:hover": { bgcolor: "#1e293b" },
+                            bgcolor: COLOR.TINTA,
+                            color: COLOR.BLANCO,
+                            "&:hover": { bgcolor: COLOR.TINTA_CLARA },
                           },
                         },
                       }}
@@ -427,7 +428,7 @@ export function ModalProgramacion({
                         <Button
                           variant="outlined"
                           onClick={onNuevaCajaExterna}
-                          sx={{ minWidth: 44, px: 0, borderColor: "#cbd5e1", color: "#0f172a", borderRadius: 2 }}
+                          sx={{ minWidth: 44, px: 0, borderColor: COLOR.BORDE_FUERTE, color: COLOR.TINTA, borderRadius: 2 }}
                         >
                           <AddIcon fontSize="small" />
                         </Button>
@@ -438,7 +439,7 @@ export function ModalProgramacion({
               </Grid>
             </Box>
 
-            <Divider sx={{ borderColor: "#f1f5f9" }} />
+            <Divider sx={{ borderColor: COLOR.RELLENO }} />
 
             <Box>
               <Typography variant="overline" sx={ETIQUETA_SX}>
@@ -448,8 +449,8 @@ export function ModalProgramacion({
               <Grid container spacing={2} sx={{ mt: 0.25 }}>
                 <Grid size={{ xs: 12 }}>
                   <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 0.5 }}>
-                    <PlaceOutlinedIcon sx={{ fontSize: 18, color: "#94a3b8" }} />
-                    <Typography variant="body2" fontWeight={600} color="#334155">
+                    <PlaceOutlinedIcon sx={{ fontSize: 18, color: COLOR.TENUE }} />
+                    <Typography variant="body2" fontWeight={600} color={COLOR.TEXTO}>
                       Destino
                     </Typography>
                   </Stack>
@@ -473,7 +474,7 @@ export function ModalProgramacion({
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
-                          <ScheduleOutlinedIcon sx={{ fontSize: 20, color: "#94a3b8" }} />
+                          <ScheduleOutlinedIcon sx={{ fontSize: 20, color: COLOR.TENUE }} />
                         </InputAdornment>
                       ),
                     }}

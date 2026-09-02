@@ -6,6 +6,7 @@ import {
   buscarLugares,
   nombreCortoDeLugar,
 } from "../../../entities/tracking"
+import { COLOR } from "../../../shared/ui/tokens"
 
 const MINIMO_PARA_BUSCAR = 3
 
@@ -124,7 +125,7 @@ export function BuscadorUbicacion({ etiqueta, placeholder, valor, onChange, icon
                 py: 1,
                 cursor: "pointer",
                 "&:hover": { bgcolor: "action.hover" },
-                borderBottom: indice < sugerencias.length - 1 ? "1px solid #f0f0f0" : "none",
+                borderBottom: indice < sugerencias.length - 1 ? `1px solid ${COLOR.RELLENO}` : "none",
               }}
             >
               <Typography variant="body2" fontWeight={500} noWrap>

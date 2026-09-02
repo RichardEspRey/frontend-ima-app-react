@@ -14,7 +14,7 @@
   }
   
   .modal {
-    background-color: #fff;
+    background-color: var(--ima-blanco);
     width: 600px;
     max-width: 90%;
     padding: 20px;
@@ -44,22 +44,22 @@
   .custom-datepicker {
     width: 100%;
     padding: 8px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--ima-borde-fuerte);
     margin-bottom: 20px;
     border-radius: 5px;
   }
   
   .dropzone {
-    border: 2px dashed #ccc;
+    border: 2px dashed var(--ima-borde-fuerte);
     padding: 40px;
     text-align: center;
     border-radius: 8px;
-    background-color: #f9f9f9;
+    background-color: var(--ima-lienzo);
     margin-bottom: 20px;
   }
   
   .dropzone:hover {
-    border-color: #0a3d91;
+    border-color: var(--ima-marca-activo);
   }
   
   .drop-text {
@@ -71,7 +71,7 @@
   
   .browse-button {
     margin-top: 10px;
-    background-color: #002f6c;
+    background-color: var(--ima-marca-activo);
     color: white;
     padding: 8px 20px;
     border-radius: 6px;
@@ -80,7 +80,7 @@
   }
   
   .browse-button:hover {
-    background-color: #001f4d;
+    background-color: var(--ima-marca-profundo);
   }
   
   .archivo-preview {
@@ -113,7 +113,7 @@
   }
   
   .guardar {
-    background-color: #002f6c;
+    background-color: var(--ima-marca-activo);
     color: white;
     border: none;
     padding: 10px 20px;
@@ -122,6 +122,6 @@
   }
   
   .guardar:hover {
-    background-color: #001f4d;
+    background-color: var(--ima-marca-profundo);
   }
   

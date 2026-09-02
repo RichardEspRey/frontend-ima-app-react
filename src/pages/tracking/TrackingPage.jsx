@@ -17,6 +17,7 @@ import {
 } from "../../entities/tracking"
 import { HudPlegado, HudUnidad, ListaUnidades, MapaFlota, TrazadorRuta } from "../../features/tracking"
 import { notify } from "../../shared/ui"
+import { COLOR } from "../../shared/ui/tokens"
 
 const AVISO_MODO = {
   [MODO_PING.MAPA]: "Haz clic en el mapa para colocar Ping 2",
@@ -186,14 +187,14 @@ export default function TrackingPage() {
         height: "calc(100vh - 70px)",
         width: "100%",
         overflow: "hidden",
-        bgcolor: "#f8fafc",
+        bgcolor: COLOR.LIENZO,
       }}
     >
       <Box
         sx={{
           width: { xs: 300, lg: 380 },
-          bgcolor: "#fff",
-          borderRight: "1px solid #e2e8f0",
+          bgcolor: COLOR.BLANCO,
+          borderRight: `1px solid ${COLOR.BORDE}`,
           display: "flex",
           flexDirection: "column",
           zIndex: 2,
@@ -224,7 +225,7 @@ export default function TrackingPage() {
         )}
 
         {AVISO_MODO[modoPunto2] && (
-          <Box sx={{ px: 1.5, py: 1, bgcolor: "#fff8e1", borderBottom: "1px solid #ffe082" }}>
+          <Box sx={{ px: 1.5, py: 1, bgcolor: COLOR.AVISO_FONDO, borderBottom: `1px solid ${COLOR.AVISO_BORDE}` }}>
             <Typography variant="caption" color="#7b5e00">
               {AVISO_MODO[modoPunto2]}
             </Typography>

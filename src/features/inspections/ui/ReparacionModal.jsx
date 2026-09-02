@@ -16,6 +16,7 @@ import {
     CARD_SX, SECTION_LABEL_SX, PAGE_OVERLINE_SX, INPUT_SX,
     GHOST_BTN_SX, DARK_BTN_SX, CHIP_SX,
 } from '../../../shared/ui/estilos';
+import { COLOR } from '../../../shared/ui/tokens';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -145,7 +146,7 @@ const ReparacionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
             showCancelButton: true,
             confirmButtonText: 'Sí, eliminar',
             cancelButtonText: 'Cancelar',
-            confirmButtonColor: '#d32f2f'
+            confirmButtonColor: COLOR.PELIGRO
         });
         if (!confirm.isConfirmed) return;
 
@@ -209,10 +210,10 @@ const ReparacionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
                         <Typography variant="overline" sx={PAGE_OVERLINE_SX}>
                             Safety · Reparaciones
                         </Typography>
-                        <Typography variant="h5" fontWeight={800} color="#0f172a" letterSpacing="-0.02em" sx={{ mt: 0.25 }}>
+                        <Typography variant="h5" fontWeight={800} color={COLOR.TINTA} letterSpacing="-0.02em" sx={{ mt: 0.25 }}>
                             {editData ? 'Editar Reparación' : 'Nueva Reparación en Carretera'}
                         </Typography>
-                        <Typography variant="body2" color="#64748b" sx={{ mt: 0.5 }}>
+                        <Typography variant="body2" color={COLOR.APAGADO} sx={{ mt: 0.5 }}>
                             Registra la unidad, la falla y los comprobantes del gasto.
                         </Typography>
                     </Box>
@@ -226,7 +227,7 @@ const ReparacionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
                                 deleteIcon={initialTrip ? undefined : <EditIcon sx={{ fontSize: 15 }} />}
                             />
                         )}
-                        <IconButton onClick={onClose} sx={{ color: '#64748b' }}>
+                        <IconButton onClick={onClose} sx={{ color: COLOR.APAGADO }}>
                             <CloseIcon />
                         </IconButton>
                     </Stack>
@@ -439,13 +440,13 @@ const ReparacionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
                                     justifyContent: 'center',
                                     width: '100%',
                                     boxSizing: 'border-box',
-                                    border: '2px dashed #90caf9', 
-                                    bgcolor: '#e3f2fd', 
+                                    border: `2px dashed ${COLOR.INFO_BORDE}`, 
+                                    bgcolor: COLOR.INFO_FONDO, 
                                     py: 4, px: 2, textAlign: 'center', borderRadius: 2,
                                     cursor: 'pointer', transition: '0.2s',
                                     '&:hover': { bgcolor: '#e1f5fe', borderColor: '#42a5f5' }
                                 }} component="label">
-                                    <CloudUploadIcon sx={{ fontSize: 40, color: '#1976d2', mb: 1 }} />
+                                    <CloudUploadIcon sx={{ fontSize: 40, color: COLOR.INFO, mb: 1 }} />
                                     <Typography variant="button" fontWeight={700} color="primary" sx={{ display: 'block', width: '100%' }}>
                                         Seleccionar Invoices (PDF)
                                     </Typography>

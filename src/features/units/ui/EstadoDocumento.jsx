@@ -7,6 +7,7 @@ import WarningIcon from "@mui/icons-material/Warning"
 import { ESTADO_DOCUMENTO, estadoDocumento } from "../../../entities/unit"
 import { API_BASE } from "../../../shared/config/env"
 import { urlSegura } from "../../../shared/security"
+import { COLOR } from "../../../shared/ui/tokens"
 
 /**
  * El estado de un documento del expediente, en una celda de tabla.
@@ -37,7 +38,7 @@ export function EstadoDocumento({ requisito, documento }) {
       </Typography>
     ) : (
       <Tooltip title="Faltante">
-        <HelpOutlineIcon sx={{ color: "#cbd5e1" }} />
+        <HelpOutlineIcon sx={{ color: COLOR.BORDE_FUERTE }} />
       </Tooltip>
     )
   }

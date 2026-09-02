@@ -16,6 +16,7 @@ import {
   Typography,
 } from "@mui/material"
 import CloseIcon from "@mui/icons-material/Close"
+import { COLOR } from "../../../shared/ui/tokens"
 
 const CATEGORIAS_SUGERIDAS = ["USA", "MEX", "Otros"]
 
@@ -65,7 +66,7 @@ export function ModalRequisitos({
 
       <DialogContent>
         <Stack spacing={3} sx={{ mt: 1 }}>
-          <Box sx={{ bgcolor: "#f8fafc", p: 2, borderRadius: 2, border: "1px solid #e2e8f0" }}>
+          <Box sx={{ bgcolor: COLOR.LIENZO, p: 2, borderRadius: 2, border: `1px solid ${COLOR.BORDE}` }}>
             <Typography variant="subtitle2" fontWeight={700} mb={1}>
               Requisitos Activos:
             </Typography>

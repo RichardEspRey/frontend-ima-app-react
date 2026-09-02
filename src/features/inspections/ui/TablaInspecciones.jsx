@@ -14,6 +14,7 @@ import {
     TABLE_CONTAINER_SX, DARK_BTN_SX, CHIP_SX, CHIP_DANGER_SX, ICON_BTN_SX,
     CELL_STRONG_SX, CELL_MUTED_SX,
 } from '../../../shared/ui/estilos';
+import { COLOR } from '../../../shared/ui/tokens';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -100,10 +101,10 @@ const TablaInspecciones = () => {
                         ) : inspections.length === 0 ? (
                             <TableRow>
                                 <TableCell colSpan={11} align="center" sx={{ py: 6 }}>
-                                    <Typography variant="body2" color="#64748b" fontWeight={600}>
+                                    <Typography variant="body2" color={COLOR.APAGADO} fontWeight={600}>
                                         No hay inspecciones registradas.
                                     </Typography>
-                                    <Typography variant="caption" color="#94a3b8">
+                                    <Typography variant="caption" color={COLOR.TENUE}>
                                         Agrega la primera con el botón de arriba.
                                     </Typography>
                                 </TableCell>
@@ -122,7 +123,7 @@ const TablaInspecciones = () => {
                                                 sx={{ ...CHIP_SX, bgcolor: '#eef2ff', color: '#4338ca', border: '1px solid #e0e7ff' }}
                                             />
                                         ) : (
-                                            <Typography variant="caption" color="#94a3b8">N/A</Typography>
+                                            <Typography variant="caption" color={COLOR.TENUE}>N/A</Typography>
                                         )}
                                     </TableCell>
                                     <TableCell>
@@ -131,13 +132,13 @@ const TablaInspecciones = () => {
                                             size="small"
                                             sx={row.tipo_violacion === 'Out of services'
                                                 ? CHIP_DANGER_SX
-                                                : { ...CHIP_SX, bgcolor: '#fffbeb', color: '#b45309', border: '1px solid #fde68a' }}
+                                                : { ...CHIP_SX, bgcolor: COLOR.AVISO_FONDO, color: COLOR.AVISO, border: `1px solid ${COLOR.AVISO_BORDE}` }}
                                         />
                                     </TableCell>
                                     <TableCell sx={CELL_MUTED_SX}>{row.descripcion}</TableCell>
                                     <TableCell align="right" sx={CELL_MUTED_SX}>{formatMoney(row.multa_ima)}</TableCell>
                                     <TableCell align="right" sx={CELL_MUTED_SX}>{formatMoney(row.multa_driver)}</TableCell>
-                                    <TableCell align="right" sx={{ fontWeight: 800, color: '#0f172a' }}>
+                                    <TableCell align="right" sx={{ fontWeight: 800, color: COLOR.TINTA }}>
                                         {formatMoney(row.total)}
                                     </TableCell>
                                     <TableCell>
@@ -154,12 +155,12 @@ const TablaInspecciones = () => {
                                                         rel="noopener noreferrer"
                                                         clickable
                                                         size="small"
-                                                        sx={{ ...CHIP_DANGER_SX, maxWidth: 160, '& .MuiChip-icon': { color: '#b91c1c' } }}
+                                                        sx={{ ...CHIP_DANGER_SX, maxWidth: 160, '& .MuiChip-icon': { color: COLOR.PELIGRO } }}
                                                     />
                                                 ))}
                                             </Stack>
                                         ) : (
-                                            <Typography variant="caption" color="#94a3b8">Sin documentos</Typography>
+                                            <Typography variant="caption" color={COLOR.TENUE}>Sin documentos</Typography>
                                         )}
                                     </TableCell>
                                     <TableCell align="center">

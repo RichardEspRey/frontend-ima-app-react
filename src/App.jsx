@@ -4,6 +4,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import notiSound from '../src/assets/sounds/Update2.mp3';
 import { QueryProvider } from './app/providers/QueryProvider';
+import { ThemeProvider } from './app/providers/ThemeProvider';
 import { SessionProvider } from './app/providers/SessionProvider';
 
 // Contexto temporal para pasar si hay update
@@ -26,6 +27,7 @@ const App = () => {
 
   return (
     <UpdateContext.Provider value={{ updateDisponible }}>
+      <ThemeProvider>
       <QueryProvider>
         <SessionProvider>
         <AppRouter />
@@ -42,6 +44,7 @@ const App = () => {
            />
         </SessionProvider>
       </QueryProvider>
+      </ThemeProvider>
     </UpdateContext.Provider>
   );
 };

@@ -18,6 +18,7 @@ import { TripFinanceRow } from '../../components/TripFinanceRow';
 import { AlertSummaryCards } from '../../components/AlertSummaryCards';
 import { getTripStatusSummary, validateStage, buildPayloadItem, collectDirtyStages } from '../../utils/financeHelpers';
 import { STATUS_OPTIONS } from '../../constants/finances'; 
+import { COLOR } from '../../shared/ui/tokens';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -260,7 +261,7 @@ const FinanzasPage = () => {
             variant="fullWidth" 
             indicatorColor="primary"
             textColor="primary"
-            sx={{ bgcolor: '#f8f9fa' }}
+            sx={{ bgcolor: COLOR.LIENZO }}
         >
             <Tab icon={<AccessTimeIcon />} label="Pendientes de Cobrar" iconPosition="start" sx={{ fontWeight: 600, py: 3 }} />
             <Tab icon={<CheckCircleIcon />} label="Pagados / Histórico" iconPosition="start" sx={{ fontWeight: 600, py: 3 }} />
@@ -276,7 +277,7 @@ const FinanzasPage = () => {
         </Box>
       )}
 
-      <Paper elevation={0} sx={{ p: 2, mb: 3, bgcolor: '#f5f5f5', borderRadius: 2, border: '1px solid #e0e0e0' }}>
+      <Paper elevation={0} sx={{ p: 2, mb: 3, bgcolor: COLOR.LIENZO, borderRadius: 2, border: `1px solid ${COLOR.BORDE}` }}>
         <Grid container spacing={2} alignItems="center">
             
             <Grid item xs={12} md={2}>
@@ -391,13 +392,13 @@ const FinanzasPage = () => {
         <Table stickyHeader size="small">
           <TableHead>
             <TableRow>
-              <TableCell width={50} sx={{ bgcolor: '#fff' }} />
-              <TableCell sx={{ fontWeight: 700, fontSize: '0.9rem', bgcolor: '#fff' }}>Trip Number</TableCell>
-              <TableCell sx={{ fontWeight: 700, fontSize: '0.9rem', bgcolor: '#fff' }}>Stages</TableCell>
-              <TableCell sx={{ fontWeight: 700, fontSize: '0.9rem', bgcolor: '#fff', textAlign: 'right' }}>Total Rate</TableCell>
-              <TableCell sx={{ fontWeight: 700, fontSize: '0.9rem', bgcolor: '#fff', textAlign: 'right' }}>Total Pagado</TableCell>
-              <TableCell sx={{ fontWeight: 700, fontSize: '0.9rem', bgcolor: '#fff' }}>Estatus General</TableCell>
-              <TableCell sx={{ fontWeight: 700, fontSize: '0.9rem', bgcolor: '#fff', textAlign: 'center' }}>Alertas</TableCell>
+              <TableCell width={50} sx={{ bgcolor: COLOR.BLANCO }} />
+              <TableCell sx={{ fontWeight: 700, fontSize: '0.9rem', bgcolor: COLOR.BLANCO }}>Trip Number</TableCell>
+              <TableCell sx={{ fontWeight: 700, fontSize: '0.9rem', bgcolor: COLOR.BLANCO }}>Stages</TableCell>
+              <TableCell sx={{ fontWeight: 700, fontSize: '0.9rem', bgcolor: COLOR.BLANCO, textAlign: 'right' }}>Total Rate</TableCell>
+              <TableCell sx={{ fontWeight: 700, fontSize: '0.9rem', bgcolor: COLOR.BLANCO, textAlign: 'right' }}>Total Pagado</TableCell>
+              <TableCell sx={{ fontWeight: 700, fontSize: '0.9rem', bgcolor: COLOR.BLANCO }}>Estatus General</TableCell>
+              <TableCell sx={{ fontWeight: 700, fontSize: '0.9rem', bgcolor: COLOR.BLANCO, textAlign: 'center' }}>Alertas</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>

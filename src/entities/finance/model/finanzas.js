@@ -1,5 +1,6 @@
 import { z } from "zod"
 import { idPhp, numeroPhp, nullable } from "../../../shared/api/zodPhp"
+import { COLOR } from "../../../shared/ui/tokens"
 
 /**
  * Formas de pago que acepta una etapa de viaje.
@@ -34,10 +35,10 @@ export const ESTADO_COBRO = {
  * @enum {object}
  */
 export const ETIQUETA_COBRO = {
-  [ESTADO_COBRO.PAGADA]: { label: "Pagada", color: "#2e7d32" },
+  [ESTADO_COBRO.PAGADA]: { label: "Pagada", color: COLOR.EXITO },
   [ESTADO_COBRO.COBRADA_PENDIENTE_RTS]: { label: "Cobrada, pendiente RTS", color: "#fdd835" },
-  [ESTADO_COBRO.COBRADA_PENDIENTE_PAGO]: { label: "Cobrada, pendiente de pago", color: "#fb8c00" },
-  [ESTADO_COBRO.PENDIENTE_COBRAR]: { label: "Pendiente de cobrar", color: "#d32f2f" },
+  [ESTADO_COBRO.COBRADA_PENDIENTE_PAGO]: { label: "Cobrada, pendiente de pago", color: COLOR.AVISO },
+  [ESTADO_COBRO.PENDIENTE_COBRAR]: { label: "Pendiente de cobrar", color: COLOR.PELIGRO },
 }
 
 /**

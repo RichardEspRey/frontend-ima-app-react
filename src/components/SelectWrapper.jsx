@@ -2,6 +2,7 @@ import React from 'react';
 import Select from 'react-select';
 import CreatableSelect from 'react-select/creatable';
 import { InputLabel, Box, Typography } from '@mui/material';
+import { COLOR } from '../shared/ui/tokens';
 
 const selectStyles = {
     control: (provided) => ({
@@ -20,7 +21,7 @@ const selectStyles = {
     }),
     option: (provided, state) => ({
         ...provided,
-        backgroundColor: state.isSelected ? '#3C48E1' : state.isFocused ? '#f0f0f0' : null,
+        backgroundColor: state.isSelected ? '#3C48E1' : state.isFocused ? COLOR.RELLENO : null,
         color: state.isSelected ? 'white' : '#333',
     }),
 };

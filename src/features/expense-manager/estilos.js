@@ -1,3 +1,4 @@
+import { COLOR } from "../../shared/ui/tokens"
 export {
   SECTION_LABEL_SX,
   CARD_SX,
@@ -15,18 +16,18 @@ export const customSelectStyles = {
     minHeight: 40,
     borderRadius: 8,
     fontSize: '0.9rem',
-    backgroundColor: '#fff',
-    borderColor: state.isFocused ? '#0f172a' : '#cbd5e1',
-    boxShadow: state.isFocused ? '0 0 0 1px #0f172a' : 'none',
-    '&:hover': { borderColor: state.isFocused ? '#0f172a' : '#94a3b8' },
+    backgroundColor: COLOR.BLANCO,
+    borderColor: state.isFocused ? COLOR.TINTA : COLOR.BORDE_FUERTE,
+    boxShadow: state.isFocused ? `0 0 0 1px ${COLOR.TINTA}` : 'none',
+    '&:hover': { borderColor: state.isFocused ? COLOR.TINTA : COLOR.TENUE },
   }),
-  placeholder: (provided) => ({ ...provided, color: '#94a3b8' }),
+  placeholder: (provided) => ({ ...provided, color: COLOR.TENUE }),
   menu: (provided) => ({ ...provided, zIndex: 9999, borderRadius: 8, overflow: 'hidden' }),
   option: (provided, state) => ({
     ...provided,
     fontSize: '0.9rem',
-    backgroundColor: state.isSelected ? '#0f172a' : state.isFocused ? '#f1f5f9' : '#fff',
-    color: state.isSelected ? '#fff' : '#334155',
+    backgroundColor: state.isSelected ? COLOR.TINTA : state.isFocused ? COLOR.RELLENO : COLOR.BLANCO,
+    color: state.isSelected ? COLOR.BLANCO : COLOR.TEXTO,
   }),
 };
 

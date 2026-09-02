@@ -3,6 +3,7 @@ import { Paper, Stack, Box, Chip, Typography, Button, Tooltip, IconButton } from
 import InsertDriveFileOutlinedIcon from '@mui/icons-material/InsertDriveFileOutlined';
 import TextFieldsIcon from '@mui/icons-material/TextFields';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import { COLOR } from '../../../shared/ui/tokens';
 
 /**
  * La ficha de un documento del expediente.
@@ -24,20 +25,20 @@ const DocumentCard = ({ req, theme, val, onEdit }) => {
             <Paper elevation={0} sx={{ p: 2, borderRadius: 3, border: `1px solid ${theme.border}`, bgcolor: 'white', borderLeft: `5px solid ${theme.color}`, display: 'flex', flexDirection: 'column', transition: 'all 0.2s ease', boxShadow: '0 2px 4px -1px rgb(0 0 0 / 0.05)', '&:hover': { transform: 'translateY(-2px)', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}}>
                 <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1.5 }}>
                     <Stack direction="row" spacing={1} alignItems="center">
-                        <TextFieldsIcon sx={{ fontSize: 18, color: '#94a3b8' }}/>
-                        <Typography variant="subtitle2" fontWeight={800} color="#0f172a" noWrap>{req.label}</Typography>
+                        <TextFieldsIcon sx={{ fontSize: 18, color: COLOR.TENUE }}/>
+                        <Typography variant="subtitle2" fontWeight={800} color={COLOR.TINTA} noWrap>{req.label}</Typography>
                     </Stack>
                     <Tooltip title={theme.status} arrow>
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>{theme.icon}</Box>
                     </Tooltip>
                 </Stack>
 
-                <Box sx={{ bgcolor: val?.valor_texto ? '#f8fafc' : '#f1f5f9', p: 1.5, borderRadius: 2, border: '1px dashed', borderColor: val?.valor_texto ? '#cbd5e1' : '#e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Typography variant="body2" fontWeight={700} color={val?.valor_texto ? "#334155" : "#94a3b8"} noWrap sx={{ flexGrow: 1, mr: 1 }}>
+                <Box sx={{ bgcolor: val?.valor_texto ? COLOR.LIENZO : COLOR.RELLENO, p: 1.5, borderRadius: 2, border: '1px dashed', borderColor: val?.valor_texto ? COLOR.BORDE_FUERTE : COLOR.BORDE, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography variant="body2" fontWeight={700} color={val?.valor_texto ? COLOR.TEXTO : COLOR.TENUE} noWrap sx={{ flexGrow: 1, mr: 1 }}>
                         {val?.valor_texto || 'No registrado'}
                     </Typography>
                     <Tooltip title="Editar Valor">
-                        <IconButton size="small" onClick={onEdit} sx={{ color: '#3b82f6', bgcolor: '#eff6ff', '&:hover': { bgcolor: '#dbeafe' } }}>
+                        <IconButton size="small" onClick={onEdit} sx={{ color: COLOR.INFO, bgcolor: COLOR.INFO_FONDO, '&:hover': { bgcolor: COLOR.INFO_BORDE } }}>
                             <EditOutlinedIcon fontSize="small" />
                         </IconButton>
                     </Tooltip>
@@ -55,14 +56,14 @@ const DocumentCard = ({ req, theme, val, onEdit }) => {
                 <Chip label={theme.status} size="small" sx={{ bgcolor: theme.bg, color: theme.color, fontWeight: 700, fontSize: '0.7rem' }} />
             </Stack>
 
-            <Typography variant="subtitle1" fontWeight={800} color="#0f172a" lineHeight={1.2} sx={{ mb: 1 }}>{req.label}</Typography>
+            <Typography variant="subtitle1" fontWeight={800} color={COLOR.TINTA} lineHeight={1.2} sx={{ mb: 1 }}>{req.label}</Typography>
             
             <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2, flexGrow: 1 }}>
-                <InsertDriveFileOutlinedIcon sx={{ fontSize: 16, color: '#94a3b8' }}/>
-                <Typography variant="caption" color="#64748b" fontWeight={600}>Documento PDF/IMG {theme.dateText && ` • Vence: ${theme.dateText}`}</Typography>
+                <InsertDriveFileOutlinedIcon sx={{ fontSize: 16, color: COLOR.TENUE }}/>
+                <Typography variant="caption" color={COLOR.APAGADO} fontWeight={600}>Documento PDF/IMG {theme.dateText && ` • Vence: ${theme.dateText}`}</Typography>
             </Stack>
 
-            <Button fullWidth variant="outlined" onClick={onEdit} startIcon={<EditOutlinedIcon />} sx={{ mt: 'auto', borderRadius: 2, textTransform: 'none', fontWeight: 600, color: '#475569', borderColor: '#cbd5e1', '&:hover': { bgcolor: '#f8fafc', borderColor: '#94a3b8' } }}>
+            <Button fullWidth variant="outlined" onClick={onEdit} startIcon={<EditOutlinedIcon />} sx={{ mt: 'auto', borderRadius: 2, textTransform: 'none', fontWeight: 600, color: COLOR.TEXTO_SUAVE, borderColor: COLOR.BORDE_FUERTE, '&:hover': { bgcolor: COLOR.LIENZO, borderColor: COLOR.TENUE } }}>
                 Gestionar Archivo
             </Button>
         </Paper>

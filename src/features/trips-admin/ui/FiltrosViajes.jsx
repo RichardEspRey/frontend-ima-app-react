@@ -23,6 +23,7 @@ import SwapHorizIcon from "@mui/icons-material/SwapHoriz"
 import TripOriginIcon from "@mui/icons-material/TripOrigin"
 
 import { DIRECCION_TODAS } from "../../../entities/trip"
+import { COLOR } from "../../../shared/ui/tokens"
 
 const DIRECCIONES = [
   { valor: DIRECCION_TODAS, etiqueta: "Todas las Direcciones" },
@@ -58,7 +59,7 @@ const GRUPOS = [
 ]
 
 const ETIQUETA_GRUPO_SX = {
-  color: "#94a3b8",
+  color: COLOR.TENUE,
   fontWeight: 700,
   letterSpacing: "0.08em",
   fontSize: "0.68rem",
@@ -98,8 +99,8 @@ export function FiltrosViajes({
           onClick={onAlternar}
           sx={{
             bgcolor: "white",
-            borderColor: activos > 0 ? "#0f172a" : "#cbd5e1",
-            color: "#334155",
+            borderColor: activos > 0 ? COLOR.TINTA : COLOR.BORDE_FUERTE,
+            color: COLOR.TEXTO,
             fontWeight: 600,
             textTransform: "none",
             borderRadius: 2,
@@ -115,8 +116,8 @@ export function FiltrosViajes({
                 height: 20,
                 px: 0.6,
                 borderRadius: "10px",
-                bgcolor: "#0f172a",
-                color: "#fff",
+                bgcolor: COLOR.TINTA,
+                color: COLOR.BLANCO,
                 fontSize: "0.72rem",
                 fontWeight: 700,
                 display: "inline-flex",
@@ -131,7 +132,7 @@ export function FiltrosViajes({
       </Box>
 
       <Collapse in={abiertos}>
-        <Paper sx={{ p: 3, mb: 3, borderRadius: 2, border: "1px solid #e2e8f0" }} elevation={0}>
+        <Paper sx={{ p: 3, mb: 3, borderRadius: 2, border: `1px solid ${COLOR.BORDE}` }} elevation={0}>
           <Stack spacing={2.5}>
             {GRUPOS.map((grupo, indice) => {
               const visibles = grupo.campos.filter(
@@ -141,7 +142,7 @@ export function FiltrosViajes({
 
               return (
                 <Box key={grupo.titulo}>
-                  {indice > 0 && <Divider sx={{ borderColor: "#f1f5f9", mb: 2.5 }} />}
+                  {indice > 0 && <Divider sx={{ borderColor: COLOR.RELLENO, mb: 2.5 }} />}
                   <Typography variant="overline" sx={ETIQUETA_GRUPO_SX}>
                     {grupo.titulo}
                   </Typography>
@@ -161,7 +162,7 @@ export function FiltrosViajes({
                             InputProps={{
                               startAdornment: (
                                 <InputAdornment position="start">
-                                  <Icono sx={{ fontSize: 18, color: "#94a3b8" }} />
+                                  <Icono sx={{ fontSize: 18, color: COLOR.TENUE }} />
                                 </InputAdornment>
                               ),
                             }}
@@ -184,7 +185,7 @@ export function FiltrosViajes({
               <Button
                 variant="text"
                 disabled={activos === 0}
-                sx={{ textTransform: "none", fontWeight: 600, color: "#64748b" }}
+                sx={{ textTransform: "none", fontWeight: 600, color: COLOR.APAGADO }}
                 onClick={onLimpiar}
               >
                 Limpiar Filtros

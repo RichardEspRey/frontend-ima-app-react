@@ -5,6 +5,7 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 
 import EmptyStage from './EmptyStage';
 import NormalStage from './NormalStage';
+import { COLOR } from '../../shared/ui/tokens';
 
 const TripStageItem = (props) => {
     const { etapa, index, removeStage, addStop } = props;
@@ -13,9 +14,9 @@ const TripStageItem = (props) => {
     return (
         <Paper elevation={2} sx={{ overflow: 'hidden', borderLeft: `6px solid ${isEmpty ? '#757575' : '#1976d2'}` }}>
             
-            <Box sx={{ bgcolor: isEmpty ? '#eeeeee' : '#e3f2fd', px: 2, py: 1.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Box sx={{ bgcolor: isEmpty ? COLOR.RELLENO : COLOR.INFO_FONDO, px: 2, py: 1.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Stack direction="row" spacing={1} alignItems="center">
-                    <Chip label={`#${index + 1}`} size="small" sx={{ bgcolor: isEmpty ? '#757575' : '#1976d2', color: 'white', fontWeight: 'bold' }} />
+                    <Chip label={`#${index + 1}`} size="small" sx={{ bgcolor: isEmpty ? COLOR.APAGADO : COLOR.INFO, color: 'white', fontWeight: 'bold' }} />
                     <Typography variant="subtitle1" fontWeight={700}>{isEmpty ? 'Etapa Vacía' : 'Viaje Normal'}</Typography>
                 </Stack>
                 <Box>

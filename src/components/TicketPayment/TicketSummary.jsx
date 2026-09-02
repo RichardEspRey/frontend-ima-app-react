@@ -1,8 +1,9 @@
 import { Paper, Stack, Typography, Divider } from "@mui/material";
+import { COLOR } from "../../shared/ui/tokens";
 
 const TicketSummary = ({ totalMillasAjustadas, customRate, gastos, totalAvances, totalPagar }) => {
   return (
-    <Paper elevation={0} sx={{ bgcolor: '#263238', color: '#fff', p: 3, borderRadius: 2, textAlign: 'right' }}>
+    <Paper elevation={0} sx={{ bgcolor: '#263238', color: COLOR.BLANCO, p: 3, borderRadius: 2, textAlign: 'right' }}>
         <Stack spacing={1}>
             <Stack direction="row" justifyContent="space-between">
                 <Typography variant="body2" color="rgba(255,255,255,0.7)">Millas Totales (Ajustadas):</Typography>

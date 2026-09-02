@@ -42,7 +42,7 @@
   
 
   .accept-button {
-    background-color: #1554e3;
+    background-color: var(--ima-info);
     color: white;
   }
 
@@ -63,7 +63,7 @@
     padding: 12px 15px; 
     margin-bottom: 25px;
     border-radius: 5px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--ima-borde-fuerte);
     width: 100%;
     font-size: 16px;
   }
@@ -72,7 +72,7 @@
     padding: 15px;
     margin-bottom: 25px;
     border-radius: 5px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--ima-borde-fuerte);
     width: 100%;
     font-size: 16px;
   }

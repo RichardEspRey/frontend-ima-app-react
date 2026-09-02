@@ -6,6 +6,7 @@ import LayersOutlinedIcon from '@mui/icons-material/LayersOutlined';
 import { StageEmptyCard } from './StageEmptyCard';
 import { StageNormalCard } from './StageNormalCard';
 import { StageUpcomingCard } from './StageUpcomingCard';
+import { COLOR } from '../../shared/ui/tokens';
 
 const actionBtnSx = { textTransform: 'none', fontWeight: 600, borderRadius: 1.5, boxShadow: 'none' };
 
@@ -16,20 +17,20 @@ export const TripExpandedDetails = ({
   const isCompleted = trip.status === 'Completed';
 
   return (
-    <Box sx={{ margin: 1, padding: 2.5, border: '1px solid #e2e8f0', borderRadius: 2, bgcolor: '#fafbfc' }}>
+    <Box sx={{ margin: 1, padding: 2.5, border: `1px solid ${COLOR.BORDE}`, borderRadius: 2, bgcolor: COLOR.CABECERA }}>
 
       {!isUpcomingTab && !isDespachoTab && (
-        <Paper elevation={0} sx={{ p: 1.75, mb: 2.5, bgcolor: '#fff', border: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderRadius: 2, flexWrap: 'wrap', gap: 1.5 }}>
-          <Typography variant="overline" sx={{ color: '#94a3b8', fontWeight: 700, letterSpacing: '0.08em', fontSize: '0.68rem' }}>
+        <Paper elevation={0} sx={{ p: 1.75, mb: 2.5, bgcolor: COLOR.BLANCO, border: `1px solid ${COLOR.BORDE}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderRadius: 2, flexWrap: 'wrap', gap: 1.5 }}>
+          <Typography variant="overline" sx={{ color: COLOR.TENUE, fontWeight: 700, letterSpacing: '0.08em', fontSize: '0.68rem' }}>
             Acciones Rápidas
           </Typography>
           <Stack direction="row" spacing={1.5}>
             <Button size="small" variant="outlined" startIcon={<HourglassBottomIcon />} onClick={() => onAlmostOver(trip.trip_id, trip.trip_number)} disabled={trip.status === 'Almost Over'}
-              sx={{ ...actionBtnSx, borderColor: '#cbd5e1', color: '#334155' }}>
+              sx={{ ...actionBtnSx, borderColor: COLOR.BORDE_FUERTE, color: COLOR.TEXTO }}>
               Marcar Almost Over
             </Button>
             <Button size="small" variant="contained" startIcon={<CheckCircleOutlineIcon />} onClick={() => onFinalize(trip.trip_id, trip.trip_number)}
-              sx={{ ...actionBtnSx, bgcolor: '#16a34a', '&:hover': { bgcolor: '#15803d' } }}>
+              sx={{ ...actionBtnSx, bgcolor: COLOR.EXITO, '&:hover': { bgcolor: COLOR.EXITO } }}>
               Finalizar Viaje
             </Button>
           </Stack>
@@ -37,8 +38,8 @@ export const TripExpandedDetails = ({
       )}
 
       <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
-        <LayersOutlinedIcon sx={{ fontSize: 18, color: '#94a3b8' }} />
-        <Typography variant="subtitle2" sx={{ fontSize: '0.8rem', fontWeight: 700, color: '#334155', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+        <LayersOutlinedIcon sx={{ fontSize: 18, color: COLOR.TENUE }} />
+        <Typography variant="subtitle2" sx={{ fontSize: '0.8rem', fontWeight: 700, color: COLOR.TEXTO, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
           Detalles de Etapas y Logística
         </Typography>
       </Stack>
@@ -64,7 +65,7 @@ export const TripExpandedDetails = ({
           })}
         </Grid>
       ) : (
-        <Typography variant="body2" sx={{ fontStyle: 'italic', color: '#94a3b8', textAlign: 'center', py: 2 }}>
+        <Typography variant="body2" sx={{ fontStyle: 'italic', color: COLOR.TENUE, textAlign: 'center', py: 2 }}>
           No hay información detallada de etapas para este viaje.
         </Typography>
       )}

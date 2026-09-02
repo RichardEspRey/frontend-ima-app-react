@@ -1,11 +1,12 @@
 import { Typography, Table, TableHead, TableBody, TableRow, TableCell, Chip, TextField } from "@mui/material";
+import { COLOR } from "../../shared/ui/tokens";
 
 const TicketStagesTable = ({ stages, ajustes, handleAjuste, getDestino }) => {
   return (
     <>
       <Typography variant="h6" fontWeight={700} gutterBottom sx={{ mt: 4 }}>Detalle de Recorrido</Typography>
       <Table size="small" sx={{ mb: 4 }}>
-        <TableHead sx={{ bgcolor: '#f5f5f5' }}>
+        <TableHead sx={{ bgcolor: COLOR.LIENZO }}>
           <TableRow>
             <TableCell sx={{ fontWeight: 700 }}>Destino (Zip / Ciudad)</TableCell>
             <TableCell sx={{ fontWeight: 700 }}>Tipo Etapa</TableCell>

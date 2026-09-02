@@ -21,6 +21,7 @@ import {
     ExpandLess, ExpandMore,
     Search as SearchIcon
 } from '@mui/icons-material';
+import { COLOR } from '../../../shared/ui/tokens';
 
 // A partir de cuántos permisos "hoja" seguidos se usa la cuadrícula compacta en vez de filas.
 const COMPACT_GRID_THRESHOLD = 5;
@@ -64,8 +65,8 @@ const CountBadge = ({ enabled, total }) => (
         size="small"
         sx={{
             height: 18, fontSize: '0.65rem', fontWeight: 700, ml: 1,
-            bgcolor: enabled > 0 ? 'primary.main' : '#e0e0e0',
-            color: enabled > 0 ? '#fff' : 'text.secondary'
+            bgcolor: enabled > 0 ? 'primary.main' : COLOR.BORDE,
+            color: enabled > 0 ? COLOR.BLANCO : 'text.secondary'
         }}
     />
 );
@@ -85,12 +86,12 @@ const PermissionChip = ({ node, desktopFeaturesMap, onToggleFeature, userId, isP
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1,
                 minWidth: 168, maxWidth: 240, flex: '1 1 168px',
                 px: 1.25, py: 0.5, borderRadius: 2,
-                border: '1px solid', borderColor: isAllowed ? '#1976d2' : '#e0e0e0',
-                bgcolor: isAllowed ? 'rgba(25, 118, 210, 0.06)' : '#fff',
+                border: '1px solid', borderColor: isAllowed ? COLOR.INFO : COLOR.BORDE,
+                bgcolor: isAllowed ? 'rgba(25, 118, 210, 0.06)' : COLOR.BLANCO,
                 cursor: disabled ? 'default' : 'pointer',
                 opacity: disabled ? 0.55 : 1,
                 transition: 'all 0.15s',
-                '&:hover': disabled ? {} : { borderColor: '#1976d2', bgcolor: 'rgba(25, 118, 210, 0.1)' },
+                '&:hover': disabled ? {} : { borderColor: COLOR.INFO, bgcolor: 'rgba(25, 118, 210, 0.1)' },
             }}
         >
             <Box sx={{ minWidth: 0 }}>
@@ -132,7 +133,7 @@ const PermissionNode = ({ node, level, desktopFeaturesMap, onToggleFeature, user
 
         return (
             <React.Fragment>
-                <ListItem sx={{ pl: 2 + (level * 4), py: 0.5, bgcolor: '#eef2f6' }}>
+                <ListItem sx={{ pl: 2 + (level * 4), py: 0.5, bgcolor: COLOR.RELLENO }}>
                     <ListItemText
                         primary={
                             <Stack direction="row" alignItems="center">
@@ -205,7 +206,7 @@ const PermissionNode = ({ node, level, desktopFeaturesMap, onToggleFeature, user
                     py: 1,
                     cursor: hasSubItems ? 'pointer' : 'default',
                     bgcolor: isAllowed ? 'rgba(25, 118, 210, 0.04)' : 'transparent',
-                    borderLeft: isAllowed ? '4px solid #1976d2' : '4px solid transparent',
+                    borderLeft: isAllowed ? `4px solid ${COLOR.INFO}` : '4px solid transparent',
                     opacity: existInDB && isParentAllowed ? 1 : 0.6,
                     transition: 'all 0.2s'
                 }}
@@ -254,7 +255,7 @@ const PermissionNode = ({ node, level, desktopFeaturesMap, onToggleFeature, user
             {hasSubItems && (
                 <Collapse in={isExpanded} timeout="auto" unmountOnExit>
                     {useCompactGrid ? (
-                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, pl: 2 + ((level + 1) * 4), pr: 2, pt: 1, pb: 1.5, bgcolor: isRoot ? '#fafafa' : 'transparent' }}>
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, pl: 2 + ((level + 1) * 4), pr: 2, pt: 1, pb: 1.5, bgcolor: isRoot ? COLOR.LIENZO : 'transparent' }}>
                             {displaySubItems.map(child => (
                                 <PermissionChip
                                     key={child.featureKey || child.name}
@@ -267,7 +268,7 @@ const PermissionNode = ({ node, level, desktopFeaturesMap, onToggleFeature, user
                             ))}
                         </Box>
                     ) : (
-                        <List component="div" disablePadding sx={{ bgcolor: isRoot ? '#fafafa' : 'transparent' }}>
+                        <List component="div" disablePadding sx={{ bgcolor: isRoot ? COLOR.LIENZO : 'transparent' }}>
                             {displaySubItems.map(child => (
                                 <PermissionNode
                                     key={child.featureKey || child.name}
@@ -326,7 +327,7 @@ const FeatureSection = ({ features, userId, onToggleFeature }) => {
                             key={f.feature_id}
                             divider
                             sx={{
-                                borderLeft: Number(f.enabled) === 1 ? '4px solid #1976d2' : '4px solid transparent',
+                                borderLeft: Number(f.enabled) === 1 ? `4px solid ${COLOR.INFO}` : '4px solid transparent',
                                 bgcolor: Number(f.enabled) === 1 ? 'rgba(25, 118, 210, 0.04)' : 'transparent',
                                 transition: 'all 0.2s'
                             }}

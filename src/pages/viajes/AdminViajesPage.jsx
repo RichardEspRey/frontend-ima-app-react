@@ -40,6 +40,7 @@ import {
 import { useAuthStore } from "../../store/useAuthStore"
 import { useViajesFiltrosStore } from "../../store/useViajesFiltrosStore"
 import { notify } from "../../shared/ui"
+import { COLOR } from "../../shared/ui/tokens"
 
 /**
  * Quiénes pueden abrir la edición sin restricciones.
@@ -53,7 +54,7 @@ import { notify } from "../../shared/ui"
 const EDICION_ESPECIAL = new Set(["Blanca", "Angelica", "Israel", "Richard"])
 
 const BOTON_OSCURO_SX = {
-  bgcolor: "#0f172a",
+  bgcolor: COLOR.TINTA,
   fontWeight: 700,
   borderRadius: 2,
   px: 3,
@@ -61,7 +62,7 @@ const BOTON_OSCURO_SX = {
   textTransform: "none",
   boxShadow: "none",
   transition: "all 0.15s",
-  "&:hover": { bgcolor: "#1e293b", boxShadow: "0 6px 16px rgba(15,23,42,0.22)" },
+  "&:hover": { bgcolor: COLOR.TINTA_CLARA, boxShadow: "0 6px 16px rgba(15,23,42,0.22)" },
 }
 
 /**
@@ -379,8 +380,8 @@ export default function AdminViajesPage() {
 
   if (permitidas.length === 0) {
     return (
-      <Box sx={{ p: { xs: 2, md: 4 }, minHeight: "100vh", bgcolor: "#f8fafc" }}>
-        <Typography variant="h4" fontWeight={800} color="#0f172a" gutterBottom>
+      <Box sx={{ p: { xs: 2, md: 4 }, minHeight: "100vh", bgcolor: COLOR.LIENZO }}>
+        <Typography variant="h4" fontWeight={800} color={COLOR.TINTA} gutterBottom>
           Administrador de Viajes
         </Typography>
         <Alert severity="warning">No tienes privilegios de lectura en este módulo.</Alert>
@@ -393,7 +394,7 @@ export default function AdminViajesPage() {
   )
 
   return (
-    <Box sx={{ p: { xs: 2, md: 4 }, minHeight: "100vh", bgcolor: "#f8fafc" }}>
+    <Box sx={{ p: { xs: 2, md: 4 }, minHeight: "100vh", bgcolor: COLOR.LIENZO }}>
       <Stack
         direction="row"
         justifyContent="space-between"
@@ -406,7 +407,7 @@ export default function AdminViajesPage() {
           <Typography
             variant="overline"
             sx={{
-              color: "#94a3b8",
+              color: COLOR.TENUE,
               fontWeight: 700,
               letterSpacing: "0.12em",
               fontSize: "0.7rem",
@@ -418,13 +419,13 @@ export default function AdminViajesPage() {
           <Typography
             variant="h4"
             fontWeight={800}
-            color="#0f172a"
+            color={COLOR.TINTA}
             letterSpacing="-0.02em"
             sx={{ mt: 0.25 }}
           >
             Administrador de Viajes
           </Typography>
-          <Typography variant="body2" color="#64748b" sx={{ mt: 0.5 }}>
+          <Typography variant="body2" color={COLOR.APAGADO} sx={{ mt: 0.5 }}>
             Gestión y control de despachos, estatus y rutas en tiempo real.
           </Typography>
         </Box>
@@ -441,7 +442,7 @@ export default function AdminViajesPage() {
         )}
       </Stack>
 
-      <Box sx={{ mb: 3, display: "inline-flex", bgcolor: "#f1f5f9", borderRadius: 2.5, p: 0.5 }}>
+      <Box sx={{ mb: 3, display: "inline-flex", bgcolor: COLOR.RELLENO, borderRadius: 2.5, p: 0.5 }}>
         <Tabs
           value={pestana}
           onChange={(evento, valor) => setEstado({ tabValue: valor, page: 0 })}
@@ -466,9 +467,9 @@ export default function AdminViajesPage() {
                 fontWeight: 600,
                 fontSize: "0.85rem",
                 textTransform: "none",
-                color: "#64748b",
+                color: COLOR.APAGADO,
                 transition: "background-color 0.15s, color 0.15s",
-                "&.Mui-selected": { bgcolor: "#0f172a", color: "#fff" },
+                "&.Mui-selected": { bgcolor: COLOR.TINTA, color: COLOR.BLANCO },
               }}
             />
           ))}
@@ -478,7 +479,7 @@ export default function AdminViajesPage() {
       {enProgramacion ? (
         <Box>
           <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
-            <Typography variant="body2" color="#64748b">
+            <Typography variant="body2" color={COLOR.APAGADO}>
               {programaciones.isLoading
                 ? "Cargando programaciones…"
                 : `${programaciones.data?.length ?? 0} viaje${

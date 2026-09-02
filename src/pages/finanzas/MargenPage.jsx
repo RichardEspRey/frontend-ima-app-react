@@ -7,6 +7,7 @@ import {
 import Swal from 'sweetalert2';
 
 import { MargenRow } from '../../components/MargenRow'; 
+import { COLOR } from '../../shared/ui/tokens';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -155,7 +156,7 @@ const MargenPage = () => {
                 <TableCell sx={{ fontWeight: 600, textAlign: 'right' }}>Costo Diesel</TableCell>
                 <TableCell sx={{ fontWeight: 600, textAlign: 'right' }}>Pago Driver</TableCell>
                 <TableCell sx={{ fontWeight: 600, textAlign: 'center' }}>Estatus</TableCell>
-                <TableCell sx={{ fontWeight: 700, textAlign: 'right', bgcolor: '#f0f0f0' }}>Margen Total (USD)</TableCell>
+                <TableCell sx={{ fontWeight: 700, textAlign: 'right', bgcolor: COLOR.RELLENO }}>Margen Total (USD)</TableCell>
               </TableRow>
             </TableHead>
 

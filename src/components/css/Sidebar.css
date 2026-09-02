@@ -1,6 +1,6 @@
 /* .sidebar {
     width: 250px;
-    background-color: #3C48E1;
+    background-color: var(--ima-marca);
     height: 100vh;
     padding-top: 20px;
     display: flex;
@@ -38,7 +38,7 @@
   }
   
   .activeMenuItem {
-    background-color: #2B36A0;
+    background-color: var(--ima-marca-activo);
   }
   
   .icon {
@@ -76,7 +76,7 @@
   }
   
   .activeSubMenuItem {
-    background-color: #4F5DDA;
+    background-color: var(--ima-marca-hover);
   }
   
   .logoutButton {
@@ -101,11 +101,11 @@
 } */
 
 :root {
-    --primary-blue: #3C48E1; /* Color principal */
-    --hover-bg: #4f5bda; /* Azul de hover (más claro y vibrante) */
-    --active-bg: #2B36A0; /* Azul de ítem activo (más oscuro y profundo) */
-    --text-color: #ffffff; /* Texto principal blanco */
-    --sub-text-color: #e0e0e0; /* Texto de submenú */
+    --primary-blue: var(--ima-marca); /* Color principal */
+    --hover-bg: var(--ima-marca-hover); /* Azul de hover (más claro y vibrante) */
+    --active-bg: var(--ima-marca-activo); /* Azul de ítem activo (más oscuro y profundo) */
+    --text-color: var(--ima-blanco); /* Texto principal blanco */
+    --sub-text-color: var(--ima-borde); /* Texto de submenú */
     --transition-speed: 0.25s; /* Transiciones rápidas */
     --border-radius: 6px;
     --item-height: 40px; /* Reducido ligeramente a 40px para más compactación */
@@ -208,7 +208,7 @@
 /* --- Contador de Notificaciones / Badges (Mantenido) --- */
 .notification-badge {
     margin-left: 6px;
-    background-color: #dc3545; 
+    background-color: var(--ima-peligro); 
     color: white;
     border-radius: 12px;
     padding: 2px 6px;
@@ -283,5 +283,5 @@
 }
 
 .logout-button:hover {
-    background-color: #dc3545; 
+    background-color: var(--ima-peligro); 
 }

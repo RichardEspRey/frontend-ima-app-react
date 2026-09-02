@@ -5,6 +5,7 @@ import "leaflet/dist/leaflet.css"
 import { NUEVO_LAREDO } from "../../../entities/schedule"
 import { TILES_BASE } from "../../../shared/config/mapa"
 import { EncuadrarRuta, iconoPunto } from "../../../shared/ui"
+import { COLOR } from "../../../shared/ui/tokens"
 
 const COLOR_CAMION = "#9c27b0"
 const COLOR_DESTINO = "#f44336"
@@ -61,13 +62,13 @@ export function MapaRutaCamion({ unidad, posicionCamion, trazo, cargando, error 
   return (
     <Paper
       elevation={0}
-      sx={{ mt: 2, border: "1px solid #e2e8f0", borderRadius: 3, overflow: "hidden" }}
+      sx={{ mt: 2, border: `1px solid ${COLOR.BORDE}`, borderRadius: 3, overflow: "hidden" }}
     >
-      <Box sx={{ px: 2.5, py: 1.5, borderBottom: "1px solid #e2e8f0" }}>
+      <Box sx={{ px: 2.5, py: 1.5, borderBottom: `1px solid ${COLOR.BORDE}` }}>
         <Typography
           variant="subtitle2"
           fontWeight={700}
-          color="#475569"
+          color={COLOR.TEXTO_SUAVE}
           sx={{ textTransform: "uppercase", letterSpacing: 0.5 }}
         >
           Ruta a Nuevo Laredo — Camión {unidad || ""}
@@ -77,7 +78,7 @@ export function MapaRutaCamion({ unidad, posicionCamion, trazo, cargando, error 
       <Stack
         direction="row"
         spacing={2.5}
-        sx={{ px: 2.5, py: 1, borderBottom: "1px solid #f1f5f9", flexWrap: "wrap" }}
+        sx={{ px: 2.5, py: 1, borderBottom: `1px solid ${COLOR.RELLENO}`, flexWrap: "wrap" }}
       >
         <Leyenda color={COLOR_CAMION} texto="Camión" />
         <Leyenda color={COLOR_DESTINO} texto="Nuevo Laredo" />

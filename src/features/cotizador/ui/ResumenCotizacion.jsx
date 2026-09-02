@@ -1,5 +1,6 @@
 import { Box, Divider, Paper, Stack, Typography } from "@mui/material"
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong"
+import { COLOR } from "../../../shared/ui/tokens"
 
 const TITULO_SX = { textTransform: "uppercase", letterSpacing: 0.5 }
 
@@ -86,7 +87,7 @@ export function ResumenCotizacion({ ubicaciones, distancias, cifras }) {
   return (
     <Paper
       elevation={0}
-      sx={{ flex: "0 0 250px", p: 3, borderRadius: 2, border: "1px solid #e0e0e0" }}
+      sx={{ flex: "0 0 250px", p: 3, borderRadius: 2, border: `1px solid ${COLOR.BORDE}` }}
     >
       <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2.5 }}>
         <ReceiptLongIcon sx={{ color: "primary.main" }} />

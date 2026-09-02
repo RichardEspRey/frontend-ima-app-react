@@ -10,6 +10,7 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import EditIcon from '@mui/icons-material/Edit'; 
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
+import { COLOR } from '../../shared/ui/tokens';
 
 const numberFmt = (n) => new Intl.NumberFormat('en-US').format(Number(n).toFixed(0));
 
@@ -108,7 +109,7 @@ export const HistoryModal = ({ open, onClose, truck, onOpenPhoto, onOpenCorrect 
     const historyRecords = truck?.ultimos_registros || [];
     return (
         <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-            <DialogTitle sx={{ fontWeight: 700, bgcolor: '#f5f5f5' }}>Últimos 15 Registros - Unidad {truck?.unidad}</DialogTitle>
+            <DialogTitle sx={{ fontWeight: 700, bgcolor: COLOR.LIENZO }}>Últimos 15 Registros - Unidad {truck?.unidad}</DialogTitle>
             <DialogContent dividers sx={{ p: 0 }}>
                 <Table size="small" stickyHeader>
                     <TableHead>

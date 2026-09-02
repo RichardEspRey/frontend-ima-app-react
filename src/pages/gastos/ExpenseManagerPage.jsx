@@ -37,6 +37,7 @@ import { DARK_BTN_SX, SECTION_LABEL_SX } from "../../features/expense-manager/es
 import useFetchExchangeRate from "../../hooks/useFetchExchangeRate"
 import { useSesion } from "../../shared/auth"
 import { useGastosFiltrosStore } from "../../store/useGastosFiltrosStore"
+import { COLOR } from "../../shared/ui/tokens"
 
 /**
  * Los filtros que cuentan para el contador y para el renglón de totales.
@@ -190,7 +191,7 @@ export default function ExpenseManagerPage() {
   }
 
   return (
-    <Box sx={{ p: { xs: 2, md: 4 }, minHeight: "100vh", bgcolor: "#f8fafc" }}>
+    <Box sx={{ p: { xs: 2, md: 4 }, minHeight: "100vh", bgcolor: COLOR.LIENZO }}>
       <Stack
         direction="row"
         justifyContent="space-between"
@@ -209,13 +210,13 @@ export default function ExpenseManagerPage() {
           <Typography
             variant="h4"
             fontWeight={800}
-            color="#0f172a"
+            color={COLOR.TINTA}
             letterSpacing="-0.02em"
             sx={{ mt: 0.25 }}
           >
             Expense Manager
           </Typography>
-          <Typography variant="body2" color="#64748b" sx={{ mt: 0.5 }}>
+          <Typography variant="body2" color={COLOR.APAGADO} sx={{ mt: 0.5 }}>
             Control y administración general de gastos por país, tipo y categoría.
           </Typography>
         </Box>
@@ -228,8 +229,8 @@ export default function ExpenseManagerPage() {
             onClick={() => setGraficaAbierta((abierta) => !abierta)}
             sx={{
               bgcolor: "white",
-              borderColor: "#cbd5e1",
-              color: "#334155",
+              borderColor: COLOR.BORDE_FUERTE,
+              color: COLOR.TEXTO,
               fontWeight: 600,
               textTransform: "none",
               borderRadius: 2,
@@ -251,7 +252,7 @@ export default function ExpenseManagerPage() {
       </Stack>
 
       <Collapse in={graficaAbierta}>
-        <Paper sx={{ p: 3, borderRadius: 2, border: "1px solid #e2e8f0", mb: 3 }} elevation={0}>
+        <Paper sx={{ p: 3, borderRadius: 2, border: `1px solid ${COLOR.BORDE}`, mb: 3 }} elevation={0}>
           <Stack
             direction="row"
             justifyContent="space-between"
@@ -264,10 +265,10 @@ export default function ExpenseManagerPage() {
               <Typography variant="overline" sx={SECTION_LABEL_SX}>
                 Analítica
               </Typography>
-              <Typography variant="h6" fontWeight={700} color="#0f172a" sx={{ lineHeight: 1.3 }}>
+              <Typography variant="h6" fontWeight={700} color={COLOR.TINTA} sx={{ lineHeight: 1.3 }}>
                 Gastos por Tipo (Acumulativo Mensual)
               </Typography>
-              <Typography variant="body2" color="#64748b">
+              <Typography variant="body2" color={COLOR.APAGADO}>
                 Últimos 12 meses · Total por mes dividido por Expense Type, en{" "}
                 {paisGrafica === "MX" ? "pesos mexicanos" : "dólares"}
               </Typography>
@@ -278,7 +279,7 @@ export default function ExpenseManagerPage() {
               size="small"
               onChange={(evento, valor) => valor && setPaisGrafica(valor)}
               sx={{
-                bgcolor: "#f1f5f9",
+                bgcolor: COLOR.RELLENO,
                 borderRadius: 2.5,
                 p: 0.5,
                 gap: 0.5,
@@ -290,9 +291,9 @@ export default function ExpenseManagerPage() {
                   fontWeight: 600,
                   fontSize: "0.85rem",
                   textTransform: "none",
-                  color: "#64748b",
+                  color: COLOR.APAGADO,
                 },
-                "& .Mui-selected": { bgcolor: "#0f172a !important", color: "#fff !important" },
+                "& .Mui-selected": { bgcolor: `${COLOR.TINTA} !important`, color: `${COLOR.BLANCO} !important` },
               }}
             >
               <ToggleButton value="US">USA</ToggleButton>

@@ -6,6 +6,7 @@ import {
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { archivoDelEvento } from '../shared/security';
+import { COLOR } from '../shared/ui/tokens';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -123,7 +124,7 @@ export const DocPreviewModal = ({ open, onClose, file, filename, tripId, docType
             fullWidth
             slotProps={{ paper: { sx: { height: '85vh', display: 'flex', flexDirection: 'column' } } }}
         >
-            <DialogTitle sx={{ fontWeight: 700, borderBottom: '1px solid #e0e0e0', pb: 1.5 }}>
+            <DialogTitle sx={{ fontWeight: 700, borderBottom: `1px solid ${COLOR.BORDE}`, pb: 1.5 }}>
                 Vista previa — {docName}
             </DialogTitle>
 
@@ -134,7 +135,7 @@ export const DocPreviewModal = ({ open, onClose, file, filename, tripId, docType
                     </Alert>
                 )}
 
-                <Box sx={{ flex: 1, border: '1px solid #e0e0e0', borderRadius: 1, overflow: 'hidden', bgcolor: '#f5f5f5' }}>
+                <Box sx={{ flex: 1, border: `1px solid ${COLOR.BORDE}`, borderRadius: 1, overflow: 'hidden', bgcolor: COLOR.LIENZO }}>
                     {displayUrl ? (
                         isPdf ? (
                             <iframe src={displayUrl} width="100%" height="100%" style={{ border: 'none', display: 'block' }} title={docName} />
@@ -149,7 +150,7 @@ export const DocPreviewModal = ({ open, onClose, file, filename, tripId, docType
                 </Box>
             </DialogContent>
 
-            <DialogActions sx={{ px: 3, py: 2, borderTop: '1px solid #e0e0e0', justifyContent: 'space-between' }}>
+            <DialogActions sx={{ px: 3, py: 2, borderTop: `1px solid ${COLOR.BORDE}`, justifyContent: 'space-between' }}>
                 {/* Left: Delete */}
                 <Button
                     variant="outlined"

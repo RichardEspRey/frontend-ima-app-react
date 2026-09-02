@@ -22,6 +22,7 @@ import {
     HEADER_ROW_SX, HEADER_CELL_SX, TABLE_CONTAINER_SX, CARD_SX,
     SECTION_LABEL_SX, PAGINATION_BOX_SX, PAGINATION_SX, GHOST_BTN_SX,
 } from '../../../shared/ui/estilos';
+import { COLOR } from '../../../shared/ui/tokens';
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
@@ -271,7 +272,7 @@ const TablaOrdenes = () => {
                             color="error" 
                             onClick={clearFilters}
                             title="Limpiar Filtros"
-                            sx={{ border: '1px solid #ffcdd2', borderRadius: 1 }}
+                            sx={{ border: `1px solid ${COLOR.PELIGRO_BORDE}`, borderRadius: 1 }}
                         >
                             <DeleteSweepIcon />
                         </IconButton>
@@ -316,10 +317,10 @@ const TablaOrdenes = () => {
                         ) : filteredOrders.length === 0 ? (
                             <TableRow>
                                 <TableCell colSpan={11} align="center" sx={{ py: 6 }}>
-                                    <Typography variant="body2" color="#64748b" fontWeight={600}>
+                                    <Typography variant="body2" color={COLOR.APAGADO} fontWeight={600}>
                                         No se encontraron órdenes.
                                     </Typography>
-                                    <Typography variant="caption" color="#94a3b8">
+                                    <Typography variant="caption" color={COLOR.TENUE}>
                                         Ajusta los filtros o crea una nueva orden.
                                     </Typography>
                                 </TableCell>

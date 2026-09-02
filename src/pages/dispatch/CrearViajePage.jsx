@@ -22,6 +22,7 @@ import { useEquipos } from "../../entities/team"
 import { useBodegas } from "../../entities/warehouse"
 import { FormulariosViaje, PanelConfiguracionViaje } from "../../features/dispatch"
 import { PageHeader, notify } from "../../shared/ui"
+import { COLOR } from "../../shared/ui/tokens"
 
 const AVISO_PROGRAMACION =
   "El viaje se creó, pero no se pudo eliminar la programación aprobada. Elimínala manualmente desde el tab de Programación."
@@ -151,7 +152,7 @@ export default function CrearViajePage() {
             variant="outlined"
             startIcon={<ArrowBackIcon />}
             onClick={() => navigate("/admin-trips")}
-            sx={{ fontWeight: 600, bgcolor: "white", borderColor: "#cbd5e1", color: "#475569" }}
+            sx={{ fontWeight: 600, bgcolor: "white", borderColor: COLOR.BORDE_FUERTE, color: COLOR.TEXTO_SUAVE }}
           >
             Volver a Viajes
           </Button>

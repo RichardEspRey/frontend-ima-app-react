@@ -3,6 +3,7 @@ import SearchIcon from "@mui/icons-material/Search"
 
 import { MODO_PING } from "../../../entities/tracking"
 import { COLOR_PUNTO_1, COLOR_PUNTO_2 } from "./iconos"
+import { COLOR } from "../../../shared/ui/tokens"
 
 const MODOS = [
   { modo: MODO_PING.BUSQUEDA, texto: "Búsqueda", activo: "Búsqueda" },
@@ -169,7 +170,7 @@ export function TrazadorRuta({
                         px: 1.5,
                         py: 0.75,
                         cursor: "pointer",
-                        borderBottom: "1px solid #f1f5f9",
+                        borderBottom: `1px solid ${COLOR.RELLENO}`,
                         "&:hover": { bgcolor: "#eef5ff" },
                         "&:last-child": { borderBottom: "none" },
                       }}
@@ -177,7 +178,7 @@ export function TrazadorRuta({
                       <Typography
                         variant="caption"
                         display="block"
-                        color="#1e293b"
+                        color={COLOR.TINTA_CLARA}
                         fontWeight={600}
                         sx={{ lineHeight: 1.3, fontSize: "0.68rem" }}
                       >

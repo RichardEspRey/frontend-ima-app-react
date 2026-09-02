@@ -14,6 +14,7 @@ import TicketStagesTable from "../../components/TicketPayment/TicketStagesTable"
 import TicketDeductions from "../../components/TicketPayment/TicketDeductions";
 import TicketSummary from "../../components/TicketPayment/TicketSummary";
 import GastosModal from "../../components/GastosModal";
+import { COLOR } from "../../shared/ui/tokens";
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -143,7 +144,7 @@ const TicketPagoPage = () => {
         `,
         icon: 'question',
         showCancelButton: true,
-        confirmButtonColor: '#2e7d32',
+        confirmButtonColor: COLOR.EXITO,
         confirmButtonText: 'Sí, Guardar y Autorizar'
     }).then(async (result) => {
         if(result.isConfirmed) {
@@ -364,7 +365,7 @@ const TicketPagoPage = () => {
                     
                     <Grid item xs={12} sm={6}>
                         <Stack spacing={2} sx={{ height: '100%' }}>
-                            <Paper elevation={0} sx={{ p: 2, bgcolor: '#f8f9fa', border: '1px dashed #cfd8dc', borderRadius: 2 }}>
+                            <Paper elevation={0} sx={{ p: 2, bgcolor: COLOR.LIENZO, border: '1px dashed #cfd8dc', borderRadius: 2 }}>
                                 <Typography variant="caption" fontWeight={700} color="text.secondary" gutterBottom sx={{ textTransform: 'uppercase', mb: 1.5, display: 'block' }}>
                                     Notas Internas
                                 </Typography>
@@ -376,12 +377,12 @@ const TicketPagoPage = () => {
                                     value={comentarios}
                                     onChange={(e) => setComentarios(e.target.value)}
                                     variant="outlined"
-                                    sx={{ bgcolor: '#fff' }}
+                                    sx={{ bgcolor: COLOR.BLANCO }}
                                 />
                             </Paper>
 
                             {/* Caja de Comentarios para el Operador (PDF) */}
-                            <Paper elevation={0} sx={{ p: 2, bgcolor: '#e3f2fd', border: '1px solid #90caf9', borderRadius: 2 }}>
+                            <Paper elevation={0} sx={{ p: 2, bgcolor: COLOR.INFO_FONDO, border: `1px solid ${COLOR.INFO_BORDE}`, borderRadius: 2 }}>
                                 <Typography variant="caption" fontWeight={800} color="info.main" gutterBottom sx={{ textTransform: 'uppercase', mb: 1.5, display: 'block' }}>
                                     Comentarios
                                 </Typography>
@@ -393,7 +394,7 @@ const TicketPagoPage = () => {
                                     value={comentariosOperador}
                                     onChange={(e) => setComentariosOperador(e.target.value)}
                                     variant="outlined"
-                                    sx={{ bgcolor: '#fff' }}
+                                    sx={{ bgcolor: COLOR.BLANCO }}
                                 />
                             </Paper>
                         </Stack>

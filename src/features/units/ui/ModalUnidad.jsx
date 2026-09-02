@@ -26,6 +26,7 @@ import {
 } from "../../../entities/unit"
 import { API_BASE } from "../../../shared/config/env"
 import { archivoDelEvento } from "../../../shared/security"
+import { COLOR } from "../../../shared/ui/tokens"
 
 /**
  * Un requisito del expediente dentro del formulario.
@@ -40,7 +41,7 @@ import { archivoDelEvento } from "../../../shared/security"
  */
 function CampoRequisito({ requisito, documento = {}, tieneArchivoNuevo, onDocumentoChange, onArchivo }) {
   return (
-    <Box sx={{ p: 1.5, bgcolor: "#f1f5f9", borderRadius: 2 }}>
+    <Box sx={{ p: 1.5, bgcolor: COLOR.RELLENO, borderRadius: 2 }}>
       <Typography variant="caption" fontWeight={700} color="primary.dark">
         {requisito.label}
       </Typography>
@@ -153,7 +154,7 @@ export function ModalUnidad({
     >
       <DialogTitle
         sx={{
-          bgcolor: "#0f172a",
+          bgcolor: COLOR.TINTA,
           color: "white",
           fontWeight: 800,
           display: "flex",
@@ -167,14 +168,14 @@ export function ModalUnidad({
         </IconButton>
       </DialogTitle>
 
-      <DialogContent sx={{ p: 0, bgcolor: "#f8fafc" }}>
+      <DialogContent sx={{ p: 0, bgcolor: COLOR.LIENZO }}>
         <Box sx={{ p: 3 }}>
           <Grid container spacing={4}>
             <Grid size={{ xs: 12, md: 4 }}>
               <Typography variant="h6" fontWeight={700} color="primary" gutterBottom>
                 1. {descriptor.etiquetas.seccionDatos}
               </Typography>
-              <Paper elevation={0} sx={{ p: 2, border: "1px solid #e2e8f0", borderRadius: 2 }}>
+              <Paper elevation={0} sx={{ p: 2, border: `1px solid ${COLOR.BORDE}`, borderRadius: 2 }}>
                 <Stack spacing={2.5}>
                   {descriptor.campos.map((campo) => (
                     <TextField
@@ -201,12 +202,12 @@ export function ModalUnidad({
                   <Grid size={{ xs: 12, sm: 6 }} key={categoria}>
                     <Paper
                       elevation={0}
-                      sx={{ p: 2, border: "1px solid #e2e8f0", borderRadius: 2, height: "100%" }}
+                      sx={{ p: 2, border: `1px solid ${COLOR.BORDE}`, borderRadius: 2, height: "100%" }}
                     >
                       <Typography
                         variant="subtitle2"
                         fontWeight={800}
-                        color="#475569"
+                        color={COLOR.TEXTO_SUAVE}
                         gutterBottom
                         sx={{ borderBottom: `2px solid ${colorCategoria(categoria)}`, pb: 1 }}
                       >
@@ -236,8 +237,8 @@ export function ModalUnidad({
         </Box>
       </DialogContent>
 
-      <DialogActions sx={{ p: 3, borderTop: "1px solid #e2e8f0", bgcolor: "#f8fafc" }}>
-        <Button onClick={onCerrar} sx={{ fontWeight: 600, color: "#64748b" }}>
+      <DialogActions sx={{ p: 3, borderTop: `1px solid ${COLOR.BORDE}`, bgcolor: COLOR.LIENZO }}>
+        <Button onClick={onCerrar} sx={{ fontWeight: 600, color: COLOR.APAGADO }}>
           Cancelar
         </Button>
         <Button
@@ -245,7 +246,7 @@ export function ModalUnidad({
           disableElevation
           onClick={onGuardar}
           disabled={guardando}
-          sx={{ px: 4, py: 1, borderRadius: 2, bgcolor: "#0f172a" }}
+          sx={{ px: 4, py: 1, borderRadius: 2, bgcolor: COLOR.TINTA }}
         >
           Guardar {descriptor.etiquetas.singular}
         </Button>

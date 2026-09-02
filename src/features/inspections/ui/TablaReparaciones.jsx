@@ -14,6 +14,7 @@ import {
     TABLE_CONTAINER_SX, DARK_BTN_SX, CHIP_SX, CHIP_DANGER_SX, ICON_BTN_SX,
     CELL_STRONG_SX, CELL_MUTED_SX,
 } from '../../../shared/ui/estilos';
+import { COLOR } from '../../../shared/ui/tokens';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -98,10 +99,10 @@ const TablaReparaciones = () => {
                         ) : repairs.length === 0 ? (
                             <TableRow>
                                 <TableCell colSpan={9} align="center" sx={{ py: 6 }}>
-                                    <Typography variant="body2" color="#64748b" fontWeight={600}>
+                                    <Typography variant="body2" color={COLOR.APAGADO} fontWeight={600}>
                                         No hay reparaciones registradas.
                                     </Typography>
-                                    <Typography variant="caption" color="#94a3b8">
+                                    <Typography variant="caption" color={COLOR.TENUE}>
                                         Agrega la primera con el botón de arriba.
                                     </Typography>
                                 </TableCell>
@@ -120,12 +121,12 @@ const TablaReparaciones = () => {
                                                 sx={{ ...CHIP_SX, bgcolor: '#eef2ff', color: '#4338ca', border: '1px solid #e0e7ff' }}
                                             />
                                         ) : (
-                                            <Typography variant="caption" color="#94a3b8">No asociado</Typography>
+                                            <Typography variant="caption" color={COLOR.TENUE}>No asociado</Typography>
                                         )}
                                     </TableCell>
                                     <TableCell align="right" sx={CELL_MUTED_SX}>{money(row.costo_reparacion)}</TableCell>
                                     <TableCell align="right" sx={CELL_MUTED_SX}>{money(row.costo_refacciones)}</TableCell>
-                                    <TableCell align="right" sx={{ fontWeight: 800, color: '#0f172a' }}>
+                                    <TableCell align="right" sx={{ fontWeight: 800, color: COLOR.TINTA }}>
                                         {money(row.total)}
                                     </TableCell>
                                     <TableCell>
@@ -142,12 +143,12 @@ const TablaReparaciones = () => {
                                                         rel="noopener noreferrer"
                                                         clickable
                                                         size="small"
-                                                        sx={{ ...CHIP_DANGER_SX, maxWidth: 160, '& .MuiChip-icon': { color: '#b91c1c' } }}
+                                                        sx={{ ...CHIP_DANGER_SX, maxWidth: 160, '& .MuiChip-icon': { color: COLOR.PELIGRO } }}
                                                     />
                                                 ))}
                                             </Stack>
                                         ) : (
-                                            <Typography variant="caption" color="#94a3b8">Sin documentos</Typography>
+                                            <Typography variant="caption" color={COLOR.TENUE}>Sin documentos</Typography>
                                         )}
                                     </TableCell>
                                     <TableCell align="center">

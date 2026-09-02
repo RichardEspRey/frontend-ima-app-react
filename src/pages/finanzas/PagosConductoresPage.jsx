@@ -15,6 +15,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
 import Swal from "sweetalert2";
 import { useNavigate } from 'react-router-dom';
+import { COLOR } from '../../shared/ui/tokens';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -60,20 +61,20 @@ const PaymentStatusChip = ({ value }) => {
 
 const StatusTrip = ({ value }) => {
   let label = value || "Desconocido";
-  let color = "#bdbdbd";
+  let color = COLOR.BORDE_FUERTE;
 
   switch (String(value)) {
-    case "Completed": color = "#2e7d32"; break;
-    case "Almost Over": color = "#1976d2"; break;
-    case "In Transit": color = "#ed6c02"; break;
-    default: color = "#757575";
+    case "Completed": color = COLOR.EXITO; break;
+    case "Almost Over": color = COLOR.INFO; break;
+    case "In Transit": color = COLOR.AVISO; break;
+    default: color = COLOR.APAGADO;
   }
 
   return (
     <Chip
       label={label}
       size="small"
-      sx={{ bgcolor: color, color: "#fff", fontWeight: 600, fontSize: '0.75rem' }}
+      sx={{ bgcolor: color, color: COLOR.BLANCO, fontWeight: 600, fontSize: '0.75rem' }}
     />
   );
 };
@@ -159,7 +160,7 @@ const PagosConductoresPage = () => {
         text: "Se marcará este viaje como PAGADO.",
         icon: 'question',
         showCancelButton: true,
-        confirmButtonColor: '#2e7d32',
+        confirmButtonColor: COLOR.EXITO,
         cancelButtonColor: '#d33',
         confirmButtonText: 'Sí, pagar',
         cancelButtonText: 'Cancelar'
@@ -223,7 +224,7 @@ const PagosConductoresPage = () => {
       </Box>
 
       {/* Pestañas */}
-      <Paper elevation={0} variant="outlined" sx={{ mb: 3, bgcolor: '#f8f9fa', borderRadius: 2, overflow: 'hidden' }}>
+      <Paper elevation={0} variant="outlined" sx={{ mb: 3, bgcolor: COLOR.LIENZO, borderRadius: 2, overflow: 'hidden' }}>
         <Tabs 
             value={tabValue} 
             onChange={handleTabChange} 
@@ -237,7 +238,7 @@ const PagosConductoresPage = () => {
       </Paper>
 
       {/* Barra de Herramientas */}
-      <Paper elevation={0} sx={{ p: 2, mb: 3, bgcolor: '#f5f5f5', borderRadius: 2, border: '1px solid #e0e0e0' }}>
+      <Paper elevation={0} sx={{ p: 2, mb: 3, bgcolor: COLOR.LIENZO, borderRadius: 2, border: `1px solid ${COLOR.BORDE}` }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
             <TextField 
                 size="small" 
@@ -272,14 +273,14 @@ const PagosConductoresPage = () => {
         <Table stickyHeader size="small">
           <TableHead>
             <TableRow>
-              <TableCell sx={{ fontWeight: 700, bgcolor: '#fff' }}>Trip #</TableCell>
-              <TableCell sx={{ fontWeight: 700, bgcolor: '#fff' }}>Conductor</TableCell>
-              <TableCell sx={{ fontWeight: 700, bgcolor: '#fff', textAlign:'center' }}>Etapas</TableCell>
-              <TableCell sx={{ fontWeight: 700, bgcolor: '#fff', textAlign:'right' }}>Millas</TableCell>
-              <TableCell sx={{ fontWeight: 700, bgcolor: '#fff', textAlign:'right' }}>Monto Pago</TableCell>
-              <TableCell sx={{ fontWeight: 700, bgcolor: '#fff' }}>Estatus Pago</TableCell>
-              <TableCell sx={{ fontWeight: 700, bgcolor: '#fff' }}>Estatus Viaje</TableCell>
-              <TableCell sx={{ fontWeight: 700, bgcolor: '#fff', textAlign:'center' }}>Acciones</TableCell>
+              <TableCell sx={{ fontWeight: 700, bgcolor: COLOR.BLANCO }}>Trip #</TableCell>
+              <TableCell sx={{ fontWeight: 700, bgcolor: COLOR.BLANCO }}>Conductor</TableCell>
+              <TableCell sx={{ fontWeight: 700, bgcolor: COLOR.BLANCO, textAlign:'center' }}>Etapas</TableCell>
+              <TableCell sx={{ fontWeight: 700, bgcolor: COLOR.BLANCO, textAlign:'right' }}>Millas</TableCell>
+              <TableCell sx={{ fontWeight: 700, bgcolor: COLOR.BLANCO, textAlign:'right' }}>Monto Pago</TableCell>
+              <TableCell sx={{ fontWeight: 700, bgcolor: COLOR.BLANCO }}>Estatus Pago</TableCell>
+              <TableCell sx={{ fontWeight: 700, bgcolor: COLOR.BLANCO }}>Estatus Viaje</TableCell>
+              <TableCell sx={{ fontWeight: 700, bgcolor: COLOR.BLANCO, textAlign:'center' }}>Acciones</TableCell>
             </TableRow>
           </TableHead>
 
@@ -346,7 +347,7 @@ const PagosConductoresPage = () => {
                                   size="small"
                                   color="primary"
                                   onClick={() => navigate(`/ticketPayment/${t.trip_id}`, { state: { driver_id: t.driver_id } })}
-                                  sx={{ border: '1px solid #e0e0e0' }}
+                                  sx={{ border: `1px solid ${COLOR.BORDE}` }}
                               >
                                   <VisibilityIcon fontSize="small" />
                               </IconButton>

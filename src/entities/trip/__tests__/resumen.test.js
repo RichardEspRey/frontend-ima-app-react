@@ -14,6 +14,7 @@ import {
   gastosDeResumen,
   galonesDeResumen,
 } from "../model/resumen"
+import { COLOR } from "../../../shared/ui/tokens"
 
 const leer = (nombre) =>
   JSON.parse(readFileSync(`src/entities/trip/__tests__/fixtures/${nombre}`, "utf8"))
@@ -24,8 +25,8 @@ const NO_ENCONTRADO = leer("trip_summary_no_encontrado.json")
 
 describe("colorEstadoViaje", () => {
   it("da su color a cada estado del ciclo", () => {
-    expect(colorEstadoViaje(ESTADO_VIAJE.COMPLETADO)).toBe("#16a34a")
-    expect(colorEstadoViaje(ESTADO_VIAJE.CANCELADO)).toBe("#dc2626")
+    expect(colorEstadoViaje(ESTADO_VIAJE.COMPLETADO)).toBe(COLOR.EXITO)
+    expect(colorEstadoViaje(ESTADO_VIAJE.CANCELADO)).toBe(COLOR.PELIGRO)
   })
 
   it("sin estado asume que va en tránsito", () => {

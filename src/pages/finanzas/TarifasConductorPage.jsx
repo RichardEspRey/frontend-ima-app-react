@@ -12,6 +12,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SearchIcon from '@mui/icons-material/Search';
 import PersonIcon from '@mui/icons-material/Person';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import { COLOR } from '../../shared/ui/tokens';
 
 /**
  * Tarifa por milla de cada conductor.
@@ -164,7 +165,7 @@ const TarifasConductorPage = () => {
 
       <Paper variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden' }}>
         <Table>
-          <TableHead sx={{ bgcolor: '#f5f5f5' }}>
+          <TableHead sx={{ bgcolor: COLOR.LIENZO }}>
             <TableRow>
               <TableCell sx={{ fontWeight: 700, color: '#555', width: 80 }}>#</TableCell>
               <TableCell sx={{ fontWeight: 700, color: '#555' }}>Nombre del Operador</TableCell>

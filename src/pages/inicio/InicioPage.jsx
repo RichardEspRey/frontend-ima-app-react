@@ -14,6 +14,7 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import CloseIcon from '@mui/icons-material/Close';
 
 import logoWhite from '../../assets/images/logo_white.png';
+import { COLOR, TINTE } from '../../shared/ui/tokens';
 
 // Las 6 tarjetas van en una sola retícula para que el número de columnas
 // siempre divida exacto a 6 y no quede ninguna huérfana a media fila.
@@ -26,23 +27,23 @@ const MOSAIC_SX = {
 };
 
 const SECTION_LABEL_SX = {
-  color: '#94a3b8', fontWeight: 700, letterSpacing: '0.08em', fontSize: '0.68rem',
+  color: COLOR.TENUE, fontWeight: 700, letterSpacing: '0.08em', fontSize: '0.68rem',
 };
 const CARD_SX = {
-  p: { xs: 2.5, lg: 3 }, borderRadius: 2, border: '1px solid #e2e8f0',
+  p: { xs: 2.5, lg: 3 }, borderRadius: 2, border: `1px solid ${COLOR.BORDE}`,
   height: '100%', display: 'flex', flexDirection: 'column',
 };
 const BODY_SX = {
-  color: '#475569', lineHeight: 1.65, fontSize: '0.875rem',
+  color: COLOR.TEXTO_SUAVE, lineHeight: 1.65, fontSize: '0.875rem',
 };
 const ICON_BOX_SX = {
   width: 38, height: 38, borderRadius: 2, display: 'inline-flex',
   alignItems: 'center', justifyContent: 'center', flexShrink: 0,
 };
 const CLOSE_BTN_SX = {
-  bgcolor: '#0f172a', fontWeight: 700, borderRadius: 2, px: 3,
+  bgcolor: COLOR.TINTA, fontWeight: 700, borderRadius: 2, px: 3,
   textTransform: 'none', boxShadow: 'none',
-  '&:hover': { bgcolor: '#1e293b', boxShadow: '0 6px 16px rgba(15,23,42,0.22)' },
+  '&:hover': { bgcolor: COLOR.TINTA_CLARA, boxShadow: '0 6px 16px rgba(15,23,42,0.22)' },
 };
 
 const CardHeader = ({ icon, accent, tint, eyebrow, title }) => (
@@ -50,7 +51,7 @@ const CardHeader = ({ icon, accent, tint, eyebrow, title }) => (
     <Box sx={{ ...ICON_BOX_SX, bgcolor: tint, color: accent }}>{icon}</Box>
     <Box sx={{ minWidth: 0 }}>
       <Typography variant="overline" sx={SECTION_LABEL_SX}>{eyebrow}</Typography>
-      <Typography variant="h6" fontWeight={800} color="#0f172a" letterSpacing="-0.02em" sx={{ lineHeight: 1.2 }}>
+      <Typography variant="h6" fontWeight={800} color={COLOR.TINTA} letterSpacing="-0.02em" sx={{ lineHeight: 1.2 }}>
         {title}
       </Typography>
     </Box>
@@ -81,7 +82,7 @@ const PolicyCard = ({ icon, accent, tint, title, teaser, onClick }) => (
       <Stack
         direction="row" alignItems="center" gap={0.75}
         className="policy-cta"
-        sx={{ mt: 1.5, color: '#94a3b8', fontWeight: 700, fontSize: '0.78rem', transition: 'color 0.15s, gap 0.15s' }}
+        sx={{ mt: 1.5, color: COLOR.TENUE, fontWeight: 700, fontSize: '0.78rem', transition: 'color 0.15s, gap 0.15s' }}
       >
         Leer completa <ArrowForwardIcon sx={{ fontSize: 15 }} />
       </Stack>
@@ -94,11 +95,11 @@ const PolicyDialogHeader = ({ icon, accent, tint, title, onClose }) => (
     <Box sx={{ ...ICON_BOX_SX, width: 46, height: 46, bgcolor: tint, color: accent }}>{icon}</Box>
     <Box sx={{ flexGrow: 1, minWidth: 0 }}>
       <Typography variant="overline" sx={SECTION_LABEL_SX}>IMA EXPRESS LLC</Typography>
-      <Typography variant="h5" fontWeight={800} color="#0f172a" letterSpacing="-0.02em" sx={{ lineHeight: 1.2 }}>
+      <Typography variant="h5" fontWeight={800} color={COLOR.TINTA} letterSpacing="-0.02em" sx={{ lineHeight: 1.2 }}>
         {title}
       </Typography>
     </Box>
-    <IconButton onClick={onClose} sx={{ color: '#94a3b8', mt: -0.5, mr: -1 }}>
+    <IconButton onClick={onClose} sx={{ color: COLOR.TENUE, mt: -0.5, mr: -1 }}>
       <CloseIcon />
     </IconButton>
   </Stack>
@@ -125,7 +126,7 @@ export const InicioPage = () => {
         sx={{
           p: { xs: 2.5, sm: 3, lg: 4 }, mb: { xs: 2, lg: 2.5 }, borderRadius: 3,
           position: 'relative', overflow: 'hidden',
-          background: 'linear-gradient(120deg, #0f172a 0%, #1e293b 55%, #334155 100%)',
+          background: `linear-gradient(120deg, ${COLOR.TINTA} 0%, ${COLOR.TINTA_CLARA} 55%, ${COLOR.TEXTO} 100%)`,
         }}
       >
         <Box
@@ -152,7 +153,7 @@ export const InicioPage = () => {
             variant="h3"
             fontWeight={800}
             letterSpacing="-0.02em"
-            sx={{ color: '#fff', mt: 0.75, fontSize: { xs: '1.45rem', sm: '1.65rem', lg: '1.9rem' } }}
+            sx={{ color: COLOR.BLANCO, mt: 0.75, fontSize: { xs: '1.45rem', sm: '1.65rem', lg: '1.9rem' } }}
           >
             Bienvenido a IMA EXPRESS
           </Typography>
@@ -170,8 +171,8 @@ export const InicioPage = () => {
         <Paper elevation={0} sx={CARD_SX}>
           <CardHeader
             icon={<RouteOutlinedIcon />}
-            accent="#4338ca"
-            tint="#eef2ff"
+            accent={TINTE.INDIGO.texto}
+            tint={TINTE.INDIGO.fondo}
             eyebrow="Nuestro propósito"
             title="Misión"
           />
@@ -185,8 +186,8 @@ export const InicioPage = () => {
         <Paper elevation={0} sx={CARD_SX}>
           <CardHeader
             icon={<SignpostOutlinedIcon />}
-            accent="#0f766e"
-            tint="#f0fdfa"
+            accent={TINTE.TEAL.texto}
+            tint={TINTE.TEAL.fondo}
             eyebrow="Hacia dónde vamos"
             title="Visión"
           />
@@ -200,8 +201,8 @@ export const InicioPage = () => {
         <Paper elevation={0} sx={CARD_SX}>
           <CardHeader
             icon={<FoundationOutlinedIcon />}
-            accent="#b45309"
-            tint="#fef3c7"
+            accent={COLOR.AVISO}
+            tint={COLOR.AVISO_FONDO}
             eyebrow="Lo que nos define"
             title="Valores"
           />
@@ -212,8 +213,8 @@ export const InicioPage = () => {
                 label={valor}
                 size="small"
                 sx={{
-                  fontWeight: 700, fontSize: '0.72rem', bgcolor: '#f1f5f9',
-                  color: '#334155', border: '1px solid #e2e8f0',
+                  fontWeight: 700, fontSize: '0.72rem', bgcolor: COLOR.RELLENO,
+                  color: COLOR.TEXTO, border: `1px solid ${COLOR.BORDE}`,
                 }}
               />
             ))}
@@ -228,8 +229,8 @@ export const InicioPage = () => {
 
         <PolicyCard
           icon={<MenuBookOutlinedIcon />}
-          accent="#4338ca"
-          tint="#eef2ff"
+          accent={TINTE.INDIGO.texto}
+          tint={TINTE.INDIGO.fondo}
           title="Política General"
           teaser="Nuestro compromiso con un servicio seguro, puntual y transparente, en cumplimiento con las leyes de México y Estados Unidos."
           onClick={() => setOpenPolicy('general')}
@@ -237,8 +238,8 @@ export const InicioPage = () => {
 
         <PolicyCard
           icon={<FactCheckOutlinedIcon />}
-          accent="#b45309"
-          tint="#fef3c7"
+          accent={COLOR.AVISO}
+          tint={COLOR.AVISO_FONDO}
           title="Política de Calidad"
           teaser="Cómo aseguramos un servicio confiable y consistente que cumpla con los requisitos y expectativas de nuestros clientes."
           onClick={() => setOpenPolicy('calidad')}
@@ -246,8 +247,8 @@ export const InicioPage = () => {
 
         <PolicyCard
           icon={<NoCrashOutlinedIcon />}
-          accent="#0f766e"
-          tint="#f0fdfa"
+          accent={TINTE.TEAL.texto}
+          tint={TINTE.TEAL.fondo}
           title="Política de Seguridad"
           teaser="Las reglas que previenen accidentes y reducen riesgos en cada viaje, incluido el anexo de mantenimiento de unidades."
           onClick={() => setOpenPolicy('seguridad')}
@@ -257,8 +258,8 @@ export const InicioPage = () => {
 
       <Dialog open={openPolicy === 'general'} onClose={closePolicy} maxWidth="md" fullWidth scroll="paper" PaperProps={{ sx: { borderRadius: 3 } }}>
         <DialogContent sx={{ p: { xs: 3, md: 4.5 } }}>
-          <PolicyDialogHeader icon={<MenuBookOutlinedIcon />} accent="#4338ca" tint="#eef2ff" title="Política General" onClose={closePolicy} />
-          <Divider sx={{ borderColor: '#f1f5f9', mb: 2.5 }} />
+          <PolicyDialogHeader icon={<MenuBookOutlinedIcon />} accent={TINTE.INDIGO.texto} tint={TINTE.INDIGO.fondo} title="Política General" onClose={closePolicy} />
+          <Divider sx={{ borderColor: COLOR.RELLENO, mb: 2.5 }} />
 
           <Typography sx={{ ...BODY_SX, fontSize: '0.925rem', mb: 2.5 }}>
             IMA EXPRESS LLC se compromete a proporcionar servicios de transporte de carga de manera
@@ -285,8 +286,8 @@ export const InicioPage = () => {
 
       <Dialog open={openPolicy === 'calidad'} onClose={closePolicy} maxWidth="md" fullWidth scroll="paper" PaperProps={{ sx: { borderRadius: 3 } }}>
         <DialogContent sx={{ p: { xs: 3, md: 4.5 } }}>
-          <PolicyDialogHeader icon={<FactCheckOutlinedIcon />} accent="#b45309" tint="#fef3c7" title="Política de Calidad" onClose={closePolicy} />
-          <Divider sx={{ borderColor: '#f1f5f9', mb: 2.5 }} />
+          <PolicyDialogHeader icon={<FactCheckOutlinedIcon />} accent={COLOR.AVISO} tint={COLOR.AVISO_FONDO} title="Política de Calidad" onClose={closePolicy} />
+          <Divider sx={{ borderColor: COLOR.RELLENO, mb: 2.5 }} />
 
           <Typography sx={{ ...BODY_SX, fontSize: '0.925rem', mb: 2.5 }}>
             IMA EXPRESS LLC está comprometida con proporcionar servicios de transporte que cumplan
@@ -314,8 +315,8 @@ export const InicioPage = () => {
 
       <Dialog open={openPolicy === 'seguridad'} onClose={closePolicy} maxWidth="md" fullWidth scroll="paper" PaperProps={{ sx: { borderRadius: 3 } }}>
         <DialogContent sx={{ p: { xs: 3, md: 4.5 } }}>
-          <PolicyDialogHeader icon={<NoCrashOutlinedIcon />} accent="#0f766e" tint="#f0fdfa" title="Política de Seguridad" onClose={closePolicy} />
-          <Divider sx={{ borderColor: '#f1f5f9', mb: 2.5 }} />
+          <PolicyDialogHeader icon={<NoCrashOutlinedIcon />} accent={TINTE.TEAL.texto} tint={TINTE.TEAL.fondo} title="Política de Seguridad" onClose={closePolicy} />
+          <Divider sx={{ borderColor: COLOR.RELLENO, mb: 2.5 }} />
 
           <Typography sx={{ ...BODY_SX, fontSize: '0.925rem', mb: 2.5 }}>
             La seguridad es una prioridad fundamental para IMA EXPRESS LLC y debe estar presente en
@@ -335,14 +336,14 @@ export const InicioPage = () => {
             incluyendo HOS y ELD cuando corresponda.
           </Typography>
 
-          <Box sx={{ mt: 3.5, p: 3, borderRadius: 2, bgcolor: '#fafbfc', border: '1px solid #e2e8f0' }}>
+          <Box sx={{ mt: 3.5, p: 3, borderRadius: 2, bgcolor: COLOR.CABECERA, border: `1px solid ${COLOR.BORDE}` }}>
             <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 2 }}>
-              <Box sx={{ ...ICON_BOX_SX, bgcolor: '#f0fdfa', color: '#0f766e' }}>
+              <Box sx={{ ...ICON_BOX_SX, bgcolor: TINTE.TEAL.fondo, color: TINTE.TEAL.texto }}>
                 <TireRepairOutlinedIcon />
               </Box>
               <Box>
                 <Typography variant="overline" sx={SECTION_LABEL_SX}>Anexo</Typography>
-                <Typography variant="subtitle1" fontWeight={700} color="#0f172a" sx={{ lineHeight: 1.2 }}>
+                <Typography variant="subtitle1" fontWeight={700} color={COLOR.TINTA} sx={{ lineHeight: 1.2 }}>
                   Seguridad y Mantenimiento
                 </Typography>
               </Box>

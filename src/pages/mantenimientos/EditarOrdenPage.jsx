@@ -15,6 +15,7 @@ import CreatableSelect from "react-select/creatable";
 
 import useFetchInventoryItems from "../../hooks/expense_hooks/useFetchInventoryItems";
 import useFetchRepairTypes from "../../hooks/service_order/useFetchRepairTypes";
+import { COLOR } from "../../shared/ui/tokens";
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -340,7 +341,7 @@ export default function EditarOrdenPage() {
                         />
 
                         {usarItems && (
-                            <Box sx={{ mt: 2, p: 2, bgcolor: '#f5f5f5', borderRadius: 2 }}>
+                            <Box sx={{ mt: 2, p: 2, bgcolor: COLOR.LIENZO, borderRadius: 2 }}>
                                 <Grid container spacing={2} alignItems="flex-end">
                                     <Grid item xs={12} md={6}>
                                         <Select 
@@ -400,7 +401,7 @@ export default function EditarOrdenPage() {
 
                         <Stack spacing={2} sx={{ maxHeight: '60vh', overflowY: 'auto', pr: 1 }}>
                             {services.map((s, idx) => (
-                                <Paper key={s.id_local} variant="outlined" sx={{ p: 2, position: 'relative', bgcolor: '#fafafa' }}>
+                                <Paper key={s.id_local} variant="outlined" sx={{ p: 2, position: 'relative', bgcolor: COLOR.LIENZO }}>
                                     <IconButton 
                                         size="small" color="error" sx={{ position: 'absolute', top: 5, right: 5 }} 
                                         onClick={() => setServices(prev => prev.filter(x => x.id_local !== s.id_local))}

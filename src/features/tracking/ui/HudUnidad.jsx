@@ -29,6 +29,7 @@ import {
   tramoActivo,
 } from "../../../entities/tracking"
 import { ParadasEtapa } from "./ParadasEtapa"
+import { COLOR } from "../../../shared/ui/tokens"
 
 const POSICION = { position: "absolute", top: { xs: 10, md: 20 }, right: { xs: 10, md: 20 }, zIndex: 1000 }
 
@@ -173,9 +174,9 @@ export function HudUnidad({
           direction="row"
           justifyContent="space-between"
           alignItems="center"
-          sx={{ mb: 2, p: 1, bgcolor: "#f8fafc", borderRadius: 2, border: "1px dashed #cbd5e1" }}
+          sx={{ mb: 2, p: 1, bgcolor: COLOR.LIENZO, borderRadius: 2, border: `1px dashed ${COLOR.BORDE_FUERTE}` }}
         >
-          <Typography variant="caption" fontWeight={700} color="#475569">
+          <Typography variant="caption" fontWeight={700} color={COLOR.TEXTO_SUAVE}>
             {unidad.trip_number ? `Viaje: #${unidad.trip_number}` : "Unidad Libre"}
           </Typography>
           {unidad.trip_number && (
@@ -194,25 +195,25 @@ export function HudUnidad({
         </Stack>
 
         {unidad.current_stage_number && (
-          <Box sx={{ mb: 2, p: 1.5, bgcolor: "#eff6ff", borderRadius: 2, border: "1px solid #bfdbfe" }}>
+          <Box sx={{ mb: 2, p: 1.5, bgcolor: COLOR.INFO_FONDO, borderRadius: 2, border: `1px solid ${COLOR.INFO_BORDE}` }}>
             <Stack direction="row" justifyContent="space-between" alignItems="center" mb={0.5}>
-              <Typography variant="caption" fontWeight={800} color="#1d4ed8">
+              <Typography variant="caption" fontWeight={800} color={COLOR.INFO}>
                 Etapa {unidad.current_stage_number}
               </Typography>
               {unidad.current_stop && (
                 <Chip
                   label="En ruta a parada"
                   size="small"
-                  sx={{ height: 18, fontSize: "0.6rem", bgcolor: "#f59e0b", color: "white", fontWeight: "bold" }}
+                  sx={{ height: 18, fontSize: "0.6rem", bgcolor: COLOR.AVISO, color: "white", fontWeight: "bold" }}
                 />
               )}
             </Stack>
 
-            <Typography variant="caption" display="block" color="#334155" fontWeight={600}>
+            <Typography variant="caption" display="block" color={COLOR.TEXTO} fontWeight={600}>
               {tramo.origen} ➔ {tramo.destino}
             </Typography>
             {tramo.destinoFinal && (
-              <Typography variant="caption" display="block" color="#64748b" sx={{ mt: 0.3 }}>
+              <Typography variant="caption" display="block" color={COLOR.APAGADO} sx={{ mt: 0.3 }}>
                 Destino final: {tramo.destinoFinal}
               </Typography>
             )}
@@ -223,10 +224,10 @@ export function HudUnidad({
 
         <Stack spacing={1.5} sx={{ mb: 2 }}>
           <Stack direction="row" spacing={1.5} alignItems="flex-start">
-            <LocationOnIcon sx={{ color: "#ef4444", fontSize: 20, mt: 0.2 }} />
+            <LocationOnIcon sx={{ color: COLOR.PELIGRO, fontSize: 20, mt: 0.2 }} />
             <Typography
               variant="body2"
-              color="#334155"
+              color={COLOR.TEXTO}
               fontWeight={600}
               lineHeight={1.3}
               sx={{ wordBreak: "break-word" }}
@@ -235,14 +236,14 @@ export function HudUnidad({
             </Typography>
           </Stack>
           <Stack direction="row" spacing={1.5} alignItems="center">
-            <SpeedIcon sx={{ color: "#3b82f6", fontSize: 20 }} />
-            <Typography variant="body2" color="#334155" fontWeight={700}>
+            <SpeedIcon sx={{ color: COLOR.INFO, fontSize: 20 }} />
+            <Typography variant="body2" color={COLOR.TEXTO} fontWeight={700}>
               {unidad.speed} km/h
             </Typography>
           </Stack>
           <Stack direction="row" spacing={1.5} alignItems="center">
-            <AccessTimeIcon sx={{ color: "#94a3b8", fontSize: 20 }} />
-            <Typography variant="caption" color="#64748b">
+            <AccessTimeIcon sx={{ color: COLOR.TENUE, fontSize: 20 }} />
+            <Typography variant="caption" color={COLOR.APAGADO}>
               Últ. act: {unidad.timestamp ? new Date(unidad.timestamp * 1000).toLocaleTimeString() : "---"}
             </Typography>
           </Stack>
@@ -252,7 +253,7 @@ export function HudUnidad({
 
         {unidad.truck_id ? (
           <Box>
-            <Typography variant="subtitle2" fontWeight={800} color="#0f172a" mb={1} textAlign="center">
+            <Typography variant="subtitle2" fontWeight={800} color={COLOR.TINTA} mb={1} textAlign="center">
               Niveles y Autonomía
             </Typography>
 
@@ -288,7 +289,7 @@ export function HudUnidad({
                     size="small"
                     variant="contained"
                     onClick={guardar}
-                    sx={{ minWidth: 50, py: 0, fontSize: "0.6rem", height: 20, bgcolor: "#0f172a" }}
+                    sx={{ minWidth: 50, py: 0, fontSize: "0.6rem", height: 20, bgcolor: COLOR.TINTA }}
                   >
                     Guardar
                   </Button>
@@ -303,19 +304,19 @@ export function HudUnidad({
                   setAjustado(true)
                 }}
                 size="small"
-                sx={{ color: porcentajeTanque(galones, capacidad) < 20 ? "#ef4444" : "#3b82f6" }}
+                sx={{ color: porcentajeTanque(galones, capacidad) < 20 ? COLOR.PELIGRO : COLOR.INFO }}
               />
             </Box>
 
-            <Grid container spacing={1} sx={{ pt: 1, borderTop: "1px dashed #e2e8f0" }}>
-              <Grid size={{ xs: 6 }} sx={{ textAlign: "center", borderRight: "1px solid #e2e8f0" }}>
-                <Typography variant="caption" color="#64748b" display="block" fontWeight={600}>
+            <Grid container spacing={1} sx={{ pt: 1, borderTop: `1px dashed ${COLOR.BORDE}` }}>
+              <Grid size={{ xs: 6 }} sx={{ textAlign: "center", borderRight: `1px solid ${COLOR.BORDE}` }}>
+                <Typography variant="caption" color={COLOR.APAGADO} display="block" fontWeight={600}>
                   Rendimiento
                 </Typography>
                 <Typography
                   variant="h6"
                   fontWeight={800}
-                  color="#3b82f6"
+                  color={COLOR.INFO}
                   sx={{ fontSize: { xs: "1rem", md: "1.25rem" } }}
                 >
                   {unidad.avg_mpg > 0 ? Number(unidad.avg_mpg).toFixed(2) : "--"}{" "}
@@ -323,13 +324,13 @@ export function HudUnidad({
                 </Typography>
               </Grid>
               <Grid size={{ xs: 6 }} sx={{ textAlign: "center" }}>
-                <Typography variant="caption" color="#64748b" display="block" fontWeight={600}>
+                <Typography variant="caption" color={COLOR.APAGADO} display="block" fontWeight={600}>
                   Alcance
                 </Typography>
                 <Typography
                   variant="h6"
                   fontWeight={800}
-                  color="#10b981"
+                  color={COLOR.EXITO}
                   sx={{ fontSize: { xs: "1rem", md: "1.25rem" } }}
                 >
                   {unidad.estimated_range > 0 ? Number(unidad.estimated_range).toFixed(0) : "--"}{" "}
@@ -339,8 +340,8 @@ export function HudUnidad({
             </Grid>
           </Box>
         ) : (
-          <Box sx={{ p: 1.5, textAlign: "center", bgcolor: "#f1f5f9", borderRadius: 2 }}>
-            <Typography variant="caption" color="#64748b" fontWeight={600}>
+          <Box sx={{ p: 1.5, textAlign: "center", bgcolor: COLOR.RELLENO, borderRadius: 2 }}>
+            <Typography variant="caption" color={COLOR.APAGADO} fontWeight={600}>
               Telemetría no disponible. Unidad no registrada internamente.
             </Typography>
           </Box>

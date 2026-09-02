@@ -1,13 +1,14 @@
 import { Paper, Typography, Grid, TextField, IconButton } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import DocButton from './DocButton';
+import { COLOR } from '../../shared/ui/tokens';
 
 const StopsSection = ({ stops, stageIndex, updateStop, removeStop, openDocModal }) => {
     if (!stops || stops.length === 0) return null;
 
     return (
         <Grid item xs={12}>
-            <Paper sx={{ p: 2, bgcolor: '#fff8e1', border: '1px dashed #ffb74d' }}>
+            <Paper sx={{ p: 2, bgcolor: COLOR.AVISO_FONDO, border: '1px dashed #ffb74d' }}>
                 <Typography variant="subtitle2" color="warning.dark">Paradas</Typography>
                 {stops.map((stop, si) => (
                     <Grid container spacing={1} key={si} alignItems="center" sx={{ mt: 1 }}>

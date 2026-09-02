@@ -1,3 +1,4 @@
+import { COLOR } from "../../../shared/ui/tokens"
 /**
  * Estados por los que pasa un viaje, en el orden del ciclo.
  *
@@ -26,10 +27,10 @@ export const ESTADO_POR_OMISION = ESTADO_VIAJE.EN_TRANSITO
  * @enum {string}
  */
 export const COLOR_ESTADO_VIAJE = {
-  [ESTADO_VIAJE.COMPLETADO]: "#16a34a",
-  [ESTADO_VIAJE.EN_TRANSITO]: "#d97706",
-  [ESTADO_VIAJE.POR_TERMINAR]: "#2563eb",
-  [ESTADO_VIAJE.CANCELADO]: "#dc2626",
+  [ESTADO_VIAJE.COMPLETADO]: COLOR.EXITO,
+  [ESTADO_VIAJE.EN_TRANSITO]: COLOR.AVISO,
+  [ESTADO_VIAJE.POR_TERMINAR]: COLOR.INFO,
+  [ESTADO_VIAJE.CANCELADO]: COLOR.PELIGRO,
   [ESTADO_VIAJE.EN_CAMINO]: "#0891b2",
 }
 
@@ -40,7 +41,7 @@ export const COLOR_ESTADO_VIAJE = {
  * @returns {string} Su color, o un gris si el estado no se reconoce.
  */
 export const colorEstadoViaje = (estado) =>
-  COLOR_ESTADO_VIAJE[estado || ESTADO_POR_OMISION] ?? "#64748b"
+  COLOR_ESTADO_VIAJE[estado || ESTADO_POR_OMISION] ?? COLOR.APAGADO
 
 /**
  * Tipos de etapa que puede tener un viaje.

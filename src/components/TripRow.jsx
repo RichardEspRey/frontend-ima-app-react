@@ -25,6 +25,7 @@ import Swal from 'sweetalert2';
 
 import { TripExpandedDetails } from './TripRow/TripExpandedDetails';
 import { StatusIndicator, getStatusColor } from './TripStatusIndicator';
+import { COLOR } from '../shared/ui/tokens';
 
 dayjs.extend(updateLocale);
 dayjs.extend(isSameOrAfter);
@@ -173,7 +174,7 @@ ${(!trip.caja_id && !trip.caja_externa_id) ? 'Sin tráiler asignado' : ''}
 
         <TableCell component="th" scope="row">
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography variant="body2" fontWeight={700} color="#0f172a" sx={{ whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}>
+            <Typography variant="body2" fontWeight={700} color={COLOR.TINTA} sx={{ whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}>
                 {trip.trip_number}
             </Typography>
 

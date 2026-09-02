@@ -13,6 +13,7 @@ import {
   usePeriodos,
   useDetallePeriodo,
 } from "../../entities/payroll"
+import { COLOR } from "../../shared/ui/tokens"
 
 const dinero = (monto, locale) =>
   `$${Number(monto).toLocaleString(locale, { minimumFractionDigits: 2 })}`
@@ -77,7 +78,7 @@ export default function DetallePagoPage() {
         <Chip
           label={d.tipo_nomina === "MX" ? "MXN" : "USD"}
           size="small"
-          sx={d.tipo_nomina === "MX" ? { ...CHIP_SX, bgcolor: "#f0fdf4", color: "#15803d", border: "1px solid #bbf7d0" } : { ...CHIP_SX, bgcolor: "#eff6ff", color: "#1d4ed8", border: "1px solid #bfdbfe" }}
+          sx={d.tipo_nomina === "MX" ? { ...CHIP_SX, bgcolor: COLOR.EXITO_FONDO, color: COLOR.EXITO, border: `1px solid ${COLOR.EXITO_BORDE}` } : { ...CHIP_SX, bgcolor: COLOR.INFO_FONDO, color: COLOR.INFO, border: `1px solid ${COLOR.INFO_BORDE}` }}
         />
       ),
     },
@@ -127,7 +128,7 @@ export default function DetallePagoPage() {
             etiqueta="Nómina total (MXN)"
             valor={dinero(periodo.total_mx, "es-MX")}
             pie={`Pagado a ${periodo.emps_mx} empleado(s)`}
-            acento="#15803d"
+            acento={COLOR.EXITO}
             icono={<MonetizationOnIcon fontSize="small" />}
           />
         </Grid>
@@ -136,7 +137,7 @@ export default function DetallePagoPage() {
             etiqueta="Nómina total (USD)"
             valor={dinero(periodo.total_us, "en-US")}
             pie={`Pagado a ${periodo.emps_us} empleado(s)`}
-            acento="#1d4ed8"
+            acento={COLOR.INFO}
             icono={<MonetizationOnIcon fontSize="small" />}
           />
         </Grid>
@@ -150,7 +151,7 @@ export default function DetallePagoPage() {
         </Grid>
       </Grid>
 
-      <Typography variant="h6" fontWeight={700} color="#0f172a" sx={{ mb: 2 }}>
+      <Typography variant="h6" fontWeight={700} color={COLOR.TINTA} sx={{ mb: 2 }}>
         Desglose por empleado
       </Typography>
 

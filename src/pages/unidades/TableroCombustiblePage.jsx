@@ -27,6 +27,7 @@ import {
   useGuardarTanque,
 } from "../../entities/tracking"
 import { PageHeader, notify } from "../../shared/ui"
+import { COLOR } from "../../shared/ui/tokens"
 
 /**
  * Tablero de combustible: niveles, autonomía y estatus de cada unidad.
@@ -126,7 +127,7 @@ export default function TableroCombustiblePage() {
 
           {visibles.length === 0 && (
             <Grid size={{ xs: 12 }}>
-              <Paper sx={{ p: 4, textAlign: "center", bgcolor: "#f5f5f5" }}>
+              <Paper sx={{ p: 4, textAlign: "center", bgcolor: COLOR.LIENZO }}>
                 <Typography color="text.secondary">
                   No hay unidades con el estatus &quot;{estatus}&quot;
                 </Typography>

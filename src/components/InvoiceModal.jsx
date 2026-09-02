@@ -8,6 +8,7 @@ import SaveIcon from '@mui/icons-material/Save';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import Swal from 'sweetalert2';
 import InvoicePreview from './InvoicePreview';
+import { COLOR } from '../shared/ui/tokens';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -177,20 +178,20 @@ const InvoiceModal = ({ isOpen, onClose, stageData, tripData, onSaveInvoice }) =
 
     return (
         <Dialog open={isOpen} onClose={onClose} maxWidth="md" fullWidth>
-            <DialogTitle sx={{ bgcolor: '#0f172a', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <DialogTitle sx={{ bgcolor: COLOR.TINTA, color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Typography variant="h6" fontWeight="bold">
                     {viewMode === 'form' ? `Datos del Invoice - Etapa ${stageData?.stage_number}` : 'Vista Previa del Documento'}
                 </Typography>
                 <Chip label={tripData?.trip_number ? `Viaje: #${tripData.trip_number}` : ''} sx={{ bgcolor: 'rgba(255,255,255,0.2)', color: 'white' }} />
             </DialogTitle>
             
-            <DialogContent dividers sx={{ bgcolor: '#f1f5f9', p: viewMode === 'form' ? 3 : 0 }}>
+            <DialogContent dividers sx={{ bgcolor: COLOR.RELLENO, p: viewMode === 'form' ? 3 : 0 }}>
                 
                 {/* === VISTA 1: FORMULARIO === */}
                 {viewMode === 'form' && (
                     <Grid container spacing={3}>
                         <Grid item xs={12}>
-                            <Paper elevation={0} sx={{ p: 2, border: '1px solid #e2e8f0' }}>
+                            <Paper elevation={0} sx={{ p: 2, border: `1px solid ${COLOR.BORDE}` }}>
                                 <Grid container spacing={2}>
                                     <Grid item xs={12} sm={6}>
                                         <TextField fullWidth size="small" label="Número de Invoice" name="pdf_number" value={invoiceForm.pdf_number} onChange={handleChange} />
@@ -203,7 +204,7 @@ const InvoiceModal = ({ isOpen, onClose, stageData, tripData, onSaveInvoice }) =
                         </Grid>
 
                         <Grid item xs={12}>
-                            <Paper elevation={0} sx={{ p: 2, border: '1px solid #e2e8f0' }}>
+                            <Paper elevation={0} sx={{ p: 2, border: `1px solid ${COLOR.BORDE}` }}>
                                 <Typography variant="caption" fontWeight={700} color="textSecondary" mb={1} display="block">DATOS DEL CLIENTE</Typography>
                                 <Grid container spacing={2}>
                                     <Grid item xs={12} sm={6}>
@@ -250,7 +251,7 @@ const InvoiceModal = ({ isOpen, onClose, stageData, tripData, onSaveInvoice }) =
                         </Grid>
 
                         <Grid item xs={12}>
-                            <Paper elevation={0} sx={{ p: 2, border: '1px solid #e2e8f0' }}>
+                            <Paper elevation={0} sx={{ p: 2, border: `1px solid ${COLOR.BORDE}` }}>
                                 <Typography variant="caption" fontWeight={700} color="textSecondary" mb={1} display="block">DATOS DEL FLETE</Typography>
                                 <Grid container spacing={2}>
                                     <Grid item xs={12} sm={6}>
@@ -289,14 +290,14 @@ const InvoiceModal = ({ isOpen, onClose, stageData, tripData, onSaveInvoice }) =
 
                 {/* === VISTA 2: PREVIEW === */}
                 {viewMode === 'preview' && (
-                    <Box sx={{ p: 4, bgcolor: '#94a3b8', display: 'flex', justifyContent: 'center', minHeight: '600px' }}>
+                    <Box sx={{ p: 4, bgcolor: COLOR.TENUE, display: 'flex', justifyContent: 'center', minHeight: '600px' }}>
                         <InvoicePreview data={invoiceForm} />
                     </Box>
                 )}
 
             </DialogContent>
             
-            <DialogActions sx={{ p: 2, bgcolor: '#f8fafc', borderTop: '1px solid #e2e8f0', justifyContent: 'space-between' }}>
+            <DialogActions sx={{ p: 2, bgcolor: COLOR.LIENZO, borderTop: `1px solid ${COLOR.BORDE}`, justifyContent: 'space-between' }}>
                 {viewMode === 'form' ? (
                     <>
                         <Button onClick={onClose} color="inherit" sx={{ fontWeight: 600 }}>Cancelar</Button>

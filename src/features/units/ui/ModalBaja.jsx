@@ -10,6 +10,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material"
+import { COLOR } from "../../../shared/ui/tokens"
 
 /**
  * Da de baja a un conductor, con su motivo y su fecha.
@@ -38,7 +39,7 @@ export function ModalBaja({
 }) {
   return (
     <Dialog open={abierto} onClose={onCerrar} maxWidth="sm" fullWidth>
-      <DialogTitle sx={{ fontWeight: 800, bgcolor: "#0f172a", color: "white" }}>
+      <DialogTitle sx={{ fontWeight: 800, bgcolor: COLOR.TINTA, color: "white" }}>
         Dar de baja a conductor
       </DialogTitle>
 
@@ -49,7 +50,7 @@ export function ModalBaja({
           El conductor ya no aparecerá en la lista de activos.
         </Alert>
 
-        <Box mb={3} p={2} bgcolor="#f8fafc" borderRadius={2} border="1px solid #e2e8f0">
+        <Box mb={3} p={2} bgcolor={COLOR.LIENZO} borderRadius={2} border={`1px solid ${COLOR.BORDE}`}>
           <Typography variant="body2" color="text.secondary">
             Conductor
           </Typography>
@@ -93,7 +94,7 @@ export function ModalBaja({
         </Stack>
       </DialogContent>
 
-      <DialogActions sx={{ p: 2, bgcolor: "#f8fafc", borderTop: "1px solid #e2e8f0" }}>
+      <DialogActions sx={{ p: 2, bgcolor: COLOR.LIENZO, borderTop: `1px solid ${COLOR.BORDE}` }}>
         <Button onClick={onCerrar} color="inherit">
           Cancelar
         </Button>

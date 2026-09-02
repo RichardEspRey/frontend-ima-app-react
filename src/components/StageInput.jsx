@@ -1,5 +1,6 @@
 import { Box, Typography, Stack, Button, InputLabel, Paper } from '@mui/material';
 import { RemoveCircleOutline } from '@mui/icons-material';
+import { COLOR } from '../shared/ui/tokens';
 
 const StageInput = ({ label, docType, stageIndex, documentos, abrirModal }) => {
     const docData = documentos[docType];
@@ -26,7 +27,7 @@ const StageInput = ({ label, docType, stageIndex, documentos, abrirModal }) => {
                             flexGrow: 1, 
                             display: 'flex', 
                             alignItems: 'center', 
-                            bgcolor: '#e3f2fd'
+                            bgcolor: COLOR.INFO_FONDO
                         }}
                     >
                         <Typography variant="body2" color="primary" sx={{ flexGrow: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>

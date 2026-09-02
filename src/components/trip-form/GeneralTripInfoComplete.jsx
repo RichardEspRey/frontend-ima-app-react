@@ -4,6 +4,7 @@ import Select from 'react-select';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { selectStyles } from '../../utils/tripFormConstants'; 
+import { COLOR } from '../../shared/ui/tokens';
 
 const GeneralTripInfoComplete = ({
     formData,
@@ -75,7 +76,7 @@ const GeneralTripInfoComplete = ({
                         disabled={isFormDisabled}
                         variant="outlined"
                         size="small"
-                        sx={{ '& .MuiInputBase-root': { backgroundColor: '#fff' } }}
+                        sx={{ '& .MuiInputBase-root': { backgroundColor: COLOR.BLANCO } }}
                     >
                         <MenuItem value="MX">México (MX)</MenuItem>
                         <MenuItem value="US">Estados Unidos (US)</MenuItem>
@@ -95,7 +96,7 @@ const GeneralTripInfoComplete = ({
                         variant="outlined"
                         size="small"
                         sx={{ 
-                            '& .MuiInputBase-root': { backgroundColor: '#fff' } 
+                            '& .MuiInputBase-root': { backgroundColor: COLOR.BLANCO } 
                         }}
                     />
                 </Grid>
@@ -190,13 +191,13 @@ const GeneralTripInfoComplete = ({
                             disabled={isFormDisabled}
                             variant="outlined"
                             size="small"
-                            sx={{ '& .MuiInputBase-root': { backgroundColor: '#fff' } }}
+                            sx={{ '& .MuiInputBase-root': { backgroundColor: COLOR.BLANCO } }}
                         />
                     </Grid>
                 )}
             </Grid>
 
-            <Box sx={{ mt: 3, pt: 2, borderTop: '1px dashed #e0e0e0' }}>
+            <Box sx={{ mt: 3, pt: 2, borderTop: `1px dashed ${COLOR.BORDE}` }}>
                 <Typography variant="subtitle2" gutterBottom>Configuración de Caja (Trailer)</Typography>
                 <Grid container spacing={2} alignItems="center">
                     <Grid item>
@@ -258,8 +259,8 @@ const GeneralTripInfoComplete = ({
                 </Grid>
             </Box>
 
-            <Box sx={{ mt: 3, pt: 2, borderTop: '1px dashed #e0e0e0' }}>
-                <Paper variant="outlined" sx={{ p: 2, bgcolor: '#f8f9fa' }}>
+            <Box sx={{ mt: 3, pt: 2, borderTop: `1px dashed ${COLOR.BORDE}` }}>
+                <Paper variant="outlined" sx={{ p: 2, bgcolor: COLOR.LIENZO }}>
                     <Stack spacing={1}>
                         <FormControlLabel
                             control={

@@ -2,12 +2,13 @@ import { Grid, Card, CardContent, Stack, Typography, Box, TextField, InputAdornm
 import PersonIcon from '@mui/icons-material/Person';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import { COLOR } from '../../shared/ui/tokens';
 
 const TicketInfoCards = ({ driverName, unidad, customRate, setCustomRate }) => {
   return (
     <Grid container spacing={3} mb={4}>
       <Grid item xs={12} md={8}>
-          <Card variant="outlined" sx={{ bgcolor: '#f8f9fa', height: '100%' }}>
+          <Card variant="outlined" sx={{ bgcolor: COLOR.LIENZO, height: '100%' }}>
               <CardContent>
                   <Grid container spacing={2}>
                       <Grid item xs={6}>
@@ -30,7 +31,7 @@ const TicketInfoCards = ({ driverName, unidad, customRate, setCustomRate }) => {
       </Grid>
       
       <Grid item xs={12} md={4}>
-            <Card variant="outlined" sx={{ height: '100%', borderColor: 'primary.light', bgcolor: '#e3f2fd' }}>
+            <Card variant="outlined" sx={{ height: '100%', borderColor: 'primary.light', bgcolor: COLOR.INFO_FONDO }}>
               <CardContent>
                   <Typography variant="caption" textTransform="uppercase" fontWeight={700} color="primary.main">Tarifa por Milla</Typography>
                   <Box mt={1}>

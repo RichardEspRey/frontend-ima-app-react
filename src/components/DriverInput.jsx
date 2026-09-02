@@ -1,4 +1,5 @@
 import { Box, Typography, Stack, Button, InputLabel, Paper } from '@mui/material';
+import { COLOR } from '../shared/ui/tokens';
 
 /**
  * Componente para subir y visualizar el estado de un documento de conductor.
@@ -41,7 +42,7 @@ const DriverInput = ({ label, documentKey, documentos, abrirModal, handleClear }
                             display: 'flex', 
                             alignItems: 'center', 
                             justifyContent: 'space-between',
-                            bgcolor: '#f5f5f5'
+                            bgcolor: COLOR.LIENZO
                         }}
                     >
                         {/* Nombre del archivo y vencimiento */}

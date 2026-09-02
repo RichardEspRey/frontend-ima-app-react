@@ -3,13 +3,14 @@ import { Grid, TextField, Paper, Typography, Stack, Autocomplete } from '@mui/ma
 import PlaceIcon from '@mui/icons-material/Place';
 import FlagIcon from '@mui/icons-material/Flag';
 import { format } from 'date-fns';
+import { COLOR } from '../../shared/ui/tokens';
 
 const EmptyStage = ({ etapa, index, updateStage, origenes }) => {
     return (
         <Grid container spacing={3}>
             {/* ORIGEN (MOVIMIENTO VACÍO) */}
             <Grid item xs={12} md={6}>
-                <Paper variant="outlined" sx={{ p: 2, height: '100%', bgcolor: '#f8fafc' }}>
+                <Paper variant="outlined" sx={{ p: 2, height: '100%', bgcolor: COLOR.LIENZO }}>
                     <Typography variant="subtitle2" color="primary" sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                         <PlaceIcon fontSize="small" /> ORIGEN (MOVIMIENTO VACÍO)
                     </Typography>
@@ -47,7 +48,7 @@ const EmptyStage = ({ etapa, index, updateStage, origenes }) => {
 
             {/* DESTINO (MOVIMIENTO VACÍO) */}
             <Grid item xs={12} md={6}>
-                <Paper variant="outlined" sx={{ p: 2, height: '100%', bgcolor: '#f8fafc' }}>
+                <Paper variant="outlined" sx={{ p: 2, height: '100%', bgcolor: COLOR.LIENZO }}>
                     <Typography variant="subtitle2" color="error" sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                         <FlagIcon fontSize="small" /> DESTINO (MOVIMIENTO VACÍO)
                     </Typography>

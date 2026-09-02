@@ -20,6 +20,7 @@ import {
 import { EquiposDialog } from "../../features/access-manager/ui/EquiposDialog"
 import { NuevoUsuarioDialog } from "../../features/access-manager/ui/NuevoUsuarioDialog"
 import PermisosDrawer from "../../features/access-manager/ui/PermisosDrawer"
+import { COLOR } from "../../shared/ui/tokens"
 
 /**
  * Gestor de perfiles y accesos: usuarios, sus permisos y los equipos.
@@ -111,8 +112,8 @@ export default function AccesosPage() {
           size="small"
           sx={
             estaActivo(u)
-              ? { ...CHIP_SX, bgcolor: "#f0fdf4", color: "#15803d", border: "1px solid #bbf7d0" }
-              : { ...CHIP_SX, bgcolor: "#fef2f2", color: "#b91c1c", border: "1px solid #fecaca" }
+              ? { ...CHIP_SX, bgcolor: COLOR.EXITO_FONDO, color: COLOR.EXITO, border: `1px solid ${COLOR.EXITO_BORDE}` }
+              : { ...CHIP_SX, bgcolor: COLOR.PELIGRO_FONDO, color: COLOR.PELIGRO, border: `1px solid ${COLOR.PELIGRO_BORDE}` }
           }
         />
       ),

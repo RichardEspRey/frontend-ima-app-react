@@ -1,97 +1,232 @@
-export const PAGE_SHELL_SX = { p: { xs: 2, md: 4 }, minHeight: '100vh', bgcolor: '#f8fafc' };
+import { BORDE, COLOR, RADIO, RELLENO_PANTALLA, SOMBRA, TIPO } from "./tokens"
 
+/**
+ * El contenedor de una pantalla completa.
+ *
+ * @readonly
+ */
+export const PAGE_SHELL_SX = {
+  p: RELLENO_PANTALLA,
+  minHeight: "100vh",
+  bgcolor: COLOR.LIENZO,
+}
+
+/**
+ * La etiqueta pequeña en mayúsculas que rotula una sección.
+ *
+ * @readonly
+ */
 export const SECTION_LABEL_SX = {
-  color: '#94a3b8', fontWeight: 700, letterSpacing: '0.08em', fontSize: '0.68rem',
-};
+  ...TIPO.ETIQUETA,
+  color: COLOR.TENUE,
+}
 
+/**
+ * La misma etiqueta, con más espaciado, para el rótulo sobre el título.
+ *
+ * @readonly
+ */
 export const PAGE_OVERLINE_SX = {
-  ...SECTION_LABEL_SX, letterSpacing: '0.12em', fontSize: '0.7rem', lineHeight: 1,
-};
+  ...SECTION_LABEL_SX,
+  letterSpacing: "0.12em",
+  fontSize: "0.7rem",
+  lineHeight: 1,
+}
 
-export const PAGE_TITLE_SX = { mt: 0.25 };
+/** @readonly */
+export const PAGE_TITLE_SX = { mt: 0.25 }
 
-export const CARD_SX = { p: 3, borderRadius: 2, border: '1px solid #e2e8f0' };
+/** @readonly */
+export const CARD_SX = {
+  p: 3,
+  borderRadius: 2,
+  border: BORDE,
+}
 
-export const DIALOG_PAPER_SX = { borderRadius: 3, overflow: 'hidden' };
+/** @readonly */
+export const DIALOG_PAPER_SX = { borderRadius: 3, overflow: "hidden" }
 
+/** @readonly */
 export const DIALOG_TITLE_SX = {
-  bgcolor: '#fff', borderBottom: '1px solid #e2e8f0', px: { xs: 2, md: 4 }, py: 2.5,
-};
+  bgcolor: COLOR.BLANCO,
+  borderBottom: BORDE,
+  px: RELLENO_PANTALLA,
+  py: 2.5,
+}
 
-export const DIALOG_CONTENT_SX = { bgcolor: '#f8fafc', p: { xs: 2, md: 4 } };
+/** @readonly */
+export const DIALOG_CONTENT_SX = {
+  bgcolor: COLOR.LIENZO,
+  p: RELLENO_PANTALLA,
+}
 
+/** @readonly */
 export const DIALOG_ACTIONS_SX = {
-  px: { xs: 2, md: 4 }, py: 2.5, bgcolor: '#fff', borderTop: '1px solid #e2e8f0', gap: 1,
-};
+  px: RELLENO_PANTALLA,
+  py: 2.5,
+  bgcolor: COLOR.BLANCO,
+  borderTop: BORDE,
+  gap: 1,
+}
 
-export const SECTION_ICON_SX = { color: '#64748b' };
+/** @readonly */
+export const SECTION_ICON_SX = { color: COLOR.APAGADO }
 
-export const SECTION_TITLE_SX = { fontWeight: 700, color: '#0f172a' };
+/** @readonly */
+export const SECTION_TITLE_SX = { fontWeight: 700, color: COLOR.TINTA }
 
-export const HEADER_ROW_SX = { bgcolor: '#fafbfc', borderBottom: '1px solid #e2e8f0' };
+/** @readonly */
+export const HEADER_ROW_SX = {
+  bgcolor: COLOR.CABECERA,
+  borderBottom: BORDE,
+}
 
+/** @readonly */
 export const HEADER_CELL_SX = {
-  fontWeight: 700, color: '#94a3b8', fontSize: '0.7rem',
-  textTransform: 'uppercase', letterSpacing: '0.06em', borderBottom: 'none',
-};
+  ...TIPO.CABECERA_TABLA,
+  color: COLOR.TENUE,
+  borderBottom: "none",
+}
 
+/** @readonly */
 export const TABLE_CONTAINER_SX = {
-  border: '1px solid #e2e8f0', borderRadius: 2, overflowX: 'auto',
-};
+  border: BORDE,
+  borderRadius: 2,
+  overflowX: "auto",
+}
 
+/** @readonly */
 export const PAGINATION_BOX_SX = {
-  bgcolor: 'white', border: '1px solid #e2e8f0', borderTop: 'none',
-  borderBottomLeftRadius: 8, borderBottomRightRadius: 8,
-};
+  bgcolor: COLOR.BLANCO,
+  border: BORDE,
+  borderTop: "none",
+  borderBottomLeftRadius: RADIO.NORMAL,
+  borderBottomRightRadius: RADIO.NORMAL,
+}
 
+/** @readonly */
 export const PAGINATION_SX = {
-  color: '#475569',
-  '.MuiTablePagination-selectLabel, .MuiTablePagination-displayedRows': { fontSize: '0.8rem' },
-};
+  color: COLOR.TEXTO_SUAVE,
+  ".MuiTablePagination-selectLabel, .MuiTablePagination-displayedRows": {
+    fontSize: "0.8rem",
+  },
+}
 
+/** @readonly */
 export const TABS_WRAPPER_SX = {
-  mb: 3, display: 'inline-flex', bgcolor: '#f1f5f9', borderRadius: 2.5, p: 0.5,
-};
+  mb: 3,
+  display: "inline-flex",
+  bgcolor: COLOR.RELLENO,
+  borderRadius: 2.5,
+  p: 0.5,
+}
 
+/** @readonly */
 export const TAB_SX = {
-  minHeight: 36, minWidth: 0, px: 2.5, py: 1, borderRadius: 2,
-  fontWeight: 600, fontSize: '0.85rem', textTransform: 'none',
-  color: '#64748b', transition: 'background-color 0.15s, color 0.15s',
-  '&.Mui-selected': { bgcolor: '#0f172a', color: '#fff' },
-};
+  minHeight: 36,
+  minWidth: 0,
+  px: 2.5,
+  py: 1,
+  borderRadius: 2,
+  fontWeight: 600,
+  fontSize: "0.85rem",
+  textTransform: "none",
+  color: COLOR.APAGADO,
+  transition: "background-color 0.15s, color 0.15s",
+  "&.Mui-selected": { bgcolor: COLOR.TINTA, color: COLOR.BLANCO },
+}
 
+/** @readonly */
 export const CHIP_SX = {
-  height: 22, fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.04em',
-  textTransform: 'none',
-};
+  height: 22,
+  fontSize: "0.7rem",
+  fontWeight: 700,
+  letterSpacing: "0.04em",
+  textTransform: "none",
+}
 
+/** @readonly */
 export const CHIP_OK_SX = {
-  ...CHIP_SX, bgcolor: '#f0fdf4', color: '#15803d', border: '1px solid #bbf7d0',
-};
+  ...CHIP_SX,
+  bgcolor: COLOR.EXITO_FONDO,
+  color: COLOR.EXITO,
+  border: `1px solid ${COLOR.EXITO_BORDE}`,
+}
 
+/** @readonly */
 export const CHIP_DANGER_SX = {
-  ...CHIP_SX, bgcolor: '#fef2f2', color: '#b91c1c', border: '1px solid #fecaca',
-};
+  ...CHIP_SX,
+  bgcolor: COLOR.PELIGRO_FONDO,
+  color: COLOR.PELIGRO,
+  border: `1px solid ${COLOR.PELIGRO_BORDE}`,
+}
 
+/**
+ * Un chip de aviso, para lo que no está mal pero pide atención.
+ *
+ * @readonly
+ */
+export const CHIP_WARN_SX = {
+  ...CHIP_SX,
+  bgcolor: COLOR.AVISO_FONDO,
+  color: COLOR.AVISO,
+  border: `1px solid ${COLOR.AVISO_BORDE}`,
+}
+
+/**
+ * Un chip informativo, sin carga de bueno ni malo.
+ *
+ * @readonly
+ */
+export const CHIP_INFO_SX = {
+  ...CHIP_SX,
+  bgcolor: COLOR.INFO_FONDO,
+  color: COLOR.INFO,
+  border: `1px solid ${COLOR.INFO_BORDE}`,
+}
+
+/** @readonly */
 export const ICON_BTN_SX = {
-  border: '1px solid #e2e8f0', bgcolor: '#fff', color: '#475569',
-  '&:hover': { bgcolor: '#f8fafc', borderColor: '#cbd5e1' },
-};
+  border: BORDE,
+  bgcolor: COLOR.BLANCO,
+  color: COLOR.TEXTO_SUAVE,
+  "&:hover": { bgcolor: COLOR.LIENZO, borderColor: COLOR.BORDE_FUERTE },
+}
 
-export const CELL_STRONG_SX = { color: '#0f172a', fontWeight: 600 };
-export const CELL_SX = { color: '#334155' };
-export const CELL_MUTED_SX = { color: '#475569' };
+/** @readonly */
+export const CELL_STRONG_SX = { color: COLOR.TINTA, fontWeight: 600 }
 
+/** @readonly */
+export const CELL_SX = { color: COLOR.TEXTO }
+
+/** @readonly */
+export const CELL_MUTED_SX = { color: COLOR.TEXTO_SUAVE }
+
+/** @readonly */
 export const DARK_BTN_SX = {
-  bgcolor: '#0f172a', fontWeight: 700, borderRadius: 2, px: 3, py: 1.1,
-  textTransform: 'none', boxShadow: 'none', transition: 'all 0.15s',
-  '&:hover': { bgcolor: '#1e293b', boxShadow: '0 6px 16px rgba(15,23,42,0.22)' },
-  '&.Mui-disabled': { bgcolor: '#cbd5e1', color: '#fff' },
-};
+  bgcolor: COLOR.TINTA,
+  fontWeight: 700,
+  borderRadius: 2,
+  px: 3,
+  py: 1.1,
+  textTransform: "none",
+  boxShadow: SOMBRA.NINGUNA,
+  transition: "all 0.15s",
+  "&:hover": { bgcolor: COLOR.TINTA_CLARA, boxShadow: SOMBRA.FLOTANTE },
+  "&.Mui-disabled": { bgcolor: COLOR.BORDE_FUERTE, color: COLOR.BLANCO },
+}
 
+/** @readonly */
 export const GHOST_BTN_SX = {
-  bgcolor: 'white', borderColor: '#cbd5e1', color: '#334155',
-  fontWeight: 600, textTransform: 'none', borderRadius: 2, px: 2.5, py: 1.1,
-};
+  bgcolor: COLOR.BLANCO,
+  borderColor: COLOR.BORDE_FUERTE,
+  color: COLOR.TEXTO,
+  fontWeight: 600,
+  textTransform: "none",
+  borderRadius: 2,
+  px: 2.5,
+  py: 1.1,
+}
 
-export const INPUT_SX = { borderRadius: 2 };
+/** @readonly */
+export const INPUT_SX = { borderRadius: 2 }

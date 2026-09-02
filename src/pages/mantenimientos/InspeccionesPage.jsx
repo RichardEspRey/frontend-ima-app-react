@@ -2,6 +2,7 @@ import { Box, Typography } from "@mui/material"
 
 import TablaInspecciones from "../../features/inspections/ui/TablaInspecciones"
 import { PAGE_SHELL_SX, PAGE_OVERLINE_SX, PAGE_TITLE_SX } from "../../shared/ui/estilos"
+import { COLOR } from "../../shared/ui/tokens"
 
 /**
  * Inspecciones operativas hechas a los camiones en ruta.
@@ -20,13 +21,13 @@ const InspeccionesPage = () => (
       <Typography
         variant="h4"
         fontWeight={800}
-        color="#0f172a"
+        color={COLOR.TINTA}
         letterSpacing="-0.02em"
         sx={PAGE_TITLE_SX}
       >
         Inspecciones Operativas
       </Typography>
-      <Typography variant="body2" color="#64748b" sx={{ mt: 0.5 }}>
+      <Typography variant="body2" color={COLOR.APAGADO} sx={{ mt: 0.5 }}>
         Inspecciones realizadas a las unidades durante un viaje.
       </Typography>
     </Box>

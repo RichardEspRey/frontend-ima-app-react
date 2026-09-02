@@ -45,6 +45,7 @@ import {
   millas as formatearMillas,
 } from "../../features/cotizador"
 import { notify } from "../../shared/ui"
+import { COLOR } from "../../shared/ui/tokens"
 
 const TITULO_SX = { textTransform: "uppercase", letterSpacing: 0.5 }
 
@@ -253,7 +254,7 @@ export default function CotizadorPage() {
   }
 
   return (
-    <Box sx={{ p: 3, bgcolor: "#f4f6f8", minHeight: "100vh" }}>
+    <Box sx={{ p: 3, bgcolor: COLOR.LIENZO, minHeight: "100vh" }}>
       <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 3 }}>
         <Box>
           <Typography variant="h5" fontWeight={700}>
@@ -289,7 +290,7 @@ export default function CotizadorPage() {
       <Box sx={{ display: "flex", gap: 2.5, alignItems: "flex-start", flexWrap: "wrap" }}>
         <Paper
           elevation={0}
-          sx={{ flex: "0 0 300px", p: 3, borderRadius: 2, border: "1px solid #e0e0e0" }}
+          sx={{ flex: "0 0 300px", p: 3, borderRadius: 2, border: `1px solid ${COLOR.BORDE}` }}
         >
           <Typography
             variant="subtitle2"
@@ -317,7 +318,7 @@ export default function CotizadorPage() {
                     placeholder="Ciudad o código postal"
                     valor={parada}
                     onChange={(ubicacion) => cambiarParada(indice, ubicacion)}
-                    icono={<PlaceIcon sx={{ mr: 1, color: "#f59e0b", fontSize: 18 }} />}
+                    icono={<PlaceIcon sx={{ mr: 1, color: COLOR.AVISO, fontSize: 18 }} />}
                   />
                 </Box>
                 <IconButton
@@ -339,9 +340,9 @@ export default function CotizadorPage() {
                 textTransform: "none",
                 alignSelf: "flex-start",
                 borderStyle: "dashed",
-                color: "#f59e0b",
-                borderColor: "#f59e0b",
-                "&:hover": { borderColor: "#d97706", borderStyle: "dashed" },
+                color: COLOR.AVISO,
+                borderColor: COLOR.AVISO,
+                "&:hover": { borderColor: COLOR.AVISO, borderStyle: "dashed" },
               }}
             >
               Agregar Parada
@@ -437,7 +438,7 @@ export default function CotizadorPage() {
       </Box>
 
       {vistaPrevia && (
-        <Paper elevation={0} sx={{ mt: 2.5, p: 3, borderRadius: 2, border: "1px solid #e0e0e0" }}>
+        <Paper elevation={0} sx={{ mt: 2.5, p: 3, borderRadius: 2, border: `1px solid ${COLOR.BORDE}` }}>
           <Stack
             direction="row"
             justifyContent="space-between"

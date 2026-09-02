@@ -11,6 +11,7 @@ import FmdGoodOutlinedIcon from '@mui/icons-material/FmdGoodOutlined';
 import dayjs from 'dayjs';
 import { usePermisos, PERMISOS } from '../../shared/auth';
 import { urlSegura } from '../../shared/security';
+import { COLOR } from '../../shared/ui/tokens';
 
 const formatTime = (timeStr) => {
     if (!timeStr) return '';
@@ -45,17 +46,17 @@ export const StageUpcomingCard = ({ etapa, getDocumentUrl }) => {
         : [];
 
     return (
-        <Paper elevation={0} sx={{ borderRadius: 2, overflow: 'hidden', border: '1px solid #e2e8f0', mb: 1 }}>
+        <Paper elevation={0} sx={{ borderRadius: 2, overflow: 'hidden', border: `1px solid ${COLOR.BORDE}`, mb: 1 }}>
 
             {/* ENCABEZADO DE LA ETAPA */}
-            <Box sx={{ bgcolor: '#fafbfc', px: 2.5, py: 1.5, borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
+            <Box sx={{ bgcolor: COLOR.CABECERA, px: 2.5, py: 1.5, borderBottom: `1px solid ${COLOR.BORDE}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
                 <Stack direction="row" alignItems="center" spacing={2} flexWrap="wrap" useFlexGap>
-                    <Typography variant="overline" sx={{ color: '#94a3b8', fontWeight: 700, letterSpacing: '0.06em', fontSize: '0.68rem' }}>
+                    <Typography variant="overline" sx={{ color: COLOR.TENUE, fontWeight: 700, letterSpacing: '0.06em', fontSize: '0.68rem' }}>
                         Etapa {etapa.stage_number}{etapa.travel_direction ? ` • ${etapa.travel_direction}` : ''}
                     </Typography>
                     <Stack direction="row" alignItems="center" spacing={1} flexWrap="wrap" useFlexGap>
-                        <BusinessIcon sx={{ fontSize: 18, color: '#94a3b8' }} />
-                        <Typography variant="subtitle1" fontWeight={700} color="#0f172a">
+                        <BusinessIcon sx={{ fontSize: 18, color: COLOR.TENUE }} />
+                        <Typography variant="subtitle1" fontWeight={700} color={COLOR.TINTA}>
                             {etapa.nombre_compania || 'Compañía sin nombre'}
                         </Typography>
 
@@ -70,13 +71,13 @@ export const StageUpcomingCard = ({ etapa, getDocumentUrl }) => {
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 clickable
-                                sx={{ height: 22, fontSize: '0.7rem', fontWeight: 700, bgcolor: '#eff6ff', color: '#2563eb', border: '1px solid #2563eb22' }}
+                                sx={{ height: 22, fontSize: '0.7rem', fontWeight: 700, bgcolor: COLOR.INFO_FONDO, color: COLOR.INFO, border: `1px solid ${COLOR.INFO}22` }}
                             />
                         ))}
                     </Stack>
                 </Stack>
                 {canManageInvoice && etapa.ci_number && (
-                    <Chip label={`CI: ${etapa.ci_number}`} sx={{ fontWeight: 700, bgcolor: '#f1f5f9', color: '#475569' }} />
+                    <Chip label={`CI: ${etapa.ci_number}`} sx={{ fontWeight: 700, bgcolor: COLOR.RELLENO, color: COLOR.TEXTO_SUAVE }} />
                 )}
             </Box>
 
@@ -84,54 +85,54 @@ export const StageUpcomingCard = ({ etapa, getDocumentUrl }) => {
                 <Grid container spacing={2} alignItems="center">
                     {/* ORIGEN Y FECHA SALIDA */}
                     <Grid item xs={12} md={5}>
-                        <Paper variant="outlined" sx={{ p: 2, bgcolor: '#fafbfc', borderRadius: 2, borderLeft: '3px solid #2563eb', borderColor: '#e2e8f0' }}>
+                        <Paper variant="outlined" sx={{ p: 2, bgcolor: COLOR.CABECERA, borderRadius: 2, borderLeft: `3px solid ${COLOR.INFO}`, borderColor: COLOR.BORDE }}>
                             <Stack direction="row" alignItems="center" spacing={1} mb={1.5}>
-                                <RoomOutlinedIcon sx={{ fontSize: 18, color: '#2563eb' }} />
-                                <Typography variant="caption" fontWeight={700} color="#94a3b8" sx={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}>Origen</Typography>
+                                <RoomOutlinedIcon sx={{ fontSize: 18, color: COLOR.INFO }} />
+                                <Typography variant="caption" fontWeight={700} color={COLOR.TENUE} sx={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}>Origen</Typography>
                             </Stack>
-                            <Typography variant="body1" fontWeight={600} color="#0f172a" mb={1.5} sx={{ minHeight: '48px' }}>
+                            <Typography variant="body1" fontWeight={600} color={COLOR.TINTA} mb={1.5} sx={{ minHeight: '48px' }}>
                                 {etapa.origin || 'Sin origen especificado'}
                             </Typography>
 
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
-                                <CalendarTodayOutlinedIcon sx={{ color: '#94a3b8', fontSize: 20 }} />
+                                <CalendarTodayOutlinedIcon sx={{ color: COLOR.TENUE, fontSize: 20 }} />
                                 <Box>
-                                    <Typography variant="caption" color="#94a3b8" fontWeight={700} sx={{ textTransform: 'uppercase', fontSize: '0.65rem' }}>Fecha Salida</Typography>
-                                    <Typography variant="body1" color="#0f172a" fontWeight={700} lineHeight={1.2}>{departureDate}</Typography>
+                                    <Typography variant="caption" color={COLOR.TENUE} fontWeight={700} sx={{ textTransform: 'uppercase', fontSize: '0.65rem' }}>Fecha Salida</Typography>
+                                    <Typography variant="body1" color={COLOR.TINTA} fontWeight={700} lineHeight={1.2}>{departureDate}</Typography>
                                 </Box>
                             </Box>
                         </Paper>
                     </Grid>
 
                     <Grid item xs={12} md={2} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                        <ArrowForwardIcon sx={{ fontSize: 24, color: '#cbd5e1', display: { xs: 'none', md: 'block' } }} />
+                        <ArrowForwardIcon sx={{ fontSize: 24, color: COLOR.BORDE_FUERTE, display: { xs: 'none', md: 'block' } }} />
                     </Grid>
 
                     <Grid item xs={12} md={5}>
-                        <Paper variant="outlined" sx={{ p: 2, bgcolor: '#fafbfc', borderRadius: 2, borderLeft: '3px solid #dc2626', borderColor: '#e2e8f0' }}>
+                        <Paper variant="outlined" sx={{ p: 2, bgcolor: COLOR.CABECERA, borderRadius: 2, borderLeft: `3px solid ${COLOR.PELIGRO}`, borderColor: COLOR.BORDE }}>
                             <Stack direction="row" alignItems="center" spacing={1} mb={1.5}>
-                                <FlagOutlinedIcon sx={{ fontSize: 18, color: '#dc2626' }} />
-                                <Typography variant="caption" fontWeight={700} color="#94a3b8" sx={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}>Destino</Typography>
+                                <FlagOutlinedIcon sx={{ fontSize: 18, color: COLOR.PELIGRO }} />
+                                <Typography variant="caption" fontWeight={700} color={COLOR.TENUE} sx={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}>Destino</Typography>
                             </Stack>
-                            <Typography variant="body1" fontWeight={600} color="#0f172a" mb={1.5} sx={{ minHeight: '48px' }}>
+                            <Typography variant="body1" fontWeight={600} color={COLOR.TINTA} mb={1.5} sx={{ minHeight: '48px' }}>
                                 {etapa.destination || 'Sin destino especificado'}
                             </Typography>
 
                             <Stack direction="row" spacing={2}>
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, flexGrow: 1 }}>
-                                    <CalendarTodayOutlinedIcon sx={{ color: '#94a3b8', fontSize: 20 }} />
+                                    <CalendarTodayOutlinedIcon sx={{ color: COLOR.TENUE, fontSize: 20 }} />
                                     <Box>
-                                        <Typography variant="caption" color="#94a3b8" fontWeight={700} sx={{ textTransform: 'uppercase', fontSize: '0.65rem' }}>Fecha Entrega</Typography>
-                                        <Typography variant="body1" color="#0f172a" fontWeight={700} lineHeight={1.2}>{deliveryDate}</Typography>
+                                        <Typography variant="caption" color={COLOR.TENUE} fontWeight={700} sx={{ textTransform: 'uppercase', fontSize: '0.65rem' }}>Fecha Entrega</Typography>
+                                        <Typography variant="body1" color={COLOR.TINTA} fontWeight={700} lineHeight={1.2}>{deliveryDate}</Typography>
                                     </Box>
                                 </Box>
 
                                 {etapa.time_of_delivery && (
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                        <AccessTimeOutlinedIcon sx={{ color: '#94a3b8', fontSize: 18 }} />
+                                        <AccessTimeOutlinedIcon sx={{ color: COLOR.TENUE, fontSize: 18 }} />
                                         <Box>
-                                            <Typography variant="caption" color="#94a3b8" fontWeight={700} sx={{ textTransform: 'uppercase', fontSize: '0.65rem' }}>Hora</Typography>
-                                            <Typography variant="body2" color="#0f172a" fontWeight={700} lineHeight={1.2}>{formatTime(etapa.time_of_delivery)}</Typography>
+                                            <Typography variant="caption" color={COLOR.TENUE} fontWeight={700} sx={{ textTransform: 'uppercase', fontSize: '0.65rem' }}>Hora</Typography>
+                                            <Typography variant="body2" color={COLOR.TINTA} fontWeight={700} lineHeight={1.2}>{formatTime(etapa.time_of_delivery)}</Typography>
                                         </Box>
                                     </Box>
                                 )}
@@ -143,25 +144,25 @@ export const StageUpcomingCard = ({ etapa, getDocumentUrl }) => {
 
             {tieneParadas && (
                 <Box sx={{ px: 2.5, pb: 2.5 }}>
-                    <Paper variant="outlined" sx={{ p: 2, bgcolor: '#fff', borderRadius: 2, borderColor: '#e2e8f0' }}>
+                    <Paper variant="outlined" sx={{ p: 2, bgcolor: COLOR.BLANCO, borderRadius: 2, borderColor: COLOR.BORDE }}>
                         <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1.5 }}>
-                            <FmdGoodOutlinedIcon sx={{ fontSize: 16, color: '#94a3b8' }} />
-                            <Typography variant="overline" fontWeight={700} color="#94a3b8" sx={{ fontSize: '0.65rem', letterSpacing: '0.06em' }}>
+                            <FmdGoodOutlinedIcon sx={{ fontSize: 16, color: COLOR.TENUE }} />
+                            <Typography variant="overline" fontWeight={700} color={COLOR.TENUE} sx={{ fontSize: '0.65rem', letterSpacing: '0.06em' }}>
                                 Detalle de Paradas en Tránsito ({etapa.stops_in_transit.length})
                             </Typography>
                         </Stack>
 
-                        <Stack spacing={1} divider={<Divider sx={{ borderColor: '#f1f5f9' }} />}>
+                        <Stack spacing={1} divider={<Divider sx={{ borderColor: COLOR.RELLENO }} />}>
                             {etapa.stops_in_transit.map((stop, index) => (
                                 <Box key={index} sx={{ py: 0.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
                                     <Stack direction="row" alignItems="center" spacing={1.5} sx={{ flexGrow: 1 }}>
                                         <Box sx={{
-                                            width: 18, height: 18, borderRadius: '50%', bgcolor: '#f1f5f9', color: '#64748b',
+                                            width: 18, height: 18, borderRadius: '50%', bgcolor: COLOR.RELLENO, color: COLOR.APAGADO,
                                             display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem', fontWeight: 700, flexShrink: 0,
                                         }}>
                                             {stop.stop_order || (index + 1)}
                                         </Box>
-                                        <Typography variant="body2" fontWeight={600} color="#334155">
+                                        <Typography variant="body2" fontWeight={600} color={COLOR.TEXTO}>
                                             {stop.location}
                                         </Typography>
 
@@ -170,7 +171,7 @@ export const StageUpcomingCard = ({ etapa, getDocumentUrl }) => {
                                                 icon={<AccessTimeOutlinedIcon sx={{ fontSize: '13px !important' }} />}
                                                 label={formatTime(stop.time_of_delivery)}
                                                 size="small"
-                                                sx={{ height: 20, fontSize: '0.7rem', bgcolor: '#f8fafc', border: '1px solid #e2e8f0', color: '#64748b' }}
+                                                sx={{ height: 20, fontSize: '0.7rem', bgcolor: COLOR.LIENZO, border: `1px solid ${COLOR.BORDE}`, color: COLOR.APAGADO }}
                                             />
                                         )}
                                     </Stack>
@@ -185,7 +186,7 @@ export const StageUpcomingCard = ({ etapa, getDocumentUrl }) => {
                                             rel="noopener noreferrer"
                                             clickable
                                             size="small"
-                                            sx={{ height: 22, fontSize: '0.72rem', fontWeight: 700, bgcolor: '#eff6ff', color: '#2563eb', border: '1px solid #2563eb22' }}
+                                            sx={{ height: 22, fontSize: '0.72rem', fontWeight: 700, bgcolor: COLOR.INFO_FONDO, color: COLOR.INFO, border: `1px solid ${COLOR.INFO}22` }}
                                         />
                                     )}
                                 </Box>
@@ -195,12 +196,12 @@ export const StageUpcomingCard = ({ etapa, getDocumentUrl }) => {
                 </Box>
             )}
 
-            <Divider sx={{ borderColor: '#e2e8f0' }} />
+            <Divider sx={{ borderColor: COLOR.BORDE }} />
 
-            <Box sx={{ px: 2.5, py: 2, bgcolor: '#fff' }}>
+            <Box sx={{ px: 2.5, py: 2, bgcolor: COLOR.BLANCO }}>
                 <Grid container spacing={2}>
                     <Grid item xs={12} md={7}>
-                        <Typography variant="overline" fontWeight={700} color="#94a3b8" mb={1} sx={{ display: 'flex', alignItems: 'center', gap: 0.5, fontSize: '0.65rem', letterSpacing: '0.06em' }}>
+                        <Typography variant="overline" fontWeight={700} color={COLOR.TENUE} mb={1} sx={{ display: 'flex', alignItems: 'center', gap: 0.5, fontSize: '0.65rem', letterSpacing: '0.06em' }}>
                             <InsertDriveFileOutlinedIcon sx={{ fontSize: 15 }} /> Documentos de la Etapa
                         </Typography>
 
@@ -217,12 +218,12 @@ export const StageUpcomingCard = ({ etapa, getDocumentUrl }) => {
                                         rel="noopener noreferrer"
                                         clickable
                                         variant="outlined"
-                                        sx={{ fontWeight: 700, fontSize: '0.75rem', borderColor: '#e2e8f0', color: '#475569' }}
+                                        sx={{ fontWeight: 700, fontSize: '0.75rem', borderColor: COLOR.BORDE, color: COLOR.TEXTO_SUAVE }}
                                     />
                                 ))}
                             </Stack>
                         ) : (
-                            <Typography variant="body2" color="#94a3b8" fontStyle="italic">
+                            <Typography variant="body2" color={COLOR.TENUE} fontStyle="italic">
                                 Aún no se han subido documentos adicionales.
                             </Typography>
                         )}
@@ -230,8 +231,8 @@ export const StageUpcomingCard = ({ etapa, getDocumentUrl }) => {
 
                     {etapa.comments && (
                         <Grid item xs={12} md={5}>
-                            <Box sx={{ bgcolor: '#fffbeb', p: 1.5, borderRadius: 2, border: '1px dashed #fbbf24' }}>
-                                <Typography variant="caption" fontWeight={700} color="#b45309" display="block">Comentarios:</Typography>
+                            <Box sx={{ bgcolor: COLOR.AVISO_FONDO, p: 1.5, borderRadius: 2, border: `1px dashed ${COLOR.AVISO_BORDE}` }}>
+                                <Typography variant="caption" fontWeight={700} color={COLOR.AVISO} display="block">Comentarios:</Typography>
                                 <Typography variant="body2" fontStyle="italic" color="#78350f">"{etapa.comments}"</Typography>
                             </Box>
                         </Grid>

@@ -1,14 +1,15 @@
 import { useMemo } from 'react';
 import { Box, Typography, Stack, CircularProgress } from '@mui/material';
 import { BarChart } from '@mui/x-charts/BarChart';
+import { COLOR } from '../../shared/ui/tokens';
 
 const MONTH_LABELS_ES = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
 
 // Paleta fija para que cada Expense Type conserve siempre el mismo color entre
 // renders/filtros; se recicla si hay más tipos que colores en la lista.
 const PALETTE = [
-  '#2563eb', '#16a34a', '#d97706', '#dc2626', '#7c3aed', '#0891b2',
-  '#db2777', '#65a30d', '#ea580c', '#4f46e5', '#059669', '#b91c1c',
+  COLOR.INFO, COLOR.EXITO, COLOR.AVISO, COLOR.PELIGRO, '#7c3aed', '#0891b2',
+  '#db2777', '#65a30d', '#ea580c', '#4f46e5', '#059669', COLOR.PELIGRO,
 ];
 
 const money = (currency) => (v) =>

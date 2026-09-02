@@ -17,6 +17,7 @@ import {
     useEliminarEmpleado,
     validarFormularioEmpleado,
 } from '../../entities/personal';
+import { COLOR } from '../../shared/ui/tokens';
 
 const FORMULARIO_VACIO = { id: null, nombre: '', puesto: '', sueldo: '', frecuencia_pago: 'Semanal', tipo_nomina: 'MX' };
 
@@ -83,7 +84,7 @@ export default function PersonalAdmin() {
                 <Chip
                     label={e.tipo_nomina === 'MX' ? 'Pesos (MXN)' : 'Dólares (USD)'}
                     size="small"
-                    sx={e.tipo_nomina === 'MX' ? { ...CHIP_SX, bgcolor: "#f0fdf4", color: "#15803d", border: "1px solid #bbf7d0" } : { ...CHIP_SX, bgcolor: "#eff6ff", color: "#1d4ed8", border: "1px solid #bfdbfe" }}
+                    sx={e.tipo_nomina === 'MX' ? { ...CHIP_SX, bgcolor: COLOR.EXITO_FONDO, color: COLOR.EXITO, border: `1px solid ${COLOR.EXITO_BORDE}` } : { ...CHIP_SX, bgcolor: COLOR.INFO_FONDO, color: COLOR.INFO, border: `1px solid ${COLOR.INFO_BORDE}` }}
                 />
             ),
         },
@@ -94,7 +95,7 @@ export default function PersonalAdmin() {
                     <IconButton onClick={() => openModal(e)} size="small" sx={{ ...ICON_BTN_SX, mr: 1 }} title="Editar">
                         <EditIcon />
                     </IconButton>
-                    <IconButton onClick={() => handleDelete(e.id)} size="small" sx={{ ...ICON_BTN_SX, color: '#b91c1c' }} title="Eliminar">
+                    <IconButton onClick={() => handleDelete(e.id)} size="small" sx={{ ...ICON_BTN_SX, color: COLOR.PELIGRO }} title="Eliminar">
                         <DeleteIcon />
                     </IconButton>
                 </>
@@ -138,7 +139,7 @@ export default function PersonalAdmin() {
 
             {/* MODAL (DIALOG) */}
             <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
-                <DialogTitle sx={{ fontWeight: 800, color: 'primary.main', borderBottom: '1px solid #e0e0e0', pb: 2 }}>
+                <DialogTitle sx={{ fontWeight: 800, color: 'primary.main', borderBottom: `1px solid ${COLOR.BORDE}`, pb: 2 }}>
                     {form.id ? 'Editar Empleado' : 'Agregar Nuevo Empleado'}
                 </DialogTitle>
                 <DialogContent sx={{ pt: 4 }}>
@@ -167,7 +168,7 @@ export default function PersonalAdmin() {
                         </Grid>
                     </Grid>
                 </DialogContent>
-                <DialogActions sx={{ p: 3, borderTop: '1px solid #e0e0e0' }}>
+                <DialogActions sx={{ p: 3, borderTop: `1px solid ${COLOR.BORDE}` }}>
                     <Button onClick={() => setOpen(false)} sx={{ textTransform: 'none', fontWeight: 600 }}>Cancelar</Button>
                     <Button variant="contained" onClick={handleSubmit} disabled={guardar.isPending} sx={{ textTransform: 'none', fontWeight: 600, px: 4 }}>
                         {guardar.isPending ? 'Guardando…' : 'Guardar Empleado'}

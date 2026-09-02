@@ -1,6 +1,7 @@
 import React from "react";
 import { Box, Avatar, Typography, Stack, Paper } from "@mui/material";
 import { useAuthStore } from "../store/useAuthStore";
+import { COLOR } from "../shared/ui/tokens";
 
 const Header = () => {
   const { user } = useAuthStore();
@@ -19,25 +20,25 @@ const Header = () => {
         alignItems: 'center', 
         justifyContent: 'flex-end', 
         px: 4, 
-        bgcolor: '#ffffff',
-        borderBottom: '1px solid #e2e8f0',
+        bgcolor: COLOR.BLANCO,
+        borderBottom: `1px solid ${COLOR.BORDE}`,
         zIndex: 10
       }}
     >
       <Stack direction="row" spacing={2} alignItems="center" sx={{ cursor: 'pointer' }}>
         
         <Box sx={{ textAlign: 'right' }}>
-          <Typography variant="subtitle2" fontWeight={800} color="#0f172a" lineHeight={1.2}>
+          <Typography variant="subtitle2" fontWeight={800} color={COLOR.TINTA} lineHeight={1.2}>
             {userName}
           </Typography>
-          <Typography variant="caption" color="#64748b" fontWeight={700} sx={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          <Typography variant="caption" color={COLOR.APAGADO} fontWeight={700} sx={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}>
             {userRole}
           </Typography>
         </Box>
 
         <Avatar 
           sx={{ 
-            background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
+            background: `linear-gradient(135deg, ${COLOR.TINTA_CLARA} 0%, ${COLOR.TINTA} 100%)`,
             color: 'white', 
             fontWeight: 800,
             width: 40,

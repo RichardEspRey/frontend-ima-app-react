@@ -6,6 +6,7 @@ import {
 } from '@mui/material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import { COLOR } from '../shared/ui/tokens';
 
 const money = (v) =>
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, currencyDisplay: 'symbol' })
@@ -103,7 +104,7 @@ export const OrderRow = ({ order, onEdit, onEditDetail }) => {
                                         overflowX: 'auto',
                                         pb: 1,
                                         '&::-webkit-scrollbar': { height: 8 },
-                                        '&::-webkit-scrollbar-thumb': { backgroundColor: '#c7c7c7', borderRadius: 8 }
+                                        '&::-webkit-scrollbar-thumb': { backgroundColor: COLOR.BORDE_FUERTE, borderRadius: 8 }
                                     }}
                                 >
                                     {servicios.map((svc, idx) => {

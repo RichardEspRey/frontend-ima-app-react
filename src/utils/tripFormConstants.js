@@ -1,3 +1,4 @@
+import { COLOR } from "../shared/ui/tokens"
 export const initialBorderCrossingDocs = {
   ima_invoice: null,
   doda: null,
@@ -43,10 +44,10 @@ export const selectStyles = {
     ...provided,
     padding: "2px",
     borderRadius: "4px",
-    border: "1px solid #c4c4c4",
+    border: `1px solid ${COLOR.BORDE_FUERTE}`,
     fontSize: "15px",
     minHeight: "45px",
-    backgroundColor: "#fff",
+    backgroundColor: COLOR.BLANCO,
   }),
   menu: (provided) => ({ ...provided, zIndex: 9999 }),
 };

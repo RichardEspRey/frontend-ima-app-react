@@ -5,6 +5,7 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 
 import EmptyStage from './EmptyStage';
 import BorderCrossingStage from './BorderCrossingStage';
+import { COLOR } from '../../shared/ui/tokens';
 
 const TripStageItem = (props) => {
     const { etapa, index, removeStage, addStop } = props;
@@ -13,9 +14,9 @@ const TripStageItem = (props) => {
     return (
         <Paper elevation={2} sx={{ overflow: 'hidden', borderLeft: `6px solid ${isEmpty ? '#757575' : '#ff9800'}` }}>
             
-            <Box sx={{ bgcolor: isEmpty ? '#eeeeee' : '#fff3e0', px: 2, py: 1.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Box sx={{ bgcolor: isEmpty ? COLOR.RELLENO : COLOR.AVISO_FONDO, px: 2, py: 1.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Stack direction="row" spacing={1} alignItems="center">
-                    <Chip label={`#${index + 1}`} size="small" sx={{ bgcolor: isEmpty ? '#757575' : '#ff9800', color: 'white', fontWeight: 'bold' }} />
+                    <Chip label={`#${index + 1}`} size="small" sx={{ bgcolor: isEmpty ? COLOR.APAGADO : COLOR.AVISO, color: 'white', fontWeight: 'bold' }} />
                     <Typography variant="subtitle1" fontWeight={700}>{isEmpty ? 'Etapa Vacía' : 'Cruce Fronterizo'}</Typography>
                 </Stack>
                 <Box>

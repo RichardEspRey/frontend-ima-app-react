@@ -21,6 +21,7 @@ import MoreVertIcon from "@mui/icons-material/MoreVert"
 
 import { ESTADO_CONDUCTOR, estadoConductor } from "../../../entities/unit"
 import { EstadoDocumento } from "./EstadoDocumento"
+import { COLOR } from "../../../shared/ui/tokens"
 
 const LARGO_MAXIMO_ENCABEZADO = 12
 
@@ -95,7 +96,7 @@ function CeldaFija({ columna, unidad }) {
   const valor = unidad?.[columna.clave]
   if (columna.principal) {
     return (
-      <Typography variant="body2" fontWeight={800} color="#0f172a">
+      <Typography variant="body2" fontWeight={800} color={COLOR.TINTA}>
         {valor}
       </Typography>
     )
@@ -140,15 +141,15 @@ export function TablaUnidades({
   const columnas = descriptor.columnas.length + requisitos.length + 1
 
   return (
-    <Paper elevation={0} sx={{ border: "1px solid #e2e8f0", borderRadius: 3, overflow: "hidden" }}>
+    <Paper elevation={0} sx={{ border: `1px solid ${COLOR.BORDE}`, borderRadius: 3, overflow: "hidden" }}>
       <TableContainer sx={{ overflowX: "auto" }}>
         <Table size="small">
-          <TableHead sx={{ bgcolor: "#f1f5f9" }}>
+          <TableHead sx={{ bgcolor: COLOR.RELLENO }}>
             <TableRow>
               {descriptor.columnas.map((columna) => (
                 <TableCell
                   key={columna.clave}
-                  sx={{ fontWeight: 700, color: "#475569", minWidth: columna.ancho }}
+                  sx={{ fontWeight: 700, color: COLOR.TEXTO_SUAVE, minWidth: columna.ancho }}
                 >
                   {columna.etiqueta}
                 </TableCell>
@@ -157,7 +158,7 @@ export function TablaUnidades({
                 <TableCell
                   key={requisito.key_name}
                   align="center"
-                  sx={{ fontWeight: 700, color: "#475569", whiteSpace: "nowrap" }}
+                  sx={{ fontWeight: 700, color: COLOR.TEXTO_SUAVE, whiteSpace: "nowrap" }}
                 >
                   <Tooltip title={requisito.label}>
                     <span>
@@ -168,7 +169,7 @@ export function TablaUnidades({
                   </Tooltip>
                 </TableCell>
               ))}
-              <TableCell align="center" sx={{ fontWeight: 700, color: "#475569", minWidth: 90 }}>
+              <TableCell align="center" sx={{ fontWeight: 700, color: COLOR.TEXTO_SUAVE, minWidth: 90 }}>
                 Acciones
               </TableCell>
             </TableRow>

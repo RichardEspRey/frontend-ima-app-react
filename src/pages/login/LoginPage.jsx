@@ -16,8 +16,9 @@ import logo from "../../assets/images/logo.png"
 import { iniciarSesion, validarCredenciales } from "../../entities/session"
 import { notify } from "../../shared/ui"
 import { useAuthStore } from "../../store/useAuthStore"
+import { COLOR } from "../../shared/ui/tokens"
 
-const CAMPO_SX = { "& .MuiOutlinedInput-root": { borderRadius: 2, bgcolor: "#f8fafc" } }
+const CAMPO_SX = { "& .MuiOutlinedInput-root": { borderRadius: 2, bgcolor: COLOR.LIENZO } }
 
 /**
  * La puerta de entrada a la aplicación.
@@ -107,14 +108,14 @@ export default function LoginPage() {
         <Typography
           variant="h5"
           fontWeight={800}
-          color="#0f172a"
+          color={COLOR.TINTA}
           mb={1}
           textAlign="center"
           letterSpacing="-0.02em"
         >
           Bienvenido de nuevo
         </Typography>
-        <Typography variant="body2" color="#64748b" mb={4} textAlign="center" fontWeight={500}>
+        <Typography variant="body2" color={COLOR.APAGADO} mb={4} textAlign="center" fontWeight={500}>
           Ingresa tus credenciales para acceder a la plataforma.
         </Typography>
 
@@ -130,7 +131,7 @@ export default function LoginPage() {
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <PersonIcon sx={{ color: "#94a3b8" }} />
+                  <PersonIcon sx={{ color: COLOR.TENUE }} />
                 </InputAdornment>
               ),
             }}
@@ -148,7 +149,7 @@ export default function LoginPage() {
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <LockIcon sx={{ color: "#94a3b8" }} />
+                  <LockIcon sx={{ color: COLOR.TENUE }} />
                 </InputAdornment>
               ),
             }}
@@ -163,13 +164,13 @@ export default function LoginPage() {
             sx={{
               py: 1.5,
               borderRadius: 2,
-              bgcolor: "#0f172a",
+              bgcolor: COLOR.TINTA,
               fontSize: "1rem",
               fontWeight: 700,
               textTransform: "none",
               transition: "0.2s",
               "&:hover": {
-                bgcolor: "#1e293b",
+                bgcolor: COLOR.TINTA_CLARA,
                 transform: "translateY(-2px)",
                 boxShadow: "0 10px 15px -3px rgba(15, 23, 42, 0.3)",
               },

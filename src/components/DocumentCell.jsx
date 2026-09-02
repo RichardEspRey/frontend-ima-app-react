@@ -8,6 +8,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
 import { CHIP_OK_SX, CHIP_DANGER_SX, ICON_BTN_SX } from '../shared/ui/estilos';
+import { COLOR } from '../shared/ui/tokens';
 
 export const DocumentCell = ({ isUploaded, docName, onUpload, onView }) => {
     return (
@@ -17,14 +18,14 @@ export const DocumentCell = ({ isUploaded, docName, onUpload, onView }) => {
                     icon={<CheckCircleIcon sx={{ fontSize: 14 }} />}
                     label="Subido"
                     size="small"
-                    sx={{ ...CHIP_OK_SX, minWidth: 92, '& .MuiChip-icon': { color: '#15803d', ml: 0.75 } }}
+                    sx={{ ...CHIP_OK_SX, minWidth: 92, '& .MuiChip-icon': { color: COLOR.EXITO, ml: 0.75 } }}
                 />
             ) : (
                 <Chip
                     icon={<ErrorOutlineIcon sx={{ fontSize: 14 }} />}
                     label="Falta"
                     size="small"
-                    sx={{ ...CHIP_DANGER_SX, minWidth: 92, '& .MuiChip-icon': { color: '#b91c1c', ml: 0.75 } }}
+                    sx={{ ...CHIP_DANGER_SX, minWidth: 92, '& .MuiChip-icon': { color: COLOR.PELIGRO, ml: 0.75 } }}
                 />
             )}
 

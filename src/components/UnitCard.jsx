@@ -5,6 +5,7 @@ import {
 import LocalGasStationIcon from '@mui/icons-material/LocalGasStation';
 import SettingsIcon from '@mui/icons-material/Settings';
 import FuelGauge from "./FuelGauge";
+import { COLOR } from "../shared/ui/tokens";
 
 const UnitCard = ({ truck, onUpdate, onConfig }) => {
     const [fuel, setFuel] = useState(truck.current_fuel);
@@ -53,8 +54,8 @@ const UnitCard = ({ truck, onUpdate, onConfig }) => {
 
             <Box sx={{ px: 2, mt: 1 }}>
                 <Box sx={{ 
-                    bgcolor: truck.trip_number ? '#e3f2fd' : '#f5f5f5', 
-                    color: truck.trip_number ? '#1565c0' : '#757575',
+                    bgcolor: truck.trip_number ? COLOR.INFO_FONDO : COLOR.LIENZO, 
+                    color: truck.trip_number ? COLOR.INFO : COLOR.APAGADO,
                     p: 0.8, borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between'
                 }}>
                     <Typography variant="caption" fontWeight={700}>
@@ -70,7 +71,7 @@ const UnitCard = ({ truck, onUpdate, onConfig }) => {
                 <FuelGauge percent={percent} value={fuel} capacity={truck.tank_capacity} />
             </Box>
 
-            <Box sx={{ bgcolor: '#fafafa', p: 2, flexGrow: 1, borderTop: '1px solid #eee' }}>
+            <Box sx={{ bgcolor: COLOR.LIENZO, p: 2, flexGrow: 1, borderTop: '1px solid #eee' }}>
                 <Box sx={{ mb: 2 }}>
                     <Stack direction="row" justifyContent="space-between" alignItems="center" mb={0.5}>
                         <Typography variant="caption" fontWeight={700} color="text.secondary">Ajuste Manual</Typography>
@@ -88,12 +89,12 @@ const UnitCard = ({ truck, onUpdate, onConfig }) => {
                             max={Number(truck.tank_capacity) || 200} 
                             onChange={handleSliderChange} 
                             size="small"
-                            sx={{ color: percent < 20 ? '#d32f2f' : '#1976d2', '& .MuiSlider-thumb': { width: 12, height: 12 } }}
+                            sx={{ color: percent < 20 ? COLOR.PELIGRO : COLOR.INFO, '& .MuiSlider-thumb': { width: 12, height: 12 } }}
                         />
                     </Stack>
                 </Box>
 
-                <Grid container spacing={1} sx={{ pt: 1, borderTop: '1px dashed #e0e0e0' }}>
+                <Grid container spacing={1} sx={{ pt: 1, borderTop: `1px dashed ${COLOR.BORDE}` }}>
                     <Grid item xs={6} sx={{ textAlign: 'center', borderRight: '1px solid #eee' }}>
                         <Typography variant="caption" color="text.secondary" display="block">Autonomía</Typography>
                         <Typography variant="body1" fontWeight={800} color="primary.main">

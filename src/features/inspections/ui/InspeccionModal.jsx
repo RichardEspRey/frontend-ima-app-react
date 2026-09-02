@@ -20,6 +20,7 @@ import {
     CARD_SX, SECTION_LABEL_SX, PAGE_OVERLINE_SX, INPUT_SX,
     GHOST_BTN_SX, DARK_BTN_SX, CHIP_SX,
 } from '../../../shared/ui/estilos';
+import { COLOR } from '../../../shared/ui/tokens';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -230,7 +231,7 @@ const InspeccionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
             showCancelButton: true,
             confirmButtonText: 'Sí, eliminar',
             cancelButtonText: 'Cancelar',
-            confirmButtonColor: '#d32f2f'
+            confirmButtonColor: COLOR.PELIGRO
         });
         if (!confirm.isConfirmed) return;
 
@@ -328,10 +329,10 @@ const InspeccionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
                         <Typography variant="overline" sx={PAGE_OVERLINE_SX}>
                             Safety · Inspecciones
                         </Typography>
-                        <Typography variant="h5" fontWeight={800} color="#0f172a" letterSpacing="-0.02em" sx={{ mt: 0.25 }}>
+                        <Typography variant="h5" fontWeight={800} color={COLOR.TINTA} letterSpacing="-0.02em" sx={{ mt: 0.25 }}>
                             {editData ? 'Editar Inspección' : 'Nueva Inspección'}
                         </Typography>
-                        <Typography variant="body2" color="#64748b" sx={{ mt: 0.5 }}>
+                        <Typography variant="body2" color={COLOR.APAGADO} sx={{ mt: 0.5 }}>
                             Captura la unidad, las violaciones detectadas y las multas.
                         </Typography>
                     </Box>
@@ -345,7 +346,7 @@ const InspeccionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
                                 deleteIcon={initialTrip ? undefined : <EditIcon sx={{ fontSize: 15 }} />}
                             />
                         )}
-                        <IconButton onClick={onClose} sx={{ color: '#64748b' }} disabled={saving}>
+                        <IconButton onClick={onClose} sx={{ color: COLOR.APAGADO }} disabled={saving}>
                             <CloseIcon />
                         </IconButton>
                     </Stack>
@@ -510,7 +511,7 @@ const InspeccionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
                                         </Typography>
                                         <Stack spacing={1.5}>
                                             {reportesList.map((reporte, index) => (
-                                                <Paper key={index} variant="outlined" sx={{ p: 1.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: '#fafafa', borderColor: '#e0e0e0' }}>
+                                                <Paper key={index} variant="outlined" sx={{ p: 1.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: COLOR.LIENZO, borderColor: COLOR.BORDE }}>
                                                     <Box sx={{ width: '100%' }}>
                                                         <Box display="flex" alignItems="center" gap={1} mb={0.5}>
                                                             <Chip 
@@ -613,11 +614,11 @@ const InspeccionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
                                     <Grid size={{ xs: 12 }}>
                                         <Box sx={{
                                             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                                            width: '100%', boxSizing: 'border-box', border: '2px dashed #90caf9',
-                                            bgcolor: '#e3f2fd', py: 4, px: 2, textAlign: 'center', borderRadius: 2,
+                                            width: '100%', boxSizing: 'border-box', border: `2px dashed ${COLOR.INFO_BORDE}`,
+                                            bgcolor: COLOR.INFO_FONDO, py: 4, px: 2, textAlign: 'center', borderRadius: 2,
                                             cursor: 'pointer', transition: '0.2s', '&:hover': { bgcolor: '#e1f5fe', borderColor: '#42a5f5' }
                                         }} component="label">
-                                            <CloudUploadIcon sx={{ fontSize: 40, color: '#1976d2', mb: 1 }} />
+                                            <CloudUploadIcon sx={{ fontSize: 40, color: COLOR.INFO, mb: 1 }} />
                                             <Typography variant="button" fontWeight={700} color="primary" sx={{ display: 'block', width: '100%' }}>
                                                 Seleccionar Archivos (PDF/IMG)
                                             </Typography>

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import Swal from "sweetalert2"
 import { notify } from "../notify"
+import { COLOR } from "../tokens"
 
 vi.mock("sweetalert2", () => ({
   default: { fire: vi.fn(() => Promise.resolve({ isConfirmed: true })) },
@@ -41,7 +42,7 @@ describe("notify", () => {
 
   it("confirmar pinta de rojo el botón por omisión, por ser destructivo", async () => {
     await notify.confirmar({ titulo: "¿Borrar?" })
-    expect(ultimaLlamada().confirmButtonColor).toBe("#d32f2f")
+    expect(ultimaLlamada().confirmButtonColor).toBe(COLOR.PELIGRO)
   })
 
   it("confirmar permite desactivar el rojo cuando no es destructivo", async () => {

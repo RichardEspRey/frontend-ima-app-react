@@ -11,6 +11,7 @@ import { selectStyles, getDocumentUrl } from '../../utils/tripFormConstants';
 import ReceiptIcon from '@mui/icons-material/Receipt';
 import { usePermisos, PERMISOS } from '../../shared/auth';
 import { urlSegura } from '../../shared/security';
+import { COLOR } from '../../shared/ui/tokens';
 
 const DocButton = ({ label, doc, onClick, disabled, apiHost }) => (
     <Box sx={{ mb: 1 }}>
@@ -28,7 +29,7 @@ const DocButton = ({ label, doc, onClick, disabled, apiHost }) => (
         </Button>
         {doc && (
             <Typography variant="caption" display="block" sx={{ mt: 0.5, fontStyle: 'italic', wordBreak: 'break-all' }}>
-                <a href={urlSegura(getDocumentUrl(doc, apiHost))} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: '#1976d2' }}>
+                <a href={urlSegura(getDocumentUrl(doc, apiHost))} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: COLOR.INFO }}>
                     {doc.fileName}
                 </a>
                 {doc.vencimiento && ` (V: ${doc.vencimiento})`}
@@ -58,8 +59,8 @@ const StageCard = ({
 
     const getHeaderInfo = () => {
         switch (etapa.stageType) {
-            case 'borderCrossing': return { label: 'Cruce Fronterizo', color: '#ff9800' };
-            case 'emptyMileage': return { label: 'Etapa Vacía', color: '#9e9e9e' };
+            case 'borderCrossing': return { label: 'Cruce Fronterizo', color: COLOR.AVISO };
+            case 'emptyMileage': return { label: 'Etapa Vacía', color: COLOR.TENUE };
             default: return { label: 'Viaje Normal', color: '#2196f3' };
         }
     };
@@ -67,9 +68,9 @@ const StageCard = ({
 
     return (
         <Paper elevation={3} sx={{ mb: 3, overflow: 'hidden', borderLeft: `6px solid ${headerInfo.color}` }}>
-            <Box sx={{ p: 2, bgcolor: '#f8f9fa', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #eee' }}>
+            <Box sx={{ p: 2, bgcolor: COLOR.LIENZO, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #eee' }}>
                 <Stack direction="row" alignItems="center" spacing={1}>
-                    <Chip label={index + 1} size="small" style={{ backgroundColor: headerInfo.color, color: '#fff', fontWeight: 'bold' }} />
+                    <Chip label={index + 1} size="small" style={{ backgroundColor: headerInfo.color, color: COLOR.BLANCO, fontWeight: 'bold' }} />
                     <Typography variant="subtitle1" fontWeight={600}>
                         {headerInfo.label}
                     </Typography>
@@ -302,7 +303,7 @@ const StageCard = ({
                         </Grid>
 
                         {Array.isArray(etapa.stops_in_transit) && etapa.stops_in_transit.length > 0 && (
-                            <Box sx={{ mt: 3, p: 2, bgcolor: '#fff3e0', borderRadius: 2 }}>
+                            <Box sx={{ mt: 3, p: 2, bgcolor: COLOR.AVISO_FONDO, borderRadius: 2 }}>
                                 <Typography variant="subtitle2" gutterBottom color="warning.dark">Paradas en Ruta ({etapa.stops_in_transit.length})</Typography>
                                 {etapa.stops_in_transit.map((stop, stopIndex) => (
                                     <Paper key={stop.stop_id || `stop-${stopIndex}`} sx={{ p: 2, mb: 1, position: 'relative' }}>

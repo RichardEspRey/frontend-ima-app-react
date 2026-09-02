@@ -18,6 +18,7 @@ import InboxOutlinedIcon from "@mui/icons-material/InboxOutlined"
 import dayjs from "dayjs"
 
 import { HEADER_CELL_SX, HEADER_ROW_SX } from "../../../shared/ui/estilos"
+import { COLOR } from "../../../shared/ui/tokens"
 
 const COLUMNAS = [
   "Operador",
@@ -59,7 +60,7 @@ export function TablaProgramaciones({
     <TableContainer
       component={Paper}
       elevation={0}
-      sx={{ border: "1px solid #e2e8f0", borderRadius: 2, overflow: "hidden" }}
+      sx={{ border: `1px solid ${COLOR.BORDE}`, borderRadius: 2, overflow: "hidden" }}
     >
       <Table size="small">
         <TableHead>
@@ -79,9 +80,9 @@ export function TablaProgramaciones({
               <TableCell colSpan={9} align="center" sx={{ py: 5 }}>
                 <CircularProgress
                   size={22}
-                  sx={{ mr: 1.5, verticalAlign: "middle", color: "#94a3b8" }}
+                  sx={{ mr: 1.5, verticalAlign: "middle", color: COLOR.TENUE }}
                 />
-                <Typography component="span" color="#64748b" fontWeight={500}>
+                <Typography component="span" color={COLOR.APAGADO} fontWeight={500}>
                   Cargando programaciones...
                 </Typography>
               </TableCell>
@@ -89,8 +90,8 @@ export function TablaProgramaciones({
           ) : programaciones.length === 0 ? (
             <TableRow>
               <TableCell colSpan={9} align="center" sx={{ py: 6 }}>
-                <InboxOutlinedIcon sx={{ fontSize: 34, color: "#cbd5e1", mb: 1 }} />
-                <Typography variant="body2" color="#94a3b8" fontWeight={500}>
+                <InboxOutlinedIcon sx={{ fontSize: 34, color: COLOR.BORDE_FUERTE, mb: 1 }} />
+                <Typography variant="body2" color={COLOR.TENUE} fontWeight={500}>
                   No hay viajes programados. Usa &quot;Programar Viaje&quot; para agregar uno.
                 </Typography>
               </TableCell>
@@ -106,14 +107,14 @@ export function TablaProgramaciones({
               >
                 <TableCell sx={{ fontWeight: 600 }}>{programacion.driver_nombre || "-"}</TableCell>
                 <TableCell>{programacion.truck_unidad || "-"}</TableCell>
-                <TableCell sx={{ color: "#64748b" }}>
+                <TableCell sx={{ color: COLOR.APAGADO }}>
                   {programacion.dist_nv_l != null ? `${programacion.dist_nv_l} Km` : "No obtenido"}
                 </TableCell>
                 <TableCell>{programacion.caja_numero || "-"}</TableCell>
                 <TableCell>{programacion.caja_externa_numero || "-"}</TableCell>
                 <TableCell>{programacion.nombre_compania || "-"}</TableCell>
                 <TableCell>{programacion.destino || "-"}</TableCell>
-                <TableCell sx={{ fontVariantNumeric: "tabular-nums", color: "#64748b" }}>
+                <TableCell sx={{ fontVariantNumeric: "tabular-nums", color: COLOR.APAGADO }}>
                   {programacion.salida
                     ? dayjs(programacion.salida).format("DD/MM/YYYY HH:mm")
                     : "-"}
@@ -138,7 +139,7 @@ export function TablaProgramaciones({
                         evento.stopPropagation()
                         onEditar(programacion)
                       }}
-                      sx={{ "&:hover": { bgcolor: "#f1f5f9" } }}
+                      sx={{ "&:hover": { bgcolor: COLOR.RELLENO } }}
                     >
                       <EditIcon fontSize="small" />
                     </IconButton>
@@ -151,7 +152,7 @@ export function TablaProgramaciones({
                         evento.stopPropagation()
                         onEliminar(programacion.id)
                       }}
-                      sx={{ "&:hover": { bgcolor: "#fef2f2" } }}
+                      sx={{ "&:hover": { bgcolor: COLOR.PELIGRO_FONDO } }}
                     >
                       <DeleteIcon fontSize="small" />
                     </IconButton>

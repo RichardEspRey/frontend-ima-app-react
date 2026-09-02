@@ -16,6 +16,7 @@ import {
 import CloudUploadIcon from "@mui/icons-material/CloudUpload"
 import dayjs from "dayjs"
 import { archivosDelEvento, GRUPOS_ARCHIVO } from "../../../shared/security"
+import { COLOR } from "../../../shared/ui/tokens"
 
 const CAMPOS = [
   { clave: "fecha", etiqueta: "Fecha y hora", tipo: "datetime-local", ancho: 12 },
@@ -88,8 +89,8 @@ export function ModalDieselManual({
     <Dialog open={abierto} onClose={onCerrar} maxWidth="md" fullWidth scroll="paper">
       <DialogTitle
         sx={{
-          bgcolor: "#f8f9fa",
-          borderBottom: "1px solid #e0e0e0",
+          bgcolor: COLOR.LIENZO,
+          borderBottom: `1px solid ${COLOR.BORDE}`,
           fontWeight: 800,
           color: "primary.main",
           py: 2,
@@ -98,7 +99,7 @@ export function ModalDieselManual({
         Registrar carga de diesel a mano
       </DialogTitle>
 
-      <DialogContent sx={{ p: { xs: 2, md: 4 }, bgcolor: "#f4f6f8" }}>
+      <DialogContent sx={{ p: { xs: 2, md: 4 }, bgcolor: COLOR.LIENZO }}>
         <Grid container spacing={2} sx={{ mt: 0 }}>
           {CAMPOS.map((campo) => (
             <Grid size={{ xs: 12, sm: campo.ancho }} key={campo.clave}>
@@ -161,7 +162,7 @@ export function ModalDieselManual({
         </Grid>
       </DialogContent>
 
-      <DialogActions sx={{ p: 3, bgcolor: "#f8f9fa", borderTop: "1px solid #e0e0e0" }}>
+      <DialogActions sx={{ p: 3, bgcolor: COLOR.LIENZO, borderTop: `1px solid ${COLOR.BORDE}` }}>
         <Button onClick={onCerrar} color="inherit">
           Cancelar
         </Button>

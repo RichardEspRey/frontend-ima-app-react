@@ -1,7 +1,7 @@
 :root {
-    --primary-blue: #3C48E1;
-    --text-color-light: #ffffff;
-    --text-color-secondary: #e0e0e0; 
+    --primary-blue: var(--ima-marca);
+    --text-color-light: var(--ima-blanco);
+    --text-color-secondary: var(--ima-borde); 
     --header-height: 55px; 
 }
 
@@ -37,7 +37,7 @@
     width: 32px; 
     height: 32px;
     border-radius: 50%;
-    background-color: #ffffff; 
+    background-color: var(--ima-blanco); 
     display: flex;
     justify-content: center;
     align-items: center;
@@ -47,7 +47,7 @@
 .userInitial {
     font-weight: 700;
     font-size: 14px;
-    color: #333; 
+    color: var(--ima-texto); 
 }
   
 .userName {

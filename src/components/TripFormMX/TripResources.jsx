@@ -2,6 +2,7 @@ import React from 'react';
 import { Box, Typography, Grid, Stack, Button, Paper, Divider, InputLabel } from '@mui/material';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import SelectWrapper from '../SelectWrapper';
+import { COLOR } from '../../shared/ui/tokens';
 
 const TripResources = ({ 
     formData, setForm, 
@@ -12,7 +13,7 @@ const TripResources = ({
     const { activeDrivers, activeTrucks, activeTrailers, activeExternalTrailers } = options;
 
     return (
-        <Paper elevation={3} sx={{ p: 3, mb: 4, borderRadius: 2, borderTop: '4px solid #1976d2' }}>
+        <Paper elevation={3} sx={{ p: 3, mb: 4, borderRadius: 2, borderTop: `4px solid ${COLOR.INFO}` }}>
             <Typography variant="h6" fontWeight={700} gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <LocalShippingIcon color="primary" /> Recursos del Viaje
             </Typography>

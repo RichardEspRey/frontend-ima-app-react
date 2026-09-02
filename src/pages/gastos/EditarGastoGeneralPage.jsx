@@ -30,6 +30,7 @@ import {
   customSelectStyles, DATEPICKER_CSS, money,
 } from '../../features/expense-manager/estilos';
 import { archivoDelEvento, GRUPOS_ARCHIVO } from '../../shared/security';
+import { COLOR, TINTE } from '../../shared/ui/tokens';
 
 // La app móvil puede subir el "ticket" como PDF escaneado en vez de imagen
 // (ej. archivos "scan_*.pdf"), no solo JPG/PNG. Un <img> no puede mostrar un PDF.
@@ -255,14 +256,14 @@ const ExpenseEdit = () => {
 
   if (loading) {
     return (
-      <Box sx={{ p: { xs: 2, md: 4 }, minHeight: '100vh', bgcolor: '#f8fafc', display: 'flex', justifyContent: 'center', alignItems: 'flex-start', pt: 12 }}>
+      <Box sx={{ p: { xs: 2, md: 4 }, minHeight: '100vh', bgcolor: COLOR.LIENZO, display: 'flex', justifyContent: 'center', alignItems: 'flex-start', pt: 12 }}>
         <CircularProgress />
       </Box>
     );
   }
 
   return (
-    <Box sx={{ p: { xs: 2, md: 4 }, minHeight: '100vh', bgcolor: '#f8fafc' }}>
+    <Box sx={{ p: { xs: 2, md: 4 }, minHeight: '100vh', bgcolor: COLOR.LIENZO }}>
       <style>{DATEPICKER_CSS}</style>
 
       <Stack direction="row" justifyContent="space-between" alignItems="flex-end" mb={4} flexWrap="wrap" gap={2}>
@@ -271,7 +272,7 @@ const ExpenseEdit = () => {
             Gastos · Edición
           </Typography>
           <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mt: 0.25 }}>
-            <Typography variant="h4" fontWeight={800} color="#0f172a" letterSpacing="-0.02em">
+            <Typography variant="h4" fontWeight={800} color={COLOR.TINTA} letterSpacing="-0.02em">
               Gasto #{id_gasto}
             </Typography>
             <Chip
@@ -279,13 +280,13 @@ const ExpenseEdit = () => {
               label={esMXN ? 'MXN' : 'USD'}
               sx={{
                 height: 22, fontWeight: 700, fontSize: '0.7rem', letterSpacing: '0.04em',
-                bgcolor: esMXN ? '#f0fdfa' : '#eef2ff',
-                color: esMXN ? '#0f766e' : '#4338ca',
+                bgcolor: esMXN ? TINTE.TEAL.fondo : TINTE.INDIGO.fondo,
+                color: esMXN ? TINTE.TEAL.texto : TINTE.INDIGO.texto,
                 border: `1px solid ${esMXN ? '#99f6e4' : '#e0e7ff'}`,
               }}
             />
           </Stack>
-          <Typography variant="body2" color="#64748b" sx={{ mt: 0.5 }}>
+          <Typography variant="body2" color={COLOR.APAGADO} sx={{ mt: 0.5 }}>
             Actualiza los datos generales, los conceptos y los documentos del gasto.
           </Typography>
         </Box>
@@ -298,7 +299,7 @@ const ExpenseEdit = () => {
             variant="contained"
             onClick={handleSubmit}
             disabled={saving}
-            startIcon={saving ? <CircularProgress size={18} sx={{ color: '#fff' }} /> : <SaveIcon />}
+            startIcon={saving ? <CircularProgress size={18} sx={{ color: COLOR.BLANCO }} /> : <SaveIcon />}
             sx={DARK_BTN_SX}
           >
             {saving ? 'Guardando…' : 'Guardar Cambios'}
@@ -378,7 +379,7 @@ const ExpenseEdit = () => {
                           <Button
                             size="small"
                             onClick={traerTasaDelGasto}
-                            sx={{ textTransform: 'none', fontWeight: 700, minWidth: 0, px: 1, color: '#334155' }}
+                            sx={{ textTransform: 'none', fontWeight: 700, minWidth: 0, px: 1, color: COLOR.TEXTO }}
                           >
                             Buscar
                           </Button>
@@ -404,11 +405,11 @@ const ExpenseEdit = () => {
             </Grid>
             {esMXN && (
               faltaTasa ? (
-                <Typography variant="caption" sx={{ display: 'block', mt: 2, color: '#b91c1c', fontWeight: 600 }}>
+                <Typography variant="caption" sx={{ display: 'block', mt: 2, color: COLOR.PELIGRO, fontWeight: 600 }}>
                   Sin tipo de cambio no se puede convertir a dólares: el Total (USD) que ves es el monto en pesos, no una conversión. Pulsa &quot;Buscar&quot; para traer la tasa de la fecha del gasto, o escríbela.
                 </Typography>
               ) : (
-                <Typography variant="caption" color="#94a3b8" sx={{ display: 'block', mt: 2 }}>
+                <Typography variant="caption" color={COLOR.TENUE} sx={{ display: 'block', mt: 2 }}>
                   El total en USD se recalcula solo al cambiar el monto original o el tipo de cambio; también puedes escribirlo a mano.
                 </Typography>
               )
@@ -419,7 +420,7 @@ const ExpenseEdit = () => {
             <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
               <Box>
                 <Typography variant="overline" sx={SECTION_LABEL_SX}>Conceptos</Typography>
-                <Typography variant="body2" color="#64748b">
+                <Typography variant="body2" color={COLOR.APAGADO}>
                   {expenseDetails.length} concepto{expenseDetails.length === 1 ? '' : 's'} en este gasto
                 </Typography>
               </Box>
@@ -430,13 +431,13 @@ const ExpenseEdit = () => {
 
             {expenseDetails.length === 0 ? (
               <Box sx={{
-                py: 6, textAlign: 'center', borderRadius: 2, border: '1px dashed #cbd5e1', bgcolor: '#fafbfc',
+                py: 6, textAlign: 'center', borderRadius: 2, border: `1px dashed ${COLOR.BORDE_FUERTE}`, bgcolor: COLOR.CABECERA,
               }}>
-                <ReceiptLongOutlinedIcon sx={{ fontSize: 28, color: '#cbd5e1' }} />
-                <Typography variant="body2" color="#64748b" fontWeight={600} sx={{ mt: 1 }}>
+                <ReceiptLongOutlinedIcon sx={{ fontSize: 28, color: COLOR.BORDE_FUERTE }} />
+                <Typography variant="body2" color={COLOR.APAGADO} fontWeight={600} sx={{ mt: 1 }}>
                   Este gasto no tiene conceptos.
                 </Typography>
-                <Typography variant="caption" color="#94a3b8">Agrega al menos uno antes de guardar.</Typography>
+                <Typography variant="caption" color={COLOR.TENUE}>Agrega al menos uno antes de guardar.</Typography>
               </Box>
             ) : (
               <Stack spacing={2}>
@@ -457,12 +458,12 @@ const ExpenseEdit = () => {
                     <Paper
                       key={detail.id}
                       elevation={0}
-                      sx={{ p: 2.5, borderRadius: 2, border: '1px solid #e2e8f0', bgcolor: '#fafbfc' }}
+                      sx={{ p: 2.5, borderRadius: 2, border: `1px solid ${COLOR.BORDE}`, bgcolor: COLOR.CABECERA }}
                     >
                       <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1.5 }}>
                         <Stack direction="row" alignItems="center" spacing={1}>
                           <Box sx={{
-                            width: 22, height: 22, borderRadius: '50%', bgcolor: '#0f172a', color: '#fff',
+                            width: 22, height: 22, borderRadius: '50%', bgcolor: COLOR.TINTA, color: COLOR.BLANCO,
                             fontSize: '0.7rem', fontWeight: 700,
                             display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                           }}>
@@ -471,14 +472,14 @@ const ExpenseEdit = () => {
                           <Typography variant="caption" sx={SECTION_LABEL_SX}>Concepto</Typography>
                         </Stack>
                         <Stack direction="row" alignItems="center" spacing={1}>
-                          <Typography variant="body2" fontWeight={700} color="#0f172a">
+                          <Typography variant="body2" fontWeight={700} color={COLOR.TINTA}>
                             {money(lineTotal)}
                           </Typography>
                           <Tooltip title="Eliminar concepto">
                             <IconButton
                               size="small"
                               onClick={() => handleRemoveDetail(detail.id)}
-                              sx={{ color: '#94a3b8', '&:hover': { color: '#dc2626', bgcolor: '#fef2f2' } }}
+                              sx={{ color: COLOR.TENUE, '&:hover': { color: COLOR.PELIGRO, bgcolor: COLOR.PELIGRO_FONDO } }}
                             >
                               <DeleteOutlineIcon fontSize="small" />
                             </IconButton>
@@ -486,7 +487,7 @@ const ExpenseEdit = () => {
                         </Stack>
                       </Stack>
 
-                      <Divider sx={{ borderColor: '#e2e8f0', mb: 2 }} />
+                      <Divider sx={{ borderColor: COLOR.BORDE, mb: 2 }} />
 
                       <Grid container spacing={2}>
                         <Grid
@@ -552,7 +553,7 @@ const ExpenseEdit = () => {
                             fullWidth size="small" placeholder="Descripción del artículo o servicio"
                             value={detail.itemDescription}
                             onChange={e => handleDetailChange(detail.id, 'itemDescription', e.target.value)}
-                            InputProps={{ sx: { borderRadius: 2, bgcolor: '#fff' } }}
+                            InputProps={{ sx: { borderRadius: 2, bgcolor: COLOR.BLANCO } }}
                           />
                         </Grid>
                         <Grid
@@ -565,7 +566,7 @@ const ExpenseEdit = () => {
                             fullWidth size="small" type="number"
                             value={detail.price}
                             onChange={e => handleDetailChange(detail.id, 'price', e.target.value)}
-                            InputProps={{ sx: { borderRadius: 2, bgcolor: '#fff' } }}
+                            InputProps={{ sx: { borderRadius: 2, bgcolor: COLOR.BLANCO } }}
                           />
                         </Grid>
                         <Grid
@@ -578,7 +579,7 @@ const ExpenseEdit = () => {
                             fullWidth size="small" type="number"
                             value={detail.quantity}
                             onChange={e => handleDetailChange(detail.id, 'quantity', e.target.value)}
-                            InputProps={{ sx: { borderRadius: 2, bgcolor: '#fff' } }}
+                            InputProps={{ sx: { borderRadius: 2, bgcolor: COLOR.BLANCO } }}
                           />
                         </Grid>
                       </Grid>
@@ -599,44 +600,44 @@ const ExpenseEdit = () => {
             <Paper elevation={0} sx={{ ...CARD_SX, mb: 3 }}>
               <Typography variant="overline" sx={SECTION_LABEL_SX}>Resumen</Typography>
 
-              <Typography variant="h3" fontWeight={800} color="#0f172a" letterSpacing="-0.03em" sx={{ mt: 1 }}>
+              <Typography variant="h3" fontWeight={800} color={COLOR.TINTA} letterSpacing="-0.03em" sx={{ mt: 1 }}>
                 {money(totalAmount)}
               </Typography>
-              <Typography variant="caption" color="#94a3b8">Total capturado (USD)</Typography>
+              <Typography variant="caption" color={COLOR.TENUE}>Total capturado (USD)</Typography>
 
-              <Divider sx={{ borderColor: '#f1f5f9', my: 2 }} />
+              <Divider sx={{ borderColor: COLOR.RELLENO, my: 2 }} />
 
               <Stack spacing={1.25}>
                 <Stack direction="row" justifyContent="space-between">
-                  <Typography variant="body2" color="#64748b">País</Typography>
-                  <Typography variant="body2" fontWeight={600} color="#0f172a">{country?.label || '—'}</Typography>
+                  <Typography variant="body2" color={COLOR.APAGADO}>País</Typography>
+                  <Typography variant="body2" fontWeight={600} color={COLOR.TINTA}>{country?.label || '—'}</Typography>
                 </Stack>
                 <Stack direction="row" justifyContent="space-between">
-                  <Typography variant="body2" color="#64748b">Fecha del gasto</Typography>
-                  <Typography variant="body2" fontWeight={600} color="#0f172a">{expenseDate.toLocaleDateString()}</Typography>
+                  <Typography variant="body2" color={COLOR.APAGADO}>Fecha del gasto</Typography>
+                  <Typography variant="body2" fontWeight={600} color={COLOR.TINTA}>{expenseDate.toLocaleDateString()}</Typography>
                 </Stack>
                 <Stack direction="row" justifyContent="space-between">
-                  <Typography variant="body2" color="#64748b">Monto original</Typography>
-                  <Typography variant="body2" fontWeight={600} color={originalAmount === '' ? '#cbd5e1' : '#0f172a'}>
+                  <Typography variant="body2" color={COLOR.APAGADO}>Monto original</Typography>
+                  <Typography variant="body2" fontWeight={600} color={originalAmount === '' ? COLOR.BORDE_FUERTE : COLOR.TINTA}>
                     {originalAmount === ''
                       ? 'Sin registrar'
                       : `${new Intl.NumberFormat('en-US', { minimumFractionDigits: 2 }).format(Number(originalAmount) || 0)} ${esMXN ? 'MXN' : 'USD'}`}
                   </Typography>
                 </Stack>
                 <Stack direction="row" justifyContent="space-between">
-                  <Typography variant="body2" color="#64748b">Conceptos</Typography>
-                  <Typography variant="body2" fontWeight={600} color="#0f172a">{expenseDetails.length}</Typography>
+                  <Typography variant="body2" color={COLOR.APAGADO}>Conceptos</Typography>
+                  <Typography variant="body2" fontWeight={600} color={COLOR.TINTA}>{expenseDetails.length}</Typography>
                 </Stack>
                 <Stack direction="row" justifyContent="space-between">
-                  <Typography variant="body2" color="#64748b">Suma de conceptos</Typography>
-                  <Typography variant="body2" fontWeight={600} color="#0f172a">
+                  <Typography variant="body2" color={COLOR.APAGADO}>Suma de conceptos</Typography>
+                  <Typography variant="body2" fontWeight={600} color={COLOR.TINTA}>
                     {new Intl.NumberFormat('en-US', { minimumFractionDigits: 2 }).format(detailsSum)}
                   </Typography>
                 </Stack>
               </Stack>
 
               {esMXN && (
-                <Typography variant="caption" color="#94a3b8" sx={{ display: 'block', mt: 2 }}>
+                <Typography variant="caption" color={COLOR.TENUE} sx={{ display: 'block', mt: 2 }}>
                   Este gasto se capturó en pesos: los precios de los conceptos están en MXN y el total en USD.
                 </Typography>
               )}
@@ -650,21 +651,21 @@ const ExpenseEdit = () => {
                 {files.facturaPdf ? (
                   <Paper
                     elevation={0}
-                    sx={{ p: 1.25, borderRadius: 2, border: '1px solid #e2e8f0', bgcolor: '#fafbfc', display: 'flex', alignItems: 'center', gap: 1 }}
+                    sx={{ p: 1.25, borderRadius: 2, border: `1px solid ${COLOR.BORDE}`, bgcolor: COLOR.CABECERA, display: 'flex', alignItems: 'center', gap: 1 }}
                   >
-                    <InsertDriveFileOutlinedIcon sx={{ fontSize: 20, color: '#94a3b8' }} />
-                    <Typography variant="caption" noWrap sx={{ flexGrow: 1, color: '#334155' }} title={files.facturaPdf.name}>
+                    <InsertDriveFileOutlinedIcon sx={{ fontSize: 20, color: COLOR.TENUE }} />
+                    <Typography variant="caption" noWrap sx={{ flexGrow: 1, color: COLOR.TEXTO }} title={files.facturaPdf.name}>
                       {files.facturaPdf.name || 'Archivo actual'}
                     </Typography>
                     {files.facturaPdf.url && (
                       <Button size="small" href={urlSegura(files.facturaPdf.url)} target="_blank" rel="noopener noreferrer"
-                        sx={{ textTransform: 'none', fontWeight: 700, color: '#334155', minWidth: 0 }}>
+                        sx={{ textTransform: 'none', fontWeight: 700, color: COLOR.TEXTO, minWidth: 0 }}>
                         Ver
                       </Button>
                     )}
                     <Tooltip title="Quitar archivo">
                       <IconButton size="small" onClick={() => handleRemoveFile('facturaPdf')}
-                        sx={{ color: '#94a3b8', '&:hover': { color: '#dc2626', bgcolor: '#fef2f2' } }}>
+                        sx={{ color: COLOR.TENUE, '&:hover': { color: COLOR.PELIGRO, bgcolor: COLOR.PELIGRO_FONDO } }}>
                         <DeleteOutlineIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>
@@ -685,7 +686,7 @@ const ExpenseEdit = () => {
                     ? files.ticketJpg.type?.startsWith('image/')
                     : isImageUrl(ticketUrl);
                   return (
-                    <Paper elevation={0} sx={{ p: 1.25, borderRadius: 2, border: '1px solid #e2e8f0', bgcolor: '#fafbfc' }}>
+                    <Paper elevation={0} sx={{ p: 1.25, borderRadius: 2, border: `1px solid ${COLOR.BORDE}`, bgcolor: COLOR.CABECERA }}>
                       {ticketIsImage ? (
                         <PhotoProvider>
                           <PhotoView src={ticketUrl}>
@@ -699,15 +700,15 @@ const ExpenseEdit = () => {
                       ) : (
                         <Box sx={{
                           height: 160, display: 'flex', flexDirection: 'column', alignItems: 'center',
-                          justifyContent: 'center', gap: 1, bgcolor: '#fff', borderRadius: 1.5, border: '1px dashed #cbd5e1',
+                          justifyContent: 'center', gap: 1, bgcolor: COLOR.BLANCO, borderRadius: 1.5, border: `1px dashed ${COLOR.BORDE_FUERTE}`,
                         }}>
-                          <InsertDriveFileOutlinedIcon sx={{ fontSize: 30, color: '#94a3b8' }} />
-                          <Typography variant="caption" color="#64748b" noWrap sx={{ maxWidth: '90%' }}>
+                          <InsertDriveFileOutlinedIcon sx={{ fontSize: 30, color: COLOR.TENUE }} />
+                          <Typography variant="caption" color={COLOR.APAGADO} noWrap sx={{ maxWidth: '90%' }}>
                             {files.ticketJpg.name || 'Documento'}
                           </Typography>
                           {ticketUrl && (
                             <Button size="small" href={urlSegura(ticketUrl)} target="_blank" rel="noopener noreferrer"
-                              sx={{ textTransform: 'none', fontWeight: 700, color: '#334155' }}>
+                              sx={{ textTransform: 'none', fontWeight: 700, color: COLOR.TEXTO }}>
                               Ver documento
                             </Button>
                           )}
@@ -716,7 +717,7 @@ const ExpenseEdit = () => {
                       <Button
                         size="small" fullWidth onClick={() => handleRemoveFile('ticketJpg')}
                         startIcon={<DeleteOutlineIcon fontSize="small" />}
-                        sx={{ mt: 1, textTransform: 'none', fontWeight: 600, color: '#64748b', '&:hover': { color: '#dc2626', bgcolor: '#fef2f2' } }}
+                        sx={{ mt: 1, textTransform: 'none', fontWeight: 600, color: COLOR.APAGADO, '&:hover': { color: COLOR.PELIGRO, bgcolor: COLOR.PELIGRO_FONDO } }}
                       >
                         Quitar
                       </Button>

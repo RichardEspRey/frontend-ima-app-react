@@ -27,6 +27,7 @@ import {
     SECTION_LABEL_SX, CARD_SX, DARK_BTN_SX, GHOST_BTN_SX, INPUT_SX,
     customSelectStyles, DATEPICKER_CSS, money,
 } from '../estilos';
+import { COLOR } from '../../../shared/ui/tokens';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -223,26 +224,26 @@ const ExpenseModal = ({ open, onClose, onSuccess }) => {
         >
             <style>{DATEPICKER_CSS}</style>
 
-            <DialogTitle sx={{ bgcolor: '#fff', borderBottom: '1px solid #e2e8f0', px: { xs: 2, md: 4 }, py: 2.5 }}>
+            <DialogTitle sx={{ bgcolor: COLOR.BLANCO, borderBottom: `1px solid ${COLOR.BORDE}`, px: { xs: 2, md: 4 }, py: 2.5 }}>
                 <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
                     <Box>
                         <Typography variant="overline" sx={{ ...SECTION_LABEL_SX, letterSpacing: '0.12em', fontSize: '0.7rem', lineHeight: 1 }}>
                             Gastos · Nuevo
                         </Typography>
-                        <Typography variant="h5" fontWeight={800} color="#0f172a" letterSpacing="-0.02em" sx={{ mt: 0.25 }}>
+                        <Typography variant="h5" fontWeight={800} color={COLOR.TINTA} letterSpacing="-0.02em" sx={{ mt: 0.25 }}>
                             Nuevo Gasto
                         </Typography>
-                        <Typography variant="body2" color="#64748b" sx={{ mt: 0.5 }}>
+                        <Typography variant="body2" color={COLOR.APAGADO} sx={{ mt: 0.5 }}>
                             Captura los datos generales, los conceptos y adjunta los documentos.
                         </Typography>
                     </Box>
-                    <IconButton onClick={onClose} sx={{ color: '#64748b' }} disabled={saving}>
+                    <IconButton onClick={onClose} sx={{ color: COLOR.APAGADO }} disabled={saving}>
                         <CloseIcon />
                     </IconButton>
                 </Stack>
             </DialogTitle>
 
-            <DialogContent sx={{ bgcolor: '#f8fafc', p: { xs: 2, md: 4 } }}>
+            <DialogContent sx={{ bgcolor: COLOR.LIENZO, p: { xs: 2, md: 4 } }}>
                 <Grid container spacing={3}>
                     <Grid
                         size={{
@@ -317,7 +318,7 @@ const ExpenseModal = ({ open, onClose, onSuccess }) => {
                                         md: 4
                                     }}>
                                     <FieldLabel>Total Calculado (USD)</FieldLabel>
-                                    <TextField fullWidth value={money(totalAmount)} size="small" InputProps={{ readOnly: true, sx: { ...INPUT_SX, bgcolor: '#f8fafc' } }} />
+                                    <TextField fullWidth value={money(totalAmount)} size="small" InputProps={{ readOnly: true, sx: { ...INPUT_SX, bgcolor: COLOR.LIENZO } }} />
                                 </Grid>
                             </Grid>
                         </Paper>
@@ -326,7 +327,7 @@ const ExpenseModal = ({ open, onClose, onSuccess }) => {
                             <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
                                 <Box>
                                     <Typography variant="overline" sx={SECTION_LABEL_SX}>Conceptos</Typography>
-                                    <Typography variant="body2" color="#64748b">
+                                    <Typography variant="body2" color={COLOR.APAGADO}>
                                         {expenseDetails.length} concepto{expenseDetails.length === 1 ? '' : 's'} en este gasto
                                     </Typography>
                                 </Box>
@@ -347,7 +348,7 @@ const ExpenseModal = ({ open, onClose, onSuccess }) => {
                                     else if (hasCategories) mdSelectSize = 6;
 
                                     return (
-                                        <Paper key={detail.id} elevation={0} sx={{ p: 2, bgcolor: '#fafbfc', borderRadius: 2, border: '1px solid #e2e8f0' }}>
+                                        <Paper key={detail.id} elevation={0} sx={{ p: 2, bgcolor: COLOR.CABECERA, borderRadius: 2, border: `1px solid ${COLOR.BORDE}` }}>
                                             <Grid container spacing={2} alignItems="center">
                                                 
                                                 <Grid
@@ -429,8 +430,8 @@ const ExpenseModal = ({ open, onClose, onSuccess }) => {
                                                         <IconButton
                                                             onClick={() => handleRemoveDetail(detail.id)}
                                                             sx={{
-                                                                color: '#b91c1c', border: '1px solid #fecaca', borderRadius: 1.5,
-                                                                '&:hover': { bgcolor: '#b91c1c', color: '#fff', borderColor: '#b91c1c' },
+                                                                color: COLOR.PELIGRO, border: `1px solid ${COLOR.PELIGRO_BORDE}`, borderRadius: 1.5,
+                                                                '&:hover': { bgcolor: COLOR.PELIGRO, color: COLOR.BLANCO, borderColor: COLOR.PELIGRO },
                                                             }}
                                                         >
                                                             <DeleteOutlineIcon fontSize="small" />
@@ -442,12 +443,12 @@ const ExpenseModal = ({ open, onClose, onSuccess }) => {
                                     );
                                 })}
                                 {expenseDetails.length === 0 && (
-                                    <Box sx={{ py: 6, textAlign: 'center', borderRadius: 2, border: '1px dashed #cbd5e1', bgcolor: '#fafbfc' }}>
-                                        <ReceiptLongOutlinedIcon sx={{ fontSize: 28, color: '#cbd5e1' }} />
-                                        <Typography variant="body2" color="#64748b" fontWeight={600} sx={{ mt: 1 }}>
+                                    <Box sx={{ py: 6, textAlign: 'center', borderRadius: 2, border: `1px dashed ${COLOR.BORDE_FUERTE}`, bgcolor: COLOR.CABECERA }}>
+                                        <ReceiptLongOutlinedIcon sx={{ fontSize: 28, color: COLOR.BORDE_FUERTE }} />
+                                        <Typography variant="body2" color={COLOR.APAGADO} fontWeight={600} sx={{ mt: 1 }}>
                                             Este gasto no tiene conceptos.
                                         </Typography>
-                                        <Typography variant="caption" color="#94a3b8">Agrega al menos uno antes de guardar.</Typography>
+                                        <Typography variant="caption" color={COLOR.TENUE}>Agrega al menos uno antes de guardar.</Typography>
                                     </Box>
                                 )}
                             </Stack>
@@ -464,45 +465,45 @@ const ExpenseModal = ({ open, onClose, onSuccess }) => {
 
                             <Stack spacing={1} sx={{ mt: 1 }}>
                                 <Stack direction="row" justifyContent="space-between">
-                                    <Typography variant="body2" color="#64748b">País</Typography>
-                                    <Typography variant="body2" color="#334155" fontWeight={600}>{country?.label || '—'}</Typography>
+                                    <Typography variant="body2" color={COLOR.APAGADO}>País</Typography>
+                                    <Typography variant="body2" color={COLOR.TEXTO} fontWeight={600}>{country?.label || '—'}</Typography>
                                 </Stack>
                                 <Stack direction="row" justifyContent="space-between">
-                                    <Typography variant="body2" color="#64748b">Fecha de ticket</Typography>
-                                    <Typography variant="body2" color="#334155" fontWeight={600}>{ticketDate.toLocaleDateString()}</Typography>
+                                    <Typography variant="body2" color={COLOR.APAGADO}>Fecha de ticket</Typography>
+                                    <Typography variant="body2" color={COLOR.TEXTO} fontWeight={600}>{ticketDate.toLocaleDateString()}</Typography>
                                 </Stack>
                             </Stack>
 
-                            <Divider sx={{ my: 2, borderColor: '#f1f5f9' }} />
+                            <Divider sx={{ my: 2, borderColor: COLOR.RELLENO }} />
 
-                            <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, letterSpacing: '0.06em' }}>
+                            <Typography variant="caption" sx={{ color: COLOR.TENUE, fontWeight: 700, letterSpacing: '0.06em' }}>
                                 TOTAL (USD)
                             </Typography>
-                            <Typography variant="h4" fontWeight={800} color="#0f172a" letterSpacing="-0.02em">
+                            <Typography variant="h4" fontWeight={800} color={COLOR.TINTA} letterSpacing="-0.02em">
                                 {money(totalAmount)}
                             </Typography>
 
-                            <Divider sx={{ my: 2, borderColor: '#f1f5f9' }} />
+                            <Divider sx={{ my: 2, borderColor: COLOR.RELLENO }} />
 
                             <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
                                 <Typography variant="overline" sx={SECTION_LABEL_SX}>Conceptos</Typography>
                                 <Chip
                                     size="small"
                                     label={expenseDetails.length}
-                                    sx={{ height: 18, fontSize: '0.68rem', fontWeight: 700, bgcolor: '#e2e8f0', color: '#475569' }}
+                                    sx={{ height: 18, fontSize: '0.68rem', fontWeight: 700, bgcolor: COLOR.BORDE, color: COLOR.TEXTO_SUAVE }}
                                 />
                             </Stack>
 
                             {expenseDetails.length === 0 ? (
-                                <Typography variant="body2" color="#94a3b8">Sin conceptos todavía.</Typography>
+                                <Typography variant="body2" color={COLOR.TENUE}>Sin conceptos todavía.</Typography>
                             ) : (
                                 <Stack spacing={0.75}>
                                     {expenseDetails.map((d, i) => (
                                         <Stack key={d.id || i} direction="row" justifyContent="space-between" spacing={1}>
-                                            <Typography variant="body2" color="#334155" noWrap sx={{ maxWidth: 170 }}>
+                                            <Typography variant="body2" color={COLOR.TEXTO} noWrap sx={{ maxWidth: 170 }}>
                                                 {d.itemDescription || 'Concepto'}
                                             </Typography>
-                                            <Typography variant="body2" color="#64748b">×{d.quantity || 0}</Typography>
+                                            <Typography variant="body2" color={COLOR.APAGADO}>×{d.quantity || 0}</Typography>
                                         </Stack>
                                     ))}
                                 </Stack>
@@ -513,9 +514,9 @@ const ExpenseModal = ({ open, onClose, onSuccess }) => {
                             <Typography variant="overline" sx={{ ...SECTION_LABEL_SX, display: 'block', mb: 1.5 }}>Documentos</Typography>
                             <Stack spacing={2}>
                                 {files.facturaPdf ? (
-                                    <Paper elevation={0} sx={{ p: 1.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between', bgcolor: '#fafbfc', border: '1px solid #e2e8f0', borderRadius: 2 }}>
-                                        <Typography variant="caption" fontWeight={600} color="#334155" noWrap sx={{ maxWidth: 180 }}>{files.facturaPdf.name}</Typography>
-                                        <IconButton size="small" onClick={() => handleRemoveFile('facturaPdf')} sx={{ color: '#b91c1c' }}><DeleteOutlineIcon fontSize="small"/></IconButton>
+                                    <Paper elevation={0} sx={{ p: 1.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between', bgcolor: COLOR.CABECERA, border: `1px solid ${COLOR.BORDE}`, borderRadius: 2 }}>
+                                        <Typography variant="caption" fontWeight={600} color={COLOR.TEXTO} noWrap sx={{ maxWidth: 180 }}>{files.facturaPdf.name}</Typography>
+                                        <IconButton size="small" onClick={() => handleRemoveFile('facturaPdf')} sx={{ color: COLOR.PELIGRO }}><DeleteOutlineIcon fontSize="small"/></IconButton>
                                     </Paper>
                                 ) : (
                                     <Button variant="outlined" fullWidth startIcon={<AttachFileIcon/>} onClick={() => setModalState({ isOpen: true, fileType: 'facturaPdf' })} sx={GHOST_BTN_SX}>
@@ -524,9 +525,9 @@ const ExpenseModal = ({ open, onClose, onSuccess }) => {
                                 )}
 
                                 {files.ticketJpg ? (
-                                    <Paper elevation={0} sx={{ p: 1.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between', bgcolor: '#fafbfc', border: '1px solid #e2e8f0', borderRadius: 2 }}>
-                                        <Typography variant="caption" fontWeight={600} color="#334155" noWrap sx={{ maxWidth: 180 }}>{files.ticketJpg.name}</Typography>
-                                        <IconButton size="small" onClick={() => handleRemoveFile('ticketJpg')} sx={{ color: '#b91c1c' }}><DeleteOutlineIcon fontSize="small"/></IconButton>
+                                    <Paper elevation={0} sx={{ p: 1.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between', bgcolor: COLOR.CABECERA, border: `1px solid ${COLOR.BORDE}`, borderRadius: 2 }}>
+                                        <Typography variant="caption" fontWeight={600} color={COLOR.TEXTO} noWrap sx={{ maxWidth: 180 }}>{files.ticketJpg.name}</Typography>
+                                        <IconButton size="small" onClick={() => handleRemoveFile('ticketJpg')} sx={{ color: COLOR.PELIGRO }}><DeleteOutlineIcon fontSize="small"/></IconButton>
                                     </Paper>
                                 ) : (
                                     <Button variant="outlined" fullWidth startIcon={<AttachFileIcon/>} onClick={() => setModalState({ isOpen: true, fileType: 'ticketJpg' })} sx={GHOST_BTN_SX}>
@@ -549,7 +550,7 @@ const ExpenseModal = ({ open, onClose, onSuccess }) => {
                 />
             </DialogContent>
 
-            <DialogActions sx={{ px: { xs: 2, md: 4 }, py: 2.5, bgcolor: '#fff', borderTop: '1px solid #e2e8f0', gap: 1 }}>
+            <DialogActions sx={{ px: { xs: 2, md: 4 }, py: 2.5, bgcolor: COLOR.BLANCO, borderTop: `1px solid ${COLOR.BORDE}`, gap: 1 }}>
                 <Button variant="outlined" onClick={onClose} disabled={saving} sx={GHOST_BTN_SX}>
                     Cancelar
                 </Button>
@@ -557,7 +558,7 @@ const ExpenseModal = ({ open, onClose, onSuccess }) => {
                     variant="contained"
                     onClick={handleSaveExpense}
                     disabled={saving}
-                    startIcon={saving ? <CircularProgress size={18} sx={{ color: '#fff' }}/> : <SaveIcon/>}
+                    startIcon={saving ? <CircularProgress size={18} sx={{ color: COLOR.BLANCO }}/> : <SaveIcon/>}
                     sx={DARK_BTN_SX}
                 >
                     {saving ? 'Guardando…' : 'Guardar Gasto'}

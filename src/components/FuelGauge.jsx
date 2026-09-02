@@ -1,9 +1,10 @@
 import { Box, Typography } from "@mui/material";
+import { COLOR } from "../shared/ui/tokens";
 
 const FuelGauge = ({ percent, value, capacity }) => {
-    let color = '#2e7d32'; 
+    let color = COLOR.EXITO; 
     if (percent < 50) color = '#fbc02d'; 
-    if (percent < 20) color = '#d32f2f';
+    if (percent < 20) color = COLOR.PELIGRO;
 
     const radius = 80;
     const stroke = 12;
@@ -17,7 +18,7 @@ const FuelGauge = ({ percent, value, capacity }) => {
                 <path
                     d={`M 20,100 A 80,80 0 0 1 180,100`} 
                     fill="none"
-                    stroke="#e0e0e0"
+                    stroke={COLOR.BORDE}
                     strokeWidth={stroke}
                     strokeLinecap="round"
                 />

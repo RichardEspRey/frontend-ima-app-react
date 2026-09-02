@@ -31,6 +31,7 @@ import {
 } from "../../../entities/expense"
 import { decimales, moneda } from "../../../shared/lib/formato"
 import { PageHeader } from "../../../shared/ui"
+import { COLOR } from "../../../shared/ui/tokens"
 
 const PAISES = [
   { valor: PAIS_REGISTRO.TODOS, etiqueta: "Todos" },
@@ -77,7 +78,7 @@ function Celda({ columna, fila }) {
             fontWeight: "bold",
             minWidth: 30,
             bgcolor: columna.color,
-            color: "#fff",
+            color: COLOR.BLANCO,
             border: `1px solid ${columna.color}`,
           }}
         />

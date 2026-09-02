@@ -3,6 +3,7 @@ import { TableCell, TableRow, TextField, Select, MenuItem, InputAdornment, Box, 
 import { PAYMENT_METHODS, STATUS_OPTIONS } from '../constants/finances';
 import { useAuthStore } from '../store/useAuthStore';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import { COLOR } from '../shared/ui/tokens';
 
 // Helpers 
 const money = (v) =>
@@ -86,7 +87,7 @@ export const StageDetailRow = ({ trip_id, stage, handleStageFieldChange }) => {
     }
 
     return (
-        <TableRow hover selected={!!stage._dirty} sx={{ bgcolor: stage._dirty ? '#fff3e0' : 'transparent' }}> 
+        <TableRow hover selected={!!stage._dirty} sx={{ bgcolor: stage._dirty ? COLOR.AVISO_FONDO : 'transparent' }}> 
             <TableCell sx={{ fontWeight: 500 }}>
                 {stage.invoice_number ? stage.invoice_number : <em>-</em>}
             </TableCell>

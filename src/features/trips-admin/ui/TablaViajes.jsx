@@ -17,6 +17,7 @@ import { TripRow } from "../../../components/TripRow"
 import { API_BASE } from "../../../shared/config/env"
 import { HEADER_CELL_SX, HEADER_ROW_SX } from "../../../shared/ui/estilos"
 import { columnasDeTabla, documentosFaltantesDeViaje, urlDocumento } from "../model/documentos"
+import { COLOR } from "../../../shared/ui/tokens"
 
 const CELDA_CENTRADA = { ...HEADER_CELL_SX, textAlign: "center" }
 
@@ -35,9 +36,9 @@ function FilaVacia({ columnas, cargando }) {
         <TableCell colSpan={columnas} align="center" sx={{ py: 5 }}>
           <CircularProgress
             size={22}
-            sx={{ mr: 1.5, verticalAlign: "middle", color: "#94a3b8" }}
+            sx={{ mr: 1.5, verticalAlign: "middle", color: COLOR.TENUE }}
           />
-          <Typography component="span" color="#64748b" fontWeight={500}>
+          <Typography component="span" color={COLOR.APAGADO} fontWeight={500}>
             Actualizando datos...
           </Typography>
         </TableCell>
@@ -48,8 +49,8 @@ function FilaVacia({ columnas, cargando }) {
   return (
     <TableRow>
       <TableCell colSpan={columnas} align="center" sx={{ py: 6 }}>
-        <InboxOutlinedIcon sx={{ fontSize: 34, color: "#cbd5e1", mb: 1 }} />
-        <Typography variant="body2" color="#94a3b8" fontWeight={500}>
+        <InboxOutlinedIcon sx={{ fontSize: 34, color: COLOR.BORDE_FUERTE, mb: 1 }} />
+        <Typography variant="body2" color={COLOR.TENUE} fontWeight={500}>
           No se localizaron registros en esta categoría.
         </Typography>
       </TableCell>
@@ -84,7 +85,7 @@ export function TablaViajes({ viajes = [], total, cargando, vista, paginacion, a
       <TableContainer
         component={Paper}
         elevation={0}
-        sx={{ border: "1px solid #e2e8f0", borderRadius: 2, overflow: "hidden" }}
+        sx={{ border: `1px solid ${COLOR.BORDE}`, borderRadius: 2, overflow: "hidden" }}
       >
         <Table size="small">
           <TableHead>
@@ -141,7 +142,7 @@ export function TablaViajes({ viajes = [], total, cargando, vista, paginacion, a
       <Box
         sx={{
           bgcolor: "white",
-          border: "1px solid #e2e8f0",
+          border: `1px solid ${COLOR.BORDE}`,
           borderTop: "none",
           borderBottomLeftRadius: 8,
           borderBottomRightRadius: 8,
@@ -158,7 +159,7 @@ export function TablaViajes({ viajes = [], total, cargando, vista, paginacion, a
             paginacion.onPorPaginaChange(Number.parseInt(evento.target.value, 10))
           }
           sx={{
-            color: "#475569",
+            color: COLOR.TEXTO_SUAVE,
             ".MuiTablePagination-selectLabel, .MuiTablePagination-displayedRows": {
               fontSize: "0.8rem",
             },

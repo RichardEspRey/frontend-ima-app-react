@@ -17,6 +17,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import dayjs from 'dayjs';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
+import { COLOR } from '../../shared/ui/tokens';
 
 // Configuración DayJS 
 dayjs.extend(isSameOrAfter);
@@ -108,7 +109,7 @@ export default function AfinacionesHistorialPage() {
         <Typography variant="h4" fontWeight={800}>Historial de Afinaciones</Typography>
       </Stack>
 
-      <Paper variant="outlined" sx={{ p: 2, mb: 3, bgcolor: '#f8f9fa' }}>
+      <Paper variant="outlined" sx={{ p: 2, mb: 3, bgcolor: COLOR.LIENZO }}>
         <Typography variant="subtitle2" fontWeight={600} color="text.secondary" mb={2} display="flex" alignItems="center" gap={1}>
             <FilterListIcon fontSize="small" /> Filtros de Búsqueda
         </Typography>

@@ -10,6 +10,7 @@ import {
     ResetModal, ManualUpdateModal, LimitModal, 
     CorrectOdometerModal, HistoryModal, PhotoModal 
 } from "../../components/Afinaciones/AfinacionesModals";
+import { COLOR } from "../../shared/ui/tokens";
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -109,7 +110,7 @@ export default function AfinacionesPage() {
       </Stack>
 
       <Paper elevation={3} sx={{ borderRadius: 3, overflow: 'hidden', mb: 5 }}>
-        <Box sx={{ p: 2, bgcolor: '#e3f2fd', borderBottom: '1px solid #bbdefb' }}>
+        <Box sx={{ p: 2, bgcolor: COLOR.INFO_FONDO, borderBottom: `1px solid ${COLOR.INFO_BORDE}` }}>
             <Typography variant="h6" fontWeight={700} color="primary.main">Estatus Actual de Flota</Typography>
         </Box>
         

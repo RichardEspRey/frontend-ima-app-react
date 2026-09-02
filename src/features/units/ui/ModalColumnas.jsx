@@ -12,6 +12,7 @@ import {
 } from "@mui/material"
 import CheckCircleIcon from "@mui/icons-material/CheckCircle"
 import CloseIcon from "@mui/icons-material/Close"
+import { COLOR } from "../../../shared/ui/tokens"
 
 /**
  * Elige qué requisitos se ven como columna en la tabla.
@@ -94,8 +95,8 @@ export function ModalColumnas({
         </Box>
       </DialogContent>
 
-      <DialogActions sx={{ p: 2, bgcolor: "#f8fafc", borderTop: "1px solid #e2e8f0" }}>
-        <Button onClick={onCerrar} variant="contained" disableElevation sx={{ bgcolor: "#0f172a" }}>
+      <DialogActions sx={{ p: 2, bgcolor: COLOR.LIENZO, borderTop: `1px solid ${COLOR.BORDE}` }}>
+        <Button onClick={onCerrar} variant="contained" disableElevation sx={{ bgcolor: COLOR.TINTA }}>
           Aplicar
         </Button>
       </DialogActions>

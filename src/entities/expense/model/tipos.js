@@ -1,4 +1,5 @@
 import { ENDPOINTS } from "../../../shared/api"
+import { COLOR } from "../../../shared/ui/tokens"
 
 /**
  * Los dos tipos de registro que lleva `formularios.php`.
@@ -65,7 +66,7 @@ const GASTO = {
     { clave: "trip_number", etiqueta: "Trip", peso: 500 },
     { clave: "fecha", etiqueta: "Last update" },
     { clave: "tipo_gasto", etiqueta: "Expense Type" },
-    { clave: "monto", etiqueta: "Total ($)", alineacion: "right", tipo: "dinero", color: "#d32f2f" },
+    { clave: "monto", etiqueta: "Total ($)", alineacion: "right", tipo: "dinero", color: COLOR.PELIGRO },
     { clave: "nombre", etiqueta: "Driver" },
   ],
   /** Campos del editor. Los de solo lectura vienen del registro, no se envían. */
@@ -107,9 +108,9 @@ const DIESEL = {
     { clave: "galones", etiqueta: "Total Gal.", alineacion: "right", tipo: "galones" },
     { clave: "monto", etiqueta: "Total Cost", alineacion: "right", tipo: "dinero" },
     { clave: "nombre", etiqueta: "Driver" },
-    { clave: "state_pending_count", etiqueta: "State Pending", alineacion: "center", tipo: "pendiente", color: "#d32f2f", aviso: "estados" },
-    { clave: "fleetone_pending_count", etiqueta: "Fleet One Pending", alineacion: "center", tipo: "pendiente", color: "#ed6c02", aviso: "Fleet One" },
-    { clave: "manual_count", etiqueta: "Manuales", alineacion: "center", tipo: "pendiente", color: "#f59e0b", aviso: "Registros ingresados a mano" },
+    { clave: "state_pending_count", etiqueta: "State Pending", alineacion: "center", tipo: "pendiente", color: COLOR.PELIGRO, aviso: "estados" },
+    { clave: "fleetone_pending_count", etiqueta: "Fleet One Pending", alineacion: "center", tipo: "pendiente", color: COLOR.AVISO, aviso: "Fleet One" },
+    { clave: "manual_count", etiqueta: "Manuales", alineacion: "center", tipo: "pendiente", color: COLOR.AVISO, aviso: "Registros ingresados a mano" },
     { clave: "periodo", etiqueta: "Periodo", alineacion: "center" },
   ],
   columnasDetalle: [
@@ -118,7 +119,7 @@ const DIESEL = {
     { clave: "fecha", etiqueta: "Last update" },
     { clave: "odometro", etiqueta: "Odometer", alineacion: "right" },
     { clave: "galones", etiqueta: "Gal.", alineacion: "right", tipo: "galones" },
-    { clave: "monto", etiqueta: "Total ($)", alineacion: "right", tipo: "dinero", color: "#d32f2f" },
+    { clave: "monto", etiqueta: "Total ($)", alineacion: "right", tipo: "dinero", color: COLOR.PELIGRO },
     { clave: "created_by", etiqueta: "Registrado por" },
     { clave: "estado", etiqueta: "State" },
     { clave: "fleetone", etiqueta: "Fleet One" },

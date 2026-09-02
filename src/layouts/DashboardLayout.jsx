@@ -5,6 +5,7 @@ import Header from '../components/Header';
 import { Outlet } from 'react-router-dom';
 
 import { useAuthStore } from '../store/useAuthStore'; 
+import { COLOR } from '../shared/ui/tokens';
 
 const DashboardLayout = () => {
   const { user, fetchPermissions } = useAuthStore();
@@ -24,7 +25,7 @@ const DashboardLayout = () => {
       sx={{ 
         display: 'flex', 
         height: '100vh', 
-        bgcolor: '#f8fafc',
+        bgcolor: COLOR.LIENZO,
         overflow: 'hidden',
         fontFamily: '"Roboto", "Segoe UI", Arial, sans-serif'
       }}
@@ -38,7 +39,7 @@ const DashboardLayout = () => {
             overflowY: 'auto', 
             p: { xs: 2, md: 4 }, 
             '&::-webkit-scrollbar': { width: '8px' },
-            '&::-webkit-scrollbar-thumb': { bgcolor: '#cbd5e1', borderRadius: '4px' },
+            '&::-webkit-scrollbar-thumb': { bgcolor: COLOR.BORDE_FUERTE, borderRadius: '4px' },
             '&::-webkit-scrollbar-track': { bgcolor: 'transparent' }
           }}
         >

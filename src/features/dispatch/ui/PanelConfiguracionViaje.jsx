@@ -21,6 +21,7 @@ import {
   etiquetaViajeTransnacional,
   valorViajeTransnacional,
 } from "../../../entities/dispatch"
+import { COLOR } from "../../../shared/ui/tokens"
 
 /**
  * Configuración común a crear y editar un viaje: país, año, número y cruce.
@@ -154,7 +155,7 @@ export function PanelConfiguracionViaje({
         )}
 
         <Grid size={{ xs: 12 }}>
-          <Paper variant="outlined" sx={{ p: 2, bgcolor: "#f8f9fa", borderRadius: 2 }}>
+          <Paper variant="outlined" sx={{ p: 2, bgcolor: COLOR.LIENZO, borderRadius: 2 }}>
             <Stack spacing={1}>
               <FormControlLabel
                 control={

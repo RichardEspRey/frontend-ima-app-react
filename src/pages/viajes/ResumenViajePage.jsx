@@ -33,11 +33,12 @@ import {
 import { CLASE_NO_IMPRIMIR, exportarElementoAPdf } from "../../shared/lib/pdf"
 import { decimales, fechaHora, moneda, soloFecha, soloHora } from "../../shared/lib/formato"
 import { notify } from "../../shared/ui"
+import { COLOR } from "../../shared/ui/tokens"
 
-const FILA_RESUMEN = { border: "none", borderBottom: "1px solid #f1f5f9", py: 1.2 }
-const NOTA_BD = { color: "#94a3b8", fontStyle: "italic", fontSize: "0.75rem" }
+const FILA_RESUMEN = { border: "none", borderBottom: `1px solid ${COLOR.RELLENO}`, py: 1.2 }
+const NOTA_BD = { color: COLOR.TENUE, fontStyle: "italic", fontSize: "0.75rem" }
 
-const COLOR_DIRECCION = { "Going Up": "#16a34a", "Going Down": "#d97706" }
+const COLOR_DIRECCION = { "Going Up": COLOR.EXITO, "Going Down": COLOR.AVISO }
 
 /**
  * Barra de acento y título, para separar las secciones del resumen.
@@ -51,7 +52,7 @@ function TituloSeccion({ color, children }) {
   return (
     <Stack direction="row" alignItems="center" spacing={1.2} sx={{ mb: 1.5, mt: 3.5 }}>
       <Box sx={{ width: 4, height: 22, bgcolor: color, borderRadius: 1 }} />
-      <Typography variant="subtitle1" fontWeight={800} color="#0f172a">
+      <Typography variant="subtitle1" fontWeight={800} color={COLOR.TINTA}>
         {children}
       </Typography>
     </Stack>
@@ -91,33 +92,33 @@ function FichaEtapa({ etapa }) {
       sx={{
         height: "100%",
         borderRadius: 2,
-        borderColor: "#e2e8f0",
-        borderLeft: `3px solid ${COLOR_DIRECCION[etapa.travel_direction] ?? "#cbd5e1"}`,
+        borderColor: COLOR.BORDE,
+        borderLeft: `3px solid ${COLOR_DIRECCION[etapa.travel_direction] ?? COLOR.BORDE_FUERTE}`,
       }}
     >
       <CardContent sx={{ p: 2 }}>
-        <Typography variant="subtitle2" fontWeight={800} color="#0f172a">
+        <Typography variant="subtitle2" fontWeight={800} color={COLOR.TINTA}>
           {titulo}
         </Typography>
         {recorrido && (
-          <Typography variant="body2" color="#64748b" sx={{ mb: 1.2 }}>
+          <Typography variant="body2" color={COLOR.APAGADO} sx={{ mb: 1.2 }}>
             {recorrido}
           </Typography>
         )}
 
         {!esVacia && (
-          <Box sx={{ bgcolor: "#f1f5f9", borderRadius: 1.5, p: 1.4, mb: 1.2 }}>
+          <Box sx={{ bgcolor: COLOR.RELLENO, borderRadius: 1.5, p: 1.4, mb: 1.2 }}>
             <Stack spacing={0.4}>
-              <Typography variant="caption" sx={{ fontSize: "0.72rem", color: "#334155" }}>
+              <Typography variant="caption" sx={{ fontSize: "0.72rem", color: COLOR.TEXTO }}>
                 <strong>Compañía:</strong> {etapa.nombre_compania || "—"}
               </Typography>
-              <Typography variant="caption" sx={{ fontSize: "0.72rem", color: "#334155" }}>
+              <Typography variant="caption" sx={{ fontSize: "0.72rem", color: COLOR.TEXTO }}>
                 <strong>Bodega Origen:</strong> {etapa.warehouse_origin_name || "—"}
               </Typography>
-              <Typography variant="caption" sx={{ fontSize: "0.72rem", color: "#334155" }}>
+              <Typography variant="caption" sx={{ fontSize: "0.72rem", color: COLOR.TEXTO }}>
                 <strong>Bodega Destino:</strong> {etapa.warehouse_destination_name || "—"}
               </Typography>
-              <Typography variant="caption" sx={{ fontSize: "0.72rem", color: "#334155" }}>
+              <Typography variant="caption" sx={{ fontSize: "0.72rem", color: COLOR.TEXTO }}>
                 <strong>Millas:</strong>{" "}
                 {etapa.millas_pcmiller ?? etapa.millas_pcmiller_practicas ?? "—"}
               </Typography>
@@ -126,19 +127,19 @@ function FichaEtapa({ etapa }) {
         )}
 
         {etapa.ci_number && (
-          <Typography variant="caption" color="#94a3b8" sx={{ display: "block", mb: 0.5 }}>
+          <Typography variant="caption" color={COLOR.TENUE} sx={{ display: "block", mb: 0.5 }}>
             CI: {etapa.ci_number}
           </Typography>
         )}
         {fechas && (
-          <Typography variant="caption" color="#94a3b8" sx={{ display: "block", mb: 1 }}>
+          <Typography variant="caption" color={COLOR.TENUE} sx={{ display: "block", mb: 1 }}>
             {fechas}
           </Typography>
         )}
 
         {esVacia ? (
-          <Box sx={{ bgcolor: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 1.5, p: 1.2 }}>
-            <Typography variant="subtitle2" fontWeight={700} color="#1d4ed8">
+          <Box sx={{ bgcolor: COLOR.INFO_FONDO, border: `1px solid ${COLOR.INFO_BORDE}`, borderRadius: 1.5, p: 1.2 }}>
+            <Typography variant="subtitle2" fontWeight={700} color={COLOR.INFO}>
               {titulo}
             </Typography>
             <Typography variant="body2" color="#1e3a8a">
@@ -152,8 +153,8 @@ function FichaEtapa({ etapa }) {
           <Box
             sx={{
               display: "inline-block",
-              bgcolor: "#f0fdf4",
-              border: "1px solid #16a34a33",
+              bgcolor: COLOR.EXITO_FONDO,
+              border: `1px solid ${COLOR.EXITO}33`,
               borderRadius: 1,
               px: 1.2,
               py: 0.5,
@@ -162,7 +163,7 @@ function FichaEtapa({ etapa }) {
             <Typography
               variant="body2"
               fontWeight={800}
-              color="#16a34a"
+              color={COLOR.EXITO}
               sx={{ fontVariantNumeric: "tabular-nums" }}
             >
               Rate: {moneda(etapa.rate_tarifa)}
@@ -189,11 +190,11 @@ function FilaTotal({ concepto, importe, nota = "Dato de la Base de datos", ultim
 
   return (
     <TableRow>
-      <TableCell sx={{ ...estilo, fontWeight: 700, width: 360, color: "#0f172a" }}>
+      <TableCell sx={{ ...estilo, fontWeight: 700, width: 360, color: COLOR.TINTA }}>
         {concepto}
       </TableCell>
       <TableCell
-        sx={{ ...estilo, fontWeight: 800, color: "#0f172a", fontVariantNumeric: "tabular-nums" }}
+        sx={{ ...estilo, fontWeight: 800, color: COLOR.TINTA, fontVariantNumeric: "tabular-nums" }}
       >
         {moneda(importe)}
       </TableCell>
@@ -260,7 +261,7 @@ export default function ResumenViajePage() {
   return (
     <Paper
       elevation={0}
-      sx={{ p: { xs: 2, md: 3 }, m: 2, borderRadius: 3, border: "1px solid #e2e8f0", bgcolor: "#fff" }}
+      sx={{ p: { xs: 2, md: 3 }, m: 2, borderRadius: 3, border: `1px solid ${COLOR.BORDE}`, bgcolor: COLOR.BLANCO }}
     >
       <Box sx={{ mb: 2 }} className={CLASE_NO_IMPRIMIR}>
         <Button
@@ -272,8 +273,8 @@ export default function ResumenViajePage() {
             textTransform: "none",
             fontWeight: 600,
             borderRadius: 1.5,
-            borderColor: "#cbd5e1",
-            color: "#334155",
+            borderColor: COLOR.BORDE_FUERTE,
+            color: COLOR.TEXTO,
           }}
         >
           Volver a TripAdmin
@@ -285,8 +286,8 @@ export default function ResumenViajePage() {
           sx={{
             p: 2.5,
             borderRadius: 2,
-            border: "1px solid #e2e8f0",
-            bgcolor: "#f8fafc",
+            border: `1px solid ${COLOR.BORDE}`,
+            bgcolor: COLOR.LIENZO,
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
@@ -296,10 +297,10 @@ export default function ResumenViajePage() {
           }}
         >
           <Box>
-            <Typography variant="h5" fontWeight={800} color="#0f172a" sx={{ lineHeight: 1.2 }}>
+            <Typography variant="h5" fontWeight={800} color={COLOR.TINTA} sx={{ lineHeight: 1.2 }}>
               {viaje.trip_number || "—"}
             </Typography>
-            <Typography variant="body2" color="#64748b">
+            <Typography variant="body2" color={COLOR.APAGADO}>
               {viaje.nombre || "Sin nombre de viaje"}
             </Typography>
           </Box>
@@ -307,7 +308,7 @@ export default function ResumenViajePage() {
             <Chip
               label={fechaHora(viaje.creation_date)}
               size="small"
-              sx={{ bgcolor: "#fff", border: "1px solid #e2e8f0", color: "#475569", fontWeight: 600 }}
+              sx={{ bgcolor: COLOR.BLANCO, border: `1px solid ${COLOR.BORDE}`, color: COLOR.TEXTO_SUAVE, fontWeight: 600 }}
             />
             <Chip
               label={viaje.status || "—"}
@@ -322,7 +323,7 @@ export default function ResumenViajePage() {
           </Stack>
         </Box>
 
-        <TituloSeccion color="#2563eb">Detalles de Etapas y Documentos</TituloSeccion>
+        <TituloSeccion color={COLOR.INFO}>Detalles de Etapas y Documentos</TituloSeccion>
         <Grid container spacing={2}>
           {etapas.map((etapa) => (
             <Grid key={etapa.trip_stage_id} size={{ xs: 12, md: 4 }}>
@@ -331,24 +332,24 @@ export default function ResumenViajePage() {
           ))}
         </Grid>
 
-        <TituloSeccion color="#d97706">Diesel</TituloSeccion>
+        <TituloSeccion color={COLOR.AVISO}>Diesel</TituloSeccion>
         <TableContainer
           component={Paper}
           variant="outlined"
-          sx={{ borderRadius: 2, overflow: "hidden", borderColor: "#e2e8f0" }}
+          sx={{ borderRadius: 2, overflow: "hidden", borderColor: COLOR.BORDE }}
         >
           <Table size="small">
-            <TableHead sx={{ bgcolor: "#f1f5f9" }}>
+            <TableHead sx={{ bgcolor: COLOR.RELLENO }}>
               <TableRow>
                 {["No", "Trip number", "Fecha", "Odómetro", "Galones"].map((titulo) => (
-                  <TableCell key={titulo} sx={{ fontWeight: 700, color: "#475569" }}>
+                  <TableCell key={titulo} sx={{ fontWeight: 700, color: COLOR.TEXTO_SUAVE }}>
                     {titulo}
                   </TableCell>
                 ))}
-                <TableCell sx={{ fontWeight: 700, color: "#475569", textAlign: "right" }}>
+                <TableCell sx={{ fontWeight: 700, color: COLOR.TEXTO_SUAVE, textAlign: "right" }}>
                   Monto
                 </TableCell>
-                <TableCell sx={{ fontWeight: 700, color: "#475569" }}>Driver</TableCell>
+                <TableCell sx={{ fontWeight: 700, color: COLOR.TEXTO_SUAVE }}>Driver</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -372,7 +373,7 @@ export default function ResumenViajePage() {
                   <TableCell
                     colSpan={7}
                     align="center"
-                    sx={{ py: 3, color: "#94a3b8", fontStyle: "italic" }}
+                    sx={{ py: 3, color: COLOR.TENUE, fontStyle: "italic" }}
                   >
                     Sin registros
                   </TableCell>
@@ -382,24 +383,24 @@ export default function ResumenViajePage() {
           </Table>
         </TableContainer>
 
-        <TituloSeccion color="#dc2626">Gastos viaje</TituloSeccion>
+        <TituloSeccion color={COLOR.PELIGRO}>Gastos viaje</TituloSeccion>
         <TableContainer
           component={Paper}
           variant="outlined"
-          sx={{ borderRadius: 2, overflow: "hidden", borderColor: "#e2e8f0" }}
+          sx={{ borderRadius: 2, overflow: "hidden", borderColor: COLOR.BORDE }}
         >
           <Table size="small">
-            <TableHead sx={{ bgcolor: "#f1f5f9" }}>
+            <TableHead sx={{ bgcolor: COLOR.RELLENO }}>
               <TableRow>
                 {["No", "Trip number", "Fecha", "Tipo de gasto"].map((titulo) => (
-                  <TableCell key={titulo} sx={{ fontWeight: 700, color: "#475569" }}>
+                  <TableCell key={titulo} sx={{ fontWeight: 700, color: COLOR.TEXTO_SUAVE }}>
                     {titulo}
                   </TableCell>
                 ))}
-                <TableCell sx={{ fontWeight: 700, color: "#475569", textAlign: "right" }}>
+                <TableCell sx={{ fontWeight: 700, color: COLOR.TEXTO_SUAVE, textAlign: "right" }}>
                   Monto
                 </TableCell>
-                <TableCell sx={{ fontWeight: 700, color: "#475569" }}>Driver</TableCell>
+                <TableCell sx={{ fontWeight: 700, color: COLOR.TEXTO_SUAVE }}>Driver</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -422,7 +423,7 @@ export default function ResumenViajePage() {
                   <TableCell
                     colSpan={6}
                     align="center"
-                    sx={{ py: 3, color: "#94a3b8", fontStyle: "italic" }}
+                    sx={{ py: 3, color: COLOR.TENUE, fontStyle: "italic" }}
                   >
                     Sin registros
                   </TableCell>
@@ -432,8 +433,8 @@ export default function ResumenViajePage() {
           </Table>
         </TableContainer>
 
-        <TituloSeccion color="#0f172a">Trip Summary</TituloSeccion>
-        <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 2, borderColor: "#e2e8f0" }}>
+        <TituloSeccion color={COLOR.TINTA}>Trip Summary</TituloSeccion>
+        <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 2, borderColor: COLOR.BORDE }}>
           <Table size="small">
             <TableBody>
               <FilaTotal
@@ -462,12 +463,12 @@ export default function ResumenViajePage() {
           startIcon={<DownloadIcon />}
           onClick={descargar}
           sx={{
-            bgcolor: "#0f172a",
+            bgcolor: COLOR.TINTA,
             fontWeight: 700,
             borderRadius: 1.5,
             textTransform: "none",
             px: 3,
-            "&:hover": { bgcolor: "#1e293b" },
+            "&:hover": { bgcolor: COLOR.TINTA_CLARA },
           }}
         >
           Descargar PDF

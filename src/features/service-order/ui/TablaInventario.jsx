@@ -26,25 +26,28 @@ import {
     HEADER_ROW_SX, HEADER_CELL_SX, TABLE_CONTAINER_SX, CARD_SX, SECTION_LABEL_SX,
     PAGINATION_BOX_SX, PAGINATION_SX, GHOST_BTN_SX, CELL_STRONG_SX, CELL_MUTED_SX, CHIP_SX,
 } from '../../../shared/ui/estilos';
+import { COLOR, TINTE } from '../../../shared/ui/tokens';
 
 // **Definición de las categorías para el filtro**
 const CATEGORIES = ['Todas', 'Consumibles', 'Refacciones', 'Herramientas'];
 
-const TONO_NEUTRO = { bg: '#f8fafc', texto: '#475569', borde: '#e2e8f0', acento: '#cbd5e1' };
+const TONO_NEUTRO = { bg: COLOR.LIENZO, texto: COLOR.TEXTO_SUAVE, borde: COLOR.BORDE, acento: COLOR.BORDE_FUERTE };
+
+const tinte = ({ fondo, texto, borde, acento }) => ({ bg: fondo, texto, borde, acento });
 
 const TONOS_CATEGORIA = {
-    Refacciones: { bg: '#eef2ff', texto: '#4338ca', borde: '#e0e7ff', acento: '#6366f1' },
-    Consumibles: { bg: '#f0fdfa', texto: '#0f766e', borde: '#99f6e4', acento: '#14b8a6' },
-    Herramientas: { bg: '#fffbeb', texto: '#b45309', borde: '#fde68a', acento: '#f59e0b' },
-    Basicos: { bg: '#f5f3ff', texto: '#6d28d9', borde: '#ddd6fe', acento: '#8b5cf6' },
+    Refacciones: tinte(TINTE.INDIGO),
+    Consumibles: tinte(TINTE.TEAL),
+    Herramientas: tinte(TINTE.AMBAR),
+    Basicos: tinte(TINTE.VIOLETA),
 };
 
 const tonoCategoria = (nombre) => TONOS_CATEGORIA[nombre] || TONO_NEUTRO;
 
 const tonoStock = (cantidad) => (
     cantidad <= 0
-        ? { bg: '#fef2f2', texto: '#b91c1c', borde: '#fecaca' }
-        : { bg: '#f8fafc', texto: '#334155', borde: '#e2e8f0' }
+        ? { bg: COLOR.PELIGRO_FONDO, texto: COLOR.PELIGRO, borde: COLOR.PELIGRO_BORDE }
+        : { bg: COLOR.LIENZO, texto: COLOR.TEXTO, borde: COLOR.BORDE }
 );
 
 
@@ -214,7 +217,7 @@ const TablaInventario = () => {
                                         sx={{ ...CELL_STRONG_SX, borderLeft: `3px solid ${tonoCategoria(item.nombre_categoria).acento}` }}
                                     >
                                         {item.nombre_articulo?.trim() || (
-                                            <Box component="span" sx={{ color: '#94a3b8', fontWeight: 500 }}>Sin nombre</Box>
+                                            <Box component="span" sx={{ color: COLOR.TENUE, fontWeight: 500 }}>Sin nombre</Box>
                                         )}
                                     </TableCell>
                                     <TableCell>
@@ -249,10 +252,10 @@ const TablaInventario = () => {
                         ) : (
                             <TableRow>
                                 <TableCell colSpan={4} align="center" sx={{ py: 6 }}>
-                                    <Typography variant="body2" color="#64748b" fontWeight={600}>
+                                    <Typography variant="body2" color={COLOR.APAGADO} fontWeight={600}>
                                         No se encontraron artículos.
                                     </Typography>
-                                    <Typography variant="caption" color="#94a3b8">
+                                    <Typography variant="caption" color={COLOR.TENUE}>
                                         Ajusta la búsqueda o el filtro de categoría.
                                     </Typography>
                                 </TableCell>
@@ -268,12 +271,12 @@ const TablaInventario = () => {
 
                     {!loading && filteredInventory.length > 0 && (
                         <TableFooter>
-                            <TableRow sx={{ bgcolor: '#f8fafc', '& td': { borderTop: '2px solid #e2e8f0', borderBottom: 'none' } }}>
+                            <TableRow sx={{ bgcolor: COLOR.LIENZO, '& td': { borderTop: `2px solid ${COLOR.BORDE}`, borderBottom: 'none' } }}>
                                 <TableCell colSpan={2} sx={{ py: 1.75 }}>
                                     <Typography variant="caption" sx={{ ...SECTION_LABEL_SX, textTransform: 'uppercase' }}>
                                         Resumen
                                     </Typography>
-                                    <Typography variant="body2" color="#64748b">
+                                    <Typography variant="body2" color={COLOR.APAGADO}>
                                         {filteredInventory.length} artículo{filteredInventory.length === 1 ? '' : 's'}
                                     </Typography>
                                 </TableCell>
@@ -281,7 +284,7 @@ const TablaInventario = () => {
                                     <Chip
                                         size="small"
                                         label={`${agotados} agotado${agotados === 1 ? '' : 's'}`}
-                                        sx={{ ...CHIP_SX, bgcolor: '#fef2f2', color: '#b91c1c', border: '1px solid #fecaca' }}
+                                        sx={{ ...CHIP_SX, bgcolor: COLOR.PELIGRO_FONDO, color: COLOR.PELIGRO, border: `1px solid ${COLOR.PELIGRO_BORDE}` }}
                                     />
                                 </TableCell>
                             </TableRow>

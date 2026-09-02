@@ -11,6 +11,7 @@ import SaveIcon from '@mui/icons-material/Save';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import * as pdfjsLib from 'pdfjs-dist';
 import { archivoDelEvento } from '../shared/security';
+import { COLOR } from '../shared/ui/tokens';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = './pdf.worker.min.mjs';
 
@@ -290,14 +291,14 @@ export const PCMillerModal = ({ open, onClose, tripId, file, filename, onSave, o
             fullWidth
             slotProps={{ paper: { sx: { height: '92vh', display: 'flex', flexDirection: 'column' } } }}
         >
-            <DialogTitle sx={{ fontWeight: 700, borderBottom: '1px solid #e0e0e0', pb: 1.5 }}>
+            <DialogTitle sx={{ fontWeight: 700, borderBottom: `1px solid ${COLOR.BORDE}`, pb: 1.5 }}>
                 Reporte PC Miller — Revisión y extracción de datos
             </DialogTitle>
 
             <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, p: 2.5, overflow: 'hidden', flex: 1 }}>
 
                 {/* ── Document preview ── */}
-                <Box sx={{ flex: '0 0 55%', border: '1px solid #e0e0e0', borderRadius: 1, overflow: 'hidden', bgcolor: '#f5f5f5' }}>
+                <Box sx={{ flex: '0 0 55%', border: `1px solid ${COLOR.BORDE}`, borderRadius: 1, overflow: 'hidden', bgcolor: COLOR.LIENZO }}>
                     {previewUrl ? (
                         isPdf ? (
                             <iframe src={previewUrl} width="100%" height="100%" style={{ border: 'none', display: 'block' }} title="Reporte PC Miller" />
@@ -333,7 +334,7 @@ export const PCMillerModal = ({ open, onClose, tripId, file, filename, onSave, o
                             <TableContainer component={Paper} variant="outlined" sx={{ mb: 1.5 }}>
                                 <Table size="small">
                                     <TableHead>
-                                        <TableRow sx={{ bgcolor: '#f5f5f5' }}>
+                                        <TableRow sx={{ bgcolor: COLOR.LIENZO }}>
                                             <TableCell sx={{ fontWeight: 700 }}>State / Country</TableCell>
                                             <TableCell sx={{ fontWeight: 700 }}>Total Mi</TableCell>
                                             <TableCell width={52} />
@@ -368,7 +369,7 @@ export const PCMillerModal = ({ open, onClose, tripId, file, filename, onSave, o
                 </Box>
             </DialogContent>
 
-            <DialogActions sx={{ px: 3, py: 2, borderTop: '1px solid #e0e0e0', justifyContent: 'space-between' }}>
+            <DialogActions sx={{ px: 3, py: 2, borderTop: `1px solid ${COLOR.BORDE}`, justifyContent: 'space-between' }}>
                 {/* Left: Delete */}
                 <Button
                     variant="outlined"

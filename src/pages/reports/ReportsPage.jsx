@@ -21,6 +21,7 @@ import {
   ultimosMeses,
   useGraficas,
 } from "../../entities/report";
+import { COLOR, TINTE } from "../../shared/ui/tokens";
 
 
 const valueFormatter = (v) =>
@@ -150,10 +151,10 @@ export default function ReportsPage() {
 
       <Stack spacing={4}> 
 
-        <Paper elevation={0} variant="outlined" sx={{ p: 4, borderRadius: 4, bgcolor: '#fff' }}>
+        <Paper elevation={0} variant="outlined" sx={{ p: 4, borderRadius: 4, bgcolor: COLOR.BLANCO }}>
             <Stack direction="row" alignItems="center" spacing={1} mb={3}>
-                <Box sx={{ width: 4, height: 24, bgcolor: '#607d8b', borderRadius: 1 }} />
-                <BuildIcon sx={{ color: '#607d8b' }} />
+                <Box sx={{ width: 4, height: 24, bgcolor: COLOR.APAGADO, borderRadius: 1 }} />
+                <BuildIcon sx={{ color: COLOR.APAGADO }} />
                 <Typography variant="h6" fontWeight={700}>Gastos de Mantenimiento Acumulados</Typography>
             </Stack>
             <Box sx={{ width: '100%', minHeight: 400 }}>
@@ -161,14 +162,14 @@ export default function ReportsPage() {
                     <Stack alignItems="center" justifyContent="center" height={350}><CircularProgress color="inherit" /></Stack>
                 ) : maintData.length === 0 ? (
                     <Stack alignItems="center" justifyContent="center" height={350}>
-                        <BuildIcon sx={{ fontSize: 60, color: '#e0e0e0', mb: 2 }} />
+                        <BuildIcon sx={{ fontSize: 60, color: COLOR.BORDE, mb: 2 }} />
                         <Typography color="text.secondary">No hay registros de mantenimiento</Typography>
                     </Stack>
                 ) : (
                     <BarChart
                         dataset={sliceData(maintData)} // <--- FILTRO APLICADO
                         xAxis={[{ dataKey: 'label', label: 'Mes', scaleType: 'band' }]}
-                        series={[{ dataKey: 'total', label: 'Total Mantenimiento', valueFormatter, color: '#607d8b' }]}
+                        series={[{ dataKey: 'total', label: 'Total Mantenimiento', valueFormatter, color: COLOR.APAGADO }]}
                         {...chartSetting}
                         borderRadius={4}
                     />
@@ -176,10 +177,10 @@ export default function ReportsPage() {
             </Box>
         </Paper>
 
-        <Paper elevation={0} variant="outlined" sx={{ p: 4, borderRadius: 4, bgcolor: '#fff' }}>
+        <Paper elevation={0} variant="outlined" sx={{ p: 4, borderRadius: 4, bgcolor: COLOR.BLANCO }}>
             <Stack direction="row" alignItems="center" spacing={1} mb={3}>
-                <Box sx={{ width: 4, height: 24, bgcolor: '#9c27b0', borderRadius: 1 }} />
-                {/* <AttachMoneyIcon sx={{ color: '#9c27b0' }} /> */}
+                <Box sx={{ width: 4, height: 24, bgcolor: TINTE.VIOLETA.texto, borderRadius: 1 }} />
+                {/* <AttachMoneyIcon sx={{ color: TINTE.VIOLETA.texto }} /> */}
                 <Typography variant="h6" fontWeight={700}>Facturación vs Cobranza (Global)</Typography>
             </Stack>
             <Box sx={{ width: '100%', minHeight: 400 }}>
@@ -190,8 +191,8 @@ export default function ReportsPage() {
                         dataset={sliceData(financesData)}
                         xAxis={[{ dataKey: 'label', label: 'Mes de Entrega', scaleType: 'band' }]}
                         series={[
-                            { dataKey: 'rate', label: 'Total Tarifa (Rate)', valueFormatter, color: '#1976d2' }, 
-                            { dataKey: 'paid', label: 'Total Pagado', valueFormatter, color: '#ed6c02' }, 
+                            { dataKey: 'rate', label: 'Total Tarifa (Rate)', valueFormatter, color: COLOR.INFO }, 
+                            { dataKey: 'paid', label: 'Total Pagado', valueFormatter, color: COLOR.AVISO }, 
                         ]}
                         {...chartSetting}
                         borderRadius={4}
@@ -201,10 +202,10 @@ export default function ReportsPage() {
             </Box>
         </Paper>
 
-        <Paper elevation={0} variant="outlined" sx={{ p: 4, borderRadius: 4, bgcolor: '#fff' }}>
+        <Paper elevation={0} variant="outlined" sx={{ p: 4, borderRadius: 4, bgcolor: COLOR.BLANCO }}>
             <Stack direction="row" alignItems="center" spacing={1} mb={3}>
-                <Box sx={{ width: 4, height: 24, bgcolor: '#e91e63', borderRadius: 1 }} />
-                {/* <AttachMoneyIcon sx={{ color: '#e91e63' }} /> */}
+                <Box sx={{ width: 4, height: 24, bgcolor: TINTE.INDIGO.texto, borderRadius: 1 }} />
+                {/* <AttachMoneyIcon sx={{ color: TINTE.INDIGO.texto }} /> */}
                 <Typography variant="h6" fontWeight={700}>Facturación RTS</Typography>
             </Stack>
             <Box sx={{ width: '100%', minHeight: 400 }}>
@@ -213,8 +214,8 @@ export default function ReportsPage() {
                         dataset={sliceData(rtsData)}
                         xAxis={[{ dataKey: 'label', label: 'Mes de Entrega', scaleType: 'band' }]}
                         series={[
-                            { dataKey: 'rate', label: 'RTS Tarifa', valueFormatter, color: '#8e24aa' }, 
-                            { dataKey: 'paid', label: 'RTS Pagado', valueFormatter, color: '#ff9800' }, 
+                            { dataKey: 'rate', label: 'RTS Tarifa', valueFormatter, color: TINTE.VIOLETA.texto }, 
+                            { dataKey: 'paid', label: 'RTS Pagado', valueFormatter, color: COLOR.AVISO }, 
                         ]}
                         {...chartSetting}
                         borderRadius={4}
@@ -223,7 +224,7 @@ export default function ReportsPage() {
             </Box>
         </Paper>
         
-        <Paper elevation={0} variant="outlined" sx={{ p: 4, borderRadius: 4, bgcolor: '#fff' }}>
+        <Paper elevation={0} variant="outlined" sx={{ p: 4, borderRadius: 4, bgcolor: COLOR.BLANCO }}>
             <Stack direction="row" justifyContent="space-between" alignItems="center" mb={3} flexWrap="wrap" gap={2}>
                 <Stack direction="row" alignItems="center" spacing={1}>
                     <Box sx={{ width: 4, height: 24, bgcolor: '#ff5722', borderRadius: 1 }} />
@@ -250,7 +251,7 @@ export default function ReportsPage() {
                     <Stack alignItems="center" justifyContent="center" height={350}><CircularProgress color="warning" /></Stack>
                 ) : costData.length === 0 ? (
                     <Stack alignItems="center" justifyContent="center" height={350}>
-                        <TimelineIcon sx={{ fontSize: 60, color: '#e0e0e0', mb: 2 }} />
+                        <TimelineIcon sx={{ fontSize: 60, color: COLOR.BORDE, mb: 2 }} />
                         <Typography color="text.secondary">No hay datos</Typography>
                     </Stack>
                 ) : (
@@ -272,7 +273,7 @@ export default function ReportsPage() {
             </Box>
         </Paper>
 
-        <Paper elevation={0} variant="outlined" sx={{ p: 4, borderRadius: 4, bgcolor: '#fff' }}>
+        <Paper elevation={0} variant="outlined" sx={{ p: 4, borderRadius: 4, bgcolor: COLOR.BLANCO }}>
             <Stack direction="row" alignItems="center" spacing={1} mb={3}>
                 <Box sx={{ width: 4, height: 24, bgcolor: 'primary.main', borderRadius: 1 }} />
                 {/* <TrendingUpIcon color="primary" /> */}
@@ -297,7 +298,7 @@ export default function ReportsPage() {
 
         {/* --- SECCIÓN 4: TABLA --- */}
         <Paper elevation={0} variant="outlined" sx={{ borderRadius: 4, overflow: 'hidden' }}>
-            <Box sx={{ p: 3, bgcolor: '#fcfcfc', borderBottom: '1px solid #eee' }}>
+            <Box sx={{ p: 3, bgcolor: COLOR.LIENZO, borderBottom: '1px solid #eee' }}>
                 <Stack direction="row" alignItems="center" spacing={1}>
                     <TableViewIcon color="action" />
                     <Typography variant="h6" fontWeight={700}>Detalle Volumetría (Diésel)</Typography>
@@ -310,9 +311,9 @@ export default function ReportsPage() {
                     <Table stickyHeader>
                         <TableHead>
                             <TableRow>
-                                <TableCell sx={{ fontWeight: 700, fontSize: '0.95rem', bgcolor: '#fff' }}>Mes</TableCell>
-                                <TableCell align="right" sx={{ fontWeight: 700, fontSize: '0.95rem', bgcolor: '#fff' }}>Consumo (Gal)</TableCell>
-                                <TableCell align="right" sx={{ fontWeight: 700, fontSize: '0.95rem', bgcolor: '#fff' }}>Costo Promedio ($/gal)</TableCell>
+                                <TableCell sx={{ fontWeight: 700, fontSize: '0.95rem', bgcolor: COLOR.BLANCO }}>Mes</TableCell>
+                                <TableCell align="right" sx={{ fontWeight: 700, fontSize: '0.95rem', bgcolor: COLOR.BLANCO }}>Consumo (Gal)</TableCell>
+                                <TableCell align="right" sx={{ fontWeight: 700, fontSize: '0.95rem', bgcolor: COLOR.BLANCO }}>Costo Promedio ($/gal)</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -326,7 +327,7 @@ export default function ReportsPage() {
                                 </TableRow>
                             ))}
                             {tableBase.length > 0 && (
-                                <TableRow sx={{ bgcolor: '#f5f5f5' }}>
+                                <TableRow sx={{ bgcolor: COLOR.LIENZO }}>
                                     <TableCell sx={{ fontWeight: 800 }}>TOTAL GLOBAL</TableCell>
                                     <TableCell align="right" sx={{ fontWeight: 800, color: 'primary.main', fontSize: '1.1rem' }}>
                                         {valueFormatter(totalGalones)}

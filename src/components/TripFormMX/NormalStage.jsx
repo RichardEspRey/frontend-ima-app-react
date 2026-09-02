@@ -6,6 +6,7 @@ import { format } from 'date-fns';
 import SelectWrapper from '../SelectWrapper'; 
 import StopsSection from './StopsSection';
 import DocButton from './DocButton';
+import { COLOR } from '../../shared/ui/tokens';
 
 const NormalStage = ({ 
     etapa, index, updateStage, handleEtapaChange, 
@@ -33,7 +34,7 @@ const NormalStage = ({
 
             {/* ORIGEN */}
             <Grid item xs={12} md={4}>
-                <Paper variant="outlined" sx={{ p: 2, height: '100%', bgcolor: '#f5f5f5' }}>
+                <Paper variant="outlined" sx={{ p: 2, height: '100%', bgcolor: COLOR.LIENZO }}>
                     <Typography variant="subtitle2" color="primary" sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                         <PlaceIcon fontSize="small" /> ORIGEN
                     </Typography>

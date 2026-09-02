@@ -25,6 +25,7 @@ import {
     SIDEBAR_WIDTH_COLLAPSED,
 } from '../store/useSidebarStore';
 import { useSesion } from '../shared/auth';
+import { COLOR } from '../shared/ui/tokens';
 
 const iconMap = {
     'Inicio': MdDashboard,
@@ -218,8 +219,8 @@ const Sidebar = () => {
               width: 8,
               height: 8,
               borderRadius: '50%',
-              bgcolor: red > 0 ? '#ef4444' : '#f59e0b',
-              border: '2px solid #0f172a',
+              bgcolor: red > 0 ? COLOR.PELIGRO : COLOR.AVISO,
+              border: `2px solid ${COLOR.TINTA}`,
             }}
             title={`${total} alerta(s)`}
           />
@@ -228,8 +229,8 @@ const Sidebar = () => {
 
       return (
           <Stack direction="row" spacing={0.5} alignItems="center" pl={1} sx={labelSx(isVisuallyExpanded)}>
-              {red > 0 && <Tooltip title="Vencidos" placement="right"><Avatar sx={{ width: 22, height: 22, bgcolor: '#ef4444', fontSize: '0.75rem', fontWeight: 800 }}>{red}</Avatar></Tooltip>}
-              {yellow > 0 && <Tooltip title="Por Vencer" placement="right"><Avatar sx={{ width: 22, height: 22, bgcolor: '#f59e0b', fontSize: '0.75rem', fontWeight: 800 }}>{yellow}</Avatar></Tooltip>}
+              {red > 0 && <Tooltip title="Vencidos" placement="right"><Avatar sx={{ width: 22, height: 22, bgcolor: COLOR.PELIGRO, fontSize: '0.75rem', fontWeight: 800 }}>{red}</Avatar></Tooltip>}
+              {yellow > 0 && <Tooltip title="Por Vencer" placement="right"><Avatar sx={{ width: 22, height: 22, bgcolor: COLOR.AVISO, fontSize: '0.75rem', fontWeight: 800 }}>{yellow}</Avatar></Tooltip>}
           </Stack>
       );
   };
@@ -238,10 +239,10 @@ const Sidebar = () => {
     borderRadius: 2,
     justifyContent: isVisuallyExpanded ? 'flex-start' : 'center',
     px: isVisuallyExpanded ? 2 : 1,
-    bgcolor: isActive ? '#3b82f6' : 'transparent',
-    color: isActive ? '#ffffff' : '#94a3b8',
+    bgcolor: isActive ? COLOR.INFO : 'transparent',
+    color: isActive ? COLOR.BLANCO : COLOR.TENUE,
     transition: 'all 0.2s',
-    '&:hover': { bgcolor: isActive ? '#2563eb' : 'rgba(255,255,255,0.05)', color: '#fff' },
+    '&:hover': { bgcolor: isActive ? COLOR.INFO : 'rgba(255,255,255,0.05)', color: COLOR.BLANCO },
   });
 
   return (
@@ -260,11 +261,11 @@ const Sidebar = () => {
         sx={{
           width: isVisuallyExpanded ? SIDEBAR_WIDTH_EXPANDED : SIDEBAR_WIDTH_COLLAPSED,
           height: '100vh',
-          bgcolor: '#0f172a',
-          color: '#cbd5e1',
+          bgcolor: COLOR.TINTA,
+          color: COLOR.BORDE_FUERTE,
           display: 'flex',
           flexDirection: 'column',
-          borderRight: '1px solid #1e293b',
+          borderRight: `1px solid ${COLOR.TINTA_CLARA}`,
           position: !isPinnedExpanded && isHovered ? 'absolute' : 'relative',
           left: 0,
           top: 0,
@@ -330,7 +331,7 @@ const Sidebar = () => {
                       minWidth: isVisuallyExpanded ? 40 : 0,
                       mr: isVisuallyExpanded ? 0 : 0,
                       justifyContent: 'center',
-                      color: isActive ? '#ffffff' : 'inherit',
+                      color: isActive ? COLOR.BLANCO : 'inherit',
                       position: 'relative',
                     }}
                   >
@@ -380,12 +381,12 @@ const Sidebar = () => {
                                     onClick={() => subItem.route && navigate(subItem.route)}
                                     sx={{ 
                                         borderRadius: 2, py: 0.8, my: 0.2,
-                                        color: isSubActive ? '#fff' : '#94a3b8',
+                                        color: isSubActive ? COLOR.BLANCO : COLOR.TENUE,
                                         bgcolor: isSubActive ? 'rgba(255,255,255,0.05)' : 'transparent',
-                                        '&:hover': { bgcolor: 'rgba(255,255,255,0.1)', color: '#fff' }
+                                        '&:hover': { bgcolor: 'rgba(255,255,255,0.1)', color: COLOR.BLANCO }
                                     }}
                                 >
-                                    <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: isSubActive ? '#3b82f6' : 'transparent', border: isSubActive ? 'none' : '1px solid #64748b', mr: 2, zIndex: 2 }} />
+                                    <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: isSubActive ? COLOR.INFO : 'transparent', border: isSubActive ? 'none' : `1px solid ${COLOR.APAGADO}`, mr: 2, zIndex: 2 }} />
                                     <ListItemText primary={subItem.name} primaryTypographyProps={{ fontSize: '0.85rem', fontWeight: isSubActive ? 600 : 400 }} />
                                     <NotificationBadges counts={subnotificaciones[subItem.name]} />
                                 </ListItemButton>
@@ -416,9 +417,9 @@ const Sidebar = () => {
                 onClick={() => setMode('expanded')}
                 aria-label="Barra expandida fija"
                 sx={{
-                  color: isPinnedExpanded ? '#3b82f6' : '#64748b',
+                  color: isPinnedExpanded ? COLOR.INFO : COLOR.APAGADO,
                   bgcolor: isPinnedExpanded ? 'rgba(59,130,246,0.15)' : 'transparent',
-                  '&:hover': { bgcolor: 'rgba(255,255,255,0.08)', color: '#fff' },
+                  '&:hover': { bgcolor: 'rgba(255,255,255,0.08)', color: COLOR.BLANCO },
                 }}
               >
                 <MdViewSidebar size={20} />
@@ -430,9 +431,9 @@ const Sidebar = () => {
                 onClick={() => setMode('collapsed')}
                 aria-label="Modo compacto"
                 sx={{
-                  color: !isPinnedExpanded ? '#3b82f6' : '#64748b',
+                  color: !isPinnedExpanded ? COLOR.INFO : COLOR.APAGADO,
                   bgcolor: !isPinnedExpanded ? 'rgba(59,130,246,0.15)' : 'transparent',
-                  '&:hover': { bgcolor: 'rgba(255,255,255,0.08)', color: '#fff' },
+                  '&:hover': { bgcolor: 'rgba(255,255,255,0.08)', color: COLOR.BLANCO },
                 }}
               >
                 <MdViewCompact size={20} />
@@ -443,7 +444,7 @@ const Sidebar = () => {
                 <IconButton
                   size="small"
                   onClick={() => setMode(isPinnedExpanded ? 'collapsed' : 'expanded')}
-                  sx={{ color: '#94a3b8', ml: isPinnedExpanded ? 'auto' : 0, '&:hover': { color: '#fff' } }}
+                  sx={{ color: COLOR.TENUE, ml: isPinnedExpanded ? 'auto' : 0, '&:hover': { color: COLOR.BLANCO } }}
                 >
                   <MdChevronLeft
                     size={20}
@@ -458,7 +459,7 @@ const Sidebar = () => {
           </Stack>
 
           {isVisuallyExpanded && (
-            <Typography variant="caption" sx={{ display: 'block', textAlign: 'center', color: '#64748b', mb: 1.5, px: 0.5 }}>
+            <Typography variant="caption" sx={{ display: 'block', textAlign: 'center', color: COLOR.APAGADO, mb: 1.5, px: 0.5 }}>
               {isPinnedExpanded ? 'Barra fija expandida' : 'Pasa el mouse para expandir'}
             </Typography>
           )}
@@ -493,7 +494,7 @@ const Sidebar = () => {
           )}
 
           {isVisuallyExpanded ? (
-            <ListItemButton onClick={logout} sx={{ borderRadius: 2, color: '#fca5a5', transition: '0.2s', '&:hover': { bgcolor: '#ef4444', color: '#fff' } }}>
+            <ListItemButton onClick={logout} sx={{ borderRadius: 2, color: COLOR.PELIGRO_BORDE, transition: '0.2s', '&:hover': { bgcolor: COLOR.PELIGRO, color: COLOR.BLANCO } }}>
               <ListItemIcon sx={{ minWidth: 40, color: 'inherit' }}><MdExitToApp size={22} /></ListItemIcon>
               <ListItemText primary="Cerrar Sesión" primaryTypographyProps={{ fontWeight: 700, fontSize: '0.9rem' }} />
             </ListItemButton>
@@ -503,10 +504,10 @@ const Sidebar = () => {
                 onClick={logout}
                 sx={{
                   borderRadius: 2,
-                  color: '#fca5a5',
+                  color: COLOR.PELIGRO_BORDE,
                   justifyContent: 'center',
                   minWidth: 0,
-                  '&:hover': { bgcolor: '#ef4444', color: '#fff' },
+                  '&:hover': { bgcolor: COLOR.PELIGRO, color: COLOR.BLANCO },
                 }}
               >
                 <ListItemIcon sx={{ minWidth: 0, justifyContent: 'center', color: 'inherit' }}>

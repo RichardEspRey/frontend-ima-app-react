@@ -20,6 +20,7 @@ import { useNavigate, useParams } from "react-router-dom"
 import { esManual, useRegistros } from "../../../entities/expense"
 import { decimales, moneda } from "../../../shared/lib/formato"
 import { PageHeader } from "../../../shared/ui"
+import { COLOR } from "../../../shared/ui/tokens"
 
 /**
  * El contenido de una celda del detalle, según lo que declare la columna.
@@ -51,8 +52,8 @@ function Celda({ columna, registro }) {
         variant="outlined"
         sx={{
           fontWeight: 600,
-          borderColor: manual ? "#f59e0b" : "#cbd5e1",
-          color: manual ? "#b45309" : "#64748b",
+          borderColor: manual ? COLOR.AVISO : COLOR.BORDE_FUERTE,
+          color: manual ? COLOR.AVISO : COLOR.APAGADO,
         }}
       />
     )

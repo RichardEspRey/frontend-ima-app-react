@@ -4,6 +4,7 @@ import LocalShippingIcon from "@mui/icons-material/LocalShipping"
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked"
 
 import { ESTADO_PARADA, ETIQUETA_PARADA, avanceParadas } from "../../../entities/tracking"
+import { COLOR } from "../../../shared/ui/tokens"
 
 const ICONO = {
   [ESTADO_PARADA.COMPLETADA]: CheckCircleIcon,
@@ -12,9 +13,9 @@ const ICONO = {
 }
 
 const COLOR_ICONO = {
-  [ESTADO_PARADA.COMPLETADA]: "#16a34a",
-  [ESTADO_PARADA.EN_CURSO]: "#f59e0b",
-  [ESTADO_PARADA.PENDIENTE]: "#cbd5e1",
+  [ESTADO_PARADA.COMPLETADA]: COLOR.EXITO,
+  [ESTADO_PARADA.EN_CURSO]: COLOR.AVISO,
+  [ESTADO_PARADA.PENDIENTE]: COLOR.BORDE_FUERTE,
 }
 
 /**
@@ -30,7 +31,7 @@ export function ParadasEtapa({ paradas = [], cargando }) {
     return (
       <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: 1.5 }}>
         <CircularProgress size={12} />
-        <Typography variant="caption" color="#94a3b8">
+        <Typography variant="caption" color={COLOR.TENUE}>
           Cargando paradas...
         </Typography>
       </Stack>
@@ -42,8 +43,8 @@ export function ParadasEtapa({ paradas = [], cargando }) {
   const { completadas, total } = avanceParadas(paradas)
 
   return (
-    <Stack spacing={0.6} sx={{ mt: 1.5, pt: 1, borderTop: "1px dashed #bfdbfe" }}>
-      <Typography variant="caption" fontWeight={700} color="#1d4ed8">
+    <Stack spacing={0.6} sx={{ mt: 1.5, pt: 1, borderTop: `1px dashed ${COLOR.INFO_BORDE}` }}>
+      <Typography variant="caption" fontWeight={700} color={COLOR.INFO}>
         Paradas Adicionales ({completadas}/{total} completadas)
       </Typography>
 

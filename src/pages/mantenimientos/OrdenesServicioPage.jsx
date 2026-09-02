@@ -11,6 +11,7 @@ import {
 import TablaOrdenes from '../../features/service-order/ui/TablaOrdenes.jsx';
 import TablaInventario from '../../features/service-order/ui/TablaInventario.jsx';
 import { useSesion } from '../../shared/auth';
+import { COLOR } from '../../shared/ui/tokens';
 
 
 const TABS_CONFIG = [
@@ -62,10 +63,10 @@ const OrdenesServicioPage = () => {
                     <Typography variant="overline" sx={PAGE_OVERLINE_SX}>
                         Mantenimientos · Administración
                     </Typography>
-                    <Typography variant="h4" fontWeight={800} color="#0f172a" letterSpacing="-0.02em" sx={PAGE_TITLE_SX}>
+                    <Typography variant="h4" fontWeight={800} color={COLOR.TINTA} letterSpacing="-0.02em" sx={PAGE_TITLE_SX}>
                         Administrador de Órdenes de Servicio
                     </Typography>
-                    <Typography variant="body2" color="#64748b" sx={{ mt: 0.5 }}>
+                    <Typography variant="body2" color={COLOR.APAGADO} sx={{ mt: 0.5 }}>
                         Órdenes de servicio del taller e inventario de refacciones y consumibles.
                     </Typography>
                 </Box>

@@ -9,6 +9,7 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import EditIcon from '@mui/icons-material/Edit'; 
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
+import { COLOR } from '../../shared/ui/tokens';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive'; // <-- Icono de alarma
 
 const numberFmt = (n) => new Intl.NumberFormat('en-US').format(Number(n).toFixed(0));
@@ -33,7 +34,7 @@ export const AfinacionesTable = ({ trucksStatus, onOpenModal }) => {
                 `}
             </style>
             <Table>
-                <TableHead sx={{ bgcolor: '#f5f5f5' }}>
+                <TableHead sx={{ bgcolor: COLOR.LIENZO }}>
                     <TableRow>
                         <TableCell sx={{ fontWeight: 700 }}>Camión</TableCell>
                         <TableCell sx={{ fontWeight: 700, width: '35%' }}>Estado (Millas vs Límite)</TableCell>
@@ -90,7 +91,7 @@ export const AfinacionesTable = ({ trucksStatus, onOpenModal }) => {
                                 </TableCell>
 
                                 <TableCell align="center">
-                                    <Box sx={{ p: 1, border: alarmaActiva ? '2px dashed #ef4444' : '1px dashed #ccc', borderRadius: 2, display: 'inline-block', bgcolor: alarmaActiva ? '#fef2f2' : 'transparent' }}>
+                                    <Box sx={{ p: 1, border: alarmaActiva ? `2px dashed ${COLOR.PELIGRO}` : '1px dashed #ccc', borderRadius: 2, display: 'inline-block', bgcolor: alarmaActiva ? COLOR.PELIGRO_FONDO : 'transparent' }}>
                                         <Typography variant="caption" color={alarmaActiva ? 'error.main' : 'text.secondary'} fontWeight={alarmaActiva ? 700 : 400}>
                                             {alarmaActiva ? '¡Nueva Captura!' : 'Captura chofer:'}
                                         </Typography>

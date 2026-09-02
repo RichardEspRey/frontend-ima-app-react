@@ -16,6 +16,7 @@ import { useConductoresActivos } from '../entities/driver';
 import { useCajasActivas, useCajasExternasActivas } from '../entities/trailer';
 import { useCamionesActivos } from '../entities/truck';
 import { useBodegas } from '../entities/warehouse';
+import { COLOR } from '../shared/ui/tokens';
 
 // Constante de módulo: un [] nuevo por render dispararía los efectos que
 // dependen de estas listas.
@@ -272,10 +273,10 @@ const BorderCrossingFormNew2 = ({ teamId, tripNumber, countryCode, tripYear, isT
 
             {/* 2. SECCIÓN DE ETAPAS */}
             <Typography variant="h6" fontWeight={700} gutterBottom sx={{ mt: 4, mb: 2 }}>Información del viaje</Typography>
-            <Paper sx={{ mb: 3, p: 2, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 2 }}>
+            <Paper sx={{ mb: 3, p: 2, bgcolor: COLOR.LIENZO, border: `1px solid ${COLOR.BORDE}`, borderRadius: 2 }}>
                 <Stack direction={{ xs: 'column', sm: 'row' }} alignItems="center" justifyContent="space-between" spacing={2}>
                     <Box>
-                        <Typography variant="subtitle1" fontWeight={700} color="#0f172a">Configuración Inicial del Viaje</Typography>
+                        <Typography variant="subtitle1" fontWeight={700} color={COLOR.TINTA}>Configuración Inicial del Viaje</Typography>
                         <Typography variant="body2" color="text.secondary">Indica si el conductor arranca con carga o debe hacer un movimiento en vacío primero.</Typography>
                     </Box>
                     
@@ -330,7 +331,7 @@ const BorderCrossingFormNew2 = ({ teamId, tripNumber, countryCode, tripYear, isT
             </Stack>
 
             {/* 4. FOOTER FLOTANTE */}
-            <Paper elevation={10} sx={{ position: 'fixed', bottom: 0, left: '250px', right: 0, p: 2, zIndex: 1000, textAlign: 'right', bgcolor: '#fff' }}>
+            <Paper elevation={10} sx={{ position: 'fixed', bottom: 0, left: '250px', right: 0, p: 2, zIndex: 1000, textAlign: 'right', bgcolor: COLOR.BLANCO }}>
                 <Box sx={{ maxWidth: '1600px', mx: 'auto' }}>
                     <Button variant="contained" size="large" color="success" startIcon={loadingSave ? <CircularProgress size={24} color="inherit" /> : <SaveIcon />} onClick={onSaveOverride ?? handleSubmit} disabled={loadingSave} sx={{ px: 6 }}>
                         {loadingSave ? "Guardando..." : "GUARDAR VIAJE"}

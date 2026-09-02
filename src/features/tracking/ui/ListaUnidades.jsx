@@ -14,6 +14,7 @@ import WarningAmberIcon from "@mui/icons-material/WarningAmber"
 
 import { lecturaTanqueSospechosa, porcentajeTanque } from "../../../entities/tracking"
 import { COLOR_PUNTO_1, COLOR_PUNTO_2 } from "./iconos"
+import { COLOR } from "../../../shared/ui/tokens"
 
 const TANQUE_BAJO = 20
 
@@ -44,7 +45,7 @@ export function ListaUnidades({
 }) {
   return (
     <>
-      <Box sx={{ p: 2, borderBottom: "1px solid #e2e8f0", bgcolor: "#0f172a", color: "white" }}>
+      <Box sx={{ p: 2, borderBottom: `1px solid ${COLOR.BORDE}`, bgcolor: COLOR.TINTA, color: "white" }}>
         <Typography variant="h6" fontWeight={800}>
           Centro de Comando
         </Typography>
@@ -92,14 +93,14 @@ export function ListaUnidades({
                   : esPunto2
                     ? COLOR_PUNTO_2
                     : esSeleccionada
-                      ? "#3b82f6"
-                      : "#e2e8f0",
+                      ? COLOR.INFO
+                      : COLOR.BORDE,
                 bgcolor: esPunto1
                   ? "#eef5ff"
                   : esPunto2
-                    ? "#fff0f0"
+                    ? COLOR.PELIGRO_FONDO
                     : esSeleccionada
-                      ? "#eff6ff"
+                      ? COLOR.INFO_FONDO
                       : "white",
                 transition: "0.2s",
                 "&:hover": { borderColor: "#93c5fd" },
@@ -109,13 +110,13 @@ export function ListaUnidades({
                 <Box sx={{ width: 6, height: 40, bgcolor: unidad.color, borderRadius: 1 }} />
                 <Box sx={{ flexGrow: 1 }}>
                   <Stack direction="row" justifyContent="space-between" alignItems="center">
-                    <Typography variant="subtitle2" fontWeight={800} color="#0f172a">
+                    <Typography variant="subtitle2" fontWeight={800} color={COLOR.TINTA}>
                       {unidad.name}
                     </Typography>
                     <Typography
                       variant="caption"
                       fontWeight={700}
-                      color={unidad.speed > 0 ? "#10b981" : "#64748b"}
+                      color={unidad.speed > 0 ? COLOR.EXITO : COLOR.APAGADO}
                     >
                       {unidad.speed > 0 ? `${unidad.speed} km/h` : "Detenido"}
                     </Typography>
@@ -133,7 +134,7 @@ export function ListaUnidades({
                   {unidad.truck_id && (
                     <Box sx={{ mt: 1, display: "flex", alignItems: "center", gap: 1 }}>
                       <LocalGasStationIcon
-                        sx={{ fontSize: 14, color: llenado < TANQUE_BAJO ? "#ef4444" : "#64748b" }}
+                        sx={{ fontSize: 14, color: llenado < TANQUE_BAJO ? COLOR.PELIGRO : COLOR.APAGADO }}
                       />
                       <LinearProgress
                         variant="determinate"
@@ -142,15 +143,15 @@ export function ListaUnidades({
                           flexGrow: 1,
                           height: 6,
                           borderRadius: 3,
-                          bgcolor: "#e2e8f0",
+                          bgcolor: COLOR.BORDE,
                           "& .MuiLinearProgress-bar": {
-                            bgcolor: llenado < TANQUE_BAJO ? "#ef4444" : "#10b981",
+                            bgcolor: llenado < TANQUE_BAJO ? COLOR.PELIGRO : COLOR.EXITO,
                           },
                         }}
                       />
                       {sospechosa && (
                         <Tooltip title={`Lectura imposible: ${unidad.current_fuel} gal en un tanque de ${unidad.tank_capacity}`}>
-                          <WarningAmberIcon sx={{ fontSize: 15, color: "#f59e0b" }} />
+                          <WarningAmberIcon sx={{ fontSize: 15, color: COLOR.AVISO }} />
                         </Tooltip>
                       )}
                     </Box>
