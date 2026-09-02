@@ -90,7 +90,7 @@ commits `ce8b589` y `b50d15b`.
 | 2 | ~~`@pablotheblink/flashyjs`~~ **hecho** — no se usaba | — | 0 |
 | 3 | ~~`react-toastify`~~ **hecho** | `notify.discreto` | 3 |
 | 4 | `react-datepicker` | Campo de fecha de MUI, envuelto | 9 |
-| 5 | `react-select` | `Autocomplete` de MUI, envuelto | 11 |
+| 5 | ~~`react-select`~~ **hecho** | `SelectorBusqueda` sobre `Autocomplete` | 11 |
 | 6 | `sweetalert2` | Ya está detrás de `shared/ui/notify` | 28 |
 
 Los tres primeros son trabajo de una tarde. El sexto ya está medio hecho: `notify` envuelve
@@ -117,6 +117,27 @@ beneficio.
 - **De 7 librerías de interfaz a 2** (MUI y sus iconos), y de 31 archivos mezclando a cero.
 - El aspecto no cambia por esta decisión. Lo que cambia es que deje de haber dos formas de
   hacer cada cosa.
+
+## Cómo se sustituye un control sin romper el envío
+
+Lo aprendido al quitar `react-select`, que aplica a cualquier sustitución de un control de
+formulario:
+
+**Lo que hay que preservar es el contrato del valor, no la apariencia.** Las pantallas
+guardaban la opción entera y sacaban el dato después: `pais: country?.value`. Un reemplazo
+que entregara `"MX"` en vez de `{value:"MX", label:"México"}` habría hecho que ese acceso
+diera `undefined`; la capa de API omite los `undefined`, y **el gasto se habría guardado sin
+país sin que nadie viera un error**.
+
+**La verificación que de verdad prueba que nada se rompió no es una prueba unitaria: es
+capturar el envío real.** Se interceptó `fetch` en el navegador para leer el `FormData` sin
+dejarlo salir —así que no se guardó nada—, se llenó el mismo formulario antes y después, y
+se compararon los dos cuerpos campo por campo.
+
+**Y hay que buscar la capacidad que se va a perder.** `react-select/creatable` permite crear
+compañías y bodegas escribiendo en el campo, y eso se usa de verdad en los formularios de
+viaje. Reemplazarlo sin reproducirlo habría dejado a la operación sin poder dar de alta un
+destino nuevo.
 
 ## Cuándo reconsiderar
 

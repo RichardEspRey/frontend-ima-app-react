@@ -4,14 +4,13 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import DownloadIcon from '@mui/icons-material/Download';
-import Select from 'react-select';
-import CreatableSelect from 'react-select/creatable';
 import DatePicker from 'react-datepicker';
-import { selectStyles, getDocumentUrl } from '../../utils/tripFormConstants';
+import { getDocumentUrl } from '../../utils/tripFormConstants';
 import ReceiptIcon from '@mui/icons-material/Receipt';
 import { usePermisos, PERMISOS } from '../../shared/auth';
 import { urlSegura } from '../../shared/security';
 import { COLOR } from '../../shared/ui/tokens';
+import { SelectorBusqueda } from '../../shared/ui';
 
 const DocButton = ({ label, doc, onClick, disabled, apiHost }) => (
     <Box sx={{ mb: 1 }}>
@@ -127,26 +126,23 @@ const StageCard = ({
                         <Grid container spacing={2} mb={3}>
                             <Grid item xs={12} md={4}>
                                 <Typography variant="caption" color="textSecondary">Compañía</Typography>
-                                <CreatableSelect
+                                <SelectorBusqueda permitirCrear
                                     value={options.companies.find(opt => opt.value === etapa.company_id) || null}
                                     onChange={(sel) => handleStageChange(index, 'company_id', sel?.value || '')}
-                                    onCreateOption={(val) => creators.createCompany(val, index, 'company_id')}
+                                    onCrear={(val) => creators.createCompany(val, index, 'company_id')}
                                     options={options.companies}
                                     isLoading={loadingStates.companies}
                                     isDisabled={isFormDisabled}
-                                    styles={selectStyles}
                                     placeholder="Seleccionar/Crear..."
-                                    formatCreateLabel={(v) => `Crear "${v}"`}
                                 />
                             </Grid>
                             <Grid item xs={12} md={4}>
                                 <Typography variant="caption" color="textSecondary">Dirección Viaje</Typography>
-                                <Select
+                                <SelectorBusqueda
                                     value={etapa.travel_direction ? { value: etapa.travel_direction, label: etapa.travel_direction } : null}
                                     onChange={(sel) => handleStageChange(index, 'travel_direction', sel?.value || '')}
                                     options={[{ value: 'Going Up', label: 'Going Up' }, { value: 'Going Down', label: 'Going Down' }]}
                                     isDisabled={isFormDisabled}
-                                    styles={selectStyles}
                                     placeholder="Seleccionar..."
                                 />
                             </Grid>
@@ -160,14 +156,13 @@ const StageCard = ({
 
                             <Grid item xs={12} md={6}>
                                 <Typography variant="caption" color="textSecondary">Bodega Origen</Typography>
-                                <CreatableSelect
+                                <SelectorBusqueda permitirCrear
                                     value={options.warehouses.find(opt => opt.value === etapa.warehouse_origin_id) || null}
                                     onChange={(sel) => handleStageChange(index, 'warehouse_origin_id', sel?.value || '')}
-                                    onCreateOption={(val) => creators.createWarehouse(val, index, 'warehouse_origin_id')}
+                                    onCrear={(val) => creators.createWarehouse(val, index, 'warehouse_origin_id')}
                                     options={options.warehouses}
                                     isLoading={loadingStates.warehouses}
                                     isDisabled={isFormDisabled}
-                                    styles={selectStyles}
                                     placeholder="Seleccionar/Crear..."
                                 />
                                 <TextField fullWidth placeholder="Ciudad/Estado Origen" size="small" margin="dense"
@@ -182,14 +177,13 @@ const StageCard = ({
 
                             <Grid item xs={12} md={6}>
                                 <Typography variant="caption" color="textSecondary">Bodega Destino</Typography>
-                                <CreatableSelect
+                                <SelectorBusqueda permitirCrear
                                     value={options.warehouses.find(opt => opt.value === etapa.warehouse_destination_id) || null}
                                     onChange={(sel) => handleStageChange(index, 'warehouse_destination_id', sel?.value || '')}
-                                    onCreateOption={(val) => creators.createWarehouse(val, index, 'warehouse_destination_id')}
+                                    onCrear={(val) => creators.createWarehouse(val, index, 'warehouse_destination_id')}
                                     options={options.warehouses}
                                     isLoading={loadingStates.warehouses}
                                     isDisabled={isFormDisabled}
-                                    styles={selectStyles}
                                     placeholder="Seleccionar/Crear..."
                                 />
                                 <TextField fullWidth placeholder="Ciudad/Estado Destino" size="small" margin="dense"

@@ -12,7 +12,6 @@ import InsertDriveFileOutlinedIcon from '@mui/icons-material/InsertDriveFileOutl
 import AddIcon from '@mui/icons-material/Add';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
-import Select from 'react-select';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import Swal from 'sweetalert2';
@@ -27,10 +26,11 @@ import { useAuthStore } from '../../store/useAuthStore';
 import FieldLabel from '../../components/Gastos/FieldLabel';
 import {
   SECTION_LABEL_SX, CARD_SX, DARK_BTN_SX, GHOST_BTN_SX,
-  customSelectStyles, DATEPICKER_CSS, money,
+  DATEPICKER_CSS, money,
 } from '../../features/expense-manager/estilos';
 import { archivoDelEvento, GRUPOS_ARCHIVO } from '../../shared/security';
 import { COLOR, TINTE } from '../../shared/ui/tokens';
+import { SelectorBusqueda } from '../../shared/ui';
 
 // La app móvil puede subir el "ticket" como PDF escaneado en vez de imagen
 // (ej. archivos "scan_*.pdf"), no solo JPG/PNG. Un <img> no puede mostrar un PDF.
@@ -323,9 +323,9 @@ const ExpenseEdit = () => {
                   md: 3
                 }}>
                 <FieldLabel>País</FieldLabel>
-                <Select
+                <SelectorBusqueda
                   value={country} onChange={handleCountryChange}
-                  options={countries} styles={customSelectStyles}
+                  options={countries}
                   placeholder="Seleccionar…"
                 />
               </Grid>
@@ -496,11 +496,10 @@ const ExpenseEdit = () => {
                             md: mdSelectSize
                           }}>
                           <FieldLabel>Tipo de Gasto</FieldLabel>
-                          <Select 
+                          <SelectorBusqueda 
                             options={expenseTypes} 
                             value={expenseTypes.find(t => String(t.value) === String(detail.expenseType)) || null}
                             onChange={opt => handleDetailChange(detail.id, 'expenseType', opt?.value)}
-                            styles={customSelectStyles}
                             isLoading={typesLoading}
                             placeholder="Seleccionar…"
                           />
@@ -513,11 +512,10 @@ const ExpenseEdit = () => {
                               md: mdSelectSize
                             }}>
                             <FieldLabel>Categoría</FieldLabel>
-                            <Select 
+                            <SelectorBusqueda 
                               options={relevantCategories}
                               value={relevantCategories.find(c => c.value === detail.category) || null}
                               onChange={opt => handleDetailChange(detail.id, 'category', opt?.value)}
-                              styles={customSelectStyles}
                               isLoading={catLoading}
                               placeholder="Seleccionar…"
                             />
@@ -531,11 +529,10 @@ const ExpenseEdit = () => {
                               md: mdSelectSize
                             }}>
                             <FieldLabel>Subcategoría</FieldLabel>
-                            <Select 
+                            <SelectorBusqueda 
                               options={relevantSubs}
                               value={relevantSubs.find(s => s.value === detail.subcategory) || null}
                               onChange={opt => handleDetailChange(detail.id, 'subcategory', opt?.value)}
-                              styles={customSelectStyles}
                               isDisabled={!detail.category}
                               isLoading={subLoading}
                               placeholder="Seleccionar…"

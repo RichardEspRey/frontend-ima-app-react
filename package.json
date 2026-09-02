@@ -44,7 +44,6 @@
     "react-leaflet": "^5.0.0",
     "react-photo-view": "^1.2.7",
     "react-router-dom": "^7.4.1",
-    "react-select": "^5.10.1",
     "react-tooltip": "^5.28.0",
     "sweetalert2": "^11.17.2",
     "zod": "^4.5.4",

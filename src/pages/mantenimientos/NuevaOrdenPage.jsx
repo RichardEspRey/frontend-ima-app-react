@@ -10,22 +10,14 @@ import SaveIcon from '@mui/icons-material/Save';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
-import Select from "react-select";
-import CreatableSelect from "react-select/creatable";
 
 import useFetchInventoryItems from "../../hooks/expense_hooks/useFetchInventoryItems";
 import useFetchRepairTypes from "../../hooks/service_order/useFetchRepairTypes";
 import { COLOR } from "../../shared/ui/tokens";
+import { SelectorBusqueda } from "../../shared/ui";
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
-const customSelectStyles = {
-  control: (provided) => ({
-    ...provided, height: 56, borderRadius: 4, borderColor: 'rgba(0, 0, 0, 0.23)',
-    '&:hover': { borderColor: 'rgba(0, 0, 0, 0.87)' }
-  }),
-  menu: (provided) => ({ ...provided, zIndex: 9999 })
-};
 
 const money = (v) => new Intl.NumberFormat("es-MX", { style: "currency", currency: "USD" }).format(Number(v || 0));
 
@@ -184,12 +176,11 @@ export default function NuevaOrdenPage() {
                         <Grid container spacing={2}>
                             <Grid item xs={12} md={4}>
                                 <Typography variant="caption" fontWeight={600}>Camión</Typography>
-                                <Select 
+                                <SelectorBusqueda 
                                     options={truckOptions} 
                                     value={selectedTruck} 
                                     onChange={setSelectedTruck} 
-                                    placeholder="Seleccionar..." 
-                                    styles={customSelectStyles}
+                                    placeholder="Seleccionar..."
                                 />
                             </Grid>
                             <Grid item xs={12} md={4}>
@@ -251,14 +242,13 @@ export default function NuevaOrdenPage() {
 
                             <Grid item xs={12}>
                                 <Typography variant="caption" fontWeight={600}>Tipo de Reparación</Typography>
-                                <CreatableSelect
+                                <SelectorBusqueda permitirCrear
                                     isClearable
                                     options={repairTypes}
                                     value={tipoReparacion}
                                     onChange={setTipoReparacion}
-                                    onCreateOption={handleCreateRepair}
+                                    onCrear={handleCreateRepair}
                                     placeholder="Selecciona o escribe para crear..."
-                                    styles={customSelectStyles}
                                 />
                             </Grid>
                         </Grid>
@@ -275,13 +265,12 @@ export default function NuevaOrdenPage() {
                                 <Grid container spacing={2} alignItems="flex-end">
                                     <Grid item xs={12} md={6}>
                                         <Typography variant="caption">Artículo</Typography>
-                                        <Select 
+                                        <SelectorBusqueda 
                                             options={invOptions} 
                                             value={itemSeleccionado} 
                                             onChange={setItemSeleccionado} 
                                             placeholder="Buscar en inventario..." 
                                             isLoading={itemsLoading}
-                                            styles={customSelectStyles}
                                         />
                                         <Typography variant="caption" color="text.secondary">Stock: {stockSelected}</Typography>
                                     </Grid>

@@ -10,26 +10,6 @@ export {
   INPUT_SX,
 } from '../../shared/ui/estilos';
 
-export const customSelectStyles = {
-  control: (provided, state) => ({
-    ...provided,
-    minHeight: 40,
-    borderRadius: 8,
-    fontSize: '0.9rem',
-    backgroundColor: COLOR.BLANCO,
-    borderColor: state.isFocused ? COLOR.TINTA : COLOR.BORDE_FUERTE,
-    boxShadow: state.isFocused ? `0 0 0 1px ${COLOR.TINTA}` : 'none',
-    '&:hover': { borderColor: state.isFocused ? COLOR.TINTA : COLOR.TENUE },
-  }),
-  placeholder: (provided) => ({ ...provided, color: COLOR.TENUE }),
-  menu: (provided) => ({ ...provided, zIndex: 9999, borderRadius: 8, overflow: 'hidden' }),
-  option: (provided, state) => ({
-    ...provided,
-    fontSize: '0.9rem',
-    backgroundColor: state.isSelected ? COLOR.TINTA : state.isFocused ? COLOR.RELLENO : COLOR.BLANCO,
-    color: state.isSelected ? COLOR.BLANCO : COLOR.TEXTO,
-  }),
-};
 
 export const DATEPICKER_CSS = `
   .expense-datepicker {

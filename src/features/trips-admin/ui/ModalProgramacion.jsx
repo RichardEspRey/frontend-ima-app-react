@@ -8,12 +8,11 @@ import LocalShippingOutlinedIcon from "@mui/icons-material/LocalShippingOutlined
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline"
 import PlaceOutlinedIcon from "@mui/icons-material/PlaceOutlined"
 import ScheduleOutlinedIcon from "@mui/icons-material/ScheduleOutlined"
-import CreatableSelect from "react-select/creatable"
 
 import { estaDisponible, leerValorCaja, valorCaja } from "../../../entities/schedule"
 import { selectStyles } from "../../../utils/tripFormConstants"
 import { COLOR } from "../../../shared/ui/tokens"
-import { BloqueEsqueleto, Selector } from "../../../shared/ui"
+import { BloqueEsqueleto, Selector, SelectorBusqueda } from "../../../shared/ui"
 
 const OPCIONES_TIPO_CAJA = [
   { valor: "interna", etiqueta: "Interna" },
@@ -191,7 +190,7 @@ export function ModalProgramacion({
                     <InputLabel id="operador" shrink>
                       Operador
                     </InputLabel>
-                    <Select
+                    <SelectorBusqueda
                       labelId="operador"
                       displayEmpty
                       notched
@@ -226,7 +225,7 @@ export function ModalProgramacion({
                           </Box>
                         </MenuItem>
                       ))}
-                    </Select>
+                    </SelectorBusqueda>
                   </FormControl>
                 </Grid>
 
@@ -235,7 +234,7 @@ export function ModalProgramacion({
                     <InputLabel id="camion" shrink>
                       Camión
                     </InputLabel>
-                    <Select
+                    <SelectorBusqueda
                       labelId="camion"
                       displayEmpty
                       notched
@@ -288,7 +287,7 @@ export function ModalProgramacion({
                           </Box>
                         </MenuItem>
                       ))}
-                    </Select>
+                    </SelectorBusqueda>
                   </FormControl>
                 </Grid>
 
@@ -299,19 +298,17 @@ export function ModalProgramacion({
                       Compañía
                     </Typography>
                   </Stack>
-                  <CreatableSelect
+                  <SelectorBusqueda permitirCrear
                     value={
                       opcionesCompania.find((opcion) => opcion.value === formulario.company_id) ??
                       null
                     }
                     onChange={(elegida) => onCampoChange("company_id", elegida?.value || "")}
-                    onCreateOption={onCrearCompania}
+                    onCrear={onCrearCompania}
                     options={opcionesCompania}
                     isLoading={cargandoCompanias}
                     isClearable
-                    styles={selectStyles}
                     placeholder="Seleccionar/Crear compañía..."
-                    formatCreateLabel={(valor) => `Crear "${valor}"`}
                   />
                 </Grid>
 
@@ -334,7 +331,7 @@ export function ModalProgramacion({
                       <InputLabel id="caja" shrink>
                         {tipoCaja === "interna" ? "Caja Interna" : "Caja Externa"}
                       </InputLabel>
-                      <Select
+                      <SelectorBusqueda
                         labelId="caja"
                         displayEmpty
                         notched
@@ -382,7 +379,7 @@ export function ModalProgramacion({
                             </MenuItem>
                           ))
                         )}
-                      </Select>
+                      </SelectorBusqueda>
                     </FormControl>
 
                     {tipoCaja === "externa" && (

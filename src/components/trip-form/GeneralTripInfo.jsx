@@ -1,11 +1,10 @@
 import React from 'react';
 import { Box, Paper, Typography, Grid, TextField, Button } from '@mui/material';
-import Select from 'react-select';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { selectStyles } from '../../utils/tripFormConstants'; 
 import { COLOR } from '../../shared/ui/tokens';
-import { Selector } from '../../shared/ui';
+import { Selector, SelectorBusqueda } from '../../shared/ui';
 
 const GeneralTripInfo = ({
     formData,
@@ -77,7 +76,7 @@ const GeneralTripInfo = ({
                     <Typography variant="caption" display="block" color="textSecondary" mb={0.5}>
                         Driver Principal
                     </Typography>
-                    <Select
+                    <SelectorBusqueda
                         value={formData.driver_id ? { value: formData.driver_id, label: formData.driver_nombre || `ID: ${formData.driver_id}` } : null}
                         onChange={(sel) => {
                             handleFormChange('driver_id', sel?.value || '');
@@ -86,7 +85,6 @@ const GeneralTripInfo = ({
                         }}
                         options={options.drivers}
                         isLoading={loadingStates.drivers}
-                        styles={selectStyles}
                         isDisabled={isFormDisabled}
                         placeholder="Seleccionar..."
                         isClearable
@@ -98,7 +96,7 @@ const GeneralTripInfo = ({
                         <Typography variant="caption" display="block" color="textSecondary" mb={0.5}>
                             Segundo Driver
                         </Typography>
-                        <Select
+                        <SelectorBusqueda
                             value={formData.driver_id_second ? { value: formData.driver_id_second, label: formData.driver_second_nombre || `ID: ${formData.driver_id_second}` } : null}
                             onChange={(sel) => {
                                 handleFormChange('driver_id_second', sel?.value || '');
@@ -106,7 +104,6 @@ const GeneralTripInfo = ({
                             }}
                             options={options.drivers.filter(d => d.value !== formData.driver_id)}
                             isLoading={loadingStates.drivers}
-                            styles={selectStyles}
                             isDisabled={isFormDisabled}
                             placeholder="Seleccionar..."
                             isClearable
@@ -118,7 +115,7 @@ const GeneralTripInfo = ({
                     <Typography variant="caption" display="block" color="textSecondary" mb={0.5}>
                         Camión (Truck)
                     </Typography>
-                    <Select
+                    <SelectorBusqueda
                         value={formData.truck_id ? { value: formData.truck_id, label: formData.truck_unidad || `ID: ${formData.truck_id}` } : null}
                         onChange={(sel) => {
                             handleFormChange('truck_id', sel?.value || '');
@@ -127,7 +124,6 @@ const GeneralTripInfo = ({
                         }}
                         options={options.trucks}
                         isLoading={loadingStates.trucks}
-                        styles={selectStyles}
                         isDisabled={isFormDisabled}
                         placeholder="Seleccionar..."
                         isClearable
@@ -152,7 +148,7 @@ const GeneralTripInfo = ({
                     
                     <Grid item xs={12} md={6}>
                         {trailerType === 'interna' ? (
-                            <Select
+                            <SelectorBusqueda
                                 value={formData.caja_id ? { value: formData.caja_id, label: formData.caja_no_caja || `ID: ${formData.caja_id}` } : null}
                                 onChange={(sel) => {
                                     handleFormChange('caja_id', sel?.value || '');
@@ -160,7 +156,6 @@ const GeneralTripInfo = ({
                                 }}
                                 options={options.trailers}
                                 isLoading={loadingStates.trailers}
-                                styles={selectStyles}
                                 isDisabled={isFormDisabled}
                                 placeholder="Seleccionar Caja Interna"
                                 isClearable
@@ -168,7 +163,7 @@ const GeneralTripInfo = ({
                         ) : (
                             <Box sx={{ display: 'flex', gap: 1 }}>
                                 <Box sx={{ flexGrow: 1 }}>
-                                    <Select
+                                    <SelectorBusqueda
                                         value={formData.caja_externa_id ? { value: formData.caja_externa_id, label: formData.caja_externa_no_caja || `ID: ${formData.caja_externa_id}` } : null}
                                         onChange={(sel) => {
                                             handleFormChange('caja_externa_id', sel?.value || '');
@@ -176,7 +171,6 @@ const GeneralTripInfo = ({
                                         }}
                                         options={options.externalTrailers}
                                         isLoading={loadingStates.externalTrailers}
-                                        styles={selectStyles}
                                         isDisabled={isFormDisabled}
                                         placeholder="Seleccionar Caja Externa"
                                         isClearable

@@ -13,7 +13,6 @@ import CloseIcon from '@mui/icons-material/Close';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import Swal from 'sweetalert2';
-import Select from 'react-select';
 
 import ModalArchivo from '../../../components/ModalArchivo';
 
@@ -25,9 +24,10 @@ import { useAuthStore } from '../../../store/useAuthStore';
 import FieldLabel from '../../../components/Gastos/FieldLabel';
 import {
     SECTION_LABEL_SX, CARD_SX, DARK_BTN_SX, GHOST_BTN_SX, INPUT_SX,
-    customSelectStyles, DATEPICKER_CSS, money,
+    DATEPICKER_CSS, money,
 } from '../estilos';
 import { COLOR } from '../../../shared/ui/tokens';
+import { SelectorBusqueda } from '../../../shared/ui';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -260,9 +260,9 @@ const ExpenseModal = ({ open, onClose, onSuccess }) => {
                                         md: 4
                                     }}>
                                     <FieldLabel>País</FieldLabel>
-                                    <Select 
-                                        options={countries} value={country} onChange={setCountry} 
-                                        styles={customSelectStyles} placeholder="Seleccionar…" menuPosition="fixed"
+                                    <SelectorBusqueda
+                                        options={countries} value={country} onChange={setCountry}
+                                        placeholder="Seleccionar…"
                                     />
                                 </Grid>
                                 <Grid
@@ -357,10 +357,10 @@ const ExpenseModal = ({ open, onClose, onSuccess }) => {
                                                         md: mdSelectSize
                                                     }}>
                                                     <FieldLabel>Tipo</FieldLabel>
-                                                    <Select 
+                                                    <SelectorBusqueda
                                                         options={expenseTypes} value={expenseTypes.find(t => String(t.value) === String(detail.expenseType)) || null}
                                                         onChange={opt => handleDetailChange(detail.id, 'expenseType', opt?.value)}
-                                                        styles={customSelectStyles} isLoading={typesLoading} placeholder="Tipo…" menuPosition="fixed"
+                                                        isLoading={typesLoading} placeholder="Tipo…"
                                                     />
                                                 </Grid>
                                                 
@@ -371,10 +371,10 @@ const ExpenseModal = ({ open, onClose, onSuccess }) => {
                                                             md: mdSelectSize
                                                         }}>
                                                         <FieldLabel>Categoría</FieldLabel>
-                                                        <Select 
+                                                        <SelectorBusqueda
                                                             options={relevantCategories} value={relevantCategories.find(c => c.value === detail.category) || null}
                                                             onChange={opt => handleDetailChange(detail.id, 'category', opt?.value)}
-                                                            styles={customSelectStyles} isLoading={catLoading} placeholder="Categoría…" menuPosition="fixed"
+                                                            isLoading={catLoading} placeholder="Categoría…"
                                                         />
                                                     </Grid>
                                                 )}
@@ -386,10 +386,10 @@ const ExpenseModal = ({ open, onClose, onSuccess }) => {
                                                             md: mdSelectSize
                                                         }}>
                                                         <FieldLabel>Subcategoría</FieldLabel>
-                                                        <Select 
+                                                        <SelectorBusqueda
                                                             options={relevantSubs} value={relevantSubs.find(s => s.value === detail.subcategory) || null}
                                                             onChange={opt => handleDetailChange(detail.id, 'subcategory', opt?.value)}
-                                                            styles={customSelectStyles} isDisabled={!detail.category} isLoading={subLoading} placeholder="Subcategoría…" menuPosition="fixed"
+                                                            isDisabled={!detail.category} isLoading={subLoading} placeholder="Subcategoría…"
                                                         />
                                                     </Grid>
                                                 )}
