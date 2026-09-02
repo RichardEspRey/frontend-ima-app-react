@@ -12,13 +12,11 @@ import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 
 // Date Handling
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
 import dayjs from 'dayjs';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import { COLOR } from '../../shared/ui/tokens';
-import { Paginacion } from '../../shared/ui';
+import { Paginacion, CampoFecha } from '../../shared/ui';
 
 // Configuración DayJS 
 dayjs.extend(isSameOrAfter);
@@ -128,20 +126,14 @@ export default function AfinacionesHistorialPage() {
             </Grid>
             <Grid item xs={12} sm={6}>
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center">
-                    <DatePicker
-                        selected={startDate}
-                        onChange={(date) => { setStartDate(date); setPage(0); }}
-                        selectsStart startDate={startDate} endDate={endDate}
-                        placeholderText="Fecha Inicio" dateFormat="dd/MM/yyyy"
-                        className="form-input-datepicker" isClearable 
+                    <CampoFecha
+                        value={startDate}
+                        onChange={(date) => { setStartDate(date); setPage(0); }} 
                         customInput={<TextField size="small" fullWidth label="Desde" />}
                     />
-                    <DatePicker
-                        selected={endDate}
-                        onChange={(date) => { setEndDate(date); setPage(0); }}
-                        selectsEnd startDate={startDate} endDate={endDate} minDate={startDate}
-                        placeholderText="Fecha Fin" dateFormat="dd/MM/yyyy"
-                        className="form-input-datepicker" isClearable 
+                    <CampoFecha
+                        value={endDate}
+                        onChange={(date) => { setEndDate(date); setPage(0); }} 
                         customInput={<TextField size="small" fullWidth label="Hasta" />}
                     />
                 </Stack>

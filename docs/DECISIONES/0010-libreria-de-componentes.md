@@ -89,7 +89,7 @@ commits `ce8b589` y `b50d15b`.
 | 1 | ~~`react-icons`~~ **hecho** | `@mui/icons-material` | 1 |
 | 2 | ~~`@pablotheblink/flashyjs`~~ **hecho** — no se usaba | — | 0 |
 | 3 | ~~`react-toastify`~~ **hecho** | `notify.discreto` | 3 |
-| 4 | `react-datepicker` | Campo de fecha de MUI, envuelto | 9 |
+| 4 | ~~`react-datepicker`~~ **hecho** | `CampoFecha` sobre el campo nativo | 9 |
 | 5 | ~~`react-select`~~ **hecho** | `SelectorBusqueda` sobre `Autocomplete` | 11 |
 | 6 | `sweetalert2` | Ya está detrás de `shared/ui/notify` | 28 |
 
@@ -133,6 +133,12 @@ país sin que nadie viera un error**.
 capturar el envío real.** Se interceptó `fetch` en el navegador para leer el `FormData` sin
 dejarlo salir —así que no se guardó nada—, se llenó el mismo formulario antes y después, y
 se compararon los dos cuerpos campo por campo.
+
+**Y a veces la respuesta no es la librería del sistema.** Para las fechas, `@mui/x-date-pickers`
+no estaba instalado: habría sido **agregar una dependencia para quitar otra**, ganancia cero.
+El campo de fecha del navegador no agrega nada, y además era lo que la app ya usaba en **15
+archivos** frente a los 9 de `react-datepicker`. La opción correcta no siempre es la de la
+misma familia.
 
 **Y hay que buscar la capacidad que se va a perder.** `react-select/creatable` permite crear
 compañías y bodegas escribiendo en el campo, y eso se usa de verdad en los formularios de

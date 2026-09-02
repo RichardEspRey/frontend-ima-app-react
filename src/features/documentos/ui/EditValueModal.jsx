@@ -8,10 +8,9 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import CloudUploadOutlinedIcon from '@mui/icons-material/CloudUploadOutlined';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import DatePicker from 'react-datepicker';
 import { archivoDelEvento } from '../../../shared/security';
 import { COLOR } from '../../../shared/ui/tokens';
-import 'react-datepicker/dist/react-datepicker.css';
+import { CampoFecha } from '../../../shared/ui';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -68,7 +67,7 @@ const EditValueModal = ({ open, onClose, editItem, editData, setEditData, onSave
                     {editItem?.tiene_vencimiento == 1 && (
                         <Box>
                             <Typography variant="subtitle2" fontWeight={600} color={COLOR.TEXTO_SUAVE} mb={1}>Fecha de Expiración</Typography>
-                            <DatePicker selected={editData.fecha_vencimiento} onChange={(d) => setEditData({...editData, fecha_vencimiento: d})} className="form-input" placeholderText="dd/mm/aaaa" />
+                            <CampoFecha value={editData.fecha_vencimiento} onChange={(d) => setEditData({...editData, fecha_vencimiento: d})} />
                         </Box>
                     )}
                 </Stack>

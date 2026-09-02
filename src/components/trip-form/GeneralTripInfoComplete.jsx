@@ -1,10 +1,8 @@
 import React from 'react';
 import { Box, Paper, Typography, Grid, TextField, Button, MenuItem, Checkbox, FormControlLabel, Stack } from '@mui/material';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
 import { selectStyles } from '../../utils/tripFormConstants'; 
 import { COLOR } from '../../shared/ui/tokens';
-import { Selector, SelectorBusqueda } from '../../shared/ui';
+import { Selector, SelectorBusqueda, CampoFecha } from '../../shared/ui';
 
 const GeneralTripInfoComplete = ({
     formData,
@@ -104,14 +102,10 @@ const GeneralTripInfoComplete = ({
                         Fecha de Regreso
                     </Typography>
                     <div className="custom-datepicker-wrapper">
-                        <DatePicker
-                            selected={formData.return_date}
+                        <CampoFecha
+                            value={formData.return_date}
                             onChange={(date) => handleFormChange('return_date', date)}
-                            dateFormat="dd/MM/yyyy"
-                            placeholderText="Seleccionar fecha"
-                            className="form-input"
                             disabled={isFormDisabled}
-                            wrapperClassName="w-100"
                         />
                     </div>
                 </Grid>

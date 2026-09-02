@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import DatePicker from 'react-datepicker';
 import { archivoDelEvento, GRUPOS_ARCHIVO } from '../shared/security';
-import 'react-datepicker/dist/react-datepicker.css';
+import { CampoFecha, aTextoFecha } from '../shared/ui';
 import './css/ModalArchivo.css';
 
 const ModalArchivo = ({ isOpen, onClose, onSave, title = "Subir/Editar Archivo", valorActual, mostrarFechaVencimiento = true, accept = "application/pdf" }) => {
@@ -53,7 +52,7 @@ const ModalArchivo = ({ isOpen, onClose, onSave, title = "Subir/Editar Archivo",
         hasNewFile: true,
       };
       if (mostrarFechaVencimiento && fechaVencimiento) {
-        dataToSave.vencimiento = fechaVencimiento.toISOString().split('T')[0];
+        dataToSave.vencimiento = aTextoFecha(fechaVencimiento);
       } else if (mostrarFechaVencimiento && !fechaVencimiento) {
         alert('Por favor, selecciona una fecha de vencimiento.');
         return;
@@ -83,12 +82,9 @@ const ModalArchivo = ({ isOpen, onClose, onSave, title = "Subir/Editar Archivo",
         {mostrarFechaVencimiento && (
           <div>
             <h4>Fecha de vencimiento</h4>
-            <DatePicker
-              selected={fechaVencimiento}
+            <CampoFecha
+              value={fechaVencimiento}
               onChange={(date) => setFechaVencimiento(date)}
-              dateFormat="yyyy-MM-dd"
-              placeholderText="Ejemplo: 2025-12-31"
-              className="custom-datepicker"
             />
           </div>
         )}

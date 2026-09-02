@@ -10,8 +10,6 @@ import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
 import SaveIcon from '@mui/icons-material/Save';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import CloseIcon from '@mui/icons-material/Close';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
 import Swal from 'sweetalert2';
 
 import ModalArchivo from '../../../components/ModalArchivo';
@@ -27,7 +25,7 @@ import {
     DATEPICKER_CSS, money,
 } from '../estilos';
 import { COLOR } from '../../../shared/ui/tokens';
-import { SelectorBusqueda } from '../../../shared/ui';
+import { SelectorBusqueda, CampoFecha, aTextoFecha } from '../../../shared/ui';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -171,8 +169,8 @@ const ExpenseModal = ({ open, onClose, onSuccess }) => {
         if (files.ticketJpg) apiFormData.append('ticket_jpg_file', files.ticketJpg);
 
         const generalData = {
-            fecha_gasto: expenseDate.toISOString().split('T')[0],
-            fecha_ticket: ticketDate.toISOString().split('T')[0],
+            fecha_gasto: aTextoFecha(expenseDate),
+            fecha_ticket: aTextoFecha(ticketDate),
             pais: country?.value,
             moneda: isMX ? 'MXN' : 'USD',
             monto_total: totalAmount,
@@ -271,12 +269,8 @@ const ExpenseModal = ({ open, onClose, onSuccess }) => {
                                         md: 4
                                     }}>
                                     <FieldLabel>Fecha de Ticket</FieldLabel>
-                                    <DatePicker
-                                        selected={ticketDate} onChange={setTicketDate}
-                                        dateFormat="dd/MM/yyyy" placeholderText="Seleccionar fecha"
-                                        className="expense-datepicker"
-                                        wrapperClassName="expense-datepicker-wrapper"
-                                        popperClassName="expense-datepicker-popper"
+                                    <CampoFecha
+                                        value={ticketDate} onChange={setTicketDate}
                                     />
                                 </Grid>
                                 <Grid
@@ -285,12 +279,8 @@ const ExpenseModal = ({ open, onClose, onSuccess }) => {
                                         md: 4
                                     }}>
                                     <FieldLabel>Fecha Contable</FieldLabel>
-                                    <DatePicker
-                                        selected={expenseDate} onChange={setExpenseDate}
-                                        dateFormat="dd/MM/yyyy"
-                                        className="expense-datepicker"
-                                        wrapperClassName="expense-datepicker-wrapper"
-                                        popperClassName="expense-datepicker-popper"
+                                    <CampoFecha
+                                        value={expenseDate} onChange={setExpenseDate}
                                     />
                                 </Grid>
 

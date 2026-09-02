@@ -4,13 +4,12 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import DownloadIcon from '@mui/icons-material/Download';
-import DatePicker from 'react-datepicker';
 import { getDocumentUrl } from '../../utils/tripFormConstants';
 import ReceiptIcon from '@mui/icons-material/Receipt';
 import { usePermisos, PERMISOS } from '../../shared/auth';
 import { urlSegura } from '../../shared/security';
 import { COLOR } from '../../shared/ui/tokens';
-import { SelectorBusqueda } from '../../shared/ui';
+import { SelectorBusqueda, CampoFecha } from '../../shared/ui';
 
 const DocButton = ({ label, doc, onClick, disabled, apiHost }) => (
     <Box sx={{ mb: 1 }}>
@@ -170,8 +169,7 @@ const StageCard = ({
                                 <TextField fullWidth placeholder="Zip Code Origen" size="small" margin="dense"
                                     value={etapa.zip_code_origin} onChange={(e) => handleStageChange(index, 'zip_code_origin', e.target.value)} disabled={isFormDisabled} />
                                 <Box mt={1}>
-                                    <DatePicker selected={etapa.loading_date} onChange={(date) => handleStageChange(index, 'loading_date', date)}
-                                        dateFormat="dd/MM/yyyy" placeholderText="Fecha Carga" className="form-input" disabled={isFormDisabled} />
+                                    <CampoFecha value={etapa.loading_date} onChange={(date) => handleStageChange(index, 'loading_date', date)} disabled={isFormDisabled} />
                                 </Box>
                             </Grid>
 
@@ -191,8 +189,7 @@ const StageCard = ({
                                 <TextField fullWidth placeholder="Zip Code Destino" size="small" margin="dense"
                                     value={etapa.zip_code_destination} onChange={(e) => handleStageChange(index, 'zip_code_destination', e.target.value)} disabled={isFormDisabled} />
                                 <Box mt={1}>
-                                    <DatePicker selected={etapa.delivery_date} onChange={(date) => handleStageChange(index, 'delivery_date', date)}
-                                        dateFormat="dd/MM/yyyy" placeholderText="Fecha Entrega" className="form-input" disabled={isFormDisabled} />
+                                    <CampoFecha value={etapa.delivery_date} onChange={(date) => handleStageChange(index, 'delivery_date', date)} disabled={isFormDisabled} />
                                 </Box>
                             </Grid>
 

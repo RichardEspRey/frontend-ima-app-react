@@ -7,7 +7,7 @@ import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 
-import { notify, EstadoError } from '../../shared/ui';
+import { notify, EstadoError, aTextoFecha } from '../../shared/ui';
 
 import DocumentCard from '../../features/documentos/ui/DocumentCard';
 import ConfigRequirementModal from '../../features/documentos/ui/ConfigRequirementModal';
@@ -114,7 +114,7 @@ const DocumentosPage = () => {
         valorTexto: editItem.tipo === 'text' ? editData.valor_texto : undefined,
         fechaVencimiento:
           editItem.tiene_vencimiento && editData.fecha_vencimiento
-            ? editData.fecha_vencimiento.toISOString().split('T')[0]
+            ? aTextoFecha(editData.fecha_vencimiento)
             : undefined,
         archivo: editData.file ?? undefined,
       });

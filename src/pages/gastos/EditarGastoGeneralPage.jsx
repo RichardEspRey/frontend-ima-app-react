@@ -12,8 +12,6 @@ import InsertDriveFileOutlinedIcon from '@mui/icons-material/InsertDriveFileOutl
 import AddIcon from '@mui/icons-material/Add';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
 import Swal from 'sweetalert2';
 import { PhotoProvider, PhotoView } from 'react-photo-view';
 import 'react-photo-view/dist/react-photo-view.css';
@@ -30,7 +28,7 @@ import {
 } from '../../features/expense-manager/estilos';
 import { archivoDelEvento, GRUPOS_ARCHIVO } from '../../shared/security';
 import { COLOR, TINTE } from '../../shared/ui/tokens';
-import { SelectorBusqueda } from '../../shared/ui';
+import { SelectorBusqueda, CampoFecha, aTextoFecha } from '../../shared/ui';
 
 // La app móvil puede subir el "ticket" como PDF escaneado en vez de imagen
 // (ej. archivos "scan_*.pdf"), no solo JPG/PNG. Un <img> no puede mostrar un PDF.
@@ -213,7 +211,7 @@ const ExpenseEdit = () => {
         fd.append("op", "updateExpense");
         fd.append("id_gasto", id_gasto);
         fd.append("pais", country?.value || '');
-        fd.append("fecha_gasto", expenseDate.toISOString().split('T')[0]);
+        fd.append("fecha_gasto", aTextoFecha(expenseDate));
         fd.append("moneda", esMXN ? 'MXN' : 'USD');
         fd.append("monto_total", totalAmount);
         // El backend solo escribe las columnas que recibe: omitir las vacías
@@ -336,13 +334,9 @@ const ExpenseEdit = () => {
                   md: 3
                 }}>
                 <FieldLabel>Fecha del Gasto</FieldLabel>
-                <DatePicker
-                  selected={expenseDate}
+                <CampoFecha
+                  value={expenseDate}
                   onChange={setExpenseDate}
-                  dateFormat="dd/MM/yyyy"
-                  className="expense-datepicker"
-                  wrapperClassName="expense-datepicker-wrapper"
-                  popperClassName="expense-datepicker-popper"
                 />
               </Grid>
               <Grid

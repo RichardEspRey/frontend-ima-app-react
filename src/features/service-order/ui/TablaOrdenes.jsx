@@ -8,8 +8,6 @@ import Swal from 'sweetalert2';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
 
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
 import dayjs from 'dayjs';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
@@ -22,7 +20,7 @@ import {
     SECTION_LABEL_SX, PAGINATION_BOX_SX, GHOST_BTN_SX,
 } from '../../../shared/ui/estilos';
 import { COLOR } from '../../../shared/ui/tokens';
-import { FilasEsqueleto, Paginacion } from '../../../shared/ui';
+import { FilasEsqueleto, Paginacion, CampoFecha } from '../../../shared/ui';
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
@@ -239,29 +237,14 @@ const TablaOrdenes = () => {
 
                     <Grid item xs={12} sm={6} md={3}>
                         <Stack direction="row" spacing={1} alignItems="center">
-                            <DatePicker
-                                selected={startDate}
+                            <CampoFecha
+                                value={startDate}
                                 onChange={(date) => { setStartDate(date); setPage(0); }}
-                                selectsStart
-                                startDate={startDate}
-                                endDate={endDate}
-                                placeholderText="Desde"
-                                dateFormat="dd/MM/yyyy"
-                                className="form-input-datepicker" 
-                                isClearable
                                 customInput={<TextField size="small" fullWidth label="Desde" />}
                             />
-                            <DatePicker
-                                selected={endDate}
+                            <CampoFecha
+                                value={endDate}
                                 onChange={(date) => { setEndDate(date); setPage(0); }}
-                                selectsEnd
-                                startDate={startDate}
-                                endDate={endDate}
-                                minDate={startDate}
-                                placeholderText="Hasta"
-                                dateFormat="dd/MM/yyyy"
-                                className="form-input-datepicker"
-                                isClearable
                                 customInput={<TextField size="small" fullWidth label="Hasta" />}
                             />
                         </Stack>
