@@ -1,5 +1,6 @@
 import { Component } from "react"
 import { Box } from "@mui/material"
+import { RELLENO_PANTALLA } from "./tokens"
 import { EstadoError } from "./EstadoError"
 
 /**
@@ -77,12 +78,31 @@ export class ErrorBoundary extends Component {
     if (!this.state.error) return this.props.children
 
     return (
-      <Box sx={{ maxWidth: 720, mx: "auto", mt: 4 }}>
-        <EstadoError
-          error={this.state.error}
-          titulo="Esta pantalla no se pudo mostrar"
-          onReintentar={() => this.setState({ error: null })}
-        />
+      // Centrado en el alto disponible, no con un margen fijo arriba. Con un
+      // margen, el aviso queda pegado a la cabecera y parece que la pantalla
+      // cargó a medias; centrado se lee como lo que es: el estado de toda la
+      // pantalla. `minHeight: 100%` en vez de `100vh` porque esto vive dentro
+      // del área de contenido, que ya descuenta la cabecera.
+      <Box
+        sx={{
+          minHeight: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          p: RELLENO_PANTALLA,
+        }}
+      >
+        <Box sx={{ width: "100%" }}>
+          <EstadoError
+            error={this.state.error}
+            titulo="Esta pantalla no se pudo mostrar"
+            onReintentar={() => this.setState({ error: null })}
+            onInicio={() => {
+              window.location.hash = "#/home"
+              this.setState({ error: null })
+            }}
+          />
+        </Box>
       </Box>
     )
   }

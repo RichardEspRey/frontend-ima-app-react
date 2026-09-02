@@ -4,13 +4,18 @@ import {
   Box,
   Button,
   Collapse,
+  Divider,
   Paper,
   Stack,
   Typography,
 } from "@mui/material"
 import RefreshIcon from "@mui/icons-material/Refresh"
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline"
+import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined"
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
+import ExpandLessIcon from "@mui/icons-material/ExpandLess"
 import { ApiError, CAUSA_ERROR } from "../api/errors"
+import { DARK_BTN_SX, GHOST_BTN_SX } from "./estilos"
 import { BORDE, COLOR, RADIO } from "./tokens"
 
 /**
@@ -74,6 +79,9 @@ export function describirError(error) {
  * @param {object} props Propiedades del componente.
  * @param {*} props.error Lo que falló.
  * @param {Function} [props.onReintentar] Si se pasa, aparece el botón de reintentar.
+ * @param {Function} [props.onInicio] Si se pasa, aparece la salida al inicio. Importa
+ *   cuando el fallo es de la pantalla entera: reintentar puede volver a fallar, y sin una
+ *   segunda salida la persona se queda encerrada.
  * @param {string} [props.titulo] Sobrescribe el título deducido del error.
  * @param {boolean} [props.compacto=false] Versión de una línea, para un panel pequeño.
  * @returns {object} El estado de error renderizado.
@@ -81,7 +89,7 @@ export function describirError(error) {
  * @example
  * if (error) return <EstadoError error={error} onReintentar={refetch} />
  */
-export function EstadoError({ error, onReintentar, titulo, compacto = false }) {
+export function EstadoError({ error, onReintentar, onInicio, titulo, compacto = false }) {
   const [abierto, setAbierto] = useState(false)
   const info = describirError(error)
 
@@ -106,38 +114,94 @@ export function EstadoError({ error, onReintentar, titulo, compacto = false }) {
     <Paper
       elevation={0}
       sx={{
-        p: 4,
+        px: { xs: 3, md: 6 },
+        py: { xs: 5, md: 7 },
         border: BORDE,
-        borderRadius: `${RADIO.NORMAL}px`,
+        borderRadius: `${RADIO.GRANDE}px`,
         textAlign: "center",
+        maxWidth: 620,
+        mx: "auto",
       }}
     >
-      <ErrorOutlineIcon sx={{ fontSize: 40, color: COLOR.PELIGRO, mb: 1.5 }} />
+      {/* El icono va dentro de un disco del color de fondo del peligro, no
+          suelto: un icono rojo a secas sobre blanco se lee como una alerta
+          menor, y esto interrumpe el trabajo de alguien. */}
+      <Box
+        sx={{
+          width: 72,
+          height: 72,
+          mx: "auto",
+          mb: 3,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          borderRadius: "50%",
+          bgcolor: COLOR.PELIGRO_FONDO,
+          border: `1px solid ${COLOR.PELIGRO_BORDE}`,
+        }}
+      >
+        <ErrorOutlineIcon sx={{ fontSize: 36, color: COLOR.PELIGRO }} />
+      </Box>
 
-      <Typography variant="h6" sx={{ color: COLOR.TINTA, mb: 0.5 }}>
+      <Typography variant="h5" sx={{ color: COLOR.TINTA, mb: 1.5 }}>
         {titulo ?? info.titulo}
       </Typography>
 
-      <Typography variant="body2" sx={{ color: COLOR.TEXTO_SUAVE }}>
+      <Typography variant="body1" sx={{ color: COLOR.TEXTO_SUAVE, lineHeight: 1.7 }}>
         {info.mensaje}
       </Typography>
 
       {info.sugerencia && (
-        <Typography variant="body2" sx={{ color: COLOR.APAGADO, mt: 0.5 }}>
+        <Typography
+          variant="body2"
+          sx={{ color: COLOR.APAGADO, mt: 1, lineHeight: 1.7 }}
+        >
           {info.sugerencia}
         </Typography>
       )}
 
-      <Stack direction="row" spacing={1.5} justifyContent="center" sx={{ mt: 3 }}>
+      <Stack
+        direction={{ xs: "column", sm: "row" }}
+        spacing={1.5}
+        justifyContent="center"
+        alignItems="center"
+        sx={{ mt: 4 }}
+      >
         {onReintentar && (
-          <Button variant="contained" startIcon={<RefreshIcon />} onClick={onReintentar}>
+          <Button
+            variant="contained"
+            size="large"
+            startIcon={<RefreshIcon />}
+            onClick={onReintentar}
+            sx={DARK_BTN_SX}
+          >
             Reintentar
           </Button>
         )}
-        <Button variant="text" size="small" onClick={() => setAbierto((v) => !v)}>
-          {abierto ? "Ocultar detalle" : "Ver detalle técnico"}
-        </Button>
+        {onInicio && (
+          <Button
+            variant="outlined"
+            size="large"
+            startIcon={<HomeOutlinedIcon />}
+            onClick={onInicio}
+            sx={GHOST_BTN_SX}
+          >
+            Ir al inicio
+          </Button>
+        )}
       </Stack>
+
+      <Divider sx={{ mt: 4, mb: 2 }} />
+
+      <Button
+        variant="text"
+        size="small"
+        onClick={() => setAbierto((v) => !v)}
+        endIcon={abierto ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+        sx={{ color: COLOR.APAGADO, fontWeight: 600 }}
+      >
+        {abierto ? "Ocultar detalle" : "Ver detalle técnico"}
+      </Button>
 
       {/* unmountOnExit: sin esto el detalle sigue en el DOM aunque no se vea, y
           un lector de pantalla lee la traza entera a quien no la pidió. */}
@@ -146,14 +210,18 @@ export function EstadoError({ error, onReintentar, titulo, compacto = false }) {
           component="pre"
           sx={{
             mt: 2,
-            p: 2,
+            p: 2.5,
             textAlign: "left",
             bgcolor: COLOR.RELLENO,
-            borderRadius: `${RADIO.CHICO}px`,
+            border: BORDE,
+            borderRadius: `${RADIO.NORMAL}px`,
             fontSize: "0.75rem",
+            lineHeight: 1.6,
             color: COLOR.TEXTO_SUAVE,
             overflowX: "auto",
             whiteSpace: "pre-wrap",
+            maxHeight: 260,
+            overflowY: "auto",
           }}
         >
           {info.tecnico}

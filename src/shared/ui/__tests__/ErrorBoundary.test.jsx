@@ -144,3 +144,33 @@ describe("EstadoError", () => {
     expect(reintentar).toHaveBeenCalledTimes(1)
   })
 })
+
+describe("EstadoError · la salida de emergencia", () => {
+  it("ofrece ir al inicio cuando se le da a dónde", async () => {
+    const alInicio = vi.fn()
+    render(<EstadoError error={new Error("x")} onInicio={alInicio} />)
+
+    await userEvent.click(screen.getByRole("button", { name: /ir al inicio/i }))
+    expect(alInicio).toHaveBeenCalledTimes(1)
+  })
+
+  it("no ofrece salidas que nadie le dio", () => {
+    render(<EstadoError error={new Error("x")} />)
+
+    expect(screen.queryByRole("button", { name: /ir al inicio/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole("button", { name: /reintentar/i })).not.toBeInTheDocument()
+  })
+})
+
+describe("ErrorBoundary · las dos salidas", () => {
+  it("da reintentar y también ir al inicio, porque reintentar puede fallar otra vez", () => {
+    render(
+      <ErrorBoundary clave="/a">
+        <Bomba falla />
+      </ErrorBoundary>,
+    )
+
+    expect(screen.getByRole("button", { name: /reintentar/i })).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: /ir al inicio/i })).toBeInTheDocument()
+  })
+})
