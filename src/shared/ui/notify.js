@@ -7,11 +7,12 @@ const ROJO_PELIGRO = COLOR.PELIGRO
 /**
  * Avisos al usuario, en un solo lugar.
  *
- * Hoy el proyecto usa **tres** librerías para lo mismo: `sweetalert2` (343
- * llamadas en 56 archivos), `react-toastify` (una) y `@pablotheblink/flashyjs`
- * (nueve). Este módulo envuelve sweetalert2, que es la que domina, para que las
- * otras dos se puedan ir retirando módulo por módulo y para que cambiar de
- * librería sea editar este archivo en vez de 56.
+ * El proyecto llegó a tener **tres** librerías para lo mismo: `sweetalert2`,
+ * `react-toastify` y `@pablotheblink/flashyjs`. Las dos últimas ya se retiraron
+ * —ver `docs/DECISIONES/0010`—; este módulo envuelve la que quedó.
+ *
+ * Envolverla es lo que hace que cambiarla algún día sea editar **este** archivo
+ * y no los 56 que la llamaban.
  *
  * Cada función devuelve una promesa, así que se puede esperar el cierre.
  */
