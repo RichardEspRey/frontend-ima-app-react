@@ -26,17 +26,26 @@ Conviene no mezclarlos:
 ## Fase 2 — backend
 
 1. `Auth.php` emite un token de sesión propio (JWT firmado, o token opaco en una tabla
-   `sessions`). Ver `../DECISIONES/0001-sin-idp-externo.md` para por qué no un IdP externo.
+   `sessions`). **Hay que crearla: el dump confirma que no existe ninguna infraestructura
+   de sesión en las 97 tablas.** Ver `../DECISIONES/0001-sin-idp-externo.md` para por qué no un IdP externo.
 2. Los 36 endpoints lo verifican en vez de confiar en el `id_usuario` que manda el cliente.
 3. Coordinar con la app móvil **antes**: consume los mismos endpoints y su código no está
    en este repo.
 4. De paso: `features.php` · `get_users` deja de devolver las contraseñas en claro, y las
-   contraseñas se hashean.
+   contraseñas se hashean. Son **43 en dos tablas**, no 31: `users` duplica a 10 personas
+   que ya están en `Users_credentials`. El procedimiento para hashearlas sin ventana de
+   corte está en [`08-DIAGNOSTICO-BD.md`](08-DIAGNOSTICO-BD.md).
 
 En el frontend, el único archivo que cambia es `src/shared/auth/authService` — la costura
 se dejó puesta a propósito en el incremento 4.
 
 ## Fase 3 — base de datos
+
+> **Ojo, esto cambió.** El dump del 2026-09-02 dice que los roles por área que se proponen
+> más abajo **no encajan con cómo se usa el sistema**: los 12 `Administrativo` se agrupan
+> por amplitud, no por área, y nadie es "solo Finanzas". Los grupos reales, con los nombres
+> y los conteos, están en [`08-DIAGNOSTICO-BD.md`](08-DIAGNOSTICO-BD.md). Léelo antes de
+> tocar `../sql/001-roles-y-permisos.sql`.
 
 El SQL ya está escrito y verificado: `../sql/001-roles-y-permisos.sql`. No toca producción.
 

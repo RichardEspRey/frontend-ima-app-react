@@ -13,6 +13,7 @@
 | `05-INCREMENTOS.md` | La lista de trabajo, en orden, con criterio de "terminado" |
 | `06-DOCUMENTACION.md` | Estándar de JSDoc y plan de documentación del proyecto |
 | `07-VERIFICACION-FASE-1.md` | Qué se comprobó antes de plantear el merge, con resultados |
+| `08-DIAGNOSTICO-BD.md` | La base de datos medida sobre el dump: qué hay que arreglar en las fases 2 y 3 |
 
 ## Dónde vamos
 
@@ -136,6 +137,12 @@ divergencia porque nadie la sincronizaba, no porque hubiera hecho demasiado.
   además de exponer las contraseñas, permite alterar lo que llega al renderer.
 - **`features.php` · `op=get_users` devuelve las contraseñas en claro de todos los
   usuarios, sin autenticación.** Verificado el 2026-08-31.
+- **Son 43 contraseñas en claro, no 31: hay dos tablas.** `users` duplica a 10 personas que
+  ya están en `Users_credentials`, cada una con su propia copia. Medido sobre el dump del
+  2026-09-02; ver [`08-DIAGNOSTICO-BD.md`](08-DIAGNOSTICO-BD.md).
+- **No existe ninguna infraestructura de sesión** en las 97 tablas. La fase 2 no es migrar
+  el login: es construirlo.
+- **WordPress comparte la base de datos** con el sistema de operaciones: 13 tablas `wp_*`.
 
 ## Notificaciones push — resuelto
 
@@ -149,23 +156,20 @@ Se integró con **merge, no rebase**: los 18 commits de la rama `Emiliano` ya es
 diario" del `04-SINCRONIZACION.md` aplica a los commits propios del refactor, no a
 reescribir historia ya publicada de otra rama.
 
-## Pendiente para afinar los roles
+## Los roles — resuelto con el dump del 2026-09-02
 
-El modelo está puesto y funcionando, pero los 12 `Administrativo` están todos en un
-mismo rol de transición. Para repartirlos en Operaciones / Finanzas / Mantenimiento /
-Safety hace falta ver qué tiene habilitado cada uno hoy:
+Ya no hace falta la consulta que estaba pendiente aquí: el dump la responde, y el resultado
+está en [`08-DIAGNOSTICO-BD.md`](08-DIAGNOSTICO-BD.md).
 
-```sql
-SHOW TABLES LIKE '%feature%';
--- y con el nombre real de la tabla:
-SELECT u.name, u.type, GROUP_CONCAT(f.feature_key ORDER BY f.feature_key SEPARATOR ', ')
-FROM Users_credentials u
-JOIN <TABLA_FEATURES> f ON f.user_id = u.id AND f.enabled = 1
-WHERE u.type = 'Administrativo'
-GROUP BY u.id;
-```
+**El hallazgo cambia el plan.** Los 12 `Administrativo` **no se agrupan por área sino por
+amplitud**: nadie es "solo Finanzas" —solo la tienen Osvaldo y Angelica, y ambos tienen
+además casi todo lo demás—. El reparto en Operaciones / Finanzas / Mantenimiento / Safety
+que proponía `03-AUTH-ROLES.md` no encaja con los datos. Los grupos reales son
+Coordinación, Operación, Operación limitada y tres cuentas sin permisos.
 
-Con eso se agrupan por lo que de verdad usan, en vez de inventar los roles.
+**Bloquea una sola decisión:** Celso, Prueba y Max no tienen prácticamente permisos y
+siguen con `active = 1`, así que pueden entrar. ¿Son cuentas vivas?
+
 Mientras tanto **nadie pierde ni gana accesos**: sus flags individuales siguen mandando.
 
 ## Falta probar a mano (incremento 4b)
