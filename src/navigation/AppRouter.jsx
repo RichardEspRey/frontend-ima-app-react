@@ -3,7 +3,7 @@ import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 
 import { useAuthStore } from '../store/useAuthStore'; 
 
-import LoginScreen from '../screens/Login/Login.jsx';
+import LoginPage from '../pages/login/LoginPage.jsx';
 import DashboardLayout from '../layouts/DashboardLayout';
 import ConductoresPage from '../pages/unidades/ConductoresPage.jsx';
 import AdminViajesPage from '../pages/viajes/AdminViajesPage.jsx';
@@ -61,7 +61,7 @@ const AppRouter = () => {
         {!user ? (
           <>
             <Route path="*" element={<Navigate to="/login" replace />} />
-            <Route path="/login" element={<LoginScreen />} />
+            <Route path="/login" element={<LoginPage />} />
           </>
         ) : (
           <Route path="/" element={<DashboardLayout />}> 

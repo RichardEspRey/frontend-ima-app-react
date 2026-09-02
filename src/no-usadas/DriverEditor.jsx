@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom'; 
 import { Box, Paper, Typography, Grid, Stack, TextField, Button, InputLabel, CircularProgress } from '@mui/material'; 
 
-// import '../screens/css/ConductoresScreen.css'; 
+// import './css/ConductoresScreen.css'; 
 import 'react-datepicker/dist/react-datepicker.css';
 import ModalArchivo from '../components/ModalArchivo.jsx'; 
 import DriverInput from '../components/DriverInput';

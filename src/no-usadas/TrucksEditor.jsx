@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import '../screens/css/ConductoresScreen.css';
+import './css/ConductoresScreen.css';
 import 'react-datepicker/dist/react-datepicker.css';
 import ModalArchivo from '../components/ModalArchivo.jsx';
 import Swal from 'sweetalert2';

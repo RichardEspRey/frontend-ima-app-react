@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import '../screens/css/TripScreen.css';
+import './css/TripScreen.css';
 import BorderCrossingForm from '../components/BorderCrossingForm';
 import TripForm from '../components/TripForm';
 
