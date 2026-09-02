@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { ordenarGastos, siguienteOrden } from "../ordenarGastos";
+import { ordenarGastos, siguienteOrden } from "../model/orden";
 
 const gastos = [
   { id_gasto: 3, fecha_gasto: "2026-01-15", pais: "MX", moneda: "MXN", monto_total: 100, cantidad_original: 2000,

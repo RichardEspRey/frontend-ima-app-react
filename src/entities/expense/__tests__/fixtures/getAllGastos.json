@@ -1,0 +1,1415 @@
+{
+ "status": "success",
+ "data": [
+  {
+   "id_gasto": "1725",
+   "fecha_gasto": "2026-09-01",
+   "pais": "MX",
+   "moneda": "MXN",
+   "monto_total": "24.64",
+   "cantidad_original": "419.80",
+   "created_by": "29",
+   "created_name": "Ashlye",
+   "updated_by": null,
+   "updated_name": null,
+   "detalles": [
+    {
+     "id_detalle_gasto": "2078",
+     "id_gasto": "1725",
+     "tipo_gasto": "Gastos de viaje",
+     "descripcion_articulo": "OXO GAS CARGA NLD",
+     "cantidad_articulo": "1",
+     "precio_unitario": "419.80",
+     "nombre_categoria": "Viaticos",
+     "nombre_subcategoria": "Gasolina"
+    }
+   ],
+   "tickets": [
+    {
+     "id_documento": "1319",
+     "id_gasto": "1725",
+     "tipo_documento": "Factura PDF",
+     "nombre_original": "63874838.pdf",
+     "ruta_archivo": "Uploads/Expense/Factura_1725_1788296396.pdf",
+     "fecha_carga": "2026-09-01 13:59:56",
+     "url": "http://imaexpressllc.com/API/Uploads/Expense/Factura_1725_1788296396.pdf"
+    }
+   ]
+  },
+  {
+   "id_gasto": "1724",
+   "fecha_gasto": "2026-08-31",
+   "pais": "MX",
+   "moneda": "MXN",
+   "monto_total": "234.81",
+   "cantidad_original": "4000.00",
+   "created_by": "29",
+   "created_name": "Ashlye",
+   "updated_by": null,
+   "updated_name": null,
+   "detalles": [
+    {
+     "id_detalle_gasto": "2077",
+     "id_gasto": "1724",
+     "tipo_gasto": "Gastos de viaje",
+     "descripcion_articulo": "DIESEL 70MX",
+     "cantidad_articulo": "1",
+     "precio_unitario": "4000.00",
+     "nombre_categoria": "Viaticos",
+     "nombre_subcategoria": null
+    }
+   ],
+   "tickets": [
+    {
+     "id_documento": "1318",
+     "id_gasto": "1724",
+     "tipo_documento": "Ticket Imagen",
+     "nombre_original": "70MX.jpeg",
+     "ruta_archivo": "Uploads/Expense/Ticket_1724_1788288913.jpeg",
+     "fecha_carga": "2026-09-01 11:55:13",
+     "url": "http://imaexpressllc.com/API/Uploads/Expense/Ticket_1724_1788288913.jpeg"
+    }
+   ]
+  },
+  {
+   "id_gasto": "1723",
+   "fecha_gasto": "2026-08-31",
+   "pais": "MX",
+   "moneda": "MXN",
+   "monto_total": "234.81",
+   "cantidad_original": "4000.00",
+   "created_by": "29",
+   "created_name": "Ashlye",
+   "updated_by": null,
+   "updated_name": null,
+   "detalles": [
+    {
+     "id_detalle_gasto": "2076",
+     "id_gasto": "1723",
+     "tipo_gasto": "Gastos de viaje",
+     "descripcion_articulo": "DIESEL 70MX",
+     "cantidad_articulo": "1",
+     "precio_unitario": "4000.00",
+     "nombre_categoria": "Viaticos",
+     "nombre_subcategoria": null
+    }
+   ],
+   "tickets": [
+    {
+     "id_documento": "1317",
+     "id_gasto": "1723",
+     "tipo_documento": "Factura PDF",
+     "nombre_original": "70 MX.pdf",
+     "ruta_archivo": "Uploads/Expense/Factura_1723_1788288093.pdf",
+     "fecha_carga": "2026-09-01 11:41:33",
+     "url": "http://imaexpressllc.com/API/Uploads/Expense/Factura_1723_1788288093.pdf"
+    }
+   ]
+  },
+  {
+   "id_gasto": "1722",
+   "fecha_gasto": "2026-08-29",
+   "pais": "MX",
+   "moneda": "MXN",
+   "monto_total": "20.37",
+   "cantidad_original": "347.00",
+   "created_by": "29",
+   "created_name": "Ashlye",
+   "updated_by": null,
+   "updated_name": null,
+   "detalles": [
+    {
+     "id_detalle_gasto": "2075",
+     "id_gasto": "1722",
+     "tipo_gasto": "Gastos de viaje",
+     "descripcion_articulo": "AUTO - SABINAS",
+     "cantidad_articulo": "1",
+     "precio_unitario": "347.00",
+     "nombre_categoria": "Casetas MX",
+     "nombre_subcategoria": null
+    }
+   ],
+   "tickets": [
+    {
+     "id_documento": "1316",
+     "id_gasto": "1722",
+     "tipo_documento": "Factura PDF",
+     "nombre_original": "31 AGO.pdf",
+     "ruta_archivo": "Uploads/Expense/Factura_1722_1788287843.pdf",
+     "fecha_carga": "2026-09-01 11:37:23",
+     "url": "http://imaexpressllc.com/API/Uploads/Expense/Factura_1722_1788287843.pdf"
+    }
+   ]
+  },
+  {
+   "id_gasto": "1721",
+   "fecha_gasto": "2026-08-29",
+   "pais": "MX",
+   "moneda": "MXN",
+   "monto_total": "58.70",
+   "cantidad_original": "1000.00",
+   "created_by": "29",
+   "created_name": "Ashlye",
+   "updated_by": null,
+   "updated_name": null,
+   "detalles": [
+    {
+     "id_detalle_gasto": "2074",
+     "id_gasto": "1721",
+     "tipo_gasto": "Gastos de viaje",
+     "descripcion_articulo": "TAG PASE",
+     "cantidad_articulo": "1",
+     "precio_unitario": "0.00",
+     "nombre_categoria": "Casetas MX",
+     "nombre_subcategoria": null
+    }
+   ],
+   "tickets": [
+    {
+     "id_documento": "1315",
+     "id_gasto": "1721",
+     "tipo_documento": "Factura PDF",
+     "nombre_original": "factura.pdf",
+     "ruta_archivo": "Uploads/Expense/Factura_1721_1788287722.pdf",
+     "fecha_carga": "2026-09-01 11:35:22",
+     "url": "http://imaexpressllc.com/API/Uploads/Expense/Factura_1721_1788287722.pdf"
+    }
+   ]
+  },
+  {
+   "id_gasto": "1720",
+   "fecha_gasto": "2026-08-28",
+   "pais": "MX",
+   "moneda": "MXN",
+   "monto_total": "24.64",
+   "cantidad_original": "419.80",
+   "created_by": "29",
+   "created_name": "Ashlye",
+   "updated_by": null,
+   "updated_name": null,
+   "detalles": [
+    {
+     "id_detalle_gasto": "2073",
+     "id_gasto": "1720",
+     "tipo_gasto": "Gastos de viaje",
+     "descripcion_articulo": "CARGA NLD",
+     "cantidad_articulo": "1",
+     "precio_unitario": "419.80",
+     "nombre_categoria": "Viaticos",
+     "nombre_subcategoria": "Gasolina"
+    }
+   ],
+   "tickets": [
+    {
+     "id_documento": "1314",
+     "id_gasto": "1720",
+     "tipo_documento": "Factura PDF",
+     "nombre_original": "Reporte 28 GASOLINA.pdf",
+     "ruta_archivo": "Uploads/Expense/Factura_1720_1788287572.pdf",
+     "fecha_carga": "2026-09-01 11:32:52",
+     "url": "http://imaexpressllc.com/API/Uploads/Expense/Factura_1720_1788287572.pdf"
+    }
+   ]
+  },
+  {
+   "id_gasto": "1719",
+   "fecha_gasto": "2026-08-29",
+   "pais": "MX",
+   "moneda": "MXN",
+   "monto_total": "20.37",
+   "cantidad_original": "347.00",
+   "created_by": "29",
+   "created_name": "Ashlye",
+   "updated_by": null,
+   "updated_name": null,
+   "detalles": [
+    {
+     "id_detalle_gasto": "2072",
+     "id_gasto": "1719",
+     "tipo_gasto": "Gastos de viaje",
+     "descripcion_articulo": "AUTO CASETA SABINAS",
+     "cantidad_articulo": "1",
+     "precio_unitario": "347.00",
+     "nombre_categoria": "Casetas MX",
+     "nombre_subcategoria": null
+    }
+   ],
+   "tickets": [
+    {
+     "id_documento": "1313",
+     "id_gasto": "1719",
+     "tipo_documento": "Factura PDF",
+     "nombre_original": "29 GO.pdf",
+     "ruta_archivo": "Uploads/Expense/Factura_1719_1788287021.pdf",
+     "fecha_carga": "2026-09-01 11:23:41",
+     "url": "http://imaexpressllc.com/API/Uploads/Expense/Factura_1719_1788287021.pdf"
+    }
+   ]
+  },
+  {
+   "id_gasto": "1717",
+   "fecha_gasto": "2026-08-31",
+   "pais": "MX",
+   "moneda": "MXN",
+   "monto_total": "205.60",
+   "cantidad_original": "3500.00",
+   "created_by": "17",
+   "created_name": "Osvaldo",
+   "updated_by": null,
+   "updated_name": null,
+   "detalles": [
+    {
+     "id_detalle_gasto": "2070",
+     "id_gasto": "1717",
+     "tipo_gasto": "Documentos Despacho",
+     "descripcion_articulo": "3500Agosto31",
+     "cantidad_articulo": "1",
+     "precio_unitario": "3500.00",
+     "nombre_categoria": "Puentes",
+     "nombre_subcategoria": null
+    }
+   ],
+   "tickets": [
+    {
+     "id_documento": "1312",
+     "id_gasto": "1717",
+     "tipo_documento": "Ticket Imagen",
+     "nombre_original": "AgostoMX3500.jpeg",
+     "ruta_archivo": "Uploads/Expense/Ticket_1717_1788208413.jpeg",
+     "fecha_carga": "2026-08-31 13:33:33",
+     "url": "http://imaexpressllc.com/API/Uploads/Expense/Ticket_1717_1788208413.jpeg"
+    }
+   ]
+  },
+  {
+   "id_gasto": "1716",
+   "fecha_gasto": "2026-08-31",
+   "pais": "US",
+   "moneda": "USD",
+   "monto_total": "309.00",
+   "cantidad_original": "309.00",
+   "created_by": "17",
+   "created_name": "Osvaldo",
+   "updated_by": null,
+   "updated_name": null,
+   "detalles": [
+    {
+     "id_detalle_gasto": "2069",
+     "id_gasto": "1716",
+     "tipo_gasto": "Documentos Despacho",
+     "descripcion_articulo": "Agosto31",
+     "cantidad_articulo": "1",
+     "precio_unitario": "309.00",
+     "nombre_categoria": "Puentes",
+     "nombre_subcategoria": null
+    }
+   ],
+   "tickets": [
+    {
+     "id_documento": "1311",
+     "id_gasto": "1716",
+     "tipo_documento": "Factura PDF",
+     "nombre_original": "Laredo TAG Agosto 31 2026.pdf",
+     "ruta_archivo": "Uploads/Expense/Factura_1716_1788205090.pdf",
+     "fecha_carga": "2026-08-31 12:38:10",
+     "url": "http://imaexpressllc.com/API/Uploads/Expense/Factura_1716_1788205090.pdf"
+    }
+   ]
+  },
+  {
+   "id_gasto": "1715",
+   "fecha_gasto": "2026-08-31",
+   "pais": "US",
+   "moneda": "USD",
+   "monto_total": "500.00",
+   "cantidad_original": "500.00",
+   "created_by": "17",
+   "created_name": "Osvaldo",
+   "updated_by": "17",
+   "updated_name": "Osvaldo",
+   "detalles": [
+    {
+     "id_detalle_gasto": "2068",
+     "id_gasto": "1715",
+     "tipo_gasto": "Servicios Mensuales",
+     "descripcion_articulo": "500Agosto31",
+     "cantidad_articulo": "1",
+     "precio_unitario": "500.00",
+     "nombre_categoria": "Prepass",
+     "nombre_subcategoria": null
+    }
+   ],
+   "tickets": [
+    {
+     "id_documento": "1310",
+     "id_gasto": "1715",
+     "tipo_documento": "Factura PDF",
+     "nombre_original": "500Agosto31.2026.pdf",
+     "ruta_archivo": "Uploads/Expense/Factura_1715_1788204775.pdf",
+     "fecha_carga": "2026-08-31 12:32:55",
+     "url": "http://imaexpressllc.com/API/Uploads/Expense/Factura_1715_1788204775.pdf"
+    }
+   ]
+  },
+  {
+   "id_gasto": "1714",
+   "fecha_gasto": "2026-08-26",
+   "pais": "MX",
+   "moneda": "MXN",
+   "monto_total": "176.23",
+   "cantidad_original": "3000.00",
+   "created_by": "29",
+   "created_name": "Ashlye",
+   "updated_by": null,
+   "updated_name": null,
+   "detalles": [
+    {
+     "id_detalle_gasto": "2067",
+     "id_gasto": "1714",
+     "tipo_gasto": "Gastos de viaje",
+     "descripcion_articulo": "Carga en NLD",
+     "cantidad_articulo": "1",
+     "precio_unitario": "3000.00",
+     "nombre_categoria": "Viaticos",
+     "nombre_subcategoria": "Gasolina"
+    }
+   ],
+   "tickets": [
+    {
+     "id_documento": "1309",
+     "id_gasto": "1714",
+     "tipo_documento": "Ticket Imagen",
+     "nombre_original": "scan_1788196764694.pdf",
+     "ruta_archivo": "Uploads/Expense/Ticket_1714_1788196773.pdf",
+     "fecha_carga": "2026-08-31 10:19:33",
+     "url": "http://imaexpressllc.com/API/Uploads/Expense/Ticket_1714_1788196773.pdf"
+    }
+   ]
+  },
+  {
+   "id_gasto": "1713",
+   "fecha_gasto": "2026-08-29",
+   "pais": "MX",
+   "moneda": "MXN",
+   "monto_total": "13.63",
+   "cantidad_original": "232.00",
+   "created_by": "28",
+   "created_name": "Yssayana Pavian Arias",
+   "updated_by": null,
+   "updated_name": null,
+   "detalles": [
+    {
+     "id_detalle_gasto": "2066",
+     "id_gasto": "1713",
+     "tipo_gasto": "Mantenimiento",
+     "descripcion_articulo": "Talachas para el 4\n",
+     "cantidad_articulo": "1",
+     "precio_unitario": "200.00",
+     "nombre_categoria": "Refacciones",
+     "nombre_subcategoria": "Otros (nombre)"
+    }
+   ],
+   "tickets": [
+    {
+     "id_documento": "1308",
+     "id_gasto": "1713",
+     "tipo_documento": "Ticket Imagen",
+     "nombre_original": "scan_1788193844154.pdf",
+     "ruta_archivo": "Uploads/Expense/Ticket_1713_1788193856.pdf",
+     "fecha_carga": "2026-08-31 09:30:56",
+     "url": "http://imaexpressllc.com/API/Uploads/Expense/Ticket_1713_1788193856.pdf"
+    }
+   ]
+  },
+  {
+   "id_gasto": "1712",
+   "fecha_gasto": "2026-08-24",
+   "pais": "MX",
+   "moneda": "MXN",
+   "monto_total": "63.44",
+   "cantidad_original": "1080.00",
+   "created_by": "28",
+   "created_name": "Yssayana Pavian Arias",
+   "updated_by": null,
+   "updated_name": null,
+   "detalles": [
+    {
+     "id_detalle_gasto": "2065",
+     "id_gasto": "1712",
+     "tipo_gasto": "Mantenimiento",
+     "descripcion_articulo": "Rotochamber ",
+     "cantidad_articulo": "2",
+     "precio_unitario": "500.00",
+     "nombre_categoria": "Refacciones",
+     "nombre_subcategoria": "Otros (nombre)"
+    }
+   ],
+   "tickets": [
+    {
+     "id_documento": "1307",
+     "id_gasto": "1712",
+     "tipo_documento": "Ticket Imagen",
+     "nombre_original": "scan_1788193761182.pdf",
+     "ruta_archivo": "Uploads/Expense/Ticket_1712_1788193762.pdf",
+     "fecha_carga": "2026-08-31 09:29:22",
+     "url": "http://imaexpressllc.com/API/Uploads/Expense/Ticket_1712_1788193762.pdf"
+    }
+   ]
+  },
+  {
+   "id_gasto": "1711",
+   "fecha_gasto": "2026-08-24",
+   "pais": "MX",
+   "moneda": "MXN",
+   "monto_total": "27.26",
+   "cantidad_original": "464.00",
+   "created_by": "28",
+   "created_name": "Yssayana Pavian Arias",
+   "updated_by": null,
+   "updated_name": null,
+   "detalles": [
+    {
+     "id_detalle_gasto": "2064",
+     "id_gasto": "1711",
+     "tipo_gasto": "Mantenimiento",
+     "descripcion_articulo": "Talachas para el 4",
+     "cantidad_articulo": "1",
+     "precio_unitario": "400.00",
+     "nombre_categoria": "Refacciones",
+     "nombre_subcategoria": "Otros (nombre)"
+    }
+   ],
+   "tickets": [
+    {
+     "id_documento": "1306",
+     "id_gasto": "1711",
+     "tipo_documento": "Ticket Imagen",
+     "nombre_original": "scan_1788193499034.pdf",
+     "ruta_archivo": "Uploads/Expense/Ticket_1711_1788193501.pdf",
+     "fecha_carga": "2026-08-31 09:25:01",
+     "url": "http://imaexpressllc.com/API/Uploads/Expense/Ticket_1711_1788193501.pdf"
+    }
+   ]
+  },
+  {
+   "id_gasto": "1710",
+   "fecha_gasto": "2026-08-27",
+   "pais": "MX",
+   "moneda": "MXN",
+   "monto_total": "18.68",
+   "cantidad_original": "318.01",
+   "created_by": "28",
+   "created_name": "Yssayana Pavian Arias",
+   "updated_by": null,
+   "updated_name": null,
+   "detalles": [
+    {
+     "id_detalle_gasto": "2063",
+     "id_gasto": "1710",
+     "tipo_gasto": "Mantenimiento",
+     "descripcion_articulo": "Codo tanque aire camión 8",
+     "cantidad_articulo": "1",
+     "precio_unitario": "294.45",
+     "nombre_categoria": "Refacciones",
+     "nombre_subcategoria": "Otros (nombre)"
+    }
+   ],
+   "tickets": [
+    {
+     "id_documento": "1305",
+     "id_gasto": "1710",
+     "tipo_documento": "Ticket Imagen",
+     "nombre_original": "scan_1788192659410.pdf",
+     "ruta_archivo": "Uploads/Expense/Ticket_1710_1788192661.pdf",
+     "fecha_carga": "2026-08-31 09:11:01",
+     "url": "http://imaexpressllc.com/API/Uploads/Expense/Ticket_1710_1788192661.pdf"
+    }
+   ]
+  },
+  {
+   "id_gasto": "1709",
+   "fecha_gasto": "2026-08-28",
+   "pais": "MX",
+   "moneda": "MXN",
+   "monto_total": "107.06",
+   "cantidad_original": "1822.55",
+   "created_by": "28",
+   "created_name": "Yssayana Pavian Arias",
+   "updated_by": null,
+   "updated_name": null,
+   "detalles": [
+    {
+     "id_detalle_gasto": "2062",
+     "id_gasto": "1709",
+     "tipo_gasto": "Mantenimiento",
+     "descripcion_articulo": "Válvula niveladora para el 8 ",
+     "cantidad_articulo": "1",
+     "precio_unitario": "1687.55",
+     "nombre_categoria": "Refacciones",
+     "nombre_subcategoria": "Otros (nombre)"
+    }
+   ],
+   "tickets": [
+    {
+     "id_documento": "1304",
+     "id_gasto": "1709",
+     "tipo_documento": "Ticket Imagen",
+     "nombre_original": "scan_1788192137890.pdf",
+     "ruta_archivo": "Uploads/Expense/Ticket_1709_1788192141.pdf",
+     "fecha_carga": "2026-08-31 09:02:21",
+     "url": "http://imaexpressllc.com/API/Uploads/Expense/Ticket_1709_1788192141.pdf"
+    }
+   ]
+  },
+  {
+   "id_gasto": "1708",
+   "fecha_gasto": "2026-08-26",
+   "pais": "MX",
+   "moneda": "MXN",
+   "monto_total": "20.44",
+   "cantidad_original": "348.00",
+   "created_by": "28",
+   "created_name": "Yssayana Pavian Arias",
+   "updated_by": null,
+   "updated_name": null,
+   "detalles": [
+    {
+     "id_detalle_gasto": "2061",
+     "id_gasto": "1708",
+     "tipo_gasto": "Mantenimiento",
+     "descripcion_articulo": "Ajuste de tuercas caja 102 ",
+     "cantidad_articulo": "40",
+     "precio_unitario": "7.50",
+     "nombre_categoria": "Refacciones",
+     "nombre_subcategoria": "Otros (nombre)"
+    }
+   ],
+   "tickets": [
+    {
+     "id_documento": "1303",
+     "id_gasto": "1708",
+     "tipo_documento": "Ticket Imagen",
+     "nombre_original": "scan_1788191848528.pdf",
+     "ruta_archivo": "Uploads/Expense/Ticket_1708_1788191851.pdf",
+     "fecha_carga": "2026-08-31 08:57:31",
+     "url": "http://imaexpressllc.com/API/Uploads/Expense/Ticket_1708_1788191851.pdf"
+    }
+   ]
+  },
+  {
+   "id_gasto": "1707",
+   "fecha_gasto": "2026-08-28",
+   "pais": "MX",
+   "moneda": "MXN",
+   "monto_total": "119.28",
+   "cantidad_original": "2030.54",
+   "created_by": "28",
+   "created_name": "Yssayana Pavian Arias",
+   "updated_by": null,
+   "updated_name": null,
+   "detalles": [
+    {
+     "id_detalle_gasto": "2059",
+     "id_gasto": "1707",
+     "tipo_gasto": "Mantenimiento",
+     "descripcion_articulo": "Bolsa de asiento para el 4 ",
+     "cantidad_articulo": "1",
+     "precio_unitario": "680.13",
+     "nombre_categoria": "Refacciones",
+     "nombre_subcategoria": "Otros (nombre)"
+    },
+    {
+     "id_detalle_gasto": "2060",
+     "id_gasto": "1707",
+     "tipo_gasto": "Mantenimiento",
+     "descripcion_articulo": "Loderas lisa negra para el 4",
+     "cantidad_articulo": "6",
+     "precio_unitario": "200.00",
+     "nombre_categoria": "Refacciones",
+     "nombre_subcategoria": "Otros (nombre)"
+    }
+   ],
+   "tickets": [
+    {
+     "id_documento": "1302",
+     "id_gasto": "1707",
+     "tipo_documento": "Ticket Imagen",
+     "nombre_original": "scan_1788191498932.pdf",
+     "ruta_archivo": "Uploads/Expense/Ticket_1707_1788191502.pdf",
+     "fecha_carga": "2026-08-31 08:51:42",
+     "url": "http://imaexpressllc.com/API/Uploads/Expense/Ticket_1707_1788191502.pdf"
+    }
+   ]
+  },
+  {
+   "id_gasto": "1706",
+   "fecha_gasto": "2026-08-28",
+   "pais": "MX",
+   "moneda": "MXN",
+   "monto_total": "41.11",
+   "cantidad_original": "699.84",
+   "created_by": "28",
+   "created_name": "Yssayana Pavian Arias",
+   "updated_by": null,
+   "updated_name": null,
+   "detalles": [
+    {
+     "id_detalle_gasto": "2058",
+     "id_gasto": "1706",
+     "tipo_gasto": "Mantenimiento",
+     "descripcion_articulo": "Tubo compresor ",
+     "cantidad_articulo": "1",
+     "precio_unitario": "648.00",
+     "nombre_categoria": "Refacciones",
+     "nombre_subcategoria": "Otros (nombre)"
+    }
+   ],
+   "tickets": [
+    {
+     "id_documento": "1301",
+     "id_gasto": "1706",
+     "tipo_documento": "Ticket Imagen",
+     "nombre_original": "scan_1788191364135.pdf",
+     "ruta_archivo": "Uploads/Expense/Ticket_1706_1788191366.pdf",
+     "fecha_carga": "2026-08-31 08:49:26",
+     "url": "http://imaexpressllc.com/API/Uploads/Expense/Ticket_1706_1788191366.pdf"
+    }
+   ]
+  },
+  {
+   "id_gasto": "1703",
+   "fecha_gasto": "2026-08-28",
+   "pais": "MX",
+   "moneda": "MXN",
+   "monto_total": "176.23",
+   "cantidad_original": "3000.00",
+   "created_by": "29",
+   "created_name": "Ashlye",
+   "updated_by": null,
+   "updated_name": null,
+   "detalles": [
+    {
+     "id_detalle_gasto": "2055",
+     "id_gasto": "1703",
+     "tipo_gasto": "Gastos de viaje",
+     "descripcion_articulo": "T. Durango -Ima",
+     "cantidad_articulo": "1",
+     "precio_unitario": "3000.00",
+     "nombre_categoria": null,
+     "nombre_subcategoria": null
+    }
+   ],
+   "tickets": [
+    {
+     "id_documento": "1300",
+     "id_gasto": "1703",
+     "tipo_documento": "Ticket Imagen",
+     "nombre_original": "ttransito.jpeg",
+     "ruta_archivo": "Uploads/Expense/Ticket_1703_1787958011.jpeg",
+     "fecha_carga": "2026-08-28 16:00:11",
+     "url": "http://imaexpressllc.com/API/Uploads/Expense/Ticket_1703_1787958011.jpeg"
+    }
+   ]
+  },
+  {
+   "id_gasto": "1702",
+   "fecha_gasto": "2026-08-27",
+   "pais": "MX",
+   "moneda": "MXN",
+   "monto_total": "28.27",
+   "cantidad_original": "479.80",
+   "created_by": "29",
+   "created_name": "Ashlye",
+   "updated_by": null,
+   "updated_name": null,
+   "detalles": [
+    {
+     "id_detalle_gasto": "2054",
+     "id_gasto": "1702",
+     "tipo_gasto": "Gastos de viaje",
+     "descripcion_articulo": "carga NL",
+     "cantidad_articulo": "1",
+     "precio_unitario": "479.80",
+     "nombre_categoria": "Viaticos",
+     "nombre_subcategoria": "Gasolina"
+    }
+   ],
+   "tickets": [
+    {
+     "id_documento": "1299",
+     "id_gasto": "1702",
+     "tipo_documento": "Ticket Imagen",
+     "nombre_original": "WhatsApp Image 2026-08-28 at 3.51.18 PM.jpeg",
+     "ruta_archivo": "Uploads/Expense/Ticket_1702_1787950360.jpeg",
+     "fecha_carga": "2026-08-28 13:52:40",
+     "url": "http://imaexpressllc.com/API/Uploads/Expense/Ticket_1702_1787950360.jpeg"
+    }
+   ]
+  },
+  {
+   "id_gasto": "1701",
+   "fecha_gasto": "2026-08-28",
+   "pais": "MX",
+   "moneda": "MXN",
+   "monto_total": "29.46",
+   "cantidad_original": "500.00",
+   "created_by": "29",
+   "created_name": "Ashlye",
+   "updated_by": null,
+   "updated_name": null,
+   "detalles": [
+    {
+     "id_detalle_gasto": "2053",
+     "id_gasto": "1701",
+     "tipo_gasto": "Gastos de viaje",
+     "descripcion_articulo": "oxxo gas",
+     "cantidad_articulo": "1",
+     "precio_unitario": "500.00",
+     "nombre_categoria": "Viaticos",
+     "nombre_subcategoria": "Gasolina"
+    }
+   ],
+   "tickets": [
+    {
+     "id_documento": "1298",
+     "id_gasto": "1701",
+     "tipo_documento": "Factura PDF",
+     "nombre_original": "28.pdf",
+     "ruta_archivo": "Uploads/Expense/Factura_1701_1787950095.pdf",
+     "fecha_carga": "2026-08-28 13:48:15",
+     "url": "http://imaexpressllc.com/API/Uploads/Expense/Factura_1701_1787950095.pdf"
+    }
+   ]
+  },
+  {
+   "id_gasto": "1700",
+   "fecha_gasto": "2026-08-07",
+   "pais": "MX",
+   "moneda": "MXN",
+   "monto_total": "24.73",
+   "cantidad_original": "419.80",
+   "created_by": "29",
+   "created_name": "Ashlye",
+   "updated_by": null,
+   "updated_name": null,
+   "detalles": [
+    {
+     "id_detalle_gasto": "2052",
+     "id_gasto": "1700",
+     "tipo_gasto": "Gastos de viaje",
+     "descripcion_articulo": "CARGA NLD",
+     "cantidad_articulo": "1",
+     "precio_unitario": "419.00",
+     "nombre_categoria": "Viaticos",
+     "nombre_subcategoria": "Gasolina"
+    }
+   ],
+   "tickets": [
+    {
+     "id_documento": "1297",
+     "id_gasto": "1700",
+     "tipo_documento": "Factura PDF",
+     "nombre_original": "Reporte.pdf",
+     "ruta_archivo": "Uploads/Expense/Factura_1700_1787939609.pdf",
+     "fecha_carga": "2026-08-28 10:53:29",
+     "url": "http://imaexpressllc.com/API/Uploads/Expense/Factura_1700_1787939609.pdf"
+    }
+   ]
+  },
+  {
+   "id_gasto": "1699",
+   "fecha_gasto": "2026-08-26",
+   "pais": "MX",
+   "moneda": "MXN",
+   "monto_total": "150.25",
+   "cantidad_original": "2550.00",
+   "created_by": "29",
+   "created_name": "Ashlye",
+   "updated_by": null,
+   "updated_name": null,
+   "detalles": [
+    {
+     "id_detalle_gasto": "2051",
+     "id_gasto": "1699",
+     "tipo_gasto": "Servicios Mensuales",
+     "descripcion_articulo": "fac 157f7",
+     "cantidad_articulo": "1",
+     "precio_unitario": "2550.00",
+     "nombre_categoria": "GPS",
+     "nombre_subcategoria": null
+    }
+   ],
+   "tickets": [
+    {
+     "id_documento": "1296",
+     "id_gasto": "1699",
+     "tipo_documento": "Ticket Imagen",
+     "nombre_original": "gps.jpeg",
+     "ruta_archivo": "Uploads/Expense/Ticket_1699_1787929175.jpeg",
+     "fecha_carga": "2026-08-28 07:59:35",
+     "url": "http://imaexpressllc.com/API/Uploads/Expense/Ticket_1699_1787929175.jpeg"
+    }
+   ]
+  },
+  {
+   "id_gasto": "1698",
+   "fecha_gasto": "2026-08-14",
+   "pais": "US",
+   "moneda": "USD",
+   "monto_total": "14.07",
+   "cantidad_original": "14.07",
+   "created_by": "29",
+   "created_name": "Ashlye",
+   "updated_by": null,
+   "updated_name": null,
+   "detalles": [
+    {
+     "id_detalle_gasto": "2050",
+     "id_gasto": "1698",
+     "tipo_gasto": "Gastos de viaje",
+     "descripcion_articulo": "estancia",
+     "cantidad_articulo": "1",
+     "precio_unitario": "14.07",
+     "nombre_categoria": "Viaticos",
+     "nombre_subcategoria": "Comida"
+    }
+   ],
+   "tickets": [
+    {
+     "id_documento": "1295",
+     "id_gasto": "1698",
+     "tipo_documento": "Ticket Imagen",
+     "nombre_original": "comida 0812.jpeg",
+     "ruta_archivo": "Uploads/Expense/Ticket_1698_1787928985.jpeg",
+     "fecha_carga": "2026-08-28 07:56:25",
+     "url": "http://imaexpressllc.com/API/Uploads/Expense/Ticket_1698_1787928985.jpeg"
+    }
+   ]
+  },
+  {
+   "id_gasto": "1697",
+   "fecha_gasto": "2026-08-21",
+   "pais": "US",
+   "moneda": "USD",
+   "monto_total": "41.09",
+   "cantidad_original": "41.09",
+   "created_by": "29",
+   "created_name": "Ashlye",
+   "updated_by": null,
+   "updated_name": null,
+   "detalles": [
+    {
+     "id_detalle_gasto": "2049",
+     "id_gasto": "1697",
+     "tipo_gasto": "Gastos de viaje",
+     "descripcion_articulo": "tacos kiss",
+     "cantidad_articulo": "1",
+     "precio_unitario": "41.09",
+     "nombre_categoria": "Viaticos",
+     "nombre_subcategoria": "Comida"
+    }
+   ],
+   "tickets": [
+    {
+     "id_documento": "1294",
+     "id_gasto": "1697",
+     "tipo_documento": "Ticket Imagen",
+     "nombre_original": "comida 0811.jpeg",
+     "ruta_archivo": "Uploads/Expense/Ticket_1697_1787871992.jpeg",
+     "fecha_carga": "2026-08-27 16:06:32",
+     "url": "http://imaexpressllc.com/API/Uploads/Expense/Ticket_1697_1787871992.jpeg"
+    }
+   ]
+  },
+  {
+   "id_gasto": "1696",
+   "fecha_gasto": "2026-08-05",
+   "pais": "US",
+   "moneda": "USD",
+   "monto_total": "49.15",
+   "cantidad_original": "49.15",
+   "created_by": "29",
+   "created_name": "Ashlye",
+   "updated_by": null,
+   "updated_name": null,
+   "detalles": [
+    {
+     "id_detalle_gasto": "2048",
+     "id_gasto": "1696",
+     "tipo_gasto": "Gastos de viaje",
+     "descripcion_articulo": "walmart",
+     "cantidad_articulo": "1",
+     "precio_unitario": "49.15",
+     "nombre_categoria": "Viaticos",
+     "nombre_subcategoria": "Comida"
+    }
+   ],
+   "tickets": [
+    {
+     "id_documento": "1293",
+     "id_gasto": "1696",
+     "tipo_documento": "Ticket Imagen",
+     "nombre_original": "comida 0810.jpeg",
+     "ruta_archivo": "Uploads/Expense/Ticket_1696_1787871936.jpeg",
+     "fecha_carga": "2026-08-27 16:05:36",
+     "url": "http://imaexpressllc.com/API/Uploads/Expense/Ticket_1696_1787871936.jpeg"
+    }
+   ]
+  },
+  {
+   "id_gasto": "1695",
+   "fecha_gasto": "2026-07-12",
+   "pais": "MX",
+   "moneda": "MXN",
+   "monto_total": "217.30",
+   "cantidad_original": "3688.00",
+   "created_by": "29",
+   "created_name": "Ashlye",
+   "updated_by": null,
+   "updated_name": null,
+   "detalles": [
+    {
+     "id_detalle_gasto": "2047",
+     "id_gasto": "1695",
+     "tipo_gasto": "Gastos de viaje",
+     "descripcion_articulo": "",
+     "cantidad_articulo": "1",
+     "precio_unitario": "3688.00",
+     "nombre_categoria": "Viaticos",
+     "nombre_subcategoria": "Comida"
+    }
+   ],
+   "tickets": [
+    {
+     "id_documento": "1292",
+     "id_gasto": "1695",
+     "tipo_documento": "Ticket Imagen",
+     "nombre_original": "comida 089.jpeg",
+     "ruta_archivo": "Uploads/Expense/Ticket_1695_1787871878.jpeg",
+     "fecha_carga": "2026-08-27 16:04:38",
+     "url": "http://imaexpressllc.com/API/Uploads/Expense/Ticket_1695_1787871878.jpeg"
+    }
+   ]
+  },
+  {
+   "id_gasto": "1694",
+   "fecha_gasto": "2026-08-13",
+   "pais": "US",
+   "moneda": "USD",
+   "monto_total": "73.34",
+   "cantidad_original": "73.34",
+   "created_by": "29",
+   "created_name": "Ashlye",
+   "updated_by": null,
+   "updated_name": null,
+   "detalles": [
+    {
+     "id_detalle_gasto": "2046",
+     "id_gasto": "1694",
+     "tipo_gasto": "Gastos de viaje",
+     "descripcion_articulo": "walmart",
+     "cantidad_articulo": "1",
+     "precio_unitario": "73.34",
+     "nombre_categoria": "Viaticos",
+     "nombre_subcategoria": "Comida"
+    }
+   ],
+   "tickets": [
+    {
+     "id_documento": "1291",
+     "id_gasto": "1694",
+     "tipo_documento": "Ticket Imagen",
+     "nombre_original": "comida 088.jpeg",
+     "ruta_archivo": "Uploads/Expense/Ticket_1694_1787871793.jpeg",
+     "fecha_carga": "2026-08-27 16:03:13",
+     "url": "http://imaexpressllc.com/API/Uploads/Expense/Ticket_1694_1787871793.jpeg"
+    }
+   ]
+  },
+  {
+   "id_gasto": "1693",
+   "fecha_gasto": "2026-08-20",
+   "pais": "US",
+   "moneda": "USD",
+   "monto_total": "66.00",
+   "cantidad_original": "66.00",
+   "created_by": "29",
+   "created_name": "Ashlye",
+   "updated_by": null,
+   "updated_name": null,
+   "detalles": [
+    {
+     "id_detalle_gasto": "2045",
+     "id_gasto": "1693",
+     "tipo_gasto": "Gastos de viaje",
+     "descripcion_articulo": "apleebe´s",
+     "cantidad_articulo": "1",
+     "precio_unitario": "66.00",
+     "nombre_categoria": "Viaticos",
+     "nombre_subcategoria": "Comida"
+    }
+   ],
+   "tickets": [
+    {
+     "id_documento": "1290",
+     "id_gasto": "1693",
+     "tipo_documento": "Ticket Imagen",
+     "nombre_original": "comida 087.jpeg",
+     "ruta_archivo": "Uploads/Expense/Ticket_1693_1787871736.jpeg",
+     "fecha_carga": "2026-08-27 16:02:16",
+     "url": "http://imaexpressllc.com/API/Uploads/Expense/Ticket_1693_1787871736.jpeg"
+    }
+   ]
+  },
+  {
+   "id_gasto": "1692",
+   "fecha_gasto": "2026-08-19",
+   "pais": "US",
+   "moneda": "USD",
+   "monto_total": "27.30",
+   "cantidad_original": "27.30",
+   "created_by": "29",
+   "created_name": "Ashlye",
+   "updated_by": null,
+   "updated_name": null,
+   "detalles": [
+    {
+     "id_detalle_gasto": "2044",
+     "id_gasto": "1692",
+     "tipo_gasto": "Gastos de viaje",
+     "descripcion_articulo": "h-e-b",
+     "cantidad_articulo": "1",
+     "precio_unitario": "27.30",
+     "nombre_categoria": "Viaticos",
+     "nombre_subcategoria": "Comida"
+    }
+   ],
+   "tickets": [
+    {
+     "id_documento": "1289",
+     "id_gasto": "1692",
+     "tipo_documento": "Ticket Imagen",
+     "nombre_original": "comida 086.jpeg",
+     "ruta_archivo": "Uploads/Expense/Ticket_1692_1787871656.jpeg",
+     "fecha_carga": "2026-08-27 16:00:56",
+     "url": "http://imaexpressllc.com/API/Uploads/Expense/Ticket_1692_1787871656.jpeg"
+    }
+   ]
+  },
+  {
+   "id_gasto": "1691",
+   "fecha_gasto": "2026-08-14",
+   "pais": "US",
+   "moneda": "USD",
+   "monto_total": "71.69",
+   "cantidad_original": "71.69",
+   "created_by": "29",
+   "created_name": "Ashlye",
+   "updated_by": null,
+   "updated_name": null,
+   "detalles": [
+    {
+     "id_detalle_gasto": "2043",
+     "id_gasto": "1691",
+     "tipo_gasto": "Gastos de viaje",
+     "descripcion_articulo": "dannys",
+     "cantidad_articulo": "1",
+     "precio_unitario": "71.69",
+     "nombre_categoria": "Viaticos",
+     "nombre_subcategoria": "Comida"
+    }
+   ],
+   "tickets": [
+    {
+     "id_documento": "1288",
+     "id_gasto": "1691",
+     "tipo_documento": "Ticket Imagen",
+     "nombre_original": "comida 085.jpeg",
+     "ruta_archivo": "Uploads/Expense/Ticket_1691_1787871596.jpeg",
+     "fecha_carga": "2026-08-27 15:59:56",
+     "url": "http://imaexpressllc.com/API/Uploads/Expense/Ticket_1691_1787871596.jpeg"
+    }
+   ]
+  },
+  {
+   "id_gasto": "1690",
+   "fecha_gasto": "2026-08-04",
+   "pais": "MX",
+   "moneda": "MXN",
+   "monto_total": "43.60",
+   "cantidad_original": "740.00",
+   "created_by": "29",
+   "created_name": "Ashlye",
+   "updated_by": null,
+   "updated_name": null,
+   "detalles": [
+    {
+     "id_detalle_gasto": "2042",
+     "id_gasto": "1690",
+     "tipo_gasto": "Gastos de viaje",
+     "descripcion_articulo": "mr.pay",
+     "cantidad_articulo": "1",
+     "precio_unitario": "740.00",
+     "nombre_categoria": "Viaticos",
+     "nombre_subcategoria": "Comida"
+    }
+   ],
+   "tickets": [
+    {
+     "id_documento": "1287",
+     "id_gasto": "1690",
+     "tipo_documento": "Ticket Imagen",
+     "nombre_original": "comida 084.jpeg",
+     "ruta_archivo": "Uploads/Expense/Ticket_1690_1787871510.jpeg",
+     "fecha_carga": "2026-08-27 15:58:30",
+     "url": "http://imaexpressllc.com/API/Uploads/Expense/Ticket_1690_1787871510.jpeg"
+    }
+   ]
+  },
+  {
+   "id_gasto": "1689",
+   "fecha_gasto": "2026-08-18",
+   "pais": "MX",
+   "moneda": "MXN",
+   "monto_total": "8.25",
+   "cantidad_original": "140.00",
+   "created_by": "29",
+   "created_name": "Ashlye",
+   "updated_by": null,
+   "updated_name": null,
+   "detalles": [
+    {
+     "id_detalle_gasto": "2041",
+     "id_gasto": "1689",
+     "tipo_gasto": "Gastos de viaje",
+     "descripcion_articulo": "El rancho",
+     "cantidad_articulo": "1",
+     "precio_unitario": "140.00",
+     "nombre_categoria": "Viaticos",
+     "nombre_subcategoria": "Comida"
+    }
+   ],
+   "tickets": [
+    {
+     "id_documento": "1286",
+     "id_gasto": "1689",
+     "tipo_documento": "Ticket Imagen",
+     "nombre_original": "comida 083.jpeg",
+     "ruta_archivo": "Uploads/Expense/Ticket_1689_1787871441.jpeg",
+     "fecha_carga": "2026-08-27 15:57:21",
+     "url": "http://imaexpressllc.com/API/Uploads/Expense/Ticket_1689_1787871441.jpeg"
+    }
+   ]
+  },
+  {
+   "id_gasto": "1688",
+   "fecha_gasto": "2026-08-15",
+   "pais": "MX",
+   "moneda": "MXN",
+   "monto_total": "30.29",
+   "cantidad_original": "514.00",
+   "created_by": "29",
+   "created_name": "Ashlye",
+   "updated_by": null,
+   "updated_name": null,
+   "detalles": [
+    {
+     "id_detalle_gasto": "2040",
+     "id_gasto": "1688",
+     "tipo_gasto": "Gastos de viaje",
+     "descripcion_articulo": "pollo loco",
+     "cantidad_articulo": "1",
+     "precio_unitario": "514.00",
+     "nombre_categoria": "Viaticos",
+     "nombre_subcategoria": "Comida"
+    }
+   ],
+   "tickets": [
+    {
+     "id_documento": "1285",
+     "id_gasto": "1688",
+     "tipo_documento": "Ticket Imagen",
+     "nombre_original": "comida 081.jpeg",
+     "ruta_archivo": "Uploads/Expense/Ticket_1688_1787871089.jpeg",
+     "fecha_carga": "2026-08-27 15:51:29",
+     "url": "http://imaexpressllc.com/API/Uploads/Expense/Ticket_1688_1787871089.jpeg"
+    }
+   ]
+  },
+  {
+   "id_gasto": "1687",
+   "fecha_gasto": "2026-08-16",
+   "pais": "MX",
+   "moneda": "MXN",
+   "monto_total": "14.73",
+   "cantidad_original": "250.00",
+   "created_by": "29",
+   "created_name": "Ashlye",
+   "updated_by": null,
+   "updated_name": null,
+   "detalles": [
+    {
+     "id_detalle_gasto": "2039",
+     "id_gasto": "1687",
+     "tipo_gasto": "Gastos de viaje",
+     "descripcion_articulo": "el colorado",
+     "cantidad_articulo": "1",
+     "precio_unitario": "250.00",
+     "nombre_categoria": "Viaticos",
+     "nombre_subcategoria": "Comida"
+    }
+   ],
+   "tickets": [
+    {
+     "id_documento": "1284",
+     "id_gasto": "1687",
+     "tipo_documento": "Ticket Imagen",
+     "nombre_original": "comida 08.jpeg",
+     "ruta_archivo": "Uploads/Expense/Ticket_1687_1787871021.jpeg",
+     "fecha_carga": "2026-08-27 15:50:21",
+     "url": "http://imaexpressllc.com/API/Uploads/Expense/Ticket_1687_1787871021.jpeg"
+    }
+   ]
+  },
+  {
+   "id_gasto": "1686",
+   "fecha_gasto": "2026-06-06",
+   "pais": "US",
+   "moneda": "USD",
+   "monto_total": "38.41",
+   "cantidad_original": "38.41",
+   "created_by": "29",
+   "created_name": "Ashlye",
+   "updated_by": null,
+   "updated_name": null,
+   "detalles": [
+    {
+     "id_detalle_gasto": "2038",
+     "id_gasto": "1686",
+     "tipo_gasto": "Gastos de viaje",
+     "descripcion_articulo": "tacos kissi",
+     "cantidad_articulo": "1",
+     "precio_unitario": "38.41",
+     "nombre_categoria": "Viaticos",
+     "nombre_subcategoria": "Comida"
+    }
+   ],
+   "tickets": [
+    {
+     "id_documento": "1283",
+     "id_gasto": "1686",
+     "tipo_documento": "Ticket Imagen",
+     "nombre_original": "comida 3.jpeg",
+     "ruta_archivo": "Uploads/Expense/Ticket_1686_1787870071.jpeg",
+     "fecha_carga": "2026-08-27 15:34:31",
+     "url": "http://imaexpressllc.com/API/Uploads/Expense/Ticket_1686_1787870071.jpeg"
+    }
+   ]
+  },
+  {
+   "id_gasto": "1685",
+   "fecha_gasto": "2026-07-21",
+   "pais": "US",
+   "moneda": "USD",
+   "monto_total": "21.11",
+   "cantidad_original": "21.11",
+   "created_by": "29",
+   "created_name": "Ashlye",
+   "updated_by": null,
+   "updated_name": null,
+   "detalles": [
+    {
+     "id_detalle_gasto": "2037",
+     "id_gasto": "1685",
+     "tipo_gasto": "Gastos de viaje",
+     "descripcion_articulo": "walmart ",
+     "cantidad_articulo": "1",
+     "precio_unitario": "21.11",
+     "nombre_categoria": "Viaticos",
+     "nombre_subcategoria": "Comida"
+    }
+   ],
+   "tickets": [
+    {
+     "id_documento": "1282",
+     "id_gasto": "1685",
+     "tipo_documento": "Ticket Imagen",
+     "nombre_original": "comida 4.jpeg",
+     "ruta_archivo": "Uploads/Expense/Ticket_1685_1787869989.jpeg",
+     "fecha_carga": "2026-08-27 15:33:09",
+     "url": "http://imaexpressllc.com/API/Uploads/Expense/Ticket_1685_1787869989.jpeg"
+    }
+   ]
+  },
+  {
+   "id_gasto": "1684",
+   "fecha_gasto": "2026-07-26",
+   "pais": "MX",
+   "moneda": "MXN",
+   "monto_total": "31.05",
+   "cantidad_original": "526.99",
+   "created_by": "29",
+   "created_name": "Ashlye",
+   "updated_by": null,
+   "updated_name": null,
+   "detalles": [
+    {
+     "id_detalle_gasto": "2036",
+     "id_gasto": "1684",
+     "tipo_gasto": "Gastos de viaje",
+     "descripcion_articulo": "",
+     "cantidad_articulo": "1",
+     "precio_unitario": "526.00",
+     "nombre_categoria": "Viaticos",
+     "nombre_subcategoria": "Comida"
+    }
+   ],
+   "tickets": [
+    {
+     "id_documento": "1281",
+     "id_gasto": "1684",
+     "tipo_documento": "Ticket Imagen",
+     "nombre_original": "comida 5.jpeg",
+     "ruta_archivo": "Uploads/Expense/Ticket_1684_1787869773.jpeg",
+     "fecha_carga": "2026-08-27 15:29:33",
+     "url": "http://imaexpressllc.com/API/Uploads/Expense/Ticket_1684_1787869773.jpeg"
+    }
+   ]
+  },
+  {
+   "id_gasto": "1683",
+   "fecha_gasto": "2026-08-24",
+   "pais": "MX",
+   "moneda": "MXN",
+   "monto_total": "23.57",
+   "cantidad_original": "400.00",
+   "created_by": "28",
+   "created_name": "Yssayana Pavian Arias",
+   "updated_by": null,
+   "updated_name": null,
+   "detalles": [
+    {
+     "id_detalle_gasto": "2035",
+     "id_gasto": "1683",
+     "tipo_gasto": "Mantenimiento",
+     "descripcion_articulo": "Reparación llanta y parche tip top",
+     "cantidad_articulo": "1",
+     "precio_unitario": "400.00",
+     "nombre_categoria": "Refacciones",
+     "nombre_subcategoria": "Llantas"
+    }
+   ],
+   "tickets": [
+    {
+     "id_documento": "1280",
+     "id_gasto": "1683",
+     "tipo_documento": "Ticket Imagen",
+     "nombre_original": "scan_1787869562200.pdf",
+     "ruta_archivo": "Uploads/Expense/Ticket_1683_1787869564.pdf",
+     "fecha_carga": "2026-08-27 15:26:04",
+     "url": "http://imaexpressllc.com/API/Uploads/Expense/Ticket_1683_1787869564.pdf"
+    }
+   ]
+  }
+ ]
+}
