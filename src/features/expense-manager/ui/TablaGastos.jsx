@@ -22,6 +22,7 @@ import {
 } from "../estilos"
 import { COLOR } from "../../../shared/ui/tokens"
 import { FilasEsqueleto, Paginacion } from "../../../shared/ui"
+import { useIdioma } from "../../../shared/i18n"
 
 const COLUMNAS = [
   { campo: "id_gasto", etiqueta: "Expense #" },
@@ -115,6 +116,7 @@ export function TablaGastos({
   puedeEliminar,
   onEliminado,
 }) {
+  const { t } = useIdioma()
   const columnas = COLUMNAS.length + 2
 
   return (
@@ -134,7 +136,7 @@ export function TablaGastos({
                   align={columna.align}
                 />
               ))}
-              <TableCell sx={{ ...HEADER_CELL_SX, textAlign: "center" }}>Acciones</TableCell>
+              <TableCell sx={{ ...HEADER_CELL_SX, textAlign: "center" }}>{t("tabla.acciones")}</TableCell>
             </TableRow>
           </TableHead>
 

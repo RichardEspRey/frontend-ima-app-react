@@ -12,6 +12,7 @@ import RefreshIcon from "@mui/icons-material/Refresh"
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline"
 import { ApiError, CAUSA_ERROR } from "../api/errors"
 import { BORDE, COLOR, RADIO } from "./tokens"
+import { useIdioma } from "../i18n"
 
 /**
  * Qué decirle a la persona según por qué falló la petición.
@@ -83,6 +84,7 @@ export function describirError(error) {
  */
 export function EstadoError({ error, onReintentar, titulo, compacto = false }) {
   const [abierto, setAbierto] = useState(false)
+  const { t } = useIdioma()
   const info = describirError(error)
 
   if (compacto) {
@@ -92,7 +94,7 @@ export function EstadoError({ error, onReintentar, titulo, compacto = false }) {
         action={
           onReintentar && (
             <Button color="inherit" size="small" onClick={onReintentar}>
-              Reintentar
+              {t("accion.reintentar")}
             </Button>
           )
         }
@@ -131,11 +133,11 @@ export function EstadoError({ error, onReintentar, titulo, compacto = false }) {
       <Stack direction="row" spacing={1.5} justifyContent="center" sx={{ mt: 3 }}>
         {onReintentar && (
           <Button variant="contained" startIcon={<RefreshIcon />} onClick={onReintentar}>
-            Reintentar
+            {t("accion.reintentar")}
           </Button>
         )}
         <Button variant="text" size="small" onClick={() => setAbierto((v) => !v)}>
-          {abierto ? "Ocultar detalle" : "Ver detalle técnico"}
+          {abierto ? t("estado.ocultarDetalle") : t("estado.verDetalle")}
         </Button>
       </Stack>
 

@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react"
 import { Box, TablePagination } from "@mui/material"
 import { PAGINATION_BOX_SX, PAGINATION_SX } from "./estilos"
+import { useIdioma } from "../i18n"
 
 /**
  * Opciones de tamaño de página que se ofrecen por omisión.
@@ -98,6 +99,8 @@ export function Paginacion({
   onPorPagina,
   tamanos = TAMANOS_PAGINA,
 }) {
+  const { t } = useIdioma()
+
   return (
     <Box sx={PAGINATION_BOX_SX}>
       <TablePagination
@@ -108,8 +111,8 @@ export function Paginacion({
         onPageChange={(_evento, nueva) => onPagina(nueva)}
         onRowsPerPageChange={(evento) => onPorPagina(Number(evento.target.value))}
         rowsPerPageOptions={tamanos}
-        labelRowsPerPage="Filas por página"
-        labelDisplayedRows={({ from, to, count }) => `${from}–${to} de ${count}`}
+        labelRowsPerPage={t("tabla.filasPorPagina")}
+        labelDisplayedRows={({ from, to, count }) => `${from}–${to} ${t("tabla.de")} ${count}`}
         sx={PAGINATION_SX}
       />
     </Box>

@@ -127,17 +127,6 @@ const TablaInventario = () => {
         page * rowsPerPage + rowsPerPage
     );
 
-    // **Manejadores de Paginación**
-    const handleChangePage = (event, newPage) => {
-        setPage(newPage);
-    };
-
-    const handleChangeRowsPerPage = (event) => {
-        // Manejo de opción "Todos"
-        const value = parseInt(event.target.value, 10);
-        setRowsPerPage(value === -1 ? filteredInventory.length : value);
-        setPage(0); 
-    };
 
     return (
         <Box>

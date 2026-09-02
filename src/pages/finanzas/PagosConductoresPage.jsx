@@ -17,6 +17,7 @@ import Swal from "sweetalert2";
 import { useNavigate } from 'react-router-dom';
 import { COLOR } from '../../shared/ui/tokens';
 import { FilasEsqueleto, Pestanas, PageHeader, PAGE_SHELL_SX, TABLE_CONTAINER_SX, HEADER_ROW_SX, HEADER_CELL_SX, GHOST_BTN_SX, Paginacion } from '../../shared/ui';
+import { useIdioma } from '../../shared/i18n';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -86,6 +87,7 @@ const StatusTrip = ({ value }) => {
  * @returns {object} La pantalla.
  */
 const PagosConductoresPage = () => {
+  const { t } = useIdioma()
   const navigate = useNavigate();
   const [trips, setTrips] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -263,14 +265,14 @@ const PagosConductoresPage = () => {
         <Table stickyHeader size="small">
           <TableHead>
             <TableRow sx={HEADER_ROW_SX}>
-              <TableCell sx={HEADER_CELL_SX}>Trip #</TableCell>
-              <TableCell sx={HEADER_CELL_SX}>Driver</TableCell>
-              <TableCell align="center" sx={HEADER_CELL_SX}>Etapas</TableCell>
+              <TableCell sx={HEADER_CELL_SX}>{t("tabla.trip")}</TableCell>
+              <TableCell sx={HEADER_CELL_SX}>{t("tabla.driver")}</TableCell>
+              <TableCell align="center" sx={HEADER_CELL_SX}>{t("tabla.etapas")}</TableCell>
               <TableCell align="right" sx={HEADER_CELL_SX}>Millas</TableCell>
               <TableCell align="right" sx={HEADER_CELL_SX}>Monto Pago</TableCell>
               <TableCell sx={HEADER_CELL_SX}>Estatus Pago</TableCell>
               <TableCell sx={HEADER_CELL_SX}>Estatus Viaje</TableCell>
-              <TableCell align="center" sx={HEADER_CELL_SX}>Acciones</TableCell>
+              <TableCell align="center" sx={HEADER_CELL_SX}>{t("tabla.acciones")}</TableCell>
             </TableRow>
           </TableHead>
 

@@ -16,6 +16,7 @@ import {
 } from '../../../shared/ui/estilos';
 import { COLOR } from '../../../shared/ui/tokens';
 import { FilasEsqueleto, usePaginacion, Paginacion } from '../../../shared/ui';
+import { useIdioma } from '../../../shared/i18n';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -31,6 +32,7 @@ const money = (val) => new Intl.NumberFormat('en-US', { style: 'currency', curre
  * @returns {object} La tabla renderizada.
  */
 const TablaReparaciones = () => {
+    const { t } = useIdioma()
     const [repairs, setRepairs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [modalOpen, setModalOpen] = useState(false);
@@ -83,13 +85,13 @@ const TablaReparaciones = () => {
                         <TableRow sx={HEADER_ROW_SX}>
                             <TableCell sx={HEADER_CELL_SX}>ID</TableCell>
                             <TableCell sx={HEADER_CELL_SX}>Fecha</TableCell>
-                            <TableCell sx={HEADER_CELL_SX}>Camión</TableCell>
+                            <TableCell sx={HEADER_CELL_SX}>{t("tabla.camion")}</TableCell>
                             <TableCell sx={HEADER_CELL_SX}>Viaje Asociado</TableCell>
                             <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'right' }}>Costo Rep.</TableCell>
                             <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'right' }}>Costo Ref.</TableCell>
                             <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'right' }}>Total</TableCell>
-                            <TableCell sx={HEADER_CELL_SX}>Documentos</TableCell>
-                            <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'center' }}>Acciones</TableCell>
+                            <TableCell sx={HEADER_CELL_SX}>{t("tabla.documentos")}</TableCell>
+                            <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'center' }}>{t("tabla.acciones")}</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>

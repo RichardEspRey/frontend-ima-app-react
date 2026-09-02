@@ -16,6 +16,7 @@ import {
 } from '../../../shared/ui/estilos';
 import { COLOR } from '../../../shared/ui/tokens';
 import { FilasEsqueleto, usePaginacion, Paginacion } from '../../../shared/ui';
+import { useIdioma } from '../../../shared/i18n';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -31,6 +32,7 @@ const formatMoney = (val) => new Intl.NumberFormat('en-US', { style: 'currency',
  * @returns {object} La tabla renderizada.
  */
 const TablaInspecciones = () => {
+    const { t } = useIdioma()
     const [inspections, setInspections] = useState([]);
     const [loading, setLoading] = useState(true);
     const [modalOpen, setModalOpen] = useState(false);
@@ -83,15 +85,15 @@ const TablaInspecciones = () => {
                         <TableRow sx={HEADER_ROW_SX}>
                             <TableCell sx={HEADER_CELL_SX}>Folio</TableCell>
                             <TableCell sx={HEADER_CELL_SX}>Fecha</TableCell>
-                            <TableCell sx={HEADER_CELL_SX}>Camión</TableCell>
+                            <TableCell sx={HEADER_CELL_SX}>{t("tabla.camion")}</TableCell>
                             <TableCell sx={HEADER_CELL_SX}>Viaje Asociado</TableCell>
                             <TableCell sx={HEADER_CELL_SX}>Tipo de Violación</TableCell>
                             <TableCell sx={HEADER_CELL_SX}>Descripción</TableCell>
                             <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'right' }}>Multa IMA</TableCell>
                             <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'right' }}>Multa Driver</TableCell>
                             <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'right' }}>Total</TableCell>
-                            <TableCell sx={HEADER_CELL_SX}>Documentos</TableCell>
-                            <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'center' }}>Acciones</TableCell>
+                            <TableCell sx={HEADER_CELL_SX}>{t("tabla.documentos")}</TableCell>
+                            <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'center' }}>{t("tabla.acciones")}</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>

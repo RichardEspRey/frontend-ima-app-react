@@ -4,6 +4,7 @@ import Swal from 'sweetalert2';
 
 import { InspeccionRow } from '../../components/InspeccionRow'; 
 import { Pestanas, Selector, usePaginacion, Paginacion, TABLE_CONTAINER_SX, HEADER_ROW_SX, HEADER_CELL_SX } from '../../shared/ui';
+import { useIdioma } from '../../shared/i18n';
 
 
 const OPS = {
@@ -18,6 +19,7 @@ const OPS = {
  * @returns {object} La pantalla.
  */
 const InspeccionFinalPage = () => {
+  const { t } = useIdioma()
   const apiHost = import.meta.env.VITE_API_HOST;
 
   const [rows, setRows] = useState([]);                      
@@ -226,13 +228,13 @@ const InspeccionFinalPage = () => {
           <TableHead>
             <TableRow sx={HEADER_ROW_SX}>
               <TableCell sx={HEADER_CELL_SX} />
-              <TableCell sx={HEADER_CELL_SX}>Trip #</TableCell>
-              <TableCell sx={HEADER_CELL_SX}>Driver</TableCell>
-              <TableCell sx={HEADER_CELL_SX}>Camión</TableCell>
+              <TableCell sx={HEADER_CELL_SX}>{t("tabla.trip")}</TableCell>
+              <TableCell sx={HEADER_CELL_SX}>{t("tabla.driver")}</TableCell>
+              <TableCell sx={HEADER_CELL_SX}>{t("tabla.camion")}</TableCell>
               <TableCell sx={HEADER_CELL_SX}>Fallas</TableCell>
-              <TableCell sx={HEADER_CELL_SX}>Estatus</TableCell>
+              <TableCell sx={HEADER_CELL_SX}>{t("tabla.estatus")}</TableCell>
               <TableCell sx={HEADER_CELL_SX}>Último driver</TableCell>
-              <TableCell align="center" sx={HEADER_CELL_SX}>Acciones</TableCell>
+              <TableCell align="center" sx={HEADER_CELL_SX}>{t("tabla.acciones")}</TableCell>
             </TableRow>
           </TableHead>
 

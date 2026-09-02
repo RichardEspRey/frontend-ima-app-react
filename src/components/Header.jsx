@@ -2,6 +2,7 @@ import React from "react";
 import { Box, Avatar, Typography, Stack, Paper } from "@mui/material";
 import { useAuthStore } from "../store/useAuthStore";
 import { COLOR } from "../shared/ui/tokens";
+import { BotonIdioma } from "../shared/i18n";
 
 const Header = () => {
   const { user } = useAuthStore();
@@ -25,8 +26,9 @@ const Header = () => {
         zIndex: 10
       }}
     >
-      <Stack direction="row" spacing={2} alignItems="center" sx={{ cursor: 'pointer' }}>
-        
+      <Stack direction="row" spacing={3} alignItems="center">
+        <BotonIdioma />
+
         <Box sx={{ textAlign: 'right' }}>
           <Typography variant="subtitle2" fontWeight={800} color={COLOR.TINTA} lineHeight={1.2}>
             {userName}

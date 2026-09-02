@@ -105,9 +105,6 @@ const MargenPage = () => {
 
   const pageTrips = filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
   
-  const handlePageChange = (e, newPage) => setPage(newPage);
-  const handleChangeRowsPerPage = (e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); };
-
   if (loading) {
       return (
           <Box sx={{ p: 3 }}>

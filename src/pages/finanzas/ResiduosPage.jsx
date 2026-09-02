@@ -4,6 +4,7 @@ import {
   TextField, Box, Typography, Button
 } from '@mui/material';
 import { FilasEsqueleto, PageHeader, PAGE_SHELL_SX, TABLE_CONTAINER_SX, HEADER_ROW_SX, HEADER_CELL_SX, usePaginacion, Paginacion } from '../../shared/ui';
+import { useIdioma } from '../../shared/i18n';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -22,11 +23,10 @@ const money = (v) =>
  * @returns {object} La pantalla.
  */
 const ResiduosPage = () => {
+  const { t } = useIdioma()
   const [rows, setRows] = useState([]);      // [{ trip_id, trip_number, status, creation_date, nombre, rate_tarifa, diesel, gastos }]
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const fetchResiduoTrips = async () => {
     setLoading(true);
@@ -78,9 +78,7 @@ const ResiduosPage = () => {
     return rows.filter(r => (r.trip_number || '').toLowerCase().includes(q));
   }, [rows, search]);
 
-  const pageRows = visibles;
-
-  const { visibles, props: propsPaginacion } = usePaginacion(filtered, { porPagina: 10 })
+  const { visibles, porPagina, props: propsPaginacion } = usePaginacion(filtered, { porPagina: 10 })
 
   return (
     <Box sx={PAGE_SHELL_SX}>
@@ -94,7 +92,7 @@ const ResiduosPage = () => {
               size="small"
               placeholder="Buscar por Trip number"
               value={search}
-              onChange={(e) => { setSearch(e.target.value); setPage(0); }}
+              onChange={(e) => { setSearch(e.target.value);  }}
             />
             <Button variant="outlined" onClick={fetchResiduoTrips}>Recargar</Button>
           </>
@@ -107,9 +105,9 @@ const ResiduosPage = () => {
         <Table stickyHeader size="small">
           <TableHead>
             <TableRow sx={HEADER_ROW_SX}>
-              <TableCell sx={HEADER_CELL_SX}>Trip #</TableCell>
-              <TableCell sx={HEADER_CELL_SX}>Driver</TableCell>
-              <TableCell sx={HEADER_CELL_SX}>Estatus</TableCell>
+              <TableCell sx={HEADER_CELL_SX}>{t("tabla.trip")}</TableCell>
+              <TableCell sx={HEADER_CELL_SX}>{t("tabla.driver")}</TableCell>
+              <TableCell sx={HEADER_CELL_SX}>{t("tabla.estatus")}</TableCell>
               <TableCell sx={HEADER_CELL_SX}>Creado</TableCell>
               <TableCell align="right" sx={HEADER_CELL_SX}>Rate</TableCell>
               <TableCell align="right" sx={HEADER_CELL_SX}>Diesel</TableCell>
@@ -120,15 +118,15 @@ const ResiduosPage = () => {
 
           <TableBody>
             {loading ? (
-              <FilasEsqueleto columnas={8} filas={Math.min(rowsPerPage, 10)} />
-            ) : pageRows.length === 0 ? (
+              <FilasEsqueleto columnas={8} filas={Math.min(porPagina, 10)} />
+            ) : visibles.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={8} align="center">
                   <Typography color="text.secondary" sx={{ py: 3 }}>Sin registros.</Typography>
                 </TableCell>
               </TableRow>
             ) : (
-              pageRows.map((r) => (
+              visibles.map((r) => (
                 <TableRow key={r.trip_id} hover>
                   <TableCell>{r.trip_number}</TableCell>
                   <TableCell>{r.nombre}</TableCell>
