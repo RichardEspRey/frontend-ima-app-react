@@ -3,7 +3,7 @@ import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper
 import Swal from 'sweetalert2';
 
 import { InspeccionRow } from '../../components/InspeccionRow'; 
-import { Pestanas, Selector } from '../../shared/ui';
+import { Pestanas, Selector, usePaginacion, Paginacion, TABLE_CONTAINER_SX, HEADER_ROW_SX, HEADER_CELL_SX } from '../../shared/ui';
 
 
 const OPS = {
@@ -180,6 +180,8 @@ const InspeccionFinalPage = () => {
     }
   };
 
+  const { visibles, props: propsPaginacion } = usePaginacion(filteredRows)
+
   return (
     <Box sx={{ p: 3 }}>
       {/* Título Principal  */}
@@ -219,23 +221,23 @@ const InspeccionFinalPage = () => {
         )}
       </Stack>
 
-      <TableContainer component={Paper}>
+      <TableContainer component={Paper} elevation={0} sx={TABLE_CONTAINER_SX}>
         <Table stickyHeader size="small" sx={{ minWidth: 900 }} aria-label="inspecciones">
           <TableHead>
-            <TableRow>
-              <TableCell />
-              <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>Trip number</TableCell>
-              <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>Driver</TableCell>
-              <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>Truck</TableCell>
-              <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>Fallas</TableCell>
-              <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>Status</TableCell>
-              <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>Último driver</TableCell>
-              <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap', textAlign: 'center' }}>Acciones</TableCell>
+            <TableRow sx={HEADER_ROW_SX}>
+              <TableCell sx={HEADER_CELL_SX} />
+              <TableCell sx={HEADER_CELL_SX}>Trip number</TableCell>
+              <TableCell sx={HEADER_CELL_SX}>Driver</TableCell>
+              <TableCell sx={HEADER_CELL_SX}>Truck</TableCell>
+              <TableCell sx={HEADER_CELL_SX}>Fallas</TableCell>
+              <TableCell sx={HEADER_CELL_SX}>Status</TableCell>
+              <TableCell sx={HEADER_CELL_SX}>Último driver</TableCell>
+              <TableCell align="center" sx={HEADER_CELL_SX}>Acciones</TableCell>
             </TableRow>
           </TableHead>
 
           <TableBody>
-            {filteredRows.map((row) => {
+            {visibles.map((row) => {
               const viajeId = row.viaje_id;
               const abierto = !!openByTrip[viajeId];
               const loading = !!loadingByTrip[viajeId];
@@ -255,7 +257,7 @@ const InspeccionFinalPage = () => {
                 />
               );
             })}
-             {filteredRows.length === 0 && !loadingSummary && (
+             {visibles.length === 0 && !loadingSummary && (
                 <TableRow>
                     <TableCell colSpan={8} align="center">
                         <Typography color="text.secondary" sx={{ py: 3 }}>
@@ -269,6 +271,8 @@ const InspeccionFinalPage = () => {
           </TableBody>
         </Table>
       </TableContainer>
+
+      <Paginacion {...propsPaginacion} />
     </Box>
   );
 };

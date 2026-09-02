@@ -15,7 +15,7 @@ import {
     CELL_STRONG_SX, CELL_MUTED_SX,
 } from '../../../shared/ui/estilos';
 import { COLOR } from '../../../shared/ui/tokens';
-import { FilasEsqueleto } from '../../../shared/ui';
+import { FilasEsqueleto, usePaginacion, Paginacion } from '../../../shared/ui';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -72,6 +72,8 @@ const TablaReparaciones = () => {
         fetchRepairs(); 
     };
 
+    const { visibles, props: propsPaginacion } = usePaginacion(repairs)
+
     return (
         <>
 
@@ -105,7 +107,7 @@ const TablaReparaciones = () => {
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            repairs.map((row) => (
+                            visibles.map((row) => (
                                 <TableRow key={row.id_reparacion} hover>
                                     <TableCell sx={CELL_MUTED_SX}>{row.id_reparacion}</TableCell>
                                     <TableCell sx={CELL_MUTED_SX}>{fechaCorta(row.fecha_suceso)}</TableCell>
@@ -159,6 +161,8 @@ const TablaReparaciones = () => {
                     </TableBody>
                 </Table>
             </TableContainer>
+
+            <Paginacion {...propsPaginacion} />
 
             <RoadRepairModal
                 open={modalOpen}

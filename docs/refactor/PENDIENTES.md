@@ -9,7 +9,7 @@
 
 ---
 
-## 1 · Paginar la tabla de Inspecciones de Camiones
+## 1 · Paginar la tabla de Inspecciones de Camiones — HECHO
 
 **Pantalla:** `/Inspeccion-final` · `pages/mantenimientos/InspeccionFinalPage.jsx:238`
 
@@ -40,8 +40,27 @@ paso le da el esqueleto de carga y el ordenamiento por columna, que hoy no tiene
 Si alguna no encaja en `DataTable`, la respuesta es ampliarlo, no rodearlo — igual que con
 `Pestanas` y `Selector`. Ver `../ESTANDAR-DE-INGENIERIA.md`.
 
-**Esfuerzo:** una tarde por pantalla. La primera cuesta más porque hay que comprobar que
-`DataTable` cubre lo que la pantalla hacía.
+### Cómo se resolvió
+
+**No con `DataTable`.** Estas filas son expandibles —`InspeccionRow` abre un detalle— y
+`DataTable` pinta celdas a partir de descriptores de columna, así que no las soporta.
+Forzarlas habría sido rodear el componente en vez de usarlo.
+
+Se extrajo `usePaginacion` + `Paginacion` a `shared/ui`, que sirve tanto a las tablas que
+encajan en `DataTable` como a las que tienen filas propias. Eran **catorce pantallas
+repitiendo la misma lógica a mano**, y ese copiado es justamente el que deja tablas sin
+paginar: si hay que escribirlo cada vez, alguna se queda sin él.
+
+De paso corrige un fallo que estaba en varias copias: al filtrar, la página actual podía
+quedar más allá del final y se veía una tabla vacía con datos que sí existían. Ahora la
+página se acota al último trozo con filas.
+
+Quedaron paginadas `InspeccionFinalPage`, `TablaInspecciones` y `TablaReparaciones`. Las
+otras dos de la lista —`InspeccionesPage` y `ReparacionesRutaPage`— resultaron ser solo
+contenedores que montan esas tablas, así que eran tres sitios y no cinco.
+
+**Pendiente menor:** las once pantallas que ya paginaban siguen con su copia a mano. No
+están rotas, así que se migran a `usePaginacion` según se toque cada una.
 
 ---
 

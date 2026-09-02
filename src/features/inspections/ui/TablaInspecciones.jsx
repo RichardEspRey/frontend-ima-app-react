@@ -15,7 +15,7 @@ import {
     CELL_STRONG_SX, CELL_MUTED_SX,
 } from '../../../shared/ui/estilos';
 import { COLOR } from '../../../shared/ui/tokens';
-import { FilasEsqueleto } from '../../../shared/ui';
+import { FilasEsqueleto, usePaginacion, Paginacion } from '../../../shared/ui';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -72,6 +72,8 @@ const TablaInspecciones = () => {
         fetchInspections(); 
     };
 
+    const { visibles, props: propsPaginacion } = usePaginacion(inspections)
+
     return (
         <>
 
@@ -107,7 +109,7 @@ const TablaInspecciones = () => {
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            inspections.map((row) => (
+                            visibles.map((row) => (
                                 <TableRow key={row.id_inspeccion} hover>
                                     <TableCell sx={CELL_STRONG_SX}>{row.id_inspeccion}</TableCell>
                                     <TableCell sx={CELL_MUTED_SX}>{fechaCorta(row.fecha_inspeccion)}</TableCell>
@@ -171,6 +173,8 @@ const TablaInspecciones = () => {
                     </TableBody>
                 </Table>
             </TableContainer>
+
+            <Paginacion {...propsPaginacion} />
 
             <InspectionModal
                 open={modalOpen}
