@@ -1,7 +1,7 @@
 # Pendientes con medición
 
 > Cosas que faltan por hacer, cada una con lo que ya se midió para que quien la retome no
-> tenga que volver a investigar. **Ninguna está empezada.**
+> tenga que volver a investigar.
 >
 > Lo que ya está decidido pero no ejecutado vive en otro sitio:
 > `../NOTAS-PIPELINE-ACTUALIZACIONES.md` para el pipeline de Windows, y
@@ -13,11 +13,11 @@
 
 **Pantalla:** `/Inspeccion-final` · `pages/mantenimientos/InspeccionFinalPage.jsx:238`
 
-Hoy pinta `filteredRows.map(...)` **sin ningún límite**. Cada fila que entre a la base se
-pinta en el DOM. Con las 471 filas de `conteo_inspecciones` en producción, la pantalla ya
-está en el rango donde el navegador empieza a arrastrarse, y no hay nada que lo frene.
+Pintaba `filteredRows.map(...)` **sin ningún límite**: cada fila que entrara a la base iba
+al DOM. Con las 471 filas de `conteo_inspecciones` en producción, la pantalla ya estaba en
+el rango donde el navegador empieza a arrastrarse.
 
-**No está sola.** Estas tampoco paginan:
+**No estaba sola.** Estas tampoco paginaban:
 
 | Archivo | Qué pinta |
 |---|---|
@@ -29,16 +29,6 @@ está en el rango donde el navegador empieza a arrastrarse, y no hay nada que lo
 
 Las de arriba son de bajo volumen hoy —3 y 5 filas en la base— pero el problema es el
 mismo y crece solo.
-
-### Cómo hacerlo
-
-**No agregando `TablePagination` a mano en cada una.** Eso repetiría por sexta vez el
-patrón que `shared/ui/DataTable` ya resuelve: pagina, ordena, y trae los estados de carga,
-error y vacío. Migrar `InspeccionFinalPage` a `DataTable` resuelve la paginación **y** de
-paso le da el esqueleto de carga y el ordenamiento por columna, que hoy no tiene.
-
-Si alguna no encaja en `DataTable`, la respuesta es ampliarlo, no rodearlo — igual que con
-`Pestanas` y `Selector`. Ver `../ESTANDAR-DE-INGENIERIA.md`.
 
 ### Cómo se resolvió
 
