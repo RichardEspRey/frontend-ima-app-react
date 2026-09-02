@@ -77,12 +77,13 @@ function Detalle({ lista, renglones, total }) {
 
   return (
     <Stack spacing={0.75} sx={{ mt: 1 }}>
-      {lista?.map((punto) => (
-        <Stack key={punto} direction="row" spacing={1} alignItems="flex-start">
-          <Box sx={{ mt: "9px", width: 4, height: 4, borderRadius: "50%", bgcolor: COLOR.APAGADO, flexShrink: 0 }} />
-          <Typography sx={{ color: COLOR.TEXTO }}>{punto}</Typography>
-        </Stack>
-      ))}
+      {lista && (
+        <Box component="ul" sx={{ m: 0, pl: 2.5, color: COLOR.TEXTO, "& li": { mb: 0.5 } }}>
+          {lista.map((punto) => (
+            <li key={punto}>{punto}</li>
+          ))}
+        </Box>
+      )}
 
       {renglones?.map((renglon) => (
         <Stack key={renglon.etiqueta} direction="row" justifyContent="space-between" spacing={2}>
@@ -224,19 +225,26 @@ export function AnfitrionAvisos() {
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
         sx={{ top: { xs: 72, sm: 80 } }}
       >
-        <Stack spacing={1} sx={{ width: { xs: "88vw", sm: 380 } }}>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 1,
+            width: { xs: "88vw", sm: 380 },
+          }}
+        >
           {flotantes.map((aviso) => (
             <Alert
               key={aviso.id}
               severity={aviso.icono === "question" ? "info" : aviso.icono}
               variant="standard"
               onClose={() => retirar(aviso.id)}
-              sx={{ borderRadius: `${RADIO.NORMAL}px`, boxShadow: SOMBRA.MENU, alignItems: "center" }}
+              sx={{ width: "100%", borderRadius: `${RADIO.NORMAL}px`, boxShadow: SOMBRA.MENU, alignItems: "center" }}
             >
               {aviso.mensaje}
             </Alert>
           ))}
-        </Stack>
+        </Box>
       </Snackbar>
     </>
   )
