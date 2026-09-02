@@ -4,7 +4,6 @@ import {
     Button, TextField, Box, Typography, Stack, Grid, FormControl, InputLabel, Select, MenuItem, IconButton
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import Swal from 'sweetalert2';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
 
@@ -20,7 +19,7 @@ import {
     SECTION_LABEL_SX, PAGINATION_BOX_SX, GHOST_BTN_SX,
 } from '../../../shared/ui/estilos';
 import { COLOR } from '../../../shared/ui/tokens';
-import { FilasEsqueleto, Paginacion, CampoFecha } from '../../../shared/ui';
+import { FilasEsqueleto, Paginacion, CampoFecha, notify } from '../../../shared/ui';
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
@@ -93,14 +92,14 @@ const TablaOrdenes = () => {
             const result = await response.json();
 
             if (result.status === 'success') {
-                Swal.fire('¡Éxito!', 'Servicio actualizado.', 'success');
+                notify.exito('Servicio actualizado.', '¡Éxito!');
                 setEditingDetail(null);
                 fetchOrders();
             } else {
                 throw new Error(result.message || 'No se pudo actualizar.');
             }
         } catch (error) {
-            Swal.fire('Error', error.message, 'error');
+            notify.error(error.message, 'Error');
         }
     };
 

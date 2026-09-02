@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import Swal from 'sweetalert2';
+import { notify } from '../shared/ui';
 import './css/ModalCajaExterna.css';
 
 const ModalCajaExterna = ({ isOpen, onClose, onSave }) => {
@@ -14,7 +14,7 @@ const ModalCajaExterna = ({ isOpen, onClose, onSave }) => {
 
     const handleSave = () => {
         if (!noCaja.trim() || !noVin.trim()) {
-            Swal.fire('Campos Requeridos', 'El Número de Caja y el VIN son obligatorios.', 'warning');
+            notify.aviso('El Número de Caja y el VIN son obligatorios.', 'Campos Requeridos');
             return;
         }
         onSave({ no_caja: noCaja, no_vin: noVin, modelo, anio, placas, estado });

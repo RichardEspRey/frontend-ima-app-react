@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Box, Typography, Stack, Button, Paper, CircularProgress } from '@mui/material';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import SaveIcon from '@mui/icons-material/Save';
-import Swal from 'sweetalert2';
 import { format } from 'date-fns';
 
 import TripResources from './BorderCrossingFormNew2/TripResources';
@@ -16,6 +15,7 @@ import { useCajasActivas, useCajasExternasActivas } from '../entities/trailer';
 import { useCamionesActivos } from '../entities/truck';
 import { useBodegas } from '../entities/warehouse';
 import { COLOR } from '../shared/ui/tokens';
+import { notify } from '../shared/ui';
 
 const VACIO = []
 
@@ -85,7 +85,7 @@ const BorderCrossingFormNew2 = ({ teamId, tripNumber, countryCode, tripYear, isT
 
     const addStage = (type) => setEtapas(p => [...p, { ...initialEtapaStateBase, stage_number: p.length + 1, stageType: type }]);
     const removeStage = (i) => {
-        if (etapas.length === 1) return Swal.fire("Aviso", "Mínimo una etapa requerida", "info");
+        if (etapas.length === 1) return notify.aviso("Mínimo una etapa requerida", "Aviso");
         setEtapas(p => p.filter((_, index) => index !== i).map((e, index) => ({ ...e, stage_number: index + 1 })));
     };
     const updateStage = (i, f, v) => setEtapas(p => { const c = [...p]; c[i] = { ...c[i], [f]: v }; return c; });
@@ -142,9 +142,9 @@ const BorderCrossingFormNew2 = ({ teamId, tripNumber, countryCode, tripYear, isT
             if (result.status === 'success') {
                 const newOption = { value: result.company.company_id, label: result.company.nombre_compania };
                 setCompanyOptions(p => [...p, newOption]); handleEtapaChange(stageIndex, 'company_id', newOption.value);
-                Swal.fire('Éxito', 'Compañía creada', 'success');
+                notify.exito('Compañía creada', 'Éxito');
             }
-        } catch { Swal.fire('Error', 'No se pudo crear compañía', 'error'); } finally { setIsCreatingCompany(false); }
+        } catch { notify.error('No se pudo crear compañía', 'Error'); } finally { setIsCreatingCompany(false); }
     };
 
     const handleCreateWarehouse = async (inputValue, stageIndex, fieldKey) => {
@@ -156,9 +156,9 @@ const BorderCrossingFormNew2 = ({ teamId, tripNumber, countryCode, tripYear, isT
             if (result.status === 'success') {
                 const newOption = { value: result.warehouse.warehouse_id, label: result.warehouse.nombre_almacen };
                 setWarehouseOptions(p => [...p, newOption]); handleEtapaChange(stageIndex, fieldKey, newOption.value);
-                Swal.fire('Éxito', 'Bodega creada', 'success');
+                notify.exito('Bodega creada', 'Éxito');
             }
-        } catch { Swal.fire('Error', 'No se pudo crear bodega', 'error'); } finally { setIsCreatingWarehouse(false); }
+        } catch { notify.error('No se pudo crear bodega', 'Error'); } finally { setIsCreatingWarehouse(false); }
     };
 
     const handleSaveExternalCaja = async (cajaData) => {
@@ -168,11 +168,11 @@ const BorderCrossingFormNew2 = ({ teamId, tripNumber, countryCode, tripYear, isT
             const res = await fetch(`${apiHost}/caja_externa.php`, { method: 'POST', body: dataToSend });
             const result = await res.json();
             if (result.status === 'success' && result.caja) {
-                Swal.fire('¡Éxito!', 'Caja externa registrada.', 'success');
+                notify.exito('Caja externa registrada.', '¡Éxito!');
                 setForm('caja_externa_id', result.caja.caja_externa_id); setForm('caja_id', '');
                 refetchExternalTrailers(); setIsModalCajaExternaOpen(false);
             }
-        } catch (e) { Swal.fire('Error', e.message, 'error'); }
+        } catch (e) { notify.error(e.message, 'Error'); }
     };
 
     const handleTripModeChange = (mode) => { setTripMode(mode); if (mode === 'individual') setForm('driver_id_second', ''); };
@@ -187,15 +187,15 @@ const BorderCrossingFormNew2 = ({ teamId, tripNumber, countryCode, tripYear, isT
             
             if (etapa.stageType === 'emptyMileage') {
                 if (!etapa.origin || !etapa.destination) {
-                    return Swal.fire('Incompletos', `Especifique Origen y Destino para el movimiento en vacío (Etapa ${i + 1})`, 'warning');
+                    return notify.aviso(`Especifique Origen y Destino para el movimiento en vacío (Etapa ${i + 1})`, 'Incompletos');
                 }
             } else {
                 if (!etapa.company_id || !etapa.destination || !etapa.warehouse_destination_id) {
-                    return Swal.fire('Incompletos', `Complete compañía y destino obligatorios para la etapa de carga ${i + 1}`, 'warning');
+                    return notify.aviso(`Complete compañía y destino obligatorios para la etapa de carga ${i + 1}`, 'Incompletos');
                 }
             }
         }
-        Swal.fire({ title: 'Guardando...', didOpen: () => Swal.showLoading() });
+        notify.cargando();
         setLoadingSave(true);
 
         const fd = new FormData();
@@ -234,9 +234,9 @@ const BorderCrossingFormNew2 = ({ teamId, tripNumber, countryCode, tripYear, isT
         try {
             const res = await fetch(`${apiHost}/new_tripsv2.php`, { method: 'POST', body: fd });
             const result = await res.json();
-            if (res.ok && result.status === 'success') { Swal.fire('¡Éxito!', 'Viaje guardado', 'success'); onSuccess?.(); } 
+            if (res.ok && result.status === 'success') { notify.exito('Viaje guardado', '¡Éxito!'); onSuccess?.(); } 
             else throw new Error(result.message);
-        } catch (err) { Swal.fire('Error', err.message, 'error'); } finally { setLoadingSave(false); }
+        } catch (err) { notify.error(err.message, 'Error'); } finally { setLoadingSave(false); }
     };
 
     return (

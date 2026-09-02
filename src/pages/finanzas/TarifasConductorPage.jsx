@@ -4,7 +4,6 @@ import {
   TextField, Box, Typography, Button, InputAdornment, Stack,
   Container
 } from "@mui/material";
-import Swal from "sweetalert2";
 import { useNavigate } from 'react-router-dom';
 
 import SaveIcon from '@mui/icons-material/Save';
@@ -13,7 +12,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import PersonIcon from '@mui/icons-material/Person';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import { COLOR } from '../../shared/ui/tokens';
-import { PantallaEsqueleto } from '../../shared/ui';
+import { PantallaEsqueleto, notify } from '../../shared/ui';
 
 /**
  * Tarifa por milla de cada conductor.
@@ -47,7 +46,7 @@ const TarifasConductorPage = () => {
       }
     } catch (err) {
       console.error("Error cargando millas:", err);
-      Swal.fire("Error", "No se pudo cargar la lista de conductores", "error");
+      notify.error("No se pudo cargar la lista de conductores", "Error");
     } finally {
       setLoading(false);
     }
@@ -77,7 +76,7 @@ const TarifasConductorPage = () => {
     fd.append("op", "I_update_millasDriverBulk");
     fd.append("items", JSON.stringify(payload));
 
-    Swal.fire({ title: "Guardando...", allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+    notify.cargando();
 
     try {
       const res = await fetch(`${apiHost}/formularios.php`, {
@@ -87,12 +86,12 @@ const TarifasConductorPage = () => {
       const json = await res.json();
 
       if (json.status === "success") {
-        Swal.fire({ icon: "success", title: "¡Guardado!", text: "Tarifas actualizadas correctamente.", timer: 1500, showConfirmButton: false });
+        notify.exito("Tarifas actualizadas correctamente.", "¡Guardado!");
       } else {
-        Swal.fire("Error", json.message || "Error desconocido", "error");
+        notify.error(json.message || "Error desconocido", "Error");
       }
     } catch {
-      Swal.fire("Error", "No se pudo conectar al servidor.", "error");
+      notify.error("No se pudo conectar al servidor.", "Error");
     }
   };
 

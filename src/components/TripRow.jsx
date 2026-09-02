@@ -21,11 +21,11 @@ import updateLocale from 'dayjs/plugin/updateLocale';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import localizedFormat from 'dayjs/plugin/localizedFormat';
-import Swal from 'sweetalert2';
 
 import { TripExpandedDetails } from './TripRow/TripExpandedDetails';
 import { StatusIndicator, getStatusColor } from './TripStatusIndicator';
 import { COLOR } from '../shared/ui/tokens';
+import { notify } from '../shared/ui';
 
 dayjs.extend(updateLocale);
 dayjs.extend(isSameOrAfter);
@@ -147,7 +147,7 @@ ${(!trip.caja_id && !trip.caja_externa_id) ? 'Sin tráiler asignado' : ''}
       `.trim();
 
       navigator.clipboard.writeText(textToCopy).then(() => {
-          Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Información copiada al portapapeles', showConfirmButton: false, timer: 2000 });
+          notify.discreto('Información copiada al portapapeles');
       }).catch(err => {
           console.error('Error copiando al portapapeles:', err);
       });

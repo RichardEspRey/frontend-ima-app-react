@@ -5,7 +5,6 @@ import {
   Chip, TextField, InputAdornment
 } from "@mui/material";
 
-import Swal from "sweetalert2";
 import SearchIcon from '@mui/icons-material/Search';
 
 import { DocumentCell } from "../../components/DocumentCell.jsx";
@@ -19,7 +18,7 @@ import TablaReparaciones from "../../features/inspections/ui/TablaReparaciones.j
 import TablaInspecciones from "../../features/inspections/ui/TablaInspecciones.jsx";
 import { archivoDelEvento } from "../../shared/security";
 import { COLOR } from "../../shared/ui/tokens";
-import { FilasEsqueleto, Pestanas, Paginacion } from "../../shared/ui";
+import { FilasEsqueleto, Pestanas, Paginacion, notify } from "../../shared/ui";
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -65,7 +64,7 @@ export default function SafetyPage() {
       }
     } catch (err) {
       console.error(err);
-      Swal.fire("Error", "No se pudo cargar la información de Safety.", "error");
+      notify.error("No se pudo cargar la información de Safety.", "Error");
     } finally {
       setLoading(false);
     }

@@ -10,7 +10,6 @@ import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
 import SaveIcon from '@mui/icons-material/Save';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import CloseIcon from '@mui/icons-material/Close';
-import Swal from 'sweetalert2';
 
 import ModalArchivo from '../../../components/ModalArchivo';
 
@@ -25,7 +24,7 @@ import {
     DATEPICKER_CSS, money,
 } from '../estilos';
 import { COLOR } from '../../../shared/ui/tokens';
-import { SelectorBusqueda, CampoFecha, aTextoFecha } from '../../../shared/ui';
+import { SelectorBusqueda, CampoFecha, aTextoFecha, notify } from '../../../shared/ui';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -157,7 +156,7 @@ const ExpenseModal = ({ open, onClose, onSuccess }) => {
         e.preventDefault();
         
         if (!country || expenseDetails.length === 0) {
-            return Swal.fire('Faltan datos', 'Selecciona país y agrega al menos un detalle', 'warning');
+            return notify.aviso('Selecciona país y agrega al menos un detalle', 'Faltan datos');
         }
 
         setSaving(true);
@@ -197,13 +196,13 @@ const ExpenseModal = ({ open, onClose, onSuccess }) => {
             const result = await res.json();
             
             if (result.status === 'success') {
-                Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Gasto guardado', showConfirmButton: false, timer: 2000 });
+                notify.discreto('Gasto guardado');
                 onSuccess();
             } else {
                 throw new Error(result.message);
             }
         } catch (err) {
-            Swal.fire('Error', err.message, 'error');
+            notify.error(err.message, 'Error');
         } finally {
             setSaving(false);
         }

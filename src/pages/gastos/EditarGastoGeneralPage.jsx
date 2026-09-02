@@ -12,7 +12,6 @@ import InsertDriveFileOutlinedIcon from '@mui/icons-material/InsertDriveFileOutl
 import AddIcon from '@mui/icons-material/Add';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
-import Swal from 'sweetalert2';
 import { PhotoProvider, PhotoView } from 'react-photo-view';
 import 'react-photo-view/dist/react-photo-view.css';
 
@@ -28,7 +27,7 @@ import {
 } from '../../features/expense-manager/estilos';
 import { archivoDelEvento, GRUPOS_ARCHIVO } from '../../shared/security';
 import { COLOR, TINTE } from '../../shared/ui/tokens';
-import { SelectorBusqueda, CampoFecha, aTextoFecha } from '../../shared/ui';
+import { SelectorBusqueda, CampoFecha, aTextoFecha, notify } from '../../shared/ui';
 
 const isImageUrl = (url = '') => /\.(png|jpe?g|gif|webp|bmp|tiff?)$/i.test(url);
 
@@ -112,7 +111,7 @@ const ExpenseEdit = () => {
         });
 
       } catch (err) {
-        Swal.fire('Error', err.message, 'error');
+        notify.error(err.message, 'Error');
       } finally {
         setLoading(false);
       }
@@ -195,10 +194,9 @@ const ExpenseEdit = () => {
 
   const handleSubmit = async () => {
       if (faltaTasa) {
-        return Swal.fire(
-          'Falta el tipo de cambio',
+        return notify.aviso(
           'Un gasto en pesos necesita un tipo de cambio mayor a cero: sin él, el Total (USD) se queda con el monto en pesos.',
-          'warning',
+          'Falta el tipo de cambio',
         );
       }
       setSaving(true);
@@ -235,12 +233,12 @@ const ExpenseEdit = () => {
         const json = await res.json();
 
         if (json.status === "success") {
-            Swal.fire("Éxito", "Gasto actualizado", "success");
+            notify.exito("Gasto actualizado", "Éxito");
             navigate('/admin-gastos-generales');
         } else throw new Error(json.message);
 
       } catch (err) {
-          Swal.fire("Error", err.message, 'error');
+          notify.error(err.message, "Error");
       } finally {
           setSaving(false);
       }

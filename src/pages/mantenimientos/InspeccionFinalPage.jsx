@@ -1,9 +1,8 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Box, Typography, CircularProgress, Stack } from '@mui/material';
-import Swal from 'sweetalert2';
 
 import { InspeccionRow } from '../../components/InspeccionRow'; 
-import { Pestanas, Selector, usePaginacion, Paginacion, TABLE_CONTAINER_SX, HEADER_ROW_SX, HEADER_CELL_SX } from '../../shared/ui';
+import { Pestanas, Selector, usePaginacion, Paginacion, TABLE_CONTAINER_SX, HEADER_ROW_SX, HEADER_CELL_SX, notify } from '../../shared/ui';
 
 const OPS = {
   SUMMARY: 'All_CL_Final',          
@@ -146,15 +145,13 @@ const InspeccionFinalPage = () => {
       formDataToSend.append('op', 'U_CL_Final');
       formDataToSend.append('trip_id', viajeId);
       
-      const { isConfirmed } = await Swal.fire({
-            title: '¿Confirmar Finalización?',
-            text: "Esta acción marca la inspección como finalizada.",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Sí, finalizar'
+      const confirmado = await notify.confirmar({
+            titulo: '¿Confirmar Finalización?',
+            mensaje: "Esta acción marca la inspección como finalizada.",
+            confirmar: 'Sí, finalizar',
         });
 
-      if (!isConfirmed) return;
+      if (!confirmado) return;
 
     try {
       const response = await fetch(`${apiHost}/formularios.php`, {
@@ -165,14 +162,14 @@ const InspeccionFinalPage = () => {
       const data = await response.json();
     
       if (data.status === 'success' || data.status === 'successU') {
-         Swal.fire('Éxito', 'Inspección finalizada correctamente.', 'success');
+         notify.exito('Inspección finalizada correctamente.', 'Éxito');
          fetchSummary();
       } else {
-        Swal.fire('Error', data.message || 'No se pudo finalizar la inspección.', 'error');
+        notify.error(data.message || 'No se pudo finalizar la inspección.', 'Error');
       }
 
     } catch {
-      Swal.fire('Error', 'Error de conexión al finalizar.', 'error');
+      notify.error('Error de conexión al finalizar.', 'Error');
     }
   };
 

@@ -2,7 +2,6 @@ import React, { useEffect, useState, useCallback } from "react";
 import { Box, Paper, Typography, Button, CircularProgress, Stack } from "@mui/material";
 import BuildCircleIcon from '@mui/icons-material/BuildCircle';
 import HistoryIcon from '@mui/icons-material/History';
-import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom"; 
 
 import { AfinacionesTable } from "../../components/Afinaciones/AfinacionesTable";
@@ -11,6 +10,7 @@ import {
     CorrectOdometerModal, HistoryModal, PhotoModal 
 } from "../../components/Afinaciones/AfinacionesModals";
 import { COLOR } from "../../shared/ui/tokens";
+import { notify } from "../../shared/ui";
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -58,37 +58,37 @@ export default function AfinacionesPage() {
         const json = await res.json();
 
         if (json.status === 'success') {
-            Swal.fire('Éxito', successMessage, 'success');
+            notify.exito(successMessage, 'Éxito');
             closeModal();
             fetchData();
         } else {
-            Swal.fire('Error', json.message, 'error');
+            notify.error(json.message, 'Error');
         }
     } catch (e) {
-        Swal.fire('Error', e.message, 'error');
+        notify.error(e.message, 'Error');
     } finally {
         setSaving(false);
     }
   };
 
   const onConfirmReset = (oilPercentage) => {
-      if (!oilPercentage || isNaN(oilPercentage) || oilPercentage < 0 || oilPercentage > 100) return Swal.fire('Atención', 'Porcentaje inválido (0-100)', 'warning');
+      if (!oilPercentage || isNaN(oilPercentage) || oilPercentage < 0 || oilPercentage > 100) return notify.aviso('Porcentaje inválido (0-100)', 'Atención');
       handleApiRequest('reset_counter', { truck_id: modalConfig.truck.truck_id, millas_acumuladas: modalConfig.truck.millas_acumuladas, porcentaje_aceite: oilPercentage }, 'El contador se ha reiniciado.');
   };
 
   const onConfirmManual = (manualMiles) => {
-      if (manualMiles === '' || isNaN(manualMiles) || manualMiles < 0) return Swal.fire('Atención', 'Ingresa un millaje válido', 'warning');
+      if (manualMiles === '' || isNaN(manualMiles) || manualMiles < 0) return notify.aviso('Ingresa un millaje válido', 'Atención');
       handleApiRequest('update_manual_mileage', { truck_id: modalConfig.truck.truck_id, nuevo_total: manualMiles }, 'Millas actualizadas.');
   };
 
   const onConfirmLimit = (newLimit) => {
-      if (!newLimit || isNaN(newLimit) || newLimit <= 0) return Swal.fire('Error', 'Ingresa un límite válido mayor a 0', 'warning');
+      if (!newLimit || isNaN(newLimit) || newLimit <= 0) return notify.aviso('Ingresa un límite válido mayor a 0', 'Error');
       handleApiRequest('update_limit', { truck_id: modalConfig.truck.truck_id, nuevo_limite: newLimit }, 'Nuevo límite establecido.');
   };
 
   const onConfirmCorrection = (correctMiles) => {
-      if (!correctMiles || isNaN(correctMiles) || correctMiles < 0) return Swal.fire('Error', 'Ingresa un odómetro válido', 'warning');
-      if (!modalConfig.truck.id_diesel) return Swal.fire('Info', 'No hay registros para este camión aún.', 'info');
+      if (!correctMiles || isNaN(correctMiles) || correctMiles < 0) return notify.aviso('Ingresa un odómetro válido', 'Error');
+      if (!modalConfig.truck.id_diesel) return notify.aviso('No hay registros para este camión aún.', 'Info');
       handleApiRequest('correct_odometer', { diesel_id: modalConfig.truck.id_diesel, nuevo_odometro: correctMiles }, 'Odómetro corregido.');
   };
 

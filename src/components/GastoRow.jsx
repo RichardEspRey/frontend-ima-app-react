@@ -14,9 +14,9 @@ import { PhotoProvider, PhotoView } from 'react-photo-view';
 import 'react-photo-view/dist/react-photo-view.css';
 import { esGastoMXN, totalUSD, totalMXN, tipoGastoPrincipal } from '../entities/expense';
 import { money, moneyMXN } from '../features/expense-manager/estilos';
-import Swal from 'sweetalert2';
 import { useAuthStore } from '../store/useAuthStore';
 import { COLOR, TINTE } from '../shared/ui/tokens';
+import { notify } from '../shared/ui';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -52,18 +52,13 @@ const GastoRow = ({ gasto, mxnRate, puedeEliminar = false, onEliminado }) => {
   const secundarioSx = { color: COLOR.APAGADO, fontWeight: 500 };
 
   const eliminarGasto = async () => {
-    const confirmacion = await Swal.fire({
-      title: `¿Eliminar el gasto #${gasto.id_gasto}?`,
-      html: 'Se revertirá el stock que este gasto haya sumado al inventario.<br/>El gasto dejará de aparecer en la lista.',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Sí, eliminar',
-      cancelButtonText: 'Cancelar',
-      confirmButtonColor: COLOR.PELIGRO,
-      cancelButtonColor: COLOR.APAGADO,
+    const confirmado = await notify.confirmar({
+      titulo: `¿Eliminar el gasto #${gasto.id_gasto}?`,
+      formato: 'Se revertirá el stock que este gasto haya sumado al inventario.<br/>El gasto dejará de aparecer en la lista.',
+      confirmar: 'Sí, eliminar',
     });
 
-    if (!confirmacion.isConfirmed) return;
+    if (!confirmado) return;
 
     setEliminando(true);
     try {
@@ -76,13 +71,13 @@ const GastoRow = ({ gasto, mxnRate, puedeEliminar = false, onEliminado }) => {
       const data = await res.json();
 
       if (data.status === 'success') {
-        Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Gasto eliminado', showConfirmButton: false, timer: 2000 });
+        notify.discreto('Gasto eliminado');
         onEliminado?.();
       } else {
         throw new Error(data.message || 'No se pudo eliminar el gasto.');
       }
     } catch (err) {
-      Swal.fire('Error', err.message, 'error');
+      notify.error(err.message, 'Error');
     } finally {
       setEliminando(false);
     }

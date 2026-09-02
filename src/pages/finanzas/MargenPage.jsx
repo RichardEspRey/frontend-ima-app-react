@@ -3,11 +3,10 @@ import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
   TextField, Box, Typography, Stack, Button
 } from '@mui/material';
-import Swal from 'sweetalert2';
 
 import { MargenRow } from '../../components/MargenRow'; 
 import { COLOR } from '../../shared/ui/tokens';
-import { PantallaEsqueleto, Pestanas, Paginacion } from '../../shared/ui';
+import { PantallaEsqueleto, Pestanas, Paginacion, notify } from '../../shared/ui';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -72,12 +71,12 @@ const MargenPage = () => {
             setTrips(json.data); 
         } else {
              setTrips([]); 
-             Swal.fire('Error de API', 'No se pudieron cargar los datos financieros.', 'error');
+             notify.error('No se pudieron cargar los datos financieros.', 'Error de API');
         }
 
     } catch (error) {
         console.error('Error cargando datos de margen:', error);
-        Swal.fire('Error de Conexión', 'Fallo al comunicarse con el servidor.', 'error');
+        notify.error('Fallo al comunicarse con el servidor.', 'Error de Conexión');
         setTrips([]);
     } finally {
         setLoading(false);

@@ -8,13 +8,12 @@ import {
 import DeleteIcon from '@mui/icons-material/Delete';
 import SaveIcon from '@mui/icons-material/Save';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
-import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 
 import useFetchInventoryItems from "../../hooks/expense_hooks/useFetchInventoryItems";
 import useFetchRepairTypes from "../../hooks/service_order/useFetchRepairTypes";
 import { COLOR } from "../../shared/ui/tokens";
-import { SelectorBusqueda } from "../../shared/ui";
+import { SelectorBusqueda, notify } from "../../shared/ui";
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -88,8 +87,8 @@ export default function NuevaOrdenPage() {
     };
 
     const agregarServicio = () => {
-        if (!selectedTruck) return Swal.fire("Falta camión", "Selecciona un camión primero", "warning");
-        if (!tipoReparacion) return Swal.fire("Falta reparación", "Selecciona el tipo de reparación", "warning");
+        if (!selectedTruck) return notify.aviso("Selecciona un camión primero", "Falta camión");
+        if (!tipoReparacion) return notify.aviso("Selecciona el tipo de reparación", "Falta reparación");
         
         setServices(prev => [...prev, {
             id: seq.current++,
@@ -114,7 +113,7 @@ export default function NuevaOrdenPage() {
     }, 0), [services]);
 
     const enviarOrden = async () => {
-        if (services.length === 0) return Swal.fire("Sin servicios", "Agrega al menos un servicio", "warning");
+        if (services.length === 0) return notify.aviso("Agrega al menos un servicio", "Sin servicios");
         setSaving(true);
         
         const payload = {
@@ -135,13 +134,13 @@ export default function NuevaOrdenPage() {
             const res = await fetch(`${apiHost}/service_order.php`, { method: "POST", body: fd });
             const json = await res.json();
             if (json.status === "success") {
-                Swal.fire("¡Orden Creada!", `Folio: ${json.id_orden}`, "success");
+                notify.exito(`Folio: ${json.id_orden}`, "¡Orden Creada!");
                 navigate('/admin-service-order');
             } else {
                 throw new Error(json.message);
             }
         } catch (e) {
-            Swal.fire("Error", e.message, "error");
+            notify.error(e.message, "Error");
         } finally {
             setSaving(false);
         }

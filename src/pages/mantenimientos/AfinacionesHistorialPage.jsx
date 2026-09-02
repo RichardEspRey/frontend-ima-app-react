@@ -9,13 +9,12 @@ import FilterListIcon from '@mui/icons-material/FilterList';
 import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
 import OpacityIcon from '@mui/icons-material/Opacity';
 import { useNavigate } from "react-router-dom";
-import Swal from "sweetalert2";
 
 import dayjs from 'dayjs';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import { COLOR } from '../../shared/ui/tokens';
-import { Paginacion, CampoFecha } from '../../shared/ui';
+import { Paginacion, CampoFecha, notify } from '../../shared/ui';
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
@@ -57,7 +56,7 @@ export default function AfinacionesHistorialPage() {
       }
     } catch (err) {
       console.error("Error cargando historial:", err);
-      Swal.fire('Error', 'No se pudo cargar el historial', 'error');
+      notify.error('No se pudo cargar el historial', 'Error');
     } finally {
       setLoading(false);
     }

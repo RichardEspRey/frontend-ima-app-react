@@ -9,7 +9,6 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import Swal from 'sweetalert2';
 import FieldLabel from '../../../components/Gastos/FieldLabel';
 import {
     DIALOG_PAPER_SX, DIALOG_TITLE_SX, DIALOG_CONTENT_SX, DIALOG_ACTIONS_SX,
@@ -17,6 +16,7 @@ import {
     GHOST_BTN_SX, DARK_BTN_SX, CHIP_SX,
 } from '../../../shared/ui/estilos';
 import { COLOR } from '../../../shared/ui/tokens';
+import { notify } from '../../../shared/ui';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -116,7 +116,7 @@ const ReparacionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
     const handleFileChange = async (e) => {
         const selectedFiles = await archivosDelEvento(e, { grupo: GRUPOS_ARCHIVO.SOLO_PDF });
         if (selectedFiles.length > 3) {
-            Swal.fire('Atención', 'Solo puedes subir un máximo de 3 documentos PDF.', 'warning');
+            notify.aviso('Solo puedes subir un máximo de 3 documentos PDF.', 'Atención');
             return;
         }
         setFiles(selectedFiles.slice(0, 3));
@@ -129,16 +129,12 @@ const ReparacionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
     };
 
     const handleDeleteDoc = async (doc) => {
-        const confirm = await Swal.fire({
-            title: '¿Eliminar documento?',
-            html: `Se eliminará <b>${doc.file_name || 'este documento'}</b> de forma permanente.`,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Sí, eliminar',
-            cancelButtonText: 'Cancelar',
-            confirmButtonColor: COLOR.PELIGRO
+        const confirmado = await notify.confirmar({
+            titulo: '¿Eliminar documento?',
+            formato: `Se eliminará <b>${doc.file_name || 'este documento'}</b> de forma permanente.`,
+            confirmar: 'Sí, eliminar',
         });
-        if (!confirm.isConfirmed) return;
+        if (!confirmado) return;
 
         setDeletingDocId(doc.id_doc);
         try {
@@ -157,9 +153,9 @@ const ReparacionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
                 documentos: (prev.documentos || []).filter(d => String(d.id_doc) !== String(doc.id_doc))
             }));
             onDocumentsChanged?.();
-            Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Documento eliminado', showConfirmButton: false, timer: 2000 });
+            notify.discreto('Documento eliminado');
         } catch (err) {
-            Swal.fire('Error', err.message || 'Problema de conexión.', 'error');
+            notify.error(err.message || 'Problema de conexión.', 'Error');
         } finally {
             setDeletingDocId(null);
         }
@@ -167,7 +163,7 @@ const ReparacionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
 
     const handleSubmit = async () => {
         if (!formData.truck_id || !formData.operador || !formData.fallo || !formData.tipo_reparacion) {
-            Swal.fire('Error', 'Por favor llena los campos obligatorios.', 'error');
+            notify.error('Por favor llena los campos obligatorios.', 'Error');
             return;
         }
 
@@ -180,13 +176,13 @@ const ReparacionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
             const res = await fetch(`${apiHost}/roadside_repairs.php`, { method: 'POST', body: fd });
             const data = await res.json();
             if (data.status === 'success') {
-                Swal.fire('¡Guardado!', 'La reparación ha sido registrada.', 'success');
+                notify.exito('La reparación ha sido registrada.', '¡Guardado!');
                 onSuccess();
             } else {
-                Swal.fire('Error', data.message, 'error');
+                notify.error(data.message, 'Error');
             }
         } catch {
-            Swal.fire('Error', 'Problema de conexión.', 'error');
+            notify.error('Problema de conexión.', 'Error');
         }
     };
 

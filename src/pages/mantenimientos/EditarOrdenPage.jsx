@@ -8,13 +8,12 @@ import {
 import DeleteIcon from '@mui/icons-material/Delete';
 import SaveIcon from '@mui/icons-material/Save';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
-import Swal from "sweetalert2";
 import { useNavigate, useParams } from "react-router-dom";
 
 import useFetchInventoryItems from "../../hooks/expense_hooks/useFetchInventoryItems";
 import useFetchRepairTypes from "../../hooks/service_order/useFetchRepairTypes";
 import { COLOR } from "../../shared/ui/tokens";
-import { SelectorBusqueda } from "../../shared/ui";
+import { SelectorBusqueda, notify } from "../../shared/ui";
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -143,7 +142,7 @@ export default function EditarOrdenPage() {
     };
 
     const agregarServicio = () => {
-        if (!tipoReparacion) return Swal.fire("Falta reparación", "", "warning");
+        if (!tipoReparacion) return notify.aviso("", "Falta reparación");
         const nuevo = {
             id_local: seq.current++,
             id_servicio: null, 
@@ -171,7 +170,7 @@ export default function EditarOrdenPage() {
     }, 0), [services]);
 
     const guardarCambios = async () => {
-        if (!dateForm) return Swal.fire("Falta fecha", "", "warning");
+        if (!dateForm) return notify.aviso("", "Falta fecha");
         
         setSaving(true);
 
@@ -217,13 +216,13 @@ export default function EditarOrdenPage() {
             const res = await fetch(`${apiHost}/service_order.php`, { method: 'POST', body: fd });
             const json = await res.json();
             if (json.status === 'success') {
-                Swal.fire("Actualizado", "La orden se actualizó correctamente", "success");
+                notify.exito("La orden se actualizó correctamente", "Actualizado");
                 navigate('/admin-service-order');
             } else {
                 throw new Error(json.message);
             }
         } catch (e) {
-            Swal.fire("Error", e.message, "error");
+            notify.error(e.message, "Error");
         } finally {
             setSaving(false);
         }

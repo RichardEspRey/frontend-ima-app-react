@@ -1,7 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { Box, Paper, Typography, Divider, Grid, Stack, Chip, TextField } from "@mui/material";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import Swal from "sweetalert2";
 
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -14,6 +13,7 @@ import TicketDeductions from "../../components/TicketPayment/TicketDeductions";
 import TicketSummary from "../../components/TicketPayment/TicketSummary";
 import GastosModal from "../../components/GastosModal";
 import { COLOR } from "../../shared/ui/tokens";
+import { notify } from "../../shared/ui";
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -98,11 +98,11 @@ const TicketPagoPage = () => {
             setGastos(gastosCalculados);
         }
       } else {
-        Swal.fire("Error", "No se pudieron cargar los datos del ticket.", "error");
+        notify.error("No se pudieron cargar los datos del ticket.", "Error");
       }
     } catch (err) {
       console.error(err);
-      Swal.fire("Error", "No se pudo conectar al servidor.", "error");
+      notify.error("No se pudo conectar al servidor.", "Error");
     } finally {
       setLoading(false);
     }
@@ -130,9 +130,9 @@ const TicketPagoPage = () => {
   const totalPagar = Number((Number(customRate) * totalMillasAjustadas).toFixed(2)) - totalAvances + Number(gastos || 0);
 
   const AutorizarPago = async () => {
-    Swal.fire({
-        title: '¿Autorizar Pago?',
-        html: `
+    notify.confirmar({
+        titulo: '¿Autorizar Pago?',
+        formato: `
             <div style="text-align:left; font-size: 0.9em;">
                 <p>Tarifa: <b>$${Number(customRate).toFixed(2)}</b></p>
                 <p>Millas Finales: <b>${totalMillasAjustadas}</b></p>
@@ -141,12 +141,10 @@ const TicketPagoPage = () => {
             </div>
             <h3 style="margin-top:10px; color:#2e7d32">Total: $${totalPagar.toFixed(2)}</h3>
         `,
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonColor: COLOR.EXITO,
-        confirmButtonText: 'Sí, Guardar y Autorizar'
-    }).then(async (result) => {
-        if(result.isConfirmed) {
+        confirmar: 'Sí, Guardar y Autorizar',
+        peligroso: false,
+    }).then(async (confirmado) => {
+        if(confirmado) {
             try {
                 const fd = new FormData();
                 fd.append("op", "send_ticket_pago");
@@ -165,12 +163,12 @@ const TicketPagoPage = () => {
                 const res = await fetch(`${apiHost}/formularios.php`, { method: "POST", body: fd });
                 const json = await res.json();
                 if (json.status === "success") {
-                  Swal.fire("¡Éxito!", "Pago Autorizado y datos guardados.", "success");
+                  notify.exito("Pago Autorizado y datos guardados.", "¡Éxito!");
                   navigate(`/paymentDrivers`);
                 } else {
-                  Swal.fire("Error", json.message || "Error al autorizar pago.", "error");
+                  notify.error(json.message || "Error al autorizar pago.", "Error");
                 }
-              } catch { Swal.fire("Error", "No se pudo procesar la solicitud.", "error"); }
+              } catch { notify.error("No se pudo procesar la solicitud.", "Error"); }
         }
     });
   };

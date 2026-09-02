@@ -12,7 +12,6 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import EditIcon from '@mui/icons-material/Edit';
 
-import Swal from 'sweetalert2';
 import FieldLabel from '../../../components/Gastos/FieldLabel';
 import {
     DIALOG_PAPER_SX, DIALOG_TITLE_SX, DIALOG_CONTENT_SX, DIALOG_ACTIONS_SX,
@@ -20,7 +19,7 @@ import {
     GHOST_BTN_SX, DARK_BTN_SX, CHIP_SX,
 } from '../../../shared/ui/estilos';
 import { COLOR } from '../../../shared/ui/tokens';
-import { BloqueEsqueleto } from '../../../shared/ui';
+import { BloqueEsqueleto, notify } from '../../../shared/ui';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -188,7 +187,7 @@ const InspeccionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
 
     const handleAddReport = () => {
         if (!currentReport.tipo_violacion || !currentReport.descripcion) {
-            Swal.fire('Atención', 'Selecciona el tipo de violación y la descripción para agregar a la lista.', 'warning');
+            notify.aviso('Selecciona el tipo de violación y la descripción para agregar a la lista.', 'Atención');
             return;
         }
         setReportesList(prev => [...prev, currentReport]);
@@ -203,7 +202,7 @@ const InspeccionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
         const newFiles = await archivosDelEvento(e, { grupo: GRUPOS_ARCHIVO.DOCUMENTO });
         if (newFiles.length === 0) return;
         if (files.length + newFiles.length > 3) {
-            Swal.fire('Atención', 'Solo puedes subir un máximo de 3 documentos.', 'warning');
+            notify.aviso('Solo puedes subir un máximo de 3 documentos.', 'Atención');
             return;
         }
         setFiles(prev => [...prev, ...newFiles].slice(0, 3));
@@ -214,16 +213,12 @@ const InspeccionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
     };
 
     const handleDeleteDoc = async (doc) => {
-        const confirm = await Swal.fire({
-            title: '¿Eliminar documento?',
-            html: `Se eliminará <b>${doc.file_name || 'este documento'}</b> de forma permanente.`,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Sí, eliminar',
-            cancelButtonText: 'Cancelar',
-            confirmButtonColor: COLOR.PELIGRO
+        const confirmado = await notify.confirmar({
+            titulo: '¿Eliminar documento?',
+            formato: `Se eliminará <b>${doc.file_name || 'este documento'}</b> de forma permanente.`,
+            confirmar: 'Sí, eliminar',
         });
-        if (!confirm.isConfirmed) return;
+        if (!confirmado) return;
 
         setDeletingDocId(doc.id_doc);
         try {
@@ -242,9 +237,9 @@ const InspeccionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
                 documentos: (prev.documentos || []).filter(d => String(d.id_doc) !== String(doc.id_doc))
             }));
             onDocumentsChanged?.();
-            Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Documento eliminado', showConfirmButton: false, timer: 2000 });
+            notify.discreto('Documento eliminado');
         } catch (error) {
-            Swal.fire('Error', error.message || 'Problema de conexión.', 'error');
+            notify.error(error.message || 'Problema de conexión.', 'Error');
         } finally {
             setDeletingDocId(null);
         }
@@ -254,7 +249,7 @@ const InspeccionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
         e.preventDefault();
 
         if (!formData.truck_id || !formData.operador || !formData.fecha_inspeccion || !formData.ciudad || !formData.estado) {
-            Swal.fire('Error', 'Por favor llena los campos obligatorios de la unidad (*).', 'error');
+            notify.error('Por favor llena los campos obligatorios de la unidad (*).', 'Error');
             return;
         }
 
@@ -266,7 +261,7 @@ const InspeccionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
         }
 
         if (finalReportesList.length === 0) {
-            Swal.fire('Error', 'Debes agregar al menos un reporte de inspección a la lista.', 'error');
+            notify.error('Debes agregar al menos un reporte de inspección a la lista.', 'Error');
             return;
         }
 
@@ -291,13 +286,13 @@ const InspeccionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
             const result = await res.json();
 
             if (result.status === 'success') {
-                Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Operación exitosa', showConfirmButton: false, timer: 2000 });
+                notify.discreto('Operación exitosa');
                 onSuccess();
             } else {
                 throw new Error(result.message);
             }
         } catch (error) {
-            Swal.fire('Error', error.message, 'error');
+            notify.error(error.message, 'Error');
         } finally {
             setSaving(false);
         }

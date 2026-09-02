@@ -29,6 +29,49 @@ export const notify = {
   },
 
   /**
+   * Informa de algo que necesita resaltar una parte del texto.
+   *
+   * Se separa de `exito` y `aviso` porque acepta marcas de formato, y eso hay
+   * que poder buscarlo: es por donde entraría contenido del servidor al DOM sin
+   * escapar. Los llamadores de hoy solo formatean texto propio.
+   *
+   * @param {string} contenido Texto con formato simple: negritas, saltos, listas.
+   * @param {string} [titulo='Atención'] Encabezado del aviso.
+   * @param {string} [icono='warning'] Icono a mostrar.
+   * @returns {Promise} Se resuelve al cerrarse el aviso.
+   */
+  conFormato(contenido, titulo = "Atención", icono = "warning") {
+    return Swal.fire({ icon: icono, title: titulo, html: contenido, confirmButtonColor: AZUL_IMA })
+  },
+
+  /**
+   * Bloquea la pantalla mientras una operación larga termina.
+   *
+   * No se cierra sola: quien la abre es responsable de llamar a `cerrar()`,
+   * normalmente en un `finally` para que un fallo no deje la pantalla trabada.
+   *
+   * @param {string} [titulo='Guardando…'] Qué se está haciendo.
+   * @returns {void}
+   */
+  cargando(titulo = "Guardando…") {
+    Swal.fire({
+      title: titulo,
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      didOpen: () => Swal.showLoading(),
+    })
+  },
+
+  /**
+   * Cierra el aviso que esté abierto.
+   *
+   * @returns {void}
+   */
+  cerrar() {
+    Swal.close()
+  },
+
+  /**
    * Informa de un fallo.
    *
    * Acepta un `Error` directamente, para que un `catch` no tenga que acordarse
@@ -91,16 +134,18 @@ export const notify = {
    * @param {object} opciones Textos del diálogo.
    * @param {string} opciones.titulo Pregunta principal.
    * @param {string} [opciones.mensaje] Consecuencia de aceptar; conviene ser explícito.
+   * @param {string} [opciones.formato] Igual que `mensaje`, pero admite marcas de formato.
+   *   Se separa para que sea buscable: es por donde entraría al DOM contenido sin escapar.
    * @param {string} [opciones.confirmar='Sí, continuar'] Texto del botón de aceptar.
    * @param {string} [opciones.cancelar='Cancelar'] Texto del botón de cancelar.
    * @param {boolean} [opciones.peligroso=true] Pinta de rojo el botón de aceptar.
    * @returns {Promise.<boolean>} `true` si la persona aceptó.
    */
-  async confirmar({ titulo, mensaje, confirmar = "Sí, continuar", cancelar = "Cancelar", peligroso = true }) {
+  async confirmar({ titulo, mensaje, formato, confirmar = "Sí, continuar", cancelar = "Cancelar", peligroso = true }) {
     const resultado = await Swal.fire({
       icon: "warning",
       title: titulo,
-      text: mensaje,
+      ...(formato ? { html: formato } : { text: mensaje }),
       showCancelButton: true,
       confirmButtonText: confirmar,
       cancelButtonText: cancelar,

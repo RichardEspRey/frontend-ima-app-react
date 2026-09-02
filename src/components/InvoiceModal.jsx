@@ -6,9 +6,9 @@ import {
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import SaveIcon from '@mui/icons-material/Save';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import Swal from 'sweetalert2';
 import InvoicePreview from './InvoicePreview';
 import { COLOR } from '../shared/ui/tokens';
+import { notify } from '../shared/ui';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -157,9 +157,9 @@ const InvoiceModal = ({ isOpen, onClose, stageData, tripData, onSaveInvoice }) =
             });
 
             onClose();
-            await Swal.fire('Éxito', 'Invoice generado y guardado correctamente.', 'success');
+            await notify.exito('Invoice generado y guardado correctamente.', 'Éxito');
         } catch (e) {
-            Swal.fire('Error', e.message, 'error');
+            notify.error(e.message, 'Error');
         } finally {
             setSaving(false);
         }

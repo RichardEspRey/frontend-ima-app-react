@@ -13,10 +13,9 @@ import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import PendingActionsIcon from '@mui/icons-material/PendingActions';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
-import Swal from "sweetalert2";
 import { useNavigate } from 'react-router-dom';
 import { COLOR } from '../../shared/ui/tokens';
-import { FilasEsqueleto, Pestanas, PageHeader, PAGE_SHELL_SX, TABLE_CONTAINER_SX, HEADER_ROW_SX, HEADER_CELL_SX, GHOST_BTN_SX, Paginacion } from '../../shared/ui';
+import { FilasEsqueleto, Pestanas, PageHeader, PAGE_SHELL_SX, TABLE_CONTAINER_SX, HEADER_ROW_SX, HEADER_CELL_SX, GHOST_BTN_SX, Paginacion, notify } from '../../shared/ui';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -139,7 +138,7 @@ const PagosConductoresPage = () => {
       }
     } catch (err) {
       console.error("Error cargando pagos:", err);
-      Swal.fire("Error", "No se pudo cargar la información.", "error");
+      notify.error("No se pudo cargar la información.", "Error");
       setTrips([]);
     } finally {
       setLoading(false);
@@ -156,17 +155,13 @@ const PagosConductoresPage = () => {
   };
 
   const handleFinalizarPago = async (tripId, driverId) => {
-    Swal.fire({
-        title: '¿Finalizar Pago?',
-        text: "Se marcará este viaje como PAGADO.",
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonColor: COLOR.EXITO,
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Sí, pagar',
-        cancelButtonText: 'Cancelar'
-    }).then(async (result) => {
-        if (result.isConfirmed) {
+    notify.confirmar({
+        titulo: '¿Finalizar Pago?',
+        mensaje: "Se marcará este viaje como PAGADO.",
+        confirmar: 'Sí, pagar',
+        peligroso: false,
+    }).then(async (confirmado) => {
+        if (confirmado) {
             try {
                 const fd = new FormData();
                 fd.append("op", "update_ticket_pago");
@@ -184,13 +179,13 @@ const PagosConductoresPage = () => {
 
                   fetch(`http://localhost/API/Mobile.php`, { method: "POST", body: fdPush }).catch(() => {});
 
-                  Swal.fire("Éxito", "Pago actualizado correctamente", "success");
+                  notify.exito("Pago actualizado correctamente", "Éxito");
                   fetchPayments();
                 } else {
-                  Swal.fire("Error", "No se pudo actualizar el pago", "error");
+                  notify.error("No se pudo actualizar el pago", "Error");
                 }
               } catch {
-                Swal.fire("Error", "Error de conexión", "error");
+                notify.error("Error de conexión", "Error");
               }
         }
     })

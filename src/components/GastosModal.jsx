@@ -12,8 +12,7 @@ import {
   TableBody,
   } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import Swal from "sweetalert2";
-import { BloqueEsqueleto } from "../shared/ui";
+import { BloqueEsqueleto, notify } from "../shared/ui";
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -57,7 +56,7 @@ const GastosModal = ({ open, onClose, tripId }) => {
       }
 
     } catch {
-      Swal.fire("Error", "No se pudo cargar la información.", "error");
+      notify.error("No se pudo cargar la información.", "Error");
     } finally {
       setLoading(false);
     }

@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import Swal from "sweetalert2";
+import { notify } from "../shared/ui";
 
 const DOLAR_API_URL = "https://mx.dolarapi.com/v1/cotizaciones/usd";
 const HISTORICO_API_URL = "https://api.frankfurter.dev/v1";
@@ -44,14 +44,7 @@ const useFetchExchangeRate = () => {
       }
     } catch (error) {
       console.error("Error al obtener el tipo de cambio:", error.message);
-      Swal.fire({
-        toast: true,
-        position: "top-end",
-        icon: "error",
-        title: "No se pudo obtener la tasa. Escríbela a mano.",
-        showConfirmButton: false,
-        timer: 4000,
-      });
+      notify.discreto("No se pudo obtener la tasa. Escríbela a mano.");
       setExchangeRate("");
     }
   }, []);

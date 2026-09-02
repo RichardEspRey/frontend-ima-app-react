@@ -12,14 +12,13 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import SearchIcon from '@mui/icons-material/Search';
 import ReceiptIcon from '@mui/icons-material/Receipt'; 
 import BusinessIcon from '@mui/icons-material/Business';
-import Swal from 'sweetalert2';
 
 import { TripFinanceRow } from '../../components/TripFinanceRow';
 import { AlertSummaryCards } from '../../components/AlertSummaryCards';
 import { getTripStatusSummary, validateStage, buildPayloadItem, collectDirtyStages } from '../../utils/financeHelpers';
 import { STATUS_OPTIONS } from '../../constants/finances'; 
 import { COLOR } from '../../shared/ui/tokens';
-import { Pestanas, PageHeader, PAGE_SHELL_SX, TABLE_CONTAINER_SX, HEADER_ROW_SX, HEADER_CELL_SX, Paginacion } from '../../shared/ui';
+import { Pestanas, PageHeader, PAGE_SHELL_SX, TABLE_CONTAINER_SX, HEADER_ROW_SX, HEADER_CELL_SX, Paginacion, notify } from '../../shared/ui';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -202,27 +201,26 @@ const FinanzasPage = () => {
 
   const saveAll = async () => {
     const dirty = collectDirtyStages(trips);
-    if (dirty.length === 0) return Swal.fire({ icon: 'info', title: 'Sin cambios' });
+    if (dirty.length === 0) return notify.aviso('Sin cambios');
 
     const invalids = dirty.filter(({ stage }) => validateStage(stage).length > 0)
                           .map(({ stage }) => ({ stage, errs: validateStage(stage) }));
 
     if (invalids.length) {
       const html = invalids.slice(0, 10).map(i => `<li>ID ${i.stage.trip_stage_id}: ${i.errs.join(', ')}</li>`).join('');
-      return Swal.fire({ icon: 'warning', title: 'Revisa los datos', html: `<ul>${html}</ul>` });
+      return notify.conFormato(`<ul>${html}</ul>`, 'Revisa los datos', 'warning');
     }
 
-    const confirm = await Swal.fire({
-      icon: 'question',
-      title: 'Confirmar guardado',
-      text: `Se guardarán ${dirty.length} cambio(s).`,
-      showCancelButton: true,
-      confirmButtonText: 'Guardar'
+    const confirmado = await notify.confirmar({
+      titulo: 'Confirmar guardado',
+      mensaje: `Se guardarán ${dirty.length} cambio(s).`,
+      confirmar: 'Guardar',
+      peligroso: false,
     });
-    if (!confirm.isConfirmed) return;
+    if (!confirmado) return;
 
     setSaving(true);
-    Swal.fire({ title: 'Guardando...', didOpen: () => Swal.showLoading() });
+    notify.cargando();
 
     try {
       const fd = new FormData();
@@ -233,13 +231,13 @@ const FinanzasPage = () => {
       const json = await res.json();
       
       if (json.status === 'success') {
-        Swal.fire('Guardado', `Se actualizaron ${dirty.length} registros`, 'success');
+        notify.exito(`Se actualizaron ${dirty.length} registros`, 'Guardado');
         await fetchFinanzas();
       } else {
         throw new Error(json.message);
       }
     } catch (e) {
-      Swal.fire('Error', e.message || 'Error de conexión', 'error');
+      notify.error(e.message || 'Error de conexión', 'Error');
     } finally {
       setSaving(false);
     }
