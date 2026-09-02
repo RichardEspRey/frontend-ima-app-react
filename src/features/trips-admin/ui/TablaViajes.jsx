@@ -1,6 +1,5 @@
 import {
   Box,
-  CircularProgress,
   Paper,
   Table,
   TableBody,
@@ -18,6 +17,7 @@ import { API_BASE } from "../../../shared/config/env"
 import { HEADER_CELL_SX, HEADER_ROW_SX } from "../../../shared/ui/estilos"
 import { columnasDeTabla, documentosFaltantesDeViaje, urlDocumento } from "../model/documentos"
 import { COLOR } from "../../../shared/ui/tokens"
+import { FilasEsqueleto } from "../../../shared/ui"
 
 const CELDA_CENTRADA = { ...HEADER_CELL_SX, textAlign: "center" }
 
@@ -31,19 +31,7 @@ const CELDA_CENTRADA = { ...HEADER_CELL_SX, textAlign: "center" }
  */
 function FilaVacia({ columnas, cargando }) {
   if (cargando) {
-    return (
-      <TableRow>
-        <TableCell colSpan={columnas} align="center" sx={{ py: 5 }}>
-          <CircularProgress
-            size={22}
-            sx={{ mr: 1.5, verticalAlign: "middle", color: COLOR.TENUE }}
-          />
-          <Typography component="span" color={COLOR.APAGADO} fontWeight={500}>
-            Actualizando datos...
-          </Typography>
-        </TableCell>
-      </TableRow>
-    )
+    return <FilasEsqueleto columnas={columnas} />
   }
 
   return (

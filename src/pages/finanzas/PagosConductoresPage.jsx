@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
-  TablePagination, TextField, Box, Typography, CircularProgress, Chip, Button,
+  TablePagination, TextField, Box, Typography, Chip, Button,
   Stack, Tooltip, IconButton, InputAdornment, Tabs, Tab
 } from "@mui/material";
 
@@ -16,6 +16,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import Swal from "sweetalert2";
 import { useNavigate } from 'react-router-dom';
 import { COLOR } from '../../shared/ui/tokens';
+import { FilasEsqueleto } from '../../shared/ui';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -286,12 +287,7 @@ const PagosConductoresPage = () => {
 
           <TableBody>
             {loading ? (
-              <TableRow>
-                <TableCell colSpan={8} align="center" sx={{ py: 10 }}>
-                  <CircularProgress size={30} sx={{ mr: 2 }} />
-                  <Typography component="span" variant="body2" color="text.secondary">Cargando datos...</Typography>
-                </TableCell>
-              </TableRow>
+              <FilasEsqueleto columnas={8} filas={Math.min(rowsPerPage, 10)} />
             ) : pageTrips.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={8} align="center" sx={{ py: 6 }}>

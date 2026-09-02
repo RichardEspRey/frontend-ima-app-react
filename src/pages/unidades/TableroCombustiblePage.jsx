@@ -3,7 +3,6 @@ import {
   Alert,
   Box,
   Chip,
-  CircularProgress,
   Grid,
   InputAdornment,
   MenuItem,
@@ -26,7 +25,7 @@ import {
   obtenerTablero,
   useGuardarTanque,
 } from "../../entities/tracking"
-import { PageHeader, notify } from "../../shared/ui"
+import { PageHeader, notify, TarjetasEsqueleto } from "../../shared/ui"
 import { COLOR } from "../../shared/ui/tokens"
 
 /**
@@ -113,10 +112,7 @@ export default function TableroCombustiblePage() {
       )}
 
       {isLoading ? (
-        <Box display="flex" justifyContent="center" alignItems="center" gap={2} mt={5}>
-          <CircularProgress />
-          <Typography>Cargando unidades...</Typography>
-        </Box>
+        <TarjetasEsqueleto cantidad={8} alto={150} />
       ) : (
         <Grid container spacing={3}>
           {visibles.map((unidad) => (

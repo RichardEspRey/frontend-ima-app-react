@@ -1,7 +1,6 @@
 import {
   Box,
   Button,
-  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
@@ -35,6 +34,7 @@ import CreatableSelect from "react-select/creatable"
 import { estaDisponible, leerValorCaja, valorCaja } from "../../../entities/schedule"
 import { selectStyles } from "../../../utils/tripFormConstants"
 import { COLOR } from "../../../shared/ui/tokens"
+import { BloqueEsqueleto } from "../../../shared/ui"
 
 const ETIQUETA_SX = {
   color: COLOR.TENUE,
@@ -159,9 +159,7 @@ export function ModalProgramacion({
 
       <DialogContent>
         {cargandoTablero ? (
-          <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
-            <CircularProgress size={32} sx={{ color: COLOR.TENUE }} />
-          </Box>
+          <BloqueEsqueleto alto={220} conTitulo={false} />
         ) : (
           <Stack spacing={2.5} sx={{ mt: 0.5 }}>
             {hayResumen && (

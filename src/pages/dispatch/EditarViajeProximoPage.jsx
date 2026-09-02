@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react"
-import { Alert, Button, CircularProgress, Container, Paper, Stack, Typography } from "@mui/material"
+import { Alert, Button, Container, Paper, Stack, Typography } from "@mui/material"
 import { useNavigate, useParams } from "react-router-dom"
 import { format, parseISO } from "date-fns"
 import ArrowBackIcon from "@mui/icons-material/ArrowBack"
@@ -19,7 +19,7 @@ import {
   useViajeUpcoming,
 } from "../../entities/trip"
 import { FormulariosViaje, PanelConfiguracionViaje } from "../../features/dispatch"
-import { PageHeader, notify } from "../../shared/ui"
+import { PageHeader, notify, PantallaEsqueleto } from "../../shared/ui"
 import { NORMAL_TRIP_DOCS_BY_COUNTRY, initialBorderCrossingDocs } from "../../utils/tripFormConstants"
 import { COLOR } from "../../shared/ui/tokens"
 
@@ -221,12 +221,7 @@ export default function EditarViajeProximoPage() {
   if (isLoading) {
     return (
       <Container maxWidth="xl" sx={{ py: 6 }}>
-        <Paper sx={{ p: 4, borderRadius: 3 }}>
-          <Stack direction="row" spacing={2} alignItems="center">
-            <CircularProgress />
-            <Typography>Cargando viaje...</Typography>
-          </Stack>
-        </Paper>
+        <PantallaEsqueleto columnas={4} filas={5} />
       </Container>
     )
   }

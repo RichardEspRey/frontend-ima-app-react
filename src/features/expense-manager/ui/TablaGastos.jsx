@@ -1,5 +1,4 @@
 import {
-  CircularProgress,
   Paper,
   Table,
   TableBody,
@@ -23,6 +22,7 @@ import {
   moneyMXN,
 } from "../estilos"
 import { COLOR } from "../../../shared/ui/tokens"
+import { FilasEsqueleto } from "../../../shared/ui"
 
 const COLUMNAS = [
   { campo: "id_gasto", etiqueta: "Expense #" },
@@ -141,11 +141,7 @@ export function TablaGastos({
 
           <TableBody>
             {cargando ? (
-              <TableRow>
-                <TableCell colSpan={columnas} align="center" sx={{ py: 6 }}>
-                  <CircularProgress size={24} />
-                </TableCell>
-              </TableRow>
+              <FilasEsqueleto columnas={columnas} />
             ) : gastos.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={columnas} align="center" sx={{ py: 6 }}>

@@ -27,7 +27,7 @@ import {
   useTickets,
 } from "../../../entities/expense"
 import { API_BASE } from "../../../shared/config/env"
-import { notify } from "../../../shared/ui"
+import { notify, BloqueEsqueleto } from "../../../shared/ui"
 import { COLOR } from "../../../shared/ui/tokens"
 
 const ES_IMAGEN = /\.(jpe?g|png|webp|gif)$/i
@@ -162,7 +162,7 @@ export function EditorRegistro({ descriptor }) {
             </Button>
           </Stack>
         ) : (
-          <CircularProgress />
+          <BloqueEsqueleto alto={260} />
         )}
       </Box>
     )

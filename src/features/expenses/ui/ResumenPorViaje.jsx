@@ -3,7 +3,6 @@ import {
   Box,
   Button,
   Chip,
-  CircularProgress,
   Paper,
   Stack,
   Tab,
@@ -30,7 +29,7 @@ import {
   useResumen,
 } from "../../../entities/expense"
 import { decimales, moneda } from "../../../shared/lib/formato"
-import { PageHeader } from "../../../shared/ui"
+import { PageHeader, PantallaEsqueleto } from "../../../shared/ui"
 import { COLOR } from "../../../shared/ui/tokens"
 
 const PAISES = [
@@ -127,12 +126,7 @@ export function ResumenPorViaje({ descriptor }) {
   const columnas = descriptor.columnasResumen.length + 3
 
   if (isLoading) {
-    return (
-      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "50vh", p: 3 }}>
-        <CircularProgress />
-        <Typography ml={2}>Cargando registros de {descriptor.etiquetas.plural.toLowerCase()}...</Typography>
-      </Box>
-    )
+    return <PantallaEsqueleto columnas={columnas} />
   }
 
   return (

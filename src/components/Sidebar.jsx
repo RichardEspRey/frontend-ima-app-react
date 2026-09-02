@@ -136,8 +136,8 @@ const Sidebar = () => {
       const fd = new FormData(); fd.append('op', 'getStatus');
       const res = await fetch(`${apiHost}/IMA_Docs.php`, { method: 'POST', body: fd });
       const data = await res.json();
-      if (data.status === 'success') {
-        const u = data.Users[0];
+      const u = data.Users?.[0];
+      if (data.status === 'success' && u) {
         setNotificaciones(prev => ({ 
             ...prev, 
             'IMA Manager': { red: parseInt(u.ima_vencidos||0) + parseInt(u.driver_vencidos||0) + parseInt(u.documentos_faltantes_truck||0) + parseInt(u.documentos_faltantes_trailer||0), yellow: parseInt(u.ima_por_vencer||0) + parseInt(u.driver_por_vencer||0) }

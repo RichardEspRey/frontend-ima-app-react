@@ -1,6 +1,5 @@
 import {
   Button,
-  CircularProgress,
   IconButton,
   Paper,
   Table,
@@ -19,6 +18,7 @@ import dayjs from "dayjs"
 
 import { HEADER_CELL_SX, HEADER_ROW_SX } from "../../../shared/ui/estilos"
 import { COLOR } from "../../../shared/ui/tokens"
+import { FilasEsqueleto } from "../../../shared/ui"
 
 const COLUMNAS = [
   "Operador",
@@ -76,17 +76,7 @@ export function TablaProgramaciones({
 
         <TableBody>
           {cargando ? (
-            <TableRow>
-              <TableCell colSpan={9} align="center" sx={{ py: 5 }}>
-                <CircularProgress
-                  size={22}
-                  sx={{ mr: 1.5, verticalAlign: "middle", color: COLOR.TENUE }}
-                />
-                <Typography component="span" color={COLOR.APAGADO} fontWeight={500}>
-                  Cargando programaciones...
-                </Typography>
-              </TableCell>
-            </TableRow>
+            <FilasEsqueleto columnas={9} />
           ) : programaciones.length === 0 ? (
             <TableRow>
               <TableCell colSpan={9} align="center" sx={{ py: 6 }}>

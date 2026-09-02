@@ -3,7 +3,6 @@ import {
   Alert,
   Box,
   Button,
-  CircularProgress,
   Paper,
   Stack,
   Tab,
@@ -31,7 +30,7 @@ import {
   validarUnidad,
 } from "../../../entities/unit"
 import { useSesion } from "../../../shared/auth"
-import { PageHeader, notify } from "../../../shared/ui"
+import { PageHeader, notify, PantallaEsqueleto } from "../../../shared/ui"
 import { ModalBaja } from "./ModalBaja"
 import { ModalColumnas } from "./ModalColumnas"
 import { ModalRequisitos } from "./ModalRequisitos"
@@ -199,8 +198,8 @@ export function AdminUnidades({ tipo }) {
 
   if (isLoading) {
     return (
-      <Box p={5} display="flex" justifyContent="center">
-        <CircularProgress />
+      <Box sx={{ p: { xs: 2, md: 4 }, minHeight: "100vh", bgcolor: COLOR.LIENZO }}>
+        <PantallaEsqueleto columnas={6} />
       </Box>
     )
   }

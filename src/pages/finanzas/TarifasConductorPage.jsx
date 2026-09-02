@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   Paper, Table, TableHead, TableRow, TableCell, TableBody,
   TextField, Box, Typography, Button, InputAdornment, Stack,
-  CircularProgress, Container
+  Container
 } from "@mui/material";
 import Swal from "sweetalert2";
 import { useNavigate } from 'react-router-dom';
@@ -13,6 +13,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import PersonIcon from '@mui/icons-material/Person';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import { COLOR } from '../../shared/ui/tokens';
+import { PantallaEsqueleto } from '../../shared/ui';
 
 /**
  * Tarifa por milla de cada conductor.
@@ -103,8 +104,8 @@ const TarifasConductorPage = () => {
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}>
-        <CircularProgress />
+      <Box sx={{ p: 3 }}>
+        <PantallaEsqueleto columnas={5} />
       </Box>
     );
   }

@@ -2,7 +2,6 @@ import {
   Box,
   Button,
   Chip,
-  CircularProgress,
   Paper,
   Stack,
   Table,
@@ -19,7 +18,7 @@ import { useNavigate, useParams } from "react-router-dom"
 
 import { esManual, useRegistros } from "../../../entities/expense"
 import { decimales, moneda } from "../../../shared/lib/formato"
-import { PageHeader } from "../../../shared/ui"
+import { PageHeader, PantallaEsqueleto } from "../../../shared/ui"
 import { COLOR } from "../../../shared/ui/tokens"
 
 /**
@@ -91,12 +90,7 @@ export function RegistrosDeViaje({ descriptor, onAlta, children }) {
   const viaje = registros[0]?.trip_number ?? tripId
 
   if (isLoading) {
-    return (
-      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "50vh" }}>
-        <CircularProgress />
-        <Typography ml={2}>Cargando registros...</Typography>
-      </Box>
-    )
+    return <PantallaEsqueleto columnas={columnas} />
   }
 
   return (

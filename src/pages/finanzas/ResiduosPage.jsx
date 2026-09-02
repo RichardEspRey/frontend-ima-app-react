@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
-  TablePagination, TextField, Box, Typography, CircularProgress, Button
+  TablePagination, TextField, Box, Typography, Button
 } from '@mui/material';
+import { FilasEsqueleto } from '../../shared/ui';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -111,14 +112,7 @@ const ResiduosPage = () => {
 
           <TableBody>
             {loading ? (
-              <TableRow>
-                <TableCell colSpan={8} align="center">
-                  <Box sx={{ py: 4, display: 'flex', gap: 2, alignItems: 'center', justifyContent: 'center' }}>
-                    <CircularProgress size={24} />
-                    <Typography>Cargando…</Typography>
-                  </Box>
-                </TableCell>
-              </TableRow>
+              <FilasEsqueleto columnas={8} filas={Math.min(rowsPerPage, 10)} />
             ) : pageRows.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={8} align="center">

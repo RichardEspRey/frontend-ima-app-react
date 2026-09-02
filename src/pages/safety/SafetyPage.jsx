@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import {
   Box, Paper, Typography, Stack,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  Chip, CircularProgress, Tabs, Tab, TextField, InputAdornment, TablePagination
+  Chip, Tabs, Tab, TextField, InputAdornment, TablePagination
 } from "@mui/material";
 
 import Swal from "sweetalert2";
@@ -20,6 +20,7 @@ import TablaReparaciones from "../../features/inspections/ui/TablaReparaciones.j
 import TablaInspecciones from "../../features/inspections/ui/TablaInspecciones.jsx";
 import { archivoDelEvento } from "../../shared/security";
 import { COLOR } from "../../shared/ui/tokens";
+import { FilasEsqueleto } from "../../shared/ui";
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -263,11 +264,7 @@ export default function SafetyPage() {
 
                 <TableBody>
                   {loading ? (
-                    <TableRow>
-                      <TableCell colSpan={4} align="center" sx={{ py: 6 }}>
-                        <CircularProgress size={24} />
-                      </TableCell>
-                    </TableRow>
+                    <FilasEsqueleto columnas={4} filas={Math.min(rowsPerPage, 10)} />
                   ) : pageData.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={4} align="center" sx={{ py: 6 }}>

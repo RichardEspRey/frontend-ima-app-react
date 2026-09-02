@@ -1,8 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import {
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
-    Button, TablePagination, TextField, Box, Typography, CircularProgress,
-    Stack, Grid, FormControl, InputLabel, Select, MenuItem, IconButton
+    Button, TablePagination, TextField, Box, Typography, Stack, Grid, FormControl, InputLabel, Select, MenuItem, IconButton
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
@@ -23,6 +22,7 @@ import {
     SECTION_LABEL_SX, PAGINATION_BOX_SX, PAGINATION_SX, GHOST_BTN_SX,
 } from '../../../shared/ui/estilos';
 import { COLOR } from '../../../shared/ui/tokens';
+import { FilasEsqueleto } from '../../../shared/ui';
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
@@ -309,11 +309,7 @@ const TablaOrdenes = () => {
 
                     <TableBody>
                         {loading ? (
-                            <TableRow>
-                                <TableCell colSpan={11} align="center" sx={{ py: 6 }}>
-                                    <CircularProgress size={24} />
-                                </TableCell>
-                            </TableRow>
+                            <FilasEsqueleto columnas={11} filas={Math.min(rowsPerPage, 10)} />
                         ) : filteredOrders.length === 0 ? (
                             <TableRow>
                                 <TableCell colSpan={11} align="center" sx={{ py: 6 }}>

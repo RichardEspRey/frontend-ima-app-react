@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
-  TablePagination, TextField, Box, Typography, CircularProgress, Stack, Button,
+  TablePagination, TextField, Box, Typography, Stack, Button,
   Tabs, Tab
 } from '@mui/material';
 import Swal from 'sweetalert2';
 
 import { MargenRow } from '../../components/MargenRow'; 
 import { COLOR } from '../../shared/ui/tokens';
+import { PantallaEsqueleto } from '../../shared/ui';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -110,9 +111,8 @@ const MargenPage = () => {
 
   if (loading) {
       return (
-          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh', p: 3 }}>
-              <CircularProgress /> 
-              <Typography ml={2}>Calculando márgenes de viajes...</Typography> 
+          <Box sx={{ p: 3 }}>
+              <PantallaEsqueleto columnas={6} />
           </Box>
       );
   }

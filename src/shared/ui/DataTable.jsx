@@ -1,7 +1,5 @@
 import { useMemo, useState } from "react"
 import {
-  Box,
-  CircularProgress,
   Paper,
   Table,
   TableBody,
@@ -14,6 +12,7 @@ import {
   Typography,
 } from "@mui/material"
 import { ordenarPor, siguienteOrden } from "../lib/orden"
+import { FilasEsqueleto } from "./carga"
 import {
   CELL_SX,
   HEADER_CELL_SX,
@@ -38,10 +37,10 @@ import {
  */
 
 /**
- * Fila que ocupa toda la tabla para los estados de carga, error y vacío.
+ * Fila que ocupa toda la tabla para los estados de error y vacío.
  *
- * El `Typography` va como `div` y no como su `p` por omisión: el estado de carga
- * mete dentro un `Box` con el spinner, y un `div` dentro de un `p` es HTML
+ * El `Typography` va como `div` y no como su `p` por omisión: el mensaje puede
+ * traer dentro un elemento de bloque, y un `div` dentro de un `p` es HTML
  * inválido. React lo avisa en consola pero ningún test en jsdom lo detecta.
  *
  * @param {object} props Propiedades del componente.
@@ -84,7 +83,9 @@ function FilaMensaje({ columnas, children, color = "text.secondary" }) {
  * @param {Array} props.filas Datos a pintar.
  * @param {Array.<Columna>} props.columnas Definición de las columnas.
  * @param {string} [props.claveFila='id'] Campo que identifica cada fila.
- * @param {boolean} [props.cargando=false] Muestra el estado de carga.
+ * @param {boolean} [props.cargando=false] Muestra filas de esqueleto mientras
+ *   llegan los datos. Ocupan el sitio que ocuparán las filas reales, así que la
+ *   tabla no da el salto que da un spinner centrado al ser sustituido.
  * @param {(string|null)} [props.error] Mensaje de error, si lo hay.
  * @param {string} [props.vacio='No hay registros.'] Texto cuando no hay filas.
  * @param {Function} [props.onFilaClick] `(fila) => void` al hacer clic en una fila.
@@ -193,12 +194,7 @@ export function DataTable({
 
         <TableBody>
           {cargando && (
-            <FilaMensaje columnas={columnas.length}>
-              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 1.5 }}>
-                <CircularProgress size={18} />
-                Cargando…
-              </Box>
-            </FilaMensaje>
+            <FilasEsqueleto columnas={columnas.length} filas={Math.min(tamanoPagina, 10)} />
           )}
 
           {!cargando && error && (

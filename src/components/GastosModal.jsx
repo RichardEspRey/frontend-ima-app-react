@@ -10,10 +10,10 @@ import {
   TableRow,
   TableCell,
   TableBody,
-  CircularProgress,
-} from "@mui/material";
+  } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import Swal from "sweetalert2";
+import { BloqueEsqueleto } from "../shared/ui";
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -84,9 +84,7 @@ const GastosModal = ({ open, onClose, tripId }) => {
 
         {/* Contenido */}
         {loading ? (
-          <Box sx={{ textAlign: "center", py: 3 }}>
-            <CircularProgress />
-          </Box>
+          <BloqueEsqueleto alto={200} conTitulo={false} />
         ) : gastos.length === 0 ? (
           <Typography>No hay registros de gastos.</Typography>
         ) : (

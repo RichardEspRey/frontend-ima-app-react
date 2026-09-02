@@ -1,7 +1,8 @@
 import { useMemo } from 'react';
-import { Box, Typography, Stack, CircularProgress } from '@mui/material';
+import { Box, Typography, Stack } from '@mui/material';
 import { BarChart } from '@mui/x-charts/BarChart';
 import { COLOR } from '../../shared/ui/tokens';
+import { BloqueEsqueleto } from '../../shared/ui';
 
 const MONTH_LABELS_ES = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
 
@@ -97,7 +98,7 @@ export const ExpenseTypeChart = ({ gastos, country, loading }) => {
   const hasData = series.length > 0 && dataset.some(row => series.some(s => row[s.dataKey] > 0));
 
   if (loading) {
-    return <Stack alignItems="center" justifyContent="center" height={340}><CircularProgress size={28} /></Stack>;
+    return <BloqueEsqueleto alto={340} conTitulo={false} />;
   }
 
   if (!hasData) {

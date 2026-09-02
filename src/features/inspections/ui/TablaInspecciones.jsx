@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
     Box, Typography, Paper, Button, Table, TableBody, TableCell, TableContainer,
-    TableHead, TableRow, IconButton, CircularProgress, Chip, Stack
+    TableHead, TableRow, IconButton, Chip, Stack
 } from '@mui/material';
 import { urlSegura } from '../../../shared/security';
 import AddIcon from '@mui/icons-material/Add';
@@ -15,6 +15,7 @@ import {
     CELL_STRONG_SX, CELL_MUTED_SX,
 } from '../../../shared/ui/estilos';
 import { COLOR } from '../../../shared/ui/tokens';
+import { FilasEsqueleto } from '../../../shared/ui';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -93,11 +94,7 @@ const TablaInspecciones = () => {
                     </TableHead>
                     <TableBody>
                         {loading ? (
-                            <TableRow>
-                                <TableCell colSpan={11} align="center" sx={{ py: 6 }}>
-                                    <CircularProgress size={24} />
-                                </TableCell>
-                            </TableRow>
+                            <FilasEsqueleto columnas={11} />
                         ) : inspections.length === 0 ? (
                             <TableRow>
                                 <TableCell colSpan={11} align="center" sx={{ py: 6 }}>

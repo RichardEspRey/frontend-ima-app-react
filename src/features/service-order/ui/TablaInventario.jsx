@@ -15,7 +15,6 @@ import {
     TableRow,
     Paper,
     TablePagination, 
-    CircularProgress,
     Stack,
     Button,
     Chip,
@@ -27,6 +26,7 @@ import {
     PAGINATION_BOX_SX, PAGINATION_SX, GHOST_BTN_SX, CELL_STRONG_SX, CELL_MUTED_SX, CHIP_SX,
 } from '../../../shared/ui/estilos';
 import { COLOR, TINTE } from '../../../shared/ui/tokens';
+import { FilasEsqueleto } from '../../../shared/ui';
 
 // **Definición de las categorías para el filtro**
 const CATEGORIES = ['Todas', 'Consumibles', 'Refacciones', 'Herramientas'];
@@ -203,11 +203,7 @@ const TablaInventario = () => {
 
                     <TableBody>
                         {loading ? (
-                            <TableRow>
-                                <TableCell colSpan={4} align="center" sx={{ py: 6 }}>
-                                    <CircularProgress size={24} />
-                                </TableCell>
-                            </TableRow>
+                            <FilasEsqueleto columnas={4} filas={Math.min(rowsPerPage, 10)} />
                         ) : paginatedInventory.length > 0 ? (
                             paginatedInventory.map(item => (
                                 <TableRow key={item.id_articulo} hover>

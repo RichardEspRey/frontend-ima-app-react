@@ -3,7 +3,7 @@ import {
     Drawer, Box, Typography, IconButton,
     List, ListItem, ListItemText, ListItemIcon, Switch,
     Avatar, TextField, Chip, Stack,
-    Tabs, Tab, CircularProgress, Collapse,
+    Tabs, Tab, Collapse,
     Button, FormControl, InputLabel, Select, MenuItem, Divider,
     InputAdornment, Autocomplete
 } from '@mui/material';
@@ -22,6 +22,7 @@ import {
     Search as SearchIcon
 } from '@mui/icons-material';
 import { COLOR } from '../../../shared/ui/tokens';
+import { TarjetasEsqueleto } from '../../../shared/ui';
 
 // A partir de cuántos permisos "hoja" seguidos se usa la cuadrícula compacta en vez de filas.
 const COMPACT_GRID_THRESHOLD = 5;
@@ -514,7 +515,7 @@ const PermisosDrawer = ({
                 )}
 
                 {activeTab === 1 && (
-                    featuresLoading ? <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}><CircularProgress /></Box> : (
+                    featuresLoading ? <Box sx={{ p: 2 }}><TarjetasEsqueleto cantidad={5} alto={64} conIcono={false} /></Box> : (
                         <Box sx={{ p: 2 }}>
                             <TextField
                                 fullWidth placeholder="Buscar permiso..." variant="outlined" size="small"
@@ -540,7 +541,7 @@ const PermisosDrawer = ({
 
                 {activeTab === 2 && (
                     featuresLoading
-                        ? <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}><CircularProgress /></Box>
+                        ? <Box sx={{ p: 2 }}><TarjetasEsqueleto cantidad={5} alto={64} conIcono={false} /></Box>
                         : <FeatureSection features={featuresMobile} userId={user.id} onToggleFeature={onToggleFeature} />
                 )}
             </Box>

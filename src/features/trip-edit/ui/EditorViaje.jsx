@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { Alert, Box, CircularProgress, Container } from "@mui/material"
+import { Alert, Box, Container } from "@mui/material"
 import { useNavigate, useParams } from "react-router-dom"
 import { format, parseISO } from "date-fns"
 
@@ -21,7 +21,7 @@ import {
 } from "../../../entities/trip"
 import { useCamionesActivos, useCamionesActivosCompletos } from "../../../entities/truck"
 import { useBodegas, useCrearBodega } from "../../../entities/warehouse"
-import { notify } from "../../../shared/ui"
+import { notify, PantallaEsqueleto } from "../../../shared/ui"
 import { initialBorderCrossingDocs, NORMAL_TRIP_DOCS_BY_COUNTRY } from "../../../utils/tripFormConstants"
 import { admiteFacturas, ajustesDe, estadoPorCi, pideVencimiento } from "../model/modos"
 import { useEnlaceTransnacional } from "../model/useEnlaceTransnacional"
@@ -440,8 +440,8 @@ export function EditorViaje({ modo }) {
 
   if (isLoading) {
     return (
-      <Box display="flex" justifyContent="center" mt={10}>
-        <CircularProgress />
+      <Box sx={{ p: { xs: 2, md: 4 } }}>
+        <PantallaEsqueleto columnas={4} filas={5} />
       </Box>
     )
   }

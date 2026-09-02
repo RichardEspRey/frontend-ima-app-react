@@ -21,6 +21,7 @@ import {
     GHOST_BTN_SX, DARK_BTN_SX, CHIP_SX,
 } from '../../../shared/ui/estilos';
 import { COLOR } from '../../../shared/ui/tokens';
+import { BloqueEsqueleto } from '../../../shared/ui';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -392,7 +393,7 @@ const InspeccionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
             
             <DialogContent sx={DIALOG_CONTENT_SX}>
                 {loading ? (
-                    <Box display="flex" justifyContent="center" py={5}><CircularProgress /></Box>
+                    <BloqueEsqueleto alto={320} conTitulo={false} />
                 ) : (
                     <Box component="form" id="inspectionForm" onSubmit={handleSubmit} sx={{ mt: 1 }}>
                         <Stack spacing={3}>
