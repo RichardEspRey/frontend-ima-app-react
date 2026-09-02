@@ -12,6 +12,7 @@
 | `04-SINCRONIZACION.md` | Cómo convivir con la rama de Richard sin morir en merges |
 | `05-INCREMENTOS.md` | La lista de trabajo, en orden, con criterio de "terminado" |
 | `06-DOCUMENTACION.md` | Estándar de JSDoc y plan de documentación del proyecto |
+| `07-VERIFICACION-FASE-1.md` | Qué se comprobó antes de plantear el merge, con resultados |
 
 ## Dónde vamos
 
@@ -72,13 +73,20 @@ El incremento 9 está partido en **9a, 9b y 9c** (ver `05-INCREMENTOS.md`).
 **Los dieciséis incrementos de la fase 1 están hechos.** En `src/screens/` solo queda
 `Login/` y la carpeta `css/` que varias pantallas todavía comparten.
 
-Lo que sigue, en orden:
+**Los cuatro cierres también están hechos:**
 
-1. **Login y los `css/` sueltos** — lo último que queda en `screens/`.
-2. **Retirar los puentes** `@deprecated` de `hooks/` y `utils/`, ya que sus consumidores
-   están migrados.
-3. **Bajar los 113 errores de lint**, casi todos JSDoc en `components/` sin migrar.
-4. Probar la fase 1 de punta a punta antes de plantear el merge a `main`.
+1. Login migrado; `src/screens/` y `src/styles/` ya no existen.
+2. Los nueve puentes `@deprecated` retirados; la cuarentena quedó autocontenida.
+3. Lint en **0 errores** (de 112).
+4. Fase 1 verificada de punta a punta: ver `07-VERIFICACION-FASE-1.md`.
+
+**La fase 1 está lista para plantear el merge a `main`.** Antes conviene:
+
+- Que Emiliano y Richard la usen unos días contra producción.
+- Decidir lo que quedó a la vista y es de negocio, no del refactor: la columna de déficit,
+  los permisos por nombre en `TripAdmin`, y las ocho pantallas en cuarentena.
+- Repasar `07-VERIFICACION-FASE-1.md`, que lista lo que la fase 1 **no** arregla: HTTPS,
+  autenticación de la API y las contraseñas en claro son fase 2.
 
 Las **ocho pantallas sin uso** (~2 150 líneas) están en cuarentena en `src/no-usadas/`,
 fuera del router y fuera del paquete compilado. No se borran todavía: se revisa dentro de
