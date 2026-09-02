@@ -5,13 +5,24 @@ import {
     ListItemIcon, ListItemText, Collapse, Typography, LinearProgress, Avatar,
     Button, IconButton, Divider
 } from '@mui/material'; 
-import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
-import { 
-    MdDashboard, MdCarRental, MdLocalShipping, MdDirectionsBus, MdLocalGasStation, 
-    MdAttachMoney, MdExitToApp, MdList, MdAssignment, MdTrendingUp, MdBarChart, 
-    MdSecurity, MdChevronLeft, MdViewSidebar, MdViewCompact
-} from 'react-icons/md'; 
-import { GrMapLocation } from "react-icons/gr";
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import CarRentalIcon from '@mui/icons-material/CarRental';
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import DirectionsBusIcon from '@mui/icons-material/DirectionsBus';
+import LocalGasStationIcon from '@mui/icons-material/LocalGasStation';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import ExitToAppIcon from '@mui/icons-material/ExitToApp';
+import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
+import AssignmentIcon from '@mui/icons-material/Assignment';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import BarChartIcon from '@mui/icons-material/BarChart';
+import SecurityIcon from '@mui/icons-material/Security';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ViewSidebarIcon from '@mui/icons-material/ViewSidebar';
+import ViewCompactIcon from '@mui/icons-material/ViewCompact';
+import MapIcon from '@mui/icons-material/Map';
 
 import logo from '../assets/images/logo_white.png';
 import iconUpdate from '../assets/images/icons/update.png';
@@ -28,21 +39,21 @@ import { useSesion } from '../shared/auth';
 import { COLOR } from '../shared/ui/tokens';
 
 const iconMap = {
-    'Inicio': MdDashboard,
-    'IMA Manager': MdAssignment,
-    'IMA': MdAssignment,
-    'Conductores': MdCarRental,
-    'Camiones': MdDirectionsBus,
-    'Cajas': MdDirectionsBus,
-    'Gastos': MdLocalGasStation,
-    'Mantenimientos': MdList,
-    'Viajes': MdLocalShipping,
-    'Finanzas': MdAttachMoney,
-    'Reports': MdBarChart,
-    'Safety': MdSecurity,
-    'Mapa': GrMapLocation,
-    'Gestor de Acceso': MdList,
-    'Estatus de Unidades': MdTrendingUp,
+    'Inicio': DashboardIcon,
+    'IMA Manager': AssignmentIcon,
+    'IMA': AssignmentIcon,
+    'Conductores': CarRentalIcon,
+    'Camiones': DirectionsBusIcon,
+    'Cajas': DirectionsBusIcon,
+    'Gastos': LocalGasStationIcon,
+    'Mantenimientos': FormatListBulletedIcon,
+    'Viajes': LocalShippingIcon,
+    'Finanzas': AttachMoneyIcon,
+    'Reports': BarChartIcon,
+    'Safety': SecurityIcon,
+    'Mapa': MapIcon,
+    'Gestor de Acceso': FormatListBulletedIcon,
+    'Estatus de Unidades': TrendingUpIcon,
 };
 
 const MANAGEMENT_ITEM = { name: 'Gestor de Acceso', route: '/access-manager' };
@@ -318,7 +329,7 @@ const Sidebar = () => {
             {menuFiltrado.map((item) => {
               const hasSubs = !!(item.subItems && item.subItems.length > 0);
               const isOpen = openMenus[item.name]; 
-              const IconComponent = iconMap[item.name] || MdList;
+              const IconComponent = iconMap[item.name] || FormatListBulletedIcon;
               const isActive = currentPath === item.route;
 
               const menuButton = (
@@ -335,7 +346,7 @@ const Sidebar = () => {
                       position: 'relative',
                     }}
                   >
-                    <IconComponent size={20} />
+                    <IconComponent sx={{ fontSize: 22 }} />
                     {!isVisuallyExpanded && (
                       <NotificationBadges counts={notificaciones[item.name]} compact />
                     )}
@@ -350,7 +361,7 @@ const Sidebar = () => {
 
                   {hasSubs && isVisuallyExpanded && (
                     <Box sx={{ ml: 1, display: 'flex', alignItems: 'center', opacity: 0.7, ...labelSx(true) }}>
-                      {isOpen ? <FaChevronUp size={10} /> : <FaChevronDown size={10} />}
+                      {isOpen ? <ExpandLessIcon sx={{ fontSize: 16 }} /> : <ExpandMoreIcon sx={{ fontSize: 16 }} />}
                     </Box>
                   )}
                 </ListItemButton>
@@ -422,7 +433,7 @@ const Sidebar = () => {
                   '&:hover': { bgcolor: 'rgba(255,255,255,0.08)', color: COLOR.BLANCO },
                 }}
               >
-                <MdViewSidebar size={20} />
+                <ViewSidebarIcon sx={{ fontSize: 20 }} />
               </IconButton>
             </Tooltip>
             <Tooltip title="Solo iconos (expandir al pasar el mouse)" placement="right" arrow>
@@ -436,7 +447,7 @@ const Sidebar = () => {
                   '&:hover': { bgcolor: 'rgba(255,255,255,0.08)', color: COLOR.BLANCO },
                 }}
               >
-                <MdViewCompact size={20} />
+                <ViewCompactIcon sx={{ fontSize: 20 }} />
               </IconButton>
             </Tooltip>
             {isVisuallyExpanded && (
@@ -446,8 +457,8 @@ const Sidebar = () => {
                   onClick={() => setMode(isPinnedExpanded ? 'collapsed' : 'expanded')}
                   sx={{ color: COLOR.TENUE, ml: isPinnedExpanded ? 'auto' : 0, '&:hover': { color: COLOR.BLANCO } }}
                 >
-                  <MdChevronLeft
-                    size={20}
+                  <ChevronLeftIcon
+                    sx={{ fontSize: 20 }}
                     style={{
                       transform: isPinnedExpanded ? 'rotate(0deg)' : 'rotate(180deg)',
                       transition: 'transform 0.2s',
@@ -495,7 +506,7 @@ const Sidebar = () => {
 
           {isVisuallyExpanded ? (
             <ListItemButton onClick={logout} sx={{ borderRadius: 2, color: COLOR.PELIGRO_BORDE, transition: '0.2s', '&:hover': { bgcolor: COLOR.PELIGRO, color: COLOR.BLANCO } }}>
-              <ListItemIcon sx={{ minWidth: 40, color: 'inherit' }}><MdExitToApp size={22} /></ListItemIcon>
+              <ListItemIcon sx={{ minWidth: 40, color: 'inherit' }}><ExitToAppIcon sx={{ fontSize: 22 }} /></ListItemIcon>
               <ListItemText primary="Cerrar Sesión" primaryTypographyProps={{ fontWeight: 700, fontSize: '0.9rem' }} />
             </ListItemButton>
           ) : (
@@ -511,7 +522,7 @@ const Sidebar = () => {
                 }}
               >
                 <ListItemIcon sx={{ minWidth: 0, justifyContent: 'center', color: 'inherit' }}>
-                  <MdExitToApp size={22} />
+                  <ExitToAppIcon sx={{ fontSize: 22 }} />
                 </ListItemIcon>
               </ListItemButton>
             </Tooltip>
