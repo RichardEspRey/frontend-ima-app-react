@@ -8,7 +8,7 @@ viajes, gastos, mantenimientos, finanzas, nómina, safety y seguimiento de unida
 | Si eres… | Lee |
 |---|---|
 | Alguien nuevo en el proyecto | `ONBOARDING.md` → `ARQUITECTURA.md` → `GLOSARIO.md` |
-| Quien va a escribir código | `CONTRIBUYENDO.md` |
+| Quien va a escribir código | **`ESTANDAR-DE-INGENIERIA.md`** → `CONTRIBUYENDO.md` |
 | Quien va a tocar la API | `API-ENDPOINTS.md` |
 | Quien necesita saber de roles o permisos | `ROLES-Y-PERMISOS.md` |
 | Quien retoma el refactor | `refactor/00-ESTADO.md` |
@@ -21,7 +21,10 @@ docs/
   README.md            Este archivo
   ONBOARDING.md        De cero a la app corriendo            (pendiente)
   ARQUITECTURA.md      Estructura del código y sus reglas    (pendiente — hoy en refactor/02)
-  CONTRIBUYENDO.md     Convenciones de trabajo
+  ESTANDAR-DE-INGENIERIA.md
+                       Los principios y su criterio de aceptación. Portátil:
+                       está escrito para aplicarse a cualquier proyecto
+  CONTRIBUYENDO.md     Convenciones de trabajo de ESTE repositorio
   GLOSARIO.md          Términos del dominio                  (pendiente — incremento 4)
   API-ENDPOINTS.md     Catálogo de la API PHP
   ROLES-Y-PERMISOS.md  Roles, permisos y su migración

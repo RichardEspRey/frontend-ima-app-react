@@ -1,5 +1,11 @@
 # Arquitectura destino
 
+> Este documento describe la arquitectura **de este proyecto**. Los principios que hay
+> detrás —incluidos los de consistencia visual, estados de carga y manejo de errores, que
+> no estaban en el brief original— viven en
+> [`../ESTANDAR-DE-INGENIERIA.md`](../ESTANDAR-DE-INGENIERIA.md), escrito para poder
+> aplicarse a cualquier proyecto.
+
 ## Estructura
 
 ```
