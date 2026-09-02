@@ -12,12 +12,12 @@ import CajasPage from '../pages/unidades/CajasPage.jsx';
 import EditarViajePage from '../pages/viajes/EditarViajePage.jsx';
 import EditarViajeCompletoPage from '../pages/viajes/EditarViajeCompletoPage.jsx';
 import EditarViajeProximoPage from '../pages/dispatch/EditarViajeProximoPage.jsx';
-import DieselAdmin from '../screens/Gastos/DieselAdmin.jsx';
-import DieselDetalle from '../screens/Gastos/DieselDetalle.jsx';
-import DieselEditor from '../screens/Gastos/DieselEditor.jsx';
-import GastosAdmin from '../screens/Gastos/GastosAdmin.jsx';
-import GastosDetalle from '../screens/Gastos/GastosDetalle.jsx';
-import GastosEditor from '../screens/Gastos/GastosEditor.jsx';
+import DieselPage from '../pages/gastos/DieselPage.jsx';
+import DieselDeViajePage from '../pages/gastos/DieselDeViajePage.jsx';
+import EditarDieselPage from '../pages/gastos/EditarDieselPage.jsx';
+import GastosViajePage from '../pages/gastos/GastosViajePage.jsx';
+import GastosDeViajePage from '../pages/gastos/GastosDeViajePage.jsx';
+import EditarGastoPage from '../pages/gastos/EditarGastoPage.jsx';
 import AdminGastosGeneral from '../screens/Gastos/AdminGastos.jsx';
 import InspeccionFinalPage from '../pages/mantenimientos/InspeccionFinalPage.jsx';
 import ExpenseEdit from '../screens/Gastos/ExpenseEdit.jsx';
@@ -71,12 +71,12 @@ const AppRouter = () => {
             <Route path="/admin-trucks" element={<CamionesPage />} />
             <Route path="/admin-trailers" element={<CajasPage />} />
             <Route path="/admin-trips" element={<AdminViajesPage />} />
-            <Route path="/admin-diesel" element={<DieselAdmin />} />
-            <Route path="/detalle-diesel/:tripId" element={<DieselDetalle />} />
-            <Route path="/editor-diesel/:id/:trip_id" element={<DieselEditor />} />
-            <Route path="/admin-gastos" element={<GastosAdmin />} />
-            <Route path="/detalle-gastos/:tripId" element={<GastosDetalle />} />
-            <Route path="/editor-gastos/:id/:trip_id" element={<GastosEditor />} />
+            <Route path="/admin-diesel" element={<DieselPage />} />
+            <Route path="/detalle-diesel/:tripId" element={<DieselDeViajePage />} />
+            <Route path="/editor-diesel/:id/:trip_id" element={<EditarDieselPage />} />
+            <Route path="/admin-gastos" element={<GastosViajePage />} />
+            <Route path="/detalle-gastos/:tripId" element={<GastosDeViajePage />} />
+            <Route path="/editor-gastos/:id/:trip_id" element={<EditarGastoPage />} />
             <Route path="/admin-gastos-generales" element={<AdminGastosGeneral />} />
             <Route path="/edit-trip/:tripId" element={<EditarViajePage />} />
             <Route path="/edit-trip-complete/:tripId" element={<EditarViajeCompletoPage />} />

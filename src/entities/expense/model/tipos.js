@@ -54,12 +54,28 @@ const GASTO = {
     editor: (id, tripId) => `/editor-gastos/${id}/${tripId}`,
     volver: "/admin-gastos",
   },
-  /** Columnas propias del detalle, además de las comunes. */
-  columnasDetalle: [{ clave: "tipo_gasto", etiqueta: "Tipo de gasto" }],
-  campos: [
-    { clave: "tipo_gasto", etiqueta: "Tipo de gasto" },
-    { clave: "monto", etiqueta: "Monto", tipo: "number" },
+  /** Columnas del resumen, además del viaje y la fecha. */
+  columnasResumen: [
+    { clave: "registros", etiqueta: "No of records", alineacion: "right" },
+    { clave: "monto", etiqueta: "Total Cost", alineacion: "right", tipo: "dinero" },
+    { clave: "nombre", etiqueta: "Last Driver" },
   ],
+  /** Columnas del detalle, entre el número de renglón y las acciones. */
+  columnasDetalle: [
+    { clave: "trip_number", etiqueta: "Trip", peso: 500 },
+    { clave: "fecha", etiqueta: "Last update" },
+    { clave: "tipo_gasto", etiqueta: "Expense Type" },
+    { clave: "monto", etiqueta: "Total ($)", alineacion: "right", tipo: "dinero", color: "#d32f2f" },
+    { clave: "nombre", etiqueta: "Driver" },
+  ],
+  /** Campos del editor. Los de solo lectura vienen del registro, no se envían. */
+  campos: [
+    { clave: "trip_number", etiqueta: "Trip Number", soloLectura: true },
+    { clave: "nombre", etiqueta: "Driver", soloLectura: true },
+    { clave: "tipo_gasto", etiqueta: "Expense Type", ayuda: "e.g. Comida, Peaje" },
+    { clave: "monto", etiqueta: "Total Cost", tipo: "number", prefijo: "$" },
+  ],
+  tituloEditor: "Expense Log Editor",
 }
 
 const DIESEL = {
@@ -87,20 +103,44 @@ const DIESEL = {
     editor: (id, tripId) => `/editor-diesel/${id}/${tripId}`,
     volver: "/admin-diesel",
   },
+  columnasResumen: [
+    { clave: "galones", etiqueta: "Total Gal.", alineacion: "right", tipo: "galones" },
+    { clave: "monto", etiqueta: "Total Cost", alineacion: "right", tipo: "dinero" },
+    { clave: "nombre", etiqueta: "Driver" },
+    { clave: "state_pending_count", etiqueta: "State Pending", alineacion: "center", tipo: "pendiente", color: "#d32f2f", aviso: "estados" },
+    { clave: "fleetone_pending_count", etiqueta: "Fleet One Pending", alineacion: "center", tipo: "pendiente", color: "#ed6c02", aviso: "Fleet One" },
+    { clave: "manual_count", etiqueta: "Manuales", alineacion: "center", tipo: "pendiente", color: "#f59e0b", aviso: "Registros ingresados a mano" },
+    { clave: "periodo", etiqueta: "Periodo", alineacion: "center" },
+  ],
   columnasDetalle: [
-    { clave: "odometro", etiqueta: "Odómetro" },
-    { clave: "galones", etiqueta: "Galones" },
-    { clave: "estado", etiqueta: "Estado" },
-    { clave: "periodo", etiqueta: "Periodo" },
+    { clave: "is_manual", etiqueta: "Origen", tipo: "origen" },
+    { clave: "trip_number", etiqueta: "Trip", peso: 500 },
+    { clave: "fecha", etiqueta: "Last update" },
+    { clave: "odometro", etiqueta: "Odometer", alineacion: "right" },
+    { clave: "galones", etiqueta: "Gal.", alineacion: "right", tipo: "galones" },
+    { clave: "monto", etiqueta: "Total ($)", alineacion: "right", tipo: "dinero", color: "#d32f2f" },
+    { clave: "created_by", etiqueta: "Registrado por" },
+    { clave: "estado", etiqueta: "State" },
+    { clave: "fleetone", etiqueta: "Fleet One" },
   ],
   campos: [
-    { clave: "monto", etiqueta: "Monto", tipo: "number" },
-    { clave: "galones", etiqueta: "Galones", tipo: "number" },
-    { clave: "odometro", etiqueta: "Odómetro", tipo: "number" },
-    { clave: "estado", etiqueta: "Estado" },
-    { clave: "periodo", etiqueta: "Periodo" },
+    { clave: "trip_number", etiqueta: "Trip Number", soloLectura: true },
+    { clave: "nombre", etiqueta: "Driver", soloLectura: true },
+    { clave: "estado", etiqueta: "State" },
+    { clave: "fleetone", etiqueta: "Fleet One ($)", tipo: "number", prefijo: "$" },
+    { clave: "odometro", etiqueta: "Odometer", tipo: "number", sufijo: "mi", ancho: 6 },
+    { clave: "galones", etiqueta: "Gallons", tipo: "number", sufijo: "gal", ancho: 6 },
+    { clave: "monto", etiqueta: "Total Cost", tipo: "number", prefijo: "$" },
+    { clave: "periodo", etiqueta: "Periodo", ayuda: "Ej. Q1, Q2..." },
   ],
+  tituloEditor: "Diesel Log Editor",
   conPendientes: true,
+  conPaginacion: true,
+  /** Las dos pestañas del resumen de diesel, por conciliar y conciliado. */
+  pestanas: [
+    { etiqueta: "Pendientes", filtro: (fila) => Number(fila?.fleetone_pending_count ?? 0) > 0 },
+    { etiqueta: "Completados", filtro: (fila) => Number(fila?.fleetone_pending_count ?? 0) === 0 },
+  ],
 }
 
 /**
