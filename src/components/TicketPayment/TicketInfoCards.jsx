@@ -14,7 +14,7 @@ const TicketInfoCards = ({ driverName, unidad, customRate, setCustomRate }) => {
                       <Grid item xs={6}>
                           <Stack direction="row" spacing={1} alignItems="center" mb={1}>
                               <PersonIcon color="action" fontSize="small" />
-                              <Typography variant="caption" textTransform="uppercase" fontWeight={700} color="text.secondary">Conductor</Typography>
+                              <Typography variant="caption" textTransform="uppercase" fontWeight={700} color="text.secondary">Driver</Typography>
                           </Stack>
                           <Typography variant="h6" fontWeight={600}>{driverName}</Typography>
                       </Grid>

@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import {
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
-    Button, TablePagination, TextField, Box, Typography, Stack, Grid, FormControl, InputLabel, Select, MenuItem, IconButton
+    Button, TextField, Box, Typography, Stack, Grid, FormControl, InputLabel, Select, MenuItem, IconButton
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
@@ -19,10 +19,10 @@ import EditDetailModal from '../../../components/EditDetailModa';
 import { OrderRow } from '../../../components/OrderRow';
 import {
     HEADER_ROW_SX, HEADER_CELL_SX, TABLE_CONTAINER_SX, CARD_SX,
-    SECTION_LABEL_SX, PAGINATION_BOX_SX, PAGINATION_SX, GHOST_BTN_SX,
+    SECTION_LABEL_SX, PAGINATION_BOX_SX, GHOST_BTN_SX,
 } from '../../../shared/ui/estilos';
 import { COLOR } from '../../../shared/ui/tokens';
-import { FilasEsqueleto } from '../../../shared/ui';
+import { FilasEsqueleto, Paginacion } from '../../../shared/ui';
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
@@ -338,16 +338,13 @@ const TablaOrdenes = () => {
             </TableContainer>
 
             <Box sx={PAGINATION_BOX_SX}>
-                <TablePagination
-                    rowsPerPageOptions={[10, 25, 50]}
-                    component="div"
-                    count={filteredOrders.length}
-                    rowsPerPage={rowsPerPage}
-                    page={page}
-                    onPageChange={(e, newPage) => setPage(newPage)}
-                    onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }}
-                    labelRowsPerPage="Filas por página:"
-                    sx={PAGINATION_SX}
+                <Paginacion
+                    pagina={page}
+                    porPagina={rowsPerPage}
+                    total={filteredOrders.length}
+                    onPagina={setPage}
+                    onPorPagina={(cuantas) => { setRowsPerPage(cuantas); setPage(0); }}
+                    tamanos={[10, 25, 50]}
                 />
             </Box>
 

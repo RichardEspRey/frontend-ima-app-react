@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
-  TablePagination, TextField, Box, Typography, Stack, Button
+  TextField, Box, Typography, Stack, Button
 } from '@mui/material';
 import Swal from 'sweetalert2';
 
 import { MargenRow } from '../../components/MargenRow'; 
 import { COLOR } from '../../shared/ui/tokens';
-import { PantallaEsqueleto, Pestanas } from '../../shared/ui';
+import { PantallaEsqueleto, Pestanas, Paginacion } from '../../shared/ui';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -175,15 +175,13 @@ const MargenPage = () => {
           </Table>
         </TableContainer>
 
-        <TablePagination
-          rowsPerPageOptions={[10, 25, 50]}
-          component="div"
-          count={filtered.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handlePageChange}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-          labelRowsPerPage="Filas por página:"
+        <Paginacion
+          pagina={page}
+          porPagina={rowsPerPage}
+          total={filtered.length}
+          onPagina={setPage}
+          onPorPagina={(cuantas) => { setRowsPerPage(cuantas); setPage(0); }}
+          tamanos={[10, 25, 50]}
         />
       </Paper>
     </Box>

@@ -131,7 +131,7 @@ export function RegistrosDeViaje({ descriptor, onAlta, children }) {
                     {columna.etiqueta}
                   </TableCell>
                 ))}
-                <TableCell sx={{ fontWeight: 600, textAlign: "center" }}>Actions</TableCell>
+                <TableCell sx={{ fontWeight: 600, textAlign: "center" }}>Acciones</TableCell>
               </TableRow>
             </TableHead>
 

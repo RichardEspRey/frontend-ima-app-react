@@ -6,7 +6,6 @@ import {
   TableContainer,
   TableFooter,
   TableHead,
-  TablePagination,
   TableRow,
   TableSortLabel,
   Tooltip,
@@ -22,7 +21,7 @@ import {
   moneyMXN,
 } from "../estilos"
 import { COLOR } from "../../../shared/ui/tokens"
-import { FilasEsqueleto } from "../../../shared/ui"
+import { FilasEsqueleto, Paginacion } from "../../../shared/ui"
 
 const COLUMNAS = [
   { campo: "id_gasto", etiqueta: "Expense #" },
@@ -135,7 +134,7 @@ export function TablaGastos({
                   align={columna.align}
                 />
               ))}
-              <TableCell sx={{ ...HEADER_CELL_SX, textAlign: "center" }}>Actions</TableCell>
+              <TableCell sx={{ ...HEADER_CELL_SX, textAlign: "center" }}>Acciones</TableCell>
             </TableRow>
           </TableHead>
 
@@ -201,18 +200,13 @@ export function TablaGastos({
         </Table>
       </TableContainer>
 
-      <TablePagination
-        component="div"
-        count={total}
-        page={paginacion.pagina}
-        onPageChange={(evento, nueva) => paginacion.onPaginaChange(nueva)}
-        rowsPerPage={paginacion.porPagina}
-        onRowsPerPageChange={(evento) =>
-          paginacion.onPorPaginaChange(Number.parseInt(evento.target.value, 10))
-        }
-        rowsPerPageOptions={[10, 20, 50, 100, { label: "Todos", value: -1 }]}
-        labelRowsPerPage="Gastos por página:"
-        labelDisplayedRows={({ from, to, count }) => `${from}-${to === -1 ? count : to} de ${count}`}
+      <Paginacion
+        pagina={paginacion.pagina}
+        porPagina={paginacion.porPagina}
+        total={total}
+        onPagina={paginacion.onPaginaChange}
+        onPorPagina={paginacion.onPorPaginaChange}
+        tamanos={[10, 20, 50, 100]}
       />
     </Paper>
   )

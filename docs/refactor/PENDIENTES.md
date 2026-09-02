@@ -99,14 +99,14 @@ que se usa de día en oficina, el modo oscuro a veces es una función que nadie 
 
 ---
 
-## 3 · Botón de idioma (español / inglés)
+## 3 · Botón de idioma (español / inglés) — el idioma YA está unificado
 
 Posible, pero es el más caro de los tres. Y al medirlo salió algo que hay que decidir antes.
 
-### El hallazgo: la interfaz ya está en dos idiomas
+### La mezcla, que ya se arregló
 
-No es que esté en español y haya que traducirla. **Está mezclada hoy**, en la misma
-pantalla:
+No era que estuviera en español y hubiera que traducirla. **Estaba mezclada dentro de la
+misma pantalla:**
 
 | | Cuántas |
 |---|---:|
@@ -117,8 +117,19 @@ En una sola tabla conviven `Trip Number`, `Total Rate` y `Total Pagado`. Hay pan
 `Actions` y `Acciones`, `Driver` y `Conductor`, `Status` y `Estatus`. La paginación dice
 `Rows per page` en unas y `Filas por página` en otras.
 
-**Eso significa que el botón de idioma arreglaría un problema que existe hoy**, no solo
-agregaría una función. Es un argumento a favor más fuerte que el de "estaría bien tenerlo".
+**Eso se resolvió aparte del botón**, porque era un problema por sí mismo.
+
+La regla que decidió Emiliano el 2026-09-02:
+
+> **Los sustantivos del oficio van en inglés; todo lo demás en español.**
+
+`Trip` y `Driver` se quedan en inglés porque es como se habla en el transporte de carga en
+la frontera y como los nombra el backend. `Estatus` en español, reservando `Estado` para su
+sentido geográfico en IFTA, que es donde de verdad significa entidad federativa.
+
+El vocabulario vive en `shared/lib/terminos.js`, que **es la semilla del catálogo de
+traducción**: sus claves describen el concepto, no el texto, así que cuando llegue el botón
+solo hay que darles una segunda versión.
 
 ### Lo que falta, medido
 

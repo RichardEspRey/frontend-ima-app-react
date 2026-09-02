@@ -85,7 +85,7 @@ export const TripFinanceRow = ({ trip, isOpen, onToggle, onStageChange }) => {
         <TableCell colSpan={7} sx={{ p: 0, borderBottom: isOpen ? '1px solid rgba(224,224,224,1)' : 0 }}>
           <Collapse in={isOpen} timeout="auto" unmountOnExit>
             <Box sx={{ p: 2 }}>
-              <Typography variant="h6" fontWeight={700} gutterBottom>Stages</Typography>
+              <Typography variant="h6" fontWeight={700} gutterBottom>Etapas</Typography>
               <Divider sx={{ mb: 1 }} />
               <Table size="small">
                 <TableHead>
@@ -99,7 +99,7 @@ export const TripFinanceRow = ({ trip, isOpen, onToggle, onStageChange }) => {
                     <TableCell sx={{ fontWeight: 600 }}>Tarifa pagada</TableCell>
                     <TableCell sx={{ fontWeight: 600, textAlign: 'center' }}>Días Crédito</TableCell>
                     <TableCell sx={{ fontWeight: 600, color: COLOR.PELIGRO }}>% Déficit</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Estatus</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>

@@ -6,7 +6,6 @@ import {
   TableCell,
   TableContainer,
   TableHead,
-  TablePagination,
   TableRow,
   Typography,
 } from "@mui/material"
@@ -17,7 +16,7 @@ import { API_BASE } from "../../../shared/config/env"
 import { HEADER_CELL_SX, HEADER_ROW_SX } from "../../../shared/ui/estilos"
 import { columnasDeTabla, documentosFaltantesDeViaje, urlDocumento } from "../model/documentos"
 import { COLOR } from "../../../shared/ui/tokens"
-import { FilasEsqueleto } from "../../../shared/ui"
+import { FilasEsqueleto, Paginacion } from "../../../shared/ui"
 
 const CELDA_CENTRADA = { ...HEADER_CELL_SX, textAlign: "center" }
 
@@ -81,17 +80,17 @@ export function TablaViajes({ viajes = [], total, cargando, vista, paginacion, a
               <TableCell sx={HEADER_CELL_SX} />
               <TableCell sx={HEADER_CELL_SX}>Trip</TableCell>
               <TableCell sx={HEADER_CELL_SX}>Driver(s)</TableCell>
-              <TableCell sx={HEADER_CELL_SX}>Truck</TableCell>
-              <TableCell sx={HEADER_CELL_SX}>Trailer</TableCell>
+              <TableCell sx={HEADER_CELL_SX}>Camión</TableCell>
+              <TableCell sx={HEADER_CELL_SX}>Caja</TableCell>
 
               {!conDocumentos && <TableCell sx={HEADER_CELL_SX}>Initial Date</TableCell>}
-              <TableCell sx={HEADER_CELL_SX}>Status</TableCell>
+              <TableCell sx={HEADER_CELL_SX}>Estatus</TableCell>
               {!conDocumentos && <TableCell sx={HEADER_CELL_SX}>Return Date</TableCell>}
               {conDocumentos && <TableCell sx={CELDA_CENTRADA}>Documentos Faltantes</TableCell>}
 
               {enRuta && <TableCell sx={CELDA_CENTRADA}>Copiar Info</TableCell>}
 
-              <TableCell sx={CELDA_CENTRADA}>Actions</TableCell>
+              <TableCell sx={CELDA_CENTRADA}>Acciones</TableCell>
               {conAdmin && <TableCell sx={CELDA_CENTRADA}>Admin</TableCell>}
             </TableRow>
           </TableHead>
@@ -136,22 +135,12 @@ export function TablaViajes({ viajes = [], total, cargando, vista, paginacion, a
           borderBottomRightRadius: 8,
         }}
       >
-        <TablePagination
-          rowsPerPageOptions={[25, 50, 100]}
-          component="div"
-          count={total}
-          rowsPerPage={paginacion.porPagina}
-          page={paginacion.pagina}
-          onPageChange={(evento, nueva) => paginacion.onPaginaChange(nueva)}
-          onRowsPerPageChange={(evento) =>
-            paginacion.onPorPaginaChange(Number.parseInt(evento.target.value, 10))
-          }
-          sx={{
-            color: COLOR.TEXTO_SUAVE,
-            ".MuiTablePagination-selectLabel, .MuiTablePagination-displayedRows": {
-              fontSize: "0.8rem",
-            },
-          }}
+        <Paginacion
+          pagina={paginacion.pagina}
+          porPagina={paginacion.porPagina}
+          total={total}
+          onPagina={paginacion.onPaginaChange}
+          onPorPagina={paginacion.onPorPaginaChange}
         />
       </Box>
     </>

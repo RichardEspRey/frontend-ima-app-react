@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
-  TablePagination, TextField, Box, Typography, Button
+  TextField, Box, Typography, Button
 } from '@mui/material';
-import { FilasEsqueleto, PageHeader, PAGE_SHELL_SX, TABLE_CONTAINER_SX, HEADER_ROW_SX, HEADER_CELL_SX, PAGINATION_BOX_SX, PAGINATION_SX } from '../../shared/ui';
+import { FilasEsqueleto, PageHeader, PAGE_SHELL_SX, TABLE_CONTAINER_SX, HEADER_ROW_SX, HEADER_CELL_SX, usePaginacion, Paginacion } from '../../shared/ui';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -78,7 +78,9 @@ const ResiduosPage = () => {
     return rows.filter(r => (r.trip_number || '').toLowerCase().includes(q));
   }, [rows, search]);
 
-  const pageRows = filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+  const pageRows = visibles;
+
+  const { visibles, props: propsPaginacion } = usePaginacion(filtered, { porPagina: 10 })
 
   return (
     <Box sx={PAGE_SHELL_SX}>
@@ -106,8 +108,8 @@ const ResiduosPage = () => {
           <TableHead>
             <TableRow sx={HEADER_ROW_SX}>
               <TableCell sx={HEADER_CELL_SX}>Trip #</TableCell>
-              <TableCell sx={HEADER_CELL_SX}>Conductor</TableCell>
-              <TableCell sx={HEADER_CELL_SX}>Status</TableCell>
+              <TableCell sx={HEADER_CELL_SX}>Driver</TableCell>
+              <TableCell sx={HEADER_CELL_SX}>Estatus</TableCell>
               <TableCell sx={HEADER_CELL_SX}>Creado</TableCell>
               <TableCell align="right" sx={HEADER_CELL_SX}>Rate</TableCell>
               <TableCell align="right" sx={HEADER_CELL_SX}>Diesel</TableCell>
@@ -143,15 +145,7 @@ const ResiduosPage = () => {
         </Table>
       </TableContainer>
 
-      <TablePagination
-        rowsPerPageOptions={[10, 25, 50]}
-        component="div"
-        count={filtered.length}
-        rowsPerPage={rowsPerPage}
-        page={page}
-        onPageChange={(e, newPage) => setPage(newPage)}
-        onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }}
-      />
+      <Paginacion {...propsPaginacion} />
     </Box>
   );
 };

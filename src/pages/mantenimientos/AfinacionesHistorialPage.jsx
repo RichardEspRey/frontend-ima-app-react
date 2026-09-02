@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo, useCallback } from "react";
 import {
   Box, Paper, Typography, Table, TableBody, TableCell,
   TableContainer, TableHead, TableRow, Button, CircularProgress, 
-  Stack, TextField, TablePagination, Chip, IconButton, Grid
+  Stack, TextField, Chip, IconButton, Grid
 } from "@mui/material";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import FilterListIcon from '@mui/icons-material/FilterList';
@@ -18,6 +18,7 @@ import dayjs from 'dayjs';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import { COLOR } from '../../shared/ui/tokens';
+import { Paginacion } from '../../shared/ui';
 
 // Configuración DayJS 
 dayjs.extend(isSameOrAfter);
@@ -203,15 +204,12 @@ export default function AfinacionesHistorialPage() {
             </Table>
         </TableContainer>
 
-        <TablePagination
-            rowsPerPageOptions={[25, 50, 100]}
-            component="div"
-            count={filteredData.length}
-            rowsPerPage={rowsPerPage}
-            page={page}
-            onPageChange={(e, p) => setPage(p)}
-            onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }}
-            labelRowsPerPage="Filas por página:"
+        <Paginacion
+            pagina={page}
+            porPagina={rowsPerPage}
+            total={filteredData.length}
+            onPagina={setPage}
+            onPorPagina={(cuantas) => { setRowsPerPage(cuantas); setPage(0); }}
         />
       </Paper>
 

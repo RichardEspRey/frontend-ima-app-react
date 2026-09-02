@@ -319,7 +319,7 @@ const ReparacionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
                                 <TextField fullWidth name="ciudad" placeholder="Ciudad actual" value={formData.ciudad} onChange={handleChange} {...inputProps} />
                             </Grid>
                             <Grid size={{ xs: 12, sm: 4 }}>
-                                <FieldLabel>Estado</FieldLabel>
+                                <FieldLabel>Estatus</FieldLabel>
                                 <TextField fullWidth name="estado" placeholder="Estado/Provincia" value={formData.estado} onChange={handleChange} {...inputProps} />
                             </Grid>
                             <Grid size={{ xs: 12, sm: 4 }}>

@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react"
-import { Box, Button, Chip, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, TextField, Tooltip, Typography } from "@mui/material"
+import { Box, Button, Chip, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Tooltip, Typography } from "@mui/material"
 import { useNavigate } from "react-router-dom"
 
 import {
@@ -9,7 +9,7 @@ import {
   useResumen,
 } from "../../../entities/expense"
 import { decimales, moneda } from "../../../shared/lib/formato"
-import { PageHeader, PantallaEsqueleto, Pestanas, Selector } from "../../../shared/ui"
+import { PageHeader, PantallaEsqueleto, Pestanas, Selector, Paginacion } from "../../../shared/ui"
 import { COLOR } from "../../../shared/ui/tokens"
 
 const PAISES = [
@@ -209,17 +209,12 @@ export function ResumenPorViaje({ descriptor }) {
         </TableContainer>
 
         {descriptor.conPaginacion && (
-          <TablePagination
-            component="div"
-            count={visibles.length}
-            page={paginaActual}
-            onPageChange={(evento, nueva) => setPagina(nueva)}
-            rowsPerPage={porPagina}
-            onRowsPerPageChange={(evento) => {
-              setPorPagina(Number.parseInt(evento.target.value, 10))
-              setPagina(0)
-            }}
-            rowsPerPageOptions={[25, 50, 100]}
+          <Paginacion
+            pagina={paginaActual}
+            porPagina={porPagina}
+            total={visibles.length}
+            onPagina={setPagina}
+            onPorPagina={(cuantas) => { setPorPagina(cuantas); setPagina(0) }}
           />
         )}
       </Paper>

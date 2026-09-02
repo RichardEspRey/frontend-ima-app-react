@@ -226,11 +226,11 @@ const InspeccionFinalPage = () => {
           <TableHead>
             <TableRow sx={HEADER_ROW_SX}>
               <TableCell sx={HEADER_CELL_SX} />
-              <TableCell sx={HEADER_CELL_SX}>Trip number</TableCell>
+              <TableCell sx={HEADER_CELL_SX}>Trip #</TableCell>
               <TableCell sx={HEADER_CELL_SX}>Driver</TableCell>
-              <TableCell sx={HEADER_CELL_SX}>Truck</TableCell>
+              <TableCell sx={HEADER_CELL_SX}>Camión</TableCell>
               <TableCell sx={HEADER_CELL_SX}>Fallas</TableCell>
-              <TableCell sx={HEADER_CELL_SX}>Status</TableCell>
+              <TableCell sx={HEADER_CELL_SX}>Estatus</TableCell>
               <TableCell sx={HEADER_CELL_SX}>Último driver</TableCell>
               <TableCell align="center" sx={HEADER_CELL_SX}>Acciones</TableCell>
             </TableRow>

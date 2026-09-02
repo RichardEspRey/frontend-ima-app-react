@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
-  TablePagination, TextField, Box, Typography, CircularProgress, Button, Badge, 
+  TextField, Box, Typography, CircularProgress, Button, Badge, 
   Tooltip, Stack, MenuItem, Grid, Divider,
   Autocomplete
 } from '@mui/material';
@@ -19,7 +19,7 @@ import { AlertSummaryCards } from '../../components/AlertSummaryCards';
 import { getTripStatusSummary, validateStage, buildPayloadItem, collectDirtyStages } from '../../utils/financeHelpers';
 import { STATUS_OPTIONS } from '../../constants/finances'; 
 import { COLOR } from '../../shared/ui/tokens';
-import { Pestanas, PageHeader, PAGE_SHELL_SX, TABLE_CONTAINER_SX, HEADER_ROW_SX, HEADER_CELL_SX, PAGINATION_BOX_SX, PAGINATION_SX } from '../../shared/ui';
+import { Pestanas, PageHeader, PAGE_SHELL_SX, TABLE_CONTAINER_SX, HEADER_ROW_SX, HEADER_CELL_SX, Paginacion } from '../../shared/ui';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -390,9 +390,9 @@ const FinanzasPage = () => {
           <TableHead>
             <TableRow sx={HEADER_ROW_SX}>
               <TableCell width={50} sx={HEADER_CELL_SX} />
-              <TableCell sx={HEADER_CELL_SX}>Trip Number</TableCell>
-              <TableCell sx={HEADER_CELL_SX}>Stages</TableCell>
-              <TableCell align="right" sx={HEADER_CELL_SX}>Total Rate</TableCell>
+              <TableCell sx={HEADER_CELL_SX}>Trip #</TableCell>
+              <TableCell sx={HEADER_CELL_SX}>Etapas</TableCell>
+              <TableCell align="right" sx={HEADER_CELL_SX}>Total Tarifa</TableCell>
               <TableCell align="right" sx={HEADER_CELL_SX}>Total Pagado</TableCell>
               <TableCell sx={HEADER_CELL_SX}>Estatus General</TableCell>
               <TableCell align="center" sx={HEADER_CELL_SX}>Alertas</TableCell>
@@ -426,15 +426,13 @@ const FinanzasPage = () => {
         </Table>
       </TableContainer>
 
-      <TablePagination
-        rowsPerPageOptions={[10, 25, 50]}
-        component="div"
-        count={filteredAndSorted.length}
-        rowsPerPage={rowsPerPage}
-        page={page}
-        onPageChange={(e, p) => setPage(p)}
-        onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }}
-        labelRowsPerPage="Filas:"
+      <Paginacion
+        pagina={page}
+        porPagina={rowsPerPage}
+        total={filteredAndSorted.length}
+        onPagina={setPage}
+        onPorPagina={(cuantas) => { setRowsPerPage(cuantas); setPage(0); }}
+        tamanos={[10, 25, 50]}
       />
     </Box>
   );

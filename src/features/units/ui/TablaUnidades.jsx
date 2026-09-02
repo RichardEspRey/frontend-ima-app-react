@@ -10,7 +10,6 @@ import {
   TableCell,
   TableContainer,
   TableHead,
-  TablePagination,
   TableRow,
   Tooltip,
   Typography,
@@ -22,6 +21,7 @@ import MoreVertIcon from "@mui/icons-material/MoreVert"
 import { ESTADO_CONDUCTOR, estadoConductor } from "../../../entities/unit"
 import { EstadoDocumento } from "./EstadoDocumento"
 import { COLOR } from "../../../shared/ui/tokens"
+import { Paginacion } from "../../../shared/ui"
 
 const LARGO_MAXIMO_ENCABEZADO = 12
 
@@ -229,19 +229,13 @@ export function TablaUnidades({
         </Table>
       </TableContainer>
 
-      <TablePagination
-        component="div"
-        count={unidades.length}
-        page={paginaActual}
-        onPageChange={(evento, nueva) => setPagina(nueva)}
-        rowsPerPage={porPagina}
-        onRowsPerPageChange={(evento) => {
-          setPorPagina(Number.parseInt(evento.target.value, 10))
-          setPagina(0)
-        }}
-        rowsPerPageOptions={[10, 25, 50]}
-        labelRowsPerPage={descriptor.etiquetas.porPagina}
-        labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count}`}
+      <Paginacion
+        pagina={paginaActual}
+        porPagina={porPagina}
+        total={unidades.length}
+        onPagina={setPagina}
+        onPorPagina={(cuantas) => { setPorPagina(cuantas); setPagina(0) }}
+        tamanos={[10, 25, 50]}
       />
     </Paper>
   )

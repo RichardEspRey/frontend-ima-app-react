@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import {
   Box, Paper, Typography, Stack,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  Chip, TextField, InputAdornment, TablePagination
+  Chip, TextField, InputAdornment
 } from "@mui/material";
 
 import Swal from "sweetalert2";
@@ -13,13 +13,13 @@ import { PCMillerModal } from "../../components/PCMillerModal.jsx";
 import { DocPreviewModal } from "../../components/DocPreviewModal.jsx";
 import {
   PAGE_SHELL_SX, PAGE_OVERLINE_SX, PAGE_TITLE_SX, CARD_SX, SECTION_LABEL_SX, HEADER_ROW_SX, HEADER_CELL_SX, TABLE_CONTAINER_SX,
-  PAGINATION_BOX_SX, PAGINATION_SX, CHIP_DANGER_SX,
+  PAGINATION_BOX_SX, CHIP_DANGER_SX,
 } from "../../shared/ui/estilos";
 import TablaReparaciones from "../../features/inspections/ui/TablaReparaciones.jsx";
 import TablaInspecciones from "../../features/inspections/ui/TablaInspecciones.jsx";
 import { archivoDelEvento } from "../../shared/security";
 import { COLOR } from "../../shared/ui/tokens";
-import { FilasEsqueleto, Pestanas } from "../../shared/ui";
+import { FilasEsqueleto, Pestanas, Paginacion } from "../../shared/ui";
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -317,16 +317,13 @@ export default function SafetyPage() {
           </TableContainer>
 
           <Box sx={PAGINATION_BOX_SX}>
-            <TablePagination
-              rowsPerPageOptions={[50, 100, 150]}
-              component="div"
-              count={filteredTrips.length}
-              rowsPerPage={rowsPerPage}
-              page={page}
-              onPageChange={(e, newPage) => setPage(newPage)}
-              onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }}
-              labelRowsPerPage="Filas por página:"
-              sx={PAGINATION_SX}
+            <Paginacion
+              pagina={page}
+              porPagina={rowsPerPage}
+              total={filteredTrips.length}
+              onPagina={setPage}
+              onPorPagina={(cuantas) => { setRowsPerPage(cuantas); setPage(0); }}
+              tamanos={[50, 100, 150]}
             />
           </Box>
         </>

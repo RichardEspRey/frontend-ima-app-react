@@ -14,7 +14,6 @@ import {
     TableHead,
     TableRow,
     Paper,
-    TablePagination, 
     Stack,
     Button,
     Chip,
@@ -23,10 +22,10 @@ import {
 
 import {
     HEADER_ROW_SX, HEADER_CELL_SX, TABLE_CONTAINER_SX, CARD_SX, SECTION_LABEL_SX,
-    PAGINATION_BOX_SX, PAGINATION_SX, GHOST_BTN_SX, CELL_STRONG_SX, CELL_MUTED_SX, CHIP_SX,
+    PAGINATION_BOX_SX, GHOST_BTN_SX, CELL_STRONG_SX, CELL_MUTED_SX, CHIP_SX,
 } from '../../../shared/ui/estilos';
 import { COLOR, TINTE } from '../../../shared/ui/tokens';
-import { FilasEsqueleto } from '../../../shared/ui';
+import { FilasEsqueleto, Paginacion } from '../../../shared/ui';
 
 // **Definición de las categorías para el filtro**
 const CATEGORIES = ['Todas', 'Consumibles', 'Refacciones', 'Herramientas'];
@@ -290,19 +289,13 @@ const TablaInventario = () => {
             </TableContainer>
 
             <Box sx={PAGINATION_BOX_SX}>
-                <TablePagination
-                    rowsPerPageOptions={[20, 50, 100, { label: 'Todos', value: -1 }]}
-                    component="div"
-                    count={filteredInventory.length}
-                    rowsPerPage={rowsPerPage === filteredInventory.length ? -1 : rowsPerPage}
-                    page={page}
-                    onPageChange={handleChangePage}
-                    onRowsPerPageChange={handleChangeRowsPerPage}
-                    labelRowsPerPage="Filas por página:"
-                    labelDisplayedRows={({ from, to, count }) =>
-                        `${from}-${to} de ${count !== -1 ? count : `más de ${to}`}`
-                    }
-                    sx={PAGINATION_SX}
+                <Paginacion
+                    pagina={page}
+                    porPagina={rowsPerPage}
+                    total={filteredInventory.length}
+                    onPagina={setPage}
+                    onPorPagina={(cuantas) => { setRowsPerPage(cuantas); setPage(0); }}
+                    tamanos={[10, 25, 50]}
                 />
             </Box>
         </Box>

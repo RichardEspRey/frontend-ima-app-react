@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
-  TablePagination, TextField, Box, Typography, Chip, Button,
+  TextField, Box, Typography, Chip, Button,
   Stack, Tooltip, IconButton, InputAdornment
 } from "@mui/material";
 
@@ -16,7 +16,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import Swal from "sweetalert2";
 import { useNavigate } from 'react-router-dom';
 import { COLOR } from '../../shared/ui/tokens';
-import { FilasEsqueleto, Pestanas, PageHeader, PAGE_SHELL_SX, TABLE_CONTAINER_SX, HEADER_ROW_SX, HEADER_CELL_SX, PAGINATION_BOX_SX, PAGINATION_SX, GHOST_BTN_SX } from '../../shared/ui';
+import { FilasEsqueleto, Pestanas, PageHeader, PAGE_SHELL_SX, TABLE_CONTAINER_SX, HEADER_ROW_SX, HEADER_CELL_SX, GHOST_BTN_SX, Paginacion } from '../../shared/ui';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -264,7 +264,7 @@ const PagosConductoresPage = () => {
           <TableHead>
             <TableRow sx={HEADER_ROW_SX}>
               <TableCell sx={HEADER_CELL_SX}>Trip #</TableCell>
-              <TableCell sx={HEADER_CELL_SX}>Conductor</TableCell>
+              <TableCell sx={HEADER_CELL_SX}>Driver</TableCell>
               <TableCell align="center" sx={HEADER_CELL_SX}>Etapas</TableCell>
               <TableCell align="right" sx={HEADER_CELL_SX}>Millas</TableCell>
               <TableCell align="right" sx={HEADER_CELL_SX}>Monto Pago</TableCell>
@@ -373,23 +373,13 @@ const PagosConductoresPage = () => {
         </Table>
       </TableContainer>
 
-      <Box sx={PAGINATION_BOX_SX}>
-        <TablePagination
-          rowsPerPageOptions={[25, 50, 100]}
-          component="div"
-          count={filtered.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={(e, newPage) => setPage(newPage)}
-          onRowsPerPageChange={(e) => {
-            setRowsPerPage(parseInt(e.target.value, 10));
-            setPage(0);
-          }}
-          labelRowsPerPage="Filas por página"
-          labelDisplayedRows={({ from, to, count }) => `${from}–${to} de ${count}`}
-          sx={PAGINATION_SX}
-        />
-      </Box>
+      <Paginacion
+        pagina={page}
+        porPagina={rowsPerPage}
+        total={filtered.length}
+        onPagina={setPage}
+        onPorPagina={(cuantas) => { setRowsPerPage(cuantas); setPage(0); }}
+      />
     </Box>
   );
 };
