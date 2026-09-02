@@ -126,6 +126,31 @@ export default [
     },
   },
 
+  // Controles con aspecto propio: el aspecto vive en un componente, no en una
+  // guía que alguien tiene que recordar.
+  //
+  // Las pestañas y los selectores de filtro existían con cuatro aspectos
+  // distintos repartidos por la app, y el que el equipo quería estaba copiado a
+  // mano en algunas pantallas. Escribir la regla en la documentación no evitó
+  // ninguna de esas copias; esto sí, porque falla antes de llegar a revisión.
+  //
+  // `shared/ui` queda fuera: es justo donde vive la única implementación.
+  {
+    files: ['src/**/*.{js,jsx}'],
+    ignores: ['src/shared/ui/**', 'src/no-usadas/**'],
+    rules: {
+      'no-restricted-imports': ['error', {
+        paths: [{
+          name: '@mui/material',
+          importNames: ['Tabs', 'Tab', 'ToggleButtonGroup', 'ToggleButton'],
+          message:
+            'Usa <Pestanas> o <Selector> de shared/ui. Si te falta una capacidad, ' +
+            'agrégasela al componente compartido en vez de armar el control aquí.',
+        }],
+      }],
+    },
+  },
+
   {
     files: ZONA_REFACTORIZADA,
     rules: reglasJsdoc,

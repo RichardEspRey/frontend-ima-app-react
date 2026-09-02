@@ -191,6 +191,37 @@ un encabezado de página, el aspecto de una tabla, el estado vacío.
   la *estructura* del tinte —fondo muy claro, texto oscuro, borde intermedio, acento—, de
   modo que toda categoría se construya igual aunque su color sea distinto.
 
+### La forma no la homogeneizan los tokens
+
+Los tokens homogeneizan el **color**; la **forma** de un control no. Un control con aspecto
+propio —pestañas, un selector segmentado, un estado vacío— acaba existiendo en tres
+versiones: la correcta compartida, la correcta **copiada a mano**, y la de fábrica sin
+tocar.
+
+De las tres, **la copiada a mano es la peor**: parece resuelta, así que nadie la revisa, y
+cada copia deriva por su cuenta.
+
+**La regla:** cuando un control tiene un aspecto propio, ese aspecto vive en un componente,
+y usar el de la librería directamente **es un error de linter**, no una nota en una guía.
+
+```js
+// eslint.config.js — la regla deja de depender de que alguien se acuerde
+'no-restricted-imports': ['error', {
+  paths: [{
+    name: '@mui/material',
+    importNames: ['Tabs', 'Tab', 'ToggleButtonGroup', 'ToggleButton'],
+    message: 'Usa <Pestanas> o <Selector> de shared/ui.',
+  }],
+}]
+```
+
+El componente compartido queda fuera de la restricción: es donde vive la única
+implementación. Y el mensaje del error dice **qué hacer**, no solo qué está prohibido:
+si falta una capacidad, se le agrega al componente compartido.
+
+Una guía de estilo que nadie ejecuta tiene el mismo efecto que no tenerla. La diferencia
+entre una convención y una regla es si algo falla cuando se incumple.
+
 ### Cómo se comprueba
 
 ```bash

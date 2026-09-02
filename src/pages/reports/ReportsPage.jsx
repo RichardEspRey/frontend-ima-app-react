@@ -1,10 +1,5 @@
 import { useMemo, useState } from "react";
-import {
-  Box, Paper, Typography, Stack,
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, 
-  CircularProgress, Container, ToggleButton, ToggleButtonGroup, Grid,
-  FormControl, InputLabel, Select, MenuItem
-} from "@mui/material";
+import { Box, Paper, Typography, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, CircularProgress, Container, Grid, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
 import { BarChart } from '@mui/x-charts/BarChart';
 import { LineChart } from '@mui/x-charts/LineChart'; 
 
@@ -22,6 +17,7 @@ import {
   useGraficas,
 } from "../../entities/report";
 import { COLOR, TINTE, SERIE, BORDE } from "../../shared/ui/tokens";
+import { Selector } from "../../shared/ui";
 
 
 const valueFormatter = (v) =>
@@ -233,17 +229,15 @@ export default function ReportsPage() {
                         <Typography variant="h6" fontWeight={700}>Costo de Diesel por Galón</Typography>
                     </Box>
                 </Stack>
-                <ToggleButtonGroup
-                    value={costPeriod}
-                    exclusive
-                    onChange={handlePeriodChange}
-                    size="small"
-                    sx={{ '& .MuiToggleButton-root': { fontWeight: 600, textTransform: 'none', px: 2 } }}
-                >
-                    <ToggleButton value="day">Día</ToggleButton>
-                    <ToggleButton value="week">Semana</ToggleButton>
-                    <ToggleButton value="month">Mes</ToggleButton>
-                </ToggleButtonGroup>
+                <Selector
+                    valor={costPeriod}
+                    onChange={(valor) => handlePeriodChange(null, valor)}
+                    opciones={[
+                        { valor: 'day', etiqueta: 'Día' },
+                        { valor: 'week', etiqueta: 'Semana' },
+                        { valor: 'month', etiqueta: 'Mes' },
+                    ]}
+                />
             </Stack>
             
             <Box sx={{ width: '100%', minHeight: 400 }}>

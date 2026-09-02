@@ -1,13 +1,9 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
-import {
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
-  Button, Box, Typography, CircularProgress, Stack, ToggleButtonGroup,
-  ToggleButton
-} from '@mui/material';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Box, Typography, CircularProgress, Stack } from '@mui/material';
 import Swal from 'sweetalert2';
 
 import { InspeccionRow } from '../../components/InspeccionRow'; 
-import { Pestanas } from '../../shared/ui';
+import { Pestanas, Selector } from '../../shared/ui';
 
 
 const OPS = {
@@ -198,18 +194,16 @@ const InspeccionFinalPage = () => {
             pestanas={[{ etiqueta: 'Pendientes' }, { etiqueta: 'Completadas' }]}
         />
 
-        <ToggleButtonGroup
-            value={countryFilter}
-            exclusive
-            onChange={(e, val) => val && setCountryFilter(val)}
-            size="small"
-            color="primary"
+        <Selector
+            valor={countryFilter}
+            onChange={setCountryFilter}
+            opciones={[
+                { valor: 'All', etiqueta: 'Todos' },
+                { valor: 'US', etiqueta: 'USA' },
+                { valor: 'MX', etiqueta: 'México' },
+            ]}
             sx={{ mb: { xs: 1, sm: 0 } }}
-        >
-            <ToggleButton value="All" sx={{ fontWeight: 'bold', px: 3 }}>Todos</ToggleButton>
-            <ToggleButton value="US" sx={{ fontWeight: 'bold', px: 3 }}>USA</ToggleButton>
-            <ToggleButton value="MX" sx={{ fontWeight: 'bold', px: 3 }}>México</ToggleButton>
-        </ToggleButtonGroup>
+        />
       </Box>
 
       {/* Toolbar y Estado de Carga */}

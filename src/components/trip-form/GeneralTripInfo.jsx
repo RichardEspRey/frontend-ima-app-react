@@ -1,10 +1,11 @@
 import React from 'react';
-import { Box, Paper, Typography, Grid, ToggleButton, ToggleButtonGroup, TextField, Button } from '@mui/material';
+import { Box, Paper, Typography, Grid, TextField, Button } from '@mui/material';
 import Select from 'react-select';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { selectStyles } from '../../utils/tripFormConstants'; 
 import { COLOR } from '../../shared/ui/tokens';
+import { Selector } from '../../shared/ui';
 
 const GeneralTripInfo = ({
     formData,
@@ -26,17 +27,15 @@ const GeneralTripInfo = ({
 
             <Grid container spacing={2} alignItems="flex-end"> 
                 <Grid item xs={12}>
-                    <ToggleButtonGroup
-                        color="primary"
-                        value={tripMode}
-                        exclusive
-                        onChange={(e, newMode) => newMode && handleTripModeChange(newMode)}
-                        disabled={isFormDisabled}
-                        size="small"
-                    >
-                        <ToggleButton value="individual">Viaje Individual</ToggleButton>
-                        <ToggleButton value="team">Viaje en Equipo</ToggleButton>
-                    </ToggleButtonGroup>
+                    <Selector
+                        valor={tripMode}
+                        onChange={handleTripModeChange}
+                        deshabilitado={isFormDisabled}
+                        opciones={[
+                            { valor: 'individual', etiqueta: 'Viaje Individual' },
+                            { valor: 'team', etiqueta: 'Viaje en Equipo' },
+                        ]}
+                    />
                 </Grid>
 
                 <Grid item xs={12} md={4}>
@@ -140,16 +139,15 @@ const GeneralTripInfo = ({
                 <Typography variant="subtitle2" gutterBottom>Configuración de Caja (Trailer)</Typography>
                 <Grid container spacing={2} alignItems="center">
                     <Grid item>
-                        <ToggleButtonGroup
-                            value={trailerType}
-                            exclusive
-                            onChange={(e, val) => val && handleTrailerTypeChange(val)}
-                            disabled={isFormDisabled}
-                            size="small"
-                        >
-                            <ToggleButton value="interna">Interna</ToggleButton>
-                            <ToggleButton value="externa">Externa</ToggleButton>
-                        </ToggleButtonGroup>
+                        <Selector
+                            valor={trailerType}
+                            onChange={handleTrailerTypeChange}
+                            deshabilitado={isFormDisabled}
+                            opciones={[
+                                { valor: 'interna', etiqueta: 'Interna' },
+                                { valor: 'externa', etiqueta: 'Externa' },
+                            ]}
+                        />
                     </Grid>
                     
                     <Grid item xs={12} md={6}>

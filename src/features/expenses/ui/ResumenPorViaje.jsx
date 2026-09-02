@@ -1,23 +1,5 @@
 import { useMemo, useState } from "react"
-import {
-  Box,
-  Button,
-  Chip,
-  Paper,
-  Stack,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TablePagination,
-  TableRow,
-  TextField,
-  ToggleButton,
-  ToggleButtonGroup,
-  Tooltip,
-  Typography,
-} from "@mui/material"
+import { Box, Button, Chip, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, TextField, Tooltip, Typography } from "@mui/material"
 import { useNavigate } from "react-router-dom"
 
 import {
@@ -27,7 +9,7 @@ import {
   useResumen,
 } from "../../../entities/expense"
 import { decimales, moneda } from "../../../shared/lib/formato"
-import { PageHeader, PantallaEsqueleto, Pestanas } from "../../../shared/ui"
+import { PageHeader, PantallaEsqueleto, Pestanas, Selector } from "../../../shared/ui"
 import { COLOR } from "../../../shared/ui/tokens"
 
 const PAISES = [
@@ -134,19 +116,11 @@ export function ResumenPorViaje({ descriptor }) {
         titulo={descriptor.etiquetas.titulo}
         descripcion={descriptor.etiquetas.descripcion}
         acciones={
-          <ToggleButtonGroup
-            value={pais}
-            exclusive
-            onChange={(evento, valor) => valor && setPais(valor)}
-            size="small"
-            color="primary"
-          >
-            {PAISES.map((opcion) => (
-              <ToggleButton key={opcion.valor} value={opcion.valor} sx={{ fontWeight: "bold", px: 3 }}>
-                {opcion.etiqueta}
-              </ToggleButton>
-            ))}
-          </ToggleButtonGroup>
+          <Selector
+            valor={pais}
+            onChange={setPais}
+            opciones={PAISES.map((o) => ({ valor: o.valor, etiqueta: o.etiqueta }))}
+          />
         }
       />
 

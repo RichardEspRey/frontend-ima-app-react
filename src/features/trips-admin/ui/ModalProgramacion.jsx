@@ -1,25 +1,4 @@
-import {
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Divider,
-  FormControl,
-  Grid,
-  IconButton,
-  InputAdornment,
-  InputLabel,
-  MenuItem,
-  Select,
-  Stack,
-  TextField,
-  ToggleButton,
-  ToggleButtonGroup,
-  Tooltip,
-  Typography,
-} from "@mui/material"
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, FormControl, Grid, IconButton, InputAdornment, InputLabel, MenuItem, Select, Stack, TextField, Tooltip, Typography } from "@mui/material"
 import AddIcon from "@mui/icons-material/Add"
 import ApartmentOutlinedIcon from "@mui/icons-material/ApartmentOutlined"
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward"
@@ -34,7 +13,12 @@ import CreatableSelect from "react-select/creatable"
 import { estaDisponible, leerValorCaja, valorCaja } from "../../../entities/schedule"
 import { selectStyles } from "../../../utils/tripFormConstants"
 import { COLOR } from "../../../shared/ui/tokens"
-import { BloqueEsqueleto } from "../../../shared/ui"
+import { BloqueEsqueleto, Selector } from "../../../shared/ui"
+
+const OPCIONES_TIPO_CAJA = [
+  { valor: "interna", etiqueta: "Interna" },
+  { valor: "externa", etiqueta: "Externa" },
+]
 
 const ETIQUETA_SX = {
   color: COLOR.TENUE,
@@ -337,32 +321,12 @@ export function ModalProgramacion({
                     <Typography variant="body2" fontWeight={600} color={COLOR.TEXTO}>
                       Caja
                     </Typography>
-                    <ToggleButtonGroup
-                      value={tipoCaja}
-                      exclusive
-                      size="small"
-                      onChange={(evento, valor) => valor && onTipoCajaChange(valor)}
-                      sx={{
-                        ml: "auto",
-                        "& .MuiToggleButton-root": {
-                          textTransform: "none",
-                          fontWeight: 600,
-                          fontSize: "0.78rem",
-                          px: 1.5,
-                          py: 0.3,
-                          color: COLOR.APAGADO,
-                          borderColor: COLOR.BORDE,
-                          "&.Mui-selected": {
-                            bgcolor: COLOR.TINTA,
-                            color: COLOR.BLANCO,
-                            "&:hover": { bgcolor: COLOR.TINTA_CLARA },
-                          },
-                        },
-                      }}
-                    >
-                      <ToggleButton value="interna">Interna</ToggleButton>
-                      <ToggleButton value="externa">Externa</ToggleButton>
-                    </ToggleButtonGroup>
+                    <Selector
+                      valor={tipoCaja}
+                      onChange={onTipoCajaChange}
+                      opciones={OPCIONES_TIPO_CAJA}
+                      sx={{ ml: "auto" }}
+                    />
                   </Stack>
 
                   <Stack direction="row" spacing={1}>

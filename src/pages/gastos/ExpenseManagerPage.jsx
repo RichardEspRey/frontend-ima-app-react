@@ -1,14 +1,5 @@
 import { useEffect, useMemo, useState } from "react"
-import {
-  Box,
-  Button,
-  Collapse,
-  Paper,
-  Stack,
-  ToggleButton,
-  ToggleButtonGroup,
-  Typography,
-} from "@mui/material"
+import { Box, Button, Collapse, Paper, Stack, Typography } from "@mui/material"
 import AddIcon from "@mui/icons-material/Add"
 import ExpandLessIcon from "@mui/icons-material/ExpandLess"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
@@ -38,6 +29,12 @@ import useFetchExchangeRate from "../../hooks/useFetchExchangeRate"
 import { useSesion } from "../../shared/auth"
 import { useGastosFiltrosStore } from "../../store/useGastosFiltrosStore"
 import { COLOR } from "../../shared/ui/tokens"
+import { Selector } from "../../shared/ui"
+
+const OPCIONES_PAIS_GRAFICA = [
+  { valor: "US", etiqueta: "USA" },
+  { valor: "MX", etiqueta: "México" },
+]
 
 /**
  * Los filtros que cuentan para el contador y para el renglón de totales.
@@ -273,32 +270,11 @@ export default function ExpenseManagerPage() {
                 {paisGrafica === "MX" ? "pesos mexicanos" : "dólares"}
               </Typography>
             </Box>
-            <ToggleButtonGroup
-              value={paisGrafica}
-              exclusive
-              size="small"
-              onChange={(evento, valor) => valor && setPaisGrafica(valor)}
-              sx={{
-                bgcolor: COLOR.RELLENO,
-                borderRadius: 2.5,
-                p: 0.5,
-                gap: 0.5,
-                "& .MuiToggleButton-root": {
-                  border: "none",
-                  borderRadius: "8px !important",
-                  px: 3,
-                  py: 0.75,
-                  fontWeight: 600,
-                  fontSize: "0.85rem",
-                  textTransform: "none",
-                  color: COLOR.APAGADO,
-                },
-                "& .Mui-selected": { bgcolor: `${COLOR.TINTA} !important`, color: `${COLOR.BLANCO} !important` },
-              }}
-            >
-              <ToggleButton value="US">USA</ToggleButton>
-              <ToggleButton value="MX">México</ToggleButton>
-            </ToggleButtonGroup>
+            <Selector
+              valor={paisGrafica}
+              onChange={setPaisGrafica}
+              opciones={OPCIONES_PAIS_GRAFICA}
+            />
           </Stack>
           <ExpenseTypeChart gastos={gastos} country={paisGrafica} loading={isLoading} />
         </Paper>
