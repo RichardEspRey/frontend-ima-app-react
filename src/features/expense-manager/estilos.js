@@ -7,7 +7,7 @@ export {
   DARK_BTN_SX,
   GHOST_BTN_SX,
   INPUT_SX,
-} from '../../styles/estilosTabla';
+} from '../../shared/ui/estilos';
 
 export const customSelectStyles = {
   control: (provided, state) => ({

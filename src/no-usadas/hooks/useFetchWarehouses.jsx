@@ -1,10 +1,11 @@
 import { useMemo } from "react"
-import { useBodegas } from "../entities/warehouse"
+import { useBodegas } from "../../entities/warehouse"
 
 const VACIO = []
 
 /**
- * @deprecated Puente temporal. Usa `useBodegas` de `entities/warehouse` directamente.
+ * @deprecated Solo lo usan las pantallas en cuarentena de src/no-usadas.
+ * En el resto de la aplicación, usa `useBodegas` de `entities/warehouse` directamente.
  *
  * Mantiene intacta la forma `{ activeWarehouses, loading, error, refetchWarehouses }` que esperan las pantallas
  * sin migrar, pero por debajo ya usa TanStack Query: la petición se cachea y se

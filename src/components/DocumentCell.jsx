@@ -7,7 +7,7 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
-import { CHIP_OK_SX, CHIP_DANGER_SX, ICON_BTN_SX } from '../styles/estilosTabla';
+import { CHIP_OK_SX, CHIP_DANGER_SX, ICON_BTN_SX } from '../shared/ui/estilos';
 
 export const DocumentCell = ({ isUploaded, docName, onUpload, onView }) => {
     return (

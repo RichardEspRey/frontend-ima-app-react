@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import './css/TripScreen.css';
-import BorderCrossingForm from '../components/BorderCrossingForm';
-import TripForm from '../components/TripForm';
+import BorderCrossingForm from './BorderCrossingForm';
+import TripForm from './TripForm';
 
 const TripScreen = () => {
   const [activeForm, setActiveForm] = useState('borderCrossing');

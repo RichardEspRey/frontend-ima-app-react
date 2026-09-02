@@ -1,6 +1,11 @@
+/*
+ * Estos puentes ya solo los usan las pantallas de src/no-usadas. La prueba se
+ * queda con ellos: mientras el código exista, tiene que seguir funcionando, y
+ * si se borran las pantallas se borra esto con ellas.
+ */
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen, waitFor } from "@testing-library/react"
-import { QueryProvider } from "../../app/providers/QueryProvider"
+import { QueryProvider } from "../../../app/providers/QueryProvider"
 import useFetchCompanies from "../useFetchCompanies"
 import useFetchActiveDrivers from "../useFetchActiveDrivers"
 
@@ -29,7 +34,7 @@ beforeEach(() => {
   })
 })
 
-describe("puentes de catálogo", () => {
+describe("puentes de catálogo de la cuarentena", () => {
   it("conserva la forma { activeCompanies, loading, error, refetchCompanies }", async () => {
     let capturado
     function Sonda() {

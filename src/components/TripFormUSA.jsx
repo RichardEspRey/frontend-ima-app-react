@@ -9,13 +9,16 @@ import TripResources from './TripFormUSA/TripResources';
 import TripStageItem from './TripFormUSA/TripStageItem';
 import ModalArchivo from './ModalArchivo'; 
 import ModalCajaExterna from './ModalCajaExterna'; 
+import { useCompanias } from '../entities/company';
+import { useConductoresActivos } from '../entities/driver';
+import { useCajasActivas, useCajasExternasActivas } from '../entities/trailer';
+import { useCamionesActivos } from '../entities/truck';
+import { useBodegas } from '../entities/warehouse';
 
-import useFetchActiveDrivers from '../hooks/useFetchActiveDrivers';
-import useFetchActiveTrucks from '../hooks/useFetchActiveTrucks';
-import useFetchActiveTrailers from '../hooks/useFetchActiveTrailers';
-import useFetchActiveExternalTrailers from '../hooks/useFetchActiveExternalTrailers';
-import useFetchCompanies from '../hooks/useFetchCompanies';
-import useFetchWarehouses from '../hooks/useFetchWarehouses';
+
+// Constante de módulo: un [] nuevo por render dispararía los efectos que
+// dependen de estas listas.
+const VACIO = []
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -31,13 +34,12 @@ const initialEtapaStateBase = {
 
 const TripFormUSA = ({ teamId, tripNumber, countryCode, tripYear, isTransnational, isContinuation, transnationalNumber, movementNumber, origenId, onSuccess, etapas: etapasProp, setEtapas: setEtapasProp, formData: formDataProp, setFormData: setFormDataProp, onSaveOverride, initialFormDataOverrides, initialStageOverrides }) => {
 
-    // Hooks
-    const { activeDrivers, loading: loadingDrivers, error: errorDrivers } = useFetchActiveDrivers();
-    const { activeTrucks, loading: loadingTrucks, error: errorTrucks } = useFetchActiveTrucks();
-    const { activeTrailers, loading: loadingCajas, error: errorCajas } = useFetchActiveTrailers();
-    const { activeExternalTrailers, loading: loadingCajasExternas, error: errorCajasExternas, refetch: refetchExternalTrailers } = useFetchActiveExternalTrailers();
-    const { activeCompanies, loading: loadingCompanies } = useFetchCompanies();
-    const { activeWarehouses, loading: loadingWarehouses } = useFetchWarehouses();
+    const { data: activeDrivers = VACIO, isLoading: loadingDrivers, error: errorDrivers } = useConductoresActivos();
+    const { data: activeTrucks = VACIO, isLoading: loadingTrucks, error: errorTrucks } = useCamionesActivos();
+    const { data: activeTrailers = VACIO, isLoading: loadingCajas, error: errorCajas } = useCajasActivas();
+    const { data: activeExternalTrailers = VACIO, isLoading: loadingCajasExternas, error: errorCajasExternas, refetch: refetchExternalTrailers } = useCajasExternasActivas();
+    const { data: activeCompanies = VACIO, isLoading: loadingCompanies } = useCompanias();
+    const { data: activeWarehouses = VACIO, isLoading: loadingWarehouses } = useBodegas();
 
     // States
     const [etapasLocal, setEtapasLocal] = useState([{ ...initialEtapaStateBase, stageType: 'normalTrip', ...(initialStageOverrides || {}) }]);

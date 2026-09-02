@@ -1,10 +1,11 @@
 import { useMemo } from "react"
-import { useCamionesActivos } from "../entities/truck"
+import { useCamionesActivos } from "../../entities/truck"
 
 const VACIO = []
 
 /**
- * @deprecated Puente temporal. Usa `useCamionesActivos` de `entities/truck` directamente.
+ * @deprecated Solo lo usan las pantallas en cuarentena de src/no-usadas.
+ * En el resto de la aplicación, usa `useCamionesActivos` de `entities/truck` directamente.
  *
  * Mantiene intacta la forma `{ activeTrucks, loading, error }` que esperan las pantallas
  * sin migrar, pero por debajo ya usa TanStack Query: la petición se cachea y se

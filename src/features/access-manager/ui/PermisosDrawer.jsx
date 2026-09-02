@@ -7,7 +7,7 @@ import {
     Button, FormControl, InputLabel, Select, MenuItem, Divider,
     InputAdornment, Autocomplete
 } from '@mui/material';
-import useFetchActiveDrivers from '../../../hooks/useFetchActiveDrivers';
+import { useConductoresActivos } from '../../../entities/driver';
 import {
     Close as CloseIcon,
     Computer as ComputerIcon,
@@ -379,7 +379,7 @@ const PermisosDrawer = ({
     const [activeTab, setActiveTab] = useState(0);
     const [form, setForm] = useState({ name: '', user: '', pass: '', type: '', active: '1', driver_id: '' });
     const [showPass, setShowPass] = useState(false);
-    const { activeDrivers } = useFetchActiveDrivers();
+    const { data: activeDrivers = [] } = useConductoresActivos();
 
     const [searchTerm, setSearchTerm] = useState('');
     const [expandedSections, setExpandedSections] = useState({});

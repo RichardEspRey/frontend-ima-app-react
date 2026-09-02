@@ -1,10 +1,11 @@
 import { useMemo } from "react"
-import { useConductoresActivos } from "../entities/driver"
+import { useConductoresActivos } from "../../entities/driver"
 
 const VACIO = []
 
 /**
- * @deprecated Puente temporal. Usa `useConductoresActivos` de `entities/driver` directamente.
+ * @deprecated Solo lo usan las pantallas en cuarentena de src/no-usadas.
+ * En el resto de la aplicación, usa `useConductoresActivos` de `entities/driver` directamente.
  *
  * Mantiene intacta la forma `{ activeDrivers, loading, error }` que esperan las pantallas
  * sin migrar, pero por debajo ya usa TanStack Query: la petición se cachea y se

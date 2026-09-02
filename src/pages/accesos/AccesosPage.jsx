@@ -4,7 +4,7 @@ import GroupIcon from "@mui/icons-material/Group"
 import PersonAddIcon from "@mui/icons-material/PersonAdd"
 
 import { menuItemsConfig } from "../../config/menuConfig"
-import useFetchActiveDrivers from "../../hooks/useFetchActiveDrivers"
+import { useConductoresActivos } from "../../entities/driver"
 import { useSesion } from "../../shared/auth"
 import { useAuthStore } from "../../store/useAuthStore"
 import { DataTable, PageHeader, notify } from "../../shared/ui"
@@ -37,7 +37,7 @@ export default function AccesosPage() {
   const { esTotal, usuario } = useSesion()
   const refrescarPermisosPropios = useAuthStore((estado) => estado.fetchPermissions)
   const { data: usuarios = [], isLoading, isError, error } = useUsuarios()
-  const { activeDrivers } = useFetchActiveDrivers()
+  const { data: activeDrivers = [] } = useConductoresActivos()
 
   const [pestana, setPestana] = useState(0)
   const [busqueda, setBusqueda] = useState("")

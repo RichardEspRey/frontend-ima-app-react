@@ -1,10 +1,11 @@
 import { useMemo } from "react"
-import { useCompanias } from "../entities/company"
+import { useCompanias } from "../../entities/company"
 
 const VACIO = []
 
 /**
- * @deprecated Puente temporal. Usa `useCompanias` de `entities/company` directamente.
+ * @deprecated Solo lo usan las pantallas en cuarentena de src/no-usadas.
+ * En el resto de la aplicación, usa `useCompanias` de `entities/company` directamente.
  *
  * Mantiene intacta la forma `{ activeCompanies, loading, error, refetchCompanies }` que esperan las pantallas
  * sin migrar, pero por debajo ya usa TanStack Query: la petición se cachea y se

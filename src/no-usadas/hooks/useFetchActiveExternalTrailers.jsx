@@ -1,10 +1,11 @@
 import { useMemo } from "react"
-import { useCajasExternasActivas } from "../entities/trailer"
+import { useCajasExternasActivas } from "../../entities/trailer"
 
 const VACIO = []
 
 /**
- * @deprecated Puente temporal. Usa `useCajasExternasActivas` de `entities/trailer` directamente.
+ * @deprecated Solo lo usan las pantallas en cuarentena de src/no-usadas.
+ * En el resto de la aplicación, usa `useCajasExternasActivas` de `entities/trailer` directamente.
  *
  * Mantiene intacta la forma `{ activeExternalTrailers, loading, error, refetch }` que esperan las pantallas
  * sin migrar, pero por debajo ya usa TanStack Query: la petición se cachea y se

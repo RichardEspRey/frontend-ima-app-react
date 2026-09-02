@@ -8,16 +8,16 @@ import { format } from 'date-fns';
 // 🚨 IMPORTAMOS LOS COMPONENTES ESTANDARIZADOS Y MODALES
 import SelectWrapper from '../components/SelectWrapper';
 import StageInput from '../components/StageInput';
-import ModalArchivo from './ModalArchivo';
+import ModalArchivo from '../components/ModalArchivo';
 import ModalCajaExterna from '../components/ModalCajaExterna';
 
 // IMPORTACIONES DE HOOKS (Mantenidas)
-import useFetchActiveDrivers from '../hooks/useFetchActiveDrivers';
-import useFetchActiveTrucks from '../hooks/useFetchActiveTrucks';
-import useFetchActiveTrailers from '../hooks/useFetchActiveTrailers';
-import useFetchActiveExternalTrailers from '../hooks/useFetchActiveExternalTrailers';
-import useFetchCompanies from '../hooks/useFetchCompanies';
-import useFetchWarehouses from '../hooks/useFetchWarehouses';
+import useFetchActiveDrivers from './hooks/useFetchActiveDrivers';
+import useFetchActiveTrucks from './hooks/useFetchActiveTrucks';
+import useFetchActiveTrailers from './hooks/useFetchActiveTrailers';
+import useFetchActiveExternalTrailers from './hooks/useFetchActiveExternalTrailers';
+import useFetchCompanies from './hooks/useFetchCompanies';
+import useFetchWarehouses from './hooks/useFetchWarehouses';
 
 
 const initialBorderCrossingDocs = {
