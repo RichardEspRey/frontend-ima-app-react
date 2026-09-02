@@ -14,6 +14,7 @@
 | `06-DOCUMENTACION.md` | Estándar de JSDoc y plan de documentación del proyecto |
 | `07-VERIFICACION-FASE-1.md` | Qué se comprobó antes de plantear el merge, con resultados |
 | `08-DIAGNOSTICO-BD.md` | La base de datos medida sobre el dump: qué hay que arreglar en las fases 2 y 3 |
+| `PENDIENTES.md` | Lo que falta por hacer, ya medido: paginar tablas, modo oscuro, idioma |
 
 ## Dónde vamos
 

@@ -81,13 +81,14 @@ aplicación.
 
 ### 2 · Retirar las cinco que compiten
 
-En este orden, de más fácil a más difícil:
+En este orden, de más fácil a más difícil. **Las tres primeras ya están hechas** — ver los
+commits `ce8b589` y `b50d15b`.
 
 | Orden | Qué se quita | Se reemplaza por | Archivos |
 |---|---|---|---:|
-| 1 | `react-icons` | `@mui/icons-material` | 1 |
-| 2 | `@pablotheblink/flashyjs` | `shared/ui/notify` | 2 |
-| 3 | `react-toastify` | `notify.discreto` | 3 |
+| 1 | ~~`react-icons`~~ **hecho** | `@mui/icons-material` | 1 |
+| 2 | ~~`@pablotheblink/flashyjs`~~ **hecho** — no se usaba | — | 0 |
+| 3 | ~~`react-toastify`~~ **hecho** | `notify.discreto` | 3 |
 | 4 | `react-datepicker` | Campo de fecha de MUI, envuelto | 9 |
 | 5 | `react-select` | `Autocomplete` de MUI, envuelto | 11 |
 | 6 | `sweetalert2` | Ya está detrás de `shared/ui/notify` | 28 |
