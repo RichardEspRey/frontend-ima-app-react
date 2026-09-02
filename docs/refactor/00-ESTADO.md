@@ -44,6 +44,7 @@ Todo vive en la rama larga **`refactor-fase-1`**, con un tag por incremento
 | 13 | Mapas / Tracking | **hecho** | tag `incremento-13` |
 | 14 | Unidades (camiones, cajas, conductores) | **hecho** | tag `incremento-14` |
 | 15 | Viajes (admin, cotizador, editores, resumen) | **hecho** | tag `incremento-15` |
+| 16 | Gastos (Expense Manager, gastos de viaje, diesel) | **hecho** | tag `incremento-16` |
 | 6+ | Resto de módulos, uno por uno | pendiente | — |
 | — | Deduplicar: **cada par en el incremento de su módulo**, no al final | ver `05-INCREMENTOS.md` | — |
 
@@ -68,10 +69,16 @@ Si alguna red vuelve a filtrar SSH, el remoto por HTTPS suele pasar:
 ## Al retomar
 
 El incremento 9 está partido en **9a, 9b y 9c** (ver `05-INCREMENTOS.md`).
-Incrementos 9 a 15 completos. Sigue el **16: Gastos**, el módulo más caliente que queda
-(`screens/Gastos/`: 8 archivos, ~2 800 líneas, con `ExpenseEdit` de 727 y `AdminGastos` de
-616). Es el único que todavía tiene una prueba propia en `screens/`, así que hay que
-moverla con él.
+**Los dieciséis incrementos de la fase 1 están hechos.** En `src/screens/` solo queda
+`Login/` y la carpeta `css/` que varias pantallas todavía comparten.
+
+Lo que sigue, en orden:
+
+1. **Login y los `css/` sueltos** — lo último que queda en `screens/`.
+2. **Retirar los puentes** `@deprecated` de `hooks/` y `utils/`, ya que sus consumidores
+   están migrados.
+3. **Bajar los 113 errores de lint**, casi todos JSDoc en `components/` sin migrar.
+4. Probar la fase 1 de punta a punta antes de plantear el merge a `main`.
 
 Las **ocho pantallas sin uso** (~2 150 líneas) están en cuarentena en `src/no-usadas/`,
 fuera del router y fuera del paquete compilado. No se borran todavía: se revisa dentro de
