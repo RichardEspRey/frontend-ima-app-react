@@ -7,7 +7,6 @@ import { COLOR } from '../shared/ui/tokens';
 const TruckInput = ({ label, documentKey, documentos, abrirModal, handleClear }) => {
     const doc = documentos[documentKey];
     
-    // Función local para manejar la limpieza del documento
     const handleClearLocal = (e) => {
         e.stopPropagation();
         handleClear(documentKey); 
@@ -15,11 +14,9 @@ const TruckInput = ({ label, documentKey, documentos, abrirModal, handleClear })
 
     return (
         <Box sx={{ mb: 2 }}>
-            {/* Etiqueta del Documento */}
             <InputLabel sx={{ fontWeight: 600, mb: 0.5, fontSize: '0.9rem', color: 'text.primary' }}>{label}</InputLabel>
             
             <Stack direction="row" spacing={1} alignItems="center">
-                {/* Botón de Acción */}
                 <Button 
                     variant="outlined" 
                     onClick={() => abrirModal(documentKey)}
@@ -41,11 +38,9 @@ const TruckInput = ({ label, documentKey, documentos, abrirModal, handleClear })
                             bgcolor: COLOR.LIENZO
                         }}
                     >
-                        {/* Nombre del archivo y vencimiento */}
                         <Typography variant="body2" color="primary" sx={{ flexGrow: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                             {doc.fileName} - Vence: {doc.vencimiento || 'N/A'}
                         </Typography>
-                        {/* Botón de Limpiar */}
                         <Button 
                             color="error" 
                             size="small" 

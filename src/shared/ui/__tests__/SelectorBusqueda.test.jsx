@@ -10,10 +10,6 @@ const PAISES = [
 
 describe("SelectorBusqueda · el contrato con react-select", () => {
   it("entrega el OBJETO completo, no el valor suelto", async () => {
-    // Es la prueba que protege el envío. Las pantallas guardan la opción entera
-    // y sacan el dato después con `country?.value`. Si esto entregara "MX", ese
-    // acceso daría undefined, la capa de API omite los undefined, y el registro
-    // se guardaría sin país sin que nadie viera un error.
     const alCambiar = vi.fn()
     render(<SelectorBusqueda options={PAISES} value={null} onChange={alCambiar} />)
 
@@ -40,9 +36,6 @@ describe("SelectorBusqueda · el contrato con react-select", () => {
   })
 
   it("reconoce un valor equivalente aunque sea otro objeto", () => {
-    // Pasa siempre que el valor viene del servidor y las opciones se piden
-    // aparte: son dos objetos distintos con el mismo `value`. Comparando por
-    // identidad, el campo se vería vacío teniendo dato.
     render(
       <SelectorBusqueda
         options={PAISES}
@@ -128,8 +121,6 @@ describe("SelectorBusqueda · crear opciones al vuelo", () => {
   })
 
   it("manda el texto a onCrear y NO a onChange", async () => {
-    // La entrada de "crear" no tiene `value`. Si llegara a onChange, la pantalla
-    // guardaría una opción sin dato y el envío llevaría basura.
     const alCambiar = vi.fn()
     const alCrear = vi.fn()
     render(

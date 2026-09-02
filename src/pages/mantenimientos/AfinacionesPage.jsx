@@ -47,7 +47,6 @@ export default function AfinacionesPage() {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  // --- MANEJADORES DE API ---
   const handleApiRequest = async (op, dataPayload, successMessage) => {
     setSaving(true);
     try {
@@ -129,7 +128,7 @@ export default function AfinacionesPage() {
           open={modalConfig.type === 'history'} 
           onClose={closeModal} 
           truck={modalConfig.truck} 
-          onOpenPhoto={(url) => openModal('photo', url)} // En este caso le pasamos la URL como data
+          onOpenPhoto={(url) => openModal('photo', url)}
           onOpenCorrect={(truckData) => openModal('correct', truckData)} 
       />
       <PhotoModal open={modalConfig.type === 'photo'} onClose={closeModal} photoUrl={modalConfig.type === 'photo' ? modalConfig.truck : null} />

@@ -137,7 +137,6 @@ export default function PersonalAdmin() {
                 vacio="No hay personal registrado activo."
             />
 
-            {/* MODAL (DIALOG) */}
             <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
                 <DialogTitle sx={{ fontWeight: 800, color: 'primary.main', borderBottom: `1px solid ${COLOR.BORDE}`, pb: 2 }}>
                     {form.id ? 'Editar Empleado' : 'Agregar Nuevo Empleado'}

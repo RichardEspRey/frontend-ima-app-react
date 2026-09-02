@@ -71,7 +71,6 @@ const GastosModal = ({ open, onClose, tripId }) => {
     <Modal open={open} onClose={onClose}>
       <Box sx={modalStyle}>
 
-        {/* Header */}
         <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
           <Typography variant="h6" fontWeight={700}>
             Gastos del Viaje
@@ -82,7 +81,6 @@ const GastosModal = ({ open, onClose, tripId }) => {
           </IconButton>
         </Box>
 
-        {/* Contenido */}
         {loading ? (
           <BloqueEsqueleto alto={200} conTitulo={false} />
         ) : gastos.length === 0 ? (
@@ -109,7 +107,6 @@ const GastosModal = ({ open, onClose, tripId }) => {
           </Table>
         )}
 
-        {/* Footer */}
         <Box sx={{ textAlign: "right", mt: 3 }}>
           <Button variant="outlined" onClick={onClose}>
             Cerrar

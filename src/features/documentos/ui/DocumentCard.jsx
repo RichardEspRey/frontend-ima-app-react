@@ -19,7 +19,6 @@ import { COLOR } from '../../../shared/ui/tokens';
  * @returns {object} La ficha renderizada.
  */
 const DocumentCard = ({ req, theme, val, onEdit }) => {
-    // 1. DISEÑO RECTANGULAR PARA INPUTS DE TEXTO (DATOS)
     if (req.tipo === 'text') {
         return (
             <Paper elevation={0} sx={{ p: 2, borderRadius: 3, border: `1px solid ${theme.border}`, bgcolor: 'white', borderLeft: `5px solid ${theme.color}`, display: 'flex', flexDirection: 'column', transition: 'all 0.2s ease', boxShadow: '0 2px 4px -1px rgb(0 0 0 / 0.05)', '&:hover': { transform: 'translateY(-2px)', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}}>
@@ -47,7 +46,6 @@ const DocumentCard = ({ req, theme, val, onEdit }) => {
         );
     }
 
-    // 2. DISEÑO CLÁSICO PARA DOCUMENTOS (ARCHIVOS)
     return (
         <Paper elevation={0} sx={{ p: 2.5, borderRadius: 3, border: `1px solid ${theme.border}`, bgcolor: 'white', position: 'relative', overflow: 'hidden', height: '100%', display: 'flex', flexDirection: 'column', transition: 'all 0.2s ease', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.05)', '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}}>
             <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: 4, bgcolor: theme.color }} />

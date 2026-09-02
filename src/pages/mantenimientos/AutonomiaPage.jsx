@@ -11,9 +11,9 @@ const apiHost = import.meta.env.VITE_API_HOST;
 
 const getPerformanceColor = (mpg) => {
     if (!mpg || mpg === 0) return 'default';
-    if (mpg >= 7) return 'success'; // Bueno
-    if (mpg >= 5.5) return 'warning'; // Regular
-    return 'error'; // Malo
+    if (mpg >= 7) return 'success';
+    if (mpg >= 5.5) return 'warning';
+    return 'error';
 };
 
 /**
@@ -62,7 +62,6 @@ export default function AutonomiaPage() {
 
   return (
     <Box sx={{ p: 3 }}>
-      {/* Encabezado */}
       <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 3 }}>
         <Typography variant="h4" component="h1" fontWeight={700}>
           Autonomía (MPG)
@@ -79,14 +78,12 @@ export default function AutonomiaPage() {
         </Tooltip>
       </Stack>
 
-      {/* Tabla */}
       <Paper elevation={2} sx={{ width: '100%', overflow: 'hidden', borderRadius: 2 }}>
         <TableContainer>
           <Table size="medium">
             <TableHead sx={{ bgcolor: COLOR.LIENZO }}>
               <TableRow>
                 <TableCell sx={{ fontWeight: 800, width: 150 }}>Camión</TableCell>
-                {/* Columnas de registros 1 (más reciente) al 5 */}
                 {[1, 2, 3, 4, 5].map(num => (
                     <TableCell key={num} align="center" sx={{ fontWeight: 600, color: '#555' }}>
                         Registro {num}
@@ -109,7 +106,6 @@ export default function AutonomiaPage() {
               ) : (
                 trucks.map((truck) => (
                   <TableRow key={truck.truck_id}>
-                    {/* Información del Camión */}
                     <TableCell>
                         <Typography fontWeight={700} variant="body1">
                             {truck.unidad}
@@ -119,7 +115,6 @@ export default function AutonomiaPage() {
                         </Typography>
                     </TableCell>
 
-                    {/* Registros de Autonomía (1 al 5) */}
                     {truck.registros.map((reg, idx) => (
                         <TableCell key={idx} align="center">
                             {reg ? (
@@ -140,7 +135,6 @@ export default function AutonomiaPage() {
                         </TableCell>
                     ))}
 
-                    {/* Promedio Final */}
                     <TableCell align="center" sx={{ bgcolor: '#f1f8ff' }}>
                         <Chip 
                             label={`${truck.promedio.toFixed(2)} MPG`}

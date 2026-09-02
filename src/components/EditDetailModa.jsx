@@ -17,7 +17,7 @@ const EditDetailModal = ({ detail, isOpen, onClose, onSave }) => {
 
   const handleSave = () => {
     onSave({
-      id_servicio: detail.id_servicio ?? detail.id_detalle, // preferimos id_servicio
+      id_servicio: detail.id_servicio ?? detail.id_detalle,
       estatus: currentStatus,
     });
   };

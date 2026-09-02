@@ -104,8 +104,6 @@ describe("contra la respuesta real de la API", () => {
   })
 
   it("encuentra la lectura de odómetro rota que hay en producción", () => {
-    // El registro id_diesel 489 tiene 149946 entre lecturas de 1.5 millones:
-    // un dígito perdido al capturar. Por eso el backend tiene correct_odometer.
     const { validos } = normalizarLista(REAL.data, esquemaAfinacion)
     const conProblemas = validos.filter((a) => lecturasSospechosas(a.ultimos_registros).length > 0)
     expect(conProblemas.length).toBeGreaterThan(0)

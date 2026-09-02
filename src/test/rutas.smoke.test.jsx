@@ -3,18 +3,6 @@ import { render, act } from "@testing-library/react";
 import App from "../App";
 import { useAuthStore } from "../store/useAuthStore";
 
-/* ---------------------------------------------------------------------------
-   Test de humo a nivel ruta.
-
-   Esta es la red que protege el refactor: monta CADA ruta con el router, el
-   layout y los providers reales. Si un archivo se mueve y queda un import
-   roto, o una pantalla revienta al montar, aquí se cae — que es exactamente
-   lo que el `vite build` NO detecta (el build valida que el import resuelva,
-   no que el componente monte).
-
-   La lista sale de AppRouter.jsx. Si agregas una ruta, agrégala aquí.
---------------------------------------------------------------------------- */
-
 const RUTAS = [
   "/CrearViaje",
   "/Ifta",
@@ -63,10 +51,6 @@ const RUTAS = [
   "/view-inventory"
 ];
 
-// Se monta <App/> completo, no <AppRouter/>: el árbol real incluye providers
-// que las pantallas consumen (UpdateContext lo provee App, y Sidebar lo lee).
-// App ya trae su propio HashRouter, así que el test no
-// envuelve nada — solo posiciona la ruta en el hash. Cero cambios en producción.
 async function montarRuta(ruta) {
   window.location.hash = "#" + ruta;
   const resultado = render(<App />);

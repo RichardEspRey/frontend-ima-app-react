@@ -258,7 +258,6 @@ const PagosConductoresPage = () => {
         sx={{ minWidth: 320, mb: 3 }}
       />
 
-      {/* Tabla de Resultados */}
       <TableContainer component={Paper} elevation={0} sx={TABLE_CONTAINER_SX}>
         <Table stickyHeader size="small">
           <TableHead>
@@ -290,7 +289,6 @@ const PagosConductoresPage = () => {
             ) : (
               pageTrips.map((t) => {
                 const isAutorizado = String(t.status_payment) === "2";
-                // const isPagado = String(t.status_payment) === "1";
 
                 const uniqueKey = `${t.trip_id}-${t.driver_id}`;
 

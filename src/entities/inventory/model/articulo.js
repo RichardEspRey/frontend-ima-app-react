@@ -10,10 +10,6 @@ const idDePhp = z.coerce.string()
  */
 export const esquemaArticulo = z.object({
   id_articulo: idDePhp,
-  // NO se exige nombre. Hay artículos sin nombre en producción —uno con stock 1— y
-  // la pantalla ya los pinta como "Sin nombre". Descartarlos escondería existencias
-  // reales del inventario, que es peor que mostrar una fila fea. Lo que sí se hace
-  // es marcarlos para que se puedan encontrar y corregir.
   nombre_articulo: z.string().catch(""),
   cantidad_stock: z.coerce.number().catch(0),
   nombre_subcategoria: z.string().catch(""),

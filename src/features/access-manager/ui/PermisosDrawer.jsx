@@ -24,12 +24,8 @@ import {
 import { COLOR } from '../../../shared/ui/tokens';
 import { TarjetasEsqueleto, Pestanas } from '../../../shared/ui';
 
-// A partir de cuántos permisos "hoja" seguidos se usa la cuadrícula compacta en vez de filas.
 const COMPACT_GRID_THRESHOLD = 5;
 
-// Agrupa visualmente sub-items consecutivos que comparten `group` bajo un encabezado.
-// No modifica los datos reales (featureKey/route/rolesPermitidos): el Sidebar sigue
-// leyendo el array plano original y nunca ve estos encabezados sintéticos.
 const groupSubItems = (subItems) => {
     const result = [];
     let currentGroup = null;
@@ -48,7 +44,6 @@ const groupSubItems = (subItems) => {
     return result;
 };
 
-// Cuenta permisos reales (hojas) activos/totales bajo un nodo, recursivo.
 const countLeafFeatures = (node, desktopFeaturesMap) => {
     if (!node.subItems || node.subItems.length === 0) {
         const fd = desktopFeaturesMap[node.featureKey || node.name];
@@ -72,8 +67,6 @@ const CountBadge = ({ enabled, total }) => (
     />
 );
 
-// Toggle compacto para permisos "hoja" dentro de un grupo: se puede togglear
-// haciendo clic en cualquier parte del chip, no solo en el switch.
 const PermissionChip = ({ node, desktopFeaturesMap, onToggleFeature, userId, isParentAllowed }) => {
     const featureData = desktopFeaturesMap[node.featureKey || node.name];
     const existInDB = !!featureData;
@@ -192,8 +185,6 @@ const PermissionNode = ({ node, level, desktopFeaturesMap, onToggleFeature, user
     const isRoot = level === 0;
     const displaySubItems = hasSubItems ? groupSubItems(node.subItems) : [];
     const leafCount = hasSubItems ? countLeafFeatures(node, desktopFeaturesMap) : null;
-    // Sin `group` explícito, si de todos modos hay muchos permisos "hoja" seguidos
-    // (ej. Mantenimientos), se acomodan solos en cuadrícula compacta.
     const allDisplayLeaf = hasSubItems && displaySubItems.every(child => !(child.subItems && child.subItems.length > 0));
     const useCompactGrid = allDisplayLeaf && displaySubItems.length >= COMPACT_GRID_THRESHOLD;
 

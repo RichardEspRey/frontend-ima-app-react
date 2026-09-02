@@ -5,7 +5,6 @@ import { useAuthStore } from '../store/useAuthStore';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import { COLOR } from '../shared/ui/tokens';
 
-// Helpers 
 const money = (v) =>
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, currencyDisplay: 'symbol' })
     .format(Number(v || 0));
@@ -26,10 +25,6 @@ export const StageDetailRow = ({ trip_id, stage, handleStageFieldChange }) => {
 
     const ROLES_PERMITIDOS = ['admin', 'dev'];
     const userRole = (user?.tipo_usuario || '').toLowerCase();
-    // OJO: esto se calcula pero no se usa. La columna de déficit se le enseña hoy
-    // a todo el mundo, aunque alguien escribió aquí que debía ser solo para admin
-    // y dev. Aplicarlo escondería una columna que la gente ya ve, así que es una
-    // decisión de negocio, no del refactor. Se deja la intención escrita.
     // eslint-disable-next-line no-unused-vars
     const canViewDeficit = ROLES_PERMITIDOS.includes(userRole);
 
@@ -64,7 +59,6 @@ export const StageDetailRow = ({ trip_id, stage, handleStageFieldChange }) => {
             else daysColor = 'primary'; 
         }
     }
-    // ---------------------------------
 
     let deficitContent = '-';
     let deficitColor = 'text.secondary';
@@ -147,7 +141,6 @@ export const StageDetailRow = ({ trip_id, stage, handleStageFieldChange }) => {
                     <Typography variant="caption" color="text.secondary">—</Typography>
                 )}
             </TableCell>
-            {/* ------------------------------------- */}
 
             
             <TableCell sx={{ fontWeight: 700 }}>

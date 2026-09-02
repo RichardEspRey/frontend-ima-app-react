@@ -27,9 +27,6 @@ const getDynamicFontSize = (id, value) => {
         return '0.75rem';
     }
 
-    // La descripción puede traer varias "piernas" de ruta (una por parada
-    // adicional), una por línea. Achicamos la letra para que quepan sin
-    // desbordar el recuadro de la plantilla.
     if (id === 'description') {
         const lines = strValue.split('\n').length;
         if (lines >= 4) return '0.6rem';
@@ -45,29 +42,23 @@ const InvoicePreview = ({ data }) => {
 
     const formattedRate = formatCurrency(data.rate);
 
-    // --- SISTEMA DE COORDENADAS ---
     const fields = [
-        // ENCABEZADO
         { id: 'pdf_number', value: data.pdf_number, top: '16%', left: '57%', variant: 'subtitle2', bold: true },
         { id: 'save_date', value: data.save_date, top: '16%', left: '79%', variant: 'subtitle2' },
 
-        // BILL TO
         { id: 'client_name', value: data.client_name, top: '25%', left: '7%', variant: 'subtitle1', bold: true, maxWidth: '45%', noWrap: true },
         { id: 'client_address', value: data.client_address, top: '28%', left: '7%', variant: 'body2', width: '30%' }, 
 
-        // TABLA 1: DATOS DEL VIAJE 
         { id: 'driver_name', value: data.driver_name, top: '35.2%', left: '8%', variant: 'body2', maxWidth: '25%', noWrap: true },
         { id: 'ci_number', value: data.ci_number, top: '35.2%', left: '35%', variant: 'body2', maxWidth: '17%', noWrap: true },
         { id: 'pickup_date', value: data.pickup_date, top: '35.2%', left: '53.5%', variant: 'body2' },
         { id: 'delivery_date', value: data.delivery_date, top: '35.2%', left: '65%', variant: 'body2' },
 
-        // TABLA 2: CONCEPTOS
         { id: 'qty', value: 'FREIGHT', top: '46%', left: '8.5%', variant: 'body2' },
         { id: 'description', value: data.description, top: '46%', left: '25%', variant: 'body2', width: '45%' },
         
         { id: 'rate', value: formattedRate, top: '46%', left: '77%', width: '15%', align: 'right', variant: 'body2', bold: false },
 
-        // TOTAL
         { id: 'total', value: formattedRate, top: '73.5%', left: '77%', width: '15%', align: 'right', variant: 'body2', bold: true, color: COLOR.TINTA },
     ];
 

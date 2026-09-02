@@ -19,7 +19,6 @@ const TripResources = ({
             <Divider sx={{ mb: 3 }} />
             
             <Grid container spacing={3}>
-                {/* Conductores */}
                 <Grid item xs={12} md={6}>
                     <Typography variant="subtitle2">Conductor Principal</Typography>
                     <SelectWrapper
@@ -42,7 +41,6 @@ const TripResources = ({
                     )}
                 </Grid>
 
-                {/* Tipo de Viaje */}
                 <Grid item xs={12} md={6}>
                     <Typography variant="subtitle2">Tipo de viaje</Typography>
                     <InputLabel sx={{ fontWeight: 600, mb: 0.5, color: 'text.primary' }}>Tipo de Viaje:</InputLabel>
@@ -52,7 +50,6 @@ const TripResources = ({
                     </Stack>
                 </Grid>
 
-                {/* Camión */}
                 <Grid item xs={12} md={4}>
                     <Typography variant="subtitle2">Camión</Typography>
                     <SelectWrapper
@@ -65,7 +62,6 @@ const TripResources = ({
                     />
                 </Grid>
 
-                {/* Tráiler */}
                 <Grid item xs={12} md={8}>
                     <Grid item xs={12} md={4}>
                         <InputLabel sx={{ fontWeight: 600, mb: 0.5, color: 'text.primary' }}>Tipo de Trailer:</InputLabel>

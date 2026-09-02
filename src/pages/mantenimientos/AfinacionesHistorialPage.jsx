@@ -11,20 +11,17 @@ import OpacityIcon from '@mui/icons-material/Opacity';
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 
-// Date Handling
 import dayjs from 'dayjs';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import { COLOR } from '../../shared/ui/tokens';
 import { Paginacion, CampoFecha } from '../../shared/ui';
 
-// Configuración DayJS 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
-// Helper número
 const numberFmt = (n) => new Intl.NumberFormat('en-US').format(Number(n).toFixed(0));
 
 /**
@@ -35,20 +32,16 @@ const numberFmt = (n) => new Intl.NumberFormat('en-US').format(Number(n).toFixed
 export default function AfinacionesHistorialPage() {
   const navigate = useNavigate();
 
-  // --- States ---
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   
-  // Filtros
   const [truckFilter, setTruckFilter] = useState('');
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
 
-  // Paginación
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(25);
 
-  // --- Fetch ---
   const fetchHistory = useCallback(async () => {
     setLoading(true);
     try {
@@ -72,7 +65,6 @@ export default function AfinacionesHistorialPage() {
 
   useEffect(() => { fetchHistory(); }, [fetchHistory]);
 
-  // --- Filtrado ---
   const filteredData = useMemo(() => {
     return history.filter(reg => {
         const matchTruck = truckFilter === '' || String(reg.unidad || '').toLowerCase().includes(truckFilter.toLowerCase());
@@ -90,7 +82,6 @@ export default function AfinacionesHistorialPage() {
     });
   }, [history, truckFilter, startDate, endDate]);
 
-  // --- Handlers ---
   const handleClearFilters = () => {
       setTruckFilter('');
       setStartDate(null);

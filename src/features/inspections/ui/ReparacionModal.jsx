@@ -38,22 +38,16 @@ const apiHost = import.meta.env.VITE_API_HOST;
 const ReparacionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDocumentsChanged }) => {
     const [trucks, setTrucks] = useState([]);
     
-    // 🚨 Agregamos trip_id y formatted_trip al estado
     const [formData, setFormData] = useState({
         id_reparacion: '', truck_id: '', trip_id: '', formatted_trip: '', operador: '', ciudad: '', estado: '',
         fallo: '', tipo_reparacion: '', comentarios: '', costo_reparacion: '', costo_refacciones: '', fecha_suceso: ''
     });
     
     const [files, setFiles] = useState([]);
-    // id_doc del documento guardado que se está eliminando (para el spinner del chip)
     const [deletingDocId, setDeletingDocId] = useState(null);
 
-    // 🚨 Estados para el Autocomplete de Viajes
     const [tripOptions, setTripOptions] = useState([]);
     const [loadingTrips, setLoadingTrips] = useState(false);
-    // Si ya hay un viaje asociado, lo mostramos como texto junto al título en vez
-    // del input de búsqueda; este flag permite volver a mostrar el input para
-    // cambiarlo (solo cuando no viene fijado por contexto, ver initialTrip).
     const [editingTrip, setEditingTrip] = useState(false);
 
     useEffect(() => {
@@ -91,7 +85,6 @@ const ReparacionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
         if (data.status === 'success') setTrucks(data.data);
     };
 
-    // 🚨 Función que busca los viajes mientras escribes
     const fetchTrips = async (searchStr) => {
         if (!searchStr || isNaN(searchStr)) {
             setTripOptions([]);
@@ -135,9 +128,6 @@ const ReparacionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
         setFiles(newFiles);
     };
 
-    // Elimina un documento YA guardado en el servidor (uno por uno).
-    // El backend solo borra el renglón de la tabla de documentos + el archivo
-    // físico; la reparación en sí nunca se toca.
     const handleDeleteDoc = async (doc) => {
         const confirm = await Swal.fire({
             title: '¿Eliminar documento?',
@@ -284,7 +274,6 @@ const ReparacionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
             <DialogContent sx={DIALOG_CONTENT_SX}>
                 <Stack spacing={3} sx={{ mt: 1 }}>
 
-                    {/* SECCIÓN 1: UNIDAD */}
                     <Paper elevation={0} sx={CARD_SX}>
                         <Typography variant="overline" sx={SECTION_LABEL_SX}>Datos de la Unidad</Typography>
                         <Grid container spacing={2}>
@@ -310,7 +299,6 @@ const ReparacionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
                         </Grid>
                     </Paper>
 
-                    {/* SECCIÓN 2: INCIDENTE */}
                     <Paper elevation={0} sx={CARD_SX}>
                         <Typography variant="overline" sx={SECTION_LABEL_SX}>Reporte de Falla</Typography>
                         <Grid container spacing={2}>
@@ -360,7 +348,6 @@ const ReparacionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
                         </Grid>
                     </Paper>
 
-                    {/* SECCIÓN 3: COSTOS Y ARCHIVOS */}
                     <Paper elevation={0} sx={CARD_SX}>
                         <Typography variant="overline" sx={SECTION_LABEL_SX}>Administración y Comprobantes</Typography>
                         <Grid container spacing={2}>
@@ -373,7 +360,6 @@ const ReparacionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
                                 <TextField fullWidth name="costo_refacciones" type="number" value={formData.costo_refacciones} onChange={handleChange} {...inputProps} InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }} />
                             </Grid>
                             
-                            {/* Documentos ya guardados (solo al editar un registro existente) */}
                             {Array.isArray(formData.documentos) && formData.documentos.length > 0 && (
                                 <Grid size={{ xs: 12 }}>
                                     <Typography variant="caption" fontWeight={700} color="textSecondary" display="block" sx={{ mb: 0.5 }}>
@@ -382,8 +368,6 @@ const ReparacionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
                                     <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 1 }}>
                                         Da clic en el documento para abrirlo, o en el bote de basura para eliminarlo permanentemente.
                                     </Typography>
-                                    {/* El botón de borrar va FUERA del chip: dentro, el chip es un <a>
-                                        y el clic abría el documento antes de mostrar la confirmación. */}
                                     <Stack spacing={1}>
                                         {formData.documentos.map((doc) => {
                                             const isDeleting = String(deletingDocId) === String(doc.id_doc);
@@ -431,7 +415,6 @@ const ReparacionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
                                 </Grid>
                             )}
 
-                            {/* Subida de Invoices */}
                             <Grid size={{ xs: 12 }}>
                                 <Box sx={{
                                     display: 'flex',

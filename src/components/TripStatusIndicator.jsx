@@ -11,8 +11,6 @@ const STATUS_STYLES = {
 
 export const getStatusColor = (status) => STATUS_STYLES[status || 'In Transit'] || COLOR.APAGADO;
 
-// Barra de acento + punto en vez de un Chip sólido: mismo significado de color
-// que antes, tratamiento más editorial y menos "template".
 export const StatusIndicator = ({ status }) => {
     const value = status || 'In Transit';
     const color = getStatusColor(value);

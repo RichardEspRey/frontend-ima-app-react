@@ -45,8 +45,6 @@ export const esquemaOrden = z.object({
   estatus: z.string().catch(ESTATUS_ORDEN.ABIERTA),
   truck_id: idDePhp,
   nombre_camion: z.string().catch(""),
-  // El nullable va PRIMERO: z.coerce.number() convierte null en 0, y un tipo de
-  // cambio de 0 no es lo mismo que "orden en pesos, sin tipo de cambio".
   tipo_cambio: z
     .union([z.null(), z.undefined(), numeroDePhp])
     .transform((v) => (v === undefined ? null : v))

@@ -78,11 +78,6 @@ export class ErrorBoundary extends Component {
     if (!this.state.error) return this.props.children
 
     return (
-      // Centrado en el alto disponible, no con un margen fijo arriba. Con un
-      // margen, el aviso queda pegado a la cabecera y parece que la pantalla
-      // cargó a medias; centrado se lee como lo que es: el estado de toda la
-      // pantalla. `minHeight: 100%` en vez de `100vh` porque esto vive dentro
-      // del área de contenido, que ya descuenta la cabecera.
       <Box
         sx={{
           minHeight: "100%",

@@ -7,7 +7,6 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import RouteIcon from '@mui/icons-material/Route';
 
-// Componentes modulares
 import TicketHeader from "../../components/TicketPayment/TicketHeader";
 import TicketInfoCards from "../../components/TicketPayment/TicketInfoCards";
 import TicketStagesTable from "../../components/TicketPayment/TicketStagesTable";
@@ -287,7 +286,6 @@ const TicketPagoPage = () => {
         
         doc.setFont(undefined, 'normal');
         doc.setFontSize(10);
-        // splitTextToSize evita que el texto se salga del ancho de la página
         const splitComments = doc.splitTextToSize(comentariosOperador, 180);
         doc.text(splitComments, 14, sumY + 6);
     }
@@ -381,7 +379,6 @@ const TicketPagoPage = () => {
                                 />
                             </Paper>
 
-                            {/* Caja de Comentarios para el Operador (PDF) */}
                             <Paper elevation={0} sx={{ p: 2, bgcolor: COLOR.INFO_FONDO, border: `1px solid ${COLOR.INFO_BORDE}`, borderRadius: 2 }}>
                                 <Typography variant="caption" fontWeight={800} color="info.main" gutterBottom sx={{ textTransform: 'uppercase', mb: 1.5, display: 'block' }}>
                                     Comentarios

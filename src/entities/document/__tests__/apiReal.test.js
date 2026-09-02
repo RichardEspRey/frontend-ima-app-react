@@ -2,14 +2,6 @@ import { describe, it, expect } from "vitest"
 import { readFileSync } from "node:fs"
 import { normalizarDocumentos, porRegion, estadoDocumento } from "../model/documento"
 
-/*
- * La fixture es una respuesta REAL de IMA_Docsv2.php, capturada con curl el
- * 2026-09-01. Existe porque los tests que simulan la respuesta reproducen la
- * suposición de quien los escribe: así se descubrió tarde, en el incremento 6,
- * que el campo de plataforma se llama `plataform` y no `app`.
- *
- * Si la API cambia de forma, estos tests fallan y avisan.
- */
 const RESPUESTA_REAL = JSON.parse(
   readFileSync("src/entities/document/__tests__/fixtures/getAll.json", "utf8"),
 )

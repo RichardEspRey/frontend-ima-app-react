@@ -1,4 +1,3 @@
-// src/components/InspeccionRow.jsx (Nuevo Archivo)
 import React from 'react';
 import {
     Button, TableCell, TableRow, IconButton, Collapse, Box, Typography, CircularProgress, Chip, Grid, Divider
@@ -28,18 +27,15 @@ function Categoria({ titulo, items = [] }) {
   );
 }
 
-
 export const InspeccionRow = ({ row, abierto, loading, error, det, toggleOpen, handleFinalizar }) => {
     const viajeId = row.viaje_id;
     const completed = Number(row.status) === 1;
 
-    // Colores para el chip de estado
     const statusColor = completed ? 'success' : 'warning';
     const statusLabel = completed ? 'Completado' : 'Pendiente';
 
     return (
         <React.Fragment>
-            {/* Fila Resumen Principal */}
             <TableRow hover>
                 <TableCell>
                     <IconButton size="small" onClick={() => toggleOpen(viajeId)}>
@@ -57,7 +53,6 @@ export const InspeccionRow = ({ row, abierto, loading, error, det, toggleOpen, h
                     {row.truck_unidad ?? row.unidad ?? '-'}
                 </TableCell>
                 
-                {/* Fallas/Total de Conteo */}
                 <TableCell sx={{ whiteSpace: 'nowrap', textAlign: 'left', fontWeight: 500 }}>
                     <Typography component="div" fontWeight={700}>Total: {row.total_cnt ?? 0}</Typography>
                     {(row.cnt_motor || row.cnt_exterior || row.cnt_neumaticos || row.cnt_cabina || row.cnt_remolque || row.cnt_otro) && (
@@ -67,7 +62,6 @@ export const InspeccionRow = ({ row, abierto, loading, error, det, toggleOpen, h
                     )}
                 </TableCell>
                 
-                {/* Status Chip */}
                 <TableCell sx={{ whiteSpace: 'nowrap', textAlign: 'center' }}>
                     <Chip label={statusLabel} color={statusColor} size="small" sx={{ fontWeight: 600 }} />
                 </TableCell>
@@ -76,7 +70,6 @@ export const InspeccionRow = ({ row, abierto, loading, error, det, toggleOpen, h
                     {row.ultimo_driver || row.driver_nombre || '-'}
                 </TableCell>
                 
-                {/* Acciones */}
                 <TableCell sx={{ whiteSpace: 'nowrap', textAlign: 'center' }}>
                     <Button
                         variant="contained"
@@ -90,7 +83,6 @@ export const InspeccionRow = ({ row, abierto, loading, error, det, toggleOpen, h
                 </TableCell>
             </TableRow>
 
-            {/* Collapse */}
             <TableRow>
                 <TableCell colSpan={8} sx={{ p: 0, borderBottom: 0 }}> 
                     <Collapse in={abierto} timeout="auto" unmountOnExit>

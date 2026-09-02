@@ -7,7 +7,6 @@ import { instalarErroresGlobales } from './app/erroresGlobales';
 import { notify } from './shared/ui';
 import { SessionProvider } from './app/providers/SessionProvider';
 
-// Contexto temporal para pasar si hay update
 export const UpdateContext = React.createContext();
 
 const App = () => {

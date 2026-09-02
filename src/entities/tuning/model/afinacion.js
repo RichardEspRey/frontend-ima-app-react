@@ -127,10 +127,6 @@ export const millasRestantes = (afinacion) =>
 export function lecturasSospechosas(registros = []) {
   const sospechosas = []
 
-  // Los registros van del más reciente al más antiguo, así que cada uno debería
-  // tener un odómetro MAYOR que el siguiente. Si uno queda por debajo de sus dos
-  // vecinos, el raro es él y no ellos: eso distingue un error de captura de un
-  // odómetro que de verdad se reinició.
   for (let i = 1; i < registros.length - 1; i += 1) {
     const anterior = Number(registros[i - 1]?.odometro ?? 0)
     const actual = Number(registros[i]?.odometro ?? 0)

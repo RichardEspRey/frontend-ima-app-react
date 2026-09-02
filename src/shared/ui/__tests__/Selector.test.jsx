@@ -32,8 +32,6 @@ describe("Selector", () => {
 
     await userEvent.click(screen.getByRole("button", { name: "USA" }))
 
-    // Sin esta guarda, ToggleButtonGroup entrega null y el filtro se queda sin
-    // valor: la tabla sale vacía y nadie entiende por qué.
     expect(alCambiar).not.toHaveBeenCalled()
   })
 

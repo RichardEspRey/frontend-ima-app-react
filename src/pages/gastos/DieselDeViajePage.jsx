@@ -49,7 +49,6 @@ export default function DieselDeViajePage() {
         registro: {
           trip_id: tripId,
           ...formulario,
-          // MySQL no entiende la T que mete el campo datetime-local.
           fecha: formulario.fecha.replace("T", " "),
           created_by: usuario?.name || "Administrador",
           ...Object.fromEntries(archivos.map((archivo, i) => [`manualFiles[${i}]`, archivo])),

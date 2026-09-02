@@ -3,7 +3,6 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import { COLOR } from '../shared/ui/tokens';
 
-// Helpers 
 const money = (v) =>
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, currencyDisplay: 'symbol' })
     .format(Number(v || 0));

@@ -6,8 +6,6 @@ import { BloqueEsqueleto } from '../../shared/ui';
 
 const MONTH_LABELS_ES = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
 
-// Paleta fija para que cada Expense Type conserve siempre el mismo color entre
-// renders/filtros; se recicla si hay más tipos que colores en la lista.
 const PALETTE = [
   COLOR.INFO, COLOR.EXITO, COLOR.AVISO, COLOR.PELIGRO, '#7c3aed', '#0891b2',
   '#db2777', '#65a30d', '#ea580c', '#4f46e5', '#059669', COLOR.PELIGRO,
@@ -20,9 +18,6 @@ const money = (currency) => (v) =>
     maximumFractionDigits: 0,
   }).format(Number(v || 0));
 
-// Los 12 meses terminando en el mes actual (ventana móvil), del más antiguo
-// (izquierda) al más reciente (derecha). Ej. si hoy es agosto 2026, va de
-// septiembre 2025 a agosto 2026, y el próximo mes la ventana se recorre sola.
 const getRollingMonths = () => {
   const now = new Date();
   return Array.from({ length: 12 }, (_, i) => {
@@ -31,10 +26,6 @@ const getRollingMonths = () => {
   });
 };
 
-// Gráfica de barras acumulativa (stacked): eje X = últimos 12 meses (ventana
-// móvil), eje Y = dinero, cada columna se divide por Expense Type (una serie
-// por tipo, todas compartiendo el mismo `stack`). El hover y la leyenda de
-// colores los da @mui/x-charts de forma nativa.
 export const ExpenseTypeChart = ({ gastos, country, loading }) => {
   const currency = country === 'MX' ? 'MXN' : 'USD';
   const formatMoney = money(currency);
@@ -75,9 +66,6 @@ export const ExpenseTypeChart = ({ gastos, country, loading }) => {
       });
     });
 
-    // Orden por total de la ventana (mayor a menor), para que la leyenda quede
-    // en el mismo orden que la columna: `stackOrder: 'descending'` es lo que
-    // en realidad manda al gasto más grande hasta abajo de cada columna.
     const totalByType = {};
     types.forEach(t => { totalByType[t] = buckets.reduce((sum, row) => sum + row[t], 0); });
     const typeList = Array.from(types).sort((a, b) => totalByType[b] - totalByType[a]);
@@ -116,10 +104,6 @@ export const ExpenseTypeChart = ({ gastos, country, loading }) => {
       <BarChart
         dataset={dataset}
         xAxis={[{ dataKey: 'label', scaleType: 'band' }]}
-        // El ancho por default del eje Y es de solo 45px (65 si tiene label),
-        // insuficiente para montos completos como "$123,456" — por eso se
-        // veían cortados sin importar el margen del chart. Con `width` se
-        // reserva el espacio real que necesita el texto.
         yAxis={[{ valueFormatter: formatMoney, width: 95 }]}
         series={series}
         height={380}
@@ -127,10 +111,6 @@ export const ExpenseTypeChart = ({ gastos, country, loading }) => {
         borderRadius={4}
         slotProps={{
           legend: { hidden: false, direction: 'row', position: { vertical: 'top', horizontal: 'right' } },
-          // 'axis' (el default): muestra todos los Expense Types del mes en un
-          // solo tooltip. Los que están en $0 no aparecen porque su
-          // valueFormatter devuelve null, y ChartsAxisTooltipContent omite
-          // cualquier fila cuyo valor formateado sea null.
           tooltip: { trigger: 'axis' },
         }}
       />

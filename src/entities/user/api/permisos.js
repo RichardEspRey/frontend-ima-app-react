@@ -40,8 +40,6 @@ export async function obtenerPermisosUsuario({ userId, signal }) {
     signal,
   })
 
-  // El campo se llama `plataform`, sin la segunda "a". Está así en la API y en la
-  // base; corregirlo aquí rompería la app móvil, que lee el mismo endpoint.
   return {
     escritorio: features.filter((f) => f.plataform === PLATAFORMA.ESCRITORIO),
     movil: features.filter((f) => f.plataform === PLATAFORMA.MOVIL),

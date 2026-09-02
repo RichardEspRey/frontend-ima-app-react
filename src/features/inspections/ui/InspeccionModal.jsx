@@ -5,7 +5,6 @@ import {
 } from '@mui/material';
 import { urlSegura, archivosDelEvento, GRUPOS_ARCHIVO } from '../../../shared/security';
 
-// Íconos para la UI
 import CloseIcon from '@mui/icons-material/Close';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
@@ -56,13 +55,11 @@ const initialForm = {
 const InspeccionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDocumentsChanged }) => {
     const [formData, setFormData] = useState(initialForm);
     const [files, setFiles] = useState([]);
-    // id_doc del documento guardado que se está eliminando (para el spinner del chip)
     const [deletingDocId, setDeletingDocId] = useState(null);
     const [trucks, setTrucks] = useState([]);
     const [descriptions, setDescriptions] = useState([]);
     const [tripsOptions, setTripsOptions] = useState([]);
     
-    // Estados para la lista de reportes múltiples
     const [reportesList, setReportesList] = useState([]);
     const [currentReport, setCurrentReport] = useState({
         tipo_violacion: '',
@@ -73,9 +70,6 @@ const InspeccionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
     const [loading, setLoading] = useState(false);
     const [loadingTrips, setLoadingTrips] = useState(false);
     const [saving, setSaving] = useState(false);
-    // Si ya hay un viaje asociado, lo mostramos como texto junto al título en vez
-    // del input de búsqueda; este flag permite volver a mostrar el input para
-    // cambiarlo (solo cuando no viene fijado por contexto, ver initialTrip).
     const [editingTrip, setEditingTrip] = useState(false);
 
     useEffect(() => {
@@ -90,7 +84,6 @@ const InspeccionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
                     fecha_inspeccion: editData.fecha_inspeccion || ''
                 });
 
-                // Soporte por si ya se envían múltiples reportes desde el backend o es el formato viejo
                 if (editData.reportes && Array.isArray(editData.reportes)) {
                     setReportesList(editData.reportes);
                 } else if (editData.tipo_violacion) {
@@ -182,7 +175,6 @@ const InspeccionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    // Manejadores para el registro temporal de reporte
     const handleReportChange = (e) => {
         const { name, value } = e.target;
         if (name === 'comentarios' && value.length > 500) return;
@@ -221,9 +213,6 @@ const InspeccionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
         setFiles(prev => prev.filter((_, index) => index !== indexToRemove));
     };
 
-    // Elimina un documento YA guardado en el servidor (uno por uno).
-    // El backend solo borra el renglón de inspection_docs + el archivo físico;
-    // la inspección y sus reportes nunca se tocan.
     const handleDeleteDoc = async (doc) => {
         const confirm = await Swal.fire({
             title: '¿Eliminar documento?',
@@ -264,15 +253,11 @@ const InspeccionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Validación general
         if (!formData.truck_id || !formData.operador || !formData.fecha_inspeccion || !formData.ciudad || !formData.estado) {
             Swal.fire('Error', 'Por favor llena los campos obligatorios de la unidad (*).', 'error');
             return;
         }
 
-        // Si hay un reporte capturado en el formulario pero no se agregó a la lista
-        // (el usuario olvidó dar clic en "Agregar a la lista"), lo incluimos automáticamente
-        // en vez de perderlo silenciosamente.
         let finalReportesList = reportesList;
         if (currentReport.tipo_violacion && currentReport.descripcion) {
             finalReportesList = [...reportesList, currentReport];
@@ -280,7 +265,6 @@ const InspeccionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
             setCurrentReport({ tipo_violacion: '', descripcion: '', comentarios: '' });
         }
 
-        // Validar que exista al menos un reporte en la lista
         if (finalReportesList.length === 0) {
             Swal.fire('Error', 'Debes agregar al menos un reporte de inspección a la lista.', 'error');
             return;
@@ -296,7 +280,6 @@ const InspeccionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
             }
         });
 
-        // Enviar la lista de reportes como JSON para procesar en PHP
         dataToSend.append('reportes', JSON.stringify(finalReportesList));
 
         files.forEach((file) => {
@@ -398,7 +381,6 @@ const InspeccionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
                     <Box component="form" id="inspectionForm" onSubmit={handleSubmit} sx={{ mt: 1 }}>
                         <Stack spacing={3}>
                             
-                            {/* SECCIÓN 1: DATOS DE LA UNIDAD */}
                             <Paper elevation={0} sx={CARD_SX}>
                                 <Typography variant="overline" sx={SECTION_LABEL_SX}>Datos de la Unidad</Typography>
                                 <Grid container spacing={2}>
@@ -421,7 +403,6 @@ const InspeccionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
                                 </Grid>
                             </Paper>
 
-                            {/* SECCIÓN 2: REPORTE DE INSPECCIÓN (Múltiples Registros) */}
                             <Paper elevation={0} sx={CARD_SX}>
                                 <Typography variant="overline" sx={SECTION_LABEL_SX}>Reporte de Inspección</Typography>
 
@@ -504,7 +485,6 @@ const InspeccionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
                                     </Grid>
                                 </Grid>
 
-                                {/* Renderizado de la lista de reportes agregados */}
                                 {reportesList.length > 0 && (
                                     <Box sx={{ mt: 3 }}>
                                         <Typography variant="subtitle2" color="text.secondary" mb={1.5} fontWeight={600}>
@@ -541,7 +521,6 @@ const InspeccionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
                                 )}
                             </Paper>
 
-                            {/* SECCIÓN 3: ADMINISTRACIÓN Y COMPROBANTES */}
                             <Paper elevation={0} sx={CARD_SX}>
                                 <Typography variant="overline" sx={SECTION_LABEL_SX}>Administración y Comprobantes</Typography>
                                 <Grid container spacing={2}>
@@ -554,7 +533,6 @@ const InspeccionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
                                         <TextField fullWidth name="multa_driver" type="number" inputProps={{ step: "0.01", min: "0" }} value={formData.multa_driver} onChange={handleChange} {...inputProps} InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }} />
                                     </Grid>
                                     
-                                    {/* Documentos ya guardados (solo al editar un registro existente) */}
                                     {Array.isArray(formData.documentos) && formData.documentos.length > 0 && (
                                         <Grid size={{ xs: 12 }}>
                                             <Typography variant="caption" fontWeight={700} color="textSecondary" display="block" sx={{ mb: 0.5 }}>
@@ -563,8 +541,6 @@ const InspeccionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
                                             <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 1 }}>
                                                 Da clic en el documento para abrirlo, o en el bote de basura para eliminarlo permanentemente.
                                             </Typography>
-                                            {/* El botón de borrar va FUERA del chip: dentro, el chip es un <a>
-                                                y el clic abría el documento antes de mostrar la confirmación. */}
                                             <Stack spacing={1}>
                                                 {formData.documentos.map((doc) => {
                                                     const isDeleting = String(deletingDocId) === String(doc.id_doc);

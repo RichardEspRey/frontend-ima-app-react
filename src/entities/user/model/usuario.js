@@ -34,8 +34,6 @@ export const esquemaUsuario = z.object({
   user: z.string().catch(""),
   type: z.string().catch(""),
   active: z.coerce.number().catch(1),
-  // z.coerce.string() convierte null en la CADENA "null", que acabaría viajando
-  // así al backend. El nullable va primero para que un null real se preserve.
   driver_id: z
     .union([z.null(), z.undefined(), idDePhp])
     .transform((v) => (v === undefined ? null : v))

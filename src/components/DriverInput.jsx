@@ -12,7 +12,6 @@ import { COLOR } from '../shared/ui/tokens';
 const DriverInput = ({ label, documentKey, documentos, abrirModal, handleClear }) => {
     const doc = documentos[documentKey];
     
-    // Función local para manejar la limpieza del documento
     const handleClearLocal = (e) => {
         e.stopPropagation();
         handleClear(documentKey);
@@ -23,7 +22,6 @@ const DriverInput = ({ label, documentKey, documentos, abrirModal, handleClear }
             <InputLabel sx={{ fontWeight: 600, mb: 0.5, fontSize: '0.9rem' }}>{label}</InputLabel>
             
             <Stack direction="row" spacing={1} alignItems="center">
-                {/* Botón de Acción */}
                 <Button 
                     variant="outlined" 
                     onClick={() => abrirModal(documentKey)}
@@ -45,11 +43,9 @@ const DriverInput = ({ label, documentKey, documentos, abrirModal, handleClear }
                             bgcolor: COLOR.LIENZO
                         }}
                     >
-                        {/* Nombre del archivo y vencimiento */}
                         <Typography variant="body2" color="primary" sx={{ flexGrow: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                             {doc.fileName} - Vence: {doc.vencimiento || 'N/A'}
                         </Typography>
-                        {/* Botón de Eliminar/Limpiar */}
                         <Button 
                             color="error" 
                             size="small" 

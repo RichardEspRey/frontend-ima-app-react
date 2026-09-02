@@ -17,7 +17,6 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = './pdf.worker.min.mjs';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
-// ── Client-side PDF extraction — accepts File/Blob or a URL string ──────────
 async function extractStateRows(source) {
     try {
         let arrayBuffer;
@@ -81,7 +80,6 @@ async function extractStateRows(source) {
     }
 }
 
-// ── Component ────────────────────────────────────────────────────────────────
 export const PCMillerModal = ({ open, onClose, tripId, file, filename, onSave, onDeleteSuccess }) => {
     const [pendingFile, setPendingFile] = useState(null);
     const [rows, setRows] = useState([]);
@@ -98,7 +96,6 @@ export const PCMillerModal = ({ open, onClose, tripId, file, filename, onSave, o
     const displayName = activeFile?.name || filename || '';
     const isPdf = displayName.toLowerCase().endsWith('.pdf');
 
-    // Reset on close
     useEffect(() => {
         if (!open) {
             setPendingFile(null);
@@ -108,14 +105,12 @@ export const PCMillerModal = ({ open, onClose, tripId, file, filename, onSave, o
         }
     }, [open]);
 
-    // Build preview URL and extract rows whenever source changes
     useEffect(() => {
         if (!open) return;
 
         const currentActiveFile = pendingFile || file;
 
         if (currentActiveFile) {
-            // New or replacement file — blob preview
             const url = URL.createObjectURL(currentActiveFile);
             setPreviewUrl(url);
             setRows([]);
@@ -136,7 +131,6 @@ export const PCMillerModal = ({ open, onClose, tripId, file, filename, onSave, o
 
             return () => URL.revokeObjectURL(url);
         } else if (filename) {
-            // View server file — load saved states from DB via get_ifta_by_trip
             setPreviewUrl(serverUrl);
             setRows([]);
             setError(null);
@@ -172,7 +166,6 @@ export const PCMillerModal = ({ open, onClose, tripId, file, filename, onSave, o
 
     const removeRow = async (index) => {
         const row = rows[index];
-        // Si es un state guardado en DB, eliminarlo del servidor primero
         if (row.id && isServerFile) {
             try {
                 const fd = new FormData();
@@ -204,7 +197,6 @@ export const PCMillerModal = ({ open, onClose, tripId, file, filename, onSave, o
         try {
             const fileToUpload = pendingFile || file;
 
-            // 1. Upload file only if there's a new one
             if (fileToUpload) {
                 const uploadFd = new FormData();
                 uploadFd.append('op', 'upload_doc');
@@ -219,7 +211,6 @@ export const PCMillerModal = ({ open, onClose, tripId, file, filename, onSave, o
                 }
             }
 
-            // 2. Insert/update IFTA states
             const iftaFd = new FormData();
             iftaFd.append('op', 'insert_ifta');
             iftaFd.append('trip_id', tripId);
@@ -241,22 +232,18 @@ export const PCMillerModal = ({ open, onClose, tripId, file, filename, onSave, o
     };
 
     const handleDelete = async () => {
-        // Pending replacement → clear, go back to server file view
         if (pendingFile) {
             setPendingFile(null);
             return;
         }
-        // New file from outside, not yet on server → just close
         if (!filename) {
             onDeleteSuccess?.();
             onClose();
             return;
         }
-        // Delete document file + IFTA states from server
         setDeleting(true);
         setError(null);
         try {
-            // 1. Eliminar el archivo del documento
             const docFd = new FormData();
             docFd.append('op', 'delete_doc');
             docFd.append('trip_id', tripId);
@@ -268,7 +255,6 @@ export const PCMillerModal = ({ open, onClose, tripId, file, filename, onSave, o
                 return;
             }
 
-            // 2. Eliminar los registros IFTA del viaje
             const iftaFd = new FormData();
             iftaFd.append('op', 'delete_ifta_trip');
             iftaFd.append('trip_id', tripId);
@@ -297,7 +283,6 @@ export const PCMillerModal = ({ open, onClose, tripId, file, filename, onSave, o
 
             <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, p: 2.5, overflow: 'hidden', flex: 1 }}>
 
-                {/* ── Document preview ── */}
                 <Box sx={{ flex: '0 0 55%', border: `1px solid ${COLOR.BORDE}`, borderRadius: 1, overflow: 'hidden', bgcolor: COLOR.LIENZO }}>
                     {previewUrl ? (
                         isPdf ? (
@@ -312,7 +297,6 @@ export const PCMillerModal = ({ open, onClose, tripId, file, filename, onSave, o
                     )}
                 </Box>
 
-                {/* ── Extracted state rows ── */}
                 <Box sx={{ flex: 1, overflow: 'auto' }}>
                     <Typography variant="subtitle1" fontWeight={700} mb={1}>
                         Datos Extraídos — State / Country
@@ -370,7 +354,6 @@ export const PCMillerModal = ({ open, onClose, tripId, file, filename, onSave, o
             </DialogContent>
 
             <DialogActions sx={{ px: 3, py: 2, borderTop: `1px solid ${COLOR.BORDE}`, justifyContent: 'space-between' }}>
-                {/* Left: Delete */}
                 <Button
                     variant="outlined"
                     color="error"
@@ -381,13 +364,11 @@ export const PCMillerModal = ({ open, onClose, tripId, file, filename, onSave, o
                     {deleting ? 'Eliminando...' : pendingFile ? 'Cancelar reemplazo' : 'Eliminar'}
                 </Button>
 
-                {/* Right: Cancel + action buttons */}
                 <Box sx={{ display: 'flex', gap: 1 }}>
                     <Button onClick={onClose} disabled={saving || deleting} color="inherit">
                         Cancelar
                     </Button>
 
-                    {/* Viewing server file — offer replacement */}
                     {isServerFile && (
                         <>
                             <input
@@ -408,7 +389,6 @@ export const PCMillerModal = ({ open, onClose, tripId, file, filename, onSave, o
                         </>
                     )}
 
-                    {/* Save / upload */}
                     <Button
                         variant="contained"
                         onClick={handleSave}

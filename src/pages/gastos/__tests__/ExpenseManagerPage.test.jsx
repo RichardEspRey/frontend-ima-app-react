@@ -15,10 +15,6 @@ describe("Expense Manager", () => {
     renderPantalla(<ExpenseManagerPage />);
     await waitFor(() => expect(global.fetch).toHaveBeenCalled());
 
-    // La op tiene que seguir siendo getAllGastos: el refactor no debe cambiar
-    // el contrato con el backend (fase 1 = endpoints intactos).
-    // No se asume el orden: la pantalla monta un modal hijo que pide sus
-    // catálogos (getExpenseTypes, getCategories...) en paralelo.
     const ops = opsLlamadas(global.fetch);
     expect(ops).toContain("getAllGastos");
   });

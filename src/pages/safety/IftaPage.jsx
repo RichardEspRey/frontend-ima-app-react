@@ -16,11 +16,9 @@ import { Pestanas } from '../../shared/ui';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
 const fmt = (n) => Number(n).toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 const fmtDate = (d) => d ? d.split('T')[0] : '—';
 
-// ── Component ─────────────────────────────────────────────────────────────────
 /**
  * IFTA: millas recorridas y combustible cargado por estado.
  *
@@ -32,7 +30,6 @@ const fmtDate = (d) => d ? d.split('T')[0] : '—';
 export default function IftaPage() {
     const [tabValue, setTabValue] = useState(0);
 
-    // ── Tab 0: Por Viaje ──────────────────────────────────────────────────────
     const [trips, setTrips]             = useState([]);
     const [loadingTrips, setLoadingTrips] = useState(false);
     const [search, setSearch]           = useState('');
@@ -63,7 +60,6 @@ export default function IftaPage() {
         );
     }, [trips, search]);
 
-    // ── Tab 1: Totales por Estado ─────────────────────────────────────────────
     const [totals, setTotals]               = useState([]);
     const [loadingTotals, setLoadingTotals] = useState(false);
     const [filterState, setFilterState]     = useState('');
@@ -88,14 +84,12 @@ export default function IftaPage() {
         }
     };
 
-    // Cargar totales al entrar al tab
     useEffect(() => {
         if (tabValue === 1) fetchTotals();
     }, [tabValue]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const grandTotal = useMemo(() => totals.reduce((sum, r) => sum + r.total, 0), [totals]);
 
-    // ── Tab 2: Millas por Periodo ─────────────────────────────────────────────
     const [periodos, setPeriodos]               = useState([]);
     const [loadingPeriodos, setLoadingPeriodos] = useState(false);
     const [filterPeriodo, setFilterPeriodo]     = useState('');
@@ -180,7 +174,6 @@ export default function IftaPage() {
         doc.save('IFTA_Registros.pdf');
     };
 
-    // ── Render ────────────────────────────────────────────────────────────────
     return (
         <Box sx={{ p: 3 }}>
             <Typography variant="h5" fontWeight={700} mb={2.5}>
@@ -198,7 +191,6 @@ export default function IftaPage() {
                 sx={{ mb: 2.5 }}
             />
 
-            {/* ── TAB 0: Por Viaje ─────────────────────────────────────────── */}
             {tabValue === 0 && (
                 <Box>
                     <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
@@ -276,10 +268,8 @@ export default function IftaPage() {
                 </Box>
             )}
 
-            {/* ── TAB 1: Totales por Estado ────────────────────────────────── */}
             {tabValue === 1 && (
                 <Box>
-                    {/* Filtros */}
                     <Paper variant="outlined" sx={{ p: 2, mb: 2.5 }}>
                         <Stack direction="row" alignItems="center" gap={1} mb={1.5}>
                             <FilterListIcon fontSize="small" color="action" />
@@ -368,7 +358,6 @@ export default function IftaPage() {
                                                     <TableCell align="right">{row.trips}</TableCell>
                                                 </TableRow>
                                             ))}
-                                            {/* Totales footer */}
                                             <TableRow sx={{ bgcolor: COLOR.LIENZO }}>
                                                 <TableCell sx={{ fontWeight: 700 }}>TOTAL</TableCell>
                                                 <TableCell align="right" sx={{ fontWeight: 700 }}>{fmt(grandTotal)}</TableCell>
@@ -383,10 +372,8 @@ export default function IftaPage() {
                 </Box>
             )}
 
-            {/* ── TAB 2: Millas por Periodo ────────────────────────────────── */}
             {tabValue === 2 && (
                 <Box>
-                    {/* Filtros */}
                     <Paper variant="outlined" sx={{ p: 2, mb: 2.5 }}>
                         <Stack direction="row" alignItems="center" gap={1} mb={1.5}>
                             <FilterListIcon fontSize="small" color="action" />

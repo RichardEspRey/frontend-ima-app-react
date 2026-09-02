@@ -66,8 +66,6 @@ describe("los catálogos como entidad", () => {
       </QueryProvider>,
     )
 
-    // Importa de verdad: hay pantallas con useEffect sobre estas listas que
-    // llaman a setState dentro. Una identidad nueva por pintado es un bucle.
     expect(Object.is(vistas.at(-1), cargada)).toBe(true)
   })
 

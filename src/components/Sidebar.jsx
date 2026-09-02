@@ -88,7 +88,6 @@ const Sidebar = () => {
   const isVisuallyExpanded = isPinnedExpanded || isHovered;
   const railWidth = isPinnedExpanded ? SIDEBAR_WIDTH_EXPANDED : SIDEBAR_WIDTH_COLLAPSED;
 
-
   useEffect(() => {
     if (user?.id) {
         fetchPermissions(user.id);
@@ -286,7 +285,6 @@ const Sidebar = () => {
           overflow: 'hidden',
         }}
       >
-        {/* LOGO */}
         <Box
           sx={{
             py: isVisuallyExpanded ? 2.5 : 1.5,
@@ -314,7 +312,6 @@ const Sidebar = () => {
           />
         </Box>
 
-        {/* LISTA DE MENÚS */}
         <Box
           sx={{
             flexGrow: 1,
@@ -412,7 +409,6 @@ const Sidebar = () => {
           </List>
         </Box>
 
-        {/* CONTROLES + SECCIÓN INFERIOR */}
         <Box sx={{ p: isVisuallyExpanded ? 2 : 1, borderTop: '1px solid rgba(255,255,255,0.05)' }}>
           
           <Stack

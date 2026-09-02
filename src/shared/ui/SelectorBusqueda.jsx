@@ -76,9 +76,6 @@ export function SelectorBusqueda({
     <Autocomplete
       value={value ?? null}
       onChange={(_evento, opcion) => {
-        // La entrada de "crear" no es una opción real: no tiene `value`, así que
-        // dejarla pasar a onChange guardaría un valor inexistente y el envío
-        // llevaría basura. Se desvía a onCrear, que es quien sabe darla de alta.
         if (opcion?.__crear) {
           onCrear?.(opcion.__texto)
           return

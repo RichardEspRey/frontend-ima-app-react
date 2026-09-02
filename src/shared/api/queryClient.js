@@ -43,11 +43,6 @@ const EN_PRUEBAS = import.meta.env?.MODE === "test"
  */
 export function crearQueryClient({ alFallar } = {}) {
   return new QueryClient({
-    // Ninguna consulta debe fallar en silencio. Una pantalla que no mira su
-    // `error` deja a la persona ante una tabla vacía sin saber si no hay datos o
-    // si la petición se cayó, que son cosas muy distintas. Esto no sustituye al
-    // estado de error de la pantalla: es la red por debajo, para lo que nadie
-    // atrapó. Las cancelaciones no cuentan: cambiar de pantalla no es un fallo.
     queryCache: new QueryCache({
       onError: (error) => {
         if (error instanceof ApiError && error.fueCancelada) return

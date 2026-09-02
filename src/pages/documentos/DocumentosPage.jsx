@@ -24,8 +24,6 @@ import {
 } from '../../entities/document';
 import { COLOR } from '../../shared/ui/tokens';
 
-// Cada estado de vencimiento con su aspecto. Es una tabla porque la lógica de
-// qué estado tiene un documento vive en la entidad; aquí solo se pinta.
 const TEMA_POR_ESTADO = {
   [ESTADO_DOCUMENTO.SIN_CAPTURAR]: { status: 'Faltante', color: COLOR.APAGADO, bg: COLOR.LIENZO, border: COLOR.BORDE },
   [ESTADO_DOCUMENTO.VENCIDO]:      { status: 'Vencido', color: COLOR.PELIGRO, bg: COLOR.PELIGRO_FONDO, border: COLOR.PELIGRO_BORDE },

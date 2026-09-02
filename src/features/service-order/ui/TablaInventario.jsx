@@ -27,7 +27,6 @@ import {
 import { COLOR, TINTE } from '../../../shared/ui/tokens';
 import { FilasEsqueleto, Paginacion } from '../../../shared/ui';
 
-// **Definición de las categorías para el filtro**
 const CATEGORIES = ['Todas', 'Consumibles', 'Refacciones', 'Herramientas'];
 
 const TONO_NEUTRO = { bg: COLOR.LIENZO, texto: COLOR.TEXTO_SUAVE, borde: COLOR.BORDE, acento: COLOR.BORDE_FUERTE };
@@ -49,7 +48,6 @@ const tonoStock = (cantidad) => (
         : { bg: COLOR.LIENZO, texto: COLOR.TEXTO, borde: COLOR.BORDE }
 );
 
-
 /**
  * Tabla del inventario de refacciones y consumibles.
  *
@@ -65,7 +63,6 @@ const TablaInventario = () => {
     const [categoryFilter, setCategoryFilter] = useState('Todas');
     const [loading, setLoading] = useState(true);
 
-    // **Estados de Paginación**
     const [page, setPage] = useState(0); 
     const [rowsPerPage, setRowsPerPage] = useState(20); 
 
@@ -96,7 +93,6 @@ const TablaInventario = () => {
         fetchInventory();
     }, [fetchInventory]);
 
-    // **Lógica de filtrado combinada**
     const filteredInventory = useMemo(() => {
         const searchLower = searchTerm.toLowerCase();
         
@@ -114,7 +110,6 @@ const TablaInventario = () => {
         });
     }, [inventoryList, searchTerm, categoryFilter]);
     
-    // **Lógica de Paginación**
     const agotados = useMemo(
         () => filteredInventory.filter(item => (Number(item.cantidad_stock) || 0) <= 0).length,
         [filteredInventory]
@@ -126,7 +121,6 @@ const TablaInventario = () => {
         page * rowsPerPage,
         page * rowsPerPage + rowsPerPage
     );
-
 
     return (
         <Box>

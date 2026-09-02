@@ -41,10 +41,8 @@ describe("usePaginacion", () => {
     act(() => result.current.irAPagina(2))
     expect(result.current.visibles).toHaveLength(10)
 
-    // El usuario filtra y quedan 10 filas: la página 2 ya no existe.
     rerender({ f: filas(10) })
 
-    // Sin la acotación, aquí se vería una tabla vacía con datos que sí están.
     expect(result.current.pagina).toBe(0)
     expect(result.current.visibles).toHaveLength(10)
   })

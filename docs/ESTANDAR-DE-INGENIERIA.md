@@ -372,18 +372,23 @@ la aplicación sigue usable y que se puede salir navegando, sin recargar.
 **Todo lo exportado lleva documentación.** Nombre, parámetros, retorno y —cuando el
 comportamiento sorprende— un ejemplo.
 
-**Dentro del cuerpo de una función, cero comentarios.** Un comentario que explica *qué* hace
-una línea es una línea mal escrita. El *porqué* va en el commit o en un registro de
-decisión, que es donde alguien lo va a buscar dentro de un año.
+**Dentro del cuerpo de una función, cero comentarios.** Ninguno. Un comentario que explica
+*qué* hace una línea es una línea mal escrita; uno que explica *por qué* pertenece al
+commit o a un registro de decisión, que es donde alguien lo va a buscar dentro de un año.
 
-**Tres excepciones**, y solo tres:
+La única excepción son las **directivas** —`eslint-disable`, `@ts-ignore`—, que no son
+comentarios para leer sino instrucciones para las herramientas.
 
-1. Una **trampa real** que se repetiría: un formato de fecha inválido que llega del backend,
-   un prefijo con significado, un identificador que no es lo que parece.
-2. **Intención perdida**: código que existe pero no se aplica, y que borrar sería tomar una
-   decisión de negocio sin permiso. Se deja escrito por qué sigue ahí.
-3. La **razón de una excepción a una regla** —una supresión de linter, por ejemplo—, junto a
-   la excepción.
+**Por qué la regla no admite excepciones «razonables».** Toda excepción empieza como un
+caso legítimo —«esto sí es una trampa de verdad»— y termina siendo la puerta por la que
+vuelven los demás. Y hay una razón práctica: **un comentario envejece sin que nadie se
+entere.** Nada falla cuando deja de ser cierto, así que sobrevive años describiendo un
+código que ya cambió, y engaña a quien confía en él.
+
+Barrer los comentarios de un proyecto es además una forma barata de encontrar código
+muerto: en este, quitarlos dejó al descubierto un `if` cuyo único contenido era una nota
+—no hacía nada— y tres importaciones que ya no usaba nadie. El comentario los estaba
+escondiendo.
 
 ### Los registros de decisión
 

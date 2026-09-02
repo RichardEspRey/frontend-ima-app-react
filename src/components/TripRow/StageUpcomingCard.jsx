@@ -31,7 +31,6 @@ export const StageUpcomingCard = ({ etapa, getDocumentUrl }) => {
     const deliveryDate = etapa.delivery_date ? dayjs(etapa.delivery_date).format("DD/MM/YY") : '--';
     const tieneParadas = Array.isArray(etapa.stops_in_transit) && etapa.stops_in_transit.length > 0;
 
-    // 1. Separamos SOLO el BL Firmado
     const mainBLDocs = Array.isArray(etapa.documentos_adjuntos)
         ? etapa.documentos_adjuntos.filter(d => d.tipo_documento.toLowerCase() === 'bl_firmado')
         : [];
@@ -48,7 +47,6 @@ export const StageUpcomingCard = ({ etapa, getDocumentUrl }) => {
     return (
         <Paper elevation={0} sx={{ borderRadius: 2, overflow: 'hidden', border: `1px solid ${COLOR.BORDE}`, mb: 1 }}>
 
-            {/* ENCABEZADO DE LA ETAPA */}
             <Box sx={{ bgcolor: COLOR.CABECERA, px: 2.5, py: 1.5, borderBottom: `1px solid ${COLOR.BORDE}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
                 <Stack direction="row" alignItems="center" spacing={2} flexWrap="wrap" useFlexGap>
                     <Typography variant="overline" sx={{ color: COLOR.TENUE, fontWeight: 700, letterSpacing: '0.06em', fontSize: '0.68rem' }}>
@@ -83,7 +81,6 @@ export const StageUpcomingCard = ({ etapa, getDocumentUrl }) => {
 
             <Box sx={{ p: 2.5, pb: tieneParadas ? 1 : 2.5 }}>
                 <Grid container spacing={2} alignItems="center">
-                    {/* ORIGEN Y FECHA SALIDA */}
                     <Grid item xs={12} md={5}>
                         <Paper variant="outlined" sx={{ p: 2, bgcolor: COLOR.CABECERA, borderRadius: 2, borderLeft: `3px solid ${COLOR.INFO}`, borderColor: COLOR.BORDE }}>
                             <Stack direction="row" alignItems="center" spacing={1} mb={1.5}>
@@ -205,7 +202,6 @@ export const StageUpcomingCard = ({ etapa, getDocumentUrl }) => {
                             <InsertDriveFileOutlinedIcon sx={{ fontSize: 15 }} /> Documentos de la Etapa
                         </Typography>
 
-                        {/* Renderizamos solo los "otros documentos" (Incluye el BL normal) */}
                         {otrosDocumentos.length > 0 ? (
                             <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
                                 {otrosDocumentos.map(doc => (

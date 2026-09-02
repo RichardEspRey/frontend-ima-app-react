@@ -9,7 +9,6 @@ const useFetchExpenseTypes = () => {
     useEffect(() => {
         const fetchTypes = async () => {
             try {
-                // Asume que tu API está en el mismo archivo
                 const formData = new FormData();
                 formData.append('op', 'getExpenseTypes');
 

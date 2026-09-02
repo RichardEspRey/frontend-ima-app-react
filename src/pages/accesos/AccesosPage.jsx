@@ -63,7 +63,6 @@ export default function AccesosPage() {
   const alCambiarPermiso = async (userId, featureId, _plataforma, concedido) => {
     try {
       await cambiarPermiso.mutateAsync({ userId, featureId, concedido })
-      // Si el admin se cambió sus propios permisos, el menú tiene que reflejarlo.
       if (String(userId) === String(usuario?.id)) await refrescarPermisosPropios(userId)
     } catch (e) {
       notify.error(e, "No se pudo cambiar el permiso")
@@ -80,9 +79,6 @@ export default function AccesosPage() {
     }
   }
 
-  // Los conductores van en su propia pestaña: son 16 de 31 y su acceso es a la
-  // app móvil, así que mezclarlos con el personal de oficina hace más difícil
-  // encontrar a cualquiera de los dos.
   const esConductor = (usuario) => usuario.type === TIPO_USUARIO_API.DRIVER
   const dePestana = usuarios.filter((u) => (pestana === 1 ? esConductor(u) : !esConductor(u)))
   const visibles = busqueda

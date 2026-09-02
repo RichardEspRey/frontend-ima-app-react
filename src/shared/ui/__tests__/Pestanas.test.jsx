@@ -75,10 +75,6 @@ describe("Pestanas", () => {
     const dos = screen.getByRole("tab", { name: "Dos" })
     expect(dos).toBeDisabled()
 
-    // fireEvent y no userEvent: userEvent se niega a pulsar algo con
-    // pointer-events none, que es justo lo que MUI le pone a una pestaña
-    // deshabilitada. Con fireEvent el clic llega y se comprueba lo que importa:
-    // que aun llegando, no dispara el cambio.
     fireEvent.click(dos)
     expect(alCambiar).not.toHaveBeenCalled()
   })

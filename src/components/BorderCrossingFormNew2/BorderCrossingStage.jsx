@@ -14,11 +14,10 @@ const BorderCrossingStage = ({
     handleCreateCompany, handleCreateWarehouse, 
     loadingStates, 
     removeStop, updateStop, openDocModal,
-    origenes // 🚨 NUEVA PROP: Recibe el catálogo desde el padre
+    origenes
 }) => {
     return (
         <Grid container spacing={3}>
-            {/* Compañía */}
             <Grid item xs={12} md={3}>
                 <Typography variant="caption" fontWeight={700}>Compañía</Typography>
                 <SelectWrapper
@@ -32,7 +31,6 @@ const BorderCrossingStage = ({
                 />
             </Grid>
 
-            {/* ORIGEN */}
             <Grid item xs={12} md={4}>
                 <Paper variant="outlined" sx={{ p: 2, height: '100%', bgcolor: COLOR.LIENZO }}>
                     <Typography variant="subtitle2" color="primary" sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
@@ -40,7 +38,6 @@ const BorderCrossingStage = ({
                     </Typography>
                     
                     <Stack spacing={2}>
-                        {/* 🚨 Autocomplete inteligente para Origen y Zip Code */}
                         <Autocomplete
                             freeSolo
                             options={origenes || []}
@@ -88,7 +85,6 @@ const BorderCrossingStage = ({
                 </Paper>
             </Grid>
 
-            {/* Destino */}
             <Grid item xs={12} md={5}>
                 <Paper variant="outlined" sx={{ p: 2, height: '100%' }}>
                     <Typography variant="subtitle2" color="error" sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
@@ -121,7 +117,6 @@ const BorderCrossingStage = ({
                 </Paper>
             </Grid>
 
-            {/* Paradas */}
             <StopsSection stops={etapa.stops_in_transit} stageIndex={index} updateStop={updateStop} removeStop={removeStop} openDocModal={openDocModal} />
 
             <Grid item xs={12}><Divider /></Grid>

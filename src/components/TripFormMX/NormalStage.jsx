@@ -14,11 +14,10 @@ const NormalStage = ({
     handleCreateCompany, handleCreateWarehouse, 
     loadingStates, 
     removeStop, updateStop, openDocModal,
-    origenes // 🚨 NUEVA PROP: Recibe el catálogo desde el padre
+    origenes
 }) => {
     return (
         <Grid container spacing={3}>
-            {/* Compañía */}
             <Grid item xs={12} md={4}>
                 <Typography variant="caption" fontWeight={700}>Compañía</Typography>
                 <SelectWrapper
@@ -32,7 +31,6 @@ const NormalStage = ({
                 />
             </Grid>
 
-            {/* ORIGEN */}
             <Grid item xs={12} md={4}>
                 <Paper variant="outlined" sx={{ p: 2, height: '100%', bgcolor: COLOR.LIENZO }}>
                     <Typography variant="subtitle2" color="primary" sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
@@ -40,19 +38,16 @@ const NormalStage = ({
                     </Typography>
                     
                     <Stack spacing={2}>
-                        {/* 🚨 Autocomplete inteligente para Origen y Zip Code */}
                         <Autocomplete
                             freeSolo
                             options={origenes || []}
                             getOptionLabel={(option) => typeof option === 'string' ? option : option.nombre}
                             value={etapa.origin || ''}
                             onChange={(event, newValue) => {
-                                // Si el usuario selecciona una opción del catálogo
                                 if (newValue && typeof newValue === 'object') {
                                     updateStage(index, 'origin', newValue.nombre);
                                     updateStage(index, 'zip_code_origin', newValue.zip_code);
                                 } else {
-                                    // Si el usuario escribe algo libre o lo borra
                                     updateStage(index, 'origin', newValue || '');
                                 }
                             }}
@@ -63,7 +58,7 @@ const NormalStage = ({
                                     size="small" 
                                     fullWidth 
                                     placeholder="Ej: Nuevo Laredo, Tamps"
-                                    onChange={(e) => updateStage(index, 'origin', e.target.value)} // Permite escritura libre
+                                    onChange={(e) => updateStage(index, 'origin', e.target.value)}
                                 />
                             )}
                         />
@@ -90,7 +85,6 @@ const NormalStage = ({
                 </Paper>
             </Grid>
 
-            {/* DESTINO */}
             <Grid item xs={12} md={4}>
                 <Paper variant="outlined" sx={{ p: 2, height: '100%' }}>
                     <Typography variant="subtitle2" color="error" sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>

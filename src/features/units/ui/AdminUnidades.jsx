@@ -39,8 +39,6 @@ import { COLOR } from "../../../shared/ui/tokens"
 const REQUISITO_EN_BLANCO = { label: "", categoria: "USA", tipo: "file", tiene_vencimiento: true }
 const BAJA_EN_BLANCO = { motivo: "", fecha: "", observaciones: "" }
 
-// Constante de módulo, no un literal por render: es lo que evita que los
-// `useMemo` que dependen de estas listas se recalculen en cada pintado.
 const VACIO = []
 
 /**

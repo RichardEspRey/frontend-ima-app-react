@@ -108,7 +108,6 @@ export default function SafetyPage() {
     fileInputRef.current.click();
   };
 
-  // File selected → open correct modal (no upload yet)
   const handleFileChange = async (e) => {
     const file = await archivoDelEvento(e);
     if (!file) return;

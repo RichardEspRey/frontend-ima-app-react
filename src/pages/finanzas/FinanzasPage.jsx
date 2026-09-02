@@ -126,7 +126,6 @@ const FinanzasPage = () => {
     setPage(0);
   };
 
-  // --- LÓGICA DE FILTRADO ---
   const filteredAndSorted = useMemo(() => {
     let result = [...trips];
 
@@ -163,7 +162,6 @@ const FinanzasPage = () => {
       result = result.filter(t => t.status_trip === Number(statusFilter));
     }
 
-    // Ordenamiento
     result.sort((a, b) => {
       const statusA = a.status_trip ?? 0;
       const statusB = b.status_trip ?? 0;
@@ -363,7 +361,6 @@ const FinanzasPage = () => {
                 </TextField>
             </Grid>
 
-            {/* Botón Guardar */}
             <Grid item xs={12} md={3} display="flex" justifyContent="flex-end">
                 <Tooltip title={dirtyCount ? `Guardar ${dirtyCount} cambios` : 'No hay cambios pendientes'}>
                     <span>

@@ -12,7 +12,6 @@ const paresDelSql = () => {
   return pares
 }
 
-
 describe("el SQL y el catálogo de JS no pueden discrepar", () => {
   it("cada par rol-permiso del SQL existe en PERMISOS_POR_ROL", () => {
     const enJs = new Set()
@@ -53,9 +52,6 @@ describe("el SQL y el catálogo de JS no pueden discrepar", () => {
   })
 
   it("no usa sintaxis que necesite MySQL 8, porque el hosting puede ser 5.7", () => {
-    // VALUES(col) dentro de ON DUPLICATE KEY UPDATE sí existe en 5.7: es la
-    // función, no el constructor de tabla. Lo que no vale es FROM (VALUES ...)
-    // ni los CTE, ambos de MySQL 8.
     expect(SQL).not.toMatch(/FROM\s*\(\s*VALUES/i)
     expect(SQL).not.toMatch(/AS\s+\w+\s*\([a-z_]+\s*,/i)
     expect(SQL).not.toMatch(/^\s*WITH\s+\w+\s+AS\s*\(/im)

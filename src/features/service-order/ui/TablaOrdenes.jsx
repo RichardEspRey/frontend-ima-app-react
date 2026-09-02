@@ -39,27 +39,22 @@ const apiHost = import.meta.env.VITE_API_HOST;
 const TablaOrdenes = () => {
     const navigate = useNavigate();
     
-    // --- ESTADOS DE DATOS ---
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [editingDetail, setEditingDetail] = useState(null);
 
-    // --- ESTADOS DE FILTROS ---
-    const [filterId, setFilterId] = useState(''); // <--- NUEVO
+    const [filterId, setFilterId] = useState('');
     const [filterTruck, setFilterTruck] = useState('');
     const [filterMaintenance, setFilterMaintenance] = useState('All');
     const [filterRepair, setFilterRepair] = useState('All');
     const [startDate, setStartDate] = useState(null);
     const [endDate, setEndDate] = useState(null);
 
-    // Paginación
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
 
-    // Hook para Tipos de Reparación
     const { repairTypes, loadingRepairTypes, refetchRepairTypes } = useFetchRepairTypes();
 
-    // --- FETCH ---
     const fetchOrders = useCallback(async () => {
         setLoading(true);
         const formData = new FormData();
@@ -109,7 +104,6 @@ const TablaOrdenes = () => {
         }
     };
 
-    // --- LÓGICA DE FILTRADO ---
     const filteredOrders = useMemo(() => {
         return orders.filter((o) => {
             

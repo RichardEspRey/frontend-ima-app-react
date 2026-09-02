@@ -2,12 +2,6 @@ import { describe, it, expect } from "vitest"
 import jsPDF from "jspdf"
 import autoTable from "jspdf-autotable"
 
-/*
- * Ninguna prueba cubría la generación de PDF, así que un salto de versión mayor
- * de jspdf pasaba en verde y reventaba en producción, al exportar. Esto ejerce
- * exactamente la API que usan ResumenTrip, TicketPayment e IFTA.
- */
-
 describe("jspdf: la API que usa la app sigue existiendo", () => {
   it("construye un documento con las tres firmas que se usan", () => {
     expect(new jsPDF()).toBeTruthy()

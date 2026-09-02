@@ -16,10 +16,6 @@ import CloseIcon from '@mui/icons-material/Close';
 import logoWhite from '../../assets/images/logo_white.png';
 import { COLOR, TINTE } from '../../shared/ui/tokens';
 
-// Las 6 tarjetas van en una sola retícula para que el número de columnas
-// siempre divida exacto a 6 y no quede ninguna huérfana a media fila.
-// El sidebar ocupa 280px fijos: por debajo de `lg` las 3 columnas darían
-// tarjetas de menos de 250px.
 const MOSAIC_SX = {
   display: 'grid',
   gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' },
@@ -118,7 +114,6 @@ export const InicioPage = () => {
   const closePolicy = () => setOpenPolicy(null);
 
   return (
-    /* Sin padding ni minHeight: DashboardLayout ya los aplica y es quien hace scroll. */
     <Box>
 
       <Paper

@@ -18,7 +18,6 @@ export const DocPreviewModal = ({ open, onClose, file, filename, tripId, docType
     const [error, setError] = useState(null);
     const internalFileInputRef = useRef(null);
 
-    // Reset internal state when modal closes
     useEffect(() => {
         if (!open) {
             setPendingFile(null);
@@ -27,7 +26,6 @@ export const DocPreviewModal = ({ open, onClose, file, filename, tripId, docType
         }
     }, [open]);
 
-    // Build preview URL from pending or passed file
     useEffect(() => {
         const activeFile = pendingFile || file;
         if (!open || !activeFile) {
@@ -39,7 +37,6 @@ export const DocPreviewModal = ({ open, onClose, file, filename, tripId, docType
         return () => URL.revokeObjectURL(url);
     }, [open, file, pendingFile]);
 
-    // Viewing server file: use server URL directly
     const serverUrl = filename ? `${apiHost}/Uploads/Safety/${filename}` : null;
 
     const activeFile = pendingFile || file;
@@ -47,7 +44,6 @@ export const DocPreviewModal = ({ open, onClose, file, filename, tripId, docType
     const displayName = activeFile?.name || filename || '';
     const isPdf = displayName.toLowerCase().endsWith('.pdf');
 
-    // Is this file already on the server (not pending local replacement)
     const isServerFile = !!filename && !pendingFile && !file;
 
     const handleNewFileSelect = async (e) => {
@@ -82,18 +78,15 @@ export const DocPreviewModal = ({ open, onClose, file, filename, tripId, docType
     };
 
     const handleDelete = async () => {
-        // Pending replacement → just clear (go back to server file view)
         if (pendingFile) {
             setPendingFile(null);
             return;
         }
-        // New file passed from outside, not yet on server → just close
         if (!filename) {
             onDeleteSuccess?.();
             onClose();
             return;
         }
-        // File is on server → delete it
         setDeleting(true);
         setError(null);
         try {
@@ -151,7 +144,6 @@ export const DocPreviewModal = ({ open, onClose, file, filename, tripId, docType
             </DialogContent>
 
             <DialogActions sx={{ px: 3, py: 2, borderTop: `1px solid ${COLOR.BORDE}`, justifyContent: 'space-between' }}>
-                {/* Left: Delete */}
                 <Button
                     variant="outlined"
                     color="error"
@@ -162,13 +154,11 @@ export const DocPreviewModal = ({ open, onClose, file, filename, tripId, docType
                     {deleting ? 'Eliminando...' : 'Eliminar'}
                 </Button>
 
-                {/* Right: Cancel + action */}
                 <Box sx={{ display: 'flex', gap: 1 }}>
                     <Button onClick={onClose} disabled={uploading || deleting} color="inherit">
                         Cancelar
                     </Button>
 
-                    {/* Viewing server file, no replacement selected yet */}
                     {isServerFile && (
                         <>
                             <input
@@ -188,7 +178,6 @@ export const DocPreviewModal = ({ open, onClose, file, filename, tripId, docType
                         </>
                     )}
 
-                    {/* New file ready to upload (initial or replacement) */}
                     {activeFile && (
                         <Button
                             variant="contained"

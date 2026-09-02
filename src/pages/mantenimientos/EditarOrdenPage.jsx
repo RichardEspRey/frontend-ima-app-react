@@ -18,7 +18,6 @@ import { SelectorBusqueda } from "../../shared/ui";
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
-
 const money = (v) => new Intl.NumberFormat("es-MX", { style: "currency", currency: "USD" }).format(Number(v || 0));
 
 /**
@@ -30,13 +29,11 @@ export default function EditarOrdenPage() {
     const navigate = useNavigate();
     const { orderId } = useParams();
 
-    // --- Hooks ---
     const { inventoryItems, loading: itemsLoading } = useFetchInventoryItems();
     const { repairTypes } = useFetchRepairTypes();
     const [trucks, setTrucks] = useState([]);
     const [loadingData, setLoadingData] = useState(true);
 
-    // Cargar Camiones
     useEffect(() => {
         const fetchTrucks = async () => {
             const formData = new FormData();
@@ -50,29 +47,24 @@ export default function EditarOrdenPage() {
         fetchTrucks();
     }, []);
 
-    // --- Estados Generales ---
     const [selectedTruck, setSelectedTruck] = useState(null);
     const [dateForm, setDateForm] = useState("");
     const [tipoCambioOrden, setTipoCambioOrden] = useState("");
 
-    // --- Builder Servicio (Inputs) ---
     const [tipoMantenimiento, setTipoMantenimiento] = useState("Correctivo");
-    const [origenServicio, setOrigenServicio] = useState("Interno"); // <--- NUEVO CAMPO
+    const [origenServicio, setOrigenServicio] = useState("Interno");
     const [tipoReparacion, setTipoReparacion] = useState(null);
     const [costoMO, setCostoMO] = useState("");
     const [usarItems, setUsarItems] = useState(false);
     
-    // Items Builder
     const [itemSeleccionado, setItemSeleccionado] = useState(null);
     const [cant, setCant] = useState(1);
     const [pendItems, setPendItems] = useState([]);
 
-    // Lista Servicios 
     const [services, setServices] = useState([]);
     const [saving, setSaving] = useState(false);
     const seq = useRef(1);
 
-    // --- Memos ---
     const truckOptions = useMemo(() => trucks.map(t => ({ value: t.value, label: t.label })), [trucks]);
     const invOptions = useMemo(() => inventoryItems.map(it => ({
         value: it.value,
@@ -81,7 +73,6 @@ export default function EditarOrdenPage() {
         cantidad_stock: parseInt(it.cantidad_stock || 0, 10),
     })), [inventoryItems]);
 
-    // --- CARGAR ORDEN EXISTENTE ---
     useEffect(() => {
         if (!orderId) return;
         const loadOrder = async () => {
@@ -97,7 +88,6 @@ export default function EditarOrdenPage() {
                     setDateForm(o.fecha_orden);
                     setTipoCambioOrden(o.tipo_cambio || "");
                     
-                    // Mapear Servicios
                     const mappedServices = json.data.servicios.map(s => {
                         let moCost = 0;
                         const items = [];
@@ -137,8 +127,6 @@ export default function EditarOrdenPage() {
         loadOrder();
     }, [orderId]);
 
-
-    // --- Handlers Builder ---
     const addItemToPending = (tipo) => {
         if (!itemSeleccionado || !cant) return;
         setPendItems(prev => [...prev, {
@@ -167,10 +155,6 @@ export default function EditarOrdenPage() {
             detalles: usarItems ? [...pendItems] : []
         };
         
-        if (nuevo.costo_mano_obra > 0) {
-            // Ajustaremos el payload final para que sea consistente.
-        }
-
         setServices(prev => [...prev, nuevo]);
         
         setTipoReparacion(null);
@@ -186,7 +170,6 @@ export default function EditarOrdenPage() {
         return acc + itemsTotal + (s.costo_mano_obra || 0);
     }, 0), [services]);
 
-    // Guardar Edición
     const guardarCambios = async () => {
         if (!dateForm) return Swal.fire("Falta fecha", "", "warning");
         
@@ -222,7 +205,6 @@ export default function EditarOrdenPage() {
         fd.append('op', 'UpdateOrder');
         fd.append('id_orden', orderId);
         
-        // Datos Orden
         const ordenData = {
             fecha: dateForm,
             truck_id: selectedTruck ? selectedTruck.value : null, 

@@ -4,9 +4,6 @@ import { CampoFecha, aTextoFecha, aFecha } from "../CampoFecha"
 
 describe("aTextoFecha · la conversión que NO pasa por UTC", () => {
   it("respeta el día local sin importar la hora", () => {
-    // Es el fallo que traía la app: con `toISOString()`, un registro capturado
-    // el 2 a las 19:00 en Monterrey se guardaba como día 3, porque en UTC ya
-    // era el día siguiente.
     for (const hora of [0, 6, 12, 18, 20, 23]) {
       expect(aTextoFecha(new Date(2026, 8, 2, hora, 30))).toBe("2026-09-02")
     }
@@ -17,7 +14,6 @@ describe("aTextoFecha · la conversión que NO pasa por UTC", () => {
     const conUtc = tarde.toISOString().split("T")[0]
 
     expect(aTextoFecha(tarde)).toBe("2026-09-02")
-    // Se deja escrito para que nadie “simplifique” volviendo a toISOString.
     expect(conUtc).not.toBe("2026-09-02")
   })
 
@@ -42,8 +38,6 @@ describe("aFecha · la vuelta, también local", () => {
   it("construye la fecha en hora local, no en UTC", () => {
     const d = aFecha("2026-09-02")
 
-    // `new Date("2026-09-02")` daría medianoche UTC, que en México es el día 1
-    // por la tarde. Por eso se construye con año, mes y día por separado.
     expect(d.getFullYear()).toBe(2026)
     expect(d.getMonth()).toBe(8)
     expect(d.getDate()).toBe(2)
@@ -62,8 +56,6 @@ describe("aFecha · la vuelta, también local", () => {
 
 describe("CampoFecha · el contrato con react-datepicker", () => {
   it("entrega un objeto Date, no un texto", () => {
-    // Las pantallas hacen `fecha.getFullYear()` y cosas así. Si esto entregara
-    // un texto, esas llamadas reventarían al guardar.
     const alCambiar = vi.fn()
     render(<CampoFecha value={null} onChange={alCambiar} label="Fecha" />)
 

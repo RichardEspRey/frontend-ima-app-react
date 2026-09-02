@@ -10,7 +10,6 @@ import PlaceOutlinedIcon from "@mui/icons-material/PlaceOutlined"
 import ScheduleOutlinedIcon from "@mui/icons-material/ScheduleOutlined"
 
 import { estaDisponible, leerValorCaja, valorCaja } from "../../../entities/schedule"
-import { selectStyles } from "../../../utils/tripFormConstants"
 import { COLOR } from "../../../shared/ui/tokens"
 import { BloqueEsqueleto, Selector, SelectorBusqueda } from "../../../shared/ui"
 

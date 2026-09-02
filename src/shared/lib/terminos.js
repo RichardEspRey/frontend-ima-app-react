@@ -23,13 +23,11 @@
  * @enum {string}
  */
 export const TERMINO = {
-  // Los dos que se quedan en inglés, por decisión del equipo.
   TRIP: "Trip #",
   TRIP_LARGO: "Trip Number",
   DRIVER: "Driver",
   DRIVERS: "Driver(s)",
 
-  // El resto, en español.
   CAMION: "Camión",
   CAJA: "Caja",
   ETAPAS: "Etapas",

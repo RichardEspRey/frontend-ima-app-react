@@ -18,7 +18,6 @@ import { SelectorBusqueda } from "../../shared/ui";
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
-
 const money = (v) => new Intl.NumberFormat("es-MX", { style: "currency", currency: "USD" }).format(Number(v || 0));
 
 /**
@@ -29,12 +28,10 @@ const money = (v) => new Intl.NumberFormat("es-MX", { style: "currency", currenc
 export default function NuevaOrdenPage() {
     const navigate = useNavigate();
 
-    // --- Hooks ---
     const { inventoryItems, loading: itemsLoading } = useFetchInventoryItems();
     const { repairTypes } = useFetchRepairTypes(); 
     const [trucks, setTrucks] = useState([]);
 
-    // Cargar Camiones
     useEffect(() => {
         const fetchTrucks = async () => {
             const formData = new FormData();
@@ -48,29 +45,24 @@ export default function NuevaOrdenPage() {
         fetchTrucks();
     }, []);
 
-    // --- Estados Generales ---
     const [selectedTruck, setSelectedTruck] = useState(null);
     const [dateForm, setDateForm] = useState(new Date().toISOString().slice(0, 10));
     const [tipoCambioOrden, setTipoCambioOrden] = useState("");
     
-    // --- Estados Builder (Servicio actual) ---
     const [tipoMantenimiento, setTipoMantenimiento] = useState("Correctivo");
     const [origenServicio, setOrigenServicio] = useState("Interno");
     const [tipoReparacion, setTipoReparacion] = useState(null);
     const [costoMO, setCostoMO] = useState("");
     const [usarItems, setUsarItems] = useState(false);
 
-    // Items Builder
     const [itemSeleccionado, setItemSeleccionado] = useState(null);
     const [cant, setCant] = useState(1);
     const [pendItems, setPendItems] = useState([]);
     
-    // Lista de Servicios (Ticket)
     const [services, setServices] = useState([]);
     const [saving, setSaving] = useState(false);
     const seq = useRef(1);
 
-    // --- Memos ---
     const truckOptions = useMemo(() => trucks.map(t => ({ value: t.value, label: t.label })), [trucks]);
     const invOptions = useMemo(() => inventoryItems.map(it => ({
         value: it.value, label: it.label,
@@ -80,7 +72,6 @@ export default function NuevaOrdenPage() {
 
     const stockSelected = itemSeleccionado?.cantidad_stock || 0;
 
-    // --- Handlers ---
     const addItemToPending = (tipo) => {
         if (!itemSeleccionado || !cant || cant <= 0) return;
         setPendItems(prev => [...prev, {

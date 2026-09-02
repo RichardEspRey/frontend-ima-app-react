@@ -39,18 +39,6 @@ export const NORMAL_TRIP_DOCS_BY_COUNTRY = {
   },
 };
 
-export const selectStyles = {
-  control: (provided) => ({
-    ...provided,
-    padding: "2px",
-    borderRadius: "4px",
-    border: `1px solid ${COLOR.BORDE_FUERTE}`,
-    fontSize: "15px",
-    minHeight: "45px",
-    backgroundColor: COLOR.BLANCO,
-  }),
-  menu: (provided) => ({ ...provided, zIndex: 9999 }),
-};
 
 export const getDocumentUrl = (doc, apiHost) => {
   if (!doc) return "#";

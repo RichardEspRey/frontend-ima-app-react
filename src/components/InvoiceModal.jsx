@@ -12,9 +12,6 @@ import { COLOR } from '../shared/ui/tokens';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
-// Arma la ruta como una pierna por línea cuando hay paradas adicionales:
-// Origen -> Parada 1 / Parada 1 -> Parada 2 / Parada 2 -> Destino.
-// Sin paradas, se queda igual que antes: Origen -> Destino.
 const buildRouteDescription = (stageData) => {
     const origin = stageData?.origin || 'Origen';
     const destination = stageData?.destination || 'Destino';
@@ -38,9 +35,6 @@ const InvoiceModal = ({ isOpen, onClose, stageData, tripData, onSaveInvoice }) =
     const [viewMode, setViewMode] = useState('form');
     const [saving, setSaving] = useState(false);
 
-    // Empresas con su nombre/dirección de facturación ya conocidos (tabla
-    // company_invoice_info, unida por company_id). Sirve tanto para
-    // autocompletar al abrir el modal como para el selector manual.
     const [companyOptions, setCompanyOptions] = useState([]);
     const [loadingCompanies, setLoadingCompanies] = useState(false);
 
@@ -95,8 +89,6 @@ const InvoiceModal = ({ isOpen, onClose, stageData, tripData, onSaveInvoice }) =
         }
     }, [isOpen, stageData, tripData]);
 
-    // Autocompleta nombre/dirección de facturación en cuanto llega la lista de
-    // empresas, comparando por company_id de la etapa (no por texto).
     useEffect(() => {
         if (!isOpen || !stageData?.company_id || companyOptions.length === 0) return;
         const match = companyOptions.find(c => String(c.company_id) === String(stageData.company_id));
@@ -145,9 +137,6 @@ const InvoiceModal = ({ isOpen, onClose, stageData, tripData, onSaveInvoice }) =
                 throw new Error(result.message || 'No se pudo generar el invoice.');
             }
 
-            // Guarda/actualiza el nombre y dirección de facturación de esta empresa
-            // para que la próxima vez se rellene solo. No debe tumbar el guardado
-            // del invoice si esto falla, por eso va en su propio try/catch.
             if (stageData?.company_id && invoiceForm.client_name.trim()) {
                 try {
                     const fdCompany = new FormData();
@@ -187,7 +176,6 @@ const InvoiceModal = ({ isOpen, onClose, stageData, tripData, onSaveInvoice }) =
             
             <DialogContent dividers sx={{ bgcolor: COLOR.RELLENO, p: viewMode === 'form' ? 3 : 0 }}>
                 
-                {/* === VISTA 1: FORMULARIO === */}
                 {viewMode === 'form' && (
                     <Grid container spacing={3}>
                         <Grid item xs={12}>
@@ -288,7 +276,6 @@ const InvoiceModal = ({ isOpen, onClose, stageData, tripData, onSaveInvoice }) =
                     </Grid>
                 )}
 
-                {/* === VISTA 2: PREVIEW === */}
                 {viewMode === 'preview' && (
                     <Box sx={{ p: 4, bgcolor: COLOR.TENUE, display: 'flex', justifyContent: 'center', minHeight: '600px' }}>
                         <InvoicePreview data={invoiceForm} />

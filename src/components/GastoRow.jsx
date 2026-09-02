@@ -23,7 +23,6 @@ const apiHost = import.meta.env.VITE_API_HOST;
 const isImageUrl = (url = '') => /\.(png|jpe?g|gif|webp|bmp|tiff?)$/i.test(url);
 const fileName = (path = '') => path.split('/').pop() || '';
 
-// Mismo lenguaje visual que el Administrador de Viajes.
 const SUB_HEADER_CELL_SX = {
   fontWeight: 700, color: COLOR.TENUE, fontSize: '0.68rem',
   textTransform: 'uppercase', letterSpacing: '0.06em', borderBottom: `1px solid ${COLOR.BORDE}`,
@@ -47,8 +46,6 @@ const GastoRow = ({ gasto, mxnRate, puedeEliminar = false, onEliminado }) => {
     [gasto, mxnRate],
   );
 
-  // Resalta la columna que refleja la moneda en la que realmente se capturó el
-  // gasto (según el país elegido al crearlo), la otra columna es solo una conversión.
   const esOriginalUSD = !esMXN;
   const esOriginalMXN = esMXN && !totalMXNEsConvertido;
   const originalSx = { color: COLOR.EXITO, fontWeight: 700 };
@@ -93,7 +90,6 @@ const GastoRow = ({ gasto, mxnRate, puedeEliminar = false, onEliminado }) => {
 
   const lastExpenseType = tipoGastoPrincipal(gasto) || '—';
 
-  // Franja de color a la izquierda de la fila según el país del gasto.
   const accentColor = esMXN ? TINTE.TEAL.acento : TINTE.INDIGO.acento;
 
   return (

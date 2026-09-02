@@ -8,7 +8,6 @@ import { COLOR } from '../../shared/ui/tokens';
 const EmptyStage = ({ etapa, index, updateStage, origenes }) => {
     return (
         <Grid container spacing={3}>
-            {/* ORIGEN (MOVIMIENTO VACÍO) */}
             <Grid item xs={12} md={6}>
                 <Paper variant="outlined" sx={{ p: 2, height: '100%', bgcolor: COLOR.LIENZO }}>
                     <Typography variant="subtitle2" color="primary" sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
@@ -46,7 +45,6 @@ const EmptyStage = ({ etapa, index, updateStage, origenes }) => {
                 </Paper>
             </Grid>
 
-            {/* DESTINO (MOVIMIENTO VACÍO) */}
             <Grid item xs={12} md={6}>
                 <Paper variant="outlined" sx={{ p: 2, height: '100%', bgcolor: COLOR.LIENZO }}>
                     <Typography variant="subtitle2" color="error" sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
@@ -66,7 +64,6 @@ const EmptyStage = ({ etapa, index, updateStage, origenes }) => {
                 </Paper>
             </Grid>
 
-            {/* METRICS */}
             <Grid item xs={12}>
                 <Grid container spacing={2}>
                     <Grid item xs={12} sm={4}>

@@ -10,9 +10,6 @@ export const ENDPOINTS = {
   afinaciones: "afinaciones.php",
   auth: "Auth.php",
   autonomia: "autonomia.php",
-  // Conviven dos generaciones. La v2 es la que usan las pantallas vivas del
-  // menú —expediente de documentos con requisitos configurables—; la v1 solo la
-  // usan las altas antiguas, a las que ya no lleva ningún enlace.
   cajas: "cajas.php",
   cajasDocs: "cajas_docs.php",
   cajasV2: "cajas_v2.php",
@@ -20,8 +17,6 @@ export const ENDPOINTS = {
   charts: "charts.php",
   companies: "companies.php",
   cotizaciones: "Cotizaciones.php",
-  // Conviven dos versiones: la v2 la usa el Centro de Documentos y la v1 sigue
-  // viva porque el Sidebar lee de ella para el contador de pendientes.
   documentos: "IMA_Docs.php",
   documentosV2: "IMA_Docsv2.php",
   drivers: "drivers.php",
@@ -35,8 +30,6 @@ export const ENDPOINTS = {
   inspecciones: "inspecciones.php",
   inventario: "inventory.php",
   movil: "Mobile.php",
-  // Conviven dos versiones. La v2 la usan 12 archivos —todo el alta y edición de
-  // viajes nuevos—; la v1 sigue viva en las pantallas de edición antiguas.
   nuevosViajes: "new_trips.php",
   nuevosViajesV2: "new_tripsv2.php",
   pagosAdmin: "pagos_admin.php",

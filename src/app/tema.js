@@ -80,8 +80,6 @@ export const tema = createTheme({
 
     MuiPaper: {
       styleOverrides: {
-        // MUI pinta un degradado sobre el papel elevado; aquí estorba, porque el
-        // lenguaje de la app separa con bordes de 1 px, no con relieve.
         root: { backgroundImage: "none" },
         rounded: { borderRadius: RADIO.GRANDE },
       },
@@ -119,9 +117,6 @@ export const tema = createTheme({
 
     MuiOutlinedInput: {
       styleOverrides: {
-        // Sin fondo: el color de la superficie lo decide quien coloca el campo.
-        // Forzarlo aquí pintaba de blanco los campos que van sobre un panel
-        // oscuro —el buscador del Tracking— y su texto blanco desaparecía.
         root: {
           borderRadius: RADIO.NORMAL,
           "& fieldset": { borderColor: COLOR.BORDE },

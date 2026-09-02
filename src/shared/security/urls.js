@@ -48,7 +48,6 @@ export function esUrlSegura(url) {
   const limpia = url.trim()
   if (limpia === "") return false
 
-  // Un caracter de control dentro de la URL es justamente lo que se rechaza.
   // eslint-disable-next-line no-control-regex
   if (/[\u0000-\u001f\u007f]/.test(limpia)) return false
 

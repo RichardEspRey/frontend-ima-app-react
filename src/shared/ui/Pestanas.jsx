@@ -55,8 +55,6 @@ export function Pestanas({ valor, onChange, pestanas, sx }) {
         variant="scrollable"
         scrollButtons="auto"
         allowScrollButtonsMobile
-        // La línea inferior de MUI sobra: aquí lo que marca la pestaña activa es
-        // la pastilla oscura, y las dos juntas se leen como un error de pintado.
         TabIndicatorProps={{ sx: { display: "none" } }}
         sx={{ minHeight: 0, "& .MuiTabs-flexContainer": { gap: 0.5 } }}
       >

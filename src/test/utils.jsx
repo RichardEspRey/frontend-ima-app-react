@@ -34,8 +34,6 @@ export function sinSesion() {
  * })
  */
 export function renderPantalla(ui, { path = "/", ruta = "/" } = {}) {
-  // Cliente nuevo por prueba, sin reintentos: una prueba no debe heredar la
-  // caché de otra, y un reintento convierte un fallo en un timeout de 5 s.
   const cliente = new QueryClient({
     defaultOptions: { queries: { retry: false, gcTime: 0 } },
   });

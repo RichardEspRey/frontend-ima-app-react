@@ -123,9 +123,6 @@ export function EstadoError({ error, onReintentar, onInicio, titulo, compacto = 
         mx: "auto",
       }}
     >
-      {/* El icono va dentro de un disco del color de fondo del peligro, no
-          suelto: un icono rojo a secas sobre blanco se lee como una alerta
-          menor, y esto interrumpe el trabajo de alguien. */}
       <Box
         sx={{
           width: 72,
@@ -203,8 +200,6 @@ export function EstadoError({ error, onReintentar, onInicio, titulo, compacto = 
         {abierto ? "Ocultar detalle" : "Ver detalle técnico"}
       </Button>
 
-      {/* unmountOnExit: sin esto el detalle sigue en el DOM aunque no se vea, y
-          un lector de pantalla lee la traza entera a quien no la pidió. */}
       <Collapse in={abierto} unmountOnExit>
         <Box
           component="pre"

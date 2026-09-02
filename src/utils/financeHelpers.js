@@ -47,7 +47,6 @@ export const countCriticalStages = (stages) => {
   );
 };
 
-// Validaciones para el guardado
 export const validateStage = (stage) => {
   const errs = [];
   const metodo = (stage.payment_method ?? "").trim();

@@ -19,7 +19,6 @@ import {
 import { COLOR, TINTE, SERIE, BORDE } from "../../shared/ui/tokens";
 import { Selector } from "../../shared/ui";
 
-
 const valueFormatter = (v) =>
   new Intl.NumberFormat('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
     .format(Number(v || 0));
@@ -77,7 +76,6 @@ export default function ReportsPage() {
   const maintData = useMemo(() => normalizarMantenimiento(mantenimiento.data), [mantenimiento.data]);
   const maintLoading = mantenimiento.isLoading;
 
-  // --- PROCESSING ---
   const datasetDiesel = useMemo(
     () => agruparDieselPorMes(rows).map((f) => ({ ...f, label: etiquetaMes(f.month) })),
     [rows],
@@ -111,8 +109,6 @@ export default function ReportsPage() {
     if (newPeriod !== null) setCostPeriod(newPeriod);
   };
 
-  // --- HELPER PARA FILTRAR EL HISTORIAL ---
-  // Toma los últimos N elementos del array (si hay menos, los toma todos)
   const sliceData = (data) => ultimosMeses(Array.isArray(data) ? data : [], historyMonths);
 
   return (
@@ -127,7 +123,6 @@ export default function ReportsPage() {
             </Typography>
         </Box>
 
-        {/* --- SELECTOR DE RANGO DE TIEMPO --- */}
         <FormControl size="small" sx={{ minWidth: 200, bgcolor: 'white' }} variant="outlined">
             <InputLabel id="history-range-label" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                  Visualizar Historial
@@ -163,7 +158,7 @@ export default function ReportsPage() {
                     </Stack>
                 ) : (
                     <BarChart
-                        dataset={sliceData(maintData)} // <--- FILTRO APLICADO
+                        dataset={sliceData(maintData)}
                         xAxis={[{ dataKey: 'label', label: 'Mes', scaleType: 'band' }]}
                         series={[{ dataKey: 'total', label: 'Total Mantenimiento', valueFormatter, color: COLOR.APAGADO }]}
                         {...chartSetting}
@@ -176,7 +171,6 @@ export default function ReportsPage() {
         <Paper elevation={0} variant="outlined" sx={{ p: 4, borderRadius: 4, bgcolor: COLOR.BLANCO }}>
             <Stack direction="row" alignItems="center" spacing={1} mb={3}>
                 <Box sx={{ width: 4, height: 24, bgcolor: TINTE.VIOLETA.texto, borderRadius: 1 }} />
-                {/* <AttachMoneyIcon sx={{ color: TINTE.VIOLETA.texto }} /> */}
                 <Typography variant="h6" fontWeight={700}>Facturación vs Cobranza (Global)</Typography>
             </Stack>
             <Box sx={{ width: '100%', minHeight: 400 }}>
@@ -201,7 +195,6 @@ export default function ReportsPage() {
         <Paper elevation={0} variant="outlined" sx={{ p: 4, borderRadius: 4, bgcolor: COLOR.BLANCO }}>
             <Stack direction="row" alignItems="center" spacing={1} mb={3}>
                 <Box sx={{ width: 4, height: 24, bgcolor: TINTE.INDIGO.texto, borderRadius: 1 }} />
-                {/* <AttachMoneyIcon sx={{ color: TINTE.INDIGO.texto }} /> */}
                 <Typography variant="h6" fontWeight={700}>Facturación RTS</Typography>
             </Stack>
             <Box sx={{ width: '100%', minHeight: 400 }}>
@@ -224,7 +217,6 @@ export default function ReportsPage() {
             <Stack direction="row" justifyContent="space-between" alignItems="center" mb={3} flexWrap="wrap" gap={2}>
                 <Stack direction="row" alignItems="center" spacing={1}>
                     <Box sx={{ width: 4, height: 24, bgcolor: SERIE[2], borderRadius: 1 }} />
-                    {/* <LocalGasStationIcon sx={{ color: SERIE[2] }} /> */}
                     <Box>
                         <Typography variant="h6" fontWeight={700}>Costo de Diesel por Galón</Typography>
                     </Box>
@@ -270,7 +262,6 @@ export default function ReportsPage() {
         <Paper elevation={0} variant="outlined" sx={{ p: 4, borderRadius: 4, bgcolor: COLOR.BLANCO }}>
             <Stack direction="row" alignItems="center" spacing={1} mb={3}>
                 <Box sx={{ width: 4, height: 24, bgcolor: 'primary.main', borderRadius: 1 }} />
-                {/* <TrendingUpIcon color="primary" /> */}
                 <Typography variant="h6" fontWeight={700}>Evolución de Costos de Diésel</Typography>
             </Stack>
             <Box sx={{ width: '100%', minHeight: 400 }}>
@@ -290,7 +281,6 @@ export default function ReportsPage() {
         </Paper>
         
 
-        {/* --- SECCIÓN 4: TABLA --- */}
         <Paper elevation={0} variant="outlined" sx={{ borderRadius: 4, overflow: 'hidden' }}>
             <Box sx={{ p: 3, bgcolor: COLOR.LIENZO, borderBottom: BORDE }}>
                 <Stack direction="row" alignItems="center" spacing={1}>

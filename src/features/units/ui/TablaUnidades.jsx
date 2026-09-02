@@ -131,9 +131,6 @@ export function TablaUnidades({
   const [pagina, setPagina] = useState(0)
   const [porPagina, setPorPagina] = useState(10)
 
-  // Buscar o borrar puede dejar menos páginas de las que había. Sin acotar, la
-  // tabla se queda en una página que ya no existe y se ve vacía aunque haya
-  // resultados: pasaba al escribir en el buscador desde la página 2.
   const ultimaPagina = Math.max(0, Math.ceil(unidades.length / porPagina) - 1)
   const paginaActual = Math.min(pagina, ultimaPagina)
 

@@ -73,8 +73,6 @@ describe("contra la respuesta real de la API", () => {
   })
 
   it("hay artículos sin nombre en producción y quedan marcados", () => {
-    // Uno de ellos tiene stock 1: son existencias reales que no se pueden
-    // esconder. Marcarlos permite encontrarlos para limpiar la base.
     const { articulos } = normalizarArticulos(REAL.data)
     const rotos = articulos.filter(sinNombre)
     expect(rotos.length).toBeGreaterThan(0)

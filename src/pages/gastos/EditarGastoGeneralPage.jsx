@@ -30,8 +30,6 @@ import { archivoDelEvento, GRUPOS_ARCHIVO } from '../../shared/security';
 import { COLOR, TINTE } from '../../shared/ui/tokens';
 import { SelectorBusqueda, CampoFecha, aTextoFecha } from '../../shared/ui';
 
-// La app móvil puede subir el "ticket" como PDF escaneado en vez de imagen
-// (ej. archivos "scan_*.pdf"), no solo JPG/PNG. Un <img> no puede mostrar un PDF.
 const isImageUrl = (url = '') => /\.(png|jpe?g|gif|webp|bmp|tiff?)$/i.test(url);
 
 /**
@@ -52,8 +50,6 @@ const ExpenseEdit = () => {
   const [country, setCountry] = useState(null);
   const [expenseDate, setExpenseDate] = useState(new Date());
   const [totalAmount, setTotalAmount] = useState('0.00');
-  // La columna "Total (MX)" de la tabla sale de cantidad_original: sin estos
-  // campos un gasto en pesos no se puede corregir.
   const [originalAmount, setOriginalAmount] = useState('');
   const { exchangeRate, setExchangeRate, fetchExchangeRate } = useFetchExchangeRate();
   const [expenseDetails, setExpenseDetails] = useState([]);
@@ -214,8 +210,6 @@ const ExpenseEdit = () => {
         fd.append("fecha_gasto", aTextoFecha(expenseDate));
         fd.append("moneda", esMXN ? 'MXN' : 'USD');
         fd.append("monto_total", totalAmount);
-        // El backend solo escribe las columnas que recibe: omitir las vacías
-        // evita borrar lo que ya tenía el gasto.
         if (originalAmount !== '' && originalAmount !== null) fd.append("cantidad_original", originalAmount);
         if (esMXN && exchangeRate) fd.append("tipo_cambio", exchangeRate);
         fd.append("id_usuario", user?.id);

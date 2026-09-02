@@ -1,8 +1,6 @@
-// src/hooks/useFetchExchangeRate.js
 import { useState, useCallback } from "react";
 import Swal from "sweetalert2";
 
-// Endpoint Correcto para cotizaciones USD/MXN
 const DOLAR_API_URL = "https://mx.dolarapi.com/v1/cotizaciones/usd";
 const HISTORICO_API_URL = "https://api.frankfurter.dev/v1";
 
@@ -32,7 +30,6 @@ const tasaHistorica = async (fecha) => {
  * La tasa se usa para convertir Monto Original (MXN) a Monto Total (USD).
  */
 const useFetchExchangeRate = () => {
-  // Almacena la tasa de cambio (Ej: 17.50 MXN por 1 USD)
   const [exchangeRate, setExchangeRate] = useState("");
 
   const fetchExchangeRate = useCallback(async (fecha) => {

@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 
-// SUGERENCIA: Renombrar la función para que sea más descriptiva
 function useFetchCategories() {
   const apiHost = import.meta.env.VITE_API_HOST;
   const [maintenanceCategories, setMaintenanceCategories] = useState([]);
@@ -50,5 +49,4 @@ function useFetchCategories() {
   return { maintenanceCategories, loading, error, refetch: fetchCategories };
 }
 
-// SUGERENCIA: Exportar con el nuevo nombre
 export default useFetchCategories;

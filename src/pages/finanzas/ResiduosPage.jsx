@@ -22,7 +22,7 @@ const money = (v) =>
  * @returns {object} La pantalla.
  */
 const ResiduosPage = () => {
-  const [rows, setRows] = useState([]);      // [{ trip_id, trip_number, status, creation_date, nombre, rate_tarifa, diesel, gastos }]
+  const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
 
@@ -30,7 +30,7 @@ const ResiduosPage = () => {
     setLoading(true);
     try {
       const fd = new FormData();
-      fd.append('op', 'residuo_trip');               // <- trips.php
+      fd.append('op', 'residuo_trip');
       const res = await fetch(`${apiHost}/trips.php`, {
         method: 'POST',
         body: fd,
@@ -38,7 +38,6 @@ const ResiduosPage = () => {
       const json = await res.json();
 
       if (json.status === 'success' && Array.isArray(json.data)) {
-        // normaliza tipos y calcula utilidad
         const norm = json.data.map((t) => {
           const rate = Number(t.rate_tarifa ?? 0);
           const diesel = Number(t.diesel ?? 0);

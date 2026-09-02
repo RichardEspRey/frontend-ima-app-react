@@ -156,9 +156,6 @@ export default function ExpenseManagerPage() {
     if (pagina > ultima) setEstado({ page: ultima })
   }, [isLoading, ordenados.length, porPagina, pagina, setEstado])
 
-  // Si a un filtro se le quita el suelo —porque el catálogo ya no trae esa
-  // opción, o porque cambió el tipo y su categoría dejó de aplicar—, se limpia
-  // solo. Sin esto la tabla se queda vacía por un filtro que ya no se ve.
   useEffect(() => {
     if (tipos.length === 0) return
 

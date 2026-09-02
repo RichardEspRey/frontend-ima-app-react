@@ -122,9 +122,6 @@ export const TripRow = ({
     </>
   );
 
-  // ==========================================
-  // 🚨 FUNCIÓN PARA COPIAR AL PORTAPAPELES
-  // ==========================================
   const handleCopyToClipboard = () => {
       const textToCopy = `
 === DETALLES DEL VIAJE ===

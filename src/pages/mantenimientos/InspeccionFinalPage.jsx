@@ -5,7 +5,6 @@ import Swal from 'sweetalert2';
 import { InspeccionRow } from '../../components/InspeccionRow'; 
 import { Pestanas, Selector, usePaginacion, Paginacion, TABLE_CONTAINER_SX, HEADER_ROW_SX, HEADER_CELL_SX } from '../../shared/ui';
 
-
 const OPS = {
   SUMMARY: 'All_CL_Final',          
   DETAIL: 'collapse_CL_Final',    
@@ -49,7 +48,6 @@ const InspeccionFinalPage = () => {
     return result;
   }, [rows, tabValue, countryFilter]);
 
-  // Helpers 
   const toFormBody = useCallback((obj) =>
     Object.entries(obj)
       .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v ?? '')}`)
@@ -76,7 +74,6 @@ const InspeccionFinalPage = () => {
       });
       return grouped;
   }, []);
-
 
   const fetchSummary = useCallback(async () => {
     setLoadingSummary(true);
@@ -138,7 +135,6 @@ const InspeccionFinalPage = () => {
     }
   }, [apiHost, detailsByTrip, toFormBody, groupIfNeeded]);
 
-
   const toggleOpen = async (viajeId) => {
     const next = !openByTrip[viajeId];
     setOpenByTrip((p) => ({ ...p, [viajeId]: next }));
@@ -184,7 +180,6 @@ const InspeccionFinalPage = () => {
 
   return (
     <Box sx={{ p: 3 }}>
-      {/* Título Principal  */}
       <Typography variant="h4" component="h1" fontWeight={700} gutterBottom sx={{ mb: 3 }}>
         Inspecciones de Camiones
       </Typography>
@@ -208,7 +203,6 @@ const InspeccionFinalPage = () => {
         />
       </Box>
 
-      {/* Toolbar y Estado de Carga */}
       <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
         <Button variant="contained" onClick={fetchSummary} size="small">Refrescar</Button>
         {loadingSummary && (

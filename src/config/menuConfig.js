@@ -55,11 +55,6 @@ export const menuItemsConfig = [
     name: "Gastos",
     featureKey: "gastos",
     subItems: [
-      /*{
-        name: "Nuevo Gasto",
-        featureKey: "gastos_nuevo",
-        route: "/new-expense",
-      },*/
       {
         name: "Administrador gastos",
         featureKey: "gastos_admin_general",

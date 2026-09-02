@@ -198,7 +198,7 @@ const ExpenseModal = ({ open, onClose, onSuccess }) => {
             
             if (result.status === 'success') {
                 Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Gasto guardado', showConfirmButton: false, timer: 2000 });
-                onSuccess(); // 🚨 Cierra el modal y refresca la tabla
+                onSuccess();
             } else {
                 throw new Error(result.message);
             }

@@ -14,7 +14,6 @@ import { COLOR } from '../../shared/ui/tokens';
 
 const numberFmt = (n) => new Intl.NumberFormat('en-US').format(Number(n).toFixed(0));
 
-// 1. Modal de Reinicio
 export const ResetModal = ({ open, onClose, onConfirm, saving, truck }) => {
     const [oil, setOil] = useState('');
     useEffect(() => { if(open) setOil(''); }, [open]);
@@ -38,7 +37,6 @@ export const ResetModal = ({ open, onClose, onConfirm, saving, truck }) => {
     );
 };
 
-// 2. Modal Manual
 export const ManualUpdateModal = ({ open, onClose, onConfirm, saving, truck }) => {
     const [miles, setMiles] = useState('');
     useEffect(() => { if(open) setMiles(truck?.odometro_base || ''); }, [open, truck]);
@@ -60,7 +58,6 @@ export const ManualUpdateModal = ({ open, onClose, onConfirm, saving, truck }) =
     );
 };
 
-// 3. Modal Límite
 export const LimitModal = ({ open, onClose, onConfirm, saving, truck }) => {
     const [limit, setLimit] = useState('');
     useEffect(() => { if(open) setLimit(truck?.limite_afinacion || 15000); }, [open, truck]);
@@ -82,7 +79,6 @@ export const LimitModal = ({ open, onClose, onConfirm, saving, truck }) => {
     );
 };
 
-// 4. Modal Corregir Odómetro
 export const CorrectOdometerModal = ({ open, onClose, onConfirm, saving, truck }) => {
     const [correctMiles, setCorrectMiles] = useState('');
     useEffect(() => { if(open) setCorrectMiles(truck?.ultimo_odometro_registrado || truck?.odometro || ''); }, [open, truck]);
@@ -104,7 +100,6 @@ export const CorrectOdometerModal = ({ open, onClose, onConfirm, saving, truck }
     );
 };
 
-// 5. Modal Historial
 export const HistoryModal = ({ open, onClose, truck, onOpenPhoto, onOpenCorrect }) => {
     const historyRecords = truck?.ultimos_registros || [];
     return (
@@ -158,7 +153,6 @@ const resolvePhotoUrl = (photoUrl) => {
     return url.startsWith('http') ? url : `http://imaexpressllc.com/API/${url}`;
 };
 
-// 6. Modal Foto
 export const PhotoModal = ({ open, onClose, photoUrl }) => {
     const imageUrl = resolvePhotoUrl(photoUrl);
     return (

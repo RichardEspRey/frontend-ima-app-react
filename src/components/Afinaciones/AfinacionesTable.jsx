@@ -10,7 +10,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import { COLOR } from '../../shared/ui/tokens';
-import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive'; // <-- Icono de alarma
+import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 
 const numberFmt = (n) => new Intl.NumberFormat('en-US').format(Number(n).toFixed(0));
 
@@ -23,7 +23,6 @@ const getProgressColor = (value) => {
 export const AfinacionesTable = ({ trucksStatus, onOpenModal }) => {
     return (
         <TableContainer>
-            {/* Animación CSS para el pulso de la campanita */}
             <style>
                 {`
                 @keyframes pulse-ring {
@@ -51,7 +50,6 @@ export const AfinacionesTable = ({ trucksStatus, onOpenModal }) => {
                         const progress = Math.min((millas / limite) * 100, 100);
                         const isCritical = millas >= limite;
 
-                        // ASUMIMOS QUE EL BACKEND NOS MANDARÁ ESTA BANDERA
                         const alarmaActiva = truck.requiere_actualizacion == 1; 
 
                         return (

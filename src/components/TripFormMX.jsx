@@ -10,7 +10,6 @@ import TripStageItem from './TripFormMX/TripStageItem';
 import ModalArchivo from './ModalArchivo'; 
 import ModalCajaExterna from './ModalCajaExterna'; 
 
-// Catálogos, desde sus entidades
 import { useCompanias } from '../entities/company';
 import { useConductoresActivos } from '../entities/driver';
 import { useCajasActivas, useCajasExternasActivas } from '../entities/trailer';
@@ -18,8 +17,6 @@ import { useCamionesActivos } from '../entities/truck';
 import { useBodegas } from '../entities/warehouse';
 import { COLOR } from '../shared/ui/tokens';
 
-// Constante de módulo: un [] nuevo por render dispararía los efectos que
-// dependen de estas listas.
 const VACIO = []
 
 const apiHost = import.meta.env.VITE_API_HOST;
@@ -36,7 +33,6 @@ const initialEtapaStateBase = {
 
 const TripFormMX = ({ teamId,tripNumber, countryCode, tripYear, isTransnational, isContinuation, transnationalNumber, movementNumber, origenId, onSuccess, etapas: etapasProp, setEtapas: setEtapasProp, formData: formDataProp, setFormData: setFormDataProp, onSaveOverride, initialFormDataOverrides, initialStageOverrides }) => {
 
-    // Hooks
     const { data: activeDrivers = VACIO, isLoading: loadingDrivers, error: errorDrivers } = useConductoresActivos();
     const { data: activeTrucks = VACIO, isLoading: loadingTrucks, error: errorTrucks } = useCamionesActivos();
     const { data: activeTrailers = VACIO, isLoading: loadingCajas, error: errorCajas } = useCajasActivas();
@@ -44,20 +40,17 @@ const TripFormMX = ({ teamId,tripNumber, countryCode, tripYear, isTransnational,
     const { data: activeCompanies = VACIO, isLoading: loadingCompanies } = useCompanias();
     const { data: activeWarehouses = VACIO, isLoading: loadingWarehouses } = useBodegas();
 
-    // States
     const [etapasLocal, setEtapasLocal] = useState([{ ...initialEtapaStateBase, stageType: 'normalTrip', ...(initialStageOverrides || {}) }]);
     const etapas = etapasProp ?? etapasLocal;
     const setEtapas = setEtapasProp ?? setEtapasLocal;
     const [loadingSave, setLoadingSave] = useState(false);
     const [tripMode, setTripMode] = useState(() => formDataProp?.driver_id_second ? 'team' : 'individual');
     
-    // Modales
     const [modalAbierto, setModalAbierto] = useState(false);
     const [modalTarget, setModalTarget] = useState({ stageIndex: null, docType: null, stopIndex: null });
     const [mostrarFechaVencimientoModal, setMostrarFechaVencimientoModal] = useState(false);
     const [IsModalCajaExternaOpen, setIsModalCajaExternaOpen] = useState(false);
 
-    // Memos para opciones
     const [isCreatingCompany, setIsCreatingCompany] = useState(false);
     const [isCreatingWarehouse, setIsCreatingWarehouse] = useState(false);
     const [trailerType, setTrailerType] = useState(() => formDataProp?.caja_externa_id ? 'externa' : 'interna');
@@ -66,7 +59,6 @@ const TripFormMX = ({ teamId,tripNumber, countryCode, tripYear, isTransnational,
 
     const [origenes, setOrigenes] = useState([]);
 
-    // 👇 AGREGA ESTE useEffect
     useEffect(() => {
         const fd = new FormData();
         fd.append("op", "get_origenes");
@@ -91,7 +83,6 @@ const TripFormMX = ({ teamId,tripNumber, countryCode, tripYear, isTransnational,
     useEffect(() => { if (activeWarehouses) setWarehouseOptions(activeWarehouses.map(w => ({ value: w.warehouse_id, label: w.nombre_almacen }))); }, [activeWarehouses]);
     useEffect(() => { setForm('trip_number', tripNumber || ''); }, [tripNumber]);
 
-    // Handlers Etapas
     const addStage = (type) => setEtapas(p => [...p, { ...initialEtapaStateBase, stage_number: p.length + 1, stageType: type }]);
     const removeStage = (i) => {
         if (etapas.length === 1) return Swal.fire("Aviso", "Mínimo una etapa requerida", "info");
@@ -100,12 +91,10 @@ const TripFormMX = ({ teamId,tripNumber, countryCode, tripYear, isTransnational,
     const updateStage = (i, f, v) => setEtapas(p => { const c = [...p]; c[i] = { ...c[i], [f]: v }; return c; });
     const handleEtapaChange = (index, field, value) => setEtapas(p => { const c = [...p]; c[index] = { ...c[index], [field]: value }; return c; });
 
-    // Handlers Paradas
     const addStop = (i) => setEtapas(p => { const c = [...p]; c[i].stops_in_transit = [...(c[i].stops_in_transit || []), { location: '', time_of_delivery: '', bl_firmado_doc: null }]; return c; });
     const removeStop = (i, si) => setEtapas(p => { const c = [...p]; c[i].stops_in_transit = c[i].stops_in_transit.filter((_, index) => index !== si); return c; });
     const updateStop = (i, si, f, v) => setEtapas(p => { const c = [...p]; c[i].stops_in_transit[si][f] = v; return c; });
 
-    // Docs
     const openDocModal = (si, dt, spi = null) => { setModalTarget({ stageIndex: si, docType: dt, stopIndex: spi }); setMostrarFechaVencimientoModal(false); setModalAbierto(true); };
     const getDocValue = () => {
         const { stageIndex, docType, stopIndex } = modalTarget;
@@ -114,13 +103,12 @@ const TripFormMX = ({ teamId,tripNumber, countryCode, tripYear, isTransnational,
     };
 
     const handleGuardarDocumentoEtapa = (data) => {
-        const { stageIndex, docType, stopIndex } = modalTarget; // Extraemos el stopIndex
+        const { stageIndex, docType, stopIndex } = modalTarget;
         if (stageIndex === null || !docType) return;
         
         setEtapas(prev => {
             const up = [...prev];
             
-            // Si stopIndex no es nulo, significa que el archivo ES PARA UNA PARADA
             if (stopIndex !== null && stopIndex !== undefined) {
                 const stops = [...(up[stageIndex].stops_in_transit || [])];
                 stops[stopIndex] = { 
@@ -129,7 +117,6 @@ const TripFormMX = ({ teamId,tripNumber, countryCode, tripYear, isTransnational,
                 };
                 up[stageIndex] = { ...up[stageIndex], stops_in_transit: stops };
             } 
-            // Si es nulo, el archivo ES PARA LA ETAPA PRINCIPAL
             else {
                 up[stageIndex] = { 
                     ...up[stageIndex], 
@@ -146,7 +133,6 @@ const TripFormMX = ({ teamId,tripNumber, countryCode, tripYear, isTransnational,
         setModalTarget({ stageIndex: null, docType: null, stopIndex: null });
     };
 
-    // Bases de Datos
     const handleCreateCompany = async (inputValue, stageIndex) => {
         setIsCreatingCompany(true);
         const fd = new FormData(); fd.append('op', 'CreateCompany'); fd.append('nombre_compania', inputValue);
@@ -192,7 +178,6 @@ const TripFormMX = ({ teamId,tripNumber, countryCode, tripYear, isTransnational,
     const handleTripModeChange = (mode) => { setTripMode(mode); if (mode === 'individual') setForm('driver_id_second', ''); };
     const handleTrailerTypeChange = (type) => { setTrailerType(type); if (type === 'interna') setForm('caja_externa_id', ''); else setForm('caja_id', ''); };
 
-    // Submit Principal
     const handleSubmit = async (e) => {
         e?.preventDefault();
         if (onSaveOverride) { onSaveOverride(); return; }
@@ -266,7 +251,6 @@ const TripFormMX = ({ teamId,tripNumber, countryCode, tripYear, isTransnational,
                 errors={{ drivers: errorDrivers, trucks: errorTrucks, trailers: errorCajas, externalTrailers: errorCajasExternas }}
             />
 
-            {/* 2. SECCIÓN DE ETAPAS */}
             <Typography variant="h6" fontWeight={700} gutterBottom sx={{ mt: 4, mb: 2 }}>Información del viaje</Typography>
             <Paper sx={{ mb: 3, p: 2, bgcolor: COLOR.LIENZO, border: `1px solid ${COLOR.BORDE}`, borderRadius: 2 }}>
                 <Stack direction={{ xs: 'column', sm: 'row' }} alignItems="center" justifyContent="space-between" spacing={2}>
@@ -319,13 +303,11 @@ const TripFormMX = ({ teamId,tripNumber, countryCode, tripYear, isTransnational,
                 ))}
             </Stack>
 
-            {/* 3. BOTONES DE ACCIÓN */}
             <Stack direction="row" spacing={2} justifyContent="center" sx={{ mt: 4 }}>
                 <Button variant="contained" onClick={() => addStage('normalTrip')} startIcon={<AddCircleOutlineIcon />}>Agregar Viaje</Button>
                 <Button variant="outlined" color="secondary" onClick={() => addStage('emptyMileage')} startIcon={<AddCircleOutlineIcon />}>Agregar Vacía</Button>
             </Stack>
 
-            {/* 4. FOOTER FLOTANTE */}
             <Paper elevation={10} sx={{ position: 'fixed', bottom: 0, left: '250px', right: 0, p: 2, zIndex: 1000, textAlign: 'right', bgcolor: COLOR.BLANCO }}>
                 <Box sx={{ maxWidth: '1600px', mx: 'auto' }}>
                     <Button variant="contained" size="large" color="success" startIcon={loadingSave ? <CircularProgress size={24} color="inherit" /> : <SaveIcon />} onClick={onSaveOverride ?? handleSubmit} disabled={loadingSave} sx={{ px: 6 }}>
@@ -334,7 +316,6 @@ const TripFormMX = ({ teamId,tripNumber, countryCode, tripYear, isTransnational,
                 </Box>
             </Paper>
 
-            {/* MODALES */}
             {modalAbierto && (
                 <ModalArchivo
                     isOpen={modalAbierto}

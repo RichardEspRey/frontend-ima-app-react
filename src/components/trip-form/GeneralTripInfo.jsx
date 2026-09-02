@@ -1,6 +1,5 @@
 import React from 'react';
 import { Box, Paper, Typography, Grid, TextField, Button } from '@mui/material';
-import { selectStyles } from '../../utils/tripFormConstants'; 
 import { COLOR } from '../../shared/ui/tokens';
 import { Selector, SelectorBusqueda, CampoFecha } from '../../shared/ui';
 

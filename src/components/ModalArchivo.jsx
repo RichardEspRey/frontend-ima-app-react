@@ -26,8 +26,6 @@ const ModalArchivo = ({ isOpen, onClose, onSave, title = "Subir/Editar Archivo",
     }
   }, [isOpen, valorActual]);
 
-
-
   const grupoDelAccept = () => {
     if (accept.includes('pdf') && !accept.includes('image')) return GRUPOS_ARCHIVO.SOLO_PDF;
     if (accept.includes('image') && !accept.includes('pdf')) return GRUPOS_ARCHIVO.IMAGEN;
@@ -39,7 +37,6 @@ const ModalArchivo = ({ isOpen, onClose, onSave, title = "Subir/Editar Archivo",
     if (!file) return;
 
     setArchivo(file);
-    // Limpia la previsualización anterior para evitar fugas de memoria
     if (previewUrl) URL.revokeObjectURL(previewUrl);
     setPreviewUrl(URL.createObjectURL(file));
   };
@@ -65,7 +62,7 @@ const ModalArchivo = ({ isOpen, onClose, onSave, title = "Subir/Editar Archivo",
   };
 
   const handleBrowseClick = () => {
-    fileInputRef.current.click(); // Activamos el input file al hacer clic en el botón
+    fileInputRef.current.click();
   };
 
   if (!isOpen) return null;
@@ -77,7 +74,6 @@ const ModalArchivo = ({ isOpen, onClose, onSave, title = "Subir/Editar Archivo",
           <h4>{title}</h4>
           <button onClick={onClose} className="close-button">&times;</button>
         </div>
-
 
         {mostrarFechaVencimiento && (
           <div>
@@ -108,7 +104,6 @@ const ModalArchivo = ({ isOpen, onClose, onSave, title = "Subir/Editar Archivo",
           {previewUrl && (
             <div className="archivo-preview">
               <strong>Vista previa:</strong>
-              {/* Lógica para mostrar imagen o iframe */}
               {previewUrl.startsWith('blob:') && archivo?.type.startsWith('image/') ? (
                 <img src={previewUrl} alt="Vista previa" style={{ maxWidth: '100%' }} />
               ) : (

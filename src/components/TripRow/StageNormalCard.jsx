@@ -18,8 +18,6 @@ const formatTime = (timeStr) => {
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
-// Mismos tonos semánticos que el resto del rediseño (success/warning/error),
-// en versión "tinted badge" en vez de Chip sólido de MUI.
 const TINTS = {
   success: { bg: COLOR.EXITO_FONDO, fg: COLOR.EXITO },
   warning: { bg: COLOR.AVISO_FONDO, fg: COLOR.AVISO },
@@ -51,7 +49,6 @@ export const StageNormalCard = ({ etapa, getDocumentUrl, isCompleted }) => {
   const { can } = usePermisos();
   const canManageInvoice = can(PERMISOS.VIAJES_INVOICES);
 
-  // 1. Separamos SOLO el BL Firmado
   const mainBLDocs = Array.isArray(etapa.documentos_adjuntos)
     ? etapa.documentos_adjuntos.filter(d => d.tipo_documento.toLowerCase() === 'bl_firmado')
     : [];
@@ -153,7 +150,6 @@ export const StageNormalCard = ({ etapa, getDocumentUrl, isCompleted }) => {
             <RoomOutlinedIcon sx={{ fontSize: 18, color: COLOR.TENUE, mt: 0.2 }} />
 
             <Grid container spacing={1} alignItems="flex-start">
-              {/* ORIGEN */}
               <Grid item xs={5} sx={{ display: 'flex', flexDirection: 'column' }}>
                 <Typography variant="body2" fontWeight={600} color={COLOR.TEXTO} sx={{ lineHeight: 1.2 }}>{etapa.origin}</Typography>
                 <Box sx={{ mt: 0.8 }}>
@@ -187,7 +183,6 @@ export const StageNormalCard = ({ etapa, getDocumentUrl, isCompleted }) => {
                 <ArrowForwardIcon sx={{ fontSize: 16, color: COLOR.BORDE_FUERTE }} />
               </Grid>
 
-              {/* DESTINO */}
               <Grid item xs={5} sx={{ display: 'flex', flexDirection: 'column' }}>
                 <Typography variant="body2" fontWeight={600} color={COLOR.TEXTO} sx={{ lineHeight: 1.2 }}>{etapa.destination}</Typography>
                 <Box sx={{ mt: 0.8 }}>
@@ -216,7 +211,6 @@ export const StageNormalCard = ({ etapa, getDocumentUrl, isCompleted }) => {
             </Typography>
           )}
 
-          {/* PARADAS */}
           {Array.isArray(etapa.stops_in_transit) && etapa.stops_in_transit.length > 0 && (
             <Box sx={{ mt: 1, pt: 1, borderTop: `1px dashed ${COLOR.BORDE}` }}>
               <Typography variant="overline" fontWeight={700} color={COLOR.TENUE} sx={{ fontSize: '0.65rem', letterSpacing: '0.06em' }}>Paradas Adicionales</Typography>
@@ -250,7 +244,6 @@ export const StageNormalCard = ({ etapa, getDocumentUrl, isCompleted }) => {
             </Box>
           )}
 
-          {/* DOCUMENTOS ADJUNTOS (Incluye el BL normal) */}
           {otrosDocumentos.length > 0 && (
             <Box sx={{ mt: 'auto', pt: 1 }}>
               <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>

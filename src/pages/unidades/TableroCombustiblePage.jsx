@@ -49,9 +49,6 @@ export default function TableroCombustiblePage() {
 
   const visibles = useMemo(() => filtrarPorEstatus(unidades, estatus), [unidades, estatus])
 
-  // El indicador acota lo que dibuja, así que una lectura imposible se ve como
-  // un tanque lleno o vacío perfectamente normal. Se nombra aquí para que quien
-  // mire el tablero sepa de qué unidades no fiarse.
   const sospechosas = useMemo(() => unidades.filter(lecturaTanqueSospechosa), [unidades])
 
   const guardar = async (truckId, galones, capacidad) => {
