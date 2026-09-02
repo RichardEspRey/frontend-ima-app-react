@@ -206,7 +206,9 @@ nada) y se avanza solo si aporta. Decisión revisable, no cerrada.
 
 ## Dependencias que se quitan
 
-`@reduxjs/toolkit` y `react-redux`. Y a revisar durante el trabajo: `sweetalert2` +
-`react-toastify` + `@pablotheblink/flashyjs` son **tres** librerías para notificar al
-usuario; hay que quedarse con una y envolverla en `shared/ui/notify` para que cambiarla
-después sea un archivo.
+`@reduxjs/toolkit` y `react-redux`.
+
+**Ya retiradas**: `sweetalert2`, `react-toastify`, `@pablotheblink/flashyjs`, `react-select`,
+`react-datepicker` y `react-icons` — seis librerías de interfaz que competían con MUI. Los
+avisos viven ahora en `shared/ui/notify`, que encola, y en `AnfitrionAvisos`, que pinta.
+Ver [`DECISIONES/0010`](../DECISIONES/0010-libreria-de-componentes.md).

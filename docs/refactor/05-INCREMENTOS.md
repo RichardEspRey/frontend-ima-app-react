@@ -96,9 +96,9 @@ propio, y los catálogos se piden una vez en toda la app en lugar de una por pan
 `FormField`, `Modal`, `ConfirmDialog`, `PageHeader`, `FilterBar`, `ExportButton`,
 `EmptyState`, `ErrorBoundary`, `notify`.
 
-`notify` envuelve **una sola** de las tres librerías de notificación que hay hoy
-(`sweetalert2`, `react-toastify`, `@pablotheblink/flashyjs`). Se elige una, se envuelve, y
-las otras dos se van saliendo módulo por módulo.
+`notify` sustituye a las tres librerías de notificación que había (`sweetalert2`,
+`react-toastify`, `@pablotheblink/flashyjs`). **Hecho**: hoy los avisos se pintan con MUI y
+no queda ninguna de las tres — ver [`DECISIONES/0010`](../DECISIONES/0010-libreria-de-componentes.md).
 
 `DataTable` se extrae de la tabla de gastos, que es la más completa, y se generaliza.
 

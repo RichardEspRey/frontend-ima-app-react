@@ -91,10 +91,16 @@ commits `ce8b589` y `b50d15b`.
 | 3 | ~~`react-toastify`~~ **hecho** | `notify.discreto` | 3 |
 | 4 | ~~`react-datepicker`~~ **hecho** | `CampoFecha` sobre el campo nativo | 9 |
 | 5 | ~~`react-select`~~ **hecho** | `SelectorBusqueda` sobre `Autocomplete` | 11 |
-| 6 | `sweetalert2` | Ya está detrás de `shared/ui/notify` | 28 |
+| 6 | ~~`sweetalert2`~~ **hecho** | `notify` sobre `Dialog` y `Snackbar` de MUI | 25 |
 
-Los tres primeros son trabajo de una tarde. El sexto ya está medio hecho: `notify` envuelve
-sweetalert2, así que quitarla es cambiar un archivo, no 28.
+**Las seis están hechas.** La sexta costó más de lo que anuncié: dije que sería «cambiar un
+archivo, no 28» porque `notify` ya envolvía sweetalert2, pero **había 120 llamadas directas
+a `Swal.fire` en 25 archivos** que nunca habían pasado por la envoltura. La envoltura no
+sirve de nada si no es el único camino.
+
+Por eso se hizo en dos pasos separados y verificables: primero **rutar todo por `notify`**
+sin cambiar de librería, y solo entonces cambiar lo que hay debajo. El primer paso deja el
+sistema funcionando igual y se puede revertir solo; el segundo toca un módulo.
 
 ### 3 · Envolver la que queda
 
@@ -115,6 +121,7 @@ beneficio.
   que no nos sirva— solo hay que reescribir `shared/ui`, no las 47 pantallas. Ese es el
   verdadero valor de envolver: convierte una decisión irreversible en una reversible.
 - **De 7 librerías de interfaz a 2** (MUI y sus iconos), y de 31 archivos mezclando a cero.
+  Conseguido: quedan `@mui/material` y `@mui/icons-material`.
 - El aspecto no cambia por esta decisión. Lo que cambia es que deje de haber dos formas de
   hacer cada cosa.
 
@@ -144,6 +151,45 @@ misma familia.
 compañías y bodegas escribiendo en el campo, y eso se usa de verdad en los formularios de
 viaje. Reemplazarlo sin reproducirlo habría dejado a la operación sin poder dar de alta un
 destino nuevo.
+
+**Una API imperativa necesita un puente, no un componente.** `notify` se llama desde un
+`catch`, desde el manejador global de errores y desde hooks: sitios que no son componentes y
+que no pueden devolver JSX. La solución es partirlo en dos: un módulo que **encola** —al que
+puede llamar cualquiera— y un componente montado una sola vez que **pinta** lo que hay en la
+cola. Sin esa separación, quitar una librería de diálogos obliga a convertir en componente
+cada sitio que la llamaba.
+
+**Al quitar una librería se poda el árbol de dependencias, y ahí salen los polizones.** El
+build se rompió al desinstalar sweetalert2: `date-fns` lo usan **15 archivos** sin estar
+declarado en `package.json`: vivía de ser dependencia transitiva de otra cosa. Funcionaba
+por accidente y habría fallado igual en cualquier instalación limpia.
+
+## Lo que se cerró de paso: el HTML sin escapar
+
+Los avisos con negritas o listas se armaban concatenando etiquetas y se le pasaban a la
+librería como `html`. Eso era **la única puerta de XSS de la aplicación**, y no era teórica:
+tres de esos cinco avisos metían dentro de la cadena el **nombre de archivo que devuelve el
+servidor**.
+
+No se reprodujo. `formato` se sustituyó por `detalle`, que son **datos** —una lista de
+puntos, o renglones con su total— que React escapa por su cuenta:
+
+```js
+notify.conDetalle({ lista: errores }, 'Revisa los datos', 'warning')
+
+notify.confirmar({
+  titulo: '¿Autorizar Pago?',
+  detalle: {
+    renglones: [{ etiqueta: 'Tarifa', valor: '$2.10' }],
+    total: { etiqueta: 'Total', valor: '$3,594.65' },
+  },
+})
+```
+
+Es también la razón por la que la regla `no-restricted-syntax` que prohíbe
+`dangerouslySetInnerHTML` —ver [`0006`](0006-seguridad-en-el-front.md)— **sigue en pie sin
+una sola excepción**. La regla hizo su trabajo: falló el lint, y la salida fácil habría sido
+silenciarla en una línea.
 
 ## Cuándo reconsiderar
 
