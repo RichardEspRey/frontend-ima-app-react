@@ -1,18 +1,34 @@
-import Swal from "sweetalert2"
-import { COLOR } from "./tokens"
+import { abrirCargando, anunciar, cerrarAbierto, pedir } from "./avisos/cola"
 
-const AZUL_IMA = COLOR.TINTA
-const ROJO_PELIGRO = COLOR.PELIGRO
+const ACEPTAR = [{ texto: "Entendido", valor: undefined, principal: true }]
+
+/**
+ * Contenido estructurado que acompaña a un aviso.
+ *
+ * Existe en lugar de una cadena de HTML. Un aviso que necesitaba negritas o una
+ * lista se armaba concatenando etiquetas, y eso metía al DOM texto que venía del
+ * servidor —un nombre de archivo, un mensaje de error— sin escapar. Con datos,
+ * React escapa por su cuenta y la puerta se cierra sola.
+ *
+ * @typedef {object} Detalle
+ * @property {Array.<string>} [lista] Puntos a enumerar, uno por renglón.
+ * @property {Array.<{etiqueta: string, valor: string}>} [renglones] Pares dato-valor.
+ * @property {{etiqueta: string, valor: string}} [total] El renglón destacado del final.
+ */
 
 /**
  * Avisos al usuario, en un solo lugar.
  *
  * El proyecto llegó a tener **tres** librerías para lo mismo: `sweetalert2`,
- * `react-toastify` y `@pablotheblink/flashyjs`. Las dos últimas ya se retiraron
- * —ver `docs/DECISIONES/0010`—; este módulo envuelve la que quedó.
+ * `react-toastify` y `@pablotheblink/flashyjs`. Hoy no tiene ninguna: los avisos
+ * se pintan con los componentes de MUI y el tema de la aplicación —ver
+ * `docs/DECISIONES/0010` y `0011`—, así que un diálogo de confirmación se ve
+ * como el resto de la app y no como una librería ajena.
  *
- * Envolverla es lo que hace que cambiarla algún día sea editar **este** archivo
- * y no los 56 que la llamaban.
+ * Este módulo no pinta nada: encola. Quien pinta es `AnfitrionAvisos`, montado
+ * una sola vez junto al tema. Esa separación es lo que permite llamar a `notify`
+ * desde un `catch`, desde el manejador global de errores o desde un hook, sin
+ * que ninguno de esos sitios tenga que ser un componente.
  *
  * Cada función devuelve una promesa, así que se puede esperar el cierre.
  */
@@ -25,41 +41,38 @@ export const notify = {
    * @returns {Promise} Se resuelve al cerrarse el aviso.
    */
   exito(mensaje, titulo = "Listo") {
-    return Swal.fire({ icon: "success", title: titulo, text: mensaje, confirmButtonColor: AZUL_IMA })
+    return pedir({ icono: "success", titulo, mensaje, acciones: ACEPTAR })
   },
 
   /**
-   * Informa de algo que necesita resaltar una parte del texto.
+   * Informa de algo que se lee mejor enumerado que en un párrafo.
    *
-   * Se separa de `exito` y `aviso` porque acepta marcas de formato, y eso hay
-   * que poder buscarlo: es por donde entraría contenido del servidor al DOM sin
-   * escapar. Los llamadores de hoy solo formatean texto propio.
+   * Sustituye al aviso con HTML que había antes. El contenido son **datos**, no
+   * marcas: así un nombre que venga del servidor no puede convertirse en
+   * etiquetas al pintarse.
    *
-   * @param {string} contenido Texto con formato simple: negritas, saltos, listas.
+   * @param {Detalle} detalle El contenido estructurado.
    * @param {string} [titulo='Atención'] Encabezado del aviso.
    * @param {string} [icono='warning'] Icono a mostrar.
    * @returns {Promise} Se resuelve al cerrarse el aviso.
    */
-  conFormato(contenido, titulo = "Atención", icono = "warning") {
-    return Swal.fire({ icon: icono, title: titulo, html: contenido, confirmButtonColor: AZUL_IMA })
+  conDetalle(detalle, titulo = "Atención", icono = "warning") {
+    return pedir({ icono, titulo, detalle, acciones: ACEPTAR })
   },
 
   /**
    * Bloquea la pantalla mientras una operación larga termina.
    *
-   * No se cierra sola: quien la abre es responsable de llamar a `cerrar()`,
-   * normalmente en un `finally` para que un fallo no deje la pantalla trabada.
+   * No se cierra sola. Se cierra al llamar a `cerrar()` o, más habitualmente,
+   * en cuanto se abre cualquier otro aviso: las pantallas que muestran
+   * «Guardando…» terminan siempre en un `exito` o un `error`, y ese aviso la
+   * releva.
    *
    * @param {string} [titulo='Guardando…'] Qué se está haciendo.
    * @returns {void}
    */
   cargando(titulo = "Guardando…") {
-    Swal.fire({
-      title: titulo,
-      allowOutsideClick: false,
-      allowEscapeKey: false,
-      didOpen: () => Swal.showLoading(),
-    })
+    abrirCargando(titulo)
   },
 
   /**
@@ -68,7 +81,7 @@ export const notify = {
    * @returns {void}
    */
   cerrar() {
-    Swal.close()
+    cerrarAbierto()
   },
 
   /**
@@ -83,7 +96,7 @@ export const notify = {
    */
   error(problema, titulo = "No se pudo completar") {
     const mensaje = problema instanceof Error ? problema.message : problema
-    return Swal.fire({ icon: "error", title: titulo, text: mensaje, confirmButtonColor: AZUL_IMA })
+    return pedir({ icono: "error", titulo, mensaje, acciones: ACEPTAR })
   },
 
   /**
@@ -95,23 +108,15 @@ export const notify = {
    * promesa rechazada— ese diálogo es peor que el fallo: tapa la pantalla y
    * obliga a descartarlo para poder seguir trabajando con lo que sí cargó.
    *
-   * Aparece arriba a la derecha y se va sola.
+   * Aparece arriba a la derecha y se va solo.
    *
    * @param {(string|Error)} problema Mensaje, o el error capturado.
-   * @param {string} [icono='error'] Icono de sweetalert2.
-   * @returns {Promise} Se resuelve al cerrarse el aviso.
+   * @param {string} [icono='error'] Severidad del aviso: `error`, `warning`, `info`, `success`.
+   * @returns {Promise} Se resuelve cuando el aviso desaparece.
    */
   discreto(problema, icono = "error") {
     const mensaje = problema instanceof Error ? problema.message : problema
-    return Swal.fire({
-      toast: true,
-      position: "top-end",
-      icon: icono,
-      title: mensaje,
-      showConfirmButton: false,
-      timer: 5000,
-      timerProgressBar: true,
-    })
+    return anunciar({ icono, mensaje })
   },
 
   /**
@@ -122,37 +127,41 @@ export const notify = {
    * @returns {Promise} Se resuelve al cerrarse el aviso.
    */
   aviso(mensaje, titulo = "Atención") {
-    return Swal.fire({ icon: "warning", title: titulo, text: mensaje, confirmButtonColor: AZUL_IMA })
+    return pedir({ icono: "warning", titulo, mensaje, acciones: ACEPTAR })
   },
 
   /**
    * Pide confirmación antes de una acción destructiva.
    *
-   * Devuelve un booleano en vez del objeto de sweetalert2, para que quien llama
-   * no tenga que conocer la forma `{ isConfirmed }` de la librería.
+   * Devuelve un booleano, para que quien llama no tenga que conocer la forma
+   * interna del diálogo. Cerrar sin elegir cuenta como no aceptar.
+   *
+   * El botón de cancelar va primero y el de aceptar al final, que es donde la
+   * vista termina de leer y donde MUI pone la acción principal.
    *
    * @param {object} opciones Textos del diálogo.
    * @param {string} opciones.titulo Pregunta principal.
    * @param {string} [opciones.mensaje] Consecuencia de aceptar; conviene ser explícito.
-   * @param {string} [opciones.formato] Igual que `mensaje`, pero admite marcas de formato.
-   *   Se separa para que sea buscable: es por donde entraría al DOM contenido sin escapar.
+   * @param {Detalle} [opciones.detalle] Contenido estructurado bajo el mensaje:
+   *   una lista de puntos, o un resumen de renglones con su total.
    * @param {string} [opciones.confirmar='Sí, continuar'] Texto del botón de aceptar.
    * @param {string} [opciones.cancelar='Cancelar'] Texto del botón de cancelar.
    * @param {boolean} [opciones.peligroso=true] Pinta de rojo el botón de aceptar.
    * @returns {Promise.<boolean>} `true` si la persona aceptó.
    */
-  async confirmar({ titulo, mensaje, formato, confirmar = "Sí, continuar", cancelar = "Cancelar", peligroso = true }) {
-    const resultado = await Swal.fire({
-      icon: "warning",
-      title: titulo,
-      ...(formato ? { html: formato } : { text: mensaje }),
-      showCancelButton: true,
-      confirmButtonText: confirmar,
-      cancelButtonText: cancelar,
-      confirmButtonColor: peligroso ? ROJO_PELIGRO : AZUL_IMA,
-      reverseButtons: true,
+  async confirmar({ titulo, mensaje, detalle, confirmar = "Sí, continuar", cancelar = "Cancelar", peligroso = true }) {
+    const elegido = await pedir({
+      icono: "warning",
+      titulo,
+      mensaje,
+      detalle,
+      valorAlCerrar: false,
+      acciones: [
+        { texto: cancelar, valor: false },
+        { texto: confirmar, valor: true, principal: true, tono: peligroso ? "peligro" : "principal" },
+      ],
     })
-    return resultado.isConfirmed === true
+    return elegido === true
   },
 
   /**
@@ -169,24 +178,19 @@ export const notify = {
    * @param {string} [opciones.cancelar='Cancelar'] Texto del botón de cancelar.
    * @returns {Promise.<*>} El valor elegido, o `null` si se canceló.
    */
-  async elegir({ titulo, mensaje, opciones, cancelar = "Cancelar" }) {
+  elegir({ titulo, mensaje, opciones, cancelar = "Cancelar" }) {
     const [primera, segunda] = opciones
 
-    const resultado = await Swal.fire({
-      icon: "question",
-      title: titulo,
-      text: mensaje,
-      showDenyButton: true,
-      showCancelButton: true,
-      confirmButtonText: primera.texto,
-      denyButtonText: segunda.texto,
-      cancelButtonText: cancelar,
-      confirmButtonColor: AZUL_IMA,
-      denyButtonColor: ROJO_PELIGRO,
+    return pedir({
+      icono: "question",
+      titulo,
+      mensaje,
+      valorAlCerrar: null,
+      acciones: [
+        { texto: cancelar, valor: null },
+        { texto: segunda.texto, valor: segunda.valor },
+        { texto: primera.texto, valor: primera.valor, principal: true },
+      ],
     })
-
-    if (resultado.isConfirmed) return primera.valor
-    if (resultado.isDenied) return segunda.valor
-    return null
   },
 }

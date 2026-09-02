@@ -131,7 +131,7 @@ const ReparacionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
     const handleDeleteDoc = async (doc) => {
         const confirmado = await notify.confirmar({
             titulo: '¿Eliminar documento?',
-            formato: `Se eliminará <b>${doc.file_name || 'este documento'}</b> de forma permanente.`,
+            mensaje: `Se eliminará «${doc.file_name || 'este documento'}» de forma permanente.`,
             confirmar: 'Sí, eliminar',
         });
         if (!confirmado) return;

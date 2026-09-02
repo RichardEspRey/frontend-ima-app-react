@@ -54,7 +54,7 @@ const GastoRow = ({ gasto, mxnRate, puedeEliminar = false, onEliminado }) => {
   const eliminarGasto = async () => {
     const confirmado = await notify.confirmar({
       titulo: `¿Eliminar el gasto #${gasto.id_gasto}?`,
-      formato: 'Se revertirá el stock que este gasto haya sumado al inventario.<br/>El gasto dejará de aparecer en la lista.',
+      mensaje: 'Se revertirá el stock que este gasto haya sumado al inventario.\nEl gasto dejará de aparecer en la lista.',
       confirmar: 'Sí, eliminar',
     });
 

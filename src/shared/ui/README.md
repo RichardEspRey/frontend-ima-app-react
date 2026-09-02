@@ -54,10 +54,20 @@ const acepto = await notify.confirmar({     // devuelve booleano, no {isConfirme
 })
 ```
 
-**Por qué existe**: el proyecto usa tres librerías para lo mismo — `sweetalert2` (343
-llamadas en 56 archivos), `react-toastify` (una) y `@pablotheblink/flashyjs` (nueve).
-`notify` envuelve sweetalert2, que es la que domina, para que las otras dos se retiren
-módulo por módulo y para que cambiar de librería sea editar un archivo en vez de 56.
+**Por qué existe**: el proyecto usaba tres librerías para lo mismo — `sweetalert2`,
+`react-toastify` y `@pablotheblink/flashyjs` — y las tres se ven distintas entre sí y
+distintas del resto de la app. Hoy no hay ninguna: los avisos se pintan con MUI y el
+tema del proyecto.
+
+`notify` no pinta, **encola**: por eso se puede llamar desde un `catch`, desde el
+manejador global de errores o desde un hook, sin que ninguno de esos sitios sea un
+componente. Quien pinta es `AnfitrionAvisos`, montado una sola vez en `ThemeProvider`.
+
+- `notify.discreto(...)` es el aviso flotante que no bloquea; para fallos de fondo.
+- `notify.cargando()` bloquea, y **cualquier aviso posterior lo releva**: no hace falta
+  cerrarlo a mano al terminar de guardar.
+- `formato` acepta marcas de HTML y es el único punto de la app donde entra HTML sin
+  escapar. Está aislado en `avisos/AnfitrionAvisos.jsx` para que sea auditable.
 
 ## estilos
 

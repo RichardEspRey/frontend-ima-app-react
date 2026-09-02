@@ -207,8 +207,8 @@ const FinanzasPage = () => {
                           .map(({ stage }) => ({ stage, errs: validateStage(stage) }));
 
     if (invalids.length) {
-      const html = invalids.slice(0, 10).map(i => `<li>ID ${i.stage.trip_stage_id}: ${i.errs.join(', ')}</li>`).join('');
-      return notify.conFormato(`<ul>${html}</ul>`, 'Revisa los datos', 'warning');
+      const lista = invalids.slice(0, 10).map(i => `ID ${i.stage.trip_stage_id}: ${i.errs.join(', ')}`);
+      return notify.conDetalle({ lista }, 'Revisa los datos', 'warning');
     }
 
     const confirmado = await notify.confirmar({

@@ -132,15 +132,15 @@ const TicketPagoPage = () => {
   const AutorizarPago = async () => {
     notify.confirmar({
         titulo: '¿Autorizar Pago?',
-        formato: `
-            <div style="text-align:left; font-size: 0.9em;">
-                <p>Tarifa: <b>$${Number(customRate).toFixed(2)}</b></p>
-                <p>Millas Finales: <b>${totalMillasAjustadas}</b></p>
-                <p>Total Anticipos: <b>$${totalAvances.toFixed(2)}</b></p>
-                <p>Gastos: <b>$${Number(gastos).toFixed(2)}</b></p>
-            </div>
-            <h3 style="margin-top:10px; color:#2e7d32">Total: $${totalPagar.toFixed(2)}</h3>
-        `,
+        detalle: {
+            renglones: [
+                { etiqueta: 'Tarifa', valor: `$${Number(customRate).toFixed(2)}` },
+                { etiqueta: 'Millas finales', valor: String(totalMillasAjustadas) },
+                { etiqueta: 'Total anticipos', valor: `$${totalAvances.toFixed(2)}` },
+                { etiqueta: 'Gastos', valor: `$${Number(gastos).toFixed(2)}` },
+            ],
+            total: { etiqueta: 'Total', valor: `$${totalPagar.toFixed(2)}` },
+        },
         confirmar: 'Sí, Guardar y Autorizar',
         peligroso: false,
     }).then(async (confirmado) => {
