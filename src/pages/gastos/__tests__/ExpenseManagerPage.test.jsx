@@ -1,18 +1,18 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { screen, waitFor } from "@testing-library/react";
-import AdminGastos from "../AdminGastos";
+import ExpenseManagerPage from "../ExpenseManagerPage";
 import { renderPantalla, sesionDePrueba, opsLlamadas } from "../../../test/utils";
 
-describe("AdminGastos (Expense Manager)", () => {
+describe("Expense Manager", () => {
   beforeEach(() => { sesionDePrueba(); });
 
   it("monta y dibuja el encabezado", async () => {
-    renderPantalla(<AdminGastos />);
+    renderPantalla(<ExpenseManagerPage />);
     expect(await screen.findByText("Expense Manager")).toBeInTheDocument();
   });
 
   it("pide los gastos al backend al montar", async () => {
-    renderPantalla(<AdminGastos />);
+    renderPantalla(<ExpenseManagerPage />);
     await waitFor(() => expect(global.fetch).toHaveBeenCalled());
 
     // La op tiene que seguir siendo getAllGastos: el refactor no debe cambiar
@@ -24,7 +24,7 @@ describe("AdminGastos (Expense Manager)", () => {
   });
 
   it("muestra el estado vacío cuando el backend no devuelve gastos", async () => {
-    renderPantalla(<AdminGastos />);
+    renderPantalla(<ExpenseManagerPage />);
     expect(await screen.findByText("No se encontraron gastos.")).toBeInTheDocument();
   });
 });

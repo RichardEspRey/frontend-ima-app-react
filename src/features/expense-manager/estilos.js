@@ -52,8 +52,23 @@ export const DATEPICKER_CSS = `
   .expense-datepicker-popper { z-index: 20; }
 `;
 
+/**
+ * Un importe en dólares.
+ *
+ * @param {*} v La cantidad.
+ * @returns {string} El importe formateado.
+ */
 export const money = (v) =>
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(Number(v || 0));
 
+/**
+ * Un importe en pesos.
+ *
+ * Va en `es-MX` a propósito, no en `en-US` como el de dólares: es la cifra que
+ * se compara contra facturas mexicanas.
+ *
+ * @param {*} v La cantidad.
+ * @returns {string} El importe formateado.
+ */
 export const moneyMXN = (v) =>
   new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(Number(v || 0));

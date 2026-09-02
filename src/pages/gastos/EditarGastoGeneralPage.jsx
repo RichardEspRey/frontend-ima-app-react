@@ -27,12 +27,21 @@ import FieldLabel from '../../components/Gastos/FieldLabel';
 import {
   SECTION_LABEL_SX, CARD_SX, DARK_BTN_SX, GHOST_BTN_SX,
   customSelectStyles, DATEPICKER_CSS, money,
-} from './estilosGastos';
+} from '../../features/expense-manager/estilos';
 
 // La app móvil puede subir el "ticket" como PDF escaneado en vez de imagen
 // (ej. archivos "scan_*.pdf"), no solo JPG/PNG. Un <img> no puede mostrar un PDF.
 const isImageUrl = (url = '') => /\.(png|jpe?g|gif|webp|bmp|tiff?)$/i.test(url);
 
+/**
+ * Edición de un gasto general, con sus renglones y sus archivos.
+ *
+ * Se llega desde el Expense Manager. Es la pantalla donde se corrige lo que la
+ * gente capturó desde la aplicación móvil: reclasificar un renglón, ajustar un
+ * importe, o adjuntar la factura que faltaba.
+ *
+ * @returns {object} La pantalla renderizada.
+ */
 const ExpenseEdit = () => {
   const { id_gasto } = useParams();
   const navigate = useNavigate();

@@ -1,5 +1,6 @@
 import { render } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SessionProvider } from "../app/providers/SessionProvider";
 import { useAuthStore } from "../store/useAuthStore";
 
@@ -33,14 +34,22 @@ export function sinSesion() {
  * })
  */
 export function renderPantalla(ui, { path = "/", ruta = "/" } = {}) {
+  // Cliente nuevo por prueba, sin reintentos: una prueba no debe heredar la
+  // caché de otra, y un reintento convierte un fallo en un timeout de 5 s.
+  const cliente = new QueryClient({
+    defaultOptions: { queries: { retry: false, gcTime: 0 } },
+  });
+
   return render(
-    <SessionProvider>
-      <MemoryRouter initialEntries={[ruta]}>
-        <Routes>
-          <Route path={path} element={ui} />
-        </Routes>
-      </MemoryRouter>
-    </SessionProvider>,
+    <QueryClientProvider client={cliente}>
+      <SessionProvider>
+        <MemoryRouter initialEntries={[ruta]}>
+          <Routes>
+            <Route path={path} element={ui} />
+          </Routes>
+        </MemoryRouter>
+      </SessionProvider>
+    </QueryClientProvider>,
   );
 }
 

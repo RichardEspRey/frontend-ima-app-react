@@ -15,22 +15,35 @@ import 'react-datepicker/dist/react-datepicker.css';
 import Swal from 'sweetalert2';
 import Select from 'react-select';
 
-import ModalArchivo from '../../components/ModalArchivo';
+import ModalArchivo from '../../../components/ModalArchivo';
 
-import useFetchInventoryItems from '../../hooks/expense_hooks/useFetchInventoryItems';
-import useFetchSubcategories from '../../hooks/expense_hooks/useFetchSubcategories';
-import useFetchCategories from '../../hooks/expense_hooks/useFetchCategories';
-import useFetchExpenseTypes from '../../hooks/expense_hooks/useFetchExpenseTypes';
-import useFetchExchangeRate from '../../hooks/useFetchExchangeRate';
-import { useAuthStore } from '../../store/useAuthStore';
-import FieldLabel from '../../components/Gastos/FieldLabel';
+import useFetchSubcategories from '../../../hooks/expense_hooks/useFetchSubcategories';
+import useFetchCategories from '../../../hooks/expense_hooks/useFetchCategories';
+import useFetchExpenseTypes from '../../../hooks/expense_hooks/useFetchExpenseTypes';
+import useFetchExchangeRate from '../../../hooks/useFetchExchangeRate';
+import { useAuthStore } from '../../../store/useAuthStore';
+import FieldLabel from '../../../components/Gastos/FieldLabel';
 import {
     SECTION_LABEL_SX, CARD_SX, DARK_BTN_SX, GHOST_BTN_SX, INPUT_SX,
     customSelectStyles, DATEPICKER_CSS, money,
-} from './estilosGastos';
+} from '../estilos';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
+/**
+ * Alta de un gasto general, con sus renglones y sus archivos.
+ *
+ * Un gasto es una factura o un ticket: una fecha, un país, una moneda y uno o
+ * varios renglones, cada uno con su tipo, categoría y subcategoría. Los
+ * capturados en México se guardan en pesos y en su equivalente en dólares al
+ * tipo de cambio del día.
+ *
+ * @param {object} props Propiedades del componente.
+ * @param {boolean} props.open Si el modal se muestra.
+ * @param {Function} props.onClose Cierra el modal.
+ * @param {Function} props.onSuccess Se llama al guardar, para refrescar la tabla.
+ * @returns {object} El modal renderizado.
+ */
 const ExpenseModal = ({ open, onClose, onSuccess }) => {
     const { user } = useAuthStore();
     const id = user?.id;

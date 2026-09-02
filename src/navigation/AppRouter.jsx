@@ -18,9 +18,9 @@ import EditarDieselPage from '../pages/gastos/EditarDieselPage.jsx';
 import GastosViajePage from '../pages/gastos/GastosViajePage.jsx';
 import GastosDeViajePage from '../pages/gastos/GastosDeViajePage.jsx';
 import EditarGastoPage from '../pages/gastos/EditarGastoPage.jsx';
-import AdminGastosGeneral from '../screens/Gastos/AdminGastos.jsx';
+import ExpenseManagerPage from '../pages/gastos/ExpenseManagerPage.jsx';
 import InspeccionFinalPage from '../pages/mantenimientos/InspeccionFinalPage.jsx';
-import ExpenseEdit from '../screens/Gastos/ExpenseEdit.jsx';
+import EditarGastoGeneralPage from '../pages/gastos/EditarGastoGeneralPage.jsx';
 import NuevaOrdenPage from '../pages/mantenimientos/NuevaOrdenPage.jsx';
 import EditarOrdenPage from '../pages/mantenimientos/EditarOrdenPage.jsx';
 import OrdenesServicioPage from '../pages/mantenimientos/OrdenesServicioPage.jsx';
@@ -77,12 +77,12 @@ const AppRouter = () => {
             <Route path="/admin-gastos" element={<GastosViajePage />} />
             <Route path="/detalle-gastos/:tripId" element={<GastosDeViajePage />} />
             <Route path="/editor-gastos/:id/:trip_id" element={<EditarGastoPage />} />
-            <Route path="/admin-gastos-generales" element={<AdminGastosGeneral />} />
+            <Route path="/admin-gastos-generales" element={<ExpenseManagerPage />} />
             <Route path="/edit-trip/:tripId" element={<EditarViajePage />} />
             <Route path="/edit-trip-complete/:tripId" element={<EditarViajeCompletoPage />} />
             <Route path="/edit-trip-upcoming/:tripId" element={<EditarViajeProximoPage />} />
             <Route path="/Inspeccion-final" element={<InspeccionFinalPage />} />
-            <Route path="/edit-expense/:id_gasto" element={<ExpenseEdit />} />
+            <Route path="/edit-expense/:id_gasto" element={<EditarGastoGeneralPage />} />
             <Route path="/view-inventory" element={<OrdenesServicioPage />} />
             <Route path="/new-service-order" element={<NuevaOrdenPage />} />
             <Route path="/admin-service-order" element={<OrdenesServicioPage />} />

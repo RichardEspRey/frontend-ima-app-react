@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   TableRow, TableCell, IconButton, Collapse, Box, Typography,
   Table, TableHead, TableBody, Chip, Stack, Button, Tooltip
@@ -10,8 +11,8 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import InsertDriveFileOutlinedIcon from '@mui/icons-material/InsertDriveFileOutlined';
 import { PhotoProvider, PhotoView } from 'react-photo-view';
 import 'react-photo-view/dist/react-photo-view.css';
-import { esGastoMXN, totalUSD, totalMXN, tipoGastoPrincipal } from '../utils/gastosValores';
-import { money, moneyMXN } from '../screens/Gastos/estilosGastos';
+import { esGastoMXN, totalUSD, totalMXN, tipoGastoPrincipal } from '../entities/expense';
+import { money, moneyMXN } from '../features/expense-manager/estilos';
 import Swal from 'sweetalert2';
 import { useAuthStore } from '../store/useAuthStore';
 
@@ -29,7 +30,8 @@ const MICRO_LABEL_SX = {
   color: '#94a3b8', fontWeight: 700, letterSpacing: '0.08em', fontSize: '0.68rem',
 };
 
-const GastoRow = ({ gasto, navigate, mxnRate, puedeEliminar = false, onEliminado }) => {
+const GastoRow = ({ gasto, mxnRate, puedeEliminar = false, onEliminado }) => {
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [eliminando, setEliminando] = useState(false);
   const { user } = useAuthStore();
