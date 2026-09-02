@@ -38,7 +38,7 @@ export default function NuevaOrdenPage() {
 
     // --- Hooks ---
     const { inventoryItems, loading: itemsLoading } = useFetchInventoryItems();
-    const { repairTypes, refetchRepairTypes } = useFetchRepairTypes(); 
+    const { repairTypes } = useFetchRepairTypes(); 
     const [trucks, setTrucks] = useState([]);
 
     // Cargar Camiones

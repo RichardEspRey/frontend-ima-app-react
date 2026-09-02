@@ -4,6 +4,19 @@ import InsertDriveFileOutlinedIcon from '@mui/icons-material/InsertDriveFileOutl
 import TextFieldsIcon from '@mui/icons-material/TextFields';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 
+/**
+ * La ficha de un documento del expediente.
+ *
+ * Un requisito de texto se dibuja como un rectángulo con su valor; uno de
+ * archivo, como una tarjeta con el estado de su vigencia.
+ *
+ * @param {object} props Propiedades del componente.
+ * @param {object} props.req El requisito que se exige.
+ * @param {object} props.theme Los colores de su categoría.
+ * @param {object} [props.val] Lo que hay guardado, si hay algo.
+ * @param {Function} props.onEdit Abre la edición de ese documento.
+ * @returns {object} La ficha renderizada.
+ */
 const DocumentCard = ({ req, theme, val, onEdit }) => {
     // 1. DISEÑO RECTANGULAR PARA INPUTS DE TEXTO (DATOS)
     if (req.tipo === 'text') {

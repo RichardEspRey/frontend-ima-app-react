@@ -89,7 +89,7 @@ const TarifasConductorPage = () => {
       } else {
         Swal.fire("Error", json.message || "Error desconocido", "error");
       }
-    } catch (err) {
+    } catch {
       Swal.fire("Error", "No se pudo conectar al servidor.", "error");
     }
   };

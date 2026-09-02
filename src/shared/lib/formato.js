@@ -26,15 +26,15 @@ const GUION = "—"
  * columna de importes, un cero se entiende y un `NaN` asusta.
  *
  * @param {*} valor La cantidad.
- * @param {string} [moneda='USD'] Código de la moneda.
+ * @param {string} [codigo='USD'] Código de la moneda.
  * @param {string} [locale='es-MX'] Convención de formato.
  * @returns {string} La cantidad formateada.
  */
-export function moneda(valor, moneda_ = MONEDA, locale = LOCALE) {
+export function moneda(valor, codigo = MONEDA, locale = LOCALE) {
   const numero = Number(valor)
   return new Intl.NumberFormat(locale, {
     style: "currency",
-    currency: moneda_,
+    currency: codigo,
     minimumFractionDigits: 2,
   }).format(Number.isFinite(numero) ? numero : 0)
 }
@@ -77,10 +77,10 @@ export const soloHora = (valor) => (valor ? String(valor).slice(0, 5) : null)
  * Formatea una cantidad con decimales fijos.
  *
  * @param {*} valor La cantidad.
- * @param {number} [decimales=2] Cuántos decimales.
+ * @param {number} [cuantos=2] Cuántos decimales.
  * @returns {string} La cantidad, o `0.00` si no es un número.
  */
-export function decimales(valor, decimales_ = 2) {
+export function decimales(valor, cuantos = 2) {
   const numero = Number(valor)
-  return (Number.isFinite(numero) ? numero : 0).toFixed(decimales_)
+  return (Number.isFinite(numero) ? numero : 0).toFixed(cuantos)
 }

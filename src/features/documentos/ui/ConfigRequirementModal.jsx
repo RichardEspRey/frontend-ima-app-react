@@ -4,6 +4,17 @@ import {
     TextField, Grid, MenuItem, Box, FormControlLabel, Switch, Button 
 } from '@mui/material';
 
+/**
+ * Alta de un requisito del expediente de documentos de IMA.
+ *
+ * @param {object} props Propiedades del componente.
+ * @param {boolean} props.open Si el modal se muestra.
+ * @param {Function} props.onClose Cierra el modal.
+ * @param {object} props.newField El requisito que se está creando.
+ * @param {Function} props.setNewField Recibe el requisito con el cambio aplicado.
+ * @param {Function} props.onSave Da de alta el requisito.
+ * @returns {object} El modal renderizado.
+ */
 const ConfigRequirementModal = ({ open, onClose, newField, setNewField, onSave }) => {
     return (
         <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 3, p: 1 } }}>

@@ -56,7 +56,7 @@ const GastosModal = ({ open, onClose, tripId }) => {
         setGastos([]);
       }
 
-    } catch (err) {
+    } catch {
       Swal.fire("Error", "No se pudo cargar la información.", "error");
     } finally {
       setLoading(false);

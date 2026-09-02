@@ -12,7 +12,7 @@ const BorderCrossingStage = ({
     companyOptions, warehouseOptions, 
     handleCreateCompany, handleCreateWarehouse, 
     loadingStates, 
-    addStop, removeStop, updateStop, openDocModal,
+    removeStop, updateStop, openDocModal,
     origenes // 🚨 NUEVA PROP: Recibe el catálogo desde el padre
 }) => {
     return (

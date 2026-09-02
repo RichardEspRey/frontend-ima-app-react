@@ -38,7 +38,10 @@ const reglasJsdoc = {
 }
 
 export default [
-  { ignores: ['dist', 'release', 'docs/api', 'node_modules'] },
+  // src/no-usadas es código congelado: no se toca, así que tampoco se le
+  // exige el estándar nuevo. Si alguna de esas pantallas vuelve a la vida,
+  // sale de aquí y se migra como las demás.
+  { ignores: ['dist', 'release', 'docs/api', 'node_modules', 'src/no-usadas'] },
 
   {
     files: ['**/*.{js,jsx}'],

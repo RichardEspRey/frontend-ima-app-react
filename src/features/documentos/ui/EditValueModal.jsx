@@ -12,6 +12,19 @@ import 'react-datepicker/dist/react-datepicker.css';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
+/**
+ * Edición del valor de un documento del expediente.
+ *
+ * @param {object} props Propiedades del componente.
+ * @param {boolean} props.open Si el modal se muestra.
+ * @param {Function} props.onClose Cierra el modal.
+ * @param {object} [props.editItem] El requisito que se está editando.
+ * @param {object} props.editData Los valores en el formulario.
+ * @param {Function} props.setEditData Recibe los valores con el cambio aplicado.
+ * @param {Function} props.onSave Guarda el valor.
+ * @param {Function} props.onDelete Borra el documento.
+ * @returns {object} El modal renderizado.
+ */
 const EditValueModal = ({ open, onClose, editItem, editData, setEditData, onSave, onDelete }) => {
     return (
         <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 3, p: 1 } }}>

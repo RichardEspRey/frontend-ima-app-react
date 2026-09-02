@@ -104,6 +104,14 @@ const PolicyDialogHeader = ({ icon, accent, tint, title, onClose }) => (
   </Stack>
 );
 
+/**
+ * La pantalla de bienvenida: misión, visión, valores y políticas de IMA.
+ *
+ * Es lo primero que ve quien entra, y la única pantalla que no consulta nada al
+ * servidor: su contenido es texto de la empresa.
+ *
+ * @returns {object} La pantalla renderizada.
+ */
 export const InicioPage = () => {
   const [openPolicy, setOpenPolicy] = useState(null);
   const closePolicy = () => setOpenPolicy(null);

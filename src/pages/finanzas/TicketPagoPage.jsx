@@ -170,7 +170,7 @@ const TicketPagoPage = () => {
                 } else {
                   Swal.fire("Error", json.message || "Error al autorizar pago.", "error");
                 }
-              } catch (err) { Swal.fire("Error", "No se pudo procesar la solicitud.", "error"); }
+              } catch { Swal.fire("Error", "No se pudo procesar la solicitud.", "error"); }
         }
     });
   };

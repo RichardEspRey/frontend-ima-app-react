@@ -155,7 +155,7 @@ const TripFormUSA = ({ teamId, tripNumber, countryCode, tripYear, isTransnationa
                 setCompanyOptions(p => [...p, newOption]); handleEtapaChange(stageIndex, 'company_id', newOption.value);
                 Swal.fire('Éxito', 'Compañía creada', 'success');
             }
-        } catch (e) { Swal.fire('Error', 'No se pudo crear compañía', 'error'); } finally { setIsCreatingCompany(false); }
+        } catch { Swal.fire('Error', 'No se pudo crear compañía', 'error'); } finally { setIsCreatingCompany(false); }
     };
 
     const handleCreateWarehouse = async (inputValue, stageIndex, fieldKey) => {
@@ -169,7 +169,7 @@ const TripFormUSA = ({ teamId, tripNumber, countryCode, tripYear, isTransnationa
                 setWarehouseOptions(p => [...p, newOption]); handleEtapaChange(stageIndex, fieldKey, newOption.value);
                 Swal.fire('Éxito', 'Bodega creada', 'success');
             }
-        } catch (e) { Swal.fire('Error', 'No se pudo crear bodega', 'error'); } finally { setIsCreatingWarehouse(false); }
+        } catch { Swal.fire('Error', 'No se pudo crear bodega', 'error'); } finally { setIsCreatingWarehouse(false); }
     };
 
     const handleSaveExternalCaja = async (cajaData) => {

@@ -194,7 +194,7 @@ const ReparacionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
             } else {
                 Swal.fire('Error', data.message, 'error');
             }
-        } catch (err) {
+        } catch {
             Swal.fire('Error', 'Problema de conexión.', 'error');
         }
     };

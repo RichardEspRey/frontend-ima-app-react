@@ -4,7 +4,6 @@ import {
   Button, Box, Typography, CircularProgress, Stack, Tabs, Tab, ToggleButtonGroup,
   ToggleButton
 } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 
 import { InspeccionRow } from '../../components/InspeccionRow'; 
@@ -22,7 +21,6 @@ const OPS = {
  * @returns {object} La pantalla.
  */
 const InspeccionFinalPage = () => {
-  const navigate = useNavigate();
   const apiHost = import.meta.env.VITE_API_HOST;
 
   const [rows, setRows] = useState([]);                      
@@ -108,7 +106,7 @@ const InspeccionFinalPage = () => {
       } else {
         setErrorSummary(data.message || 'No se pudo cargar el resumen.');
       }
-    } catch (e) {
+    } catch {
       setErrorSummary('Error de red al cargar el resumen.');
     } finally {
       setLoadingSummary(false);
@@ -136,7 +134,7 @@ const InspeccionFinalPage = () => {
       } else {
         setErrorByTrip((p) => ({ ...p, [viajeId]: data.message || 'No se pudo cargar el detalle.' }));
       }
-    } catch (e) {
+    } catch {
       setErrorByTrip((p) => ({ ...p, [viajeId]: 'Error de red al cargar el detalle.' }));
     } finally {
       setLoadingByTrip((p) => ({ ...p, [viajeId]: false }));
@@ -180,7 +178,7 @@ const InspeccionFinalPage = () => {
         Swal.fire('Error', data.message || 'No se pudo finalizar la inspección.', 'error');
       }
 
-    } catch (error) {
+    } catch {
       Swal.fire('Error', 'Error de conexión al finalizar.', 'error');
     }
   };

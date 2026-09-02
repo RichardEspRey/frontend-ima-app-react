@@ -46,6 +46,11 @@ export const TripFinanceRow = ({ trip, isOpen, onToggle, onStageChange }) => {
 
   const ROLES_PERMITIDOS = ['admin', 'dev'];
   const userRole = (user?.tipo_usuario || '').toLowerCase();
+  // OJO: esto se calcula pero no se usa. La columna de déficit se le enseña hoy
+  // a todo el mundo, aunque alguien escribió aquí que debía ser solo para admin
+  // y dev. Aplicarlo escondería una columna que la gente ya ve, así que es una
+  // decisión de negocio, no del refactor. Se deja la intención escrita.
+  // eslint-disable-next-line no-unused-vars
   const canViewDeficit = ROLES_PERMITIDOS.includes(userRole);
 
   return (
