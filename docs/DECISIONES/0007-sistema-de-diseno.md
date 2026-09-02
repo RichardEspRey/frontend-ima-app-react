@@ -59,6 +59,18 @@ la app se construya igual aunque su color sea distinto.
 neutro es una decisión de diseño, no un descuido. Lo que se arregló es que haya **un** azul
 de cada cosa.
 
+## Lo que salió al revisarlo en el navegador
+
+Dos cosas que las pruebas no podían ver, porque no ven colores:
+
+- **El tema no debe decidir el color de una superficie.** Le había puesto fondo blanco a
+  todos los `OutlinedInput`, y eso pintó de blanco el buscador del Tracking, que va sobre
+  un panel oscuro y escribe en blanco: el campo quedó como un bloque vacío. La regla se
+  quitó — el fondo lo decide quien coloca el campo, no el tema.
+- **Las series de las gráficas no deben usar los colores de estado.** "Total Pagado" salía
+  en ámbar, que en toda la app significa "atención". Ahora hay una paleta `SERIE` aparte,
+  cuyo único trabajo es distinguir una serie de otra.
+
 ## Consecuencias
 
 - De **1 212 colores sueltos a 250**, y 40 de esos son la definición de los tokens, que es

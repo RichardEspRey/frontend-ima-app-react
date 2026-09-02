@@ -119,9 +119,11 @@ export const tema = createTheme({
 
     MuiOutlinedInput: {
       styleOverrides: {
+        // Sin fondo: el color de la superficie lo decide quien coloca el campo.
+        // Forzarlo aquí pintaba de blanco los campos que van sobre un panel
+        // oscuro —el buscador del Tracking— y su texto blanco desaparecía.
         root: {
           borderRadius: RADIO.NORMAL,
-          backgroundColor: COLOR.BLANCO,
           "& fieldset": { borderColor: COLOR.BORDE },
           "&:hover fieldset": { borderColor: COLOR.BORDE_FUERTE },
         },

@@ -80,6 +80,29 @@ export const TINTE = {
 }
 
 /**
+ * La paleta de series para las gráficas.
+ *
+ * Va aparte de `COLOR` a propósito. Antes las series usaban los colores de
+ * estado —`COLOR.AVISO` para "Total Pagado"—, y eso confunde: el ámbar significa
+ * "atención" en toda la app, y una barra de cobranza no es una advertencia. Aquí
+ * el color solo distingue una serie de otra.
+ *
+ * El orden importa: son los colores en el orden en que se asignan, elegidos para
+ * distinguirse entre sí incluso en escala de grises al imprimir un reporte.
+ *
+ * @readonly
+ * @type {Array.<string>}
+ */
+export const SERIE = [
+  "#4338ca",
+  "#0d9488",
+  "#a16207",
+  "#6d28d9",
+  "#1d4ed8",
+  "#be123c",
+]
+
+/**
  * Radios de borde, en píxeles.
  *
  * MUI multiplica su `shape.borderRadius` por el factor que se le pase a `sx`,

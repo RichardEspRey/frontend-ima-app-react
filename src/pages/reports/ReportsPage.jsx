@@ -21,7 +21,7 @@ import {
   ultimosMeses,
   useGraficas,
 } from "../../entities/report";
-import { COLOR, TINTE } from "../../shared/ui/tokens";
+import { COLOR, TINTE, SERIE, BORDE } from "../../shared/ui/tokens";
 
 
 const valueFormatter = (v) =>
@@ -191,8 +191,8 @@ export default function ReportsPage() {
                         dataset={sliceData(financesData)}
                         xAxis={[{ dataKey: 'label', label: 'Mes de Entrega', scaleType: 'band' }]}
                         series={[
-                            { dataKey: 'rate', label: 'Total Tarifa (Rate)', valueFormatter, color: COLOR.INFO }, 
-                            { dataKey: 'paid', label: 'Total Pagado', valueFormatter, color: COLOR.AVISO }, 
+                            { dataKey: 'rate', label: 'Total Tarifa (Rate)', valueFormatter, color: SERIE[0] }, 
+                            { dataKey: 'paid', label: 'Total Pagado', valueFormatter, color: SERIE[1] }, 
                         ]}
                         {...chartSetting}
                         borderRadius={4}
@@ -214,8 +214,8 @@ export default function ReportsPage() {
                         dataset={sliceData(rtsData)}
                         xAxis={[{ dataKey: 'label', label: 'Mes de Entrega', scaleType: 'band' }]}
                         series={[
-                            { dataKey: 'rate', label: 'RTS Tarifa', valueFormatter, color: TINTE.VIOLETA.texto }, 
-                            { dataKey: 'paid', label: 'RTS Pagado', valueFormatter, color: COLOR.AVISO }, 
+                            { dataKey: 'rate', label: 'RTS Tarifa', valueFormatter, color: SERIE[3] }, 
+                            { dataKey: 'paid', label: 'RTS Pagado', valueFormatter, color: SERIE[2] }, 
                         ]}
                         {...chartSetting}
                         borderRadius={4}
@@ -227,8 +227,8 @@ export default function ReportsPage() {
         <Paper elevation={0} variant="outlined" sx={{ p: 4, borderRadius: 4, bgcolor: COLOR.BLANCO }}>
             <Stack direction="row" justifyContent="space-between" alignItems="center" mb={3} flexWrap="wrap" gap={2}>
                 <Stack direction="row" alignItems="center" spacing={1}>
-                    <Box sx={{ width: 4, height: 24, bgcolor: '#ff5722', borderRadius: 1 }} />
-                    {/* <LocalGasStationIcon sx={{ color: '#ff5722' }} /> */}
+                    <Box sx={{ width: 4, height: 24, bgcolor: SERIE[2], borderRadius: 1 }} />
+                    {/* <LocalGasStationIcon sx={{ color: SERIE[2] }} /> */}
                     <Box>
                         <Typography variant="h6" fontWeight={700}>Costo de Diesel por Galón</Typography>
                     </Box>
@@ -261,7 +261,7 @@ export default function ReportsPage() {
                         series={[{ 
                                 dataKey: 'y', 
                                 label: 'Precio Promedio ($/gal)', 
-                                color: '#ff5722',
+                                color: SERIE[2],
                                 valueFormatter: (v) => `$${Number(v).toFixed(2)}`,
                                 showMark: true,
                                 curve: 'linear' 
@@ -285,8 +285,8 @@ export default function ReportsPage() {
                         dataset={datasetDiesel}
                         xAxis={xAxisDiesel}
                         series={[
-                            { dataKey: 'monto', label: 'Monto ($)', valueFormatter, color: '#3C48E1' },
-                            { dataKey: 'fleetone', label: 'FleetOne ($)', valueFormatter, color: '#00C853' },
+                            { dataKey: 'monto', label: 'Monto ($)', valueFormatter, color: SERIE[0] },
+                            { dataKey: 'fleetone', label: 'FleetOne ($)', valueFormatter, color: SERIE[1] },
                         ]}
                         {...chartSetting}
                         borderRadius={4}
@@ -298,7 +298,7 @@ export default function ReportsPage() {
 
         {/* --- SECCIÓN 4: TABLA --- */}
         <Paper elevation={0} variant="outlined" sx={{ borderRadius: 4, overflow: 'hidden' }}>
-            <Box sx={{ p: 3, bgcolor: COLOR.LIENZO, borderBottom: '1px solid #eee' }}>
+            <Box sx={{ p: 3, bgcolor: COLOR.LIENZO, borderBottom: BORDE }}>
                 <Stack direction="row" alignItems="center" spacing={1}>
                     <TableViewIcon color="action" />
                     <Typography variant="h6" fontWeight={700}>Detalle Volumetría (Diésel)</Typography>
