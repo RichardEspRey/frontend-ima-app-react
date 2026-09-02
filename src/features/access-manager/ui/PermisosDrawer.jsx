@@ -3,7 +3,7 @@ import {
     Drawer, Box, Typography, IconButton,
     List, ListItem, ListItemText, ListItemIcon, Switch,
     Avatar, TextField, Chip, Stack,
-    Tabs, Tab, Collapse,
+    Collapse,
     Button, FormControl, InputLabel, Select, MenuItem, Divider,
     InputAdornment, Autocomplete
 } from '@mui/material';
@@ -22,7 +22,7 @@ import {
     Search as SearchIcon
 } from '@mui/icons-material';
 import { COLOR } from '../../../shared/ui/tokens';
-import { TarjetasEsqueleto } from '../../../shared/ui';
+import { TarjetasEsqueleto, Pestanas } from '../../../shared/ui';
 
 // A partir de cuántos permisos "hoja" seguidos se usa la cuadrícula compacta en vez de filas.
 const COMPACT_GRID_THRESHOLD = 5;
@@ -457,12 +457,17 @@ const PermisosDrawer = ({
                 </Stack>
             </Box>
 
-            <Box sx={{ borderBottom: 1, borderColor: 'divider', flexShrink: 0 }}>
-                <Tabs value={activeTab} onChange={(_, v) => setActiveTab(v)} variant="fullWidth">
-                    <Tab icon={<ManageAccountsIcon fontSize="small" />} label="Datos" iconPosition="start" sx={{ minHeight: 48 }} />
-                    <Tab icon={<ComputerIcon fontSize="small" />} label="Desktop" iconPosition="start" sx={{ minHeight: 48 }} />
-                    <Tab icon={<PhoneAndroidIcon fontSize="small" />} label="Mobile" iconPosition="start" sx={{ minHeight: 48 }} />
-                </Tabs>
+            <Box sx={{ borderBottom: 1, borderColor: 'divider', flexShrink: 0, px: 2, py: 1.5 }}>
+                <Pestanas
+                    valor={activeTab}
+                    onChange={setActiveTab}
+                    pestanas={[
+                      { etiqueta: 'Datos', icono: <ManageAccountsIcon fontSize="small" /> },
+                      { etiqueta: 'Desktop', icono: <ComputerIcon fontSize="small" /> },
+                      { etiqueta: 'Mobile', icono: <PhoneAndroidIcon fontSize="small" /> },
+                    ]}
+                    sx={{ mb: 0 }}
+                />
             </Box>
 
             <Box sx={{ flex: 1, overflowY: 'auto' }}>

@@ -5,8 +5,6 @@ import {
   Button,
   Paper,
   Stack,
-  Tab,
-  Tabs,
   TextField,
 } from "@mui/material"
 import AddIcon from "@mui/icons-material/Add"
@@ -30,7 +28,7 @@ import {
   validarUnidad,
 } from "../../../entities/unit"
 import { useSesion } from "../../../shared/auth"
-import { PageHeader, notify, PantallaEsqueleto } from "../../../shared/ui"
+import { PageHeader, notify, PantallaEsqueleto, Pestanas } from "../../../shared/ui"
 import { ModalBaja } from "./ModalBaja"
 import { ModalColumnas } from "./ModalColumnas"
 import { ModalRequisitos } from "./ModalRequisitos"
@@ -257,10 +255,14 @@ export function AdminUnidades({ tipo }) {
       >
         {descriptor.conBaja && (
           <Box sx={{ borderBottom: 1, borderColor: "divider", bgcolor: "white" }}>
-            <Tabs value={pestana} onChange={(evento, valor) => setPestana(valor)}>
-              <Tab label={`Activos (${activos})`} />
-              <Tab label={`Bajas (${bajas})`} />
-            </Tabs>
+            <Pestanas
+              valor={pestana}
+              onChange={setPestana}
+              pestanas={[
+                { etiqueta: `Activos (${activos})` },
+                { etiqueta: `Bajas (${bajas})` },
+              ]}
+            />
           </Box>
         )}
 

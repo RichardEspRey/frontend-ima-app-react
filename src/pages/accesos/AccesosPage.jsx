@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Alert, Box, Button, Chip, Container, Tab, Tabs, TextField } from "@mui/material"
+import { Alert, Box, Button, Chip, Container, TextField } from "@mui/material"
 import GroupIcon from "@mui/icons-material/Group"
 import PersonAddIcon from "@mui/icons-material/PersonAdd"
 
@@ -7,8 +7,8 @@ import { menuItemsConfig } from "../../config/menuConfig"
 import { useConductoresActivos } from "../../entities/driver"
 import { useSesion } from "../../shared/auth"
 import { useAuthStore } from "../../store/useAuthStore"
-import { DataTable, PageHeader, notify } from "../../shared/ui"
-import { DARK_BTN_SX, GHOST_BTN_SX, CELL_STRONG_SX, CHIP_SX, TAB_SX, TABS_WRAPPER_SX } from "../../shared/ui/estilos"
+import { DataTable, PageHeader, notify, Pestanas } from "../../shared/ui"
+import { DARK_BTN_SX, GHOST_BTN_SX, CELL_STRONG_SX, CHIP_SX } from "../../shared/ui/estilos"
 import {
   TIPO_USUARIO_API,
   estaActivo,
@@ -159,15 +159,14 @@ export default function AccesosPage() {
       />
 
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
-        <Tabs
-          value={pestana}
-          onChange={(_evento, valor) => setPestana(valor)}
-          sx={TABS_WRAPPER_SX}
-          TabIndicatorProps={{ sx: { display: "none" } }}
-        >
-          <Tab label={`Personal (${usuarios.filter((u) => !esConductor(u)).length})`} sx={TAB_SX} />
-          <Tab label={`Conductores (${usuarios.filter(esConductor).length})`} sx={TAB_SX} />
-        </Tabs>
+        <Pestanas
+          valor={pestana}
+          onChange={setPestana}
+          pestanas={[
+            { etiqueta: `Personal (${usuarios.filter((u) => !esConductor(u)).length})` },
+            { etiqueta: `Conductores (${usuarios.filter(esConductor).length})` },
+          ]}
+        />
 
         <TextField
           placeholder="Buscar por nombre o usuario…"

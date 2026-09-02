@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo, useCallback } from "react";
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
   TablePagination, TextField, Box, Typography, Chip, Button,
-  Stack, Tooltip, IconButton, InputAdornment, Tabs, Tab
+  Stack, Tooltip, IconButton, InputAdornment
 } from "@mui/material";
 
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -16,7 +16,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import Swal from "sweetalert2";
 import { useNavigate } from 'react-router-dom';
 import { COLOR } from '../../shared/ui/tokens';
-import { FilasEsqueleto } from '../../shared/ui';
+import { FilasEsqueleto, Pestanas } from '../../shared/ui';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -226,16 +226,14 @@ const PagosConductoresPage = () => {
 
       {/* Pestañas */}
       <Paper elevation={0} variant="outlined" sx={{ mb: 3, bgcolor: COLOR.LIENZO, borderRadius: 2, overflow: 'hidden' }}>
-        <Tabs 
-            value={tabValue} 
-            onChange={handleTabChange} 
-            variant="fullWidth" 
-            indicatorColor="primary" 
-            textColor="primary"
-        >
-            <Tab icon={<PendingActionsIcon />} label="Pendientes de Pago" iconPosition="start" sx={{ fontWeight: 600, py: 3 }} />
-            <Tab icon={<CheckCircleIcon />} label="Historial Pagados" iconPosition="start" sx={{ fontWeight: 600, py: 3 }} />
-        </Tabs>
+        <Pestanas
+            valor={tabValue}
+            onChange={(valor) => handleTabChange(null, valor)}
+            pestanas={[
+              { etiqueta: 'Pendientes de Pago', icono: <PendingActionsIcon fontSize="small" /> },
+              { etiqueta: 'Historial Pagados', icono: <CheckCircleIcon fontSize="small" /> },
+            ]}
+        />
       </Paper>
 
       {/* Barra de Herramientas */}

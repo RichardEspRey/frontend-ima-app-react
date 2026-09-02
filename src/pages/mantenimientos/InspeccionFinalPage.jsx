@@ -1,12 +1,13 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
-  Button, Box, Typography, CircularProgress, Stack, Tabs, Tab, ToggleButtonGroup,
+  Button, Box, Typography, CircularProgress, Stack, ToggleButtonGroup,
   ToggleButton
 } from '@mui/material';
 import Swal from 'sweetalert2';
 
 import { InspeccionRow } from '../../components/InspeccionRow'; 
+import { Pestanas } from '../../shared/ui';
 
 
 const OPS = {
@@ -191,15 +192,11 @@ const InspeccionFinalPage = () => {
       </Typography>
 
       <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
-        <Tabs 
-            value={tabValue} 
-            onChange={(e, newValue) => setTabValue(newValue)}
-            textColor="primary"
-            indicatorColor="primary"
-        >
-            <Tab label="Pendientes" sx={{ fontWeight: 600, textTransform: 'none', fontSize: '1rem' }} />
-            <Tab label="Completadas" sx={{ fontWeight: 600, textTransform: 'none', fontSize: '1rem' }} />
-        </Tabs>
+        <Pestanas
+            valor={tabValue}
+            onChange={setTabValue}
+            pestanas={[{ etiqueta: 'Pendientes' }, { etiqueta: 'Completadas' }]}
+        />
 
         <ToggleButtonGroup
             value={countryFilter}

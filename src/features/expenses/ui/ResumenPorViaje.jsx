@@ -5,7 +5,6 @@ import {
   Chip,
   Paper,
   Stack,
-  Tab,
   Table,
   TableBody,
   TableCell,
@@ -13,7 +12,6 @@ import {
   TableHead,
   TablePagination,
   TableRow,
-  Tabs,
   TextField,
   ToggleButton,
   ToggleButtonGroup,
@@ -29,7 +27,7 @@ import {
   useResumen,
 } from "../../../entities/expense"
 import { decimales, moneda } from "../../../shared/lib/formato"
-import { PageHeader, PantallaEsqueleto } from "../../../shared/ui"
+import { PageHeader, PantallaEsqueleto, Pestanas } from "../../../shared/ui"
 import { COLOR } from "../../../shared/ui/tokens"
 
 const PAISES = [
@@ -153,23 +151,14 @@ export function ResumenPorViaje({ descriptor }) {
       />
 
       {descriptor.pestanas && (
-        <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 3 }}>
-          <Tabs
-            value={pestana}
-            onChange={(evento, valor) => {
-              setPestana(valor)
-              setPagina(0)
-            }}
-          >
-            {descriptor.pestanas.map((tab) => (
-              <Tab
-                key={tab.etiqueta}
-                label={tab.etiqueta}
-                sx={{ fontWeight: 600, textTransform: "none", fontSize: "1rem" }}
-              />
-            ))}
-          </Tabs>
-        </Box>
+        <Pestanas
+          valor={pestana}
+          onChange={(valor) => {
+            setPestana(valor)
+            setPagina(0)
+          }}
+          pestanas={descriptor.pestanas.map((tab) => ({ etiqueta: tab.etiqueta }))}
+        />
       )}
 
       <Stack direction="row" spacing={2} sx={{ mb: 3 }} alignItems="center">

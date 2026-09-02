@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
   TablePagination, TextField, Box, Typography, CircularProgress, Button, Badge, 
-  Tooltip, Stack, MenuItem, Tabs, Tab, Grid, Divider,
+  Tooltip, Stack, MenuItem, Grid, Divider,
   Autocomplete
 } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
@@ -19,6 +19,7 @@ import { AlertSummaryCards } from '../../components/AlertSummaryCards';
 import { getTripStatusSummary, validateStage, buildPayloadItem, collectDirtyStages } from '../../utils/financeHelpers';
 import { STATUS_OPTIONS } from '../../constants/finances'; 
 import { COLOR } from '../../shared/ui/tokens';
+import { Pestanas } from '../../shared/ui';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -254,19 +255,15 @@ const FinanzasPage = () => {
         <Typography variant="body2" color="text.secondary">Gestión de cobros y pagos de viajes</Typography>
       </Box>
 
-      <Paper elevation={0} variant="outlined" sx={{ mb: 4, borderRadius: 2, overflow: 'hidden' }}>
-        <Tabs 
-            value={tabValue} 
-            onChange={handleTabChange} 
-            variant="fullWidth" 
-            indicatorColor="primary"
-            textColor="primary"
-            sx={{ bgcolor: COLOR.LIENZO }}
-        >
-            <Tab icon={<AccessTimeIcon />} label="Pendientes de Cobrar" iconPosition="start" sx={{ fontWeight: 600, py: 3 }} />
-            <Tab icon={<CheckCircleIcon />} label="Pagados / Histórico" iconPosition="start" sx={{ fontWeight: 600, py: 3 }} />
-        </Tabs>
-      </Paper>
+      <Pestanas
+        valor={tabValue}
+        onChange={(valor) => handleTabChange(null, valor)}
+        pestanas={[
+          { etiqueta: 'Pendientes de Cobrar', icono: <AccessTimeIcon fontSize="small" /> },
+          { etiqueta: 'Pagados / Histórico', icono: <CheckCircleIcon fontSize="small" /> },
+        ]}
+        sx={{ mb: 4 }}
+      />
 
       {!loading && tabValue === 0 && (
         <Box sx={{ mb: 4 }}>

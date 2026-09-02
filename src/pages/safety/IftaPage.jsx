@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import {
-    Box, Typography, Tabs, Tab, Table, TableBody, TableCell,
+    Box, Typography, Table, TableBody, TableCell,
     TableContainer, TableHead, TableRow, Paper, Chip, TextField,
     InputAdornment, CircularProgress, Stack, Button, MenuItem, Select,
     FormControl, InputLabel
@@ -12,6 +12,7 @@ import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { COLOR } from '../../shared/ui/tokens';
+import { Pestanas } from '../../shared/ui';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -186,11 +187,16 @@ export default function IftaPage() {
                 IFTA — Registros
             </Typography>
 
-            <Tabs value={tabValue} onChange={(_, v) => setTabValue(v)} sx={{ mb: 2.5 }}>
-                <Tab label="Por Viaje" />
-                <Tab label="Totales por Estado" />
-                <Tab label="Millas por Periodo" />
-            </Tabs>
+            <Pestanas
+                valor={tabValue}
+                onChange={setTabValue}
+                pestanas={[
+                    { etiqueta: 'Por Viaje' },
+                    { etiqueta: 'Totales por Estado' },
+                    { etiqueta: 'Millas por Periodo' },
+                ]}
+                sx={{ mb: 2.5 }}
+            />
 
             {/* ── TAB 0: Por Viaje ─────────────────────────────────────────── */}
             {tabValue === 0 && (

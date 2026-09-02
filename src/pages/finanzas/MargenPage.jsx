@@ -1,14 +1,13 @@
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
-  TablePagination, TextField, Box, Typography, Stack, Button,
-  Tabs, Tab
+  TablePagination, TextField, Box, Typography, Stack, Button
 } from '@mui/material';
 import Swal from 'sweetalert2';
 
 import { MargenRow } from '../../components/MargenRow'; 
 import { COLOR } from '../../shared/ui/tokens';
-import { PantallaEsqueleto } from '../../shared/ui';
+import { PantallaEsqueleto, Pestanas } from '../../shared/ui';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -124,15 +123,11 @@ const MargenPage = () => {
       </Typography>
 
       <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-        <Tabs 
-            value={tabValue} 
-            onChange={(e, newValue) => { setTabValue(newValue); setPage(0); }}
-            textColor="primary"
-            indicatorColor="primary"
-        >
-            <Tab label="Pendientes" sx={{ fontWeight: 600, textTransform: 'none', fontSize: '1rem' }} />
-            <Tab label="Completados" sx={{ fontWeight: 600, textTransform: 'none', fontSize: '1rem' }} />
-        </Tabs>
+        <Pestanas
+            valor={tabValue}
+            onChange={(valor) => { setTabValue(valor); setPage(0); }}
+            pestanas={[{ etiqueta: 'Pendientes' }, { etiqueta: 'Completados' }]}
+        />
       </Box>
 
       <Stack direction="row" spacing={2} sx={{ mb: 3 }} alignItems="center">

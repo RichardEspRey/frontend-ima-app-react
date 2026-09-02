@@ -1,17 +1,18 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Box, Tabs, Tab, Typography, Stack, Button, Alert } from '@mui/material';
+import { Box, Typography, Stack, Button, Alert } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { useNavigate } from 'react-router-dom';
 
 import { useAuthStore } from '../../store/useAuthStore';
 import {
     PAGE_SHELL_SX, PAGE_OVERLINE_SX, PAGE_TITLE_SX,
-    TABS_WRAPPER_SX, TAB_SX, DARK_BTN_SX,
+    DARK_BTN_SX,
 } from '../../shared/ui/estilos';
 import TablaOrdenes from '../../features/service-order/ui/TablaOrdenes.jsx';
 import TablaInventario from '../../features/service-order/ui/TablaInventario.jsx';
 import { useSesion } from '../../shared/auth';
 import { COLOR } from '../../shared/ui/tokens';
+import { Pestanas } from '../../shared/ui';
 
 
 const TABS_CONFIG = [
@@ -88,21 +89,11 @@ const OrdenesServicioPage = () => {
             ) : (
                 <>
                     {allowedTabs.length > 1 && (
-                        <Box sx={TABS_WRAPPER_SX}>
-                            <Tabs
-                                value={activeTab}
-                                onChange={(event, value) => setTabValue(value)}
-                                variant="scrollable"
-                                scrollButtons="auto"
-                                allowScrollButtonsMobile
-                                TabIndicatorProps={{ sx: { display: 'none' } }}
-                                sx={{ minHeight: 0, '& .MuiTabs-flexContainer': { gap: 0.5 } }}
-                            >
-                                {allowedTabs.map(tab => (
-                                    <Tab key={tab.id} label={tab.label} value={tab.id} disableRipple sx={TAB_SX} />
-                                ))}
-                            </Tabs>
-                        </Box>
+                        <Pestanas
+                            valor={activeTab}
+                            onChange={setTabValue}
+                            pestanas={allowedTabs.map(tab => ({ id: tab.id, etiqueta: tab.label }))}
+                        />
                     )}
 
                     {allowedTabs.map(tab => (

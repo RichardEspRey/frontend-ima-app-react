@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import {
   Box, Paper, Typography, Stack,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  Chip, Tabs, Tab, TextField, InputAdornment, TablePagination
+  Chip, TextField, InputAdornment, TablePagination
 } from "@mui/material";
 
 import Swal from "sweetalert2";
@@ -12,15 +12,14 @@ import { DocumentCell } from "../../components/DocumentCell.jsx";
 import { PCMillerModal } from "../../components/PCMillerModal.jsx";
 import { DocPreviewModal } from "../../components/DocPreviewModal.jsx";
 import {
-  PAGE_SHELL_SX, PAGE_OVERLINE_SX, PAGE_TITLE_SX, TABS_WRAPPER_SX, TAB_SX,
-  CARD_SX, SECTION_LABEL_SX, HEADER_ROW_SX, HEADER_CELL_SX, TABLE_CONTAINER_SX,
+  PAGE_SHELL_SX, PAGE_OVERLINE_SX, PAGE_TITLE_SX, CARD_SX, SECTION_LABEL_SX, HEADER_ROW_SX, HEADER_CELL_SX, TABLE_CONTAINER_SX,
   PAGINATION_BOX_SX, PAGINATION_SX, CHIP_DANGER_SX,
 } from "../../shared/ui/estilos";
 import TablaReparaciones from "../../features/inspections/ui/TablaReparaciones.jsx";
 import TablaInspecciones from "../../features/inspections/ui/TablaInspecciones.jsx";
 import { archivoDelEvento } from "../../shared/security";
 import { COLOR } from "../../shared/ui/tokens";
-import { FilasEsqueleto } from "../../shared/ui";
+import { FilasEsqueleto, Pestanas } from "../../shared/ui";
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -193,22 +192,16 @@ export default function SafetyPage() {
         </Box>
       </Stack>
 
-      <Box sx={TABS_WRAPPER_SX}>
-        <Tabs
-          value={tabValue}
-          onChange={(e, val) => { setTabValue(val); setPage(0); }}
-          variant="scrollable"
-          scrollButtons="auto"
-          allowScrollButtonsMobile
-          TabIndicatorProps={{ sx: { display: 'none' } }}
-          sx={{ minHeight: 0, '& .MuiTabs-flexContainer': { gap: 0.5 } }}
-        >
-          <Tab label="Pendientes de Documentación" disableRipple sx={TAB_SX} />
-          <Tab label="Cumplimiento Completo" disableRipple sx={TAB_SX} />
-          <Tab label="Reparaciones en Ruta" disableRipple sx={TAB_SX} />
-          <Tab label="Inspecciones Operativas" disableRipple sx={TAB_SX} />
-        </Tabs>
-      </Box>
+      <Pestanas
+        valor={tabValue}
+        onChange={(valor) => { setTabValue(valor); setPage(0); }}
+        pestanas={[
+          { etiqueta: 'Pendientes de Documentación' },
+          { etiqueta: 'Cumplimiento Completo' },
+          { etiqueta: 'Reparaciones en Ruta' },
+          { etiqueta: 'Inspecciones Operativas' },
+        ]}
+      />
 
       {(tabValue === 0 || tabValue === 1) && (
         <>

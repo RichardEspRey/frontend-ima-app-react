@@ -71,6 +71,24 @@ Dos cosas que las pruebas no podían ver, porque no ven colores:
   en ámbar, que en toda la app significa "atención". Ahora hay una paleta `SERIE` aparte,
   cuyo único trabajo es distinguir una serie de otra.
 
+## Los controles compartidos, no solo los tokens
+
+Los tokens homogeneizan el **color**; no homogeneizan la **forma**. Las pestañas lo dejaron
+claro: había **cuatro aspectos distintos en trece pantallas**, y el que el equipo quería
+—pastillas oscuras sobre un carril gris, sin la línea inferior de MUI— estaba en tres, en
+dos de ellas **copiado a mano** en lugar de compartido.
+
+Copiado a mano es lo peor de los tres estados: parece resuelto, así que nadie lo revisa, y
+cada copia deriva por su cuenta.
+
+La regla que sale de ahí: **cuando un control tiene un aspecto propio, el aspecto vive en un
+componente, no en una guía.** `shared/ui/Pestanas` es el único modo de poner pestañas en la
+app; una pantalla nueva no puede equivocarse porque no tiene dónde.
+
+Su interfaz también corrige un detalle de MUI: `onChange` entrega **el valor**, no el
+evento. Olvidarse del primer argumento de `Tabs` es el error habitual, y no tiene por qué
+repetirse en cada pantalla.
+
 ## Consecuencias
 
 - De **1 212 colores sueltos a 250**, y 40 de esos son la definición de los tokens, que es

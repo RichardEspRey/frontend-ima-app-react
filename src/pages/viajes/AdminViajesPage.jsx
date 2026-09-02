@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react"
-import { Alert, Box, Button, Stack, Tab, Tabs, Typography } from "@mui/material"
+import { Alert, Box, Button, Stack, Typography } from "@mui/material"
 import AddIcon from "@mui/icons-material/Add"
 import { useNavigate } from "react-router-dom"
 
@@ -39,7 +39,7 @@ import {
 } from "../../features/trips-admin"
 import { useAuthStore } from "../../store/useAuthStore"
 import { useViajesFiltrosStore } from "../../store/useViajesFiltrosStore"
-import { notify, EstadoError } from "../../shared/ui"
+import { notify, EstadoError, Pestanas } from "../../shared/ui"
 import { COLOR } from "../../shared/ui/tokens"
 
 /**
@@ -442,39 +442,11 @@ export default function AdminViajesPage() {
         )}
       </Stack>
 
-      <Box sx={{ mb: 3, display: "inline-flex", bgcolor: COLOR.RELLENO, borderRadius: 2.5, p: 0.5 }}>
-        <Tabs
-          value={pestana}
-          onChange={(evento, valor) => setEstado({ tabValue: valor, page: 0 })}
-          variant="scrollable"
-          scrollButtons="auto"
-          allowScrollButtonsMobile
-          TabIndicatorProps={{ sx: { display: "none" } }}
-          sx={{ minHeight: 0, "& .MuiTabs-flexContainer": { gap: 0.5 } }}
-        >
-          {permitidas.map((tab) => (
-            <Tab
-              key={tab.id}
-              label={tab.etiqueta}
-              value={tab.id}
-              disableRipple
-              sx={{
-                minHeight: 36,
-                minWidth: 0,
-                px: 2.5,
-                py: 1,
-                borderRadius: 2,
-                fontWeight: 600,
-                fontSize: "0.85rem",
-                textTransform: "none",
-                color: COLOR.APAGADO,
-                transition: "background-color 0.15s, color 0.15s",
-                "&.Mui-selected": { bgcolor: COLOR.TINTA, color: COLOR.BLANCO },
-              }}
-            />
-          ))}
-        </Tabs>
-      </Box>
+      <Pestanas
+        valor={pestana}
+        onChange={(valor) => setEstado({ tabValue: valor, page: 0 })}
+        pestanas={permitidas.map((tab) => ({ id: tab.id, etiqueta: tab.etiqueta }))}
+      />
 
       {enProgramacion ? (
         <Box>

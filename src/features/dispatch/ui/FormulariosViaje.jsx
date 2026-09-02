@@ -1,9 +1,10 @@
-import { Alert, Box, Paper, Tab, Tabs } from "@mui/material"
+import { Alert, Box, Paper } from "@mui/material"
 
 import BorderCrossingFormNew2 from "../../../components/BorderCrossingFormNew2"
 import TripFormMX from "../../../components/TripFormMX"
 import TripFormUSA from "../../../components/TripFormUSA"
 import { PAIS } from "../../../entities/dispatch"
+import { Pestanas } from "../../../shared/ui"
 
 /**
  * Las pestañas de formulario de un viaje, según el país.
@@ -29,10 +30,14 @@ export function FormulariosViaje({ pais, pestana, onPestanaChange, propsFormular
   return (
     <Box>
       <Paper sx={{ mb: 3 }}>
-        <Tabs value={pestana} onChange={(evento, valor) => onPestanaChange(valor)}>
-          {pais === PAIS.USA && <Tab label="Cruce Fronterizo (Transfer)" />}
-          <Tab label="Viaje Normal (Carretera)" />
-        </Tabs>
+        <Pestanas
+          valor={pestana}
+          onChange={onPestanaChange}
+          pestanas={[
+            ...(pais === PAIS.USA ? [{ etiqueta: 'Cruce Fronterizo (Transfer)' }] : []),
+            { etiqueta: 'Viaje Normal (Carretera)' },
+          ]}
+        />
       </Paper>
 
       {esCruce && <BorderCrossingFormNew2 {...propsFormulario} />}
