@@ -23,7 +23,6 @@ import {
 } from '../../../shared/ui/estilos';
 import { COLOR } from '../../../shared/ui/tokens';
 import { FilasEsqueleto, Paginacion } from '../../../shared/ui';
-import { useIdioma } from '../../../shared/i18n';
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
@@ -40,7 +39,6 @@ const apiHost = import.meta.env.VITE_API_HOST;
  * @returns {object} La tabla renderizada.
  */
 const TablaOrdenes = () => {
-    const { t } = useIdioma()
     const navigate = useNavigate();
     
     // --- ESTADOS DE DATOS ---
@@ -298,14 +296,14 @@ const TablaOrdenes = () => {
                             <TableCell sx={HEADER_CELL_SX} />
                             <TableCell sx={HEADER_CELL_SX}>ID</TableCell>
                             <TableCell sx={HEADER_CELL_SX}>Fecha</TableCell>
-                            <TableCell sx={HEADER_CELL_SX}>{t("tabla.camion")}</TableCell>
+                            <TableCell sx={HEADER_CELL_SX}>Camión</TableCell>
                             <TableCell sx={HEADER_CELL_SX}>Servicios</TableCell>
                             <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'right' }}>Mano de obra</TableCell>
                             <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'right' }}>Refacciones</TableCell>
                             <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'right' }}>T. cambio</TableCell>
                             <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'right' }}>Total</TableCell>
-                            <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'center' }}>{t("tabla.estatus")}</TableCell>
-                            <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'center' }}>{t("tabla.acciones")}</TableCell>
+                            <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'center' }}>Estatus</TableCell>
+                            <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'center' }}>Acciones</TableCell>
                         </TableRow>
                     </TableHead>
 

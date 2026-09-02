@@ -17,7 +17,6 @@ import { HEADER_CELL_SX, HEADER_ROW_SX } from "../../../shared/ui/estilos"
 import { columnasDeTabla, documentosFaltantesDeViaje, urlDocumento } from "../model/documentos"
 import { COLOR } from "../../../shared/ui/tokens"
 import { FilasEsqueleto, Paginacion } from "../../../shared/ui"
-import { useIdioma } from "../../../shared/i18n"
 
 const CELDA_CENTRADA = { ...HEADER_CELL_SX, textAlign: "center" }
 
@@ -64,7 +63,6 @@ function FilaVacia({ columnas, cargando }) {
  * @returns {object} La tabla renderizada.
  */
 export function TablaViajes({ viajes = [], total, cargando, vista, paginacion, acciones }) {
-  const { t } = useIdioma()
   const { conDocumentos, enRuta, proximos, despacho, finalizados, esAdmin } = vista
   const conAdmin = esAdmin && (finalizados || enRuta)
   const columnas = columnasDeTabla({ conDocumentos, enRuta, conAdmin })
@@ -80,13 +78,13 @@ export function TablaViajes({ viajes = [], total, cargando, vista, paginacion, a
           <TableHead>
             <TableRow sx={HEADER_ROW_SX}>
               <TableCell sx={HEADER_CELL_SX} />
-              <TableCell sx={HEADER_CELL_SX}>{t("tabla.trip")}</TableCell>
-              <TableCell sx={HEADER_CELL_SX}>{t("tabla.drivers")}</TableCell>
-              <TableCell sx={HEADER_CELL_SX}>{t("tabla.camion")}</TableCell>
-              <TableCell sx={HEADER_CELL_SX}>{t("tabla.caja")}</TableCell>
+              <TableCell sx={HEADER_CELL_SX}>Trip</TableCell>
+              <TableCell sx={HEADER_CELL_SX}>Driver(s)</TableCell>
+              <TableCell sx={HEADER_CELL_SX}>Camión</TableCell>
+              <TableCell sx={HEADER_CELL_SX}>Caja</TableCell>
 
               {!conDocumentos && <TableCell sx={HEADER_CELL_SX}>Initial Date</TableCell>}
-              <TableCell sx={HEADER_CELL_SX}>{t("tabla.estatus")}</TableCell>
+              <TableCell sx={HEADER_CELL_SX}>Estatus</TableCell>
               {!conDocumentos && <TableCell sx={HEADER_CELL_SX}>Return Date</TableCell>}
               {conDocumentos && <TableCell sx={CELDA_CENTRADA}>Documentos Faltantes</TableCell>}
 

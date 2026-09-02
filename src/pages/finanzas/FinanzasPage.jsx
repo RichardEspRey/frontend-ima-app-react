@@ -20,7 +20,6 @@ import { getTripStatusSummary, validateStage, buildPayloadItem, collectDirtyStag
 import { STATUS_OPTIONS } from '../../constants/finances'; 
 import { COLOR } from '../../shared/ui/tokens';
 import { Pestanas, PageHeader, PAGE_SHELL_SX, TABLE_CONTAINER_SX, HEADER_ROW_SX, HEADER_CELL_SX, Paginacion } from '../../shared/ui';
-import { useIdioma } from '../../shared/i18n';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -32,7 +31,6 @@ const STATUS_PAID = 3;
  * @returns {object} La pantalla.
  */
 const FinanzasPage = () => {
-  const { t } = useIdioma()
   const [trips, setTrips] = useState([]);
   const [loading, setLoading] = useState(true);
   
@@ -392,10 +390,10 @@ const FinanzasPage = () => {
           <TableHead>
             <TableRow sx={HEADER_ROW_SX}>
               <TableCell width={50} sx={HEADER_CELL_SX} />
-              <TableCell sx={HEADER_CELL_SX}>{t("tabla.trip")}</TableCell>
-              <TableCell sx={HEADER_CELL_SX}>{t("tabla.etapas")}</TableCell>
-              <TableCell align="right" sx={HEADER_CELL_SX}>{t("tabla.tarifa")}</TableCell>
-              <TableCell align="right" sx={HEADER_CELL_SX}>{t("tabla.pagado")}</TableCell>
+              <TableCell sx={HEADER_CELL_SX}>Trip #</TableCell>
+              <TableCell sx={HEADER_CELL_SX}>Etapas</TableCell>
+              <TableCell align="right" sx={HEADER_CELL_SX}>Total Tarifa</TableCell>
+              <TableCell align="right" sx={HEADER_CELL_SX}>Total Pagado</TableCell>
               <TableCell sx={HEADER_CELL_SX}>Estatus General</TableCell>
               <TableCell align="center" sx={HEADER_CELL_SX}>Alertas</TableCell>
             </TableRow>

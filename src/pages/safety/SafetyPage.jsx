@@ -20,7 +20,6 @@ import TablaInspecciones from "../../features/inspections/ui/TablaInspecciones.j
 import { archivoDelEvento } from "../../shared/security";
 import { COLOR } from "../../shared/ui/tokens";
 import { FilasEsqueleto, Pestanas, Paginacion } from "../../shared/ui";
-import { useIdioma } from "../../shared/i18n";
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -40,7 +39,6 @@ const DOC_NAMES = {
  * @returns {object} La pantalla.
  */
 export default function SafetyPage() {
-  const { t } = useIdioma()
   const [trips, setTrips] = useState([]);
   const [loading, setLoading] = useState(true);
   const [tabValue, setTabValue] = useState(0);
@@ -235,7 +233,7 @@ export default function SafetyPage() {
             <Table size="small">
                 <TableHead>
                   <TableRow sx={HEADER_ROW_SX}>
-                    <TableCell sx={{ ...HEADER_CELL_SX, width: '15%' }}>{t("tabla.trip")}</TableCell>
+                    <TableCell sx={{ ...HEADER_CELL_SX, width: '15%' }}>Trip #</TableCell>
                     <TableCell sx={HEADER_CELL_SX}>
                       Libro Electrónico
                       {tabValue === 0 && missingCounts.libro > 0 && (

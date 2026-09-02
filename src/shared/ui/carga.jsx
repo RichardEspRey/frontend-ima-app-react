@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react"
 import { Box, Paper, Skeleton, Stack, TableCell, TableRow } from "@mui/material"
 import { BORDE, COLOR, RADIO } from "./tokens"
-import { useIdioma } from "../i18n"
 
 /**
  * Milisegundos que se espera antes de mostrar un esqueleto.
@@ -54,13 +53,10 @@ export function useCargaVisible(cargando, retraso = RETRASO_CARGA_MS) {
  * ve pero sí se lee, y es también lo que buscan las pruebas.
  *
  * @param {object} props Propiedades del componente.
- * @param {string} [props.children] Qué anunciar; por omisión, el texto de carga
- *   del catálogo, en el idioma activo.
+ * @param {string} [props.children='Cargando…'] Qué anunciar.
  * @returns {object} El anuncio renderizado.
  */
-export function AnuncioCarga({ children }) {
-  const { t } = useIdioma()
-
+export function AnuncioCarga({ children = "Cargando…" }) {
   return (
     <Box
       component="span"
@@ -75,7 +71,7 @@ export function AnuncioCarga({ children }) {
         whiteSpace: "nowrap",
       }}
     >
-      {children ?? t("estado.cargando")}
+      {children}
     </Box>
   )
 }
@@ -219,7 +215,7 @@ export function BloqueEsqueleto({ alto = 350, conTitulo = true }) {
 export function PantallaEsqueleto({ columnas = 5, filas = 6 }) {
   return (
     <Box>
-      <AnuncioCarga />
+      <AnuncioCarga>Cargando la pantalla…</AnuncioCarga>
       <Stack spacing={1} sx={{ mb: 4 }}>
         <Barra ancho={140} alto={12} />
         <Barra ancho={320} alto={34} />

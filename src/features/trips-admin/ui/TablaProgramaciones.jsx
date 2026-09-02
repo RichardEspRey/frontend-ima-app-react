@@ -19,7 +19,6 @@ import dayjs from "dayjs"
 import { HEADER_CELL_SX, HEADER_ROW_SX } from "../../../shared/ui/estilos"
 import { COLOR } from "../../../shared/ui/tokens"
 import { FilasEsqueleto } from "../../../shared/ui"
-import { useIdioma } from "../../../shared/i18n"
 
 const COLUMNAS = [
   "Operador",
@@ -57,7 +56,6 @@ export function TablaProgramaciones({
   onEditar,
   onEliminar,
 }) {
-    const { t } = useIdioma()
   return (
     <TableContainer
       component={Paper}
@@ -72,7 +70,7 @@ export function TablaProgramaciones({
                 {columna}
               </TableCell>
             ))}
-            <TableCell sx={{ ...HEADER_CELL_SX, textAlign: "center" }}>{t("tabla.acciones")}</TableCell>
+            <TableCell sx={{ ...HEADER_CELL_SX, textAlign: "center" }}>Acciones</TableCell>
           </TableRow>
         </TableHead>
 

@@ -138,8 +138,8 @@ describe("PantallaEsqueleto", () => {
     expect(container.querySelectorAll(".MuiSkeleton-root").length).toBeGreaterThan(10)
   })
 
-  it("anuncia la carga a quien no ve el esqueleto", () => {
+  it("dice qué está cargando", () => {
     render(<PantallaEsqueleto />)
-    expect(screen.getByRole("status")).toHaveTextContent("Cargando…")
+    expect(screen.getByRole("status")).toHaveTextContent("Cargando la pantalla…")
   })
 })

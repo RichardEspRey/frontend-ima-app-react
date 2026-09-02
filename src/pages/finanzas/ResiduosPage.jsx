@@ -4,7 +4,6 @@ import {
   TextField, Box, Typography, Button
 } from '@mui/material';
 import { FilasEsqueleto, PageHeader, PAGE_SHELL_SX, TABLE_CONTAINER_SX, HEADER_ROW_SX, HEADER_CELL_SX, usePaginacion, Paginacion } from '../../shared/ui';
-import { useIdioma } from '../../shared/i18n';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -23,7 +22,6 @@ const money = (v) =>
  * @returns {object} La pantalla.
  */
 const ResiduosPage = () => {
-  const { t } = useIdioma()
   const [rows, setRows] = useState([]);      // [{ trip_id, trip_number, status, creation_date, nombre, rate_tarifa, diesel, gastos }]
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -92,7 +90,7 @@ const ResiduosPage = () => {
               size="small"
               placeholder="Buscar por Trip number"
               value={search}
-              onChange={(e) => { setSearch(e.target.value);  }}
+              onChange={(e) => setSearch(e.target.value)}
             />
             <Button variant="outlined" onClick={fetchResiduoTrips}>Recargar</Button>
           </>
@@ -105,9 +103,9 @@ const ResiduosPage = () => {
         <Table stickyHeader size="small">
           <TableHead>
             <TableRow sx={HEADER_ROW_SX}>
-              <TableCell sx={HEADER_CELL_SX}>{t("tabla.trip")}</TableCell>
-              <TableCell sx={HEADER_CELL_SX}>{t("tabla.driver")}</TableCell>
-              <TableCell sx={HEADER_CELL_SX}>{t("tabla.estatus")}</TableCell>
+              <TableCell sx={HEADER_CELL_SX}>Trip #</TableCell>
+              <TableCell sx={HEADER_CELL_SX}>Driver</TableCell>
+              <TableCell sx={HEADER_CELL_SX}>Estatus</TableCell>
               <TableCell sx={HEADER_CELL_SX}>Creado</TableCell>
               <TableCell align="right" sx={HEADER_CELL_SX}>Rate</TableCell>
               <TableCell align="right" sx={HEADER_CELL_SX}>Diesel</TableCell>

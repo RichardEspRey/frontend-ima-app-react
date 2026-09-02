@@ -5,7 +5,6 @@ import { QueryProvider } from './app/providers/QueryProvider';
 import { ThemeProvider } from './app/providers/ThemeProvider';
 import { instalarErroresGlobales } from './app/erroresGlobales';
 import { notify } from './shared/ui';
-import { IdiomaProvider } from './shared/i18n';
 import { SessionProvider } from './app/providers/SessionProvider';
 
 // Contexto temporal para pasar si hay update
@@ -31,13 +30,11 @@ const App = () => {
   return (
     <UpdateContext.Provider value={{ updateDisponible }}>
       <ThemeProvider>
-      <IdiomaProvider>
       <QueryProvider>
         <SessionProvider>
         <AppRouter />
         </SessionProvider>
       </QueryProvider>
-      </IdiomaProvider>
       </ThemeProvider>
     </UpdateContext.Provider>
   );

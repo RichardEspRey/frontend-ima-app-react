@@ -99,7 +99,7 @@ que se usa de día en oficina, el modo oscuro a veces es una función que nadie 
 
 ---
 
-## 3 · Botón de idioma (español / inglés) — mecanismo hecho, textos a medias
+## 3 · Botón de idioma (español / inglés) — el idioma YA está unificado
 
 Posible, pero es el más caro de los tres. Y al medirlo salió algo que hay que decidir antes.
 
@@ -144,36 +144,15 @@ Ese último punto es el que decide el alcance real: se puede traducir la interfa
 los datos como están —que es lo honesto y lo barato— o traducir también los valores, que ya
 toca la fase 3.
 
-### Cómo se hizo
+### Cómo hacerlo
 
-**Sin librería de i18n.** Al medirlo salieron **cero** textos con interpolación y **cuatro**
-casos de plural. Para dos idiomas y textos planos, `react-i18next` era un martillo para un
-clavo, y `docs/DECISIONES/0010` acababa de reducir de siete librerías a dos: agregar una
-octava para esto habría sido contradecirnos.
+1. Elegir librería. `react-i18next` es la estándar y encaja sin fricción.
+2. **Empezar por unificar**, no por traducir: fijar un idioma por defecto y arreglar las
+   mezclas de hoy. Eso ya mejora la app aunque el botón nunca llegue.
+3. Extraer los textos a catálogos, módulo por módulo, aprovechando que se toque cada uno.
+4. El botón al final, cuando haya dos catálogos completos.
 
-`shared/i18n` son unas 40 líneas propias: catálogo, contexto y el hook `useIdioma`.
-
-**Se reconsidera** si aparece un tercer idioma, o si alguien fuera del equipo va a traducir
-con herramientas estándar.
-
-### Lo que ya funciona
-
-- El botón, en el header junto al nombre y el rol.
-- La preferencia se recuerda entre sesiones, y se ignora si el valor guardado no es un
-  idioma que la app conozca.
-- Una prueba impide que un catálogo se quede atrás del otro, que es lo que produce esas
-  pantallas mitad traducidas.
-- Conectados: la paginación, los estados de carga y error, y **33 cabeceras de tabla** en
-  11 archivos.
-
-### Lo que falta
-
-**Unos 520 textos siguen fijos** dentro de los componentes: títulos de pantalla, botones,
-etiquetas de formulario, mensajes de diálogo. Se van extrayendo módulo por módulo,
-aprovechando que se toque cada uno; el catálogo y el hook ya están.
-
-Y lo decidido: **los valores que vienen del backend se quedan como están.** `In Transit`,
-`Almost Over`, `Completed` y los tipos de gasto no los traduce el front.
+**Esfuerzo:** una semana larga para la interfaz. Los valores del backend, aparte.
 
 ---
 
