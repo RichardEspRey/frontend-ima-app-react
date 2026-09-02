@@ -10,6 +10,7 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import FmdGoodOutlinedIcon from '@mui/icons-material/FmdGoodOutlined';
 import dayjs from 'dayjs';
 import { usePermisos, PERMISOS } from '../../shared/auth';
+import { urlSegura } from '../../shared/security';
 
 const formatTime = (timeStr) => {
     if (!timeStr) return '';
@@ -65,8 +66,9 @@ export const StageUpcomingCard = ({ etapa, getDocumentUrl }) => {
                                 label="BL Firmado"
                                 size="small"
                                 component="a"
-                                href={getDocumentUrl(doc.path_servidor_real || doc.nombre_archivo)}
+                                href={urlSegura(getDocumentUrl(doc.path_servidor_real || doc.nombre_archivo))}
                                 target="_blank"
+                                rel="noopener noreferrer"
                                 clickable
                                 sx={{ height: 22, fontSize: '0.7rem', fontWeight: 700, bgcolor: '#eff6ff', color: '#2563eb', border: '1px solid #2563eb22' }}
                             />
@@ -178,8 +180,9 @@ export const StageUpcomingCard = ({ etapa, getDocumentUrl }) => {
                                             icon={<InsertDriveFileOutlinedIcon sx={{ fontSize: '13px !important' }} />}
                                             label="BL"
                                             component="a"
-                                            href={getDocumentUrl(stop.bl_firmado_doc.path_servidor_real || stop.bl_firmado_doc.nombre_archivo)}
+                                            href={urlSegura(getDocumentUrl(stop.bl_firmado_doc.path_servidor_real || stop.bl_firmado_doc.nombre_archivo))}
                                             target="_blank"
+                                            rel="noopener noreferrer"
                                             clickable
                                             size="small"
                                             sx={{ height: 22, fontSize: '0.72rem', fontWeight: 700, bgcolor: '#eff6ff', color: '#2563eb', border: '1px solid #2563eb22' }}
@@ -209,8 +212,9 @@ export const StageUpcomingCard = ({ etapa, getDocumentUrl }) => {
                                         key={doc.document_id}
                                         label={doc.tipo_documento.toUpperCase().replace(/_/g, ' ')}
                                         component="a"
-                                        href={getDocumentUrl(doc.path_servidor_real || doc.nombre_archivo)}
+                                        href={urlSegura(getDocumentUrl(doc.path_servidor_real || doc.nombre_archivo))}
                                         target="_blank"
+                                        rel="noopener noreferrer"
                                         clickable
                                         variant="outlined"
                                         sx={{ fontWeight: 700, fontSize: '0.75rem', borderColor: '#e2e8f0', color: '#475569' }}

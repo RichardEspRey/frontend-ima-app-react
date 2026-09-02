@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import DatePicker from 'react-datepicker';
+import { archivoDelEvento, GRUPOS_ARCHIVO } from '../shared/security';
 import 'react-datepicker/dist/react-datepicker.css';
 import './css/ModalArchivo.css';
 
@@ -28,26 +29,20 @@ const ModalArchivo = ({ isOpen, onClose, onSave, title = "Subir/Editar Archivo",
 
 
 
-  const handleArchivoChange = (e) => {
-    const file = e.target.files[0];
+  const grupoDelAccept = () => {
+    if (accept.includes('pdf') && !accept.includes('image')) return GRUPOS_ARCHIVO.SOLO_PDF;
+    if (accept.includes('image') && !accept.includes('pdf')) return GRUPOS_ARCHIVO.IMAGEN;
+    return GRUPOS_ARCHIVO.DOCUMENTO;
+  };
+
+  const handleArchivoChange = async (e) => {
+    const file = await archivoDelEvento(e, { grupo: grupoDelAccept() });
     if (!file) return;
 
-    const allowedTypes = accept.split(',').map(type => type.trim());
-
-    const isAllowed = allowedTypes.some(type => {
-      if (type === '*/*') return true;
-      if (type.endsWith('/*')) return file.type.startsWith(type.slice(0, -1));
-      return type === file.type;
-    });
-
-    if (isAllowed) {
-      setArchivo(file);
-      // Limpia la previsualización anterior para evitar fugas de memoria
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
-      setPreviewUrl(URL.createObjectURL(file));
-    } else {
-      alert(`Tipo de archivo no válido. Se esperaba: ${accept}`);
-    }
+    setArchivo(file);
+    // Limpia la previsualización anterior para evitar fugas de memoria
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setPreviewUrl(URL.createObjectURL(file));
   };
 
   const handleGuardar = () => {

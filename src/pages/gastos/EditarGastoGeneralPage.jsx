@@ -4,6 +4,7 @@ import {
   Box, Grid, Paper, Typography, TextField, Button,
   Stack, Divider, IconButton, CircularProgress, Chip, Tooltip
 } from '@mui/material';
+import { urlSegura } from '../../shared/security';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import SaveIcon from '@mui/icons-material/Save';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
@@ -28,6 +29,7 @@ import {
   SECTION_LABEL_SX, CARD_SX, DARK_BTN_SX, GHOST_BTN_SX,
   customSelectStyles, DATEPICKER_CSS, money,
 } from '../../features/expense-manager/estilos';
+import { archivoDelEvento, GRUPOS_ARCHIVO } from '../../shared/security';
 
 // La app móvil puede subir el "ticket" como PDF escaneado en vez de imagen
 // (ej. archivos "scan_*.pdf"), no solo JPG/PNG. Un <img> no puede mostrar un PDF.
@@ -153,8 +155,10 @@ const ExpenseEdit = () => {
       }]);
   };
 
-  const handleFileChange = (type, e) => {
-      if (e.target.files[0]) setFiles(p => ({ ...p, [type]: e.target.files[0] }));
+  const handleFileChange = async (type, e) => {
+      const grupo = type === 'facturaPdf' ? GRUPOS_ARCHIVO.SOLO_PDF : GRUPOS_ARCHIVO.IMAGEN;
+      const file = await archivoDelEvento(e, { grupo });
+      if (file) setFiles(p => ({ ...p, [type]: file }));
   };
 
   const handleRemoveFile = (type) => {
@@ -653,7 +657,7 @@ const ExpenseEdit = () => {
                       {files.facturaPdf.name || 'Archivo actual'}
                     </Typography>
                     {files.facturaPdf.url && (
-                      <Button size="small" href={files.facturaPdf.url} target="_blank" rel="noopener noreferrer"
+                      <Button size="small" href={urlSegura(files.facturaPdf.url)} target="_blank" rel="noopener noreferrer"
                         sx={{ textTransform: 'none', fontWeight: 700, color: '#334155', minWidth: 0 }}>
                         Ver
                       </Button>
@@ -702,7 +706,7 @@ const ExpenseEdit = () => {
                             {files.ticketJpg.name || 'Documento'}
                           </Typography>
                           {ticketUrl && (
-                            <Button size="small" href={ticketUrl} target="_blank" rel="noopener noreferrer"
+                            <Button size="small" href={urlSegura(ticketUrl)} target="_blank" rel="noopener noreferrer"
                               sx={{ textTransform: 'none', fontWeight: 700, color: '#334155' }}>
                               Ver documento
                             </Button>

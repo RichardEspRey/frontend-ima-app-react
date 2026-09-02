@@ -10,6 +10,7 @@ import DatePicker from 'react-datepicker';
 import { selectStyles, getDocumentUrl } from '../../utils/tripFormConstants';
 import ReceiptIcon from '@mui/icons-material/Receipt';
 import { usePermisos, PERMISOS } from '../../shared/auth';
+import { urlSegura } from '../../shared/security';
 
 const DocButton = ({ label, doc, onClick, disabled, apiHost }) => (
     <Box sx={{ mb: 1 }}>
@@ -27,7 +28,7 @@ const DocButton = ({ label, doc, onClick, disabled, apiHost }) => (
         </Button>
         {doc && (
             <Typography variant="caption" display="block" sx={{ mt: 0.5, fontStyle: 'italic', wordBreak: 'break-all' }}>
-                <a href={getDocumentUrl(doc, apiHost)} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: '#1976d2' }}>
+                <a href={urlSegura(getDocumentUrl(doc, apiHost))} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: '#1976d2' }}>
                     {doc.fileName}
                 </a>
                 {doc.vencimiento && ` (V: ${doc.vencimiento})`}
@@ -235,7 +236,7 @@ const StageCard = ({
                                         color={etapa.invoice_file_path ? 'success' : 'inherit'}
                                         startIcon={<DownloadIcon />}
                                         component="a"
-                                        href={etapa.invoice_file_path ? `${apiHost}/${etapa.invoice_file_path}` : undefined}
+                                        href={urlSegura(etapa.invoice_file_path ? `${apiHost}/${etapa.invoice_file_path}` : undefined)}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         disabled={!etapa.invoice_file_path}

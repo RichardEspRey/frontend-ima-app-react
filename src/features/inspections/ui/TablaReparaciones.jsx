@@ -3,6 +3,7 @@ import {
     Box, Typography, Paper, Button, Table, TableBody, TableCell, TableContainer,
     TableHead, TableRow, IconButton, CircularProgress, Chip, Stack
 } from '@mui/material';
+import { urlSegura } from '../../../shared/security';
 import AddIcon from '@mui/icons-material/Add';
 import { fechaCorta } from '../../../utils/fechas';
 import EditIcon from '@mui/icons-material/Edit';
@@ -136,7 +137,7 @@ const TablaReparaciones = () => {
                                                         icon={<PictureAsPdfIcon />}
                                                         label={doc.file_name || 'Documento'}
                                                         component="a"
-                                                        href={doc.url}
+                                                        href={urlSegura(doc.url)}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                         clickable

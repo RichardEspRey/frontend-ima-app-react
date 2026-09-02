@@ -5,6 +5,7 @@ import {
 } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { archivoDelEvento } from '../shared/security';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -48,11 +49,9 @@ export const DocPreviewModal = ({ open, onClose, file, filename, tripId, docType
     // Is this file already on the server (not pending local replacement)
     const isServerFile = !!filename && !pendingFile && !file;
 
-    const handleNewFileSelect = (e) => {
-        const f = e.target.files[0];
-        if (!f) return;
-        e.target.value = null;
-        setPendingFile(f);
+    const handleNewFileSelect = async (e) => {
+        const f = await archivoDelEvento(e);
+        if (f) setPendingFile(f);
     };
 
     const handleUpload = async () => {

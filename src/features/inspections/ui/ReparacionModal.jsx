@@ -3,6 +3,7 @@ import {
     Dialog, DialogTitle, DialogContent, DialogActions,
     Button, TextField, MenuItem, Grid, Typography, Box, Paper, Chip, Stack, InputAdornment, Autocomplete, CircularProgress, IconButton, Tooltip
 } from '@mui/material';
+import { urlSegura, archivosDelEvento, GRUPOS_ARCHIVO } from '../../../shared/security';
 import CloseIcon from '@mui/icons-material/Close';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
@@ -118,14 +119,13 @@ const ReparacionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
         setFormData({ ...formData, [name]: value });
     };
 
-    const handleFileChange = (e) => {
-        const selectedFiles = Array.from(e.target.files);
+    const handleFileChange = async (e) => {
+        const selectedFiles = await archivosDelEvento(e, { grupo: GRUPOS_ARCHIVO.SOLO_PDF });
         if (selectedFiles.length > 3) {
             Swal.fire('Atención', 'Solo puedes subir un máximo de 3 documentos PDF.', 'warning');
             return;
         }
-        const validFiles = selectedFiles.filter(f => f.type === 'application/pdf');
-        setFiles(validFiles.slice(0, 3));
+        setFiles(selectedFiles.slice(0, 3));
     };
 
     const removeFile = (index) => {
@@ -397,7 +397,7 @@ const ReparacionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
                                                         icon={<PictureAsPdfIcon />}
                                                         label={doc.file_name || 'Documento'}
                                                         component="a"
-                                                        href={doc.url}
+                                                        href={urlSegura(doc.url)}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                         clickable

@@ -18,6 +18,7 @@ import {
 } from "../../shared/ui/estilos";
 import TablaReparaciones from "../../features/inspections/ui/TablaReparaciones.jsx";
 import TablaInspecciones from "../../features/inspections/ui/TablaInspecciones.jsx";
+import { archivoDelEvento } from "../../shared/security";
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -107,10 +108,9 @@ export default function SafetyPage() {
   };
 
   // File selected → open correct modal (no upload yet)
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
+  const handleFileChange = async (e) => {
+    const file = await archivoDelEvento(e);
     if (!file) return;
-    e.target.value = null;
 
     const { tripId, docType } = uploadContext;
     setPendingFile(file);

@@ -3,11 +3,13 @@ import {
     Dialog, DialogTitle, DialogContent, DialogActions, Stack, Typography, 
     TextField, Button, Paper, Box, Chip, Tooltip, IconButton 
 } from '@mui/material';
+import { urlSegura } from '../../../shared/security';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import CloudUploadOutlinedIcon from '@mui/icons-material/CloudUploadOutlined';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import DatePicker from 'react-datepicker';
+import { archivoDelEvento } from '../../../shared/security';
 import 'react-datepicker/dist/react-datepicker.css';
 
 const apiHost = import.meta.env.VITE_API_HOST;
@@ -40,7 +42,7 @@ const EditValueModal = ({ open, onClose, editItem, editData, setEditData, onSave
                     {editItem?.tipo === 'file' && editData.currentUrl && (
                         <Paper elevation={0} sx={{ p: 2, bgcolor: '#f0fdf4', border: '1px dashed #4ade80', borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                             <Typography variant="body2" color="#166534" fontWeight={600}>✓ Ya existe un documento cargado</Typography>
-                            <Button size="small" endIcon={<OpenInNewIcon />} href={`${apiHost}/${editData.currentUrl}`} target="_blank" color="success">Ver</Button>
+                            <Button size="small" endIcon={<OpenInNewIcon />} href={urlSegura(`${apiHost}/${editData.currentUrl}`)} target="_blank" rel="noopener noreferrer" color="success">Ver</Button>
                         </Paper>
                     )}
 
@@ -58,7 +60,7 @@ const EditValueModal = ({ open, onClose, editItem, editData, setEditData, onSave
                             <Typography variant="body2" color="#64748b" mb={2}>PDF, JPG o PNG permitidos.</Typography>
                             
                             {editData.file && <Chip icon={<CheckCircleIcon />} label={editData.file.name} color="primary" variant="outlined" />}
-                            <input type="file" hidden onChange={e => setEditData({...editData, file: e.target.files[0]})} />
+                            <input type="file" hidden onChange={async e => { const f = await archivoDelEvento(e); if (f) setEditData({...editData, file: f}) }} />
                         </Box>
                     )}
 

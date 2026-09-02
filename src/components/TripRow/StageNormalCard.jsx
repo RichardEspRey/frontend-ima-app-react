@@ -8,6 +8,7 @@ import ReceiptOutlinedIcon from '@mui/icons-material/ReceiptOutlined';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import dayjs from 'dayjs';
 import { usePermisos, PERMISOS } from '../../shared/auth';
+import { urlSegura } from '../../shared/security';
 
 const formatTime = (timeStr) => {
   if (!timeStr) return '';
@@ -117,8 +118,9 @@ export const StageNormalCard = ({ etapa, getDocumentUrl, isCompleted }) => {
                       icon={<InsertDriveFileOutlinedIcon sx={{ fontSize: '13px !important' }} />}
                       label="BL Firmado"
                       component="a"
-                      href={getDocumentUrl(doc.path_servidor_real || doc.nombre_archivo)}
+                      href={urlSegura(getDocumentUrl(doc.path_servidor_real || doc.nombre_archivo))}
                       target="_blank"
+                      rel="noopener noreferrer"
                   />
               ))}
 
@@ -129,8 +131,9 @@ export const StageNormalCard = ({ etapa, getDocumentUrl, isCompleted }) => {
                         icon={<ReceiptOutlinedIcon sx={{ fontSize: '13px !important' }} />}
                         label="Ver Invoice"
                         component="a"
-                        href={`${apiHost}/${etapa.invoice_file_path}`}
+                        href={urlSegura(`${apiHost}/${etapa.invoice_file_path}`)}
                         target="_blank"
+                        rel="noopener noreferrer"
                     />
                 ) : (
                     <TintedBadge
@@ -235,8 +238,9 @@ export const StageNormalCard = ({ etapa, getDocumentUrl, isCompleted }) => {
                           icon={<InsertDriveFileOutlinedIcon sx={{ fontSize: '12px !important' }} />}
                           label="BL Firmado"
                           component="a"
-                          href={getDocumentUrl(stop.bl_firmado_doc.path_servidor_real || stop.bl_firmado_doc.nombre_archivo)}
+                          href={urlSegura(getDocumentUrl(stop.bl_firmado_doc.path_servidor_real || stop.bl_firmado_doc.nombre_archivo))}
                           target="_blank"
+                          rel="noopener noreferrer"
                       />
                     )}
                   </Stack>
@@ -255,8 +259,9 @@ export const StageNormalCard = ({ etapa, getDocumentUrl, isCompleted }) => {
                       label={doc.tipo_documento.toUpperCase().replace(/_/g, ' ')}
                       size="small"
                       component="a"
-                      href={getDocumentUrl(doc.path_servidor_real || doc.nombre_archivo)}
+                      href={urlSegura(getDocumentUrl(doc.path_servidor_real || doc.nombre_archivo))}
                       target="_blank"
+                      rel="noopener noreferrer"
                       clickable
                       variant="outlined"
                       sx={{ fontSize: '0.72rem', fontWeight: 700, borderColor: '#e2e8f0', color: '#475569' }}

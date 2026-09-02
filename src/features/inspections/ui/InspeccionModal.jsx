@@ -3,6 +3,7 @@ import {
     Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Grid,
     MenuItem, CircularProgress, Autocomplete, Typography, Box, Stack, Paper, Chip, InputAdornment, IconButton, Tooltip
 } from '@mui/material';
+import { urlSegura, archivosDelEvento, GRUPOS_ARCHIVO } from '../../../shared/security';
 
 // Íconos para la UI
 import CloseIcon from '@mui/icons-material/Close';
@@ -204,8 +205,9 @@ const InspeccionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
         setReportesList(prev => prev.filter((_, i) => i !== index));
     };
 
-    const handleFileChange = (e) => {
-        const newFiles = Array.from(e.target.files);
+    const handleFileChange = async (e) => {
+        const newFiles = await archivosDelEvento(e, { grupo: GRUPOS_ARCHIVO.DOCUMENTO });
+        if (newFiles.length === 0) return;
         if (files.length + newFiles.length > 3) {
             Swal.fire('Atención', 'Solo puedes subir un máximo de 3 documentos.', 'warning');
             return;
@@ -575,7 +577,7 @@ const InspeccionModal = ({ open, onClose, onSuccess, editData, initialTrip, onDo
                                                                 icon={<InsertDriveFileIcon />}
                                                                 label={doc.file_name || 'Documento'}
                                                                 component="a"
-                                                                href={doc.url}
+                                                                href={urlSegura(doc.url)}
                                                                 target="_blank"
                                                                 rel="noopener noreferrer"
                                                                 clickable

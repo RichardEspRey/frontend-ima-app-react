@@ -10,6 +10,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import SaveIcon from '@mui/icons-material/Save';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import * as pdfjsLib from 'pdfjs-dist';
+import { archivoDelEvento } from '../shared/security';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = './pdf.worker.min.mjs';
 
@@ -191,11 +192,9 @@ export const PCMillerModal = ({ open, onClose, tripId, file, filename, onSave, o
         setRows(prev => prev.filter((_, i) => i !== index));
     };
 
-    const handleNewFileSelect = (e) => {
-        const f = e.target.files[0];
-        if (!f) return;
-        e.target.value = null;
-        setPendingFile(f);
+    const handleNewFileSelect = async (e) => {
+        const f = await archivoDelEvento(e);
+        if (f) setPendingFile(f);
     };
 
     const handleSave = async () => {

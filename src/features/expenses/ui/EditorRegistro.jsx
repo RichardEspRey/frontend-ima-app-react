@@ -13,6 +13,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material"
+import { urlSegura } from "../../../shared/security"
 import ArrowBackIcon from "@mui/icons-material/ArrowBack"
 import DeleteIcon from "@mui/icons-material/Delete"
 import DescriptionIcon from "@mui/icons-material/Description"
@@ -64,7 +65,7 @@ function Tickets({ tickets = [], cargando }) {
         return (
           <Grid size={{ xs: 6, sm: 4 }} key={ticket.id}>
             <Card variant="outlined">
-              <CardActionArea href={url} target="_blank" rel="noreferrer">
+              <CardActionArea href={urlSegura(url)} target="_blank" rel="noopener noreferrer">
                 {ES_IMAGEN.test(ticket.url_pdf ?? "") ? (
                   <CardMedia
                     component="img"

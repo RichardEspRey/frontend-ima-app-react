@@ -13,6 +13,7 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material"
+import { urlSegura } from "../../../shared/security"
 import CloseIcon from "@mui/icons-material/Close"
 import CloudUploadOutlinedIcon from "@mui/icons-material/CloudUploadOutlined"
 import FilePresentIcon from "@mui/icons-material/FilePresent"
@@ -24,6 +25,7 @@ import {
   requisitosDeCategoria,
 } from "../../../entities/unit"
 import { API_BASE } from "../../../shared/config/env"
+import { archivoDelEvento } from "../../../shared/security"
 
 /**
  * Un requisito del expediente dentro del formulario.
@@ -63,7 +65,7 @@ function CampoRequisito({ requisito, documento = {}, tieneArchivoNuevo, onDocume
               sx={{ bgcolor: "white" }}
             >
               Subir {tieneArchivoNuevo ? "(1)" : ""}
-              <input type="file" hidden onChange={(e) => onArchivo(e.target.files[0])} />
+              <input type="file" hidden onChange={async (e) => { const f = await archivoDelEvento(e); if (f) onArchivo(f) }} />
             </Button>
             {documento.url_pdf && (
               <Tooltip title="Ver Archivo">
@@ -71,8 +73,9 @@ function CampoRequisito({ requisito, documento = {}, tieneArchivoNuevo, onDocume
                   size="small"
                   color="info"
                   component="a"
-                  href={`${API_BASE}/${documento.url_pdf}`}
+                  href={urlSegura(`${API_BASE}/${documento.url_pdf}`)}
                   target="_blank"
+                  rel="noopener noreferrer"
                 >
                   <FilePresentIcon />
                 </IconButton>

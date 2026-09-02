@@ -15,6 +15,7 @@ import {
 } from "@mui/material"
 import CloudUploadIcon from "@mui/icons-material/CloudUpload"
 import dayjs from "dayjs"
+import { archivosDelEvento, GRUPOS_ARCHIVO } from "../../../shared/security"
 
 const CAMPOS = [
   { clave: "fecha", etiqueta: "Fecha y hora", tipo: "datetime-local", ancho: 12 },
@@ -77,8 +78,9 @@ export function ModalDieselManual({
 }) {
   const [entrada, setEntrada] = useState(0)
 
-  const agregarArchivos = (lista) => {
-    onArchivosChange([...archivos, ...Array.from(lista)])
+  const agregarArchivos = async (evento) => {
+    const nuevos = await archivosDelEvento(evento, { grupo: GRUPOS_ARCHIVO.DOCUMENTO })
+    if (nuevos.length > 0) onArchivosChange([...archivos, ...nuevos])
     setEntrada((n) => n + 1)
   }
 
@@ -130,7 +132,7 @@ export function ModalDieselManual({
                   type="file"
                   hidden
                   multiple
-                  onChange={(e) => agregarArchivos(e.target.files)}
+                  onChange={agregarArchivos}
                 />
               </Button>
 

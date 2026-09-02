@@ -1,4 +1,5 @@
 import { API_BASE, TIMEOUT_PETICION_MS } from "../config/env"
+import { limpiarProfundo } from "../security/texto"
 import { ApiError, CAUSA_ERROR } from "./errors"
 
 /**
@@ -9,6 +10,13 @@ import { ApiError, CAUSA_ERROR } from "./errors"
  * donde salen los campos con el literal "undefined" guardado en la base.
  * Los booleanos van como `1`/`0`, que es lo que el backend interpreta.
  *
+ * Todo texto pasa antes por `limpiarProfundo`, que le quita los caracteres
+ * invisibles y de control y lo normaliza. Se hace aquí, en el único punto por el
+ * que salen las 232 llamadas, para que ninguna pantalla tenga que acordarse.
+ * **No recorta el largo**: el límite depende de la columna, así que lo pone
+ * quien conoce el campo, no esta función; truncar aquí perdería datos en
+ * silencio, que es justo lo que se quiere evitar.
+ *
  * @param {string} op Operación a ejecutar, el campo `op` del POST.
  * @param {object} [payload] Campos adicionales.
  * @returns {FormData} El cuerpo listo para enviar.
@@ -17,7 +25,7 @@ export function construirFormData(op, payload = {}) {
   const fd = new FormData()
   fd.append("op", op)
 
-  for (const [clave, valor] of Object.entries(payload)) {
+  for (const [clave, valor] of Object.entries(limpiarProfundo(payload, Infinity))) {
     if (valor === undefined || valor === null) continue
     if (valor instanceof File || valor instanceof Blob) {
       fd.append(clave, valor)

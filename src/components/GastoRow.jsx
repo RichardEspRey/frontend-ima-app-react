@@ -4,6 +4,7 @@ import {
   TableRow, TableCell, IconButton, Collapse, Box, Typography,
   Table, TableHead, TableBody, Chip, Stack, Button, Tooltip
 } from '@mui/material';
+import { urlSegura } from '../shared/security';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import EditIcon from '@mui/icons-material/Edit';
@@ -291,8 +292,9 @@ const GastoRow = ({ gasto, mxnRate, puedeEliminar = false, onEliminado }) => {
                           </Typography>
                           <Button
                             size="small"
-                            href={url}
+                            href={urlSegura(url)}
                             target="_blank"
+                            rel="noopener noreferrer"
                             sx={{ mt: 0.25, fontSize: '0.65rem', textTransform: 'none', fontWeight: 700, color: '#334155' }}
                           >
                             Ver

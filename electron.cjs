@@ -4,6 +4,26 @@ const { autoUpdater } = require("electron-updater");
 
 let win; // ventana global
 
+// Protocolos que se pueden abrir en el navegador del sistema. Lista blanca a
+// proposito: shell.openExternal se lo entrega al sistema operativo, asi que un
+// esquema inesperado puede lanzar cualquier programa instalado. La API viaja por
+// HTTP en claro, asi que la URL de un documento puede venir alterada.
+const PROTOCOLOS_EXTERNOS = ["http:", "https:", "mailto:"];
+
+/**
+ * Indica si una URL se puede entregar al sistema operativo sin riesgo.
+ *
+ * @param {string} url La URL a evaluar.
+ * @returns {boolean} `true` si su protocolo esta en la lista blanca.
+ */
+function esExternaSegura(url) {
+  try {
+    return PROTOCOLOS_EXTERNOS.includes(new URL(url).protocol);
+  } catch {
+    return false;
+  }
+}
+
 function createWindow() {
   win = new BrowserWindow({
     width: 1200,
@@ -15,16 +35,32 @@ function createWindow() {
       nodeIntegrationInWorker: false,
       webviewTag: false,
       allowRunningInsecureContent: false,
+      sandbox: true,
+      spellcheck: false,
     },
   });
 
   win.webContents.setWindowOpenHandler(({ url }) => {
-    shell.openExternal(url);
+    if (esExternaSegura(url)) shell.openExternal(url);
     return { action: "deny" };
   });
 
   win.webContents.on("will-navigate", (event, url) => {
     if (!url.startsWith("file://")) event.preventDefault();
+  });
+
+  // La app no usa camara, microfono, ubicacion ni notificaciones del sistema.
+  // Sin este manejador, Electron concede varios de esos permisos sin preguntar.
+  win.webContents.session.setPermissionRequestHandler((_wc, _permiso, conceder) => {
+    conceder(false);
+  });
+
+  win.webContents.session.setPermissionCheckHandler(() => false);
+
+  // Un preload que no se pueda cargar dejaria la ventana sin puente de IPC y con
+  // la app pintando a medias; es mejor saberlo que verlo como un fallo raro.
+  win.webContents.on("preload-error", (_event, ruta, error) => {
+    dialog.showErrorBox("Error al iniciar", `No se pudo cargar ${ruta}: ${error.message}`);
   });
 
   // Carga el frontend compilado por Vite usando path.join (Súper seguro)

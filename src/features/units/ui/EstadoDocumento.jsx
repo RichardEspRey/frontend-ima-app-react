@@ -6,6 +6,7 @@ import WarningIcon from "@mui/icons-material/Warning"
 
 import { ESTADO_DOCUMENTO, estadoDocumento } from "../../../entities/unit"
 import { API_BASE } from "../../../shared/config/env"
+import { urlSegura } from "../../../shared/security"
 
 /**
  * El estado de un documento del expediente, en una celda de tabla.
@@ -60,9 +61,9 @@ export function EstadoDocumento({ requisito, documento }) {
   return (
     <Tooltip title={fecha ? `Vigente hasta ${fecha}` : "Archivo adjunto"}>
       <a
-        href={`${API_BASE}/${documento.url_pdf}`}
+        href={urlSegura(`${API_BASE}/${documento.url_pdf}`)}
         target="_blank"
-        rel="noreferrer"
+        rel="noopener noreferrer"
         style={{ color: "inherit" }}
       >
         <CheckCircleIcon color="success" sx={{ "&:hover": { opacity: 0.7 } }} />
