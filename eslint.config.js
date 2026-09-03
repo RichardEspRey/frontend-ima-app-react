@@ -85,6 +85,13 @@ export default [
     files: ['src/**/*.{js,jsx}'],
     plugins: { boundaries },
     settings: {
+      // Sin esto la regla es decorativa. El resolvedor por omisión solo busca
+      // `.js`, así que un `import ... from "./Algo"` que apunta a un `.jsx` no
+      // se resuelve, y lo que no se resuelve no se comprueba: justo la forma en
+      // que se importa cada componente de esta app.
+      'import/resolver': {
+        node: { extensions: ['.js', '.jsx', '.json'] },
+      },
       'boundaries/include': ['src/**/*.{js,jsx}'],
       'boundaries/elements': CAPAS.map((capa) => ({
         type: capa,
@@ -93,7 +100,7 @@ export default [
       })),
     },
     rules: {
-      'boundaries/dependencies': ['warn', {
+      'boundaries/dependencies': ['error', {
         default: 'disallow',
         policies: [
           {
@@ -172,7 +179,9 @@ export default [
     languageOptions: { globals: { ...globals.browser, ...globals.node } },
     rules: {
       'jsdoc/require-jsdoc': 'off',
-      'boundaries/element-types': 'off',
+      // Una prueba puede montar el árbol de la app para renderizar lo que
+      // prueba; eso no es una dependencia del código de producción.
+      'boundaries/dependencies': 'off',
     },
   },
 
