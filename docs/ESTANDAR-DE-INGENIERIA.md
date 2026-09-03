@@ -55,6 +55,16 @@ meses no se puede tocar una sin romper tres.
 equivalente), no con revisiones de código. Una regla que depende de que un humano se acuerde
 no es una regla.
 
+**Y a la regla hay que verla fallar antes de confiar en ella.** En este proyecto la regla de
+fronteras estuvo meses reportando cero violaciones sin comprobar nada: el resolvedor de
+módulos solo buscaba `.js`, así que un `import ... from "./Algo"` que apunta a un `.jsx` no
+se resolvía, y **lo que no se resuelve no se comprueba**. En una app de React eso es casi
+todo. Un linter en verde puede significar «no hay problemas» o «no estoy mirando», y desde
+fuera se ven igual.
+
+La comprobación cuesta un minuto y va en el mismo commit que la regla: se escribe un archivo
+que la viola a propósito, se confirma que el lint falla, y se borra.
+
 ### SOLID, en concreto
 
 Los principios sirven cuando se traducen a decisiones observables. Así se traducen aquí:

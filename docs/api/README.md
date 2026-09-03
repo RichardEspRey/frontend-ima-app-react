@@ -169,6 +169,24 @@ juntas porque olvidar una de las dos es el error habitual.</p>
 <dt><a href="#DURACION_FLOTANTE_MS">DURACION_FLOTANTE_MS</a> : <code>number</code></dt>
 <dd><p>Cuánto dura en pantalla un aviso flotante.</p>
 </dd>
+<dt><a href="#usarCola">usarCola</a></dt>
+<dd><p>La cola de avisos pendientes de pintar.</p>
+<p>Es un store de zustand y no un módulo con estado suelto porque el proyecto ya
+tiene tres stores así, y tener dos mecanismos para lo mismo es la clase de
+duplicación que el estándar manda evitar. Zustand resuelve además, de fábrica,
+lo que aquí había que escribir a mano: se lee y se escribe <strong>fuera de React</strong>
+con <code>getState</code>, que es justo lo que necesita <code>notify</code> para poder llamarse
+desde un <code>catch</code>, y <code>useStore</code> da la suscripción para pintar.</p>
+<p>Tres ranuras, separadas a propósito:</p>
+<ul>
+<li><code>cola</code>: los diálogos que esperan respuesta. Se muestran de uno en uno y por
+orden; el segundo espera en vez de reemplazar al primero, porque perder un
+aviso es peor que mostrar dos seguidos.</li>
+<li><code>cargando</code>: el indicador que bloquea. No espera respuesta, así que no entra
+en la cola, y cualquier diálogo nuevo lo releva.</li>
+<li><code>flotantes</code>: los avisos que no bloquean. Conviven y se van solos.</li>
+</ul>
+</dd>
 <dt><a href="#PAGE_SHELL_SX">PAGE_SHELL_SX</a></dt>
 <dd><p>El contenedor de una pantalla completa.</p>
 </dd>
@@ -1196,37 +1214,24 @@ del renderer. Toda URL que venga de la API pasa por aquí antes de llegar al DOM
 ejecutar nada, y son la forma normal de enlazar dentro de la propia app. Las
 que empiezan con <code>//</code> no, porque heredan el protocolo de la página.</p>
 </dd>
-<dt><a href="#suscribir">suscribir(oyente)</a> ⇒ <code>function</code></dt>
-<dd><p>Escucha los cambios de la cola.</p>
-</dd>
-<dt><a href="#leer">leer()</a> ⇒ <code>Object</code></dt>
-<dd><p>Devuelve el estado actual de la cola.</p>
-<p>Devuelve siempre la <strong>misma</strong> referencia mientras nada cambie, que es lo que
-<code>useSyncExternalStore</code> necesita para no repintar en bucle.</p>
-</dd>
 <dt><a href="#pedir">pedir(peticion)</a> ⇒ <code>Promise.&lt;*&gt;</code></dt>
 <dd><p>Encola un diálogo y espera a que la persona responda.</p>
-<p>Si hay un indicador de carga abierto, lo cierra: es el comportamiento que
-tenía sweetalert2 —un diálogo nuevo reemplazaba al anterior— y del que
-dependen las pantallas que abren «Guardando…» y terminan mostrando el
-resultado sin cerrar el indicador a mano.</p>
-<p>Si hay otro diálogo abierto, este espera su turno en vez de reemplazarlo.
-Perder un aviso es peor que mostrar dos seguidos.</p>
+<p>Cierra el indicador de carga si lo hay: es el comportamiento que tenía
+sweetalert2 —un diálogo nuevo reemplazaba al anterior— y del que dependen las
+pantallas que abren «Guardando…» y terminan mostrando el resultado sin cerrar
+el indicador a mano.</p>
 </dd>
 <dt><a href="#responder">responder(id, valor)</a> ⇒ <code>void</code></dt>
 <dd><p>Responde al diálogo indicado y lo saca de la cola.</p>
 </dd>
 <dt><a href="#abrirCargando">abrirCargando(titulo)</a> ⇒ <code>void</code></dt>
 <dd><p>Abre el indicador de carga que bloquea la pantalla.</p>
-<p>Vive en su propia ranura, fuera de la cola, porque no espera respuesta y
-porque cualquier diálogo posterior tiene que poder reemplazarlo.</p>
 </dd>
 <dt><a href="#cerrarAbierto">cerrarAbierto()</a> ⇒ <code>void</code></dt>
 <dd><p>Cierra el indicador de carga y el diálogo que esté abierto.</p>
 </dd>
 <dt><a href="#anunciar">anunciar(aviso, [duracion])</a> ⇒ <code>Promise</code></dt>
 <dd><p>Encola un aviso flotante, de los que se van solos.</p>
-<p>No pasan por la cola de diálogos: se apilan y conviven, porque no bloquean.</p>
 <p>El temporizador vive aquí y no en el componente para que el aviso se retire
 —y su promesa se resuelva— aunque nadie lo esté pintando.</p>
 </dd>
@@ -3376,6 +3381,28 @@ Cuánto dura en pantalla un aviso flotante.
 
 **Kind**: global constant  
 **Read only**: true  
+<a name="usarCola"></a>
+
+## usarCola
+La cola de avisos pendientes de pintar.
+
+Es un store de zustand y no un módulo con estado suelto porque el proyecto ya
+tiene tres stores así, y tener dos mecanismos para lo mismo es la clase de
+duplicación que el estándar manda evitar. Zustand resuelve además, de fábrica,
+lo que aquí había que escribir a mano: se lee y se escribe **fuera de React**
+con `getState`, que es justo lo que necesita `notify` para poder llamarse
+desde un `catch`, y `useStore` da la suscripción para pintar.
+
+Tres ranuras, separadas a propósito:
+
+- `cola`: los diálogos que esperan respuesta. Se muestran de uno en uno y por
+  orden; el segundo espera en vez de reemplazar al primero, porque perder un
+  aviso es peor que mostrar dos seguidos.
+- `cargando`: el indicador que bloquea. No espera respuesta, así que no entra
+  en la cola, y cualquier diálogo nuevo lo releva.
+- `flotantes`: los avisos que no bloquean. Conviven y se van solos.
+
+**Kind**: global constant  
 <a name="PAGE_SHELL_SX"></a>
 
 ## PAGE\_SHELL\_SX
@@ -6308,40 +6335,15 @@ que empiezan con `//` no, porque heredan el protocolo de la página.
 esUrlSegura('https://imaexpressllc.com/doc.pdf') // true
 esUrlSegura('javascript:alert(1)')               // false
 ```
-<a name="suscribir"></a>
-
-## suscribir(oyente) ⇒ <code>function</code>
-Escucha los cambios de la cola.
-
-**Kind**: global function  
-**Returns**: <code>function</code> - La función que cancela la suscripción.  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| oyente | <code>function</code> | Se llama, sin argumentos, en cada cambio. |
-
-<a name="leer"></a>
-
-## leer() ⇒ <code>Object</code>
-Devuelve el estado actual de la cola.
-
-Devuelve siempre la **misma** referencia mientras nada cambie, que es lo que
-`useSyncExternalStore` necesita para no repintar en bucle.
-
-**Kind**: global function  
-**Returns**: <code>Object</code> - El estado.  
 <a name="pedir"></a>
 
 ## pedir(peticion) ⇒ <code>Promise.&lt;\*&gt;</code>
 Encola un diálogo y espera a que la persona responda.
 
-Si hay un indicador de carga abierto, lo cierra: es el comportamiento que
-tenía sweetalert2 —un diálogo nuevo reemplazaba al anterior— y del que
-dependen las pantallas que abren «Guardando…» y terminan mostrando el
-resultado sin cerrar el indicador a mano.
-
-Si hay otro diálogo abierto, este espera su turno en vez de reemplazarlo.
-Perder un aviso es peor que mostrar dos seguidos.
+Cierra el indicador de carga si lo hay: es el comportamiento que tenía
+sweetalert2 —un diálogo nuevo reemplazaba al anterior— y del que dependen las
+pantallas que abren «Guardando…» y terminan mostrando el resultado sin cerrar
+el indicador a mano.
 
 **Kind**: global function  
 **Returns**: <code>Promise.&lt;\*&gt;</code> - El valor de la acción elegida.  
@@ -6367,9 +6369,6 @@ Responde al diálogo indicado y lo saca de la cola.
 ## abrirCargando(titulo) ⇒ <code>void</code>
 Abre el indicador de carga que bloquea la pantalla.
 
-Vive en su propia ranura, fuera de la cola, porque no espera respuesta y
-porque cualquier diálogo posterior tiene que poder reemplazarlo.
-
 **Kind**: global function  
 
 | Param | Type | Description |
@@ -6386,8 +6385,6 @@ Cierra el indicador de carga y el diálogo que esté abierto.
 
 ## anunciar(aviso, [duracion]) ⇒ <code>Promise</code>
 Encola un aviso flotante, de los que se van solos.
-
-No pasan por la cola de diálogos: se apilan y conviven, porque no bloquean.
 
 El temporizador vive aquí y no en el componente para que el aviso se retire
 —y su promesa se resuelva— aunque nadie lo esté pintando.

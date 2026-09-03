@@ -108,9 +108,36 @@ Es lo que ya empezamos con `Pestanas` y `Selector`, y funciona: **importar el co
 MUI directamente es un error de linter**, y el estilo vive en un componente en vez de en una
 guía que alguien tiene que recordar.
 
-El cerco se extiende a los controles con aspecto propio: `Chip`, `Dialog`, `Button`,
-`TextField`, `Select`. Los primitivos de composición —`Box`, `Stack`, `Typography`, `Grid`—
-se quedan libres: no tienen aspecto propio que defender y envolverlos sería ceremonia sin
+**Corrección de lo que decía aquí antes.** Este documento prometía extender el cerco a
+`Chip`, `Dialog`, `Button`, `TextField` y `Select`. Al ir a hacerlo resultó que no se
+sostiene, y conviene decir por qué:
+
+| Control | Archivos | Qué hay para sustituirlo |
+|---|---:|---|
+| `Button` | 36 | `DARK_BTN_SX` / `GHOST_BTN_SX` — **tokens `sx`, no un componente** |
+| `TextField` | 22 | `CampoFecha`, y solo para fechas |
+| `Chip` | 18 | `CHIP_SX` y variantes — tokens `sx` |
+| `Select` | 3 | `SelectorBusqueda`, `Selector` |
+| `Dialog` | 1 | `DIALOG_*_SX` — tokens `sx` |
+
+**Prohibir un import sin tener a dónde mandar a quien lo necesita no crea una regla: crea
+un `eslint-disable` en cada archivo**, y eso es peor que no tener regla, porque da la
+apariencia de que algo se vigila.
+
+La regla real, entonces, es esta:
+
+> **El cerco se pone donde hay un componente compartido que sustituye al control. Donde
+> solo hay tokens de estilo, lo que se aplica es el token, no una prohibición.**
+
+Hoy eso son `Tabs`/`Tab` → `Pestanas` y `ToggleButtonGroup`/`ToggleButton` → `Selector`.
+`Select` sería el siguiente candidato barato —tres archivos—, pero antes hay que comprobar
+que `SelectorBusqueda` cubre los tres usos.
+
+Para extender el cerco a `Button`, `Chip` o `TextField` primero hay que **escribir el
+componente**; convertir `DARK_BTN_SX` en un `<Boton>` es el trabajo previo, no un detalle.
+
+Los primitivos de composición —`Box`, `Stack`, `Typography`, `Grid`— se quedan libres en
+cualquier caso: no tienen aspecto propio que defender y envolverlos sería ceremonia sin
 beneficio.
 
 ## Consecuencias
