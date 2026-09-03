@@ -1,3 +1,5 @@
+import { create } from "zustand"
+
 /**
  * Cuánto dura en pantalla un aviso flotante.
  *
@@ -7,60 +9,49 @@
 export const DURACION_FLOTANTE_MS = 5000
 
 let siguienteId = 1
-let cola = []
-let cargando = null
-let flotantes = []
-let instantanea = { actual: null, cargando: null, flotantes: [] }
-
-const oyentes = new Set()
-
-function publicar() {
-  instantanea = { actual: cola[0] ?? null, cargando, flotantes }
-  oyentes.forEach((oyente) => oyente())
-}
 
 /**
- * Escucha los cambios de la cola.
+ * La cola de avisos pendientes de pintar.
  *
- * @param {Function} oyente Se llama, sin argumentos, en cada cambio.
- * @returns {Function} La función que cancela la suscripción.
+ * Es un store de zustand y no un módulo con estado suelto porque el proyecto ya
+ * tiene tres stores así, y tener dos mecanismos para lo mismo es la clase de
+ * duplicación que el estándar manda evitar. Zustand resuelve además, de fábrica,
+ * lo que aquí había que escribir a mano: se lee y se escribe **fuera de React**
+ * con `getState`, que es justo lo que necesita `notify` para poder llamarse
+ * desde un `catch`, y `useStore` da la suscripción para pintar.
+ *
+ * Tres ranuras, separadas a propósito:
+ *
+ * - `cola`: los diálogos que esperan respuesta. Se muestran de uno en uno y por
+ *   orden; el segundo espera en vez de reemplazar al primero, porque perder un
+ *   aviso es peor que mostrar dos seguidos.
+ * - `cargando`: el indicador que bloquea. No espera respuesta, así que no entra
+ *   en la cola, y cualquier diálogo nuevo lo releva.
+ * - `flotantes`: los avisos que no bloquean. Conviven y se van solos.
  */
-export function suscribir(oyente) {
-  oyentes.add(oyente)
-  return () => oyentes.delete(oyente)
-}
-
-/**
- * Devuelve el estado actual de la cola.
- *
- * Devuelve siempre la **misma** referencia mientras nada cambie, que es lo que
- * `useSyncExternalStore` necesita para no repintar en bucle.
- *
- * @returns {{actual: (object|null), cargando: (object|null), flotantes: Array}} El estado.
- */
-export function leer() {
-  return instantanea
-}
+export const usarCola = create(() => ({
+  cola: [],
+  cargando: null,
+  flotantes: [],
+}))
 
 /**
  * Encola un diálogo y espera a que la persona responda.
  *
- * Si hay un indicador de carga abierto, lo cierra: es el comportamiento que
- * tenía sweetalert2 —un diálogo nuevo reemplazaba al anterior— y del que
- * dependen las pantallas que abren «Guardando…» y terminan mostrando el
- * resultado sin cerrar el indicador a mano.
- *
- * Si hay otro diálogo abierto, este espera su turno en vez de reemplazarlo.
- * Perder un aviso es peor que mostrar dos seguidos.
+ * Cierra el indicador de carga si lo hay: es el comportamiento que tenía
+ * sweetalert2 —un diálogo nuevo reemplazaba al anterior— y del que dependen las
+ * pantallas que abren «Guardando…» y terminan mostrando el resultado sin cerrar
+ * el indicador a mano.
  *
  * @param {object} peticion El diálogo a mostrar.
  * @returns {Promise.<*>} El valor de la acción elegida.
  */
 export function pedir(peticion) {
   return new Promise((resolver) => {
-    cargando = null
-    cola = [...cola, { ...peticion, id: siguienteId++, resolver }]
-    publicar()
+    usarCola.setState((estado) => ({
+      cargando: null,
+      cola: [...estado.cola, { ...peticion, id: siguienteId++, resolver }],
+    }))
   })
 }
 
@@ -72,26 +63,21 @@ export function pedir(peticion) {
  * @returns {void}
  */
 export function responder(id, valor) {
-  const peticion = cola.find((una) => una.id === id)
+  const peticion = usarCola.getState().cola.find((una) => una.id === id)
   if (!peticion) return
 
-  cola = cola.filter((una) => una.id !== id)
-  publicar()
+  usarCola.setState((estado) => ({ cola: estado.cola.filter((una) => una.id !== id) }))
   peticion.resolver(valor)
 }
 
 /**
  * Abre el indicador de carga que bloquea la pantalla.
  *
- * Vive en su propia ranura, fuera de la cola, porque no espera respuesta y
- * porque cualquier diálogo posterior tiene que poder reemplazarlo.
- *
  * @param {string} titulo Qué se está haciendo.
  * @returns {void}
  */
 export function abrirCargando(titulo) {
-  cargando = { titulo }
-  publicar()
+  usarCola.setState({ cargando: { titulo } })
 }
 
 /**
@@ -100,17 +86,14 @@ export function abrirCargando(titulo) {
  * @returns {void}
  */
 export function cerrarAbierto() {
-  cargando = null
-  const peticion = cola[0]
-  if (peticion) cola = cola.slice(1)
-  publicar()
+  const [peticion] = usarCola.getState().cola
+
+  usarCola.setState((estado) => ({ cargando: null, cola: estado.cola.slice(1) }))
   peticion?.resolver(undefined)
 }
 
 /**
  * Encola un aviso flotante, de los que se van solos.
- *
- * No pasan por la cola de diálogos: se apilan y conviven, porque no bloquean.
  *
  * El temporizador vive aquí y no en el componente para que el aviso se retire
  * —y su promesa se resuelva— aunque nadie lo esté pintando.
@@ -122,8 +105,9 @@ export function cerrarAbierto() {
 export function anunciar(aviso, duracion = DURACION_FLOTANTE_MS) {
   return new Promise((resolver) => {
     const id = siguienteId++
-    flotantes = [...flotantes, { ...aviso, id, resolver }]
-    publicar()
+    usarCola.setState((estado) => ({
+      flotantes: [...estado.flotantes, { ...aviso, id, resolver }],
+    }))
     setTimeout(() => retirar(id), duracion)
   })
 }
@@ -135,11 +119,10 @@ export function anunciar(aviso, duracion = DURACION_FLOTANTE_MS) {
  * @returns {void}
  */
 export function retirar(id) {
-  const aviso = flotantes.find((uno) => uno.id === id)
+  const aviso = usarCola.getState().flotantes.find((uno) => uno.id === id)
   if (!aviso) return
 
-  flotantes = flotantes.filter((uno) => uno.id !== id)
-  publicar()
+  usarCola.setState((estado) => ({ flotantes: estado.flotantes.filter((uno) => uno.id !== id) }))
   aviso.resolver(undefined)
 }
 
@@ -149,8 +132,5 @@ export function retirar(id) {
  * @returns {void}
  */
 export function reiniciar() {
-  cola = []
-  cargando = null
-  flotantes = []
-  publicar()
+  usarCola.setState({ cola: [], cargando: null, flotantes: [] })
 }

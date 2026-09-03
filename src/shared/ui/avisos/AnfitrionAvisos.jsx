@@ -1,4 +1,3 @@
-import { useSyncExternalStore } from "react"
 import {
   Alert,
   Box,
@@ -19,7 +18,7 @@ import HelpOutlineRounded from "@mui/icons-material/HelpOutlineRounded"
 import InfoRounded from "@mui/icons-material/InfoRounded"
 import { BORDE, COLOR, RADIO, SOMBRA } from "../tokens"
 import { DIALOG_ACTIONS_SX, DIALOG_PAPER_SX } from "../estilos"
-import { leer, responder, retirar, suscribir } from "./cola"
+import { responder, retirar, usarCola } from "./cola"
 
 const ICONOS = {
   success: { Icono: CheckCircleRounded, color: COLOR.EXITO, fondo: COLOR.EXITO_FONDO },
@@ -213,12 +212,14 @@ function DialogoCargando({ titulo }) {
  * @returns {object} Los avisos visibles en este momento.
  */
 export function AnfitrionAvisos() {
-  const { actual, cargando, flotantes } = useSyncExternalStore(suscribir, leer, leer)
+  const primero = usarCola((estado) => estado.cola[0] ?? null)
+  const cargando = usarCola((estado) => estado.cargando)
+  const flotantes = usarCola((estado) => estado.flotantes)
 
   return (
     <>
-      {actual && <DialogoAviso key={actual.id} peticion={actual} />}
-      {!actual && cargando && <DialogoCargando titulo={cargando.titulo} />}
+      {primero && <DialogoAviso key={primero.id} peticion={primero} />}
+      {!primero && cargando && <DialogoCargando titulo={cargando.titulo} />}
 
       <Snackbar
         open={flotantes.length > 0}
