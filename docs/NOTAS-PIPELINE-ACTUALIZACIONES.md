@@ -39,6 +39,29 @@ de este trabajo.
 
 **No existe `.github/` en el repo: cero automatización.**
 
+### Y el proceso manual ya falló, medido
+
+Los últimos ocho tags contra la versión que llevan dentro:
+
+| Tag | `package.json` en ese commit | |
+|---|---|---|
+| `v.1.4.4` | 1.4.4 | ok |
+| `v.1.4.5` | 1.4.5 | ok |
+| `v.1.4.6` | **1.4.5** | ✗ |
+| `v.1.4.7` | 1.4.7 | ok |
+| `v.1.4.8` | 1.4.8 | ok |
+| `v.1.4.9` | 1.4.9 | ok |
+| `v.1.5.0` | **1.4.9** | ✗ |
+| `v.1.5.1` | **1.5.0** | ✗ |
+
+**Tres de ocho no coinciden.** El artefacto salió correcto —se compiló del árbol de
+trabajo, no del tag— pero eso es justamente el problema: **no se puede hacer checkout de
+`v.1.5.1` y reconstruir lo que la gente está corriendo hoy**. El tag no identifica el
+código que se envió.
+
+Es un argumento a favor de que el pipeline compile **desde el tag** y verifique que
+coincide con `package.json` antes de publicar.
+
 ## Los cinco puntos a resolver antes de escribir nada
 
 ### 1 · "Cada push a `main`" es más peligroso de lo que suena
