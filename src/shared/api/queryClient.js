@@ -35,6 +35,12 @@ const EN_PRUEBAS = import.meta.env?.MODE === "test"
  * pueda tener el suyo: una caché compartida entre tests los vuelve dependientes
  * del orden en que corren.
  *
+ * Una consulta puede pedir que su fallo **no** se anuncie declarando
+ * `meta: { silencioso: true }`. Es para los sondeos de fondo: uno que se repite
+ * cada 15 segundos y falla llenaría la pantalla de avisos por algo que la
+ * persona no pidió y que se arregla solo en cuanto vuelva la red. El fallo se
+ * sigue registrando en la consola.
+ *
  * @param {object} [opciones] Ajustes del cliente.
  * @param {Function} [opciones.alFallar] Qué hacer cuando una consulta falla y
  *   nadie más lo atrapó. Se inyecta para no acoplar la capa de API a la de UI, y
@@ -44,9 +50,10 @@ const EN_PRUEBAS = import.meta.env?.MODE === "test"
 export function crearQueryClient({ alFallar } = {}) {
   return new QueryClient({
     queryCache: new QueryCache({
-      onError: (error) => {
+      onError: (error, consulta) => {
         if (error instanceof ApiError && error.fueCancelada) return
         console.error("Consulta fallida:", error)
+        if (consulta?.meta?.silencioso) return
         alFallar?.(error)
       },
     }),

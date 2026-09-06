@@ -1,7 +1,7 @@
 {
   "name": "imaappdesktopreact",
   "private": true,
-  "version": "1.5.1",
+  "version": "1.5.2",
   "description": "IMA Express Desktop Application",
   "author": "IMA Express",
   "type": "module",
@@ -98,8 +98,7 @@
       {
         "provider": "github",
         "owner": "RichardEspRey",
-        "repo": "frontend-ima-app-react",
-        "private": true
+        "repo": "frontend-ima-app-react"
       }
     ]
   }

@@ -4,13 +4,16 @@ import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import { Outlet, useLocation } from 'react-router-dom';
 
-import { useAuthStore } from '../store/useAuthStore'; 
+import { useAuthStore } from '../store/useAuthStore';
+import { useAvisoDeNotificaciones } from '../features/notifications';
 import { COLOR } from '../shared/ui/tokens';
 import { ErrorBoundary } from '../shared/ui';
 
 const DashboardLayout = () => {
   const { user, fetchPermissions } = useAuthStore();
   const { pathname } = useLocation();
+
+  useAvisoDeNotificaciones(user?.id);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -23,10 +26,10 @@ const DashboardLayout = () => {
   }, [user?.id, fetchPermissions]);
 
   return (
-    <Box 
-      sx={{ 
-        display: 'flex', 
-        height: '100vh', 
+    <Box
+      sx={{
+        display: 'flex',
+        height: '100vh',
         bgcolor: COLOR.LIENZO,
         overflow: 'hidden',
         fontFamily: '"Roboto", "Segoe UI", Arial, sans-serif'
@@ -35,11 +38,11 @@ const DashboardLayout = () => {
       <Sidebar />
       <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
         <Header />
-        <Box 
-          sx={{ 
-            flex: 1, 
-            overflowY: 'auto', 
-            p: { xs: 2, md: 4 }, 
+        <Box
+          sx={{
+            flex: 1,
+            overflowY: 'auto',
+            p: { xs: 2, md: 4 },
             '&::-webkit-scrollbar': { width: '8px' },
             '&::-webkit-scrollbar-thumb': { bgcolor: COLOR.BORDE_FUERTE, borderRadius: '4px' },
             '&::-webkit-scrollbar-track': { bgcolor: 'transparent' }

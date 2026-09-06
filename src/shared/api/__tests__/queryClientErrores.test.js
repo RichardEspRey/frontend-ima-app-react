@@ -7,11 +7,16 @@ import { ApiError, CAUSA_ERROR } from "../errors"
  *
  * @param {object} cliente El cliente de TanStack Query.
  * @param {Error} error Lo que debe lanzar la consulta.
+ * @param {object} [meta] Metadatos de la consulta, por ejemplo `{ silencioso: true }`.
  * @returns {Promise.<void>} Cuando la consulta ya falló.
  */
-async function consultaQueFalla(cliente, error) {
+async function consultaQueFalla(cliente, error, meta) {
   await cliente
-    .fetchQuery({ queryKey: ["falla", Math.random()], queryFn: () => Promise.reject(error) })
+    .fetchQuery({
+      queryKey: ["falla", Math.random()],
+      queryFn: () => Promise.reject(error),
+      ...(meta ? { meta } : {}),
+    })
     .catch(() => {})
 }
 
@@ -24,6 +29,39 @@ describe("crearQueryClient · avisos de fallo", () => {
     vi.spyOn(console, "error").mockImplementation(() => {})
 
     await consultaQueFalla(crearQueryClient({ alFallar }), apiError(CAUSA_ERROR.RED))
+
+    expect(alFallar).toHaveBeenCalledTimes(1)
+    vi.restoreAllMocks()
+  })
+
+  it("no avisa de un sondeo de fondo marcado como silencioso", async () => {
+    const alFallar = vi.fn()
+    vi.spyOn(console, "error").mockImplementation(() => {})
+
+    await consultaQueFalla(
+      crearQueryClient({ alFallar }),
+      apiError(CAUSA_ERROR.RED),
+      { silencioso: true },
+    )
+
+    expect(alFallar).not.toHaveBeenCalled()
+    vi.restoreAllMocks()
+  })
+
+  it("un sondeo silencioso sigue dejando rastro en la consola", async () => {
+    const enConsola = vi.spyOn(console, "error").mockImplementation(() => {})
+
+    await consultaQueFalla(crearQueryClient(), apiError(CAUSA_ERROR.RED), { silencioso: true })
+
+    expect(enConsola).toHaveBeenCalled()
+    vi.restoreAllMocks()
+  })
+
+  it("una consulta normal sí avisa, para que silencioso no se vuelva el comportamiento por omisión", async () => {
+    const alFallar = vi.fn()
+    vi.spyOn(console, "error").mockImplementation(() => {})
+
+    await consultaQueFalla(crearQueryClient({ alFallar }), apiError(CAUSA_ERROR.RED), {})
 
     expect(alFallar).toHaveBeenCalledTimes(1)
     vi.restoreAllMocks()
