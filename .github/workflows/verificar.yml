@@ -1,0 +1,52 @@
+name: Verificar
+
+on:
+  push:
+    branches: [main, Emiliano, Richard]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: verificar-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verificar:
+    name: Compilar y probar
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Traer el código
+        uses: actions/checkout@v4
+
+      - name: Preparar Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      # Sin este secreto el build falla en claro: shared/config/env.js lanza una
+      # excepción cuando la variable no está, que es el comportamiento correcto.
+      - name: Compilar
+        run: npm run build
+        env:
+          VITE_API_HOST: ${{ secrets.VITE_API_HOST }}
+
+      # --if-present no hace nada mientras la rama no tenga script de pruebas.
+      # El día que el refactor entre a main, estas 854 pruebas empiezan a correr
+      # aquí sin tocar este archivo.
+      - name: Pruebas
+        run: npm test --if-present
+
+      # Informativo a propósito. Hoy main arrastra 147 errores de lint; si esto
+      # bloqueara, el pipeline estaría en rojo desde el primer día y todos
+      # aprenderían a ignorarlo. Se pone en bloqueante cuando esos 147 lleguen a
+      # cero.
+      - name: Lint (no bloquea)
+        run: npm run lint
+        continue-on-error: true

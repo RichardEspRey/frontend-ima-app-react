@@ -1,0 +1,94 @@
+name: Publicar
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+concurrency:
+  group: publicar
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  publicar:
+    name: Instalador de Windows
+    runs-on: windows-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Traer el código del tag
+        uses: actions/checkout@v4
+
+      - name: Preparar Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      # Tres de los últimos ocho tags apuntaban a un commit cuyo package.json
+      # decía otra versión, así que no se podía reconstruir lo que la gente
+      # estaba corriendo. Esto lo vuelve imposible: si no coinciden, no publica.
+      - name: El tag tiene que coincidir con package.json
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: bash
+        run: |
+          etiqueta="${GITHUB_REF_NAME}"
+          etiqueta="${etiqueta#v}"
+          etiqueta="${etiqueta#.}"
+          paquete="$(node -p "require('./package.json').version")"
+
+          echo "tag: $etiqueta · package.json: $paquete"
+
+          if [ "$etiqueta" != "$paquete" ]; then
+            echo "::error::El tag dice $etiqueta y package.json dice $paquete."
+            echo "::error::Sube la versión en package.json y vuelve a crear el tag."
+            exit 1
+          fi
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Compilar
+        run: npm run build
+        env:
+          VITE_API_HOST: ${{ secrets.VITE_API_HOST }}
+
+      - name: Pruebas
+        run: npm test --if-present
+
+      # Un tag con guion (v1.5.3-beta.1) sale marcado como prerelease, y
+      # electron-updater los ignora por omisión: sirve para probar el pipeline
+      # sin que ninguna de las 5-7 máquinas lo vea.
+      - name: ¿Es una prueba?
+        id: tipo
+        shell: bash
+        run: |
+          if [[ "${GITHUB_REF_NAME}" == *-* ]]; then
+            echo "prerelease=true" >> "$GITHUB_OUTPUT"
+            echo "Este tag sale como prerelease: nadie lo recibirá."
+          else
+            echo "prerelease=false" >> "$GITHUB_OUTPUT"
+            echo "Este tag sale como release: lo verán todas las máquinas."
+          fi
+
+      - name: Crear el instalador y publicarlo
+        run: npx electron-builder --win --publish always
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VITE_API_HOST: ${{ secrets.VITE_API_HOST }}
+          EP_PRE_RELEASE: ${{ steps.tipo.outputs.prerelease }}
+
+      - name: Guardar el instalador por si hay que revisarlo
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: instalador-windows
+          path: |
+            release/*.exe
+            release/*.blockmap
+            release/latest.yml
+          if-no-files-found: warn
+          retention-days: 14

@@ -95,7 +95,8 @@
       {
         "provider": "github",
         "owner": "RichardEspRey",
-        "repo": "frontend-ima-app-react"
+        "repo": "frontend-ima-app-react",
+        "releaseType": "release"
       }
     ]
   }
