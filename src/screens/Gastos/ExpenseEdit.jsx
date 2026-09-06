@@ -80,7 +80,8 @@ const ExpenseEdit = () => {
         const data = json.data;
         
         setCountry(countries.find(c => c.value === data.pais) || null);
-        setExpenseDate(new Date(`${data.fecha_gasto}T00:00:00`));
+        const fechaDelGasto = data.fecha_gasto ? new Date(`${data.fecha_gasto}T00:00:00`) : null;
+        setExpenseDate(fechaDelGasto && !isNaN(fechaDelGasto) ? fechaDelGasto : null);
         setTotalAmount(parseFloat(data.monto_total || 0).toFixed(2));
         setOriginalAmount(data.cantidad_original ?? '');
         setExchangeRate(data.tipo_cambio ?? '');
@@ -186,6 +187,13 @@ const ExpenseEdit = () => {
   }, 0), [expenseDetails]);
 
   const handleSubmit = async () => {
+      if (!fechaISO) {
+        return Swal.fire(
+          'Falta la fecha del gasto',
+          'Elige la fecha del gasto antes de guardar.',
+          'warning',
+        );
+      }
       if (faltaTasa) {
         return Swal.fire(
           'Falta el tipo de cambio',
@@ -199,7 +207,7 @@ const ExpenseEdit = () => {
         fd.append("op", "updateExpense");
         fd.append("id_gasto", id_gasto);
         fd.append("pais", country?.value || '');
-        fd.append("fecha_gasto", expenseDate.toISOString().split('T')[0]);
+        fd.append("fecha_gasto", fechaISO);
         fd.append("moneda", esMXN ? 'MXN' : 'USD');
         fd.append("monto_total", totalAmount);
         // El backend solo escribe las columnas que recibe: omitir las vacías
@@ -600,7 +608,7 @@ const ExpenseEdit = () => {
                 </Stack>
                 <Stack direction="row" justifyContent="space-between">
                   <Typography variant="body2" color="#64748b">Fecha del gasto</Typography>
-                  <Typography variant="body2" fontWeight={600} color="#0f172a">{expenseDate.toLocaleDateString()}</Typography>
+                  <Typography variant="body2" fontWeight={600} color="#0f172a">{expenseDate ? expenseDate.toLocaleDateString() : '—'}</Typography>
                 </Stack>
                 <Stack direction="row" justifyContent="space-between">
                   <Typography variant="body2" color="#64748b">Monto original</Typography>

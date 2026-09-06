@@ -17,7 +17,6 @@ import Select from 'react-select';
 
 import ModalArchivo from '../../components/ModalArchivo';
 
-import useFetchInventoryItems from '../../hooks/expense_hooks/useFetchInventoryItems';
 import useFetchSubcategories from '../../hooks/expense_hooks/useFetchSubcategories';
 import useFetchCategories from '../../hooks/expense_hooks/useFetchCategories';
 import useFetchExpenseTypes from '../../hooks/expense_hooks/useFetchExpenseTypes';

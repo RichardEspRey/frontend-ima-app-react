@@ -53,17 +53,17 @@ const TripScreen = () => {
         <div className="button-container">
           {/* ... tus botones ... */}
           <button
-            onClick={handleBorderCrossingClick}
-            className={activeForm === 'borderCrossing' ? 'selected' : ''}
-          >
-            Border Crossing
-          </button>
-          <button
-            onClick={handleTripClick}
-            className={activeForm === 'trip' ? 'selected' : ''}
-          >
-            Trip
-          </button>
+            onClick={handleBorderCrossingClick}
+            className={activeForm === 'borderCrossing' ? 'selected' : ''}
+          >
+            Border Crossing
+          </button>
+          <button
+            onClick={handleTripClick}
+            className={activeForm === 'trip' ? 'selected' : ''}
+          >
+            Trip
+          </button>
         </div>
       </div>
 

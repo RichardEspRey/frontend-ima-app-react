@@ -28,7 +28,7 @@ function useFetchActiveTrucks() {
           setError(data.message || 'Error al obtener los trucks activos');
           setLoading(false);
         }
-      } catch (err) {
+      } catch {
         setError('Error de red al obtener los trucks activos');
         setLoading(false);
       }

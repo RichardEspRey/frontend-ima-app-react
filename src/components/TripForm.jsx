@@ -669,7 +669,7 @@ const TripForm = ({ tripNumber, onSuccess }) => {
                                 styles={selectStyles}
                                 formatCreateLabel={(inputValue) => `Crear nueva compañía: "${inputValue}"`}
                             />
-                            {/* {errorCompanies && <p className="error-text">Error cargando companies</p>} */}
+                            {errorCompanies && <p className="error-text">Error cargando companies</p>}
                         </div>
                         <div className="column">
                             <label htmlFor={`travel_direction-${index}`}>Travel Direction:</label>
@@ -711,7 +711,7 @@ const TripForm = ({ tripNumber, onSuccess }) => {
                                 styles={selectStyles}
                                 formatCreateLabel={(inputValue) => `Crear nueva bodega: "${inputValue}"`}
                             />
-                            {/* {errorWarehouses && <p className="error-text">Error cargando warehouses</p>} */}
+                            {errorWarehouses && <p className="error-text">Error cargando warehouses</p>}
                         </div>
                         <div className="column">
                             <label htmlFor={`warehouse_destination_id-${index}`} style={{ marginTop: '10px' }}>Destination Warehouse:</label>

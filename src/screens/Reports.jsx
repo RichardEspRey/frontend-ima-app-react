@@ -27,7 +27,6 @@ const chartSetting = {
   margin: { top: 20, right: 20, bottom: 40, left: 70 },
 };
 
-const toDayLabel = (iso) => (iso || '').slice(0, 10);
 const toMonthKey = (iso) => (iso || '').slice(0, 7);
 
 const toMonthLabel = (mKey) => {
@@ -123,7 +122,7 @@ export default function Reports() {
             }));
             setFinancesData(mapped);
         } else { setFinancesData([]); }
-    } catch (e) { setFinancesData([]); } 
+    } catch { setFinancesData([]); } 
     finally { setFinancesLoading(false); }
   }, []);
 
@@ -143,7 +142,7 @@ export default function Reports() {
             }));
             setRtsData(mapped);
         } else { setRtsData([]); }
-    } catch (e) { setRtsData([]); } 
+    } catch { setRtsData([]); } 
     finally { setRtsLoading(false); }
   }, []);
 
@@ -162,7 +161,7 @@ export default function Reports() {
             }));
             setMaintData(mapped);
         } else { setMaintData([]); }
-    } catch (e) { setMaintData([]); } 
+    } catch { setMaintData([]); } 
     finally { setMaintLoading(false); }
   }, []);
 

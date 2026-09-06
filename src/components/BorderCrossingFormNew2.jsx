@@ -43,8 +43,6 @@ const BorderCrossingFormNew2 = ({ teamId, tripNumber, countryCode, tripYear, isT
 
     // States
 
-    const [cajaExterna, setCajaExterna] = useState(null);
-    const [tipoCaja, setTipoCaja] = useState('internal');
     const [etapasLocal, setEtapasLocal] = useState([{ ...initialEtapaStateBase, stageType: 'borderCrossing' }]);
     const etapas = etapasProp ?? etapasLocal;
     const setEtapas = setEtapasProp ?? setEtapasLocal;
@@ -157,7 +155,7 @@ const BorderCrossingFormNew2 = ({ teamId, tripNumber, countryCode, tripYear, isT
                 setCompanyOptions(p => [...p, newOption]); handleEtapaChange(stageIndex, 'company_id', newOption.value);
                 Swal.fire('Éxito', 'Compañía creada', 'success');
             }
-        } catch (e) { Swal.fire('Error', 'No se pudo crear compañía', 'error'); } finally { setIsCreatingCompany(false); }
+        } catch { Swal.fire('Error', 'No se pudo crear compañía', 'error'); } finally { setIsCreatingCompany(false); }
     };
 
     const handleCreateWarehouse = async (inputValue, stageIndex, fieldKey) => {
@@ -171,7 +169,7 @@ const BorderCrossingFormNew2 = ({ teamId, tripNumber, countryCode, tripYear, isT
                 setWarehouseOptions(p => [...p, newOption]); handleEtapaChange(stageIndex, fieldKey, newOption.value);
                 Swal.fire('Éxito', 'Bodega creada', 'success');
             }
-        } catch (e) { Swal.fire('Error', 'No se pudo crear bodega', 'error'); } finally { setIsCreatingWarehouse(false); }
+        } catch { Swal.fire('Error', 'No se pudo crear bodega', 'error'); } finally { setIsCreatingWarehouse(false); }
     };
 
     const handleSaveExternalCaja = async (cajaData) => {

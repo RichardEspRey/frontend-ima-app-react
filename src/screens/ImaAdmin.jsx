@@ -11,7 +11,6 @@ import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 
 import ModalArchivo from '../components/ModalArchivoEditor.jsx';
 import { Tooltip } from 'react-tooltip';
-import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 
 import DocumentCard from '../components/DocumentCard';
@@ -90,7 +89,6 @@ const ImaAdmin = () => {
   const getIconByFecha = (campo) => {
         const doc = documentos[campo];
         const fechaStr = doc?.vencimiento;
-        const url = doc?.url;
         const iconStyle = { fontSize: 32 }; 
 
         if (!fechaStr) {

@@ -28,7 +28,7 @@ function useFetchActiveTrailers() {
           setError(data.message || 'Error al obtener las cajas activas');
           setLoading(false);
         }
-      } catch (err) {
+      } catch {
         setError('Error de red al obtener las cajas activas');
         setLoading(false);
       }

@@ -312,8 +312,6 @@ const BorderCrossingFormNew = ({
             initialDocs = {};
         }
 
-        // Determine initial status based on ci_number for borderCrossing, or default for normalTrip
-        const initialStatus = tipoEtapa === 'borderCrossing' ? 'In Coming' : 'In Transit';
 
 
 
@@ -724,6 +722,7 @@ const BorderCrossingFormNew = ({
                                 isLoading={loadingCompanies || isCreatingCompany} styles={selectStyles}
                                 formatCreateLabel={(inputValue) => `Crear nueva compañía: "${inputValue}"`}
                             />
+                            {errorCompanies && <p className="error-text">Error cargando companies</p>}
                         </div>
                         <div className="column">
                             <label htmlFor={`travel_direction-${index}`}>Travel Direction:</label>
@@ -757,6 +756,7 @@ const BorderCrossingFormNew = ({
                                 isLoading={loadingWarehouses || isCreatingWarehouse} styles={selectStyles}
                                 formatCreateLabel={(inputValue) => `Crear nueva bodega: "${inputValue}"`}
                             />
+                            {errorWarehouses && <p className="error-text">Error cargando warehouses</p>}
                         </div>
                         <div className="column">
                             <label htmlFor={`warehouse_destination_id-${index}`} style={{ marginTop: '10px' }}>Destination Warehouse:</label>

@@ -116,7 +116,7 @@ const ServiceOrderScreenOld = () => {
                             setMode('edit');
                         }
                     } else { throw new Error(result.message); }
-                } catch (error) {
+                } catch {
                     Swal.fire('Error', 'No se pudieron cargar los datos de la orden.', 'error');
                     navigate('/admin-service-order');
                 }

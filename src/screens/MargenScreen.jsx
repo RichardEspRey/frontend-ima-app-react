@@ -10,10 +10,6 @@ import { MargenRow } from '../components/MargenRow';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
-const money = (v) =>
-  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, currencyDisplay: 'symbol' })
-    .format(Number(v || 0));
-
 const MargenScreen = () => {
   const [trips, setTrips] = useState([]);
   const [loading, setLoading] = useState(true);

@@ -57,7 +57,7 @@ jobs:
           VITE_API_HOST: ${{ secrets.VITE_API_HOST }}
 
       - name: Pruebas
-        run: npm test --if-present
+        run: npm test
 
       # Un tag con guion (v1.5.3-beta.1) sale marcado como prerelease, y
       # electron-updater los ignora por omisión: sirve para probar el pipeline

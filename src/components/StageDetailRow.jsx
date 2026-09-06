@@ -1,7 +1,6 @@
 import React from 'react';
 import { TableCell, TableRow, TextField, Select, MenuItem, InputAdornment, Box, Typography, Chip } from '@mui/material';
 import { PAYMENT_METHODS, STATUS_OPTIONS } from '../constants/finances';
-import { useAuthStore } from '../store/useAuthStore';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 
 // Helpers 
@@ -21,11 +20,7 @@ const renderStatusValue = (val) => {
 };
 
 export const StageDetailRow = ({ trip_id, stage, handleStageFieldChange }) => {
-    const { user } = useAuthStore();
 
-    const ROLES_PERMITIDOS = ['admin', 'dev'];
-    const userRole = (user?.tipo_usuario || '').toLowerCase();
-    const canViewDeficit = ROLES_PERMITIDOS.includes(userRole);
 
     const statusVal = Number(stage.status);
     const isPagada = statusVal === 3; 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Box, Typography, Grid, Stack, TextField, Button, Paper, CircularProgress, InputLabel } from '@mui/material';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -594,6 +594,7 @@ const TripFormNew = ({
                                     isLoading={loadingCompanies || isCreatingCompany}
                                     formatCreateLabel={(inputValue) => `Crear compañía: "${inputValue}"`}
                                 />
+                                {errorCompanies && <p className="error-text">Error cargando companies</p>}
                             </Grid>
                             <Grid item xs={12} md={4}>
                                 <SelectWrapper
@@ -619,6 +620,7 @@ const TripFormNew = ({
                                     isLoading={loadingWarehouses || isCreatingWarehouse}
                                     formatCreateLabel={(inputValue) => `Crear bodega: "${inputValue}"`}
                                 />
+                                {errorWarehouses && <p className="error-text">Error cargando warehouses</p>}
                             </Grid>
                             <Grid item xs={12} md={6}>
                                 <SelectWrapper

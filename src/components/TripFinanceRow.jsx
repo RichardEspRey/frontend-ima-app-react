@@ -9,7 +9,6 @@ import { STATUS_OPTIONS } from '../constants/finances';
 import { StageDetailRow } from './StageDetailRow'; 
 import { money, countCriticalStages } from '../utils/financeHelpers';
 
-import { useAuthStore } from '../store/useAuthStore';
 
 const StatusChip = ({ value }) => {
   const meta = STATUS_OPTIONS.find(o => o.value === Number(value));
@@ -40,13 +39,8 @@ const AlertBadge = ({ count, statusValue, tooltip }) => {
 
 export const TripFinanceRow = ({ trip, isOpen, onToggle, onStageChange }) => {
   
-  const { user } = useAuthStore(); 
-  
   const criticalCounts = countCriticalStages(trip.stages);
 
-  const ROLES_PERMITIDOS = ['admin', 'dev'];
-  const userRole = (user?.tipo_usuario || '').toLowerCase();
-  const canViewDeficit = ROLES_PERMITIDOS.includes(userRole);
 
   return (
     <>

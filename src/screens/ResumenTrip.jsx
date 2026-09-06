@@ -105,7 +105,6 @@ export default function ResumenTrip() {
 
   const pdf = new jsPDF('p', 'mm', 'a4');
   const pageW = pdf.internal.pageSize.getWidth();
-  const pageH = pdf.internal.pageSize.getHeight();
 
   const margin = { top: 5, right: 8, bottom: 0, left: 8 };
 

@@ -54,7 +54,7 @@ const TruckAdmin = () => {
             setConfigFields(data.requisitos || []);
             setTrucks(data.trucks || []);
         }
-    } catch (error) { console.warn('Esperando backend trucks_v2.php...'); setConfigFields([]); setTrucks([]); }
+    } catch { console.warn('Esperando backend trucks_v2.php...'); setConfigFields([]); setTrucks([]); }
     finally { setLoading(false); }
   }, []);
 
@@ -97,7 +97,7 @@ const TruckAdmin = () => {
           setNewField({ label: '', categoria: 'USA', tipo: 'file', tiene_vencimiento: true });
           fetchData();
           Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Requisito Creado', showConfirmButton: false, timer: 2000 });
-      } catch (e) { Swal.fire('Atención', 'Conecta el backend para guardar.', 'info'); }
+      } catch { Swal.fire('Atención', 'Conecta el backend para guardar.', 'info'); }
   };
 
   const handleDeleteField = async (key_name, label) => {
@@ -133,7 +133,7 @@ const TruckAdmin = () => {
           await fetch(`${apiHost}/${API_ENDPOINT}`, { method: 'POST', body: fd });
           setOpenTruckModal(false); fetchData();
           Swal.fire('Guardado', 'Camión actualizado.', 'success');
-      } catch(e) { Swal.fire('Atención', 'Conecta el backend.', 'info'); setLoading(false); }
+      } catch { Swal.fire('Atención', 'Conecta el backend.', 'info'); setLoading(false); }
   };
 
   const deleteTruck = async (truck_id) => {

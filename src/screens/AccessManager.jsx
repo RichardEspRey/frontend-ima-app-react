@@ -58,7 +58,7 @@ const ProfileAccessManager = () => {
             const data = await response.json();
             if (data.status === 'success') setUsers(data.users);
             else setError(data.message || 'Error al cargar usuarios.');
-        } catch (err) { setError('No se pudo conectar con el servidor.'); }
+        } catch { setError('No se pudo conectar con el servidor.'); }
         setLoading(false);
     }, [apiHost]);
 
@@ -116,7 +116,7 @@ const ProfileAccessManager = () => {
                 else setFeaturesMobile(prev => reverter(prev));
                 setSnackbar({ open: true, message: data.message || 'Error al actualizar.', severity: 'error' });
             }
-        } catch (err) {
+        } catch {
             setSnackbar({ open: true, message: 'Error de conexión.', severity: 'error' });
         }
     };
@@ -140,7 +140,7 @@ const ProfileAccessManager = () => {
                 setSnackbar({ open: true, message: 'Usuario creado exitosamente.', severity: 'success' });
                 handleCloseNewUser(); fetchUsers();
             } else setSnackbar({ open: true, message: data.message || 'Error al crear.', severity: 'error' });
-        } catch (err) { setSnackbar({ open: true, message: 'Error de conexión.', severity: 'error' }); }
+        } catch { setSnackbar({ open: true, message: 'Error de conexión.', severity: 'error' }); }
     };
 
     const handleUpdateUser = async (userId, data) => {
@@ -158,7 +158,7 @@ const ProfileAccessManager = () => {
                 Flashy.success('Usuario actualizado.');
                 fetchUsers(); handleCloseDrawer();
             } else setSnackbar({ open: true, message: response.message || 'Error al actualizar.', severity: 'error' });
-        } catch (err) { setSnackbar({ open: true, message: 'Error de conexión.', severity: 'error' }); }
+        } catch { setSnackbar({ open: true, message: 'Error de conexión.', severity: 'error' }); }
     };
 
     const handleOpenTeamsManager = async () => {

@@ -28,7 +28,7 @@ function useFetchActiveExternalTrailers() {
       } else {
         setError(data.message || 'Error al obtener las cajas activas');
       }
-    } catch (err) {
+    } catch {
       setError('Error de red al obtener las cajas activas');
     } finally {
    

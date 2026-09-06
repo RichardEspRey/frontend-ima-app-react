@@ -3,7 +3,7 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import './css/ModalArchivo.css';
 
-const InfoGeneral = ({ isOpen, onClose, onSave, nombreCampo, valorActual }) => {
+const InfoGeneral = ({ isOpen, onClose, onSave, valorActual }) => {
   const [archivo, setArchivo] = useState(null);
   const [fechaVencimiento, setFechaVencimiento] = useState(new Date());
   const [previewUrl, setPreviewUrl] = useState(null);

@@ -112,7 +112,7 @@ const TrailerAdmin = () => {
           await fetch(`${apiHost}/${API_ENDPOINT}`, { method: 'POST', body: fd });
           setOpenTrailerModal(false); fetchData();
           Swal.fire('Guardado', 'Caja actualizada.', 'success');
-      } catch(e) { Swal.fire('Error', 'Conecta el backend.', 'error'); setLoading(false); }
+      } catch { Swal.fire('Error', 'Conecta el backend.', 'error'); setLoading(false); }
   };
 
   const deleteTrailer = async (caja_id) => {

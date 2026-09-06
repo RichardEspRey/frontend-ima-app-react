@@ -109,7 +109,7 @@ const parseJsonSafe = async (response) => {
         return JSON.parse(text);
     } catch {
         const match = text.match(/\{[\s\S]*\}/);
-        if (match) { try { return JSON.parse(match[0]); } catch {} }
+        if (match) { try { return JSON.parse(match[0]); } catch { return {}; } }
         return {};
     }
 };

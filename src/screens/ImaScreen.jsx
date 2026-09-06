@@ -8,19 +8,8 @@ import Swal from 'sweetalert2';
 
 const ImaScreen = () => {
   const apiHost = import.meta.env.VITE_API_HOST;
-  const [formData, setFormData] = useState({
-    numero_caja: '',
-    numero_placa: '',
-    estado_placa: '',
-    numero_vin: '',
-  });
-
   const [originalDocumentos, setOriginalDocumentos] = useState({});
   const [loading, setLoading] = useState(true); // Nuevo estado de carga para los documentos
-
-  const handleInputChange = (name, value) => {
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
 
   const [documentos, setDocumentos] = useState({});
   const [modalAbierto, setModalAbierto] = useState(false);
@@ -176,7 +165,7 @@ const ImaScreen = () => {
   }, [fetchDocs]);
 
   
-  const DocumentUpload = ({ label, documentKey, accept = '.pdf' }) => {
+  const DocumentUpload = ({ label, documentKey }) => {
     const doc = documentos[documentKey];
     
     // Función para manejar la limpieza del documento

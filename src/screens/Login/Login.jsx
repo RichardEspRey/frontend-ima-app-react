@@ -51,7 +51,7 @@ const Login = () => {
           confirmButtonColor: '#0f172a'
         });
       }
-    } catch (error) {
+    } catch {
       Swal.fire({
         icon: 'error', title: 'Error de Red', text: 'No se pudo conectar con el servidor. Revisa tu conexión.',
         confirmButtonColor: '#0f172a'

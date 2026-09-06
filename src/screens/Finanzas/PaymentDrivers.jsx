@@ -182,7 +182,7 @@ const PaymentDrivers = () => {
                 } else {
                   Swal.fire("Error", "No se pudo actualizar el pago", "error");
                 }
-              } catch (err) {
+              } catch {
                 Swal.fire("Error", "Error de conexión", "error");
               }
         }

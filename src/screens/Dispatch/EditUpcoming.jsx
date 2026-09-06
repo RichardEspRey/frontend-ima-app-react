@@ -99,7 +99,7 @@ const EditUpComing = () => {
                         if (Array.isArray(etapa.documentos_adjuntos)) {
                             etapa.documentos_adjuntos.forEach((doc) => {
                                 const tipo = normalizeDocType(doc.tipo_documento);
-                                if (baseDocs.hasOwnProperty(tipo)) {
+                                if (Object.prototype.hasOwnProperty.call(baseDocs, tipo)) {
                                     baseDocs[tipo] = {
                                         fileName: doc.nombre_archivo?.split(/[\\/]/).pop() || "Archivo existente",
                                         vencimiento: doc.fecha_vencimiento || null, file: null, hasNewFile: false,

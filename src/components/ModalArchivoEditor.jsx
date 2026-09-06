@@ -4,7 +4,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import './css/ModalArchivo.css';
 import Swal from 'sweetalert2';
 
-const ModalArchivoEditor = ({ isOpen, onClose, onSave, nombreCampo, valorActual, endpoint,tipo, mostrarFechaVencimiento = true }) => {
+const ModalArchivoEditor = ({ isOpen, onClose, valorActual, endpoint,tipo, mostrarFechaVencimiento = true }) => {
 
   const [archivo, setArchivo] = useState(null);
   const [fechaVencimiento, setFechaVencimiento] = useState(new Date());

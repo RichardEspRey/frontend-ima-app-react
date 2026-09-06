@@ -50,7 +50,7 @@ export default function PagosAdministrativos() {
                 await fetch(`${apiHost}/pagos_admin.php`, { method: 'POST', body: fd });
                 Swal.fire('Autorizado', 'Semana cerrada correctamente', 'success');
                 fetchWeeks();
-            } catch(e) {
+            } catch {
                 Swal.fire('Error', 'Hubo un problema al autorizar la semana', 'error');
             }
         }

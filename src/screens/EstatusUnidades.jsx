@@ -62,7 +62,7 @@ export default function EstatusUnidades() {
                 Toast.fire({ icon: 'success', title: 'Actualizado' });
                 return true; // Éxito
             }
-        } catch (e) {
+        } catch {
             Swal.fire('Error', 'No se pudo actualizar', 'error');
         }
         return false;

@@ -30,23 +30,16 @@ jobs:
       - name: Instalar dependencias
         run: npm ci
 
-      # Sin este secreto el build falla en claro: shared/config/env.js lanza una
-      # excepción cuando la variable no está, que es el comportamiento correcto.
+      # Sin este secreto la app compila, pero apuntando a un host vacío: todas
+      # las llamadas a la API fallarían en silencio. Hay que crearlo en
+      # Settings → Secrets and variables → Actions.
       - name: Compilar
         run: npm run build
         env:
           VITE_API_HOST: ${{ secrets.VITE_API_HOST }}
 
-      # --if-present no hace nada mientras la rama no tenga script de pruebas.
-      # El día que el refactor entre a main, estas 854 pruebas empiezan a correr
-      # aquí sin tocar este archivo.
       - name: Pruebas
-        run: npm test --if-present
+        run: npm test
 
-      # Informativo a propósito. Hoy main arrastra 147 errores de lint; si esto
-      # bloqueara, el pipeline estaría en rojo desde el primer día y todos
-      # aprenderían a ignorarlo. Se pone en bloqueante cuando esos 147 lleguen a
-      # cero.
-      - name: Lint (no bloquea)
+      - name: Lint
         run: npm run lint
-        continue-on-error: true

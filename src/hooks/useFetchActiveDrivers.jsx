@@ -28,7 +28,7 @@ function useFetchActiveDrivers() {
           setError(data.message || 'Error al obtener los conductores activos');
           setLoading(false);
         }
-      } catch (err) {
+      } catch {
         setError('Error de red al obtener los conductores activos');
         setLoading(false);
       }

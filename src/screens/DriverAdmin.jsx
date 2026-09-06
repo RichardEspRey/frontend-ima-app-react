@@ -148,7 +148,7 @@ const DriverAdmin = () => {
           await fetch(`${apiHost}/${API_ENDPOINT}`, { method: 'POST', body: fd });
           setOpenDriverModal(false); fetchData();
           Swal.fire('Guardado', 'Conductor actualizado.', 'success');
-      } catch(e) { Swal.fire('Error', 'Problema al guardar.', 'error'); setLoading(false); }
+      } catch { Swal.fire('Error', 'Problema al guardar.', 'error'); setLoading(false); }
   };
 
   const handleOpenBaja = (driver) => {
@@ -179,16 +179,9 @@ const DriverAdmin = () => {
           } else {
               throw new Error(result.message);
           }
-      } catch (error) {
+      } catch {
           Swal.fire('Error', 'No se pudo procesar la baja.', 'error');
       }
-  };
-
-  const deleteDriver = async (driver_id) => {
-      const { isConfirmed } = await Swal.fire({ title: '¿Eliminar Conductor?', icon: 'error', showCancelButton: true });
-      if (!isConfirmed) return;
-      const fd = new FormData(); fd.append('op', 'deleteDriver'); fd.append('driver_id', driver_id);
-      await fetch(`${apiHost}/${API_ENDPOINT}`, { method: 'POST', body: fd }); fetchData();
   };
 
   // ==========================================
