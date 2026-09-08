@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 
+import { postConReintento } from '../../utils/peticionConReintento';
+
 // Este hook ahora trae TODAS las subcategorías de una vez.
 const useFetchSubcategories = () => {
     const apiHost = import.meta.env.VITE_API_HOST;
@@ -13,11 +15,7 @@ const useFetchSubcategories = () => {
             formData.append('op', 'getAllSubcategories'); 
 
             try {
-                const response = await fetch(`${apiHost}/save_expense.php`, {
-                    method: 'POST',
-                    body: formData,
-                });
-                const result = await response.json();
+                const result = await postConReintento(`${apiHost}/save_expense.php`, formData);
                 if (result.status === 'success') {
                     // Importante: La data de PHP debe incluir el ID de la categoría padre
                     // para poder filtrar. Ej: { value: 10, label: 'Sub X', id_categoria: 1 }
