@@ -22,6 +22,19 @@ jobs:
       - name: Traer el código del tag
         uses: actions/checkout@v4
 
+      - name: El secreto tiene que existir
+        env:
+          VITE_API_HOST: ${{ secrets.VITE_API_HOST }}
+        shell: bash
+        run: |
+          if [ -z "$VITE_API_HOST" ]; then
+            echo "::error::Falta el secreto VITE_API_HOST."
+            echo "::error::Sin él se publicaría un instalador que apunta a un host vacío."
+            echo "::error::Créalo en Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+          echo "VITE_API_HOST presente (${#VITE_API_HOST} caracteres)."
+
       - name: Preparar Node
         uses: actions/setup-node@v4
         with:
