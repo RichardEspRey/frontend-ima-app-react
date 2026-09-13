@@ -8,6 +8,7 @@ import store from '../redux/store';
 
 import LoginScreen from '../screens/Login/Login.jsx';
 import DashboardLayout from '../layouts/DashboardLayout';
+import NotificationsManager from '../screens/NotificationsManager.jsx';
 import HomeScreen from '../screens/Reports.jsx';
 import DriverAdmin from '../screens/DriverAdmin.jsx';
 import DriverEditor from '../screens/DriverEditor.jsx';
@@ -118,6 +119,7 @@ const AppRouter = () => {
               <Route path="/finanzas" element={<Finanzas />} />
               <Route path="/ResumenTrip/:tripId" element={<ResumenTrip />} />
               <Route path="/access-manager" element={<AccessManager />} />
+              <Route path="/notifications-manager" element={<NotificationsManager />} />
               <Route path="/ResiduoTrip" element={<ResiduoTrip />} />  
               <Route path="/reports" element={<Reports />} />
               <Route path="/safety" element={<Safety />} />  

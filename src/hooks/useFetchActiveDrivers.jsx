@@ -13,7 +13,7 @@ function useFetchActiveDrivers() {
         const response = await fetch(`${apiHost}/drivers.php`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: 'op=getDriversActivos',
+          body: 'op=getDriversActivosComplete',
         });
         const data = await response.json();
 

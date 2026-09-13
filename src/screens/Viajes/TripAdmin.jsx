@@ -41,6 +41,7 @@ import { useViajesFiltrosStore } from '../../store/useViajesFiltrosStore';
 import ModalCajaExterna from '../../components/ModalCajaExterna';
 import RoadRepairModal from '../../components/RoadRepairModal';
 import InspectionModal from '../../components/InspectionModal';
+import AlmostOverCajaModal from '../../components/AlmostOverCajaModal';
 import useFetchCompanies from '../../hooks/useFetchCompanies';
 import { selectStyles } from '../../utils/tripFormConstants';
 import { HEADER_ROW_SX, HEADER_CELL_SX } from '../../styles/estilosTabla';
@@ -158,6 +159,8 @@ const TripAdmin = () => {
     const [isModalCajaExternaOpen, setIsModalCajaExternaOpen] = useState(false);
     const [repairModalTrip, setRepairModalTrip] = useState(null);
     const [inspectionModalTrip, setInspectionModalTrip] = useState(null);
+    const [almostOverModal, setAlmostOverModal] = useState({ open: false, tripId: null, tripNumber: null, countryCode: null });
+    const [savingCajaStatus, setSavingCajaStatus] = useState(false);
 
     // Memorizados para no recrear el objeto en cada render (ej. el refresco de
     // permisos cada 15s en DashboardLayout): si la referencia cambiara sin que
@@ -344,6 +347,39 @@ const TripAdmin = () => {
                 if (response.ok && result.status === 'success') { Swal.fire('¡Éxito!', result.message, 'success'); fetchTrips(); }
                 else throw new Error(result.error || result.message);
             } catch (err) { Swal.fire('Error', err.message, 'error'); }
+        }
+    };
+
+    const handleOpenAlmostOverModal = (tripId, tripNumber, countryCode) => {
+        if (!tripId) return;
+        setAlmostOverModal({ open: true, tripId, tripNumber, countryCode });
+    };
+
+    const handleCloseAlmostOverModal = () => {
+        if (savingCajaStatus) return;
+        setAlmostOverModal({ open: false, tripId: null, tripNumber: null, countryCode: null });
+    };
+
+    const handleConfirmCajaStatus = async (cajaStatus) => {
+        const { tripId, tripNumber } = almostOverModal;
+        if (!tripId || !cajaStatus) return;
+        setSavingCajaStatus(true);
+        try {
+            const formData = new FormData();
+            formData.append('op', 'add_status_caja_trips');
+            formData.append('trip_id', tripId);
+            formData.append('status', cajaStatus);
+            const response = await fetch(`${apiHost}/new_tripsv2.php`, { method: 'POST', body: formData });
+            const result = await parseJsonSafe(response);
+            if (!response.ok || result.status !== 'success') {
+                throw new Error(result.message || 'No se pudo registrar el status de la caja.');
+            }
+            setAlmostOverModal({ open: false, tripId: null, tripNumber: null, countryCode: null });
+            await handleAlmostOverTrip(tripId, tripNumber);
+        } catch (err) {
+            Swal.fire('Error', err.message, 'error');
+        } finally {
+            setSavingCajaStatus(false);
         }
     };
 
@@ -1015,7 +1051,7 @@ const TripAdmin = () => {
                                                 getDocumentUrl={getDocumentUrl}
                                                 colSpanOverride={currentTableColSpan}
                                                 onDelete={handleDeleteTrip}
-                                                onAlmostOver={handleAlmostOverTrip}
+                                                onAlmostOver={handleOpenAlmostOverModal}
                                                 onFinalize={handleFinalizeTrip}
                                                 onReactivate={(tripId, tripNumber) => handleReactivateTrip(tripId, tripNumber, isEnRutaTab)}
                                                 onSpecialEdit={handleSpecialEdit}
@@ -1333,6 +1369,15 @@ const TripAdmin = () => {
                 onClose={() => setInspectionModalTrip(null)}
                 onSuccess={() => setInspectionModalTrip(null)}
                 initialTrip={inspectionInitialTrip}
+            />
+
+            <AlmostOverCajaModal
+                open={almostOverModal.open}
+                tripNumber={almostOverModal.tripNumber}
+                countryCode={almostOverModal.countryCode}
+                saving={savingCajaStatus}
+                onCancel={handleCloseAlmostOverModal}
+                onConfirm={handleConfirmCajaStatus}
             />
         </Box>
     );
