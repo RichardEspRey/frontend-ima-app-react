@@ -23,8 +23,6 @@ import NotificationsActiveIcon from "@mui/icons-material/NotificationsActive";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import SearchIcon from "@mui/icons-material/Search";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
-import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
-import PointOfSaleIcon from "@mui/icons-material/PointOfSale";
 
 // Datos dummy — a futuro vendrán de notification_categories / user_notification_subscriptions.
 const INITIAL_CATEGORIES = [
@@ -38,22 +36,6 @@ const INITIAL_CATEGORIES = [
       { id: 1, name: "Juan Pérez" },
       { id: 2, name: "Pedro Gómez" },
     ],
-  },
-  {
-    id: "compras",
-    nombre: "Compras",
-    descripcion: "Órdenes de compra creadas y aprobaciones pendientes",
-    icon: ShoppingCartIcon,
-    color: "#b5651d",
-    users: [{ id: 3, name: "María López" }],
-  },
-  {
-    id: "ventas",
-    nombre: "Ventas",
-    descripcion: "Cotizaciones y ventas cerradas",
-    icon: PointOfSaleIcon,
-    color: "#1a9d5b",
-    users: [],
   },
 ];
 
