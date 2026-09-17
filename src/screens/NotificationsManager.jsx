@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Container,
   Box,
@@ -18,79 +18,132 @@ import {
   DialogActions,
   TextField,
   InputAdornment,
+  CircularProgress,
+  Alert,
 } from "@mui/material";
 import NotificationsActiveIcon from "@mui/icons-material/NotificationsActive";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import SearchIcon from "@mui/icons-material/Search";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
+import Flashy from "@pablotheblink/flashyjs";
+import { useAuthStore } from "../store/useAuthStore";
 
-// Datos dummy — a futuro vendrán de notification_categories / user_notification_subscriptions.
-const INITIAL_CATEGORIES = [
-  {
-    id: "viajes",
-    nombre: "Viajes",
-    descripcion: "Documentos y eventos subidos en un viaje (BL, POD, etc.)",
-    icon: LocalShippingIcon,
-    color: "#1d4ed8",
-    users: [
-      { id: 1, name: "Juan Pérez" },
-      { id: 2, name: "Pedro Gómez" },
-    ],
-  },
-];
+const ADMIN_TYPES = new Set(["admin"]);
 
-// Dummy pool de usuarios disponibles para asignar.
-const ALL_USERS = [
-  { id: 1, name: "Juan Pérez" },
-  { id: 2, name: "Pedro Gómez" },
-  { id: 3, name: "María López" },
-  { id: 4, name: "Ana Torres" },
-  { id: 5, name: "Carlos Ruiz" },
-  { id: 6, name: "Sofía Ramírez" },
-];
+const CATEGORY = {
+  id: "viajes",
+  nombre: "Viajes",
+  descripcion: "Documentos y eventos subidos en un viaje (BL, POD, etc.)",
+  icon: LocalShippingIcon,
+  color: "#1d4ed8",
+};
 
 const NotificationsManager = () => {
-  const [categories, setCategories] = useState(INITIAL_CATEGORIES);
-  const [addUserFor, setAddUserFor] = useState(null); // categoria seleccionada
+  const apiHost = import.meta.env.VITE_API_HOST;
+  const { user } = useAuthStore();
+
+  const [subscribers, setSubscribers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const [addUserOpen, setAddUserOpen] = useState(false);
+  const [availableUsers, setAvailableUsers] = useState([]);
+  const [loadingAvailable, setLoadingAvailable] = useState(false);
   const [search, setSearch] = useState("");
 
-  const handleOpenAddUser = (category) => {
-    setAddUserFor(category);
+  const fetchSubscribers = async () => {
+    setLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append("op", "getSubscribers");
+      const res = await fetch(`${apiHost}/Notifications.php`, { method: "POST", body: formData });
+      const data = await res.json();
+      if (data.status === "success") setSubscribers(data.users || []);
+      else Flashy.error(data.message || "Error al cargar suscriptores.");
+    } catch (err) {
+      Flashy.error("No se pudo conectar con el servidor.");
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchSubscribers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const fetchAvailableUsers = async () => {
+    setLoadingAvailable(true);
+    try {
+      const formData = new FormData();
+      formData.append("op", "getAvailableUsers");
+      const res = await fetch(`${apiHost}/Notifications.php`, { method: "POST", body: formData });
+      const data = await res.json();
+      if (data.status === "success") setAvailableUsers(data.users || []);
+      else Flashy.error(data.message || "Error al cargar usuarios disponibles.");
+    } catch (err) {
+      Flashy.error("No se pudo conectar con el servidor.");
+    }
+    setLoadingAvailable(false);
+  };
+
+  const handleOpenAddUser = () => {
     setSearch("");
+    setAddUserOpen(true);
+    fetchAvailableUsers();
   };
 
-  const handleCloseAddUser = () => setAddUserFor(null);
+  const handleCloseAddUser = () => setAddUserOpen(false);
 
-  const handleAddUser = (userToAdd) => {
-    setCategories((prev) =>
-      prev.map((cat) =>
-        cat.id === addUserFor.id
-          ? { ...cat, users: [...cat.users, userToAdd] }
-          : cat
-      )
-    );
-    setAddUserFor((prev) => ({ ...prev, users: [...prev.users, userToAdd] }));
+  const handleAddUser = async (userToAdd) => {
+    try {
+      const formData = new FormData();
+      formData.append("op", "subscribe");
+      formData.append("user_id", userToAdd.id);
+      const res = await fetch(`${apiHost}/Notifications.php`, { method: "POST", body: formData });
+      const data = await res.json();
+      if (data.status === "success") {
+        setSubscribers((prev) => [...prev, userToAdd]);
+        setAvailableUsers((prev) => prev.filter((u) => u.id !== userToAdd.id));
+        Flashy.success(`${userToAdd.name} ahora recibirá notificaciones de viajes.`);
+      } else {
+        Flashy.error(data.message || "Error al suscribir al usuario.");
+      }
+    } catch (err) {
+      Flashy.error("No se pudo conectar con el servidor.");
+    }
   };
 
-  const handleRemoveUser = (categoryId, userId) => {
-    setCategories((prev) =>
-      prev.map((cat) =>
-        cat.id === categoryId
-          ? { ...cat, users: cat.users.filter((u) => u.id !== userId) }
-          : cat
-      )
-    );
+  const handleRemoveUser = async (userToRemove) => {
+    try {
+      const formData = new FormData();
+      formData.append("op", "unsubscribe");
+      formData.append("user_id", userToRemove.id);
+      const res = await fetch(`${apiHost}/Notifications.php`, { method: "POST", body: formData });
+      const data = await res.json();
+      if (data.status === "success") {
+        setSubscribers((prev) => prev.filter((u) => u.id !== userToRemove.id));
+        Flashy.success(`${userToRemove.name} ya no recibirá notificaciones de viajes.`);
+      } else {
+        Flashy.error(data.message || "Error al dar de baja al usuario.");
+      }
+    } catch (err) {
+      Flashy.error("No se pudo conectar con el servidor.");
+    }
   };
 
-  const availableUsers = useMemo(() => {
-    if (!addUserFor) return [];
-    const alreadyAssigned = new Set(addUserFor.users.map((u) => u.id));
-    return ALL_USERS.filter(
-      (u) =>
-        !alreadyAssigned.has(u.id) &&
-        u.name.toLowerCase().includes(search.toLowerCase())
+  const filteredAvailable = availableUsers.filter((u) =>
+    (u.name || u.user || "").toLowerCase().includes(search.toLowerCase())
+  );
+
+  const Icon = CATEGORY.icon;
+  const userType = String(user?.tipo_usuario || "").trim().toLowerCase();
+
+  if (!user || !ADMIN_TYPES.has(userType)) {
+    return (
+      <Container maxWidth="md" sx={{ mt: 4 }}>
+        <Alert severity="error">Acceso denegado. Solo administradores pueden ver esta sección.</Alert>
+      </Container>
     );
-  }, [addUserFor, search]);
+  }
 
   return (
     <Container maxWidth="md" sx={{ mt: 4, mb: 6 }}>
@@ -109,78 +162,74 @@ const NotificationsManager = () => {
         </Typography>
       </Box>
 
-      <List
-        sx={{
-          bgcolor: "#fff",
-          borderRadius: 2,
-          border: "1px solid #e2e8f0",
-          overflow: "hidden",
-        }}
-      >
-        {categories.map((cat, idx) => {
-          const Icon = cat.icon;
-          return (
-            <React.Fragment key={cat.id}>
-              {idx > 0 && <Divider />}
-              <ListItem sx={{ py: 2.5, px: 3, alignItems: "flex-start" }}>
-                <ListItemAvatar>
-                  <Avatar sx={{ bgcolor: `${cat.color}1a`, color: cat.color }}>
-                    <Icon />
-                  </Avatar>
-                </ListItemAvatar>
+      {loading ? (
+        <Box display="flex" justifyContent="center" py={6}>
+          <CircularProgress />
+        </Box>
+      ) : (
+        <List
+          sx={{
+            bgcolor: "#fff",
+            borderRadius: 2,
+            border: "1px solid #e2e8f0",
+            overflow: "hidden",
+          }}
+        >
+          <ListItem sx={{ py: 2.5, px: 3, alignItems: "flex-start" }}>
+            <ListItemAvatar>
+              <Avatar sx={{ bgcolor: `${CATEGORY.color}1a`, color: CATEGORY.color }}>
+                <Icon />
+              </Avatar>
+            </ListItemAvatar>
 
-                <ListItemText
-                  sx={{ mr: 2 }}
-                  primary={
-                    <Typography fontWeight={800} color="#0f172a">
-                      {cat.nombre}
-                    </Typography>
-                  }
-                  secondary={
-                    <>
-                      <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                        {cat.descripcion}
+            <ListItemText
+              sx={{ mr: 2 }}
+              primary={
+                <Typography fontWeight={800} color="#0f172a">
+                  {CATEGORY.nombre}
+                </Typography>
+              }
+              secondary={
+                <>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                    {CATEGORY.descripcion}
+                  </Typography>
+                  <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                    {subscribers.length === 0 ? (
+                      <Typography variant="caption" color="text.disabled">
+                        Sin usuarios asignados
                       </Typography>
-                      <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                        {cat.users.length === 0 ? (
-                          <Typography variant="caption" color="text.disabled">
-                            Sin usuarios asignados
-                          </Typography>
-                        ) : (
-                          cat.users.map((u) => (
-                            <Chip
-                              key={u.id}
-                              label={u.name}
-                              size="small"
-                              onDelete={() => handleRemoveUser(cat.id, u.id)}
-                              sx={{ mb: 0.5 }}
-                            />
-                          ))
-                        )}
-                      </Stack>
-                    </>
-                  }
-                />
+                    ) : (
+                      subscribers.map((u) => (
+                        <Chip
+                          key={u.id}
+                          label={u.name || u.user}
+                          size="small"
+                          onDelete={() => handleRemoveUser(u)}
+                          sx={{ mb: 0.5 }}
+                        />
+                      ))
+                    )}
+                  </Stack>
+                </>
+              }
+            />
 
-                <Button
-                  variant="outlined"
-                  size="small"
-                  startIcon={<PersonAddIcon />}
-                  onClick={() => handleOpenAddUser(cat)}
-                  sx={{ whiteSpace: "nowrap", mt: 0.5 }}
-                >
-                  Agregar usuario
-                </Button>
-              </ListItem>
-            </React.Fragment>
-          );
-        })}
-      </List>
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<PersonAddIcon />}
+              onClick={handleOpenAddUser}
+              sx={{ whiteSpace: "nowrap", mt: 0.5 }}
+            >
+              Agregar usuario
+            </Button>
+          </ListItem>
+        </List>
+      )}
 
-      <Dialog open={!!addUserFor} onClose={handleCloseAddUser} maxWidth="xs" fullWidth>
-        <DialogTitle>
-          Agregar usuario a {addUserFor?.nombre}
-        </DialogTitle>
+      <Dialog open={addUserOpen} onClose={handleCloseAddUser} maxWidth="xs" fullWidth>
+        <DialogTitle>Agregar usuario a {CATEGORY.nombre}</DialogTitle>
         <DialogContent>
           <TextField
             fullWidth
@@ -197,26 +246,27 @@ const NotificationsManager = () => {
               ),
             }}
           />
-          <List dense sx={{ maxHeight: 280, overflowY: "auto" }}>
-            {availableUsers.length === 0 && (
-              <Typography variant="body2" color="text.secondary" sx={{ px: 1, py: 2, textAlign: "center" }}>
-                No hay usuarios disponibles.
-              </Typography>
-            )}
-            {availableUsers.map((u) => (
-              <ListItem
-                key={u.id}
-                button
-                onClick={() => handleAddUser(u)}
-                sx={{ borderRadius: 1 }}
-              >
-                <ListItemAvatar>
-                  <Avatar sx={{ width: 32, height: 32 }}>{u.name.charAt(0)}</Avatar>
-                </ListItemAvatar>
-                <ListItemText primary={u.name} />
-              </ListItem>
-            ))}
-          </List>
+          {loadingAvailable ? (
+            <Box display="flex" justifyContent="center" py={3}>
+              <CircularProgress size={28} />
+            </Box>
+          ) : (
+            <List dense sx={{ maxHeight: 280, overflowY: "auto" }}>
+              {filteredAvailable.length === 0 && (
+                <Typography variant="body2" color="text.secondary" sx={{ px: 1, py: 2, textAlign: "center" }}>
+                  No hay usuarios disponibles.
+                </Typography>
+              )}
+              {filteredAvailable.map((u) => (
+                <ListItem key={u.id} button onClick={() => handleAddUser(u)} sx={{ borderRadius: 1 }}>
+                  <ListItemAvatar>
+                    <Avatar sx={{ width: 32, height: 32 }}>{(u.name || u.user).charAt(0)}</Avatar>
+                  </ListItemAvatar>
+                  <ListItemText primary={u.name || u.user} />
+                </ListItem>
+              ))}
+            </List>
+          )}
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseAddUser}>Cerrar</Button>
