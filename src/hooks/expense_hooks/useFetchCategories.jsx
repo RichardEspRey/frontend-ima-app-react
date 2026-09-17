@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 
+import { postConReintento } from '../../utils/peticionConReintento';
+
 // SUGERENCIA: Renombrar la función para que sea más descriptiva
 function useFetchCategories() {
   const apiHost = import.meta.env.VITE_API_HOST;
@@ -14,12 +16,7 @@ function useFetchCategories() {
       const formData = new FormData();
       formData.append('op', 'getCategories');
 
-      const response = await fetch(`${apiHost}/save_expense.php`, {
-        method: 'POST',
-        body: formData,
-      });
-
-      const data = await response.json();
+      const data = await postConReintento(`${apiHost}/save_expense.php`, formData);
 
       
       if (data.status === 'success' && Array.isArray(data.data)) {

@@ -17,6 +17,7 @@ import './css/EditTripForm.css';
 import EditTripHeader from '../components/EditTripForm/EditTripHeader';
 import StageList from '../components/EditTripForm/StageList';
 import ModalsContainer from '../components/EditTripForm/ModalsContainer';
+import { esDtopsConGasto } from '../utils/gastoDtops';
 import InvoiceModal from '../components/InvoiceModal';
 
 const EditTripForm = () => {
@@ -54,6 +55,7 @@ const EditTripForm = () => {
     const [modalTarget, setModalTarget] = useState({ stageIndex: null, docType: null, stopIndex: null });
     const [mostrarFechaVencimientoModal, setMostrarFechaVencimientoModal] = useState(true);
     const [isModalCajaExternaOpen, setIsModalCajaExternaOpen] = useState(false);
+    const [gastoDtops, setGastoDtops] = useState(null);
     const [invoiceModalOpen, setInvoiceModalOpen] = useState(false);
     const [selectedStageForInvoice, setSelectedStageForInvoice] = useState(null);
 
@@ -217,6 +219,8 @@ const EditTripForm = () => {
 
     const handleGuardarDocumento = (data) => {
         const { stageIndex, docType, stopIndex } = modalTarget;
+        const esDtopsDeEtapa = esDtopsConGasto({ docType, stopIndex, archivo: data?.file, pais: formData.country_code });
+        const dtopsPrevio = etapas[stageIndex]?.documentos?.DTOPS;
         setEtapas(prev => {
             const copy = [...prev];
             const newDoc = { fileName: data.fileName, vencimiento: data.vencimiento, file: data.file, hasNewFile: !!data.file, serverPath: null };
@@ -231,6 +235,10 @@ const EditTripForm = () => {
             return copy;
         });
         setModalAbierto(false);
+
+        if (esDtopsDeEtapa) {
+            setGastoDtops({ archivo: data.file, yaExistia: !!dtopsPrevio?.document_id });
+        }
     };
 
     const getCurrentDocValueForModal = () => {
@@ -386,6 +394,7 @@ const EditTripForm = () => {
                 modalAbierto={modalAbierto} setModalAbierto={setModalAbierto} setModalTarget={setModalTarget} handleGuardarDocumento={handleGuardarDocumento}
                 modalTarget={modalTarget} getCurrentDocValueForModal={getCurrentDocValueForModal} mostrarFechaVencimientoModal={mostrarFechaVencimientoModal}
                 isModalCajaExternaOpen={isModalCajaExternaOpen} setIsModalCajaExternaOpen={setIsModalCajaExternaOpen} handleSaveExternalCaja={handleSaveExternalCaja}
+                gastoDtops={gastoDtops} onCerrarGastoDtops={() => setGastoDtops(null)} tripNumber={formData.trip_number}
             />
 
             <InvoiceModal 
