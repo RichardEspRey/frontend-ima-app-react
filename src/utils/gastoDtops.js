@@ -1,4 +1,10 @@
-export const MONTOS_DTOPS = [20, 13];
+export const MONTOS_DTOPS = [20.8, 13.45];
+
+export const esDtopsConGasto = ({ docType, stopIndex, archivo, pais }) =>
+    docType === 'DTOPS'
+    && (stopIndex === null || stopIndex === undefined)
+    && archivo instanceof File
+    && pais === 'US';
 
 const NOMBRES_DTOPS = {
     tipo: 'documentos despacho',

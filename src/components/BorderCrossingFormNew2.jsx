@@ -10,6 +10,7 @@ import TripStageItem from './BorderCrossingFormNew2/TripStageItem';
 import ModalArchivo from './ModalArchivo'; 
 import ModalCajaExterna from './ModalCajaExterna'; 
 import ModalGastoDtops from './BorderCrossingFormNew2/ModalGastoDtops'; 
+import { esDtopsConGasto } from '../utils/gastoDtops';
 
 // Hooks
 import useFetchActiveDrivers from '../hooks/useFetchActiveDrivers';
@@ -118,10 +119,7 @@ const BorderCrossingFormNew2 = ({ teamId, tripNumber, countryCode, tripYear, isT
         const { stageIndex, docType, stopIndex } = modalTarget;
         if (stageIndex === null || !docType) return;
 
-        const esDtopsDeEtapa = docType === 'DTOPS'
-            && (stopIndex === null || stopIndex === undefined)
-            && data?.file instanceof File
-            && countryCode === 'US';
+        const esDtopsDeEtapa = esDtopsConGasto({ docType, stopIndex, archivo: data?.file, pais: countryCode });
         const dtopsPrevio = etapas[stageIndex]?.documentos?.DTOPS;
 
         setEtapas(prev => {
