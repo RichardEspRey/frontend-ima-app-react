@@ -665,6 +665,19 @@ const TripAdmin = () => {
                     </Typography>
                 </Box>
 
+                <Button
+                    variant="outlined"
+                    startIcon={<Inventory2OutlinedIcon />}
+                    onClick={() => navigate('/estatus-cajas')}
+                    sx={{
+                        borderColor: '#cbd5e1', color: '#334155', bgcolor: 'white', fontWeight: 700,
+                        borderRadius: 2, px: 3, py: 1.1, textTransform: 'none', boxShadow: 'none',
+                        '&:hover': { borderColor: '#94a3b8', bgcolor: '#f8fafc' },
+                    }}
+                >
+                    Estatus de cajas
+                </Button>
+
                 {(isAdmin || userPermissions?.viajes_crear) && (
                     <Button
                         variant="contained"
