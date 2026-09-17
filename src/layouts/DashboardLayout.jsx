@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 import { Box } from '@mui/material';
 import { toast } from 'react-toastify';
 import Sidebar from '../components/Sidebar';
@@ -10,7 +10,6 @@ import notiSound from '../assets/sounds/update.mp3';
 
 const DashboardLayout = () => {
   const { user, fetchPermissions } = useAuthStore();
-  const seenNotificationIds = useRef(new Set());
 
   useEffect(() => {
     if (!user?.id) return;
@@ -30,7 +29,7 @@ const DashboardLayout = () => {
     const pollNotifications = async () => {
       try {
         const formData = new FormData();
-        formData.append('op', 'getAll');
+        formData.append('op', 'getNew');
         formData.append('user_id', user.id);
 
         const response = await fetch(`${apiHost}/Notifications.php`, {
@@ -39,16 +38,10 @@ const DashboardLayout = () => {
         });
         const data = await response.json();
 
-        if (data.status !== 'success' || !Array.isArray(data.notifications)) return;
+        if (data.status !== 'success' || !Array.isArray(data.notifications) || data.notifications.length === 0) return;
 
-        const nuevas = data.notifications.filter(
-          (n) => !seenNotificationIds.current.has(n.id)
-        );
-        if (nuevas.length === 0) return;
-
-        nuevas.forEach((n) => {
-          seenNotificationIds.current.add(n.id);
-          toast.info(n.mensaje, { position: 'top-right' });
+        data.notifications.forEach((n) => {
+          toast.info(n.Mensaje, { position: 'top-right' });
         });
 
         new Audio(notiSound).play();

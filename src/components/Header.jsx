@@ -1,6 +1,7 @@
 import React from "react";
 import { Box, Avatar, Typography, Stack, Paper } from "@mui/material";
 import { useAuthStore } from "../store/useAuthStore";
+import NotificationBell from "./NotificationBell";
 
 const Header = () => {
   const { user } = useAuthStore();
@@ -24,8 +25,12 @@ const Header = () => {
         zIndex: 10
       }}
     >
-      <Stack direction="row" spacing={2} alignItems="center" sx={{ cursor: 'pointer' }}>
-        
+      <Stack direction="row" spacing={2} alignItems="center">
+
+        <NotificationBell />
+
+        <Stack direction="row" spacing={2} alignItems="center" sx={{ cursor: 'pointer' }}>
+
         <Box sx={{ textAlign: 'right' }}>
           <Typography variant="subtitle2" fontWeight={800} color="#0f172a" lineHeight={1.2}>
             {userName}
@@ -53,6 +58,7 @@ const Header = () => {
           {userInitial}
         </Avatar>
 
+        </Stack>
       </Stack>
     </Paper>
   );
