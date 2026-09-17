@@ -43,9 +43,11 @@ export { ORDEN_ACCESSORS, ordenarGastos, siguienteOrden } from "./model/orden"
 
 export {
   MONTOS_DTOPS,
+  DOCUMENTO_DTOPS,
   SUBCATEGORIA_DTOPS,
   PAIS_DTOPS,
   MONEDA_DTOPS,
+  requiereGastoDtops,
   resolverClasificacionDtops,
   montoDtopsValido,
   construirGastoDtops,

@@ -4,6 +4,7 @@ import {
   MONTOS_DTOPS,
   construirGastoDtops,
   montoDtopsValido,
+  requiereGastoDtops,
   resolverClasificacionDtops,
 } from "../model/dtops"
 
@@ -43,6 +44,40 @@ describe("resolverClasificacionDtops, contra el catálogo real", () => {
   it("devuelve null con los catálogos vacíos o sin argumentos", () => {
     expect(resolverClasificacionDtops([], [], [])).toBeNull()
     expect(resolverClasificacionDtops()).toBeNull()
+  })
+})
+
+describe("MONTOS_DTOPS", () => {
+  it("ofrece los importes vigentes del DTOPS, con centavos", () => {
+    expect(MONTOS_DTOPS).toEqual([20.8, 13.45])
+  })
+})
+
+describe("requiereGastoDtops", () => {
+  const archivo = new File(["x"], "dtops.pdf", { type: "application/pdf" })
+  const subida = { tipoDocumento: "DTOPS", indiceParada: null, archivo, pais: "US" }
+
+  it("pide el gasto al subir el DTOPS de una etapa en un viaje de Estados Unidos", () => {
+    expect(requiereGastoDtops(subida)).toBe(true)
+    expect(requiereGastoDtops({ ...subida, indiceParada: undefined })).toBe(true)
+  })
+
+  it("no lo pide para otro documento", () => {
+    expect(requiereGastoDtops({ ...subida, tipoDocumento: "doda" })).toBe(false)
+    expect(requiereGastoDtops({ ...subida, tipoDocumento: "dtops" })).toBe(false)
+  })
+
+  it("no lo pide si el documento es de una parada", () => {
+    expect(requiereGastoDtops({ ...subida, indiceParada: 0 })).toBe(false)
+  })
+
+  it("no lo pide sin un archivo nuevo", () => {
+    expect(requiereGastoDtops({ ...subida, archivo: undefined })).toBe(false)
+    expect(requiereGastoDtops({ ...subida, archivo: "dtops.pdf" })).toBe(false)
+  })
+
+  it("no lo pide en un viaje de México", () => {
+    expect(requiereGastoDtops({ ...subida, pais: "MX" })).toBe(false)
   })
 })
 
@@ -122,5 +157,19 @@ describe("construirGastoDtops", () => {
     })
     expect(sinTicket.ticket_jpg_file).toBeUndefined()
     expect(sinTicket.generalData.monto_total).toBe("13.00")
+  })
+
+  it("conserva los centavos de los importes de los botones", () => {
+    const [mayor, menor] = MONTOS_DTOPS.map((monto) =>
+      construirGastoDtops({
+        monto,
+        fecha: "2026-09-17",
+        viaje: "1042",
+        usuarioId: "7",
+        clasificacion: CLASIFICACION,
+      }),
+    )
+    expect(mayor.generalData.monto_total).toBe("20.80")
+    expect(menor.detailsData[0].precio_unitario).toBe("13.45")
   })
 })

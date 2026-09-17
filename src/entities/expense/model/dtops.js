@@ -3,7 +3,14 @@
  *
  * @type {Array.<number>}
  */
-export const MONTOS_DTOPS = [20, 13]
+export const MONTOS_DTOPS = [20.8, 13.45]
+
+/**
+ * La clave con la que una etapa de cruce guarda su DTOPS.
+ *
+ * @type {string}
+ */
+export const DOCUMENTO_DTOPS = "DTOPS"
 
 /**
  * La subcategoría con la que un DTOPS entra a Expense Manager.
@@ -57,6 +64,28 @@ export function resolverClasificacionDtops(tipos = [], categorias = [], subcateg
     id_categoria_mantenimiento: categoria.value,
     id_subcategoria_mantenimiento: subcategoria.value,
   }
+}
+
+/**
+ * Decide si un documento recién subido a un viaje genera el gasto de un DTOPS.
+ *
+ * Solo cuenta el DTOPS de la etapa, no el de una parada, con un archivo nuevo
+ * y en un viaje de Estados Unidos. Da igual en qué estado esté el viaje.
+ *
+ * @param {object} subida El documento que se acaba de subir.
+ * @param {string} subida.tipoDocumento Clave del documento en la etapa.
+ * @param {(number|null)} [subida.indiceParada] La parada, si el documento es de una.
+ * @param {File} [subida.archivo] El archivo elegido.
+ * @param {string} subida.pais País del viaje.
+ * @returns {boolean} `true` si hay que ofrecer el alta del gasto.
+ */
+export function requiereGastoDtops({ tipoDocumento, indiceParada, archivo, pais }) {
+  return (
+    tipoDocumento === DOCUMENTO_DTOPS &&
+    (indiceParada === null || indiceParada === undefined) &&
+    archivo instanceof File &&
+    pais === PAIS_DTOPS
+  )
 }
 
 /**

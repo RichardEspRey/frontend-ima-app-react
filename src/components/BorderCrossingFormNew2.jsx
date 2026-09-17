@@ -10,7 +10,7 @@ import ModalArchivo from './ModalArchivo';
 import ModalCajaExterna from './ModalCajaExterna'; 
 
 import { useCompanias } from '../entities/company';
-import { ModalGastoDtops } from '../features/gasto-dtops';
+import { ModalGastoDtops, useGastoDtopsPendiente } from '../features/gasto-dtops';
 import { useConductoresActivos } from '../entities/driver';
 import { useCajasActivas, useCajasExternasActivas } from '../entities/trailer';
 import { useCamionesActivos } from '../entities/truck';
@@ -52,7 +52,7 @@ const BorderCrossingFormNew2 = ({ teamId, tripNumber, countryCode, tripYear, isT
     const [modalTarget, setModalTarget] = useState({ stageIndex: null, docType: null, stopIndex: null });
     const [mostrarFechaVencimientoModal, setMostrarFechaVencimientoModal] = useState(false);
     const [IsModalCajaExternaOpen, setIsModalCajaExternaOpen] = useState(false);
-    const [gastoDtops, setGastoDtops] = useState(null);
+    const gastoDtops = useGastoDtopsPendiente();
 
     const [isCreatingCompany, setIsCreatingCompany] = useState(false);
     const [isCreatingWarehouse, setIsCreatingWarehouse] = useState(false);
@@ -108,11 +108,7 @@ const BorderCrossingFormNew2 = ({ teamId, tripNumber, countryCode, tripYear, isT
         const { stageIndex, docType, stopIndex } = modalTarget;
         if (stageIndex === null || !docType) return;
 
-        const esDtopsDeEtapa = docType === 'DTOPS'
-            && (stopIndex === null || stopIndex === undefined)
-            && data?.file instanceof File
-            && countryCode === 'US';
-        const dtopsPrevio = etapas[stageIndex]?.documentos?.DTOPS;
+        const anterior = etapas[stageIndex]?.documentos?.[docType];
 
         setEtapas(prev => {
             const up = [...prev];
@@ -140,9 +136,14 @@ const BorderCrossingFormNew2 = ({ teamId, tripNumber, countryCode, tripYear, isT
         setModalAbierto(false); 
         setModalTarget({ stageIndex: null, docType: null, stopIndex: null });
 
-        if (esDtopsDeEtapa) {
-            setGastoDtops({ archivo: data.file, yaExistia: !!dtopsPrevio?.document_id });
-        }
+        gastoDtops.alSubirDocumento({
+            tipoDocumento: docType,
+            indiceParada: stopIndex,
+            archivo: data?.file,
+            pais: countryCode,
+            viaje: formData.trip_number,
+            anterior,
+        });
     };
 
     const handleCreateCompany = async (inputValue, stageIndex) => {
@@ -347,13 +348,13 @@ const BorderCrossingFormNew2 = ({ teamId, tripNumber, countryCode, tripYear, isT
                 <ModalCajaExterna isOpen={IsModalCajaExternaOpen} onClose={() => setIsModalCajaExternaOpen(false)} onSave={handleSaveExternalCaja} />
             )}
 
-            {gastoDtops && (
+            {gastoDtops.pendiente && (
                 <ModalGastoDtops
                     abierto
-                    onCerrar={() => setGastoDtops(null)}
-                    archivo={gastoDtops.archivo}
-                    yaExistia={gastoDtops.yaExistia}
-                    viaje={formData.trip_number}
+                    onCerrar={gastoDtops.cerrar}
+                    archivo={gastoDtops.pendiente.archivo}
+                    yaExistia={gastoDtops.pendiente.yaExistia}
+                    viaje={gastoDtops.pendiente.viaje}
                 />
             )}
         </Box>

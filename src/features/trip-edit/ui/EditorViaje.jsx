@@ -81,11 +81,15 @@ const fechaApi = (fecha) => (fecha ? format(fecha, "yyyy-MM-dd") : null)
  * de qué catálogos se sirve y con qué operación guarda. Todo eso lo dice ahora
  * el modo.
  *
+ * Cada documento que se sube se anuncia con `onDocumentoSubido`, para que la
+ * página enganche lo que dependa de él sin que el editor lo conozca.
+ *
  * @param {object} props Propiedades del componente.
  * @param {string} props.modo Un valor de `MODO_EDICION`.
+ * @param {Function} [props.onDocumentoSubido] Recibe el documento subido con el contexto del viaje.
  * @returns {object} La pantalla renderizada.
  */
-export function EditorViaje({ modo }) {
+export function EditorViaje({ modo, onDocumentoSubido }) {
   const { tripId } = useParams()
   const navigate = useNavigate()
   const ajustes = ajustesDe(modo)
@@ -284,6 +288,7 @@ export function EditorViaje({ modo }) {
 
   const guardarDocumento = (datos) => {
     const { stageIndex, docType, stopIndex } = documentoEnModal
+    const anterior = documentoActual()
 
     setEtapas((previas) => {
       const copia = [...previas]
@@ -312,6 +317,15 @@ export function EditorViaje({ modo }) {
     })
 
     setModalDocumento(false)
+
+    onDocumentoSubido?.({
+      tipoDocumento: docType,
+      indiceParada: stopIndex,
+      archivo: datos.file,
+      pais: datosViaje.country_code,
+      viaje: datosViaje.trip_number,
+      anterior,
+    })
   }
 
   const documentoActual = () => {
