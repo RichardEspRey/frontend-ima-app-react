@@ -3,6 +3,7 @@ name: Publicar
 on:
   push:
     tags: ['v*']
+  workflow_call:
   workflow_dispatch:
 
 concurrency:
@@ -19,7 +20,7 @@ jobs:
     timeout-minutes: 30
 
     steps:
-      - name: Traer el código del tag
+      - name: Traer el código
         uses: actions/checkout@v4
 
       - name: El secreto tiene que existir
@@ -79,12 +80,14 @@ jobs:
         id: tipo
         shell: bash
         run: |
-          if [[ "${GITHUB_REF_NAME}" == *-* ]]; then
+          version="$(node -p "require('./package.json').version")"
+
+          if [[ "$version" == *-* ]]; then
             echo "prerelease=true" >> "$GITHUB_OUTPUT"
-            echo "Este tag sale como prerelease: nadie lo recibirá."
+            echo "La versión $version lleva guion: sale como prerelease y nadie la recibirá."
           else
             echo "prerelease=false" >> "$GITHUB_OUTPUT"
-            echo "Este tag sale como release: lo verán todas las máquinas."
+            echo "La versión $version sale como release: la verán todas las máquinas."
           fi
 
       - name: Crear el instalador y publicarlo

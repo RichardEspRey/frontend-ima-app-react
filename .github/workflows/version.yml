@@ -1,0 +1,53 @@
+name: Versión
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: version-main
+  cancel-in-progress: false
+
+jobs:
+  detectar:
+    name: ¿Cambió la versión?
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      cambio: ${{ steps.comparar.outputs.cambio }}
+      version: ${{ steps.comparar.outputs.version }}
+
+    steps:
+      - name: Traer el código
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Comparar package.json contra el commit anterior
+        id: comparar
+        run: |
+          actual="$(node -p "require('./package.json').version")"
+
+          if git show HEAD~1:package.json > /tmp/anterior.json 2>/dev/null; then
+            anterior="$(node -p "require('/tmp/anterior.json').version")"
+          else
+            anterior=""
+          fi
+
+          echo "version=$actual" >> "$GITHUB_OUTPUT"
+          echo "antes: ${anterior:-ninguna} · ahora: $actual"
+
+          if [ "$actual" = "$anterior" ]; then
+            echo "cambio=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::La versión no cambió ($actual). No se publica nada."
+          else
+            echo "cambio=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::La versión pasó de ${anterior:-ninguna} a $actual. Se publica."
+          fi
+
+  publicar:
+    name: Publicar la versión nueva
+    needs: detectar
+    if: needs.detectar.outputs.cambio == 'true'
+    uses: ./.github/workflows/publicar.yml
+    secrets: inherit
