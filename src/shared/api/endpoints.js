@@ -30,6 +30,7 @@ export const ENDPOINTS = {
   inspecciones: "inspecciones.php",
   inventario: "inventory.php",
   movil: "Mobile.php",
+  notificaciones: "Notifications.php",
   nuevosViajes: "new_trips.php",
   nuevosViajesV2: "new_tripsv2.php",
   pagosAdmin: "pagos_admin.php",

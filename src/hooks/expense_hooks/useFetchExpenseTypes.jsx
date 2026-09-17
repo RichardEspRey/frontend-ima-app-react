@@ -1,40 +1,19 @@
-import { useState, useEffect } from 'react';
+import { CATALOGO_GASTOS, useCatalogoGastos } from "../../entities/expense"
 
+const VACIO = []
+
+/**
+ * Puente: los tipos de gasto con la forma que esperan las pantallas sin migrar.
+ *
+ * Por debajo ya es TanStack Query, así que el catálogo se cachea, se comparte
+ * entre las pantallas que lo pidan y **se reintenta solo** cuando el host falla,
+ * que era lo que este hook resolvía a mano en la rama de trabajo.
+ *
+ * @returns {object} `{ expenseTypes, loading, error }`.
+ */
 const useFetchExpenseTypes = () => {
-    const apiHost = import.meta.env.VITE_API_HOST;
-    const [expenseTypes, setExpenseTypes] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+  const { data, isLoading, error } = useCatalogoGastos(CATALOGO_GASTOS.TIPOS)
+  return { expenseTypes: data ?? VACIO, loading: isLoading, error: error ? error.message : null }
+}
 
-    useEffect(() => {
-        const fetchTypes = async () => {
-            try {
-                const formData = new FormData();
-                formData.append('op', 'getExpenseTypes');
-
-                const response = await fetch(`${apiHost}/save_expense.php`, {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                const result = await response.json();
-
-                if (result.status === 'success') {
-                    setExpenseTypes(result.data);
-                } else {
-                    throw new Error(result.message || 'Error fetching expense types');
-                }
-            } catch (err) {
-                setError(err.message);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchTypes();
-    }, []);
-
-    return { expenseTypes, loading, error };
-};
-
-export default useFetchExpenseTypes;
+export default useFetchExpenseTypes

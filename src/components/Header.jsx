@@ -1,6 +1,7 @@
 import React from "react";
 import { Box, Avatar, Typography, Stack, Paper } from "@mui/material";
 import { useAuthStore } from "../store/useAuthStore";
+import { CampanaNotificaciones } from "../features/notifications";
 import { COLOR } from "../shared/ui/tokens";
 
 const Header = () => {
@@ -25,8 +26,12 @@ const Header = () => {
         zIndex: 10
       }}
     >
-      <Stack direction="row" spacing={2} alignItems="center" sx={{ cursor: 'pointer' }}>
-        
+      <Stack direction="row" spacing={2} alignItems="center">
+
+        <CampanaNotificaciones />
+
+        <Stack direction="row" spacing={2} alignItems="center" sx={{ cursor: 'pointer' }}>
+
         <Box sx={{ textAlign: 'right' }}>
           <Typography variant="subtitle2" fontWeight={800} color={COLOR.TINTA} lineHeight={1.2}>
             {userName}
@@ -54,6 +59,7 @@ const Header = () => {
           {userInitial}
         </Avatar>
 
+        </Stack>
       </Stack>
     </Paper>
   );

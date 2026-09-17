@@ -11,7 +11,7 @@ import GeneralTripInfo from "../../../components/trip-form/GeneralTripInfo"
 import GeneralTripInfoComplete from "../../../components/trip-form/GeneralTripInfoComplete"
 
 import { useCompanias, useCrearCompania } from "../../../entities/company"
-import { useConductoresActivos, useConductoresActivosCompletos } from "../../../entities/driver"
+import { useConductoresActivos } from "../../../entities/driver"
 import { useCajasActivas, useCajasActivasCompletas, useCajasExternasActivas, useCrearCajaExterna } from "../../../entities/trailer"
 import {
   etapasDesdeApi,
@@ -115,14 +115,12 @@ export function EditorViaje({ modo, onDocumentoSubido }) {
   const { data: viaje, isLoading, error, refetch: recargar } = useViajeUpcoming(tripId)
   const guardarViaje = useGuardarViajeUpcoming()
 
-  const conductoresNormales = useConductoresActivos()
-  const conductoresCompletos = useConductoresActivosCompletos()
+  const conductores = useConductoresActivos()
   const camionesNormales = useCamionesActivos()
   const camionesCompletos = useCamionesActivosCompletos()
   const cajasNormales = useCajasActivas()
   const cajasCompletas = useCajasActivasCompletas()
 
-  const conductores = ajustes.catalogosCompletos ? conductoresCompletos : conductoresNormales
   const camiones = ajustes.catalogosCompletos ? camionesCompletos : camionesNormales
   const cajas = ajustes.catalogosCompletos ? cajasCompletas : cajasNormales
 

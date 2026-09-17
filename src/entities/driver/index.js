@@ -1,1 +1,1 @@
-export { obtenerConductoresActivos, useConductoresActivos, obtenerConductoresActivosCompletos, useConductoresActivosCompletos } from "./api/conductores"
+export { obtenerConductoresActivos, useConductoresActivos } from "./api/conductores"

@@ -1,35 +1,24 @@
-import { useState, useEffect } from 'react';
+import { CATALOGO_GASTOS, useCatalogoGastos } from "../../entities/expense"
 
-const useFetchSubcategories = () => {
-    const apiHost = import.meta.env.VITE_API_HOST;
-    const [subcategories, setSubcategories] = useState([]);
-    const [loading, setLoading] = useState(true);
+const VACIO = []
 
-    useEffect(() => {
-        const fetchAllSubcategories = async () => {
-            const formData = new FormData();
-            formData.append('op', 'getAllSubcategories'); 
+/**
+ * Puente: las subcategorías de mantenimiento con la forma que esperan las
+ * pantallas sin migrar.
+ *
+ * Por debajo ya es TanStack Query: caché compartida y reintento automático
+ * cuando el host falla.
+ *
+ * @returns {object} `{ subcategories, loading, error, refetch }`.
+ */
+function useFetchSubcategories() {
+  const { data, isLoading, error, refetch } = useCatalogoGastos(CATALOGO_GASTOS.SUBCATEGORIAS)
+  return {
+    subcategories: data ?? VACIO,
+    loading: isLoading,
+    error: error ? error.message : null,
+    refetch,
+  }
+}
 
-            try {
-                const response = await fetch(`${apiHost}/save_expense.php`, {
-                    method: 'POST',
-                    body: formData,
-                });
-                const result = await response.json();
-                if (result.status === 'success') {
-                    setSubcategories(result.data);
-                }
-            } catch (error) {
-                console.error("Error fetching all subcategories:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchAllSubcategories();
-    }, []);
-
-    return { subcategories, loading };
-};
-
-export default useFetchSubcategories;
+export default useFetchSubcategories

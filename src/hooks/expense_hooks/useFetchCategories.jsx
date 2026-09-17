@@ -1,52 +1,34 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useMemo } from "react"
 
+import { CATALOGO_GASTOS, useCatalogoGastos } from "../../entities/expense"
+
+const VACIO = []
+
+/**
+ * Puente: las categorías de mantenimiento con la forma que esperan las
+ * pantallas sin migrar.
+ *
+ * Conserva la proyección del original (`value`, `label`, `id_tipo_gasto`) para
+ * que ningún consumidor reciba campos que antes no le llegaban, y hereda del
+ * cliente de consultas la caché y los reintentos.
+ *
+ * @returns {object} `{ maintenanceCategories, loading, error, refetch }`.
+ */
 function useFetchCategories() {
-  const apiHost = import.meta.env.VITE_API_HOST;
-  const [maintenanceCategories, setMaintenanceCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { data, isLoading, error, refetch } = useCatalogoGastos(CATALOGO_GASTOS.CATEGORIAS)
 
-  const fetchCategories = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const formData = new FormData();
-      formData.append('op', 'getCategories');
+  const maintenanceCategories = useMemo(
+    () =>
+      (data ?? VACIO).map(({ value, label, id_tipo_gasto }) => ({ value, label, id_tipo_gasto })),
+    [data],
+  )
 
-      const response = await fetch(`${apiHost}/save_expense.php`, {
-        method: 'POST',
-        body: formData,
-      });
-
-      const data = await response.json();
-
-      
-      if (data.status === 'success' && Array.isArray(data.data)) {
-        
-      
-        const formattedCategories = data.data.map(category => ({
-          value: category.value, 
-          label: category.label,      
-          id_tipo_gasto: category.id_tipo_gasto 
-        }));
-        setMaintenanceCategories(formattedCategories);
-
-      } else {
-        setError(data.message || 'Error al obtener las categorías de mantenimiento');
-      }
-    } catch (err) {
-      console.error("Fetch error:", err);
-      setError('Error de red al obtener las categorías');
-    } finally {
-      setLoading(false);
-    }
-  }, [apiHost]); 
-
-  useEffect(() => {
-    fetchCategories();
-  }, [fetchCategories]); 
-
-  return { maintenanceCategories, loading, error, refetch: fetchCategories };
+  return {
+    maintenanceCategories,
+    loading: isLoading,
+    error: error ? error.message : null,
+    refetch,
+  }
 }
 
-export default useFetchCategories;
+export default useFetchCategories

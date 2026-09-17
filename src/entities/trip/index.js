@@ -66,3 +66,5 @@ export {
   useViajes,
   useAccionViaje,
 } from "./api/viajes"
+
+export { STATUS_CAJA_POR_PAIS, statusCajaDe, statusCajaValido } from "./model/statusCaja"

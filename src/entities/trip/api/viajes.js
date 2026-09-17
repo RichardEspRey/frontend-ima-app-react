@@ -20,6 +20,7 @@ export const llaveViajes = (consulta) => ["viajes", "lista", consulta]
  */
 export const ACCION_VIAJE = {
   CASI_FINALIZADO: { op: "AlmostOverTrip", endpoint: ENDPOINTS.nuevosViajes },
+  STATUS_CAJA: { op: "add_status_caja_trips", endpoint: ENDPOINTS.nuevosViajesV2 },
   FINALIZAR: { op: "FinalizeTrip", endpoint: ENDPOINTS.nuevosViajes },
   REACTIVAR: { op: "activate_trip", endpoint: ENDPOINTS.nuevosViajes },
   ELIMINAR: { op: "delete_trip", endpoint: ENDPOINTS.nuevosViajes },

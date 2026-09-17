@@ -25,7 +25,7 @@ export const TripExpandedDetails = ({
             Acciones Rápidas
           </Typography>
           <Stack direction="row" spacing={1.5}>
-            <Button size="small" variant="outlined" startIcon={<HourglassBottomIcon />} onClick={() => onAlmostOver(trip.trip_id, trip.trip_number)} disabled={trip.status === 'Almost Over'}
+            <Button size="small" variant="outlined" startIcon={<HourglassBottomIcon />} onClick={() => onAlmostOver(trip.trip_id, trip.trip_number, trip.country_code)} disabled={trip.status === 'Almost Over'}
               sx={{ ...actionBtnSx, borderColor: COLOR.BORDE_FUERTE, color: COLOR.TEXTO }}>
               Marcar Almost Over
             </Button>

@@ -34,6 +34,7 @@ import {
   FiltrosViajes,
   MapaRutaCamion,
   ModalProgramacion,
+  ModalStatusCaja,
   TablaProgramaciones,
   TablaViajes,
 } from "../../features/trips-admin"
@@ -130,6 +131,7 @@ export default function AdminViajesPage() {
   const [modalCajaExterna, setModalCajaExterna] = useState(false)
   const [viajeEnReparacion, setViajeEnReparacion] = useState(null)
   const [viajeEnInspeccion, setViajeEnInspeccion] = useState(null)
+  const [viajeParaStatusCaja, setViajeParaStatusCaja] = useState(null)
 
   const [rutaSeleccionada, setRutaSeleccionada] = useState(null)
   const [trazo, setTrazo] = useState(null)
@@ -195,6 +197,23 @@ export default function AdminViajesPage() {
     } catch (fallo) {
       notify.error(fallo)
     }
+  }
+
+  const registrarStatusCaja = async (status) => {
+    const { tripId, numero } = viajeParaStatusCaja
+
+    try {
+      await accion.mutateAsync({
+        accion: ACCION_VIAJE.STATUS_CAJA,
+        tripId,
+        extra: { status },
+      })
+    } catch (fallo) {
+      return notify.error(fallo)
+    }
+
+    setViajeParaStatusCaja(null)
+    return marcarCasiFinalizado(tripId, numero)
   }
 
   const marcarCasiFinalizado = (tripId, numero) =>
@@ -538,7 +557,8 @@ export default function AdminViajesPage() {
               onSummary: (tripId) => navigate(`/ResumenTrip/${tripId}`),
               onSpecialEdit: (tripId) => navigate(`/edit-trip-complete/${tripId}`),
               onDelete: eliminarViaje,
-              onAlmostOver: marcarCasiFinalizado,
+              onAlmostOver: (tripId, numero, pais) =>
+                setViajeParaStatusCaja({ tripId, numero, pais }),
               onFinalize: finalizar,
               onReactivate: reactivar,
               onSalida: darSalida,
@@ -590,6 +610,15 @@ export default function AdminViajesPage() {
         onClose={() => setViajeEnInspeccion(null)}
         onSuccess={() => setViajeEnInspeccion(null)}
         initialTrip={inspeccionInicial}
+      />
+
+      <ModalStatusCaja
+        abierto={Boolean(viajeParaStatusCaja)}
+        numeroViaje={viajeParaStatusCaja?.numero}
+        pais={viajeParaStatusCaja?.pais}
+        guardando={accion.isPending}
+        onCancelar={() => setViajeParaStatusCaja(null)}
+        onConfirmar={registrarStatusCaja}
       />
     </Box>
   )
