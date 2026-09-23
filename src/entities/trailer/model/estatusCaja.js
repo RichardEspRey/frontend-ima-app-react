@@ -45,6 +45,28 @@ export const OBSERVACION_CAJA = {
 export const OBSERVACIONES_CAJA = Object.values(OBSERVACION_CAJA)
 
 /**
+ * Cuánto texto cabe en el comentario de una caja.
+ *
+ * Es el largo de `caja_estatus.comentarios`. Vive aquí y no en la pantalla
+ * porque el recorte tiene que ser el mismo en el campo, en el envío y en la
+ * columna; si se separan, el texto se corta en el servidor sin avisar.
+ *
+ * @type {number}
+ */
+export const LARGO_COMENTARIO = 300
+
+/**
+ * Deja un comentario listo para guardar: sin espacios sobrantes y sin pasarse
+ * del largo de la columna.
+ *
+ * @param {*} texto Lo que se escribió.
+ * @returns {string} El comentario recortado; cadena vacía si no hay nada.
+ */
+export function recortarComentario(texto) {
+  return String(texto ?? "").trim().slice(0, LARGO_COMENTARIO)
+}
+
+/**
  * El tipo de documento con el que la fianza vive en el expediente de la caja.
  *
  * En la base aparece escrito de las dos formas, `Fianza` y `FIANZA`; el
@@ -65,7 +87,8 @@ const esquemaFianza = z.object({
  * Trae junto lo automático —el viaje en turno, su operador, la dirección de la
  * etapa y el broker— y lo capturado a mano. `ubicacion` y `observacion` ya
  * vienen resueltos por el endpoint: son lo manual mientras siga vigente, y lo
- * automático en cuanto deja de estarlo.
+ * automático en cuanto deja de estarlo. El comentario sigue la misma vigencia,
+ * pero sin equivalente automático: o hay nota, o no hay.
  */
 export const esquemaEstatusCaja = z.object({
   caja_id: z.coerce.number(),
@@ -75,6 +98,7 @@ export const esquemaEstatusCaja = z.object({
   trip_number: nullable(z.coerce.string()),
   ubicacion: z.string().catch(UBICACION_CAJA.PENSION),
   observacion: z.string().catch(OBSERVACION_CAJA.VACIA),
+  comentario: nullable(z.string()),
   ubicacion_auto: z.string().catch(UBICACION_CAJA.PENSION),
   observacion_auto: z.string().catch(OBSERVACION_CAJA.VACIA),
   manual: z.coerce.boolean().catch(false),
@@ -93,6 +117,7 @@ export const esquemaEstatusCaja = z.object({
  * @property {(string|null)} trip_number Número visible de ese viaje.
  * @property {string} ubicacion Dónde está, ya resuelto entre lo manual y lo automático.
  * @property {string} observacion Si va cargada o vacía, con la misma resolución.
+ * @property {(string|null)} comentario Nota libre del viaje en curso, o `null`.
  * @property {string} ubicacion_auto Lo que dirían los viajes si nadie capturara nada.
  * @property {string} observacion_auto Lo mismo para la observación.
  * @property {boolean} manual Si lo que se ve viene de una captura vigente.

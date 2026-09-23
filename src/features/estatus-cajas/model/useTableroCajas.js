@@ -35,8 +35,10 @@ export function useTableroCajas() {
       try {
         await guardado.mutateAsync({
           cajaId: caja.caja_id,
-          ubicacion: campo === "ubicacion" ? valor : caja.ubicacion,
-          observacion: campo === "observacion" ? valor : caja.observacion,
+          ubicacion: caja.ubicacion,
+          observacion: caja.observacion,
+          comentario: caja.comentario,
+          [campo]: valor,
           usuarioId: usuario?.id,
         })
       } catch (fallo) {

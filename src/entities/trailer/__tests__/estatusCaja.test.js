@@ -1,11 +1,13 @@
 import { describe, it, expect } from "vitest"
 import { ESTADO_DOCUMENTO } from "../../unit"
 import {
+  LARGO_COMENTARIO,
   OBSERVACION_CAJA,
   UBICACION_CAJA,
   contarPorObservacion,
   estadoFianza,
   normalizarEstatusCajas,
+  recortarComentario,
 } from "../model/estatusCaja"
 
 const HOY = new Date("2026-09-21T18:00:00")
@@ -18,6 +20,7 @@ const CAJA_API = {
   trip_number: "205",
   ubicacion: "RUTA SUBIENDO",
   observacion: "CARGADA",
+  comentario: "Revisar la puerta trasera",
   ubicacion_auto: "RUTA SUBIENDO",
   observacion_auto: "CARGADA",
   manual: false,
@@ -33,6 +36,13 @@ describe("normalizarEstatusCajas", () => {
     expect(cajas[0].caja_id).toBe(7)
     expect(cajas[0].no_caja).toBe("101")
     expect(cajas[0].broker).toBe("GEBESA")
+    expect(cajas[0].comentario).toBe("Revisar la puerta trasera")
+  })
+
+  it("una caja sin comentario lo trae en null, no en undefined", () => {
+    const { cajas } = normalizarEstatusCajas([{ ...CAJA_API, comentario: null }])
+
+    expect(cajas[0].comentario).toBeNull()
   })
 
   it("una caja sin viaje trae los campos del viaje en null", () => {
@@ -92,6 +102,23 @@ describe("contarPorObservacion", () => {
 
   it("sin cajas no cuenta nada", () => {
     expect(contarPorObservacion(undefined)).toEqual({ cargadas: 0, vacias: 0 })
+  })
+})
+
+describe("recortarComentario", () => {
+  it("quita los espacios de los extremos", () => {
+    expect(recortarComentario("  va con demora  ")).toBe("va con demora")
+  })
+
+  it("no deja pasar más de lo que cabe en la columna", () => {
+    const largo = recortarComentario("x".repeat(LARGO_COMENTARIO + 50))
+
+    expect(largo).toHaveLength(LARGO_COMENTARIO)
+  })
+
+  it("sin texto devuelve cadena vacía, que es lo que borra la nota", () => {
+    expect(recortarComentario(null)).toBe("")
+    expect(recortarComentario(undefined)).toBe("")
   })
 })
 

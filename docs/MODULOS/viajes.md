@@ -10,7 +10,7 @@ Cubre todo el ciclo de un viaje, desde que se cotiza hasta que se cierra y se re
 | `/edit-trip/:tripId` | `pages/viajes/EditarViajePage.jsx` | Edición normal |
 | `/edit-trip-complete/:tripId` | `pages/viajes/EditarViajeCompletoPage.jsx` | Edición sin restricciones |
 | `/ResumenTrip/:tripId` | `pages/viajes/ResumenViajePage.jsx` | El resumen que se imprime |
-| `/estatus-cajas` | `pages/viajes/EstatusCajasPage.jsx` | Dónde está cada caja y con qué viaje |
+| `/estatus-cajas` | `pages/viajes/EstatusCajasPage.jsx` | Dónde está cada caja, con qué viaje y con qué nota |
 
 ## Entidades y features
 
@@ -60,8 +60,16 @@ Cubre todo el ciclo de un viaje, desde que se cotiza hasta que se cierra y se re
   el mismo viaje**: al cambiar de viaje caduca sola y vuelve a mandar lo automático.
 - **TALLER solo puede ser manual**: ningún dato del sistema dice que una caja está en el
   taller, y por eso existen los combos.
-- El tablero **solo muestra cajas propias activas**, las mismas que `getCajasActivas`; las
-  externas viven en otra tabla y no tienen expediente.
+- El tablero muestra **todas las cajas internas**, estén donde estén y traigan viaje o no.
+  Lo único que se deja fuera es el registro sin placa ni VIN, que no es una caja real; se
+  filtra por los datos y no por su id. Las cajas externas viven en otra tabla y no
+  aparecen: no tienen expediente.
+- La columna de **comentarios** son 300 caracteres de texto libre por caja, y **caduca con
+  el viaje**, igual que la ubicación y la observación: son notas del viaje en curso, no
+  del vehículo. Se guarda al salir del campo, no en cada tecla.
+- El botón principal del Administrador de viajes es **Estatus de cajas**. Crear un viaje
+  se hace aprobando una programación; la entrada directa a `/CrearViaje` sigue existiendo
+  como ruta, pero ya no tiene botón propio (y en `menuConfig` está con `hideInSidebar`).
 
 ## Cosas que sorprenden
 

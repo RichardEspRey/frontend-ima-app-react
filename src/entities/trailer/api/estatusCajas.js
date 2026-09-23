@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { ENDPOINTS, post } from "../../../shared/api"
-import { normalizarEstatusCajas } from "../model/estatusCaja"
+import { normalizarEstatusCajas, recortarComentario } from "../model/estatusCaja"
 
 /**
  * Llave de caché del tablero de estatus de cajas.
@@ -51,7 +51,8 @@ export function useEstatusCajas() {
 }
 
 /**
- * Guarda la ubicación y la observación capturadas a mano para una caja.
+ * Guarda lo que se captura a mano para una caja: ubicación, observación y
+ * comentario.
  *
  * Lo capturado queda amarrado al viaje en turno: el endpoint anota con qué
  * viaje se fijó, y en cuanto la caja pasa a otro deja de aplicar y vuelve a
@@ -62,15 +63,17 @@ export function useEstatusCajas() {
  * @param {number} datos.cajaId Caja que se está tocando.
  * @param {string} [datos.ubicacion] Una de `UBICACIONES_CAJA`.
  * @param {string} [datos.observacion] Una de `OBSERVACIONES_CAJA`.
+ * @param {string} [datos.comentario] Nota libre; se recorta a `LARGO_COMENTARIO`.
  * @param {(number|string)} [datos.usuarioId] Quién capturó, para la bitácora.
  * @returns {Promise.<object>} La respuesta de la API.
  * @throws {ApiError} Si la API rechaza el guardado.
  */
-export function guardarEstatusCaja({ cajaId, ubicacion, observacion, usuarioId }) {
+export function guardarEstatusCaja({ cajaId, ubicacion, observacion, comentario, usuarioId }) {
   return post(ENDPOINTS.cajasEstatus, "saveEstatusCaja", {
     caja_id: cajaId,
     ubicacion,
     observacion,
+    comentario: recortarComentario(comentario),
     id_usuario: usuarioId,
   })
 }
@@ -89,13 +92,15 @@ export function useGuardarEstatusCaja() {
 
   return useMutation({
     mutationFn: guardarEstatusCaja,
-    onMutate: async ({ cajaId, ubicacion, observacion }) => {
+    onMutate: async ({ cajaId, ubicacion, observacion, comentario }) => {
       await cliente.cancelQueries({ queryKey: LLAVE_ESTATUS_CAJAS })
       const anterior = cliente.getQueryData(LLAVE_ESTATUS_CAJAS)
 
       cliente.setQueryData(LLAVE_ESTATUS_CAJAS, (cajas = []) =>
         cajas.map((caja) =>
-          caja.caja_id === cajaId ? { ...caja, ubicacion, observacion, manual: true } : caja,
+          caja.caja_id === cajaId
+            ? { ...caja, ubicacion, observacion, comentario: comentario ?? null, manual: true }
+            : caja,
         ),
       )
 

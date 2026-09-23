@@ -18,6 +18,8 @@ export {
   OBSERVACION_CAJA,
   OBSERVACIONES_CAJA,
   TIPO_DOCUMENTO_FIANZA,
+  LARGO_COMENTARIO,
+  recortarComentario,
   esquemaEstatusCaja,
   normalizarEstatusCajas,
   estadoFianza,

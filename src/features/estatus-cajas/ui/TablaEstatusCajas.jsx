@@ -6,6 +6,7 @@ import {
   UBICACIONES_CAJA,
 } from "../../../entities/trailer"
 import { COLOR, DataTable } from "../../../shared/ui"
+import { CeldaComentario } from "./CeldaComentario"
 import { CeldaFianza } from "./CeldaFianza"
 import { SelectCelda } from "./SelectCelda"
 
@@ -16,7 +17,7 @@ const SIN_DATO = (
 )
 
 /**
- * El tablero de cajas: una fila por caja activa.
+ * El tablero de cajas: una fila por caja interna.
  *
  * Solo pinta. Las dos columnas capturables avisan hacia arriba y no guardan
  * nada por su cuenta, y el estado de la fianza lo decide la entidad.
@@ -119,6 +120,17 @@ export function TablaEstatusCajas({
             SIN_DATO
           ),
       },
+      {
+        id: "comentario",
+        label: "Comentarios",
+        render: (caja) => (
+          <CeldaComentario
+            comentario={caja.comentario}
+            deshabilitado={guardandoId === caja.caja_id}
+            onGuardar={(texto) => onCapturar({ caja, campo: "comentario", valor: texto })}
+          />
+        ),
+      },
     ],
     [guardandoId, onCapturar, onSubirFianza],
   )
@@ -130,7 +142,7 @@ export function TablaEstatusCajas({
       claveFila="caja_id"
       cargando={cargando}
       error={error}
-      vacio="No hay cajas activas que mostrar."
+      vacio="No hay cajas que mostrar."
     />
   )
 }
