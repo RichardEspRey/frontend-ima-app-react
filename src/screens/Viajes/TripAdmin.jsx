@@ -666,32 +666,17 @@ const TripAdmin = () => {
                 </Box>
 
                 <Button
-                    variant="outlined"
+                    variant="contained"
                     startIcon={<Inventory2OutlinedIcon />}
                     onClick={() => navigate('/estatus-cajas')}
                     sx={{
-                        borderColor: '#cbd5e1', color: '#334155', bgcolor: 'white', fontWeight: 700,
-                        borderRadius: 2, px: 3, py: 1.1, textTransform: 'none', boxShadow: 'none',
-                        '&:hover': { borderColor: '#94a3b8', bgcolor: '#f8fafc' },
+                        bgcolor: '#0f172a', fontWeight: 700, borderRadius: 2, px: 3, py: 1.1,
+                        textTransform: 'none', boxShadow: 'none', transition: 'all 0.15s',
+                        '&:hover': { bgcolor: '#1e293b', boxShadow: '0 6px 16px rgba(15,23,42,0.22)' },
                     }}
                 >
                     Estatus de cajas
                 </Button>
-
-                {(isAdmin || userPermissions?.viajes_crear) && (
-                    <Button
-                        variant="contained"
-                        startIcon={<AddIcon />}
-                        onClick={() => navigate('/CrearViaje')}
-                        sx={{
-                            bgcolor: '#0f172a', fontWeight: 700, borderRadius: 2, px: 3, py: 1.1,
-                            textTransform: 'none', boxShadow: 'none', transition: 'all 0.15s',
-                            '&:hover': { bgcolor: '#1e293b', boxShadow: '0 6px 16px rgba(15,23,42,0.22)' },
-                        }}
-                    >
-                        Crear Nuevo Viaje
-                    </Button>
-                )}
             </Stack>
 
             <Box sx={{ mb: 3, display: 'inline-flex', bgcolor: '#f1f5f9', borderRadius: 2.5, p: 0.5 }}>

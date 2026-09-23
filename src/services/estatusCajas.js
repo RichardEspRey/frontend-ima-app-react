@@ -4,6 +4,8 @@ export const UBICACIONES_CAJA = ['PENSION NLD', 'TALLER', 'RUTA SUBIENDO', 'RUTA
 
 export const OBSERVACIONES_CAJA = ['VACIA', 'CARGADA'];
 
+export const LARGO_COMENTARIO = 300;
+
 const pedir = async (op, campos = {}) => {
     const fd = new FormData();
     fd.append('op', op);
@@ -26,11 +28,12 @@ export const obtenerEstatusCajas = async () => {
     return Array.isArray(result.cajas) ? result.cajas : [];
 };
 
-export const guardarEstatusCaja = ({ cajaId, ubicacion, observacion, usuarioId }) =>
+export const guardarEstatusCaja = ({ cajaId, ubicacion, observacion, comentario, usuarioId }) =>
     pedir('saveEstatusCaja', {
         caja_id: cajaId,
         ubicacion,
         observacion,
+        comentario: comentario ?? '',
         id_usuario: usuarioId,
     });
 

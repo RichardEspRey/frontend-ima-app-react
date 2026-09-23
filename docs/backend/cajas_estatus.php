@@ -19,6 +19,9 @@ $op = $_POST['op'] ?? '';
 $UBICACIONES  = ['PENSION NLD', 'TALLER', 'RUTA SUBIENDO', 'RUTA BAJANDO'];
 $OBSERVACIONES = ['VACIA', 'CARGADA'];
 
+// Lo que cabe en caja_estatus.comentarios.
+define('LARGO_COMENTARIO', 300);
+
 // La ubicación que corresponde a cada dirección de viaje.
 function ubicacionPorDireccion($direccion) {
     if ($direccion === 'Going Up')   return 'RUTA SUBIENDO';
@@ -50,6 +53,7 @@ try {
                     co.nombre_compania    AS broker,
                     ce.ubicacion          AS ubicacion_manual,
                     ce.observacion        AS observacion_manual,
+                    ce.comentarios        AS comentario_manual,
                     ce.trip_id_referencia AS manual_trip_id,
                     cs.status             AS status_caja_viaje,
                     fz.fecha_vencimiento  AS fianza_vence,
@@ -103,7 +107,11 @@ try {
                           ORDER BY f2.status DESC, f2.doc_id DESC
                              LIMIT 1)
 
-                WHERE c.status = 1
+                -- Todas las cajas internas, estén donde estén y tengan viaje o no.
+                -- Lo único que se deja fuera es el registro sin placa ni VIN, que no es
+                -- una caja real: se identifica por los datos, no por su id, para que
+                -- cualquier registro de prueba futuro tampoco ensucie el tablero.
+                WHERE COALESCE(c.no_placa, '') <> '' OR COALESCE(c.no_vin, '') <> ''
              ORDER BY c.no_caja
             ";
 
@@ -143,6 +151,7 @@ try {
                 $mismoViaje = (string)($fila['manual_trip_id'] ?? '') === (string)($fila['trip_id'] ?? '');
                 $ubicacion  = ($mismoViaje && $fila['ubicacion_manual'])   ? $fila['ubicacion_manual']   : $ubicacionAuto;
                 $observacion = ($mismoViaje && $fila['observacion_manual']) ? $fila['observacion_manual'] : $observacionAuto;
+                $comentario = $mismoViaje ? $fila['comentario_manual'] : null;
 
                 $fianza = null;
                 if (!empty($fila['fianza_vence'])) {
@@ -162,9 +171,10 @@ try {
                     'trip_number'      => $fila['trip_number'],
                     'ubicacion'        => $ubicacion,
                     'observacion'      => $observacion,
+                    'comentario'       => $comentario,
                     'ubicacion_auto'   => $ubicacionAuto,
                     'observacion_auto' => $observacionAuto,
-                    'manual'           => $mismoViaje && ($fila['ubicacion_manual'] || $fila['observacion_manual']),
+                    'manual'           => $mismoViaje && ($fila['ubicacion_manual'] || $fila['observacion_manual'] || $fila['comentario_manual']),
                     'broker'           => $observacion === 'CARGADA' ? $fila['broker'] : null,
                     'fianza'           => $fianza,
                 ];
@@ -177,7 +187,14 @@ try {
             $caja_id     = $_POST['caja_id'] ?? '';
             $ubicacion   = $_POST['ubicacion'] ?? null;
             $observacion = $_POST['observacion'] ?? null;
+            $comentario  = $_POST['comentario'] ?? null;
             $id_usuario  = $_POST['id_usuario'] ?? null;
+
+            // El comentario es texto libre: se recorta al largo de la columna en vez de
+            // rechazar el guardado, que perdería lo demás por un campo que se pasó.
+            if (is_string($comentario)) {
+                $comentario = mb_substr(trim($comentario), 0, LARGO_COMENTARIO);
+            }
 
             if (!filter_var($caja_id, FILTER_VALIDATE_INT)
                 || ($ubicacion !== null && $ubicacion !== '' && !in_array($ubicacion, $UBICACIONES, true))
@@ -201,11 +218,12 @@ try {
             $trip_id = $trip_id === false ? null : (int)$trip_id;
 
             $stmt = $db->prepare("
-                INSERT INTO caja_estatus (caja_id, ubicacion, observacion, trip_id_referencia, actualizado_por)
-                VALUES (:caja_id, :ubicacion, :observacion, :trip_id, :usuario)
+                INSERT INTO caja_estatus (caja_id, ubicacion, observacion, comentarios, trip_id_referencia, actualizado_por)
+                VALUES (:caja_id, :ubicacion, :observacion, :comentario, :trip_id, :usuario)
                 ON DUPLICATE KEY UPDATE
                     ubicacion          = VALUES(ubicacion),
                     observacion        = VALUES(observacion),
+                    comentarios        = VALUES(comentarios),
                     trip_id_referencia = VALUES(trip_id_referencia),
                     actualizado_por    = VALUES(actualizado_por)
             ");
@@ -213,6 +231,7 @@ try {
                 ':caja_id'     => $caja_id,
                 ':ubicacion'   => $ubicacion ?: null,
                 ':observacion' => $observacion ?: null,
+                ':comentario'  => $comentario ?: null,
                 ':trip_id'     => $trip_id,
                 ':usuario'     => $id_usuario ?: null,
             ]);

@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Alert, Box, Button, Chip, CircularProgress, IconButton, MenuItem, Paper, Select, Stack,
-    Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, Typography
+    Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Tooltip, Typography
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import RefreshIcon from '@mui/icons-material/Refresh';
@@ -13,13 +13,41 @@ import Swal from 'sweetalert2';
 import ModalArchivo from '../../components/ModalArchivo';
 import { useAuthStore } from '../../store/useAuthStore';
 import {
-    OBSERVACIONES_CAJA, UBICACIONES_CAJA, guardarEstatusCaja, obtenerEstatusCajas, subirFianzaCaja
+    LARGO_COMENTARIO, OBSERVACIONES_CAJA, UBICACIONES_CAJA, guardarEstatusCaja, obtenerEstatusCajas,
+    subirFianzaCaja
 } from '../../services/estatusCajas';
 import { HEADER_ROW_SX, HEADER_CELL_SX } from '../../styles/estilosTabla';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
-const COLUMNAS = ['Cajas', 'Operador', 'Ubicación', 'Observación', 'Fianza', 'Broker'];
+const COLUMNAS = ['Cajas', 'Operador', 'Ubicación', 'Observación', 'Fianza', 'Broker', 'Comentarios'];
+
+const CeldaComentario = ({ caja, deshabilitado, onGuardar }) => {
+    const [texto, setTexto] = useState(caja.comentario ?? '');
+
+    useEffect(() => { setTexto(caja.comentario ?? ''); }, [caja.comentario]);
+
+    const guardarSiCambio = () => {
+        const limpio = texto.trim();
+        if (limpio !== (caja.comentario ?? '')) onGuardar(limpio);
+    };
+
+    return (
+        <TextField
+            size="small"
+            multiline
+            maxRows={3}
+            value={texto}
+            disabled={deshabilitado}
+            placeholder="Sin comentarios"
+            onChange={(evento) => setTexto(evento.target.value.slice(0, LARGO_COMENTARIO))}
+            onBlur={guardarSiCambio}
+            inputProps={{ maxLength: LARGO_COMENTARIO }}
+            helperText={texto.length > LARGO_COMENTARIO - 50 ? `${texto.length}/${LARGO_COMENTARIO}` : undefined}
+            sx={{ minWidth: 260, bgcolor: 'white' }}
+        />
+    );
+};
 
 const celdaVacia = <Typography variant="body2" color="#94a3b8">—</Typography>;
 
@@ -76,6 +104,7 @@ const EstatusCajas = () => {
                 cajaId: caja.caja_id,
                 ubicacion: campo === 'ubicacion' ? valor : caja.ubicacion,
                 observacion: campo === 'observacion' ? valor : caja.observacion,
+                comentario: campo === 'comentario' ? valor : caja.comentario,
                 usuarioId: user?.id,
             });
         } catch (err) {
@@ -235,6 +264,14 @@ const EstatusCajas = () => {
                                     {caja.broker
                                         ? <Typography variant="body2" color="#334155">{caja.broker}</Typography>
                                         : celdaVacia}
+                                </TableCell>
+
+                                <TableCell>
+                                    <CeldaComentario
+                                        caja={caja}
+                                        deshabilitado={guardando === caja.caja_id}
+                                        onGuardar={(texto) => guardarCampo(caja, 'comentario', texto)}
+                                    />
                                 </TableCell>
                             </TableRow>
                         ))}
