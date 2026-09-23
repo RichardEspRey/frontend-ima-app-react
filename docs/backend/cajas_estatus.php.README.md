@@ -1,16 +1,21 @@
-# Pendiente antes de subirlo al servidor
+# cajas_estatus.php
 
-`cajas_estatus.php` asume que el procedimiento `Crud_caja_trips_status('I', trip_id, status)`
-—el que guarda Impo / Expo / Vacío al marcar Almost Over— escribe en una tabla
-`caja_trips_status` con las columnas `id`, `trip_id` y `status`.
+Endpoint de la pantalla Estatus de cajas. Se sube al mismo directorio donde viven
+`cajas_docs.php` y `conexion.php`.
 
-Eso está **sin confirmar**: el dump de producción no trae el cuerpo de los procedimientos
-(«insufficient privileges to SHOW CREATE PROCEDURE»). Para confirmarlo, en phpMyAdmin:
+## Confirmado contra producción (2026-09-21)
 
-```sql
-SHOW CREATE PROCEDURE Crud_caja_trips_status;
-SHOW TABLES LIKE '%caja%';
-```
+- `caja_trips_status(id, trip_id, status enum('Impo','Expo','Vacio'))` — es la tabla que
+  escribe `Crud_caja_trips_status('I', trip_id, status)` desde el `add_status_caja_trips`
+  de `new_tripsv2.php`. El `LEFT JOIN` de `getEstatusCajas` quedó como estaba.
+- `conexion.php` va en minúsculas: el hosting es Linux y distingue mayúsculas.
+- La fianza vigente es la fila de `cajas_documents` con `status = 1`; el procedimiento
+  `crud_caja_docs` apaga la anterior. Por eso se ordena por `status DESC, doc_id DESC`
+  y no por `fecha_vencimiento`.
+- `tipo_documento` está en la base como `Fianza` y como `FIANZA`: la comparación va con
+  `UPPER()`.
+- La tabla `caja_estatus` ya está creada en producción.
 
-Si el nombre o las columnas son otros, lo único que cambia es el `LEFT JOIN caja_trips_status`
-de `getEstatusCajas`. Todo lo demás ya no depende de eso.
+## Pendiente
+
+Probar en Chrome contra la base real y después portarlo al refactor.

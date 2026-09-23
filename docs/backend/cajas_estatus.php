@@ -1,13 +1,15 @@
 <?php
-// Estatus de cajas
-//
-// getEstatusCajas  · una fila por caja interna activa, con lo automático ya calculado
-// saveEstatusCaja  · guarda la ubicación y la observación capturadas a mano
-//
-// No toca tablas existentes: lee de caja, trips, trip_stages, drivers, companies y
-// cajas_documents, y escribe solo en caja_estatus.
 
-require_once 'Conexion.php';
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
+
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit();
+}
+
+include_once 'conexion.php';
 
 header("Content-Type: application/json");
 
@@ -98,7 +100,7 @@ try {
                               FROM cajas_documents f2
                              WHERE f2.caja_id = c.caja_id
                                AND UPPER(f2.tipo_documento) = 'FIANZA'
-                          ORDER BY f2.fecha_vencimiento DESC, f2.doc_id DESC
+                          ORDER BY f2.status DESC, f2.doc_id DESC
                              LIMIT 1)
 
                 WHERE c.status = 1
