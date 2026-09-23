@@ -10,6 +10,7 @@ import AdminViajesPage from '../pages/viajes/AdminViajesPage.jsx';
 import CamionesPage from '../pages/unidades/CamionesPage.jsx';
 import CajasPage from '../pages/unidades/CajasPage.jsx';
 import EditarViajePage from '../pages/viajes/EditarViajePage.jsx';
+import EstatusCajasPage from '../pages/viajes/EstatusCajasPage.jsx';
 import EditarViajeCompletoPage from '../pages/viajes/EditarViajeCompletoPage.jsx';
 import EditarViajeProximoPage from '../pages/dispatch/EditarViajeProximoPage.jsx';
 import DieselPage from '../pages/gastos/DieselPage.jsx';
@@ -72,6 +73,7 @@ const AppRouter = () => {
             <Route path="/admin-trucks" element={<CamionesPage />} />
             <Route path="/admin-trailers" element={<CajasPage />} />
             <Route path="/admin-trips" element={<AdminViajesPage />} />
+            <Route path="/estatus-cajas" element={<EstatusCajasPage />} />
             <Route path="/notifications-manager" element={<NotificacionesManagerPage />} />
             <Route path="/admin-diesel" element={<DieselPage />} />
             <Route path="/detalle-diesel/:tripId" element={<DieselDeViajePage />} />

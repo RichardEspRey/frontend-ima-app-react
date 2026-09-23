@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { Alert, Box, Button, Stack, Typography } from "@mui/material"
 import AddIcon from "@mui/icons-material/Add"
+import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined"
 import { useNavigate } from "react-router-dom"
 
 import ModalCajaExterna from "../../components/ModalCajaExterna"
@@ -53,6 +54,19 @@ import { COLOR } from "../../shared/ui/tokens"
  * @type {Set.<string>}
  */
 const EDICION_ESPECIAL = new Set(["Blanca", "Angelica", "Israel", "Richard"])
+
+const BOTON_CLARO_SX = {
+  borderColor: COLOR.BORDE_FUERTE,
+  color: COLOR.TEXTO,
+  bgcolor: COLOR.BLANCO,
+  fontWeight: 700,
+  borderRadius: 2,
+  px: 3,
+  py: 1.1,
+  textTransform: "none",
+  boxShadow: "none",
+  "&:hover": { borderColor: COLOR.TENUE, bgcolor: COLOR.LIENZO },
+}
 
 const BOTON_OSCURO_SX = {
   bgcolor: COLOR.TINTA,
@@ -449,16 +463,27 @@ export default function AdminViajesPage() {
           </Typography>
         </Box>
 
-        {(esAdmin || permisos?.viajes_crear) && (
+        <Stack direction="row" spacing={2} flexWrap="wrap">
           <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => navigate("/CrearViaje")}
-            sx={BOTON_OSCURO_SX}
+            variant="outlined"
+            startIcon={<Inventory2OutlinedIcon />}
+            onClick={() => navigate("/estatus-cajas")}
+            sx={BOTON_CLARO_SX}
           >
-            Crear Nuevo Viaje
+            Estatus de cajas
           </Button>
-        )}
+
+          {(esAdmin || permisos?.viajes_crear) && (
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => navigate("/CrearViaje")}
+              sx={BOTON_OSCURO_SX}
+            >
+              Crear Nuevo Viaje
+            </Button>
+          )}
+        </Stack>
       </Stack>
 
       <Pestanas

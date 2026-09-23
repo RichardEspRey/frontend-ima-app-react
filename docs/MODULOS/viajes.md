@@ -10,6 +10,7 @@ Cubre todo el ciclo de un viaje, desde que se cotiza hasta que se cierra y se re
 | `/edit-trip/:tripId` | `pages/viajes/EditarViajePage.jsx` | Edición normal |
 | `/edit-trip-complete/:tripId` | `pages/viajes/EditarViajeCompletoPage.jsx` | Edición sin restricciones |
 | `/ResumenTrip/:tripId` | `pages/viajes/ResumenViajePage.jsx` | El resumen que se imprime |
+| `/estatus-cajas` | `pages/viajes/EstatusCajasPage.jsx` | Dónde está cada caja y con qué viaje |
 
 ## Entidades y features
 
@@ -20,6 +21,8 @@ Cubre todo el ciclo de un viaje, desde que se cotiza hasta que se cierra y se re
 - **`features/trips-admin`** — tabla, filtros, programación y mapa.
 - **`features/trip-edit`** — el editor común a las dos pantallas de edición.
 - **`features/cotizador`** — buscador de ubicaciones, mapa y resumen.
+- **`features/estatus-cajas`** — el tablero de cajas: la tabla, los dos combos de captura y
+  la subida de la fianza. Se apoya en `entities/trailer`, que es donde vive el estatus.
 
 | Endpoint | Operaciones |
 |---|---|
@@ -29,6 +32,8 @@ Cubre todo el ciclo de un viaje, desde que se cotiza hasta que se cierra y se re
 | `Programacion_viajes.php` | `dashboard`, `getAll`, `insert`, `update`, `delete` |
 | `Cotizaciones.php` | `obtener_todas`, `guardar`, `eliminar` |
 | `update_invoices.php` | `update_invoices` |
+| `cajas_estatus.php` | `getEstatusCajas`, `saveEstatusCaja` |
+| `cajas_docs.php` | `Alta` (la fianza, compartida con el Administrador de Cajas) |
 
 ## Reglas de negocio
 
@@ -49,6 +54,14 @@ Cubre todo el ciclo de un viaje, desde que se cotiza hasta que se cierra y se re
 - En el cotizador, las **millas vacías** —lo que el camión recorre para llegar a la carga—
   se cobran igual, así que entran en el total.
 - Tarifa, millas y rate se calculan unas de otras: se entra por la que se tenga.
+- En el **estatus de cajas**, la ubicación y la observación se calculan del viaje en turno:
+  una caja cargada va en ruta según la dirección de su etapa, y una vacía se queda en la
+  pensión. Lo que alguien capture a mano pisa a eso, pero **solo mientras la caja siga en
+  el mismo viaje**: al cambiar de viaje caduca sola y vuelve a mandar lo automático.
+- **TALLER solo puede ser manual**: ningún dato del sistema dice que una caja está en el
+  taller, y por eso existen los combos.
+- El tablero **solo muestra cajas propias activas**, las mismas que `getCajasActivas`; las
+  externas viven en otra tabla y no tienen expediente.
 
 ## Cosas que sorprenden
 

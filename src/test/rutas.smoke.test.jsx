@@ -28,6 +28,7 @@ const RUTAS = [
   "/edit-trip-complete/1",
   "/edit-trip-upcoming/1",
   "/edit-trip/1",
+  "/estatus-cajas",
   "/editar-orden/1",
   "/editor-diesel/1/1",
   "/editor-gastos/1/1",

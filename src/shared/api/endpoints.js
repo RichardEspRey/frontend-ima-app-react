@@ -12,6 +12,7 @@ export const ENDPOINTS = {
   autonomia: "autonomia.php",
   cajas: "cajas.php",
   cajasDocs: "cajas_docs.php",
+  cajasEstatus: "cajas_estatus.php",
   cajasV2: "cajas_v2.php",
   cajaExterna: "caja_externa.php",
   charts: "charts.php",

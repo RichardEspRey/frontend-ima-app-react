@@ -22,8 +22,8 @@ Responde **HTTP 200 aunque falle**; el fallo viaja en `{status:'error', message}
 
 ## Resumen
 
-- **35 endpoints**, **138 operaciones** distintas llamadas desde el frontend.
-- **13** ya pasan por `shared/api` (marcadas ✅); el resto sigue con `fetch()` directo.
+- **36 endpoints**, **140 operaciones** distintas llamadas desde el frontend.
+- **15** ya pasan por `shared/api` (marcadas ✅); el resto sigue con `fetch()` directo.
 
 | Endpoint | Ops | Migradas |
 |---|---:|---:|
@@ -58,6 +58,7 @@ Responde **HTTP 200 aunque falle**; el fallo viaja en `{status:'error', message}
 | `autonomia.php` | 1 | 0 |
 | `trucks_docs.php` | 1 | 0 |
 | `cajas_docs.php` | 1 | 0 |
+| `cajas_estatus.php` | 2 | 2 |
 | `inventory.php` | 1 | 0 |
 | `Mobile.php` | 1 | 0 |
 | `Tracking.php` | 1 | 0 |
@@ -160,7 +161,18 @@ Responde **HTTP 200 aunque falle**; el fallo viaja en `{status:'error', message}
 
 | op | Migrada | Llamada desde |
 |---|:--:|---|
-| `Alta` |  | `screens/TrailerEdit.jsx`, `screens/TrailerScreen.jsx` |
+| `Alta` |  | `features/units`, `entities/trailer/api/fianzas.js` (la fianza, ✅) |
+
+### `cajas_estatus.php`
+
+Endpoint propio del tablero de estatus de cajas. Lo automático —viaje en turno, operador,
+dirección de la etapa y broker— se calcula al consultar; solo se guarda lo capturado a
+mano, en `caja_estatus`, amarrado al viaje con el que se capturó.
+
+| op | Migrada | Llamada desde |
+|---|:--:|---|
+| `getEstatusCajas` | ✅ | `entities/trailer/api/estatusCajas.js` |
+| `saveEstatusCaja` | ✅ | `entities/trailer/api/estatusCajas.js` |
 
 ### `charts.php`
 

@@ -54,6 +54,22 @@ Todo vive en la rama larga **`refactor-fase-1`**, con un tag por incremento
 
 Detalle de cada uno en `05-INCREMENTOS.md`.
 
+## Lo que se integró después de la fase 1
+
+Lo que se desarrolla en `Emiliano` se integra con merge y **se porta en el mismo commit**:
+un módulo nuevo no entra como pantalla suelta en `src/screens/`, que ya no existe.
+
+| Fecha | Qué | Dónde quedó |
+|---|---|---|
+| 2026-09-17 | La campana, el IMA Manager y el status de caja al marcar Almost Over | `e2a3e01` |
+| 2026-09-23 | **Estatus de cajas** | `entities/trailer` (modelo, estatus y fianzas), `features/estatus-cajas`, `pages/viajes/EstatusCajasPage.jsx` |
+
+Del Estatus de cajas, lo que cambió al portarlo: el estado de la fianza ya no es un
+"activa/vencida" propio sino la misma regla del expediente de unidades —con su aviso a 30
+días—, la captura se guarda con actualización optimista en lugar de estado a mano, y la
+fecha de vencimiento pasa por `CampoFecha`, que corrige el corrimiento de un día que tenía
+`ModalArchivo`. El endpoint PHP y la tabla no se tocaron.
+
 ## Publicación
 
 `origin/refactor-fase-1` está **al día** desde el 2026-09-01, con los tags
