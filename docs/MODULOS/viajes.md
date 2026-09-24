@@ -67,9 +67,11 @@ Cubre todo el ciclo de un viaje, desde que se cotiza hasta que se cierra y se re
 - La columna de **comentarios** son 300 caracteres de texto libre por caja, y **caduca con
   el viaje**, igual que la ubicación y la observación: son notas del viaje en curso, no
   del vehículo. Se guarda al salir del campo, no en cada tecla.
-- El botón principal del Administrador de viajes es **Estatus de cajas**. Crear un viaje
-  se hace aprobando una programación; la entrada directa a `/CrearViaje` sigue existiendo
-  como ruta, pero ya no tiene botón propio (y en `menuConfig` está con `hideInSidebar`).
+- El encabezado del Administrador de viajes lleva **dos botones**: «Estatus de cajas» en
+  claro y «Crear Nuevo Viaje» en oscuro. El peso visual separa la acción que crea algo de
+  la que solo lleva a mirar, y `viajes_crear` sigue mandando sobre el segundo. Quitar el de
+  crear dejaba la creación de viajes sin entrada directa, porque `/CrearViaje` está con
+  `hideInSidebar` en `menuConfig`.
 
 ## Cosas que sorprenden
 
