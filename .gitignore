@@ -8,10 +8,6 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
-
-# El PHP y el SQL del backend: referencia local, no se versiona en esta rama.
-# En refactor-fase-1 sí viven en el repo, con el plan del refactor.
-docs/
 dist
 dist-ssr
 *.local
