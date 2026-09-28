@@ -20,6 +20,8 @@ import { HEADER_ROW_SX, HEADER_CELL_SX } from '../../styles/estilosTabla';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
+const REFRESCO_MS = 5 * 60 * 1000;
+
 const COLUMNAS = ['Cajas', 'Operador', 'Ubicación', 'Observación', 'Fianza', 'Broker', 'Comentarios'];
 
 const CeldaComentario = ({ caja, deshabilitado, onGuardar }) => {
@@ -80,19 +82,24 @@ const EstatusCajas = () => {
     const [guardando, setGuardando] = useState(null);
     const [fianzaEnModal, setFianzaEnModal] = useState(null);
 
-    const cargar = useCallback(async () => {
-        setLoading(true);
+    const cargar = useCallback(async (silencioso = false) => {
+        if (!silencioso) setLoading(true);
         setError(null);
         try {
             setCajas(await obtenerEstatusCajas());
         } catch (err) {
             setError(err.message);
         } finally {
-            setLoading(false);
+            if (!silencioso) setLoading(false);
         }
     }, []);
 
     useEffect(() => { cargar(); }, [cargar]);
+
+    useEffect(() => {
+        const reloj = setInterval(() => cargar(true), REFRESCO_MS);
+        return () => clearInterval(reloj);
+    }, [cargar]);
 
     const guardarCampo = async (caja, campo, valor) => {
         const previo = cajas;
@@ -158,7 +165,7 @@ const EstatusCajas = () => {
                         Volver a Viajes
                     </Button>
                     <Button
-                        variant="contained" startIcon={<RefreshIcon />} onClick={cargar} disabled={loading}
+                        variant="contained" startIcon={<RefreshIcon />} onClick={() => cargar()} disabled={loading}
                         sx={{ bgcolor: '#0f172a', fontWeight: 700, borderRadius: 2, px: 3, textTransform: 'none', boxShadow: 'none', '&:hover': { bgcolor: '#1e293b' } }}
                     >
                         Actualizar
@@ -166,7 +173,7 @@ const EstatusCajas = () => {
                 </Stack>
             </Stack>
 
-            {error && <Alert severity="error" sx={{ mb: 3 }} action={<Button onClick={cargar}>Reintentar</Button>}>{error}</Alert>}
+            {error && <Alert severity="error" sx={{ mb: 3 }} action={<Button onClick={() => cargar()}>Reintentar</Button>}>{error}</Alert>}
 
             <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid #e2e8f0', borderRadius: 3 }}>
                 <Table>
