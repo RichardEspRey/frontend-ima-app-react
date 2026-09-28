@@ -57,16 +57,25 @@ Cubre todo el ciclo de un viaje, desde que se cotiza hasta que se cierra y se re
 - En el **estatus de cajas**, la ubicación y la observación se calculan del viaje en turno:
   una caja cargada va en ruta según la dirección de su etapa, y una vacía se queda en la
   pensión. Lo que alguien capture a mano pisa a eso, pero **solo mientras la caja siga en
-  el mismo viaje**: al cambiar de viaje caduca sola y vuelve a mandar lo automático.
+  la misma etapa**: al avanzar el viaje de tramo caduca sola y vuelve a mandar lo
+  automático. Se midió por viaje hasta el 2026-09-28 y no alcanzaba: seis de siete cajas
+  estaban congeladas en una corrección vieja, con el tablero diciendo RUTA BAJANDO
+  mientras el viaje ya iba subiendo.
+- Una caja **sin viaje no tiene etapa**, así que ahí lo capturado no caduca: es lo que
+  sostiene el caso de la caja parada en el taller.
+- El tablero **se refresca solo cada cinco minutos** mientras está en primer plano, y al
+  volver a la ventana. El refresco de fondo no levanta el indicador de carga.
 - **TALLER solo puede ser manual**: ningún dato del sistema dice que una caja está en el
   taller, y por eso existen los combos.
 - El tablero muestra **todas las cajas internas**, estén donde estén y traigan viaje o no.
   Lo único que se deja fuera es el registro sin placa ni VIN, que no es una caja real; se
   filtra por los datos y no por su id. Las cajas externas viven en otra tabla y no
   aparecen: no tienen expediente.
-- La columna de **comentarios** son 300 caracteres de texto libre por caja, y **caduca con
-  el viaje**, igual que la ubicación y la observación: son notas del viaje en curso, no
-  del vehículo. Se guarda al salir del campo, no en cada tecla.
+- La columna de **comentarios** son 300 caracteres de texto libre por caja y **no caduca
+  nunca**: ahí se anotan los números de sello, y la operación reportó que se le borraban.
+  Se queda hasta que alguien lo cambie o lo borre, y se guarda al salir del campo, no en
+  cada tecla. (Caducó con el viaje entre el 2026-09-23 y el 2026-09-28; nunca se borró de
+  la tabla, solo se ocultaba.)
 - El encabezado del Administrador de viajes lleva **dos botones**: «Estatus de cajas» en
   claro y «Crear Nuevo Viaje» en oscuro. El peso visual separa la acción que crea algo de
   la que solo lleva a mirar, y `viajes_crear` sigue mandando sobre el segundo. Quitar el de

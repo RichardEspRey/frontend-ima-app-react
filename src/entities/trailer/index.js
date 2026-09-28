@@ -28,6 +28,7 @@ export {
 
 export {
   LLAVE_ESTATUS_CAJAS,
+  REFRESCO_TABLERO_MS,
   obtenerEstatusCajas,
   useEstatusCajas,
   guardarEstatusCaja,

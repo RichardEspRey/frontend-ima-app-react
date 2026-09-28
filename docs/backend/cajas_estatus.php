@@ -22,6 +22,38 @@ $OBSERVACIONES = ['VACIA', 'CARGADA'];
 // Lo que cabe en caja_estatus.comentarios.
 define('LARGO_COMENTARIO', 300);
 
+// El viaje en turno de una caja: el más reciente que todavía no está cerrado.
+function viajeEnTurno($db, $caja_id) {
+    $stmt = $db->prepare("
+        SELECT trip_id
+          FROM trips
+         WHERE caja_id = :caja_id
+           AND status IN ('In Transit', 'Almost Over')
+      ORDER BY creation_date DESC
+         LIMIT 1
+    ");
+    $stmt->execute([':caja_id' => $caja_id]);
+    $trip_id = $stmt->fetchColumn();
+
+    return $trip_id === false ? null : (int)$trip_id;
+}
+
+// La etapa en curso de un viaje: la primera que no está completada.
+function etapaEnCurso($db, $trip_id) {
+    $stmt = $db->prepare("
+        SELECT trip_stage_id
+          FROM trip_stages
+         WHERE trip_id = :trip_id
+           AND (estatus IS NULL OR estatus <> 'Completed')
+      ORDER BY stage_number ASC
+         LIMIT 1
+    ");
+    $stmt->execute([':trip_id' => $trip_id]);
+    $etapa_id = $stmt->fetchColumn();
+
+    return $etapa_id === false ? null : (int)$etapa_id;
+}
+
 // La ubicación que corresponde a cada dirección de viaje.
 function ubicacionPorDireccion($direccion) {
     if ($direccion === 'Going Up')   return 'RUTA SUBIENDO';
@@ -48,13 +80,15 @@ try {
                     t.country_code,
                     t.status              AS trip_status,
                     d.nombre              AS operador,
+                    s.trip_stage_id       AS etapa_id,
                     s.travel_direction    AS direccion,
                     s.estatus             AS etapa_estatus,
                     co.nombre_compania    AS broker,
                     ce.ubicacion          AS ubicacion_manual,
                     ce.observacion        AS observacion_manual,
                     ce.comentarios        AS comentario_manual,
-                    ce.trip_id_referencia AS manual_trip_id,
+                    ce.trip_id_referencia  AS manual_trip_id,
+                    ce.stage_id_referencia AS manual_etapa_id,
                     cs.status             AS status_caja_viaje,
                     fz.fecha_vencimiento  AS fianza_vence,
                     fz.url_pdf            AS fianza_url
@@ -148,10 +182,21 @@ try {
                 }
 
                 // Lo manual solo vale mientras la caja siga en el mismo viaje.
+                // Lo capturado a mano vale mientras la caja siga en la misma etapa del
+                // mismo viaje. Antes se comparaba solo el viaje, y una caja corregida se
+                // quedaba congelada tramo tras tramo. Una caja sin viaje no tiene etapa:
+                // los dos lados quedan vacíos, coinciden, y la captura sigue valiendo,
+                // que es lo que hace falta para la caja parada en el taller.
                 $mismoViaje = (string)($fila['manual_trip_id'] ?? '') === (string)($fila['trip_id'] ?? '');
-                $ubicacion  = ($mismoViaje && $fila['ubicacion_manual'])   ? $fila['ubicacion_manual']   : $ubicacionAuto;
-                $observacion = ($mismoViaje && $fila['observacion_manual']) ? $fila['observacion_manual'] : $observacionAuto;
-                $comentario = $mismoViaje ? $fila['comentario_manual'] : null;
+                $mismaEtapa = $mismoViaje
+                    && (string)($fila['manual_etapa_id'] ?? '') === (string)($fila['etapa_id'] ?? '');
+
+                $ubicacion   = ($mismaEtapa && $fila['ubicacion_manual'])   ? $fila['ubicacion_manual']   : $ubicacionAuto;
+                $observacion = ($mismaEtapa && $fila['observacion_manual']) ? $fila['observacion_manual'] : $observacionAuto;
+
+                // El comentario no caduca: son los números de sello, y perderlos al
+                // cambiar de etapa o de viaje es justo lo que la operación reportó.
+                $comentario = $fila['comentario_manual'];
 
                 $fianza = null;
                 if (!empty($fila['fianza_vence'])) {
@@ -174,7 +219,7 @@ try {
                     'comentario'       => $comentario,
                     'ubicacion_auto'   => $ubicacionAuto,
                     'observacion_auto' => $observacionAuto,
-                    'manual'           => $mismoViaje && ($fila['ubicacion_manual'] || $fila['observacion_manual'] || $fila['comentario_manual']),
+                    'manual'           => $mismaEtapa && ($fila['ubicacion_manual'] || $fila['observacion_manual']),
                     'broker'           => $observacion === 'CARGADA' ? $fila['broker'] : null,
                     'fianza'           => $fianza,
                 ];
@@ -204,28 +249,21 @@ try {
                 break;
             }
 
-            // El viaje en turno de esta caja, para saber hasta cuándo vale lo capturado.
-            $stmtViaje = $db->prepare("
-                SELECT trip_id
-                  FROM trips
-                 WHERE caja_id = :caja_id
-                   AND status IN ('In Transit', 'Almost Over')
-              ORDER BY creation_date DESC
-                 LIMIT 1
-            ");
-            $stmtViaje->execute([':caja_id' => $caja_id]);
-            $trip_id = $stmtViaje->fetchColumn();
-            $trip_id = $trip_id === false ? null : (int)$trip_id;
+            // Viaje y etapa en turno de esta caja: son la referencia con la que caduca
+            // lo capturado. Se calculan con las mismas dos reglas que getEstatusCajas.
+            $trip_id = viajeEnTurno($db, $caja_id);
+            $etapa_id = $trip_id === null ? null : etapaEnCurso($db, $trip_id);
 
             $stmt = $db->prepare("
-                INSERT INTO caja_estatus (caja_id, ubicacion, observacion, comentarios, trip_id_referencia, actualizado_por)
-                VALUES (:caja_id, :ubicacion, :observacion, :comentario, :trip_id, :usuario)
+                INSERT INTO caja_estatus (caja_id, ubicacion, observacion, comentarios, trip_id_referencia, stage_id_referencia, actualizado_por)
+                VALUES (:caja_id, :ubicacion, :observacion, :comentario, :trip_id, :etapa_id, :usuario)
                 ON DUPLICATE KEY UPDATE
-                    ubicacion          = VALUES(ubicacion),
-                    observacion        = VALUES(observacion),
-                    comentarios        = VALUES(comentarios),
-                    trip_id_referencia = VALUES(trip_id_referencia),
-                    actualizado_por    = VALUES(actualizado_por)
+                    ubicacion           = VALUES(ubicacion),
+                    observacion         = VALUES(observacion),
+                    comentarios         = VALUES(comentarios),
+                    trip_id_referencia  = VALUES(trip_id_referencia),
+                    stage_id_referencia = VALUES(stage_id_referencia),
+                    actualizado_por     = VALUES(actualizado_por)
             ");
             $stmt->execute([
                 ':caja_id'     => $caja_id,
@@ -233,6 +271,7 @@ try {
                 ':observacion' => $observacion ?: null,
                 ':comentario'  => $comentario ?: null,
                 ':trip_id'     => $trip_id,
+                ':etapa_id'    => $etapa_id,
                 ':usuario'     => $id_usuario ?: null,
             ]);
 

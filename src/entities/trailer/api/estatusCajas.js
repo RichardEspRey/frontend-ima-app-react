@@ -10,6 +10,18 @@ import { normalizarEstatusCajas, recortarComentario } from "../model/estatusCaja
 export const LLAVE_ESTATUS_CAJAS = ["estatus-cajas"]
 
 /**
+ * Cada cuánto se vuelve a pedir el tablero mientras está abierto, en milisegundos.
+ *
+ * La operación lo deja abierto en pantalla todo el día y reportó que «no se
+ * actualizan las cajas»: cargaba al entrar y nada más. Cinco minutos es lo que
+ * pidió Emiliano, y con el refresco solo en primer plano son doce peticiones por
+ * hora y por persona, que el hosting aguanta de sobra.
+ *
+ * @type {number}
+ */
+export const REFRESCO_TABLERO_MS = 5 * 60 * 1000
+
+/**
  * Trae una fila por caja activa, con lo automático ya resuelto.
  *
  * Lo automático —viaje en turno, operador, dirección y broker— no se guarda en
@@ -36,17 +48,25 @@ export async function obtenerEstatusCajas(opciones = {}) {
 }
 
 /**
- * El tablero de estatus de cajas.
+ * El tablero de estatus de cajas, al día mientras esté a la vista.
  *
  * No se cachea como catálogo: refleja dónde está cada caja ahora mismo, así
- * que se vuelve a pedir cada vez que la pantalla se monta.
+ * que se vuelve a pedir cada vez que la pantalla se monta, cada
+ * {@link REFRESCO_TABLERO_MS} y al volver a la ventana. El refresco de fondo no
+ * levanta `isLoading` —solo `isFetching`—, así que la tabla no parpadea encima
+ * de quien está escribiendo un comentario.
  *
- * @returns {object} El resultado de `useQuery`: `{data, isLoading, isError, error, refetch}`.
+ * Con la pestaña en segundo plano el reloj se detiene: `refetchIntervalInBackground`
+ * queda en su valor por omisión a propósito, para no golpear el hosting desde
+ * pantallas que nadie está mirando.
+ *
+ * @returns {object} El resultado de `useQuery`: `{data, isLoading, isFetching, isError, error, refetch}`.
  */
 export function useEstatusCajas() {
   return useQuery({
     queryKey: LLAVE_ESTATUS_CAJAS,
     queryFn: ({ signal }) => obtenerEstatusCajas({ signal }),
+    refetchInterval: REFRESCO_TABLERO_MS,
   })
 }
 
