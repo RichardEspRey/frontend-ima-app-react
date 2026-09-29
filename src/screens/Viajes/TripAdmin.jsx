@@ -43,6 +43,7 @@ import RoadRepairModal from '../../components/RoadRepairModal';
 import InspectionModal from '../../components/InspectionModal';
 import AlmostOverCajaModal from '../../components/AlmostOverCajaModal';
 import useFetchCompanies from '../../hooks/useFetchCompanies';
+import BotonActualizar from '../../components/BotonActualizar';
 import { selectStyles } from '../../utils/tripFormConstants';
 import { HEADER_ROW_SX, HEADER_CELL_SX } from '../../styles/estilosTabla';
 
@@ -283,6 +284,16 @@ const TripAdmin = () => {
             setLoadingScheduled(false);
         }
     }, [apiHost]);
+
+    const actualizarPantalla = useCallback(async () => {
+        const enProgramacion = tabValue === 4;
+
+        await Promise.all([
+            fetchTrips(),
+            refetchCompanies(),
+            ...(enProgramacion ? [fetchProgramacionData(), fetchScheduledTrips()] : []),
+        ]);
+    }, [tabValue, fetchTrips, refetchCompanies, fetchProgramacionData, fetchScheduledTrips]);
 
     useEffect(() => {
         if (tabValue === 4) {
@@ -666,6 +677,8 @@ const TripAdmin = () => {
                 </Box>
 
                 <Stack direction="row" spacing={1.5} flexWrap="wrap">
+                    <BotonActualizar onActualizar={actualizarPantalla} />
+
                     <Button
                         variant="outlined"
                         startIcon={<Inventory2OutlinedIcon />}

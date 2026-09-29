@@ -5,6 +5,7 @@ import {
 } from '@mui/material'; 
 import { useNavigate, useLocation } from 'react-router-dom';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import BotonActualizar from '../../components/BotonActualizar';
 
 // Helper para formato de moneda
 const money = (v) => {
@@ -168,7 +169,7 @@ const DieselAdmin = () => {
           onChange={(e) => { setSearch(e.target.value); setPage(0); }}
           sx={{ width: 300 }}
         />
-        <Button variant="contained" onClick={fetchDiesel} size="small">Refrescar</Button>
+        <BotonActualizar onActualizar={fetchDiesel} sx={{ py: 0.75 }} />
       </Stack>
 
       <Paper sx={{ width: '100%', mb: 2 }}>

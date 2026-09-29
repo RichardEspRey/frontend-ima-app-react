@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 import { postConReintento } from '../../utils/peticionConReintento';
 
@@ -8,8 +8,7 @@ const useFetchSubcategories = () => {
     const [subcategories, setSubcategories] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const fetchAllSubcategories = async () => {
+    const fetchAllSubcategories = useCallback(async () => {
             const formData = new FormData();
             // La operación en PHP debe ser una que traiga todas las subcategorías
             formData.append('op', 'getAllSubcategories'); 
@@ -26,12 +25,11 @@ const useFetchSubcategories = () => {
             } finally {
                 setLoading(false);
             }
-        };
+    }, [apiHost]);
 
-        fetchAllSubcategories();
-    }, []);
+    useEffect(() => { fetchAllSubcategories(); }, [fetchAllSubcategories]);
 
-    return { subcategories, loading };
+    return { subcategories, loading, refetch: fetchAllSubcategories };
 };
 
 export default useFetchSubcategories;

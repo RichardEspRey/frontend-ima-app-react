@@ -5,6 +5,7 @@ import {
 } from '@mui/material'; 
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
+import BotonActualizar from '../../components/BotonActualizar';
 
 const money = (v) => {
     return new Intl.NumberFormat('en-US', { 
@@ -121,7 +122,7 @@ const GastosAdmin = () => {
           onChange={(e) => setSearch(e.target.value)}
           sx={{ width: 300 }}
         />
-        <Button variant="contained" onClick={fetchGastos} size="small">Refrescar</Button>
+        <BotonActualizar onActualizar={fetchGastos} sx={{ py: 0.75 }} />
       </Stack>
       
       <Paper sx={{ width: '100%', mb: 2 }}>

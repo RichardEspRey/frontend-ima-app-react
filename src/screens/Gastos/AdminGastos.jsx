@@ -33,6 +33,7 @@ import useFetchExpenseTypes from '../../hooks/expense_hooks/useFetchExpenseTypes
 import useFetchCategories from '../../hooks/expense_hooks/useFetchCategories';
 import useFetchSubcategories from '../../hooks/expense_hooks/useFetchSubcategories';
 import { SECTION_LABEL_SX, HEADER_ROW_SX, HEADER_CELL_SX, DARK_BTN_SX, money, moneyMXN } from './estilosGastos';
+import BotonActualizar from '../../components/BotonActualizar';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -93,9 +94,9 @@ const AdminGastos = () => {
   const { exchangeRate: mxnRate, fetchExchangeRate: fetchMxnRate } = useFetchExchangeRate();
   useEffect(() => { fetchMxnRate(); }, [fetchMxnRate]);
 
-  const { expenseTypes } = useFetchExpenseTypes();
-  const { maintenanceCategories } = useFetchCategories();
-  const { subcategories } = useFetchSubcategories();
+  const { expenseTypes, refetch: refetchTipos } = useFetchExpenseTypes();
+  const { maintenanceCategories, refetch: refetchCategorias } = useFetchCategories();
+  const { subcategories, refetch: refetchSubcategorias } = useFetchSubcategories();
 
   const uniqueCountries = useMemo(() => {
     const countries = new Set(gastos.map(g => g.pais).filter(Boolean));
@@ -148,6 +149,16 @@ const AdminGastos = () => {
   };
 
   useEffect(() => { fetchGastos(); }, []);
+
+  const actualizarPantalla = async () => {
+    await Promise.all([
+      fetchGastos(),
+      fetchMxnRate(),
+      refetchTipos(),
+      refetchCategorias(),
+      refetchSubcategorias(),
+    ]);
+  };
 
   const filtered = useMemo(() => {
     let list = gastos;
@@ -281,6 +292,8 @@ const AdminGastos = () => {
         </Box>
 
         <Stack direction="row" spacing={1.5} alignItems="center">
+          <BotonActualizar onActualizar={actualizarPantalla} />
+
           <Button
             variant="outlined"
             startIcon={<InsertChartOutlinedIcon />}

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 import { postConReintento } from '../../utils/peticionConReintento';
 
@@ -8,8 +8,7 @@ const useFetchExpenseTypes = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    useEffect(() => {
-        const fetchTypes = async () => {
+    const fetchTypes = useCallback(async () => {
             try {
                 // Asume que tu API está en el mismo archivo
                 const formData = new FormData();
@@ -27,12 +26,11 @@ const useFetchExpenseTypes = () => {
             } finally {
                 setLoading(false);
             }
-        };
+    }, [apiHost]);
 
-        fetchTypes();
-    }, []);
+    useEffect(() => { fetchTypes(); }, [fetchTypes]);
 
-    return { expenseTypes, loading, error };
+    return { expenseTypes, loading, error, refetch: fetchTypes };
 };
 
 export default useFetchExpenseTypes;
