@@ -1,4 +1,5 @@
 import ModalArchivo from '../ModalArchivo';
+import { TIPOS_DOCUMENTO_VIAJE } from '../../utils/tripFormConstants';
 import ModalCajaExterna from '../ModalCajaExterna';
 
 const ModalsContainer = ({
@@ -16,6 +17,7 @@ const ModalsContainer = ({
                     nombreCampo={modalTarget.docType}
                     valorActual={getCurrentDocValueForModal()}
                     mostrarFechaVencimiento={mostrarFechaVencimientoModal}
+                    accept={TIPOS_DOCUMENTO_VIAJE}
                 />
             )}
             {isModalCajaExternaOpen && (

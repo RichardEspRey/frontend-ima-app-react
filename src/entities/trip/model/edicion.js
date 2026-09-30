@@ -69,6 +69,46 @@ export function documentoDesdeApi(doc) {
 }
 
 /**
+ * La URL con la que se abre o previsualiza un documento de viaje.
+ *
+ * Los documentos viven todos en `Uploads/Trips`, y la ruta que guarda la API
+ * puede venir con separadores de Windows, así que se usa solo el nombre del
+ * archivo. Un documento recién elegido todavía no está en el servidor: se ve
+ * desde el propio archivo.
+ *
+ * @param {object} [documento] El documento del formulario.
+ * @param {string} documento.serverPath Ruta con la que lo guardó la API.
+ * @param {File} [documento.file] Archivo recién elegido, si lo hay.
+ * @param {string} base Origen de la API, sin barra final.
+ * @returns {(string|null)} La URL, o `null` si no hay nada que abrir.
+ */
+export function urlDeDocumento(documento, base) {
+  if (!documento) return null
+  if (documento.file instanceof File) return URL.createObjectURL(documento.file)
+  if (typeof documento.serverPath !== "string" || !documento.serverPath) return null
+
+  return `${base}/Uploads/Trips/${encodeURIComponent(nombreDeArchivo(documento.serverPath, ""))}`
+}
+
+/**
+ * El documento que recibe el modal de archivo, con su URL ya resuelta.
+ *
+ * El modal solo previsualiza lo que trae `url`, y los documentos que vienen de
+ * la API traen la ruta del servidor. Sin esto, abrir un BL ya subido mostraba
+ * un modal vacío: el archivo estaba bien, pero nunca se pintaba.
+ *
+ * @param {object} [documento] El documento del formulario.
+ * @param {string} base Origen de la API, sin barra final.
+ * @returns {(object|null)} El documento con `url`, o `null` si no hay documento.
+ */
+export function documentoParaModal(documento, base) {
+  if (!documento) return null
+
+  const url = urlDeDocumento(documento, base)
+  return url ? { ...documento, url } : documento
+}
+
+/**
  * Rellena la plantilla de documentos de una etapa con los que ya están subidos.
  *
  * Solo se conservan los tipos que la plantilla contempla: un documento de un

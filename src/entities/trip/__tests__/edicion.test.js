@@ -5,6 +5,8 @@ import {
   normalizarTipoDocumento,
   nombreDeArchivo,
   documentosDeEtapa,
+  urlDeDocumento,
+  documentoParaModal,
   paradasDesdeApi,
   metadatosDocumentos,
   paradasParaGuardar,
@@ -89,6 +91,57 @@ describe("documentosDeEtapa", () => {
   it("sin adjuntos devuelve la plantilla intacta", () => {
     expect(documentosDeEtapa(plantilla)).toEqual(plantilla)
     expect(documentosDeEtapa(plantilla, null)).toEqual(plantilla)
+  })
+})
+
+describe("urlDeDocumento", () => {
+  const API = "http://api.example.com/API"
+
+  it("arma la URL con el nombre del archivo del servidor", () => {
+    expect(urlDeDocumento({ serverPath: "Uploads/Trips/1790_bl.pdf" }, API)).toBe(
+      `${API}/Uploads/Trips/1790_bl.pdf`,
+    )
+  })
+
+  it("escapa los espacios del nombre", () => {
+    expect(urlDeDocumento({ serverPath: "Uploads/Trips/BOL 106 TX.pdf" }, API)).toBe(
+      `${API}/Uploads/Trips/BOL%20106%20TX.pdf`,
+    )
+  })
+
+  it("corta también por separador de Windows", () => {
+    expect(urlDeDocumento({ serverPath: "Uploads\\Trips\\bl.jpg" }, API)).toBe(
+      `${API}/Uploads/Trips/bl.jpg`,
+    )
+  })
+
+  it("sin documento o sin ruta no hay URL", () => {
+    expect(urlDeDocumento(null, API)).toBeNull()
+    expect(urlDeDocumento({ serverPath: null }, API)).toBeNull()
+    expect(urlDeDocumento({}, API)).toBeNull()
+  })
+})
+
+describe("documentoParaModal", () => {
+  const API = "http://api.example.com/API"
+
+  it("le agrega la URL al documento que ya está en el servidor", () => {
+    const documento = { fileName: "bl.pdf", serverPath: "Uploads/Trips/1790_bl.pdf" }
+
+    expect(documentoParaModal(documento, API)).toEqual({
+      ...documento,
+      url: `${API}/Uploads/Trips/1790_bl.pdf`,
+    })
+  })
+
+  it("un documento sin ruta pasa igual, para no inventar un enlace roto", () => {
+    const documento = { fileName: "bl.pdf", serverPath: null }
+
+    expect(documentoParaModal(documento, API)).toBe(documento)
+  })
+
+  it("sin documento no hay nada que abrir", () => {
+    expect(documentoParaModal(null, API)).toBeNull()
   })
 })
 

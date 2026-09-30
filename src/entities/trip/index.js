@@ -26,6 +26,8 @@ export {
   normalizarTipoDocumento,
   nombreDeArchivo,
   documentoDesdeApi,
+  urlDeDocumento,
+  documentoParaModal,
   documentosDeEtapa,
   paradasDesdeApi,
   metadatosDocumentos,

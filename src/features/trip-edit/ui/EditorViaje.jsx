@@ -14,6 +14,7 @@ import { useCompanias, useCrearCompania } from "../../../entities/company"
 import { useConductoresActivos } from "../../../entities/driver"
 import { useCajasActivas, useCajasActivasCompletas, useCajasExternasActivas, useCrearCajaExterna } from "../../../entities/trailer"
 import {
+  documentoParaModal,
   etapasDesdeApi,
   guardarInvoices,
   useGuardarViajeUpcoming,
@@ -21,6 +22,7 @@ import {
 } from "../../../entities/trip"
 import { useCamionesActivos, useCamionesActivosCompletos } from "../../../entities/truck"
 import { useBodegas, useCrearBodega } from "../../../entities/warehouse"
+import { API_BASE } from "../../../shared/config/env"
 import { notify, PantallaEsqueleto, EstadoError } from "../../../shared/ui"
 import { initialBorderCrossingDocs, NORMAL_TRIP_DOCS_BY_COUNTRY } from "../../../utils/tripFormConstants"
 import { admiteFacturas, ajustesDe, estadoPorCi, pideVencimiento } from "../model/modos"
@@ -329,9 +331,12 @@ export function EditorViaje({ modo, onDocumentoSubido }) {
   const documentoActual = () => {
     const { stageIndex, docType, stopIndex } = documentoEnModal
     if (stageIndex === null || !etapas[stageIndex]) return null
-    return stopIndex !== null
+
+    const documento = stopIndex !== null
       ? etapas[stageIndex].stops_in_transit?.[stopIndex]?.[docType]
       : etapas[stageIndex].documentos[docType]
+
+    return documentoParaModal(documento, API_BASE)
   }
 
   const abrirModalFactura = (indice) => {

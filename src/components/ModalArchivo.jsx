@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { archivoDelEvento, GRUPOS_ARCHIVO } from '../shared/security';
 import { CampoFecha, aTextoFecha } from '../shared/ui';
 import './css/ModalArchivo.css';
+import { esImagen } from '../utils/tripFormConstants';
 
 const ModalArchivo = ({ isOpen, onClose, onSave, title = "Subir/Editar Archivo", valorActual, mostrarFechaVencimiento = true, accept = "application/pdf" }) => {
 
@@ -67,6 +68,10 @@ const ModalArchivo = ({ isOpen, onClose, onSave, title = "Subir/Editar Archivo",
 
   if (!isOpen) return null;
 
+  const mostrarComoImagen = archivo
+    ? archivo.type.startsWith('image/')
+    : esImagen(valorActual?.fileName || previewUrl);
+
   return (
     <div className="modal-overlay">
       <div className="modal">
@@ -104,7 +109,7 @@ const ModalArchivo = ({ isOpen, onClose, onSave, title = "Subir/Editar Archivo",
           {previewUrl && (
             <div className="archivo-preview">
               <strong>Vista previa:</strong>
-              {previewUrl.startsWith('blob:') && archivo?.type.startsWith('image/') ? (
+              {mostrarComoImagen ? (
                 <img src={previewUrl} alt="Vista previa" style={{ maxWidth: '100%' }} />
               ) : (
                 <iframe src={previewUrl} title="Vista previa" width="100%" height="400px" />
