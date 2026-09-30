@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import './css/ModalArchivo.css';
+import { esImagen } from '../utils/tripFormConstants';
 
 const ModalArchivo = ({ isOpen, onClose, onSave, title = "Subir/Editar Archivo", saveButtonText = "Guardar", valorActual, mostrarFechaVencimiento = true, accept = "application/pdf" }) => {
 
@@ -32,11 +33,12 @@ const ModalArchivo = ({ isOpen, onClose, onSave, title = "Subir/Editar Archivo",
     const file = e.target.files[0];
     if (!file) return;
 
-    const allowedTypes = accept.split(',').map(type => type.trim());
+    const allowedTypes = accept.split(',').map(type => type.trim().toLowerCase());
 
     const isAllowed = allowedTypes.some(type => {
       if (type === '*/*') return true;
       if (type.endsWith('/*')) return file.type.startsWith(type.slice(0, -1));
+      if (type.startsWith('.')) return file.name.toLowerCase().endsWith(type);
       return type === file.type;
     });
 
@@ -75,6 +77,10 @@ const ModalArchivo = ({ isOpen, onClose, onSave, title = "Subir/Editar Archivo",
   };
 
   if (!isOpen) return null;
+
+  const mostrarComoImagen = archivo
+    ? archivo.type.startsWith('image/')
+    : esImagen(valorActual?.fileName || previewUrl);
 
   return (
     <div className="modal-overlay">
@@ -117,8 +123,7 @@ const ModalArchivo = ({ isOpen, onClose, onSave, title = "Subir/Editar Archivo",
           {previewUrl && (
             <div className="archivo-preview">
               <strong>Vista previa:</strong>
-              {/* Lógica para mostrar imagen o iframe */}
-              {previewUrl.startsWith('blob:') && archivo?.type.startsWith('image/') ? (
+              {mostrarComoImagen ? (
                 <img src={previewUrl} alt="Vista previa" style={{ maxWidth: '100%' }} />
               ) : (
                 <iframe src={previewUrl} title="Vista previa" width="100%" height="400px" />

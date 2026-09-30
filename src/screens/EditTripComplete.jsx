@@ -14,7 +14,7 @@ import useFetchActiveExternalTrailers from '../hooks/useFetchActiveExternalTrail
 import useFetchCompanies from '../hooks/useFetchCompanies';
 import useFetchWarehouses from '../hooks/useFetchWarehouses';
 import GeneralTripInfoComplete from '../components/trip-form/GeneralTripInfoComplete';
-import { initialBorderCrossingDocs, NORMAL_TRIP_DOCS_BY_COUNTRY } from '../utils/tripFormConstants';
+import { initialBorderCrossingDocs, NORMAL_TRIP_DOCS_BY_COUNTRY, getDocumentUrl, normalizeDocType } from '../utils/tripFormConstants';
 import './css/EditTripForm.css';
 
 import EditTripHeader from '../components/EditTripForm/EditTripHeader';
@@ -53,9 +53,6 @@ const EditTripComplete = () => {
         return {};
     };
 
-    // Documentos ya guardados con la llave vieja "orden_de_retiro" (bug de BorderCrossingFormNew2)
-    // se normalizan a "orden_retiro" para que sigan viéndose en el detalle de la etapa.
-    const normalizeDocType = (tipo) => (tipo === 'orden_de_retiro' ? 'orden_retiro' : tipo);
 
     // Modals
     const [modalAbierto, setModalAbierto] = useState(false);
@@ -111,7 +108,7 @@ const EditTripComplete = () => {
                         if (Array.isArray(etapa.documentos_adjuntos)) {
                             etapa.documentos_adjuntos.forEach(doc => {
                                 const tipo = normalizeDocType(doc.tipo_documento);
-                                if (baseDocs.hasOwnProperty(tipo)) {
+                                if (Object.hasOwn(baseDocs, tipo)) {
                                     baseDocs[tipo] = {
                                         fileName: doc.nombre_archivo?.split(/[\\/]/).pop() || 'Archivo existente',
                                         vencimiento: doc.fecha_vencimiento || null, file: null, document_id: doc.document_id, serverPath: doc.path_servidor_real
@@ -288,7 +285,12 @@ const EditTripComplete = () => {
     const getCurrentDocValueForModal = () => {
         const { stageIndex, docType, stopIndex } = modalTarget;
         if (stageIndex === null || !etapas[stageIndex]) return null;
-        return stopIndex !== null ? etapas[stageIndex].stops_in_transit?.[stopIndex]?.[docType] : etapas[stageIndex].documentos[docType];
+
+        const doc = stopIndex !== null ? etapas[stageIndex].stops_in_transit?.[stopIndex]?.[docType] : etapas[stageIndex].documentos[docType];
+        if (!doc) return null;
+
+        const url = getDocumentUrl(doc, apiHost);
+        return url === '#' ? doc : { ...doc, url };
     };
 
     // --- STAGE MANAGEMENT ---

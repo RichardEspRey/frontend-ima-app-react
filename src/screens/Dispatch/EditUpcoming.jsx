@@ -8,7 +8,7 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import TripConfigPanel from "../../components/EditUpcoming/TripConfigPanel";
 import TripFormRenderer from "../../components/EditUpcoming/TripFormRenderer";
 
-import { initialBorderCrossingDocs, NORMAL_TRIP_DOCS_BY_COUNTRY } from "../../utils/tripFormConstants";
+import { initialBorderCrossingDocs, NORMAL_TRIP_DOCS_BY_COUNTRY, normalizeDocType } from "../../utils/tripFormConstants";
 
 const EditUpComing = () => {
     const { tripId } = useParams();
@@ -52,9 +52,6 @@ const EditUpComing = () => {
         return {};
     };
 
-    // Documentos ya guardados con la llave vieja "orden_de_retiro" (bug de BorderCrossingFormNew2)
-    // se normalizan a "orden_retiro" para que sigan viéndose en el detalle de la etapa.
-    const normalizeDocType = (tipo) => (tipo === 'orden_de_retiro' ? 'orden_retiro' : tipo);
 
     // FETCH DATA
     useEffect(() => {
@@ -99,7 +96,7 @@ const EditUpComing = () => {
                         if (Array.isArray(etapa.documentos_adjuntos)) {
                             etapa.documentos_adjuntos.forEach((doc) => {
                                 const tipo = normalizeDocType(doc.tipo_documento);
-                                if (baseDocs.hasOwnProperty(tipo)) {
+                                if (Object.hasOwn(baseDocs, tipo)) {
                                     baseDocs[tipo] = {
                                         fileName: doc.nombre_archivo?.split(/[\\/]/).pop() || "Archivo existente",
                                         vencimiento: doc.fecha_vencimiento || null, file: null, hasNewFile: false,
