@@ -29,7 +29,8 @@ import useFetchExchangeRate from "../../hooks/useFetchExchangeRate"
 import { useSesion } from "../../shared/auth"
 import { useGastosFiltrosStore } from "../../store/useGastosFiltrosStore"
 import { COLOR } from "../../shared/ui/tokens"
-import { Selector } from "../../shared/ui"
+import { BotonActualizar, Selector } from "../../shared/ui"
+import { useActualizarPantalla } from "../../shared/api"
 
 const OPCIONES_PAIS_GRAFICA = [
   { valor: "US", etiqueta: "USA" },
@@ -66,6 +67,7 @@ function contarFiltros(filtros) {
  */
 export default function ExpenseManagerPage() {
   const { esTotal: esAdmin } = useSesion()
+  const { actualizar, actualizando } = useActualizarPantalla()
   const [graficaAbierta, setGraficaAbierta] = useState(false)
   const [paisGrafica, setPaisGrafica] = useState("US")
   const [modalAbierto, setModalAbierto] = useState(false)
@@ -216,6 +218,8 @@ export default function ExpenseManagerPage() {
         </Box>
 
         <Stack direction="row" spacing={1.5} alignItems="center">
+          <BotonActualizar onActualizar={actualizar} actualizando={actualizando} />
+
           <Button
             variant="outlined"
             startIcon={<InsertChartOutlinedIcon />}

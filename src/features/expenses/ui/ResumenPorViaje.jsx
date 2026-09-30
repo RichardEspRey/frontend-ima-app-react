@@ -9,7 +9,8 @@ import {
   useResumen,
 } from "../../../entities/expense"
 import { decimales, moneda } from "../../../shared/lib/formato"
-import { PageHeader, PantallaEsqueleto, Pestanas, Selector, Paginacion } from "../../../shared/ui"
+import { BotonActualizar, PageHeader, PantallaEsqueleto, Pestanas, Selector, Paginacion } from "../../../shared/ui"
+import { useActualizarPantalla } from "../../../shared/api"
 import { COLOR } from "../../../shared/ui/tokens"
 
 const PAISES = [
@@ -87,7 +88,8 @@ export function ResumenPorViaje({ descriptor }) {
   const [pagina, setPagina] = useState(0)
   const [porPagina, setPorPagina] = useState(50)
 
-  const { data: filas = [], isLoading, isFetching, refetch } = useResumen(descriptor.clave)
+  const { data: filas = [], isLoading, isFetching } = useResumen(descriptor.clave)
+  const { actualizar, actualizando } = useActualizarPantalla()
 
   const visibles = useMemo(() => {
     const porPestana = descriptor.pestanas
@@ -147,9 +149,11 @@ export function ResumenPorViaje({ descriptor }) {
           }}
           sx={{ width: 300 }}
         />
-        <Button variant="contained" onClick={() => refetch()} size="small" disabled={isFetching}>
-          Refrescar
-        </Button>
+        <BotonActualizar
+          onActualizar={actualizar}
+          actualizando={actualizando || isFetching}
+          sx={{ py: 0.75 }}
+        />
       </Stack>
 
       <Paper sx={{ width: "100%", mb: 2 }}>

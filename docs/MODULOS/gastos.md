@@ -33,6 +33,14 @@ que existen dos veces, una por familia.
 - **`features/expenses`** — las tres formas compartidas entre gastos de viaje y diesel.
 - **`features/expense-manager`** — filtros, tabla, modal de alta y estilos del Expense Manager.
 
+## Actualizar a mano
+
+Las tres pantallas llevan **Actualizar**: `BotonActualizar` de `shared/ui` con
+`useActualizarPantalla` de `shared/api`, que vuelve a pedir **todas las consultas activas**
+—la tabla y los catálogos— sin enumerar llaves. Existe porque el operador sube tickets de
+gasto y diesel desde la app móvil contra la misma API, y el escritorio solo los pedía al
+montar la pantalla.
+
 ## Reglas de negocio
 
 - **Todos los gastos se guardan convertidos a dólares** en `monto_total`, sea cual sea la

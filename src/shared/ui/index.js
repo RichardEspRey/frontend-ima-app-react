@@ -1,5 +1,6 @@
 export { DataTable } from "./DataTable"
 export { PageHeader } from "./PageHeader"
+export { BotonActualizar } from "./BotonActualizar"
 export { Pestanas } from "./Pestanas"
 export { Selector } from "./Selector"
 export { SelectorBusqueda } from "./SelectorBusqueda"

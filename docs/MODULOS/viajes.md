@@ -76,7 +76,9 @@ Cubre todo el ciclo de un viaje, desde que se cotiza hasta que se cierra y se re
   Se queda hasta que alguien lo cambie o lo borre, y se guarda al salir del campo, no en
   cada tecla. (Caducó con el viaje entre el 2026-09-23 y el 2026-09-28; nunca se borró de
   la tabla, solo se ocultaba.)
-- El encabezado del Administrador de viajes lleva **dos botones**: «Estatus de cajas» en
+- El encabezado del Administrador de viajes lleva **Actualizar** —vuelve a pedir viajes,
+  compañías y, en la pestaña de programación, también el tablero y las programaciones— y
+  otros dos botones: «Estatus de cajas» en
   claro y «Crear Nuevo Viaje» en oscuro. El peso visual separa la acción que crea algo de
   la que solo lleva a mirar, y `viajes_crear` sigue mandando sobre el segundo. Quitar el de
   crear dejaba la creación de viajes sin entrada directa, porque `/CrearViaje` está con

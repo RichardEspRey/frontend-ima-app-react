@@ -41,8 +41,10 @@ import {
 } from "../../features/trips-admin"
 import { useAuthStore } from "../../store/useAuthStore"
 import { useViajesFiltrosStore } from "../../store/useViajesFiltrosStore"
-import { notify, EstadoError, Pestanas } from "../../shared/ui"
+import { notify, BotonActualizar, EstadoError, Pestanas } from "../../shared/ui"
+import { useActualizarPantalla } from "../../shared/api"
 import { COLOR } from "../../shared/ui/tokens"
+import { GHOST_BTN_SX } from "../../shared/ui/estilos"
 
 /**
  * Quiénes pueden abrir la edición sin restricciones.
@@ -54,19 +56,6 @@ import { COLOR } from "../../shared/ui/tokens"
  * @type {Set.<string>}
  */
 const EDICION_ESPECIAL = new Set(["Blanca", "Angelica", "Israel", "Richard"])
-
-const BOTON_CLARO_SX = {
-  borderColor: COLOR.BORDE_FUERTE,
-  color: COLOR.TEXTO,
-  bgcolor: COLOR.BLANCO,
-  fontWeight: 700,
-  borderRadius: 2,
-  px: 3,
-  py: 1.1,
-  textTransform: "none",
-  boxShadow: "none",
-  "&:hover": { borderColor: COLOR.TENUE, bgcolor: COLOR.LIENZO },
-}
 
 const BOTON_OSCURO_SX = {
   bgcolor: COLOR.TINTA,
@@ -92,6 +81,7 @@ const BOTON_OSCURO_SX = {
  */
 export default function AdminViajesPage() {
   const navigate = useNavigate()
+  const { actualizar, actualizando } = useActualizarPantalla()
   const { userPermissions: permisos, user: usuario } = useAuthStore()
 
   const esAdmin =
@@ -464,11 +454,13 @@ export default function AdminViajesPage() {
         </Box>
 
         <Stack direction="row" spacing={1.5} flexWrap="wrap">
+          <BotonActualizar onActualizar={actualizar} actualizando={actualizando} sx={{ px: 3 }} />
+
           <Button
             variant="outlined"
             startIcon={<Inventory2OutlinedIcon />}
             onClick={() => navigate("/estatus-cajas")}
-            sx={BOTON_CLARO_SX}
+            sx={{ ...GHOST_BTN_SX, fontWeight: 700, px: 3 }}
           >
             Estatus de cajas
           </Button>
