@@ -271,7 +271,13 @@ const PanelInspecciones = () => {
                                                                     variant="contained"
                                                                     startIcon={<BuildOutlinedIcon />}
                                                                     disabled={elegidos.length === 0}
-                                                                    onClick={() => setApertura({ inspeccion: filaAbierta, lado, puntos: elegidos })}
+                                                                    onClick={() => setApertura({
+                                                                        inspeccion: filaAbierta,
+                                                                        lado,
+                                                                        puntos: elegidos,
+                                                                        unidadId: lado === UNIDAD.CAJA ? filaAbierta?.caja_id : filaAbierta?.truck_id,
+                                                                        etiquetaUnidad: lado === UNIDAD.CAJA ? filaAbierta?.no_caja : filaAbierta?.no_camion,
+                                                                    })}
                                                                     sx={DARK_BTN_SX}
                                                                 >
                                                                     Crear orden ({elegidos.length})

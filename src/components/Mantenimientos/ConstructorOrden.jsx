@@ -76,14 +76,14 @@ const ConstructorOrden = ({ apertura, onCerrar, onCreada }) => {
         () => (maintenanceCategories || []).filter(c => String(c.id_tipo_gasto) === TIPO_GASTO_MANTENIMIENTO),
         [maintenanceCategories],
     );
-    const { inspeccion, lado, puntos } = apertura;
-
-    const unidadId = lado === UNIDAD.CAJA ? inspeccion?.caja_id : inspeccion?.truck_id;
-    const etiquetaUnidad = lado === UNIDAD.CAJA ? inspeccion?.no_caja : inspeccion?.no_camion;
+    const { inspeccion, lado, puntos = [], pendientes = [], unidadId, etiquetaUnidad } = apertura;
 
     const [fecha, setFecha] = useState(hoy());
     const [tipoCambio, setTipoCambio] = useState('');
-    const [servicios, setServicios] = useState(() => puntos.map(p => servicioDesdePunto(p, inspeccion)));
+    const [servicios, setServicios] = useState(() => [
+        ...puntos.map(punto => servicioDesdePunto(punto, inspeccion)),
+        ...pendientes.map(servicioDesdePendiente),
+    ]);
     const [previos, setPrevios] = useState([]);
     const [guardando, setGuardando] = useState(false);
     const [error, setError] = useState(null);
@@ -184,7 +184,10 @@ const ConstructorOrden = ({ apertura, onCerrar, onCreada }) => {
                     </Typography>
                     <Typography variant="h5" fontWeight={800} color="#0f172a">Nueva Orden de Servicio</Typography>
                     <Typography variant="body2" color="#64748b">
-                        Un servicio por cada reparación. Del viaje {inspeccion?.trip_number}.
+                        Un servicio por cada reparación.
+                        {inspeccion?.trip_number
+                            ? ` Del viaje ${inspeccion.trip_number}.`
+                            : ' De las reparaciones pendientes.'}
                     </Typography>
                 </Box>
                 <Button onClick={onCerrar} disabled={guardando} startIcon={<CloseIcon />} color="inherit" sx={{ textTransform: 'none' }}>
@@ -218,7 +221,7 @@ const ConstructorOrden = ({ apertura, onCerrar, onCreada }) => {
                         {previos.length > 0 && (
                             <Alert severity="warning" sx={{ mb: 2 }}>
                                 <Typography fontWeight={700} sx={{ mb: 1 }}>
-                                    {lado === UNIDAD.CAJA ? 'Esta caja' : 'Este camión'} trae {previos.length} reparación(es) pendiente(s) de antes
+                                    {lado === UNIDAD.CAJA ? 'Esta caja' : 'Este camión'} trae {previos.length} reparación(es) pendiente(s). Marca las que entran a esta orden.
                                 </Typography>
                                 {previos.map(pendiente => (
                                     <FormControlLabel

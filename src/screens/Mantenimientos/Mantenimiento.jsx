@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Box, Stack, Tab, Tabs, Typography } from '@mui/material';
 import PanelInspecciones from '../../components/Mantenimientos/PanelInspecciones';
+import PanelPendientes from '../../components/Mantenimientos/PanelPendientes';
 import ServiceOrderAdmin from '../ServiceOrderAdmin.jsx';
 import {
     PAGE_SHELL_SX, PAGE_OVERLINE_SX, PAGE_TITLE_SX, TABS_WRAPPER_SX, TAB_SX,
@@ -43,11 +44,7 @@ const Mantenimiento = () => {
                 <PanelInspecciones />
             )}
 
-            {pestana === 'pendientes' && (
-                <Typography variant="body2" sx={{ fontStyle: 'italic', color: '#94a3b8', py: 4, textAlign: 'center' }}>
-                    Las reparaciones pendientes se conectan en la siguiente entrega.
-                </Typography>
-            )}
+            {pestana === 'pendientes' && <PanelPendientes />}
 
             {pestana === 'ordenes' && <ServiceOrderAdmin />}
         </Box>

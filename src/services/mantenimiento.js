@@ -9,6 +9,12 @@ export const ESTATUS_PUNTO = {
     DESCARTADO: 'descartado',
 };
 
+export const ETIQUETA_ESTATUS = {
+    [ESTATUS_PUNTO.EN_PENDIENTES]: 'En pendientes',
+    [ESTATUS_PUNTO.CON_ORDEN]: 'Con orden',
+    [ESTATUS_PUNTO.DESCARTADO]: 'Descartado',
+};
+
 // Los seis rubros del checklist del operador. El remolque es de la caja; el resto,
 // del tractor: de ahí sale que la misma inspección se trabaje por dos lados.
 export const RUBROS = [

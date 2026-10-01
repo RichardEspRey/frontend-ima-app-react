@@ -1,6 +1,6 @@
 import { Box, Checkbox, Chip, FormControlLabel, Paper, Stack, Typography } from '@mui/material';
 
-import { agruparPorRubro } from '../../services/mantenimiento';
+import { ESTATUS_PUNTO, ETIQUETA_ESTATUS, agruparPorRubro } from '../../services/mantenimiento';
 
 const CARD_RUBRO_SX = {
     p: 2,
@@ -10,6 +10,14 @@ const CARD_RUBRO_SX = {
     minWidth: 280,
     flex: '1 1 300px',
 };
+
+const COLOR_ESTATUS = {
+    [ESTATUS_PUNTO.EN_PENDIENTES]: { bgcolor: '#eff6ff', color: '#1d4ed8' },
+    [ESTATUS_PUNTO.CON_ORDEN]: { bgcolor: '#ecfdf5', color: '#047857' },
+    [ESTATUS_PUNTO.DESCARTADO]: { bgcolor: '#fef2f2', color: '#b91c1c' },
+};
+
+const estaResuelto = (punto) => punto.estatus && punto.estatus !== ESTATUS_PUNTO.SIN_RESOLVER;
 
 /**
  * Los puntos de una inspección, agrupados por rubro y con su casilla para entrar
@@ -29,8 +37,9 @@ const RubrosInspeccion = ({ puntos, seleccionados, onAlternar, onAlternarRubro }
     return (
         <Stack direction="row" flexWrap="wrap" gap={2}>
             {rubros.map(rubro => {
-                const claves = rubro.puntos.map(p => p.clave);
-                const todos = claves.every(clave => seleccionados.includes(clave));
+                const abiertos = rubro.puntos.filter(punto => !estaResuelto(punto));
+                const claves = abiertos.map(p => p.clave);
+                const todos = claves.length > 0 && claves.every(clave => seleccionados.includes(clave));
                 const algunos = !todos && claves.some(clave => seleccionados.includes(clave));
 
                 return (
@@ -41,6 +50,7 @@ const RubrosInspeccion = ({ puntos, seleccionados, onAlternar, onAlternarRubro }
                                     size="small"
                                     checked={todos}
                                     indeterminate={algunos}
+                                    disabled={claves.length === 0}
                                     onChange={() => onAlternarRubro(claves, !todos)}
                                     sx={{ p: 0.5 }}
                                 />
@@ -48,31 +58,54 @@ const RubrosInspeccion = ({ puntos, seleccionados, onAlternar, onAlternarRubro }
                             </Stack>
                             <Chip
                                 size="small"
-                                label={rubro.puntos.length}
+                                label={abiertos.length > 0 ? abiertos.length : '✓'}
                                 sx={{ height: 20, fontSize: '0.7rem', fontWeight: 700, bgcolor: '#f1f5f9', color: '#475569' }}
                             />
                         </Stack>
 
                         <Box sx={{ pl: 0.5 }}>
-                            {rubro.puntos.map(punto => (
-                                <FormControlLabel
-                                    key={punto.clave}
-                                    sx={{ alignItems: 'flex-start', mb: 0.5, ml: 0 }}
-                                    control={
-                                        <Checkbox
-                                            size="small"
-                                            checked={seleccionados.includes(punto.clave)}
-                                            onChange={() => onAlternar(punto.clave)}
-                                            sx={{ pt: 0.25 }}
-                                        />
-                                    }
-                                    label={
-                                        <Typography variant="body2" color="#334155" sx={{ mt: 0.25 }}>
-                                            {punto.texto}
-                                        </Typography>
-                                    }
-                                />
-                            ))}
+                            {rubro.puntos.map(punto => {
+                                const resuelto = estaResuelto(punto);
+
+                                return (
+                                    <FormControlLabel
+                                        key={punto.clave}
+                                        sx={{ alignItems: 'flex-start', mb: 0.5, ml: 0 }}
+                                        control={
+                                            <Checkbox
+                                                size="small"
+                                                checked={seleccionados.includes(punto.clave)}
+                                                disabled={resuelto}
+                                                onChange={() => onAlternar(punto.clave)}
+                                                sx={{ pt: 0.25 }}
+                                            />
+                                        }
+                                        label={
+                                            <Box sx={{ mt: 0.25 }}>
+                                                <Typography
+                                                    variant="body2"
+                                                    component="span"
+                                                    color={resuelto ? '#94a3b8' : '#334155'}
+                                                >
+                                                    {punto.texto}
+                                                </Typography>
+                                                {resuelto && (
+                                                    <Chip
+                                                        size="small"
+                                                        label={punto.estatus === ESTATUS_PUNTO.CON_ORDEN && punto.id_orden
+                                                            ? `Orden #${punto.id_orden}`
+                                                            : ETIQUETA_ESTATUS[punto.estatus]}
+                                                        sx={{
+                                                            ml: 1, height: 18, fontSize: '0.65rem', fontWeight: 700,
+                                                            ...COLOR_ESTATUS[punto.estatus],
+                                                        }}
+                                                    />
+                                                )}
+                                            </Box>
+                                        }
+                                    />
+                                );
+                            })}
                         </Box>
                     </Paper>
                 );
