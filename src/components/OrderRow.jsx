@@ -59,7 +59,13 @@ export const OrderRow = ({ order, onEdit, onEditDetail }) => {
                 </TableCell>
                 <TableCell component="th" scope="row">#{order.id_orden}</TableCell>
                 <TableCell>{order.fecha_orden}</TableCell>
-                <TableCell>{order.nombre_camion || 'N/A'}</TableCell>
+                <TableCell>
+                    {order.nombre_camion
+                        ? order.nombre_camion
+                        : order.nombre_caja
+                            ? `Caja ${order.nombre_caja}`
+                            : 'N/A'}
+                </TableCell>
                 <TableCell>{serviciosResumen}</TableCell>
 
                 <TableCell align="right" sx={{ fontWeight: 500 }}>{money(totalsOrder.mo)}</TableCell>
