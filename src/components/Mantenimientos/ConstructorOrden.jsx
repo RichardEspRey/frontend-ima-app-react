@@ -9,7 +9,10 @@ import CloseIcon from '@mui/icons-material/Close';
 
 import ServicioOrden from './ServicioOrden';
 import { useAuthStore } from '../../store/useAuthStore';
-import { UNIDAD, crearOrden, obtenerPendientes } from '../../services/mantenimiento';
+import useFetchCategories from '../../hooks/expense_hooks/useFetchCategories';
+import {
+    TIPO_GASTO_MANTENIMIENTO, UNIDAD, crearGasto, crearOrden, ligarGastos, obtenerPendientes
+} from '../../services/mantenimiento';
 import {
     CARD_SX, DARK_BTN_SX, DIALOG_ACTIONS_SX, DIALOG_CONTENT_SX, DIALOG_PAPER_SX,
     DIALOG_TITLE_SX, SECTION_LABEL_SX,
@@ -25,7 +28,7 @@ const servicioDesdePunto = (punto, inspeccion) => ({
     tipo_mantenimiento: 'Correctivo',
     origen_servicio: 'Interno',
     costo_mano_obra: '',
-    conceptos: [],
+    gastos: [],
     punto: {
         cl_final_id: inspeccion?.cl_final_id,
         viaje_id: inspeccion?.viaje_id,
@@ -43,7 +46,7 @@ const servicioDesdePendiente = (pendiente) => ({
     tipo_mantenimiento: 'Correctivo',
     origen_servicio: 'Interno',
     costo_mano_obra: '',
-    conceptos: [],
+    gastos: [],
     punto_id: pendiente.id,
 });
 
@@ -54,7 +57,7 @@ const servicioEnBlanco = () => ({
     tipo_mantenimiento: 'Correctivo',
     origen_servicio: 'Interno',
     costo_mano_obra: '',
-    conceptos: [],
+    gastos: [],
 });
 
 /**
@@ -66,6 +69,11 @@ const servicioEnBlanco = () => ({
  */
 const ConstructorOrden = ({ apertura, onCerrar, onCreada }) => {
     const usuario = useAuthStore(estado => estado.user);
+    const { maintenanceCategories } = useFetchCategories();
+    const categorias = useMemo(
+        () => (maintenanceCategories || []).filter(c => String(c.id_tipo_gasto) === TIPO_GASTO_MANTENIMIENTO),
+        [maintenanceCategories],
+    );
     const { inspeccion, lado, puntos } = apertura;
 
     const unidadId = lado === UNIDAD.CAJA ? inspeccion?.caja_id : inspeccion?.truck_id;
@@ -102,12 +110,19 @@ const ConstructorOrden = ({ apertura, onCerrar, onCreada }) => {
         prev.map(s => (s.clave === clave ? actualizado : s)));
 
     const total = useMemo(() => servicios.reduce((suma, servicio) => {
-        const conceptos = servicio.conceptos.reduce(
-            (sub, c) => sub + (Number(c.precio_unitario) || 0) * (Number(c.cantidad) || 0), 0);
-        return suma + (Number(servicio.costo_mano_obra) || 0) + conceptos;
+        const gastos = servicio.gastos.reduce((sub, gasto) => sub + gasto.conceptos.reduce(
+            (sub2, c) => sub2 + (Number(c.precio_unitario) || 0) * (Number(c.cantidad) || 0), 0), 0);
+        return suma + (Number(servicio.costo_mano_obra) || 0) + gastos;
     }, 0), [servicios]);
 
     const sinReparacion = servicios.some(s => !s.tipo_reparacion.trim());
+
+    // El gasto no se puede dar de alta a medias: sin país no hay moneda ni tipo de
+    // cambio, y sin categoría el Expense Manager no lo puede filtrar.
+    const gastoIncompleto = servicios.some(servicio => servicio.gastos.some(gasto =>
+        !gasto.pais
+        || gasto.conceptos.length === 0
+        || gasto.conceptos.some(c => !c.categoria || !c.descripcion.trim() || !(Number(c.cantidad) > 0))));
 
     const guardar = async () => {
         setGuardando(true);
@@ -125,18 +140,37 @@ const ConstructorOrden = ({ apertura, onCerrar, onCreada }) => {
                     costo_mano_obra: Number(servicio.costo_mano_obra) || 0,
                     punto: servicio.punto,
                     punto_id: servicio.punto_id,
-                    conceptos: servicio.conceptos
-                        .filter(c => c.descripcion.trim() && Number(c.cantidad) > 0)
-                        .map(c => ({
-                            categoria: c.categoria,
-                            descripcion: c.descripcion.trim(),
-                            precio_unitario: Number(c.precio_unitario) || 0,
-                            cantidad: Number(c.cantidad) || 0,
+                    gastos: servicio.gastos.map(gasto => ({
+                        conceptos: gasto.conceptos.map(concepto => ({
+                            categoria_label: categorias.find(c => String(c.value) === String(concepto.categoria))?.label,
+                            descripcion: concepto.descripcion.trim(),
+                            precio_unitario: Number(concepto.precio_unitario) || 0,
+                            cantidad: Number(concepto.cantidad) || 0,
                         })),
+                    })),
                 })),
                 usuarioId: usuario?.id,
             });
-            onCreada(resultado.id_orden);
+
+            // La orden ya quedó. Ahora cada gasto se da de alta en el Admin de Gastos y
+            // se amarra con el concepto de la orden del que salió, para poder ir de uno
+            // al otro con el Expense #.
+            const ligas = [];
+            for (let iServicio = 0; iServicio < servicios.length; iServicio += 1) {
+                for (let iGasto = 0; iGasto < servicios[iServicio].gastos.length; iGasto += 1) {
+                    const gasto = servicios[iServicio].gastos[iGasto];
+                    const creado = await crearGasto({ gasto, usuarioId: usuario?.id });
+                    const idGasto = creado.id_gasto ?? creado.id ?? creado.data?.id_gasto;
+
+                    (resultado.conceptos || [])
+                        .filter(c => c.servicio === iServicio && c.gasto === iGasto)
+                        .forEach(c => ligas.push({ id_detalle: c.id_detalle, id_gasto: idGasto }));
+                }
+            }
+
+            if (ligas.length > 0) await ligarGastos(ligas);
+
+            onCreada(resultado.id_orden, ligas.length);
         } catch (err) {
             setError(err.message);
         } finally {
@@ -213,6 +247,7 @@ const ConstructorOrden = ({ apertura, onCerrar, onCreada }) => {
                                 key={servicio.clave}
                                 servicio={servicio}
                                 indice={indice}
+                                categorias={categorias}
                                 onCambiar={(actualizado) => cambiarServicio(servicio.clave, actualizado)}
                                 onEliminar={() => quitarServicio(servicio.clave)}
                             />
@@ -241,7 +276,7 @@ const ConstructorOrden = ({ apertura, onCerrar, onCreada }) => {
                                     <Typography variant="body2" color="#334155" noWrap sx={{ maxWidth: 180 }}>
                                         {indice + 1}. {servicio.tipo_reparacion || 'Sin descripción'}
                                     </Typography>
-                                    <Chip size="small" label={servicio.conceptos.length ? `${servicio.conceptos.length} con.` : 'MO'} sx={{ height: 18, fontSize: '0.65rem' }} />
+                                    <Chip size="small" label={servicio.gastos.length ? `${servicio.gastos.length} gasto(s)` : 'MO'} sx={{ height: 18, fontSize: '0.65rem' }} />
                                 </Stack>
                             ))}
                         </Stack>
@@ -262,7 +297,7 @@ const ConstructorOrden = ({ apertura, onCerrar, onCreada }) => {
                     variant="contained"
                     startIcon={<SaveIcon />}
                     onClick={guardar}
-                    disabled={guardando || servicios.length === 0 || sinReparacion}
+                    disabled={guardando || servicios.length === 0 || sinReparacion || gastoIncompleto}
                     sx={DARK_BTN_SX}
                 >
                     {guardando ? 'Guardando…' : 'Guardar orden'}

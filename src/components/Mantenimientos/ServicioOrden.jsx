@@ -4,27 +4,33 @@ import {
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import AddIcon from '@mui/icons-material/Add';
 
+import GastoServicio from './GastoServicio';
 import { CARD_SX, SECTION_LABEL_SX } from '../../styles/estilosTabla';
 
-const CONCEPTO_EN_BLANCO = { categoria: '', descripcion: '', precio_unitario: '', cantidad: 1 };
+const hoy = () => new Date().toISOString().slice(0, 10);
+
+const gastoEnBlanco = () => ({
+    pais: '',
+    fecha_ticket: hoy(),
+    fecha_gasto: hoy(),
+    cantidad_original: '',
+    tipo_cambio: '',
+    factura: null,
+    ticket: null,
+    conceptos: [{ categoria: '', descripcion: '', precio_unitario: '', cantidad: 1 }],
+});
 
 /**
  * Un servicio de la orden: una reparación, su mano de obra y los conceptos de gasto
  * que lleve. El tipo de reparación nace del punto que reportó el operador y se puede
  * corregir aquí mismo, que es lo que pidió operaciones.
  */
-const ServicioOrden = ({ servicio, indice, onCambiar, onEliminar }) => {
+const ServicioOrden = ({ servicio, indice, categorias, onCambiar, onEliminar }) => {
     const cambiar = (campo, valor) => onCambiar({ ...servicio, [campo]: valor });
 
-    const cambiarConcepto = (i, campo, valor) => {
-        const conceptos = servicio.conceptos.map((concepto, j) =>
-            j === i ? { ...concepto, [campo]: valor } : concepto);
-        onCambiar({ ...servicio, conceptos });
-    };
-
-    const totalConceptos = servicio.conceptos.reduce(
-        (suma, c) => suma + (Number(c.precio_unitario) || 0) * (Number(c.cantidad) || 0), 0);
-    const total = (Number(servicio.costo_mano_obra) || 0) + totalConceptos;
+    const totalGastos = servicio.gastos.reduce((suma, gasto) => suma + gasto.conceptos.reduce(
+        (sub, c) => sub + (Number(c.precio_unitario) || 0) * (Number(c.cantidad) || 0), 0), 0);
+    const total = (Number(servicio.costo_mano_obra) || 0) + totalGastos;
 
     return (
         <Paper elevation={0} sx={{ ...CARD_SX, bgcolor: 'white', mb: 2 }}>
@@ -85,59 +91,43 @@ const ServicioOrden = ({ servicio, indice, onCambiar, onEliminar }) => {
 
             <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
                 <Typography variant="overline" sx={SECTION_LABEL_SX}>
-                    Conceptos {servicio.conceptos.length > 0 && `(${servicio.conceptos.length})`}
+                    Gastos {servicio.gastos.length > 0 && `(${servicio.gastos.length})`}
                 </Typography>
                 <Button
                     size="small"
                     startIcon={<AddIcon />}
-                    onClick={() => onCambiar({ ...servicio, conceptos: [...servicio.conceptos, { ...CONCEPTO_EN_BLANCO }] })}
+                    onClick={() => onCambiar({ ...servicio, gastos: [...servicio.gastos, gastoEnBlanco()] })}
                     sx={{ textTransform: 'none' }}
                 >
-                    Agregar concepto
+                    Agregar gasto
                 </Button>
             </Stack>
 
-            {servicio.conceptos.length === 0 && (
-                <Typography variant="body2" sx={{ fontStyle: 'italic', color: '#94a3b8' }}>
-                    Sin refacciones ni consumibles. Lo que agregues aquí se captura como gasto, no sale del inventario.
+            {servicio.gastos.length === 0 && (
+                <Typography variant="body2" sx={{ fontStyle: 'italic', color: '#94a3b8', mb: 1 }}>
+                    Sin refacciones, herramienta ni consumibles. Lo que agregues aquí se da de alta como gasto
+                    en el Administrador de Gastos, no sale del inventario.
                 </Typography>
             )}
 
-            {servicio.conceptos.map((concepto, i) => (
-                <Stack key={i} direction="row" spacing={1.5} alignItems="center" sx={{ mb: 1 }} flexWrap="wrap" useFlexGap>
-                    <TextField
-                        size="small" label="Categoría" sx={{ minWidth: 140 }}
-                        value={concepto.categoria}
-                        onChange={(evento) => cambiarConcepto(i, 'categoria', evento.target.value)}
-                    />
-                    <TextField
-                        size="small" label="Descripción" sx={{ flex: '1 1 200px' }}
-                        value={concepto.descripcion}
-                        onChange={(evento) => cambiarConcepto(i, 'descripcion', evento.target.value)}
-                    />
-                    <TextField
-                        size="small" label="Precio Unit." type="number" sx={{ width: 120 }}
-                        value={concepto.precio_unitario}
-                        onChange={(evento) => cambiarConcepto(i, 'precio_unitario', evento.target.value)}
-                    />
-                    <TextField
-                        size="small" label="Cant." type="number" sx={{ width: 90 }}
-                        value={concepto.cantidad}
-                        onChange={(evento) => cambiarConcepto(i, 'cantidad', evento.target.value)}
-                    />
-                    <IconButton
-                        size="small" color="error"
-                        onClick={() => onCambiar({ ...servicio, conceptos: servicio.conceptos.filter((_, j) => j !== i) })}
-                    >
-                        <DeleteOutlineIcon fontSize="small" />
-                    </IconButton>
-                </Stack>
+            {servicio.gastos.map((gasto, i) => (
+                <GastoServicio
+                    key={i}
+                    gasto={gasto}
+                    indice={i}
+                    categorias={categorias}
+                    onCambiar={(actualizado) => onCambiar({
+                        ...servicio,
+                        gastos: servicio.gastos.map((g, j) => (j === i ? actualizado : g)),
+                    })}
+                    onEliminar={() => onCambiar({ ...servicio, gastos: servicio.gastos.filter((_, j) => j !== i) })}
+                />
             ))}
 
             <Box sx={{ textAlign: 'right', mt: 1.5 }}>
                 <Typography variant="caption" color="#64748b">
                     Mano de obra ${(Number(servicio.costo_mano_obra) || 0).toFixed(2)}
-                    {totalConceptos > 0 && ` · Conceptos $${totalConceptos.toFixed(2)}`}
+                    {totalGastos > 0 && ` · Gastos $${totalGastos.toFixed(2)}`}
                 </Typography>
                 <Typography fontWeight={800} color="#0f172a">${total.toFixed(2)}</Typography>
             </Box>

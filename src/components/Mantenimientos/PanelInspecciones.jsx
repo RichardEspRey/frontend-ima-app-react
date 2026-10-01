@@ -327,10 +327,16 @@ const PanelInspecciones = () => {
                 <ConstructorOrden
                     apertura={apertura}
                     onCerrar={() => setApertura(null)}
-                    onCreada={async (idOrden) => {
+                    onCreada={async (idOrden, gastos) => {
                         setApertura(null);
                         await recargarPuntos();
-                        Swal.fire('Orden creada', `Se levantó la orden #${idOrden}.`, 'success');
+                        Swal.fire(
+                            'Orden creada',
+                            gastos > 0
+                                ? `Se levantó la orden #${idOrden} y su gasto quedó en el Administrador de Gastos.`
+                                : `Se levantó la orden #${idOrden}.`,
+                            'success',
+                        );
                     }}
                 />
             )}

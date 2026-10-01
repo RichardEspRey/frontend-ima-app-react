@@ -95,6 +95,60 @@ export const crearOrden = ({ unidadTipo, unidadId, fecha, tipoCambio, servicios,
         id_usuario: usuarioId,
     });
 
+export const ligarGastos = (ligas) => pedirMtto('ligarGasto', { ligas: JSON.stringify(ligas) });
+
+// El tipo de gasto con el que entran las refacciones del taller. Lo pide
+// `save_expense.php` por id, no por nombre.
+export const TIPO_GASTO_MANTENIMIENTO = '3';
+
+/**
+ * Da de alta el gasto en el Administrador de Gastos, con sus comprobantes.
+ *
+ * Se usa el mismo endpoint que la pantalla de Nuevo Gasto para que el gasto nazca
+ * idéntico a uno capturado a mano: misma moneda, mismo tipo de cambio, mismos
+ * catálogos. Lo único que cambia es de dónde viene.
+ */
+export const crearGasto = async ({ gasto, usuarioId }) => {
+    const esMexico = gasto.pais === 'MX';
+    const total = gasto.conceptos.reduce(
+        (suma, c) => suma + (Number(c.precio_unitario) || 0) * (Number(c.cantidad) || 0), 0);
+
+    const fd = new FormData();
+    if (gasto.factura) fd.append('factura_pdf_file', gasto.factura);
+    if (gasto.ticket) fd.append('ticket_jpg_file', gasto.ticket);
+
+    fd.append('generalData', JSON.stringify({
+        fecha_gasto: gasto.fecha_gasto,
+        fecha_ticket: gasto.fecha_ticket,
+        pais: gasto.pais,
+        moneda: esMexico ? 'MXN' : 'USD',
+        monto_total: total,
+        cantidad_original: Number(gasto.cantidad_original) || total,
+        tipo_cambio: esMexico ? gasto.tipo_cambio : '',
+        id_usuario: usuarioId,
+    }));
+
+    fd.append('detailsData', JSON.stringify(gasto.conceptos.map(concepto => ({
+        id_tipo_gasto: TIPO_GASTO_MANTENIMIENTO,
+        id_articulo: null,
+        descripcion_articulo: concepto.descripcion.trim(),
+        cantidad_articulo: Number(concepto.cantidad) || 0,
+        precio_unitario: Number(concepto.precio_unitario) || 0,
+        id_categoria_mantenimiento: concepto.categoria || null,
+        id_subcategoria_mantenimiento: null,
+    }))));
+    fd.append('op', 'Alta');
+
+    const res = await fetch(`${apiHost}/save_expense.php`, { method: 'POST', body: fd });
+    const result = await res.json();
+
+    if (result.status !== 'success') {
+        throw new Error(result.message || 'No se pudo crear el gasto');
+    }
+
+    return result;
+};
+
 export const completarLado = ({ clFinalId, viajeId, lado, usuarioId }) =>
     pedirMtto('completarLado', { cl_final_id: clFinalId, viaje_id: viajeId, lado, id_usuario: usuarioId });
 
