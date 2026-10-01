@@ -1,0 +1,65 @@
+import { useState } from 'react';
+import { Box, Stack, Tab, Tabs, Typography } from '@mui/material';
+import Swal from 'sweetalert2';
+
+import PanelInspecciones from '../../components/Mantenimientos/PanelInspecciones';
+import ServiceOrderAdmin from '../ServiceOrderAdmin.jsx';
+import {
+    PAGE_SHELL_SX, PAGE_OVERLINE_SX, PAGE_TITLE_SX, TABS_WRAPPER_SX, TAB_SX,
+} from '../../styles/estilosTabla';
+
+const PESTANAS = [
+    { id: 'inspecciones', etiqueta: 'Inspecciones' },
+    { id: 'pendientes', etiqueta: 'Reparaciones pendientes' },
+    { id: 'ordenes', etiqueta: 'Órdenes de servicio' },
+];
+
+/**
+ * El taller en una sola pantalla: lo que reportó el operador, lo que quedó pendiente
+ * y las órdenes de servicio, sin saltar entre pantallas ni pasar por un Excel.
+ */
+const Mantenimiento = () => {
+    const [pestana, setPestana] = useState('inspecciones');
+
+    const porHacer = (titulo) => Swal.fire(titulo, 'Esta parte se conecta en la siguiente entrega.', 'info');
+
+    return (
+        <Box sx={PAGE_SHELL_SX}>
+            <Stack direction="row" justifyContent="space-between" alignItems="flex-end" mb={4} flexWrap="wrap" gap={2}>
+                <Box>
+                    <Typography variant="overline" sx={PAGE_OVERLINE_SX}>Mantenimientos</Typography>
+                    <Typography variant="h4" fontWeight={800} color="#0f172a" sx={PAGE_TITLE_SX}>
+                        Mantenimiento
+                    </Typography>
+                    <Typography variant="body2" color="#64748b" sx={{ mt: 0.5 }}>
+                        De lo que reportó el operador a la orden de servicio, sin salir de aquí.
+                    </Typography>
+                </Box>
+            </Stack>
+
+            <Box sx={{ ...TABS_WRAPPER_SX, mb: 3 }}>
+                <Tabs value={pestana} onChange={(_evento, valor) => setPestana(valor)} TabIndicatorProps={{ style: { display: 'none' } }}>
+                    {PESTANAS.map(p => <Tab key={p.id} value={p.id} label={p.etiqueta} sx={TAB_SX} />)}
+                </Tabs>
+            </Box>
+
+            {pestana === 'inspecciones' && (
+                <PanelInspecciones
+                    onCrearOrden={() => porHacer('Nueva orden desde la inspección')}
+                    onMandarAPendientes={() => porHacer('Mandar a reparaciones pendientes')}
+                    onDescartar={() => porHacer('Descartar puntos')}
+                />
+            )}
+
+            {pestana === 'pendientes' && (
+                <Typography variant="body2" sx={{ fontStyle: 'italic', color: '#94a3b8', py: 4, textAlign: 'center' }}>
+                    Las reparaciones pendientes se conectan en la siguiente entrega.
+                </Typography>
+            )}
+
+            {pestana === 'ordenes' && <ServiceOrderAdmin />}
+        </Box>
+    );
+};
+
+export default Mantenimiento;

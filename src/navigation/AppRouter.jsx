@@ -36,6 +36,7 @@ import GastosDetalle from '../screens/Gastos/GastosDetalle.jsx';
 import GastosEditor from '../screens/Gastos/GastosEditor.jsx';
 import AdminGastosGeneral from '../screens/Gastos/AdminGastos.jsx';
 import Inspeccion_final from '../screens/Mantenimientos/Inspeccion_final.jsx';
+import Mantenimiento from '../screens/Mantenimientos/Mantenimiento.jsx';
 import ExpenseEdit from '../screens/Gastos/ExpenseEdit.jsx';
 import StockAdmin  from '../screens/StockAdmin.jsx';
 import ServiceOrderScreen from '../screens/ServiceOrderScreen.jsx';
@@ -113,6 +114,7 @@ const AppRouter = () => {
               <Route path="/ImaAdmin" element={<ImaAdmin />} />
               <Route path="/ImaScreen" element={<ImaScreen />} />
               <Route path="/Inspeccion-final" element={<Inspeccion_final />} />
+              <Route path="/mantenimiento" element={<Mantenimiento />} />
               <Route path="/edit-expense/:id_gasto" element={<ExpenseEdit />} />
               <Route path="/view-inventory" element={<StockAdmin />} />
               <Route path="/new-service-order" element={<ServiceOrderScreen />} />
