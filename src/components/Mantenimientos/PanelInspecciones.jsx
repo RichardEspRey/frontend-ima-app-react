@@ -202,6 +202,7 @@ const PanelInspecciones = () => {
                         <TableRow sx={HEADER_ROW_SX}>
                             <TableCell sx={{ ...HEADER_CELL_SX, width: 50 }} />
                             <TableCell sx={HEADER_CELL_SX}>Viaje</TableCell>
+                            <TableCell sx={HEADER_CELL_SX}>Fecha</TableCell>
                             <TableCell sx={HEADER_CELL_SX}>Operador</TableCell>
                             <TableCell sx={HEADER_CELL_SX}>{lado === UNIDAD.CAJA ? 'Caja' : 'Camión'}</TableCell>
                             <TableCell sx={HEADER_CELL_SX} align="center">Por atender</TableCell>
@@ -210,12 +211,12 @@ const PanelInspecciones = () => {
 
                     <TableBody>
                         {cargando && (
-                            <TableRow><TableCell colSpan={5} align="center" sx={{ py: 6 }}><CircularProgress size={28} /></TableCell></TableRow>
+                            <TableRow><TableCell colSpan={6} align="center" sx={{ py: 6 }}><CircularProgress size={28} /></TableCell></TableRow>
                         )}
 
                         {!cargando && visibles.length === 0 && !error && (
                             <TableRow>
-                                <TableCell colSpan={5} align="center" sx={{ py: 6, color: '#64748b' }}>
+                                <TableCell colSpan={6} align="center" sx={{ py: 6, color: '#64748b' }}>
                                     No hay inspecciones con puntos de {lado === UNIDAD.CAJA ? 'caja' : 'camión'} en esta pestaña.
                                 </TableCell>
                             </TableRow>
@@ -232,6 +233,11 @@ const PanelInspecciones = () => {
                                     <TableCell>
                                         <Typography fontWeight={800} color="#0f172a">{fila.trip_number}</Typography>
                                         <Typography variant="caption" color="#64748b">{fila.nomenclatura}</Typography>
+                                    </TableCell>
+                                    <TableCell>
+                                        <Typography variant="body2" color="#475569">
+                                            {(fila.fecha_creacion || '').slice(0, 10) || '—'}
+                                        </Typography>
                                     </TableCell>
                                     <TableCell>
                                         <Typography variant="body2" color="#334155">{fila.operador}</Typography>
@@ -251,7 +257,7 @@ const PanelInspecciones = () => {
                                 </TableRow>
 
                                 <TableRow key={`${fila.viaje_id}-detalle`}>
-                                    <TableCell colSpan={5} sx={{ py: 0, borderBottom: abierta === fila.viaje_id ? '1px solid #e2e8f0' : 'none' }}>
+                                    <TableCell colSpan={6} sx={{ py: 0, borderBottom: abierta === fila.viaje_id ? '1px solid #e2e8f0' : 'none' }}>
                                         <Collapse in={abierta === fila.viaje_id} timeout="auto" unmountOnExit>
                                             <Box sx={{ py: 2.5, bgcolor: '#f8fafc', px: 2, borderRadius: 2, my: 1.5 }}>
                                                 {cargandoDetalle && <CircularProgress size={22} />}
