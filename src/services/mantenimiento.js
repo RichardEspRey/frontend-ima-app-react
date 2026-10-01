@@ -38,6 +38,56 @@ const normalizar = (texto) => (texto || '')
 
 export const esPuntoSinFalla = (texto) => SIN_FALLA.has(normalizar(texto));
 
+const pedirMtto = async (op, campos = {}) => {
+    const fd = new FormData();
+    fd.append('op', op);
+    Object.entries(campos).forEach(([clave, valor]) => {
+        if (valor !== undefined && valor !== null) fd.append(clave, valor);
+    });
+
+    const res = await fetch(`${apiHost}/mtto.php`, { method: 'POST', body: fd });
+    const result = await res.json();
+
+    if (result.status !== 'success') {
+        throw new Error(result.message || 'No se pudo completar la operación');
+    }
+
+    return result;
+};
+
+// El conteo de «por atender» sale del servidor ya filtrado: `All_CL_Final` cuenta
+// renglones, incluidos los «ok», y por eso una inspección con 3 cosas que hacer
+// aparecía con 5.
+export const obtenerInspeccionesDeLado = async (lado) => {
+    const result = await pedirMtto('getInspecciones', { lado });
+    return Array.isArray(result.inspecciones) ? result.inspecciones : [];
+};
+
+export const obtenerPuntos = async (viajeId, lado) => {
+    const result = await pedirMtto('getPuntos', { viaje_id: viajeId, lado });
+    return (Array.isArray(result.puntos) ? result.puntos : []).map(punto => ({
+        ...punto,
+        clave: `${punto.origen_tabla}-${punto.origen_id}`,
+        origenTabla: punto.origen_tabla,
+        origenId: Number(punto.origen_id),
+        unidadTipo: punto.unidad_tipo,
+    }));
+};
+
+export const resolverPuntos = ({ items, estatus, usuarioId }) =>
+    pedirMtto('resolverPuntos', { items: JSON.stringify(items), estatus, id_usuario: usuarioId });
+
+export const obtenerPendientes = async (unidadTipo) => {
+    const result = await pedirMtto('getPendientes', { unidad_tipo: unidadTipo });
+    return Array.isArray(result.pendientes) ? result.pendientes : [];
+};
+
+export const crearPendienteManual = ({ unidadTipo, unidadId, descripcion, usuarioId }) =>
+    pedirMtto('crearPendiente', { unidad_tipo: unidadTipo, unidad_id: unidadId, descripcion, id_usuario: usuarioId });
+
+export const completarLado = ({ clFinalId, viajeId, lado, usuarioId }) =>
+    pedirMtto('completarLado', { cl_final_id: clFinalId, viaje_id: viajeId, lado, id_usuario: usuarioId });
+
 const pedirFormularios = async (op, campos = {}) => {
     const cuerpo = Object.entries({ op, ...campos })
         .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v ?? '')}`)

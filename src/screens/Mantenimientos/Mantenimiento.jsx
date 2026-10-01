@@ -44,11 +44,7 @@ const Mantenimiento = () => {
             </Box>
 
             {pestana === 'inspecciones' && (
-                <PanelInspecciones
-                    onCrearOrden={() => porHacer('Nueva orden desde la inspección')}
-                    onMandarAPendientes={() => porHacer('Mandar a reparaciones pendientes')}
-                    onDescartar={() => porHacer('Descartar puntos')}
-                />
+                <PanelInspecciones onCrearOrden={() => porHacer('Nueva orden desde la inspección')} />
             )}
 
             {pestana === 'pendientes' && (

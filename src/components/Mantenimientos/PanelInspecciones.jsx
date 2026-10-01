@@ -9,10 +9,14 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import BuildOutlinedIcon from '@mui/icons-material/BuildOutlined';
 import ScheduleOutlinedIcon from '@mui/icons-material/ScheduleOutlined';
 import BlockOutlinedIcon from '@mui/icons-material/BlockOutlined';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+
+import Swal from 'sweetalert2';
 
 import RubrosInspeccion from './RubrosInspeccion';
+import { useAuthStore } from '../../store/useAuthStore';
 import {
-    UNIDAD, obtenerDetalle, obtenerInspecciones, puntosDeDetalle, puntosDeUnidad
+    ESTATUS_PUNTO, UNIDAD, completarLado, obtenerInspeccionesDeLado, obtenerPuntos, resolverPuntos
 } from '../../services/mantenimiento';
 import {
     TABLE_CONTAINER_SX, HEADER_ROW_SX, HEADER_CELL_SX, TABS_WRAPPER_SX, TAB_SX, DARK_BTN_SX,
@@ -23,18 +27,14 @@ const LADOS = [
     { id: UNIDAD.CAJA, etiqueta: 'Caja' },
 ];
 
-const contarDeLado = (fila, lado) => lado === UNIDAD.CAJA
-    ? Number(fila.cnt_remolque || 0)
-    : ['cnt_motor', 'cnt_exterior', 'cnt_neumaticos', 'cnt_cabina', 'cnt_otro']
-        .reduce((suma, clave) => suma + Number(fila[clave] || 0), 0);
-
 /**
  * Las inspecciones que llegan del móvil, trabajadas por lado.
  *
  * Es el centro del flujo: de aquí se arman las órdenes, se mandan puntos a pendientes
  * y se descarta lo que no procede, sin salir de la pantalla.
  */
-const PanelInspecciones = ({ onCrearOrden, onMandarAPendientes, onDescartar }) => {
+const PanelInspecciones = ({ onCrearOrden }) => {
+    const usuario = useAuthStore(estado => estado.user);
     const [lado, setLado] = useState(UNIDAD.CAMION);
     const [pestana, setPestana] = useState('pendientes');
     const [filas, setFilas] = useState([]);
@@ -50,21 +50,20 @@ const PanelInspecciones = ({ onCrearOrden, onMandarAPendientes, onDescartar }) =
         setCargando(true);
         setError(null);
         try {
-            setFilas(await obtenerInspecciones());
+            setFilas(await obtenerInspeccionesDeLado(lado));
         } catch (err) {
             setError(err.message);
         } finally {
             setCargando(false);
         }
-    }, []);
+    }, [lado]);
 
     useEffect(() => { cargar(); }, [cargar]);
 
     const visibles = useMemo(() => filas.filter(fila => {
-        const completada = String(fila.status) === '1';
-        const deEstaPestana = pestana === 'completadas' ? completada : !completada;
-        return deEstaPestana && contarDeLado(fila, lado) > 0;
-    }), [filas, pestana, lado]);
+        const completada = fila.estatus_lado === 'completada';
+        return pestana === 'completadas' ? completada : !completada;
+    }), [filas, pestana]);
 
     const abrir = async (fila) => {
         const viajeId = fila.viaje_id;
@@ -73,22 +72,20 @@ const PanelInspecciones = ({ onCrearOrden, onMandarAPendientes, onDescartar }) =
         setAbierta(viajeId);
         setSeleccionados([]);
 
-        if (!detalles[viajeId]) {
-            setCargandoDetalle(true);
-            try {
-                const detalle = await obtenerDetalle(viajeId);
-                setDetalles(prev => ({ ...prev, [viajeId]: puntosDeDetalle(detalle) }));
-            } catch (err) {
-                setError(err.message);
-            } finally {
-                setCargandoDetalle(false);
-            }
+        setCargandoDetalle(true);
+        try {
+            const puntos = await obtenerPuntos(viajeId, lado);
+            setDetalles(prev => ({ ...prev, [viajeId]: puntos }));
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setCargandoDetalle(false);
         }
     };
 
     const puntosAbiertos = useMemo(
-        () => puntosDeUnidad(detalles[abierta] || [], lado),
-        [detalles, abierta, lado],
+        () => (detalles[abierta] || []).filter(p => p.estatus !== ESTATUS_PUNTO.DESCARTADO),
+        [detalles, abierta],
     );
 
     const elegidos = useMemo(
@@ -104,6 +101,63 @@ const PanelInspecciones = ({ onCrearOrden, onMandarAPendientes, onDescartar }) =
         : prev.filter(clave => !claves.includes(clave)));
 
     const filaAbierta = filas.find(f => f.viaje_id === abierta);
+
+    const recargarPuntos = async () => {
+        const puntos = await obtenerPuntos(abierta, lado);
+        setDetalles(prev => ({ ...prev, [abierta]: puntos }));
+        setSeleccionados([]);
+        cargar();
+    };
+
+    const resolver = async (estatus) => {
+        const items = elegidos.map(punto => ({
+            cl_final_id: filaAbierta?.cl_final_id,
+            viaje_id: abierta,
+            categoria: punto.categoria,
+            origen_tabla: punto.origenTabla,
+            origen_id: punto.origenId,
+            unidad_tipo: punto.unidadTipo,
+            truck_id: filaAbierta?.truck_id,
+            caja_id: filaAbierta?.caja_id,
+            descripcion: punto.texto,
+        }));
+
+        try {
+            await resolverPuntos({ items, estatus, usuarioId: usuario?.id });
+            await recargarPuntos();
+        } catch (err) {
+            Swal.fire('Error', err.message, 'error');
+        }
+    };
+
+    const descartar = async () => {
+        const confirmacion = await Swal.fire({
+            title: `¿Descartar ${elegidos.length} punto(s)?`,
+            text: 'No entran a ninguna orden ni quedan pendientes: se guardan como descartados.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, descartar',
+            cancelButtonText: 'Cancelar',
+        });
+        if (confirmacion.isConfirmed) resolver(ESTATUS_PUNTO.DESCARTADO);
+    };
+
+    const cerrarLado = async () => {
+        try {
+            await completarLado({
+                clFinalId: filaAbierta?.cl_final_id,
+                viajeId: abierta,
+                lado,
+                usuarioId: usuario?.id,
+            });
+            setAbierta(null);
+            cargar();
+        } catch (err) {
+            Swal.fire('Falta resolver puntos', err.message, 'warning');
+        }
+    };
+
+    const sinResolver = puntosAbiertos.filter(p => p.estatus === ESTATUS_PUNTO.SIN_RESOLVER).length;
 
     return (
         <Box>
@@ -178,17 +232,17 @@ const PanelInspecciones = ({ onCrearOrden, onMandarAPendientes, onDescartar }) =
                                         <Typography variant="caption" color="#64748b">{fila.nomenclatura}</Typography>
                                     </TableCell>
                                     <TableCell>
-                                        <Typography variant="body2" color="#334155">{fila.driver_nombre}</Typography>
+                                        <Typography variant="body2" color="#334155">{fila.operador}</Typography>
                                     </TableCell>
                                     <TableCell>
                                         <Typography variant="body2" fontWeight={700} color="#334155">
-                                            {lado === UNIDAD.CAJA ? (fila.no_caja || '—') : fila.truck_unidad}
+                                            {lado === UNIDAD.CAJA ? (fila.no_caja || '—') : (fila.no_camion || '—')}
                                         </Typography>
                                     </TableCell>
                                     <TableCell align="center">
                                         <Chip
                                             size="small"
-                                            label={contarDeLado(fila, lado)}
+                                            label={fila.por_atender}
                                             sx={{ height: 22, fontWeight: 700, bgcolor: '#eff6ff', color: '#1d4ed8', border: '1px solid #bfdbfe' }}
                                         />
                                     </TableCell>
@@ -224,7 +278,7 @@ const PanelInspecciones = ({ onCrearOrden, onMandarAPendientes, onDescartar }) =
                                                                     variant="outlined"
                                                                     startIcon={<ScheduleOutlinedIcon />}
                                                                     disabled={elegidos.length === 0}
-                                                                    onClick={() => onMandarAPendientes({ inspeccion: filaAbierta, lado, puntos: elegidos })}
+                                                                    onClick={() => resolver(ESTATUS_PUNTO.EN_PENDIENTES)}
                                                                     sx={{ textTransform: 'none', fontWeight: 700, borderRadius: 2 }}
                                                                 >
                                                                     Mandar a pendientes
@@ -234,10 +288,25 @@ const PanelInspecciones = ({ onCrearOrden, onMandarAPendientes, onDescartar }) =
                                                                     color="error"
                                                                     startIcon={<BlockOutlinedIcon />}
                                                                     disabled={elegidos.length === 0}
-                                                                    onClick={() => onDescartar({ inspeccion: filaAbierta, lado, puntos: elegidos })}
+                                                                    onClick={descartar}
                                                                     sx={{ textTransform: 'none', fontWeight: 700, borderRadius: 2 }}
                                                                 >
                                                                     Descartar
+                                                                </Button>
+
+                                                                <Box sx={{ flexGrow: 1 }} />
+
+                                                                <Button
+                                                                    variant="outlined"
+                                                                    color="success"
+                                                                    startIcon={<CheckCircleOutlineIcon />}
+                                                                    disabled={sinResolver > 0}
+                                                                    onClick={cerrarLado}
+                                                                    sx={{ textTransform: 'none', fontWeight: 700, borderRadius: 2 }}
+                                                                >
+                                                                    {sinResolver > 0
+                                                                        ? `Faltan ${sinResolver} por resolver`
+                                                                        : 'Completar lado'}
                                                                 </Button>
                                                             </Stack>
                                                         )}
