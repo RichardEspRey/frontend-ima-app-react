@@ -23,9 +23,12 @@ const PAISES = [
 const GastoServicio = ({ gasto, indice, categorias, subcategorias, onCambiar, onEliminar }) => {
     const cambiar = (campo, valor) => onCambiar({ ...gasto, [campo]: valor });
 
-    const cambiarConcepto = (i, campo, valor) => onCambiar({
+    // Recibe los cambios juntos: dos llamadas seguidas se calculan sobre el mismo
+    // `gasto` y la segunda pisa a la primera, que es lo que borraba la categoría al
+    // elegirla, porque enseguida se limpiaba la subcategoría.
+    const cambiarConcepto = (i, cambios) => onCambiar({
         ...gasto,
-        conceptos: gasto.conceptos.map((concepto, j) => (j === i ? { ...concepto, [campo]: valor } : concepto)),
+        conceptos: gasto.conceptos.map((concepto, j) => (j === i ? { ...concepto, ...cambios } : concepto)),
     });
 
     const total = gasto.conceptos.reduce(
@@ -101,10 +104,7 @@ const GastoServicio = ({ gasto, indice, categorias, subcategorias, onCambiar, on
                     <TextField
                         select size="small" label="Categoría" required sx={{ width: 160 }}
                         value={concepto.categoria}
-                        onChange={(evento) => {
-                            cambiarConcepto(i, 'categoria', evento.target.value);
-                            cambiarConcepto(i, 'subcategoria', '');
-                        }}
+                        onChange={(evento) => cambiarConcepto(i, { categoria: evento.target.value, subcategoria: '' })}
                     >
                         {categorias.map(c => <MenuItem key={c.value} value={c.value}>{c.label}</MenuItem>)}
                     </TextField>
@@ -112,7 +112,7 @@ const GastoServicio = ({ gasto, indice, categorias, subcategorias, onCambiar, on
                         select size="small" label="Subcategoría" required sx={{ width: 170 }}
                         value={concepto.subcategoria}
                         disabled={!concepto.categoria}
-                        onChange={(evento) => cambiarConcepto(i, 'subcategoria', evento.target.value)}
+                        onChange={(evento) => cambiarConcepto(i, { subcategoria: evento.target.value })}
                     >
                         {subcategorias
                             .filter(sub => String(sub.id_categoria) === String(concepto.categoria))
@@ -121,17 +121,17 @@ const GastoServicio = ({ gasto, indice, categorias, subcategorias, onCambiar, on
                     <TextField
                         size="small" label="Descripción" sx={{ flex: '1 1 180px' }}
                         value={concepto.descripcion}
-                        onChange={(evento) => cambiarConcepto(i, 'descripcion', evento.target.value)}
+                        onChange={(evento) => cambiarConcepto(i, { descripcion: evento.target.value })}
                     />
                     <TextField
                         size="small" label="Precio Unit." type="number" sx={{ width: 120 }}
                         value={concepto.precio_unitario}
-                        onChange={(evento) => cambiarConcepto(i, 'precio_unitario', evento.target.value)}
+                        onChange={(evento) => cambiarConcepto(i, { precio_unitario: evento.target.value })}
                     />
                     <TextField
                         size="small" label="Cant." type="number" sx={{ width: 90 }}
                         value={concepto.cantidad}
-                        onChange={(evento) => cambiarConcepto(i, 'cantidad', evento.target.value)}
+                        onChange={(evento) => cambiarConcepto(i, { cantidad: evento.target.value })}
                     />
                     <IconButton
                         size="small" color="error"
