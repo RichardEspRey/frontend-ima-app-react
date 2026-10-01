@@ -1,7 +1,5 @@
 import { useState } from 'react';
 import { Box, Stack, Tab, Tabs, Typography } from '@mui/material';
-import Swal from 'sweetalert2';
-
 import PanelInspecciones from '../../components/Mantenimientos/PanelInspecciones';
 import ServiceOrderAdmin from '../ServiceOrderAdmin.jsx';
 import {
@@ -20,8 +18,6 @@ const PESTANAS = [
  */
 const Mantenimiento = () => {
     const [pestana, setPestana] = useState('inspecciones');
-
-    const porHacer = (titulo) => Swal.fire(titulo, 'Esta parte se conecta en la siguiente entrega.', 'info');
 
     return (
         <Box sx={PAGE_SHELL_SX}>
@@ -44,7 +40,7 @@ const Mantenimiento = () => {
             </Box>
 
             {pestana === 'inspecciones' && (
-                <PanelInspecciones onCrearOrden={() => porHacer('Nueva orden desde la inspección')} />
+                <PanelInspecciones />
             )}
 
             {pestana === 'pendientes' && (

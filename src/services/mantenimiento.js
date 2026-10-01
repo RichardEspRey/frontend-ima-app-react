@@ -85,6 +85,16 @@ export const obtenerPendientes = async (unidadTipo) => {
 export const crearPendienteManual = ({ unidadTipo, unidadId, descripcion, usuarioId }) =>
     pedirMtto('crearPendiente', { unidad_tipo: unidadTipo, unidad_id: unidadId, descripcion, id_usuario: usuarioId });
 
+export const crearOrden = ({ unidadTipo, unidadId, fecha, tipoCambio, servicios, usuarioId }) =>
+    pedirMtto('crearOrden', {
+        unidad_tipo: unidadTipo,
+        unidad_id: unidadId,
+        fecha,
+        tipo_cambio: tipoCambio || '',
+        servicios: JSON.stringify(servicios),
+        id_usuario: usuarioId,
+    });
+
 export const completarLado = ({ clFinalId, viajeId, lado, usuarioId }) =>
     pedirMtto('completarLado', { cl_final_id: clFinalId, viaje_id: viajeId, lado, id_usuario: usuarioId });
 

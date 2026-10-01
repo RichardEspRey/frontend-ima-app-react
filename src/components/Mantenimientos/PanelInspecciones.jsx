@@ -13,6 +13,7 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 
 import Swal from 'sweetalert2';
 
+import ConstructorOrden from './ConstructorOrden';
 import RubrosInspeccion from './RubrosInspeccion';
 import { useAuthStore } from '../../store/useAuthStore';
 import {
@@ -33,7 +34,7 @@ const LADOS = [
  * Es el centro del flujo: de aquí se arman las órdenes, se mandan puntos a pendientes
  * y se descarta lo que no procede, sin salir de la pantalla.
  */
-const PanelInspecciones = ({ onCrearOrden }) => {
+const PanelInspecciones = () => {
     const usuario = useAuthStore(estado => estado.user);
     const [lado, setLado] = useState(UNIDAD.CAMION);
     const [pestana, setPestana] = useState('pendientes');
@@ -45,6 +46,7 @@ const PanelInspecciones = ({ onCrearOrden }) => {
     const [detalles, setDetalles] = useState({});
     const [cargandoDetalle, setCargandoDetalle] = useState(false);
     const [seleccionados, setSeleccionados] = useState([]);
+    const [apertura, setApertura] = useState(null);
 
     const cargar = useCallback(async () => {
         setCargando(true);
@@ -269,7 +271,7 @@ const PanelInspecciones = ({ onCrearOrden }) => {
                                                                     variant="contained"
                                                                     startIcon={<BuildOutlinedIcon />}
                                                                     disabled={elegidos.length === 0}
-                                                                    onClick={() => onCrearOrden({ inspeccion: filaAbierta, lado, puntos: elegidos })}
+                                                                    onClick={() => setApertura({ inspeccion: filaAbierta, lado, puntos: elegidos })}
                                                                     sx={DARK_BTN_SX}
                                                                 >
                                                                     Crear orden ({elegidos.length})
@@ -321,6 +323,17 @@ const PanelInspecciones = ({ onCrearOrden }) => {
                     </TableBody>
                 </Table>
             </TableContainer>
+            {apertura && (
+                <ConstructorOrden
+                    apertura={apertura}
+                    onCerrar={() => setApertura(null)}
+                    onCreada={async (idOrden) => {
+                        setApertura(null);
+                        await recargarPuntos();
+                        Swal.fire('Orden creada', `Se levantó la orden #${idOrden}.`, 'success');
+                    }}
+                />
+            )}
         </Box>
     );
 };
