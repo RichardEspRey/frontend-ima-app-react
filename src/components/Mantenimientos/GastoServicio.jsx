@@ -20,7 +20,7 @@ const PAISES = [
  * capture aquí se da de alta en el Administrador de Gastos tal cual, con su país,
  * sus fechas y su comprobante.
  */
-const GastoServicio = ({ gasto, indice, categorias, onCambiar, onEliminar }) => {
+const GastoServicio = ({ gasto, indice, categorias, subcategorias, onCambiar, onEliminar }) => {
     const cambiar = (campo, valor) => onCambiar({ ...gasto, [campo]: valor });
 
     const cambiarConcepto = (i, campo, valor) => onCambiar({
@@ -89,7 +89,7 @@ const GastoServicio = ({ gasto, indice, categorias, onCambiar, onEliminar }) => 
                     size="small" startIcon={<AddIcon />} sx={{ textTransform: 'none' }}
                     onClick={() => onCambiar({
                         ...gasto,
-                        conceptos: [...gasto.conceptos, { categoria: '', descripcion: '', precio_unitario: '', cantidad: 1 }],
+                        conceptos: [...gasto.conceptos, { categoria: '', subcategoria: '', descripcion: '', precio_unitario: '', cantidad: 1 }],
                     })}
                 >
                     Concepto
@@ -101,9 +101,22 @@ const GastoServicio = ({ gasto, indice, categorias, onCambiar, onEliminar }) => 
                     <TextField
                         select size="small" label="Categoría" required sx={{ width: 160 }}
                         value={concepto.categoria}
-                        onChange={(evento) => cambiarConcepto(i, 'categoria', evento.target.value)}
+                        onChange={(evento) => {
+                            cambiarConcepto(i, 'categoria', evento.target.value);
+                            cambiarConcepto(i, 'subcategoria', '');
+                        }}
                     >
                         {categorias.map(c => <MenuItem key={c.value} value={c.value}>{c.label}</MenuItem>)}
+                    </TextField>
+                    <TextField
+                        select size="small" label="Subcategoría" required sx={{ width: 170 }}
+                        value={concepto.subcategoria}
+                        disabled={!concepto.categoria}
+                        onChange={(evento) => cambiarConcepto(i, 'subcategoria', evento.target.value)}
+                    >
+                        {subcategorias
+                            .filter(sub => String(sub.id_categoria) === String(concepto.categoria))
+                            .map(sub => <MenuItem key={sub.value} value={sub.value}>{sub.label}</MenuItem>)}
                     </TextField>
                     <TextField
                         size="small" label="Descripción" sx={{ flex: '1 1 180px' }}

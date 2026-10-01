@@ -10,8 +10,9 @@ import CloseIcon from '@mui/icons-material/Close';
 import ServicioOrden from './ServicioOrden';
 import { useAuthStore } from '../../store/useAuthStore';
 import useFetchCategories from '../../hooks/expense_hooks/useFetchCategories';
+import useFetchSubcategories from '../../hooks/expense_hooks/useFetchSubcategories';
 import {
-    TIPO_GASTO_MANTENIMIENTO, UNIDAD, crearGasto, crearOrden, ligarGastos, obtenerPendientes
+    TIPO_GASTO_MANTENIMIENTO, UNIDAD, crearGasto, crearOrden, obtenerPendientes
 } from '../../services/mantenimiento';
 import {
     CARD_SX, DARK_BTN_SX, DIALOG_ACTIONS_SX, DIALOG_CONTENT_SX, DIALOG_PAPER_SX,
@@ -70,6 +71,7 @@ const servicioEnBlanco = () => ({
 const ConstructorOrden = ({ apertura, onCerrar, onCreada }) => {
     const usuario = useAuthStore(estado => estado.user);
     const { maintenanceCategories } = useFetchCategories();
+    const { subcategories } = useFetchSubcategories();
     const categorias = useMemo(
         () => (maintenanceCategories || []).filter(c => String(c.id_tipo_gasto) === TIPO_GASTO_MANTENIMIENTO),
         [maintenanceCategories],
@@ -122,18 +124,29 @@ const ConstructorOrden = ({ apertura, onCerrar, onCreada }) => {
     const gastoIncompleto = servicios.some(servicio => servicio.gastos.some(gasto =>
         !gasto.pais
         || gasto.conceptos.length === 0
-        || gasto.conceptos.some(c => !c.categoria || !c.descripcion.trim() || !(Number(c.cantidad) > 0))));
+        || gasto.conceptos.some(c => !c.categoria || !c.subcategoria || !c.descripcion.trim() || !(Number(c.cantidad) > 0))));
 
     const guardar = async () => {
         setGuardando(true);
         setError(null);
         try {
+            // Primero los gastos y al final la orden. Si se hiciera al revés, un gasto
+            // que truena deja la orden levantada sin su comprobante; así, lo peor que
+            // puede quedar es un gasto en el Admin de Gastos, que es real: se pagó.
+            const servicate = await Promise.all(servicios.map(async (servicio) => ({
+                ...servicio,
+                gastos: await Promise.all(servicio.gastos.map(async (gasto) => {
+                    const creado = await crearGasto({ gasto, usuarioId: usuario?.id });
+                    return { ...gasto, id_gasto: creado.id_gasto };
+                })),
+            })));
+
             const resultado = await crearOrden({
                 unidadTipo: lado,
                 unidadId,
                 fecha,
                 tipoCambio,
-                servicios: servicios.map(servicio => ({
+                servicios: servicate.map(servicio => ({
                     tipo_reparacion: servicio.tipo_reparacion.trim(),
                     tipo_mantenimiento: servicio.tipo_mantenimiento,
                     origen_servicio: servicio.origen_servicio,
@@ -141,6 +154,7 @@ const ConstructorOrden = ({ apertura, onCerrar, onCreada }) => {
                     punto: servicio.punto,
                     punto_id: servicio.punto_id,
                     gastos: servicio.gastos.map(gasto => ({
+                        id_gasto: gasto.id_gasto,
                         conceptos: gasto.conceptos.map(concepto => ({
                             categoria_label: categorias.find(c => String(c.value) === String(concepto.categoria))?.label,
                             descripcion: concepto.descripcion.trim(),
@@ -152,25 +166,8 @@ const ConstructorOrden = ({ apertura, onCerrar, onCreada }) => {
                 usuarioId: usuario?.id,
             });
 
-            // La orden ya quedó. Ahora cada gasto se da de alta en el Admin de Gastos y
-            // se amarra con el concepto de la orden del que salió, para poder ir de uno
-            // al otro con el Expense #.
-            const ligas = [];
-            for (let iServicio = 0; iServicio < servicios.length; iServicio += 1) {
-                for (let iGasto = 0; iGasto < servicios[iServicio].gastos.length; iGasto += 1) {
-                    const gasto = servicios[iServicio].gastos[iGasto];
-                    const creado = await crearGasto({ gasto, usuarioId: usuario?.id });
-                    const idGasto = creado.id_gasto ?? creado.id ?? creado.data?.id_gasto;
-
-                    (resultado.conceptos || [])
-                        .filter(c => c.servicio === iServicio && c.gasto === iGasto)
-                        .forEach(c => ligas.push({ id_detalle: c.id_detalle, id_gasto: idGasto }));
-                }
-            }
-
-            if (ligas.length > 0) await ligarGastos(ligas);
-
-            onCreada(resultado.id_orden, ligas.length);
+            const gastosCreados = servicate.reduce((suma, s) => suma + s.gastos.length, 0);
+            onCreada(resultado.id_orden, gastosCreados);
         } catch (err) {
             setError(err.message);
         } finally {
@@ -248,6 +245,7 @@ const ConstructorOrden = ({ apertura, onCerrar, onCreada }) => {
                                 servicio={servicio}
                                 indice={indice}
                                 categorias={categorias}
+                                subcategorias={subcategories || []}
                                 onCambiar={(actualizado) => cambiarServicio(servicio.clave, actualizado)}
                                 onEliminar={() => quitarServicio(servicio.clave)}
                             />

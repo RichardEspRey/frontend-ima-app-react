@@ -17,7 +17,7 @@ const gastoEnBlanco = () => ({
     tipo_cambio: '',
     factura: null,
     ticket: null,
-    conceptos: [{ categoria: '', descripcion: '', precio_unitario: '', cantidad: 1 }],
+    conceptos: [{ categoria: '', subcategoria: '', descripcion: '', precio_unitario: '', cantidad: 1 }],
 });
 
 /**
@@ -25,7 +25,7 @@ const gastoEnBlanco = () => ({
  * que lleve. El tipo de reparación nace del punto que reportó el operador y se puede
  * corregir aquí mismo, que es lo que pidió operaciones.
  */
-const ServicioOrden = ({ servicio, indice, categorias, onCambiar, onEliminar }) => {
+const ServicioOrden = ({ servicio, indice, categorias, subcategorias, onCambiar, onEliminar }) => {
     const cambiar = (campo, valor) => onCambiar({ ...servicio, [campo]: valor });
 
     const totalGastos = servicio.gastos.reduce((suma, gasto) => suma + gasto.conceptos.reduce(
@@ -116,6 +116,7 @@ const ServicioOrden = ({ servicio, indice, categorias, onCambiar, onEliminar }) 
                     gasto={gasto}
                     indice={i}
                     categorias={categorias}
+                    subcategorias={subcategorias}
                     onCambiar={(actualizado) => onCambiar({
                         ...servicio,
                         gastos: servicio.gastos.map((g, j) => (j === i ? actualizado : g)),

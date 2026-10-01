@@ -135,8 +135,12 @@ export const crearGasto = async ({ gasto, usuarioId }) => {
         cantidad_articulo: Number(concepto.cantidad) || 0,
         precio_unitario: Number(concepto.precio_unitario) || 0,
         id_categoria_mantenimiento: concepto.categoria || null,
-        id_subcategoria_mantenimiento: null,
+        id_subcategoria_mantenimiento: concepto.subcategoria || null,
     }))));
+
+    // La orden ya no consume del inventario, así que su gasto tampoco lo alimenta: sin
+    // esto, cada refacción comprada entraría como stock que nada vuelve a descontar.
+    fd.append('omitir_inventario', '1');
     fd.append('op', 'Alta');
 
     const res = await fetch(`${apiHost}/save_expense.php`, { method: 'POST', body: fd });
