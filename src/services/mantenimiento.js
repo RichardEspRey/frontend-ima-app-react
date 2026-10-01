@@ -65,8 +65,20 @@ const pedirMtto = async (op, campos = {}) => {
 // renglones, incluidos los «ok», y por eso una inspección con 3 cosas que hacer
 // aparecía con 5.
 export const obtenerInspeccionesDeLado = async (lado) => {
-    const result = await pedirMtto('getInspecciones', { lado });
-    return Array.isArray(result.inspecciones) ? result.inspecciones : [];
+    // La nomenclatura la arma `All_CL_Final` en el servidor y no es reproducible desde
+    // las columnas de `trips`. Se cruza desde ahí para que sea la misma que ve el resto
+    // del sistema aunque cambie la regla.
+    const [result, catalogo] = await Promise.all([
+        pedirMtto('getInspecciones', { lado }),
+        obtenerInspecciones().catch(() => []),
+    ]);
+
+    const nomenclaturas = new Map(catalogo.map(fila => [String(fila.viaje_id), fila.nomenclatura]));
+
+    return (Array.isArray(result.inspecciones) ? result.inspecciones : []).map(fila => ({
+        ...fila,
+        nomenclatura: nomenclaturas.get(String(fila.viaje_id)) || '',
+    }));
 };
 
 export const obtenerPuntos = async (viajeId, lado) => {

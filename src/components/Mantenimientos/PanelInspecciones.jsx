@@ -231,8 +231,9 @@ const PanelInspecciones = () => {
                                         </IconButton>
                                     </TableCell>
                                     <TableCell>
-                                        <Typography fontWeight={800} color="#0f172a">{fila.trip_number}</Typography>
-                                        <Typography variant="caption" color="#64748b">{fila.nomenclatura}</Typography>
+                                        <Typography fontWeight={800} color="#0f172a">
+                                            {fila.nomenclatura || fila.trip_number}
+                                        </Typography>
                                     </TableCell>
                                     <TableCell>
                                         <Typography variant="body2" color="#475569">
