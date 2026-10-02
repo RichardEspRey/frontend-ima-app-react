@@ -175,7 +175,7 @@ const Sidebar = () => {
         }));
         setSubnotificaciones(prev => ({
             ...prev,
-            'Inspeccion final': { red: pendientes, yellow: 0 }
+            'Reparaciones': { red: pendientes, yellow: 0 }
         }));
       }
     } catch (error) { console.error("Error cargando inspecciones:", error); }

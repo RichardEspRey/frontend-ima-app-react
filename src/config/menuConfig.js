@@ -88,15 +88,26 @@ export const menuItemsConfig = [
     rolesPermitidos: ["admin", "Angeles", "Candy"],
     subItems: [
       {
+        name: "Reparaciones",
+        featureKey: "mant_inspeccion_final",
+        route: "/mantenimiento",
+        rolesPermitidos: ["admin", "Angeles", "Candy"],
+      },
+      // Las dos pantallas que "Reparaciones" sustituye. Se ocultan del menú, no se
+      // borran: sus rutas siguen vivas por si hay que volver a ellas mientras la
+      // nueva se asienta.
+      {
         name: "Inspeccion final",
         featureKey: "mant_inspeccion_final",
         route: "/Inspeccion-final",
+        hideInSidebar: true,
         rolesPermitidos: ["admin", "Angeles", "Candy"],
       },
       {
         name: "Administrador Ordenes de Servicio",
         featureKey: "mant_ordenes_servicio",
         route: "/admin-service-order",
+        hideInSidebar: true,
         rolesPermitidos: ["admin", "Angeles", "Candy"],
       },
       {

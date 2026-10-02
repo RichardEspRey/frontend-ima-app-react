@@ -26,7 +26,7 @@ const Mantenimiento = () => {
                 <Box>
                     <Typography variant="overline" sx={PAGE_OVERLINE_SX}>Mantenimientos</Typography>
                     <Typography variant="h4" fontWeight={800} color="#0f172a" sx={PAGE_TITLE_SX}>
-                        Mantenimiento
+                        Reparaciones
                     </Typography>
                     <Typography variant="body2" color="#64748b" sx={{ mt: 0.5 }}>
                         De lo que reportó el operador a la orden de servicio, sin salir de aquí.
