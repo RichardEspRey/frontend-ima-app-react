@@ -63,6 +63,19 @@ un módulo nuevo no entra como pantalla suelta en `src/screens/`, que ya no exis
 |---|---|---|
 | 2026-09-17 | La campana, el IMA Manager y el status de caja al marcar Almost Over | `e2a3e01` |
 | 2026-09-23 | **Estatus de cajas** | `entities/trailer` (modelo, estatus y fianzas), `features/estatus-cajas`, `pages/viajes/EstatusCajasPage.jsx` |
+| 2026-10-01 | **Flujo de mantenimiento**: de la inspección final a la orden | `entities/maintenance-point`, `features/maintenance`, `pages/mantenimientos/MantenimientoPage.jsx` |
+
+Del flujo de mantenimiento, lo que cambió al portarlo: el estado de un punto y las
+reglas de agrupación bajan a `entities/maintenance-point` con sus esquemas zod y once
+pruebas; las tres pantallas pasan por TanStack Query con una sola llave raíz —resolver un
+punto mueve inspecciones, puntos y pendientes a la vez, así que se invalidan juntas—; el
+estado y los efectos viven en tres controladores (`usePanelInspecciones`,
+`usePanelPendientes`, `useConstructorOrden`) y los componentes solo pintan; la paginación
+es `usePaginacion` en lugar de dos estados y un `slice` por pantalla; los avisos son
+`notify` y no `sweetalert2`, que en esta rama ya no existe; el alta del gasto reutiliza
+`crearGasto` de `entities/expense` en vez de su propio `fetch`; y los conmutadores
+Camión/Caja son `<Pestanas>`, que es lo que el linter exige. El `mtto.php` y las tablas
+no se tocaron.
 
 Del Estatus de cajas, lo que cambió al portarlo: el estado de la fianza ya no es un
 "activa/vencida" propio sino la misma regla del expediente de unidades —con su aviso a 30

@@ -21,6 +21,7 @@ import GastosDeViajePage from '../pages/gastos/GastosDeViajePage.jsx';
 import EditarGastoPage from '../pages/gastos/EditarGastoPage.jsx';
 import ExpenseManagerPage from '../pages/gastos/ExpenseManagerPage.jsx';
 import InspeccionFinalPage from '../pages/mantenimientos/InspeccionFinalPage.jsx';
+import MantenimientoPage from '../pages/mantenimientos/MantenimientoPage.jsx';
 import EditarGastoGeneralPage from '../pages/gastos/EditarGastoGeneralPage.jsx';
 import NuevaOrdenPage from '../pages/mantenimientos/NuevaOrdenPage.jsx';
 import EditarOrdenPage from '../pages/mantenimientos/EditarOrdenPage.jsx';
@@ -86,6 +87,7 @@ const AppRouter = () => {
             <Route path="/edit-trip-complete/:tripId" element={<EditarViajeCompletoPage />} />
             <Route path="/edit-trip-upcoming/:tripId" element={<EditarViajeProximoPage />} />
             <Route path="/Inspeccion-final" element={<InspeccionFinalPage />} />
+            <Route path="/mantenimiento" element={<MantenimientoPage />} />
             <Route path="/edit-expense/:id_gasto" element={<EditarGastoGeneralPage />} />
             <Route path="/view-inventory" element={<OrdenesServicioPage />} />
             <Route path="/new-service-order" element={<NuevaOrdenPage />} />
