@@ -36,7 +36,7 @@ const MantenimientoPage = () => {
         Mantenimientos
       </Typography>
       <Typography variant="h4" fontWeight={800} color={COLOR.TINTA} sx={PAGE_TITLE_SX}>
-        Mantenimiento
+        Reparaciones
       </Typography>
       <Typography variant="body2" color={COLOR.APAGADO} sx={{ mb: 3 }}>
         De lo que reportó el operador a la orden de servicio, sin salir de aquí.
