@@ -1,14 +1,15 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-    Alert, Box, Button, Checkbox, Chip, CircularProgress, FormControlLabel, Paper, Stack,
-    Table, TableBody, TableCell, TableContainer, TableHead, TableRow, ToggleButton,
-    ToggleButtonGroup, Typography
+    Alert, Box, Button, Checkbox, Chip, CircularProgress, FormControlLabel, MenuItem, Paper,
+    Stack, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow,
+    TextField, ToggleButton, ToggleButtonGroup, Typography
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import BuildOutlinedIcon from '@mui/icons-material/BuildOutlined';
 import BlockOutlinedIcon from '@mui/icons-material/BlockOutlined';
 import Swal from 'sweetalert2';
 
+import BarraFiltros from './BarraFiltros';
 import ConstructorOrden from './ConstructorOrden';
 import ModalPendienteManual from './ModalPendienteManual';
 import { useAuthStore } from '../../store/useAuthStore';
@@ -17,12 +18,21 @@ import {
 } from '../../services/mantenimiento';
 import {
     TABLE_CONTAINER_SX, HEADER_ROW_SX, HEADER_CELL_SX, DARK_BTN_SX,
+    PAGINATION_BOX_SX, PAGINATION_SX,
 } from '../../styles/estilosTabla';
 
 const LADOS = [
     { id: UNIDAD.CAMION, etiqueta: 'Camiones', columna: 'Camión' },
     { id: UNIDAD.CAJA, etiqueta: 'Cajas', columna: 'Caja' },
 ];
+
+const ORIGENES = [
+    { id: '', etiqueta: 'Todos' },
+    { id: 'inspeccion', etiqueta: 'Del operador' },
+    { id: 'manual', etiqueta: 'Levantados a mano' },
+];
+
+const SIN_FILTROS = { unidad: '', texto: '', origen: '' };
 
 const agruparPorUnidad = (pendientes, lado) => {
     const unidades = new Map();
@@ -63,6 +73,10 @@ const PanelPendientes = () => {
     const [apertura, setApertura] = useState(null);
     const [altaAbierta, setAltaAbierta] = useState(false);
 
+    const [filtros, setFiltros] = useState(SIN_FILTROS);
+    const [pagina, setPagina] = useState(0);
+    const [porPagina, setPorPagina] = useState(10);
+
     const cargar = useCallback(async () => {
         setCargando(true);
         setError(null);
@@ -78,7 +92,39 @@ const PanelPendientes = () => {
 
     useEffect(() => { cargar(); }, [cargar]);
 
-    const unidades = useMemo(() => agruparPorUnidad(pendientes, lado), [pendientes, lado]);
+    const filtrados = useMemo(() => pendientes.filter(pendiente => {
+        const unidad = String((lado === UNIDAD.CAJA ? pendiente.no_caja : pendiente.no_camion) || '');
+        if (filtros.unidad.trim() && unidad !== filtros.unidad.trim()) return false;
+
+        if (filtros.origen && pendiente.origen !== filtros.origen) return false;
+
+        const texto = `${pendiente.descripcion || ''} ${pendiente.categoria || ''}`.toLowerCase();
+        if (filtros.texto.trim() && !texto.includes(filtros.texto.trim().toLowerCase())) return false;
+
+        return true;
+    }), [pendientes, lado, filtros]);
+
+    const todasLasUnidades = useMemo(
+        () => agruparPorUnidad(filtrados, lado),
+        [filtrados, lado],
+    );
+
+    const unidades = useMemo(
+        () => todasLasUnidades.slice(pagina * porPagina, pagina * porPagina + porPagina),
+        [todasLasUnidades, pagina, porPagina],
+    );
+
+    const hayFiltros = Object.values(filtros).some(valor => valor !== '');
+
+    const cambiarFiltro = (campo, valor) => {
+        setFiltros(prev => ({ ...prev, [campo]: valor }));
+        setPagina(0);
+    };
+
+    const limpiarFiltros = () => {
+        setFiltros(SIN_FILTROS);
+        setPagina(0);
+    };
 
     const alternar = (id) => setElegidos(prev =>
         prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
@@ -143,7 +189,7 @@ const PanelPendientes = () => {
             <Stack direction="row" justifyContent="space-between" alignItems="center" flexWrap="wrap" gap={2} sx={{ mb: 2 }}>
                 <ToggleButtonGroup
                     exclusive size="small" value={lado}
-                    onChange={(_evento, valor) => { if (valor) setLado(valor); }}
+                    onChange={(_evento, valor) => { if (valor) { setLado(valor); setPagina(0); } }}
                     sx={{ bgcolor: '#f1f5f9', borderRadius: 2.5, p: 0.5, gap: 0.5 }}
                 >
                     {LADOS.map(l => (
@@ -167,6 +213,31 @@ const PanelPendientes = () => {
 
             {error && <Alert severity="error" sx={{ mb: 2 }} action={<Button onClick={cargar}>Reintentar</Button>}>{error}</Alert>}
 
+            <BarraFiltros
+                hayFiltros={hayFiltros}
+                onLimpiar={limpiarFiltros}
+                resumen={`${filtrados.length} reparación(es) en ${todasLasUnidades.length} unidad(es)`}
+            >
+                <TextField
+                    size="small" label={lado === UNIDAD.CAJA ? 'Caja (exacto)' : 'Camión (exacto)'}
+                    sx={{ width: 150 }} value={filtros.unidad}
+                    onChange={(evento) => cambiarFiltro('unidad', evento.target.value)}
+                />
+                <TextField
+                    size="small" label="Buscar en la reparación" placeholder="aceite, llanta…"
+                    sx={{ width: 260 }} value={filtros.texto}
+                    onChange={(evento) => cambiarFiltro('texto', evento.target.value)}
+                />
+                <TextField
+                    select size="small" label="Origen" sx={{ width: 190 }} value={filtros.origen}
+                    onChange={(evento) => cambiarFiltro('origen', evento.target.value)}
+                >
+                    {ORIGENES.map(origen => (
+                        <MenuItem key={origen.id || 'todos'} value={origen.id}>{origen.etiqueta}</MenuItem>
+                    ))}
+                </TextField>
+            </BarraFiltros>
+
             <TableContainer component={Paper} sx={TABLE_CONTAINER_SX}>
                 <Table>
                     <TableHead>
@@ -185,7 +256,9 @@ const PanelPendientes = () => {
                         {!cargando && unidades.length === 0 && !error && (
                             <TableRow>
                                 <TableCell colSpan={3} align="center" sx={{ py: 6, color: '#64748b' }}>
-                                    No hay reparaciones pendientes de {lado === UNIDAD.CAJA ? 'cajas' : 'camiones'}.
+                                    {hayFiltros
+                                        ? 'Ninguna reparación coincide con los filtros.'
+                                        : `No hay reparaciones pendientes de ${lado === UNIDAD.CAJA ? 'cajas' : 'camiones'}.`}
                                 </TableCell>
                             </TableRow>
                         )}
@@ -274,6 +347,24 @@ const PanelPendientes = () => {
                     </TableBody>
                 </Table>
             </TableContainer>
+
+            <Box sx={PAGINATION_BOX_SX}>
+                <TablePagination
+                    component="div"
+                    rowsPerPageOptions={[10, 25, 50]}
+                    count={todasLasUnidades.length}
+                    rowsPerPage={porPagina}
+                    page={pagina}
+                    onPageChange={(_evento, destino) => setPagina(destino)}
+                    onRowsPerPageChange={(evento) => {
+                        setPorPagina(parseInt(evento.target.value, 10));
+                        setPagina(0);
+                    }}
+                    labelRowsPerPage="Unidades por página:"
+                    labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count}`}
+                    sx={PAGINATION_SX}
+                />
+            </Box>
 
             {apertura && (
                 <ConstructorOrden

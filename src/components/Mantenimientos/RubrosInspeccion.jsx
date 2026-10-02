@@ -86,6 +86,9 @@ const RubrosInspeccion = ({ puntos, seleccionados, onAlternar, onAlternarRubro }
                                                     variant="body2"
                                                     component="span"
                                                     color={resuelto ? '#94a3b8' : '#334155'}
+                                                    sx={punto.estatus === ESTATUS_PUNTO.DESCARTADO
+                                                        ? { textDecoration: 'line-through' }
+                                                        : undefined}
                                                 >
                                                     {punto.texto}
                                                 </Typography>
