@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Box, Paper, Typography, Grid, IconButton, Button, TextField, Chip, Divider, Stack } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import DownloadIcon from '@mui/icons-material/Download';
+import DocumentScannerIcon from '@mui/icons-material/DocumentScanner';
+import DocumentScanModal from '../DocumentScanModal';
 import Select from 'react-select';
 import CreatableSelect from 'react-select/creatable';
 import DatePicker from 'react-datepicker';
@@ -36,6 +38,21 @@ const DocButton = ({ label, doc, onClick, disabled, apiHost }) => (
     </Box>
 );
 
+// Campos de la etapa que llena el lector de documentos, por lado del viaje.
+const SCAN_FIELDS = {
+    origin: { warehouse: 'warehouse_origin_id', city: 'origin', zip: 'zip_code_origin', date: 'loading_date' },
+    destination: { warehouse: 'warehouse_destination_id', city: 'destination', zip: 'zip_code_destination', date: 'delivery_date' },
+};
+
+const SectionHeader = ({ label, onScan, disabled }) => (
+    <Stack direction="row" justifyContent="space-between" alignItems="center">
+        <Typography variant="caption" color="textSecondary">{label}</Typography>
+        <Button size="small" startIcon={<DocumentScannerIcon />} onClick={onScan} disabled={disabled} sx={{ py: 0, textTransform: 'none' }}>
+            Leer documento
+        </Button>
+    </Stack>
+);
+
 const StageCard = ({
     etapa,
     index,
@@ -56,6 +73,18 @@ const StageCard = ({
     const userPermissions = useAuthStore(state => state.userPermissions);
     const isAdmin = String(user?.tipo_usuario || '').trim().toLowerCase() === 'admin';
     const canManageInvoice = isAdmin || userPermissions['viajes_invoice_fields'] === true;
+    const [scanTarget, setScanTarget] = useState(null); // 'origin' | 'destination' | null
+
+    const applyScan = (values) => {
+        const map = SCAN_FIELDS[scanTarget];
+        if (values.warehouse) {
+            if (values.warehouse.create) creators.createWarehouse(values.warehouse.name, index, map.warehouse);
+            else handleStageChange(index, map.warehouse, values.warehouse.value);
+        }
+        if (values.city) handleStageChange(index, map.city, values.city);
+        if (values.zip) handleStageChange(index, map.zip, values.zip);
+        if (values.date) handleStageChange(index, map.date, new Date(`${values.date}T12:00:00`));
+    };
 
     const getHeaderInfo = () => {
         switch (etapa.stageType) {
@@ -159,7 +188,7 @@ const StageCard = ({
                             )}
 
                             <Grid item xs={12} md={6}>
-                                <Typography variant="caption" color="textSecondary">Bodega Origen</Typography>
+                                <SectionHeader label="Bodega Origen" onScan={() => setScanTarget('origin')} disabled={isFormDisabled} />
                                 <CreatableSelect
                                     value={options.warehouses.find(opt => opt.value === etapa.warehouse_origin_id) || null}
                                     onChange={(sel) => handleStageChange(index, 'warehouse_origin_id', sel?.value || '')}
@@ -181,7 +210,7 @@ const StageCard = ({
                             </Grid>
 
                             <Grid item xs={12} md={6}>
-                                <Typography variant="caption" color="textSecondary">Bodega Destino</Typography>
+                                <SectionHeader label="Bodega Destino" onScan={() => setScanTarget('destination')} disabled={isFormDisabled} />
                                 <CreatableSelect
                                     value={options.warehouses.find(opt => opt.value === etapa.warehouse_destination_id) || null}
                                     onChange={(sel) => handleStageChange(index, 'warehouse_destination_id', sel?.value || '')}
@@ -330,6 +359,16 @@ const StageCard = ({
                     </>
                 )}
             </Box>
+
+            {etapa.stageType !== 'emptyMileage' && (
+                <DocumentScanModal
+                    open={!!scanTarget}
+                    target={scanTarget || 'origin'}
+                    onClose={() => setScanTarget(null)}
+                    warehouseOptions={options.warehouses}
+                    onApply={applyScan}
+                />
+            )}
         </Paper>
     );
 };
