@@ -3,20 +3,24 @@ import { nullable } from "../../../shared/api/zodPhp"
 import { estadoDocumento } from "../../unit"
 
 /**
- * Los cuatro lugares donde puede estar una caja.
+ * Los lugares donde puede estar una caja.
  *
- * Es una lista cerrada por decisión de operaciones: fuera de estos cuatro no
- * hay dónde poner una caja, y dejar el campo libre volvía la columna
- * incomparable entre sí misma.
+ * Es una lista cerrada por decisión de operaciones: fuera de estos no hay
+ * dónde poner una caja, y dejar el campo libre volvía la columna incomparable
+ * entre sí misma. PENSION USA, MANTENIMIENTO y AGENCIA ADUANAL solo se
+ * capturan a mano: el endpoint nunca las calcula.
  *
  * @readonly
  * @enum {string}
  */
 export const UBICACION_CAJA = {
   PENSION: "PENSION NLD",
+  PENSION_USA: "PENSION USA",
   TALLER: "TALLER",
+  MANTENIMIENTO: "MANTENIMIENTO",
   RUTA_SUBIENDO: "RUTA SUBIENDO",
   RUTA_BAJANDO: "RUTA BAJANDO",
+  AGENCIA_ADUANAL: "AGENCIA ADUANAL",
 }
 
 /**
@@ -27,7 +31,10 @@ export const UBICACION_CAJA = {
 export const UBICACIONES_CAJA = Object.values(UBICACION_CAJA)
 
 /**
- * Si la caja lleva carga o va vacía.
+ * Si la caja lleva carga, va vacía o la están cargando o descargando.
+ *
+ * CARGANDO y DESCARGANDO solo se capturan a mano: el endpoint nunca las
+ * calcula.
  *
  * @readonly
  * @enum {string}
@@ -35,6 +42,8 @@ export const UBICACIONES_CAJA = Object.values(UBICACION_CAJA)
 export const OBSERVACION_CAJA = {
   VACIA: "VACIA",
   CARGADA: "CARGADA",
+  CARGANDO: "CARGANDO",
+  DESCARGANDO: "DESCARGANDO",
 }
 
 /**
@@ -175,6 +184,6 @@ export function estadoFianza(fianza, hoy = new Date()) {
  */
 export function contarPorObservacion(cajas) {
   const lista = Array.isArray(cajas) ? cajas : []
-  const cargadas = lista.filter((caja) => caja.observacion === OBSERVACION_CAJA.CARGADA).length
-  return { cargadas, vacias: lista.length - cargadas }
+  const contar = (observacion) => lista.filter((caja) => caja.observacion === observacion).length
+  return { cargadas: contar(OBSERVACION_CAJA.CARGADA), vacias: contar(OBSERVACION_CAJA.VACIA) }
 }

@@ -1,4 +1,4 @@
-import { MenuItem, Select } from "@mui/material"
+import { Box, MenuItem, Select, Stack } from "@mui/material"
 import { COLOR } from "../../../shared/ui"
 
 /**
@@ -18,6 +18,7 @@ import { COLOR } from "../../../shared/ui"
  * @param {boolean} [props.deshabilitado=false] Apaga el combo mientras se guarda.
  * @param {string} [props.vacio='Sin capturar'] Texto cuando todavía no hay valor.
  * @param {number} [props.ancho=175] Ancho mínimo en píxeles.
+ * @param {Object.<string, {fondo: string, texto: string, punto: string}>} [props.colores={}] El color de cada opción.
  * @returns {object} El combo renderizado.
  */
 export function SelectCelda({
@@ -27,7 +28,10 @@ export function SelectCelda({
   deshabilitado = false,
   vacio = "Sin capturar",
   ancho = 175,
+  colores = {},
 }) {
+  const color = colores[valor]
+
   return (
     <Select
       size="small"
@@ -35,14 +39,32 @@ export function SelectCelda({
       onChange={(evento) => onChange(evento.target.value)}
       disabled={deshabilitado}
       displayEmpty
-      sx={{ minWidth: ancho, bgcolor: COLOR.BLANCO }}
+      sx={{
+        minWidth: ancho,
+        bgcolor: color?.fondo ?? COLOR.BLANCO,
+        color: color?.texto,
+        fontWeight: color ? 700 : 400,
+        "& .MuiOutlinedInput-notchedOutline": { borderColor: color ? "transparent" : undefined },
+        "& .MuiSelect-icon": { color: color?.texto },
+      }}
     >
       <MenuItem value="" disabled>
         {vacio}
       </MenuItem>
       {opciones.map((opcion) => (
         <MenuItem key={opcion} value={opcion}>
-          {opcion}
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Box
+              sx={{
+                width: 10,
+                height: 10,
+                borderRadius: "50%",
+                flexShrink: 0,
+                bgcolor: colores[opcion]?.punto ?? COLOR.BORDE_FUERTE,
+              }}
+            />
+            <span>{opcion}</span>
+          </Stack>
         </MenuItem>
       ))}
     </Select>

@@ -100,6 +100,17 @@ describe("contarPorObservacion", () => {
     expect(contarPorObservacion(cajas)).toEqual({ cargadas: 2, vacias: 1 })
   })
 
+  it("cargando y descargando no cuentan como vacías ni como cargadas", () => {
+    const cajas = [
+      { observacion: OBSERVACION_CAJA.CARGADA },
+      { observacion: OBSERVACION_CAJA.CARGANDO },
+      { observacion: OBSERVACION_CAJA.DESCARGANDO },
+      { observacion: OBSERVACION_CAJA.VACIA },
+    ]
+
+    expect(contarPorObservacion(cajas)).toEqual({ cargadas: 1, vacias: 1 })
+  })
+
   it("sin cajas no cuenta nada", () => {
     expect(contarPorObservacion(undefined)).toEqual({ cargadas: 0, vacias: 0 })
   })
@@ -123,12 +134,19 @@ describe("recortarComentario", () => {
 })
 
 describe("las listas cerradas", () => {
-  it("la ubicación solo admite los cuatro lugares acordados", () => {
+  it("la ubicación solo admite los lugares acordados", () => {
     expect(Object.values(UBICACION_CAJA)).toEqual([
       "PENSION NLD",
+      "PENSION USA",
       "TALLER",
+      "MANTENIMIENTO",
       "RUTA SUBIENDO",
       "RUTA BAJANDO",
+      "AGENCIA ADUANAL",
     ])
+  })
+
+  it("la observación solo admite los estados acordados", () => {
+    expect(Object.values(OBSERVACION_CAJA)).toEqual(["VACIA", "CARGADA", "CARGANDO", "DESCARGANDO"])
   })
 })

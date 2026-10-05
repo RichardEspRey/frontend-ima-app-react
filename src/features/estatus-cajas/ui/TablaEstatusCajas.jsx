@@ -8,6 +8,7 @@ import {
 import { COLOR, DataTable } from "../../../shared/ui"
 import { CeldaComentario } from "./CeldaComentario"
 import { CeldaFianza } from "./CeldaFianza"
+import { COLORES_ESTATUS_CAJA } from "./coloresEstatus"
 import { SelectCelda } from "./SelectCelda"
 
 const SIN_DATO = (
@@ -79,6 +80,7 @@ export function TablaEstatusCajas({
           <SelectCelda
             valor={caja.ubicacion}
             opciones={UBICACIONES_CAJA}
+            colores={COLORES_ESTATUS_CAJA}
             deshabilitado={guardandoId === caja.caja_id}
             vacio="Sin ubicación"
             onChange={(valor) => onCapturar({ caja, campo: "ubicacion", valor })}
@@ -93,6 +95,7 @@ export function TablaEstatusCajas({
           <SelectCelda
             valor={caja.observacion}
             opciones={OBSERVACIONES_CAJA}
+            colores={COLORES_ESTATUS_CAJA}
             deshabilitado={guardandoId === caja.caja_id}
             vacio="Sin observación"
             ancho={145}
