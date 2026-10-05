@@ -176,8 +176,8 @@ const EstatusCajas = () => {
     };
 
     const resumen = useMemo(() => {
-        const cargadas = cajas.filter(una => una.observacion === 'CARGADA').length;
-        return { cargadas, vacias: cajas.length - cargadas };
+        const contar = (observacion) => cajas.filter(una => una.observacion === observacion).length;
+        return { cargadas: contar('CARGADA'), vacias: contar('VACIA') };
     }, [cajas]);
 
     return (
