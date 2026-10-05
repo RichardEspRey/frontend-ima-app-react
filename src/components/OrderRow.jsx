@@ -7,6 +7,7 @@ import {
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { COLOR } from '../shared/ui/tokens';
+import { etiquetaUnidad } from '../entities/service-order';
 
 const money = (v) =>
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, currencyDisplay: 'symbol' })
@@ -60,7 +61,7 @@ export const OrderRow = ({ order, onEdit, onEditDetail }) => {
                 </TableCell>
                 <TableCell component="th" scope="row">#{order.id_orden}</TableCell>
                 <TableCell>{order.fecha_orden}</TableCell>
-                <TableCell>{order.nombre_camion || 'N/A'}</TableCell>
+                <TableCell>{etiquetaUnidad(order) || 'N/A'}</TableCell>
                 <TableCell>{serviciosResumen}</TableCell>
 
                 <TableCell align="right" sx={{ fontWeight: 500 }}>{money(totalsOrder.mo)}</TableCell>

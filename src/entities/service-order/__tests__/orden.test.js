@@ -4,6 +4,8 @@ import {
   ESTATUS_ORDEN,
   esquemaOrden,
   normalizarOrdenes,
+  nombreUnidad,
+  etiquetaUnidad,
   estaAbierta,
   resumenServicios,
   todoCompletado,
@@ -106,5 +108,34 @@ describe("contra la respuesta real de la API", () => {
       expect(Number.isNaN(r.total)).toBe(false)
       expect(r.completados + r.pendientes).toBe(r.total)
     }
+  })
+})
+
+describe("la unidad de una orden", () => {
+  const DE_CAJA = { ...ORDEN_API, truck_id: null, nombre_camion: null, nombre_caja: "104" }
+
+  it("una orden de caja pasa el esquema y conserva su caja", () => {
+    const o = esquemaOrden.parse(DE_CAJA)
+    expect(o.nombre_camion).toBe("")
+    expect(o.nombre_caja).toBe("104")
+  })
+
+  it("una orden de camión queda sin caja", () => {
+    expect(esquemaOrden.parse(ORDEN_API).nombre_caja).toBe("")
+  })
+
+  it("el filtro compara contra el número de la unidad que tenga", () => {
+    expect(nombreUnidad(esquemaOrden.parse(ORDEN_API))).toBe("11")
+    expect(nombreUnidad(esquemaOrden.parse(DE_CAJA))).toBe("104")
+  })
+
+  it("la caja se muestra con su prefijo y el camión tal cual", () => {
+    expect(etiquetaUnidad(esquemaOrden.parse(ORDEN_API))).toBe("11")
+    expect(etiquetaUnidad(esquemaOrden.parse(DE_CAJA))).toBe("Caja 104")
+  })
+
+  it("sin unidad no inventa una", () => {
+    expect(nombreUnidad({})).toBe("")
+    expect(etiquetaUnidad(undefined)).toBe("")
   })
 })

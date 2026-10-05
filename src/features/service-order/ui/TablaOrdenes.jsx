@@ -19,6 +19,7 @@ import {
     SECTION_LABEL_SX, PAGINATION_BOX_SX, GHOST_BTN_SX,
 } from '../../../shared/ui/estilos';
 import { COLOR } from '../../../shared/ui/tokens';
+import { nombreUnidad } from '../../../entities/service-order';
 import { FilasEsqueleto, Paginacion, CampoFecha, notify } from '../../../shared/ui';
 
 dayjs.extend(isSameOrAfter);
@@ -111,9 +112,9 @@ const TablaOrdenes = () => {
             }
 
             if (filterTruck.trim()) {
-                const truckName = String(o.nombre_camion || '').trim().toLowerCase();
+                const unidad = nombreUnidad(o).trim().toLowerCase();
                 const filterVal = filterTruck.trim().toLowerCase();
-                if (truckName !== filterVal) {
+                if (unidad !== filterVal) {
                     return false;
                 }
             }
@@ -184,7 +185,7 @@ const TablaOrdenes = () => {
 
                     <Grid item xs={6} sm={4} md={1.5}>
                         <TextField
-                            label="Camión (Exacto)"
+                            label="Unidad (Exacto)"
                             placeholder="Ej: 101"
                             variant="outlined"
                             size="small"
@@ -272,7 +273,7 @@ const TablaOrdenes = () => {
                             <TableCell sx={HEADER_CELL_SX} />
                             <TableCell sx={HEADER_CELL_SX}>ID</TableCell>
                             <TableCell sx={HEADER_CELL_SX}>Fecha</TableCell>
-                            <TableCell sx={HEADER_CELL_SX}>Camión</TableCell>
+                            <TableCell sx={HEADER_CELL_SX}>Unidad</TableCell>
                             <TableCell sx={HEADER_CELL_SX}>Servicios</TableCell>
                             <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'right' }}>Mano de obra</TableCell>
                             <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'right' }}>Refacciones</TableCell>

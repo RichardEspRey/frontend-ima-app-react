@@ -3,6 +3,8 @@ export {
   esquemaOrden,
   esquemaServicio,
   normalizarOrdenes,
+  nombreUnidad,
+  etiquetaUnidad,
   estaAbierta,
   resumenServicios,
   todoCompletado,

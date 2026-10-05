@@ -19,7 +19,7 @@ const idDePhp = z.coerce.string()
 const numeroDePhp = z.coerce.number().catch(0)
 
 /**
- * Un servicio dentro de una orden: qué se le hizo al camión.
+ * Un servicio dentro de una orden: qué se le hizo a la unidad.
  *
  * `detalles` son las refacciones y la mano de obra; puede venir vacío.
  */
@@ -45,6 +45,7 @@ export const esquemaOrden = z.object({
   estatus: z.string().catch(ESTATUS_ORDEN.ABIERTA),
   truck_id: idDePhp,
   nombre_camion: z.string().catch(""),
+  nombre_caja: z.string().catch(""),
   tipo_cambio: z
     .union([z.null(), z.undefined(), numeroDePhp])
     .transform((v) => (v === undefined ? null : v))
@@ -60,7 +61,8 @@ export const esquemaOrden = z.object({
  * @property {string} fecha_orden Fecha, solo el día.
  * @property {string} estatus `Abierta`, `Pendiente` o `Completado`.
  * @property {string} truck_id Camión al que pertenece.
- * @property {string} nombre_camion Número de unidad.
+ * @property {string} nombre_camion Número del camión; vacío si la orden es de una caja.
+ * @property {string} nombre_caja Número de la caja; vacío si la orden es de un camión.
  * @property {(number|null)} tipo_cambio Tipo de cambio, o `null` si es en pesos.
  * @property {Array} servicios Los servicios de la orden.
  */
@@ -82,6 +84,31 @@ export function normalizarOrdenes(filas = []) {
   }
 
   return { ordenes, descartados }
+}
+
+/**
+ * El número de la unidad de una orden, sea camión o caja.
+ *
+ * Una orden es de una o de otra, nunca de las dos: Reparaciones arma órdenes
+ * de caja desde la inspección y esas llegan sin camión. Es lo que se compara
+ * al filtrar por unidad.
+ *
+ * @param {Orden} orden La orden.
+ * @returns {string} El número de la unidad; cadena vacía si no tiene.
+ */
+export const nombreUnidad = (orden) => orden?.nombre_camion || orden?.nombre_caja || ""
+
+/**
+ * Cómo se muestra la unidad de una orden: el camión tal cual y la caja con su
+ * prefijo, para que «104» no se confunda con el camión 104.
+ *
+ * @param {Orden} orden La orden.
+ * @returns {string} La etiqueta; cadena vacía si no tiene unidad.
+ */
+export function etiquetaUnidad(orden) {
+  if (orden?.nombre_camion) return orden.nombre_camion
+  if (orden?.nombre_caja) return `Caja ${orden.nombre_caja}`
+  return ""
 }
 
 /**
