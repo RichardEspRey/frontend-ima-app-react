@@ -404,6 +404,21 @@ sin vencimiento no trae fecha.</p>
 <p>Los cuatro viven en el mismo endpoint y devuelven <code>{value, label}</code>, así que
 comparten una sola función.</p>
 </dd>
+<dt><a href="#MONTOS_DTOPS">MONTOS_DTOPS</a> : <code>Array.&lt;number&gt;</code></dt>
+<dd><p>Los importes de los botones del alta de un DTOPS.</p>
+</dd>
+<dt><a href="#DOCUMENTO_DTOPS">DOCUMENTO_DTOPS</a> : <code>string</code></dt>
+<dd><p>La clave con la que una etapa de cruce guarda su DTOPS.</p>
+</dd>
+<dt><a href="#SUBCATEGORIA_DTOPS">SUBCATEGORIA_DTOPS</a> : <code>string</code></dt>
+<dd><p>La subcategoría con la que un DTOPS entra a Expense Manager.</p>
+</dd>
+<dt><a href="#PAIS_DTOPS">PAIS_DTOPS</a> : <code>string</code></dt>
+<dd><p>El país de un gasto de DTOPS.</p>
+</dd>
+<dt><a href="#MONEDA_DTOPS">MONEDA_DTOPS</a> : <code>string</code></dt>
+<dd><p>La moneda de un gasto de DTOPS.</p>
+</dd>
 <dt><a href="#TODOS">TODOS</a> : <code>string</code></dt>
 <dd><p>El valor de los filtros que significa &quot;no filtrar por esto&quot;.</p>
 </dd>
@@ -562,6 +577,88 @@ permite filtrarlos para limpiarlos, sin esconder sus existencias.</p>
 </dd>
 <dt><a href="#estaAgotado">estaAgotado</a> ⇒ <code>boolean</code></dt>
 <dd><p>Indica si un artículo está agotado.</p>
+</dd>
+<dt><a href="#LLAVE_MANTENIMIENTO">LLAVE_MANTENIMIENTO</a> : <code>Array.&lt;string&gt;</code></dt>
+<dd><p>Llave raíz de todo lo que toca el flujo de mantenimiento.</p>
+<p>Cuelgan de ella las inspecciones, los puntos de cada viaje y las reparaciones
+pendientes. Resolver un punto mueve las tres cosas a la vez —sale de la
+inspección y entra a pendientes, o al revés—, así que se invalidan juntas.</p>
+</dd>
+<dt><a href="#llaveInspecciones">llaveInspecciones</a> ⇒ <code>Array</code></dt>
+<dd><p>Llave de las inspecciones de un lado.</p>
+</dd>
+<dt><a href="#llavePuntos">llavePuntos</a> ⇒ <code>Array</code></dt>
+<dd><p>Llave de los puntos de una inspección.</p>
+</dd>
+<dt><a href="#llavePendientes">llavePendientes</a> ⇒ <code>Array</code></dt>
+<dd><p>Llave de las reparaciones pendientes de un lado.</p>
+</dd>
+<dt><a href="#ETIQUETA_ESTATUS">ETIQUETA_ESTATUS</a> : <code>Object.&lt;string, string&gt;</code></dt>
+<dd><p>Cómo se nombra cada estado en pantalla.</p>
+</dd>
+<dt><a href="#RUBROS">RUBROS</a> : <code>Array.&lt;{clave: string, etiqueta: string, tabla: string, unidad: string}&gt;</code></dt>
+<dd><p>Los seis rubros del checklist del operador.</p>
+<p>El remolque es de la caja; el resto, del tractor. De ahí sale que una misma
+inspección se trabaje y se cierre por dos lados distintos.</p>
+</dd>
+<dt><a href="#SIN_FALLA">SIN_FALLA</a> : <code>Set.&lt;string&gt;</code></dt>
+<dd><p>Lo que el operador escribe cuando no hay nada que reparar.</p>
+<p>Medido contra producción: 64 de 145 renglones. Esconderlos es la diferencia
+entre leer una lista de trabajo y leer una lista de &quot;todo bien&quot;. El servidor
+aplica el mismo filtro; esta copia es para lo que ya llegó al cliente.</p>
+</dd>
+<dt><a href="#esPuntoSinFalla">esPuntoSinFalla</a> ⇒ <code>boolean</code></dt>
+<dd><p>Indica si un punto del checklist dice que no hay nada que hacer.</p>
+</dd>
+<dt><a href="#esquemaInspeccionMtto">esquemaInspeccionMtto</a></dt>
+<dd><p>Una inspección con lo que falta por atender de un lado.</p>
+</dd>
+<dt><a href="#esquemaPunto">esquemaPunto</a></dt>
+<dd><p>Un punto del checklist, con el estado que la oficina le haya dado.</p>
+</dd>
+<dt><a href="#esquemaPendiente">esquemaPendiente</a></dt>
+<dd><p>Una reparación que espera a que la unidad vuelva.</p>
+</dd>
+<dt><a href="#estaResuelto">estaResuelto</a> ⇒ <code>boolean</code></dt>
+<dd><p>Indica si un punto ya tiene destino.</p>
+<p>Un punto resuelto se sigue viendo en la inspección —con su etiqueta y, si fue
+descartado, tachado— pero ya no se puede volver a mandar: eso lo duplicaría.</p>
+</dd>
+<dt><a href="#clavePunto">clavePunto</a> ⇒ <code>string</code></dt>
+<dd><p>La clave con la que se identifica un punto en la pantalla.</p>
+<p>El renglón del checklist no tiene id propio en la respuesta: lo identifica el
+par tabla + id de origen, que es también la llave única del servidor.</p>
+</dd>
+<dt><a href="#rubrosDeLado">rubrosDeLado</a> ⇒ <code>Array.&lt;object&gt;</code></dt>
+<dd><p>Los rubros que se trabajan de un lado.</p>
+</dd>
+<dt><a href="#INTERVALO_NOTIFICACIONES_MS">INTERVALO_NOTIFICACIONES_MS</a> : <code>number</code></dt>
+<dd><p>Cada cuánto se le pregunta al servidor si hay notificaciones nuevas.</p>
+<p>Quince segundos es lo que ya usaba la app antes de este refactor. Se deja
+igual para no cambiar dos cosas a la vez: si hay que ajustarlo, se ajusta
+aquí y afecta a toda la aplicación.</p>
+</dd>
+<dt><a href="#llaveNotificaciones">llaveNotificaciones</a> ⇒ <code>Array</code></dt>
+<dd><p>Llave de caché de las notificaciones de una persona.</p>
+</dd>
+<dt><a href="#LLAVE_SUSCRIPTORES">LLAVE_SUSCRIPTORES</a> : <code>Array</code></dt>
+<dd><p>Llave de caché de quiénes reciben las notificaciones de viajes.</p>
+</dd>
+<dt><a href="#LLAVE_DISPONIBLES">LLAVE_DISPONIBLES</a> : <code>Array</code></dt>
+<dd><p>Llave de caché de quiénes todavía pueden suscribirse.</p>
+</dd>
+<dt><a href="#esquemaNotificacion">esquemaNotificacion</a> : <code>object</code></dt>
+<dd><p>Una notificación tal como la manda <code>Notifications.php</code>.</p>
+<p>Los campos son los que devuelve el endpoint de verdad, comprobados contra
+producción: <code>id</code>, <code>mensaje</code> y <code>created_at</code>.</p>
+<p>El mensaje llega con dos nombres según qué parte del backend responda:
+<code>mensaje</code> y <code>Mensaje</code>, que es como se llama la columna. Se acepta cualquiera
+de los dos y a partir de aquí, en toda la aplicación, es <code>mensaje</code>.</p>
+<p>Solo se exigen las dos cosas sin las que la notificación no sirve de nada: el
+identificador, que es lo que distingue una nueva de una ya anunciada, y el
+mensaje, que es lo que la persona lee. Todo lo demás se acepta como venga,
+porque el backend puede agregar campos sin avisar y eso no es motivo para
+tirar la notificación.</p>
 </dd>
 <dt><a href="#LLAVE_PERIODOS">LLAVE_PERIODOS</a> : <code>Array.&lt;string&gt;</code></dt>
 <dd><p>Llave de caché de los periodos de nómina.</p>
@@ -727,13 +824,19 @@ qué tan lejos está cada camión de poder empezar el siguiente viaje.</p>
 <dd><p>Llave de caché de las órdenes de servicio.</p>
 </dd>
 <dt><a href="#esquemaServicio">esquemaServicio</a></dt>
-<dd><p>Un servicio dentro de una orden: qué se le hizo al camión.</p>
+<dd><p>Un servicio dentro de una orden: qué se le hizo a la unidad.</p>
 <p><code>detalles</code> son las refacciones y la mano de obra; puede venir vacío.</p>
 </dd>
 <dt><a href="#esquemaOrden">esquemaOrden</a></dt>
 <dd><p>Una orden de servicio con sus servicios anidados.</p>
 <p>La API los devuelve así, en una sola llamada: no hay que pedir el detalle
 aparte. <code>tipo_cambio</code> viene nulo cuando la orden es en pesos.</p>
+</dd>
+<dt><a href="#nombreUnidad">nombreUnidad</a> ⇒ <code>string</code></dt>
+<dd><p>El número de la unidad de una orden, sea camión o caja.</p>
+<p>Una orden es de una o de otra, nunca de las dos: Reparaciones arma órdenes
+de caja desde la inspección y esas llegan sin camión. Es lo que se compara
+al filtrar por unidad.</p>
 </dd>
 <dt><a href="#estaAbierta">estaAbierta</a> ⇒ <code>boolean</code></dt>
 <dd><p>Indica si una orden sigue abierta al trabajo.</p>
@@ -829,6 +932,41 @@ de espera basta para no dispararle una por tecla.</p>
 en metros, así que la conversión aparece en cada pantalla que calcula un
 precio.</p>
 </dd>
+<dt><a href="#LLAVE_ESTATUS_CAJAS">LLAVE_ESTATUS_CAJAS</a> : <code>Array.&lt;string&gt;</code></dt>
+<dd><p>Llave de caché del tablero de estatus de cajas.</p>
+</dd>
+<dt><a href="#REFRESCO_TABLERO_MS">REFRESCO_TABLERO_MS</a> : <code>number</code></dt>
+<dd><p>Cada cuánto se vuelve a pedir el tablero mientras está abierto, en milisegundos.</p>
+<p>La operación lo deja abierto en pantalla todo el día y reportó que «no se
+actualizan las cajas»: cargaba al entrar y nada más. Cinco minutos es lo que
+pidió Emiliano, y con el refresco solo en primer plano son doce peticiones por
+hora y por persona, que el hosting aguanta de sobra.</p>
+</dd>
+<dt><a href="#UBICACIONES_CAJA">UBICACIONES_CAJA</a> : <code>Array.&lt;string&gt;</code></dt>
+<dd><p>Las ubicaciones en el orden en que se ofrecen.</p>
+</dd>
+<dt><a href="#OBSERVACIONES_CAJA">OBSERVACIONES_CAJA</a> : <code>Array.&lt;string&gt;</code></dt>
+<dd><p>Las observaciones en el orden en que se ofrecen.</p>
+</dd>
+<dt><a href="#LARGO_COMENTARIO">LARGO_COMENTARIO</a> : <code>number</code></dt>
+<dd><p>Cuánto texto cabe en el comentario de una caja.</p>
+<p>Es el largo de <code>caja_estatus.comentarios</code>. Vive aquí y no en la pantalla
+porque el recorte tiene que ser el mismo en el campo, en el envío y en la
+columna; si se separan, el texto se corta en el servidor sin avisar.</p>
+</dd>
+<dt><a href="#TIPO_DOCUMENTO_FIANZA">TIPO_DOCUMENTO_FIANZA</a> : <code>string</code></dt>
+<dd><p>El tipo de documento con el que la fianza vive en el expediente de la caja.</p>
+<p>En la base aparece escrito de las dos formas, <code>Fianza</code> y <code>FIANZA</code>; el
+endpoint compara en mayúsculas y al subir una nueva se escribe así.</p>
+</dd>
+<dt><a href="#esquemaEstatusCaja">esquemaEstatusCaja</a></dt>
+<dd><p>El renglón de una caja en el tablero de estatus.</p>
+<p>Trae junto lo automático —el viaje en turno, su operador, la dirección de la
+etapa y el broker— y lo capturado a mano. <code>ubicacion</code> y <code>observacion</code> ya
+vienen resueltos por el endpoint: son lo manual mientras siga vigente, y lo
+automático en cuanto deja de estarlo. El comentario sigue la misma vigencia,
+pero sin equivalente automático: o hay nota, o no hay.</p>
+</dd>
 <dt><a href="#llaveViajeUpcoming">llaveViajeUpcoming</a> ⇒ <code>Array</code></dt>
 <dd><p>Llave de caché del detalle de un viaje próximo.</p>
 </dd>
@@ -902,6 +1040,12 @@ que mirar para saber qué deja el viaje de verdad.</p>
 </dd>
 <dt><a href="#galonesDeResumen">galonesDeResumen</a> ⇒ <code>number</code></dt>
 <dd><p>Los galones cargados en el viaje.</p>
+</dd>
+<dt><a href="#STATUS_CAJA_POR_PAIS">STATUS_CAJA_POR_PAIS</a> : <code>object</code></dt>
+<dd><p>Los status de caja que admite cada país al marcar un viaje como casi
+finalizado.</p>
+<p>En Estados Unidos no existe la exportación, así que ofrecer «Expo» ahí sería
+ofrecer un dato que el viaje no puede tener.</p>
 </dd>
 <dt><a href="#ESTADO_POR_OMISION">ESTADO_POR_OMISION</a> : <code>string</code></dt>
 <dd><p>El estado que se asume cuando el viaje no trae ninguno.</p>
@@ -1017,6 +1161,9 @@ aplicación, se pinte por accidente o acabe en un log. No arregla el endpoint
 <dt><a href="#estaActivo">estaActivo</a> ⇒ <code>boolean</code></dt>
 <dd><p>Indica si un usuario está activo.</p>
 </dd>
+<dt><a href="#COLORES_ESTATUS_CAJA">COLORES_ESTATUS_CAJA</a> : <code>Object.&lt;string, {fondo: string, texto: string, punto: string}&gt;</code></dt>
+<dd><p>El color de cada ubicación y cada observación, como los pidió operaciones.</p>
+</dd>
 <dt><a href="#money">money</a> ⇒ <code>string</code></dt>
 <dd><p>Un importe en dólares.</p>
 </dd>
@@ -1024,6 +1171,63 @@ aplicación, se pinte por accidente o acabe en un log. No arregla el endpoint
 <dd><p>Un importe en pesos.</p>
 <p>Va en <code>es-MX</code> a propósito, no en <code>en-US</code> como el de dólares: es la cifra que
 se compara contra facturas mexicanas.</p>
+</dd>
+<dt><a href="#MONTO_MANUAL">MONTO_MANUAL</a> : <code>string</code></dt>
+<dd><p>El valor que marca «otro monto» frente a los botones de importe fijo.</p>
+</dd>
+<dt><a href="#SIN_FILTROS_INSPECCION">SIN_FILTROS_INSPECCION</a> : <code>object</code></dt>
+<dd><p>Los filtros vacíos de la lista de inspecciones.</p>
+</dd>
+<dt><a href="#SIN_FILTROS_PENDIENTE">SIN_FILTROS_PENDIENTE</a> : <code>object</code></dt>
+<dd><p>Los filtros vacíos de la lista de reparaciones pendientes.</p>
+</dd>
+<dt><a href="#ORIGENES">ORIGENES</a> : <code>Array.&lt;{id: string, etiqueta: string}&gt;</code></dt>
+<dd><p>De dónde salió una reparación pendiente.</p>
+<p>Separar las dos cosas importa: lo que reportó el operador en un viaje y lo que
+el taller levantó con la unidad enfrente son dos conversaciones distintas.</p>
+</dd>
+<dt><a href="#hayFiltros">hayFiltros</a> ⇒ <code>boolean</code></dt>
+<dd><p>Indica si algún filtro tiene algo escrito.</p>
+</dd>
+<dt><a href="#deLaPestana">deLaPestana</a> ⇒ <code>Array.&lt;object&gt;</code></dt>
+<dd><p>Deja las inspecciones de la pestaña que se está viendo.</p>
+</dd>
+<dt><a href="#TIPO_GASTO_MANTENIMIENTO">TIPO_GASTO_MANTENIMIENTO</a> : <code>string</code></dt>
+<dd><p>El tipo de gasto bajo el que entra todo lo del taller.</p>
+</dd>
+<dt><a href="#conceptoEnBlanco">conceptoEnBlanco</a> ⇒ <code>object</code></dt>
+<dd><p>Un concepto vacío, listo para capturar.</p>
+</dd>
+<dt><a href="#gastoEnBlanco">gastoEnBlanco</a> ⇒ <code>object</code></dt>
+<dd><p>Un gasto vacío del servicio, con un concepto ya puesto.</p>
+</dd>
+<dt><a href="#servicioDesdePunto">servicioDesdePunto</a> ⇒ <code>object</code></dt>
+<dd><p>Un servicio nacido de un punto de la inspección.</p>
+<p>El texto del operador llega al tipo de reparación y se puede corregir ahí
+mismo; lo original queda guardado del lado del servidor.</p>
+</dd>
+<dt><a href="#servicioDesdePendiente">servicioDesdePendiente</a> ⇒ <code>object</code></dt>
+<dd><p>Un servicio nacido de una reparación que ya estaba pendiente.</p>
+</dd>
+<dt><a href="#servicioEnBlanco">servicioEnBlanco</a> ⇒ <code>object</code></dt>
+<dd><p>Un servicio extra, el que el taller agrega y nadie reportó.</p>
+</dd>
+<dt><a href="#totalDeGasto">totalDeGasto</a> ⇒ <code>number</code></dt>
+<dd><p>Lo que suman los conceptos de un gasto.</p>
+</dd>
+<dt><a href="#totalDeOrden">totalDeOrden</a> ⇒ <code>number</code></dt>
+<dd><p>Lo que suma la orden: mano de obra más gastos de cada servicio.</p>
+</dd>
+<dt><a href="#gastoIncompleto">gastoIncompleto</a> ⇒ <code>boolean</code></dt>
+<dd><p>Indica si a un gasto le falta algo para poder darse de alta.</p>
+<p>Un gasto no se puede crear a medias: sin país no hay moneda, y sin categoría y
+subcategoría el Administrador de Gastos no lo puede clasificar —y el servidor
+truena con un error fatal que no deja mensaje—.</p>
+</dd>
+<dt><a href="#llaveVistas">llaveVistas</a> ⇒ <code>string</code></dt>
+<dd><p>Dónde guarda el navegador lo que esta persona ya leyó.</p>
+<p>Va por persona: en las máquinas de oficina se turnan varias, y sin el
+identificador una heredaría los avisos leídos de la anterior.</p>
 </dd>
 <dt><a href="#COLOR_PUNTO_1">COLOR_PUNTO_1</a> : <code>string</code></dt>
 <dd><p>Color del primer punto de la ruta, el que marca la unidad de partida.</p>
@@ -1056,6 +1260,19 @@ captura el CI: es lo que marca que el cruce ya se hizo.</p>
 ## Functions
 
 <dl>
+<dt><a href="#useActualizarPantalla">useActualizarPantalla()</a> ⇒ <code>Object</code></dt>
+<dd><p>Vuelve a pedir todo lo que la pantalla tiene a la vista.</p>
+<p>Refresca las consultas <strong>activas</strong>, que son justo las de los componentes
+montados: la tabla y los catálogos que la acompañan. No hace falta enumerar
+llaves ni mantener una lista por pantalla, así que una pantalla que mañana
+pida un dato más lo refresca sin tocar esto.</p>
+<p>Existe porque el operador sube cosas desde la app móvil —documentos de etapa,
+salidas, tickets de gasto y diesel— contra la misma API, y el escritorio solo
+las pedía al montar la pantalla.</p>
+<p>El estado de avance es local y no <code>useIsFetching</code>: así el botón solo se
+bloquea por el refresco que él mismo disparó, y no cada vez que una consulta
+de fondo —el tablero de cajas, la campana— sale a la red por su cuenta.</p>
+</dd>
 <dt><a href="#construirFormData">construirFormData(op, [payload])</a> ⇒ <code>FormData</code></dt>
 <dd><p>Convierte un objeto plano en el <code>FormData</code> que espera la API PHP.</p>
 <p>Omite <code>undefined</code> y <code>null</code> en vez de mandarlos: <code>FormData</code> los serializa como
@@ -1094,6 +1311,11 @@ veces y solo retrasaría el mensaje.</p>
 <p>Se crea con una función y no como constante de módulo para que cada test
 pueda tener el suyo: una caché compartida entre tests los vuelve dependientes
 del orden en que corren.</p>
+<p>Una consulta puede pedir que su fallo <strong>no</strong> se anuncie declarando
+<code>meta: { silencioso: true }</code>. Es para los sondeos de fondo: uno que se repite
+cada 15 segundos y falla llenaría la pantalla de avisos por algo que la
+persona no pidió y que se arregla solo en cuanto vuelva la red. El fallo se
+sigue registrando en la consola.</p>
 </dd>
 <dt><a href="#calcularPermisosEfectivos">calcularPermisosEfectivos(rol, [ajustesUsuario])</a> ⇒ <code>Set.&lt;string&gt;</code></dt>
 <dd><p>Calcula los permisos que realmente tiene una persona.</p>
@@ -1376,18 +1598,14 @@ que devuelve <code>IMA_Docsv2.php</code> y tratarlo como lista da siempre vacío
 </dd>
 <dt><a href="#obtenerConductoresActivos">obtenerConductoresActivos([opciones])</a> ⇒ <code>Promise.&lt;Array&gt;</code></dt>
 <dd><p>Conductores activos, para los selectores de viaje.</p>
+<p>Usa la operación «Complete», que es la que trae a todos los conductores con
+los campos que piden los formularios de viaje. La operación corta se dejó de
+usar en la rama de trabajo el 2026-09-13 porque devolvía menos gente; aquí
+había dos consultas, una por operación, y se quedó solo esta para que ninguna
+pantalla vuelva a ver una lista distinta que la de al lado.</p>
 </dd>
 <dt><a href="#useConductoresActivos">useConductoresActivos()</a> ⇒ <code>object</code></dt>
 <dd><p>Conductores activos, para los selectores de viaje.</p>
-<p>Es un catálogo: se cachea <a href="#FRESCURA_CATALOGO_MS">FRESCURA_CATALOGO_MS</a> y se comparte entre
-todas las pantallas que lo pidan, así que varias a la vez hacen una sola
-petición en lugar de una cada una.</p>
-</dd>
-<dt><a href="#obtenerConductoresActivosCompletos">obtenerConductoresActivosCompletos([opciones])</a> ⇒ <code>Promise.&lt;Array&gt;</code></dt>
-<dd><p>Conductores activos con los campos extra que pide la edición completa de viaje.</p>
-</dd>
-<dt><a href="#useConductoresActivosCompletos">useConductoresActivosCompletos()</a> ⇒ <code>object</code></dt>
-<dd><p>Conductores activos con los campos extra que pide la edición completa de viaje.</p>
 <p>Es un catálogo: se cachea <a href="#FRESCURA_CATALOGO_MS">FRESCURA_CATALOGO_MS</a> y se comparte entre
 todas las pantallas que lo pidan, así que varias a la vez hacen una sola
 petición en lugar de una cada una.</p>
@@ -1465,6 +1683,25 @@ el modal de alta y la barra de filtros lo piden una sola vez entre los dos.</p>
 </dd>
 <dt><a href="#useActualizarGasto">useActualizarGasto()</a> ⇒ <code>object</code></dt>
 <dd><p>Guarda un gasto y refresca la lista.</p>
+</dd>
+<dt><a href="#resolverClasificacionDtops">resolverClasificacionDtops([tipos], [categorias], [subcategorias])</a> ⇒ <code>object</code> | <code>null</code></dt>
+<dd><p>Busca en los catálogos el trío tipo/categoría/subcategoría de un DTOPS.</p>
+<p>Localiza la subcategoría «Dtops» por nombre, sube a la categoría que la
+contiene y de ahí al tipo de gasto de esa categoría.</p>
+</dd>
+<dt><a href="#requiereGastoDtops">requiereGastoDtops(subida)</a> ⇒ <code>boolean</code></dt>
+<dd><p>Decide si un documento recién subido a un viaje genera el gasto de un DTOPS.</p>
+<p>Solo cuenta el DTOPS de la etapa, no el de una parada, con un archivo nuevo
+y en un viaje de Estados Unidos. Da igual en qué estado esté el viaje.</p>
+</dd>
+<dt><a href="#montoDtopsValido">montoDtopsValido(monto)</a> ⇒ <code>boolean</code></dt>
+<dd><p>Comprueba si un importe capturado sirve como monto de un DTOPS.</p>
+</dd>
+<dt><a href="#construirGastoDtops">construirGastoDtops(datos)</a> ⇒ <code>object</code></dt>
+<dd><p>Arma el alta de Expense Manager que corresponde a un DTOPS.</p>
+<p>El gasto queda en Estados Unidos y en dólares, con un solo renglón de
+cantidad 1 y precio unitario igual al monto, descrito con el número de
+viaje y con el DTOPS como ticket.</p>
 </dd>
 <dt><a href="#algunRenglon">algunRenglon(gasto, cumple)</a> ⇒ <code>boolean</code></dt>
 <dd><p>Indica si alguno de los renglones de un gasto cumple algo.</p>
@@ -1621,6 +1858,157 @@ misma información como cadena y no hace falta tocarlo.</p>
 </dd>
 <dt><a href="#agruparPorCategoria">agruparPorCategoria(articulos)</a> ⇒ <code>Array.&lt;{categoria: string, articulos: Array.&lt;Articulo&gt;}&gt;</code></dt>
 <dd><p>Agrupa los artículos por categoría, conservando el orden alfabético.</p>
+</dd>
+<dt><a href="#obtenerInspeccionesMtto">obtenerInspeccionesMtto(lado, [opciones])</a> ⇒ <code>Promise.&lt;Array&gt;</code></dt>
+<dd><p>Trae las inspecciones de un lado, con lo que de verdad falta por atender.</p>
+<p>El conteo viene del servidor ya descontando lo resuelto: <code>All_CL_Final</code> cuenta
+renglones del checklist, incluidos los &quot;ok&quot;, y por eso una inspección con tres
+cosas que hacer aparecía con cinco.</p>
+</dd>
+<dt><a href="#obtenerPuntos">obtenerPuntos(viajeId, lado, [opciones])</a> ⇒ <code>Promise.&lt;Array&gt;</code></dt>
+<dd><p>Trae los puntos de un lado de una inspección, con el estado de cada uno.</p>
+</dd>
+<dt><a href="#obtenerPendientes">obtenerPendientes(unidadTipo, [opciones])</a> ⇒ <code>Promise.&lt;Array&gt;</code></dt>
+<dd><p>Trae las reparaciones pendientes de camiones o de cajas.</p>
+</dd>
+<dt><a href="#obtenerNomenclaturas">obtenerNomenclaturas([opciones])</a> ⇒ <code>Promise.&lt;Map.&lt;string, string&gt;&gt;</code></dt>
+<dd><p>Trae la nomenclatura de cada viaje con inspección final.</p>
+<p>La arma un procedimiento del servidor y no sale de las columnas de <code>trips</code>, así
+que no se puede reconstruir aquí. Se lee del resumen viejo, que es su única
+fuente, para que el viaje se nombre igual en toda la aplicación.</p>
+</dd>
+<dt><a href="#useNomenclaturas">useNomenclaturas()</a> ⇒ <code>object</code></dt>
+<dd><p>Las nomenclaturas, cacheadas largo: cambian cuando nace un viaje.</p>
+</dd>
+<dt><a href="#resolverPuntos">resolverPuntos(datos)</a> ⇒ <code>Promise.&lt;object&gt;</code></dt>
+<dd><p>Manda puntos a pendientes o los descarta.</p>
+</dd>
+<dt><a href="#crearPendiente">crearPendiente(datos)</a> ⇒ <code>Promise.&lt;object&gt;</code></dt>
+<dd><p>Levanta una reparación pendiente que no vino de ninguna inspección.</p>
+<p>Es la otra mitad del reporte: lo que el taller ve con la unidad enfrente y no
+pasó por el checklist del operador.</p>
+</dd>
+<dt><a href="#completarLado">completarLado(datos)</a> ⇒ <code>Promise.&lt;object&gt;</code></dt>
+<dd><p>Cierra el lado de camión o de caja de una inspección.</p>
+<p>El servidor vuelve a contar los puntos sin resolver y rechaza el cierre si
+queda alguno: la validación de la pantalla es comodidad, no la garantía.</p>
+</dd>
+<dt><a href="#crearOrden">crearOrden(datos)</a> ⇒ <code>Promise.&lt;object&gt;</code></dt>
+<dd><p>Levanta la orden de servicio con un servicio por reparación.</p>
+</dd>
+<dt><a href="#useInspeccionesMtto">useInspeccionesMtto(lado)</a> ⇒ <code>object</code></dt>
+<dd><p>Las inspecciones de un lado, cacheadas.</p>
+</dd>
+<dt><a href="#usePuntos">usePuntos(viajeId, lado)</a> ⇒ <code>object</code></dt>
+<dd><p>Los puntos de una inspección. Solo se piden cuando la fila está abierta.</p>
+</dd>
+<dt><a href="#usePendientes">usePendientes(unidadTipo)</a> ⇒ <code>object</code></dt>
+<dd><p>Las reparaciones pendientes de un lado, cacheadas.</p>
+</dd>
+<dt><a href="#useRefrescarMantenimiento">useRefrescarMantenimiento()</a> ⇒ <code>function</code></dt>
+<dd><p>Invalida todo el flujo: inspecciones, puntos y pendientes.</p>
+</dd>
+<dt><a href="#useResolverPuntos">useResolverPuntos()</a> ⇒ <code>object</code></dt>
+<dd><p>Resuelve puntos y refresca el flujo.</p>
+</dd>
+<dt><a href="#useCrearPendiente">useCrearPendiente()</a> ⇒ <code>object</code></dt>
+<dd><p>Levanta una reparación a mano y refresca el flujo.</p>
+</dd>
+<dt><a href="#useCompletarLado">useCompletarLado()</a> ⇒ <code>object</code></dt>
+<dd><p>Cierra un lado y refresca el flujo.</p>
+</dd>
+<dt><a href="#useCrearOrdenMtto">useCrearOrdenMtto()</a> ⇒ <code>object</code></dt>
+<dd><p>Crea la orden y refresca el flujo.</p>
+<p>No invalida las órdenes de servicio: de eso se encarga quien las lista.</p>
+</dd>
+<dt><a href="#agruparPorRubro">agruparPorRubro(puntos)</a> ⇒ <code>Array.&lt;{clave: string, etiqueta: string, puntos: Array.&lt;object&gt;}&gt;</code></dt>
+<dd><p>Agrupa los puntos por rubro, en el orden del checklist.</p>
+</dd>
+<dt><a href="#agruparPorUnidad">agruparPorUnidad(pendientes, lado)</a> ⇒ <code>Array.&lt;{clave: string, unidadId: string, etiqueta: string, reparaciones: Array.&lt;object&gt;}&gt;</code></dt>
+<dd><p>Agrupa las reparaciones pendientes por unidad.</p>
+<p>Se agrupa, y no se lista plano, porque la orden se levanta por unidad: ver
+sueltas las reparaciones de un mismo camión es lo que hacía que se olvidaran.</p>
+</dd>
+<dt><a href="#normalizarCon">normalizarCon(esquema, filas)</a> ⇒ <code>Object</code></dt>
+<dd><p>Valida una lista descartando lo que no cumple el esquema.</p>
+</dd>
+<dt><a href="#obtenerNotificaciones">obtenerNotificaciones(parametros)</a> ⇒ <code>Promise.&lt;Array.&lt;object&gt;&gt;</code></dt>
+<dd><p>Trae las notificaciones de una persona.</p>
+</dd>
+<dt><a href="#useNotificaciones">useNotificaciones([idUsuario])</a> ⇒ <code>object</code></dt>
+<dd><p>Mantiene al día las notificaciones de una persona.</p>
+<p>Sustituye al <code>setInterval</code> que vivía dentro del layout. La diferencia que
+importa no es de estilo:</p>
+<ul>
+<li><strong>Se detiene sola cuando la ventana no está al frente.</strong> <code>refetchInterval</code>
+no dispara en segundo plano, así que una máquina con la app abierta y
+minimizada toda la tarde deja de pegarle al servidor. El <code>setInterval</code>
+seguía sondeando.</li>
+<li><strong>Cancela la petición en vuelo</strong> al desmontarse o al cambiar de persona,
+en lugar de dejarla llegar tarde y escribir sobre estado que ya no existe.</li>
+<li><strong>No anuncia sus fallos.</strong> Con <code>silencioso</code>, una racha sin red no llena la
+pantalla de avisos por algo que nadie pidió y que se arregla solo.</li>
+</ul>
+</dd>
+<dt><a href="#obtenerSuscriptores">obtenerSuscriptores([opciones])</a> ⇒ <code>Promise.&lt;Array.&lt;object&gt;&gt;</code></dt>
+<dd><p>Las personas que hoy reciben las notificaciones de viajes.</p>
+</dd>
+<dt><a href="#obtenerUsuariosDisponibles">obtenerUsuariosDisponibles([opciones])</a> ⇒ <code>Promise.&lt;Array.&lt;object&gt;&gt;</code></dt>
+<dd><p>Las personas que todavía no reciben las notificaciones de viajes.</p>
+</dd>
+<dt><a href="#suscribir">suscribir(idUsuario)</a> ⇒ <code>Promise.&lt;object&gt;</code></dt>
+<dd><p>Da de alta a una persona en las notificaciones de viajes.</p>
+</dd>
+<dt><a href="#desuscribir">desuscribir(idUsuario)</a> ⇒ <code>Promise.&lt;object&gt;</code></dt>
+<dd><p>Da de baja a una persona de las notificaciones de viajes.</p>
+</dd>
+<dt><a href="#useSuscriptores">useSuscriptores()</a> ⇒ <code>object</code></dt>
+<dd><p>Quiénes reciben hoy las notificaciones de viajes.</p>
+</dd>
+<dt><a href="#useUsuariosDisponibles">useUsuariosDisponibles([habilitada])</a> ⇒ <code>object</code></dt>
+<dd><p>Quiénes pueden suscribirse. No consulta hasta que hace falta la lista.</p>
+</dd>
+<dt><a href="#refrescarListas">refrescarListas(cliente)</a> ⇒ <code>Promise</code></dt>
+<dd><p>Invalida las dos listas: quien entra a una sale de la otra.</p>
+</dd>
+<dt><a href="#useSuscribir">useSuscribir()</a> ⇒ <code>object</code></dt>
+<dd><p>Suscribe a una persona y refresca las dos listas.</p>
+</dd>
+<dt><a href="#useDesuscribir">useDesuscribir()</a> ⇒ <code>object</code></dt>
+<dd><p>Da de baja a una persona y refresca las dos listas.</p>
+</dd>
+<dt><a href="#normalizarNotificaciones">normalizarNotificaciones(crudas)</a> ⇒ <code>Object</code></dt>
+<dd><p>Valida la lista que vino del servidor y descarta lo que no se puede usar.</p>
+<p>Descarta en vez de fallar a propósito. Es un sondeo de fondo: si una
+notificación llega sin mensaje, lo correcto es no enseñarla y seguir con las
+demás, no dejar a la persona sin ninguna. Las descartadas se cuentan para que
+quede rastro en la consola.</p>
+</dd>
+<dt><a href="#sinAnunciar">sinAnunciar(notificaciones, yaAnunciadas)</a> ⇒ <code>Array.&lt;object&gt;</code></dt>
+<dd><p>Separa las notificaciones que todavía no se le han anunciado a la persona.</p>
+<p>Vive aquí, y no dentro del componente, porque es la única regla de negocio de
+esta entidad y es la que hay que poder probar sin montar React ni esperar
+quince segundos.</p>
+</dd>
+<dt><a href="#fechaDeNotificacion">fechaDeNotificacion([texto])</a> ⇒ <code>Date</code> | <code>null</code></dt>
+<dd><p>Convierte la fecha de PHP en una <code>Date</code>.</p>
+<p>PHP la manda como <code>2026-09-17 08:30:00</code>, con espacio en vez de <code>T</code>. Safari no
+acepta ese formato y devuelve una fecha inválida, así que se normaliza aquí y
+no en cada pantalla que quiera enseñarla.</p>
+</dd>
+<dt><a href="#diasDeDiferencia">diasDeDiferencia(fecha, ahora)</a> ⇒ <code>number</code></dt>
+<dd><p>Cuántos días naturales separan una fecha de otra.</p>
+<p>Cuenta días de calendario, no de 24 horas: las once de la noche y la una de
+la madrugada siguiente son un día de diferencia, aunque pasen dos horas.</p>
+</dd>
+<dt><a href="#etiquetaDeDia">etiquetaDeDia([creadaEn], [ahora])</a> ⇒ <code>string</code></dt>
+<dd><p>El encabezado del grupo al que pertenece una notificación.</p>
+</dd>
+<dt><a href="#tiempoRelativo">tiempoRelativo([creadaEn], [ahora])</a> ⇒ <code>string</code></dt>
+<dd><p>Hace cuánto llegó una notificación, en palabras.</p>
+</dd>
+<dt><a href="#agruparPorDia">agruparPorDia(notificaciones, [ahora])</a> ⇒ <code>Array.&lt;{etiqueta: string, notificaciones: Array.&lt;object&gt;}&gt;</code></dt>
+<dd><p>Agrupa las notificaciones por día, conservando el orden en que llegaron.</p>
 </dd>
 <dt><a href="#obtenerPeriodos">obtenerPeriodos([opciones])</a> ⇒ <code>Promise.&lt;Array.&lt;Periodo&gt;&gt;</code></dt>
 <dd><p>Trae todas las semanas de nómina, validadas.</p>
@@ -1840,6 +2228,10 @@ así que no hay que pedir el detalle aparte.</p>
 </dd>
 <dt><a href="#normalizarOrdenes">normalizarOrdenes(filas)</a> ⇒ <code>Object</code></dt>
 <dd><p>Valida una lista de órdenes descartando las que no cumplen lo mínimo.</p>
+</dd>
+<dt><a href="#etiquetaUnidad">etiquetaUnidad(orden)</a> ⇒ <code>string</code></dt>
+<dd><p>Cómo se muestra la unidad de una orden: el camión tal cual y la caja con su
+prefijo, para que «104» no se confunda con el camión 104.</p>
 </dd>
 <dt><a href="#resumenServicios">resumenServicios(orden)</a> ⇒ <code>Object</code></dt>
 <dd><p>Cuenta los servicios de una orden por estatus.</p>
@@ -2085,6 +2477,65 @@ petición en lugar de una cada una.</p>
 <dt><a href="#useCrearCajaExterna">useCrearCajaExterna()</a> ⇒ <code>object</code></dt>
 <dd><p>Da de alta una caja externa y refresca el catálogo.</p>
 </dd>
+<dt><a href="#obtenerEstatusCajas">obtenerEstatusCajas([opciones])</a> ⇒ <code>Promise.&lt;Array.&lt;object&gt;&gt;</code></dt>
+<dd><p>Trae una fila por caja activa, con lo automático ya resuelto.</p>
+<p>Lo automático —viaje en turno, operador, dirección y broker— no se guarda en
+ninguna parte: el endpoint lo calcula al consultar, así que nunca queda
+viejo. Lo capturado a mano viene ya aplicado encima cuando sigue vigente.</p>
+</dd>
+<dt><a href="#useEstatusCajas">useEstatusCajas()</a> ⇒ <code>object</code></dt>
+<dd><p>El tablero de estatus de cajas, al día mientras esté a la vista.</p>
+<p>No se cachea como catálogo: refleja dónde está cada caja ahora mismo, así
+que se vuelve a pedir cada vez que la pantalla se monta, cada
+<a href="#REFRESCO_TABLERO_MS">REFRESCO_TABLERO_MS</a> y al volver a la ventana. El refresco de fondo no
+levanta <code>isLoading</code> —solo <code>isFetching</code>—, así que la tabla no parpadea encima
+de quien está escribiendo un comentario.</p>
+<p>Con la pestaña en segundo plano el reloj se detiene: <code>refetchIntervalInBackground</code>
+queda en su valor por omisión a propósito, para no golpear el hosting desde
+pantallas que nadie está mirando.</p>
+</dd>
+<dt><a href="#guardarEstatusCaja">guardarEstatusCaja(datos)</a> ⇒ <code>Promise.&lt;object&gt;</code></dt>
+<dd><p>Guarda lo que se captura a mano para una caja: ubicación, observación y
+comentario.</p>
+<p>Lo capturado queda amarrado al viaje en turno: el endpoint anota con qué
+viaje se fijó, y en cuanto la caja pasa a otro deja de aplicar y vuelve a
+mandar lo automático, sin que nadie tenga que acordarse de quitarlo.</p>
+</dd>
+<dt><a href="#useGuardarEstatusCaja">useGuardarEstatusCaja()</a> ⇒ <code>object</code></dt>
+<dd><p>Guarda lo capturado y deja la tabla al día.</p>
+<p>Pinta el cambio antes de que la API conteste y lo revierte si falla: la
+captura es un combo por fila y esperar al servidor en cada cambio hacía que
+el valor elegido parpadeara de vuelta al anterior.</p>
+</dd>
+<dt><a href="#subirFianza">subirFianza(datos)</a> ⇒ <code>Promise.&lt;object&gt;</code></dt>
+<dd><p>Sube una fianza nueva al expediente de una caja.</p>
+<p>Es el mismo endpoint del expediente que usa el Administrador de Cajas, con
+el tipo de documento fijo. La anterior no se borra: el procedimiento de la
+base la apaga y conserva el archivo, así que el histórico queda completo.</p>
+</dd>
+<dt><a href="#useSubirFianza">useSubirFianza()</a> ⇒ <code>object</code></dt>
+<dd><p>Sube una fianza y refresca el tablero de estatus.</p>
+</dd>
+<dt><a href="#recortarComentario">recortarComentario(texto)</a> ⇒ <code>string</code></dt>
+<dd><p>Deja un comentario listo para guardar: sin espacios sobrantes y sin pasarse
+del largo de la columna.</p>
+</dd>
+<dt><a href="#normalizarEstatusCajas">normalizarEstatusCajas(lista)</a> ⇒ <code>Object</code></dt>
+<dd><p>Valida la lista que devuelve la API y descarta los renglones que no cumplen.</p>
+<p>Un renglón mal formado se omite en vez de tumbar la pantalla: el tablero
+sirve igual con siete cajas que con ocho, y quien mira necesita ver las que
+sí llegaron bien.</p>
+</dd>
+<dt><a href="#estadoFianza">estadoFianza([fianza], [hoy])</a> ⇒ <code>Object</code></dt>
+<dd><p>En qué estado está la fianza de una caja.</p>
+<p>Reutiliza la regla del expediente de unidades en lugar de tener la suya: una
+fianza es un documento con vencimiento como cualquier otro, y que el tablero
+la pintara vencida un día distinto que el Administrador de Cajas sería un
+error que nadie sabría explicar.</p>
+</dd>
+<dt><a href="#contarPorObservacion">contarPorObservacion(cajas)</a> ⇒ <code>Object</code></dt>
+<dd><p>Cuántas cajas van cargadas y cuántas vacías.</p>
+</dd>
 <dt><a href="#obtenerViajePorId">obtenerViajePorId(parametros)</a> ⇒ <code>Promise.&lt;object&gt;</code></dt>
 <dd><p>Trae un viaje con sus etapas, documentos y paradas.</p>
 </dd>
@@ -2130,6 +2581,19 @@ nunca tiene la lista completa en memoria.</p>
 </dd>
 <dt><a href="#documentoDesdeApi">documentoDesdeApi(doc)</a> ⇒ <code>object</code></dt>
 <dd><p>Convierte un documento de la API en el estado que maneja el formulario.</p>
+</dd>
+<dt><a href="#urlDeDocumento">urlDeDocumento([documento], base)</a> ⇒ <code>string</code> | <code>null</code></dt>
+<dd><p>La URL con la que se abre o previsualiza un documento de viaje.</p>
+<p>Los documentos viven todos en <code>Uploads/Trips</code>, y la ruta que guarda la API
+puede venir con separadores de Windows, así que se usa solo el nombre del
+archivo. Un documento recién elegido todavía no está en el servidor: se ve
+desde el propio archivo.</p>
+</dd>
+<dt><a href="#documentoParaModal">documentoParaModal([documento], base)</a> ⇒ <code>object</code> | <code>null</code></dt>
+<dd><p>El documento que recibe el modal de archivo, con su URL ya resuelta.</p>
+<p>El modal solo previsualiza lo que trae <code>url</code>, y los documentos que vienen de
+la API traen la ruta del servidor. Sin esto, abrir un BL ya subido mostraba
+un modal vacío: el archivo estaba bien, pero nunca se pintaba.</p>
 </dd>
 <dt><a href="#documentosDeEtapa">documentosDeEtapa(plantilla, [adjuntos])</a> ⇒ <code>object</code></dt>
 <dd><p>Rellena la plantilla de documentos de una etapa con los que ya están subidos.</p>
@@ -2199,6 +2663,14 @@ error, y por eso aquí se expone tal cual en vez de recalcularla.</p>
 calcula: el pago al conductor queda fuera. No corrige nada; solo permite
 avisar cuando el resumen se contradice, que es mejor que enseñar dos cifras
 que no cuadran sin decir nada.</p>
+</dd>
+<dt><a href="#statusCajaDe">statusCajaDe([pais])</a> ⇒ <code>Array.&lt;string&gt;</code></dt>
+<dd><p>Los status de caja que se le pueden ofrecer a un viaje.</p>
+<p>Un país desconocido cae en los de México, que es el juego completo: más vale
+ofrecer una opción de más que dejar la pantalla sin ninguna.</p>
+</dd>
+<dt><a href="#statusCajaValido">statusCajaValido(status, [pais])</a> ⇒ <code>boolean</code></dt>
+<dd><p>Comprueba que un status elegido valga para el país del viaje.</p>
 </dd>
 <dt><a href="#obtenerCamionesActivos">obtenerCamionesActivos([opciones])</a> ⇒ <code>Promise.&lt;Array&gt;</code></dt>
 <dd><p>Camiones activos, para los selectores de viaje.</p>
@@ -2407,6 +2879,93 @@ petición en lugar de una cada una.</p>
 <dt><a href="#useCrearBodega">useCrearBodega()</a> ⇒ <code>object</code></dt>
 <dd><p>Da de alta una bodega y refresca el catálogo.</p>
 </dd>
+<dt><a href="#useTableroCajas">useTableroCajas()</a> ⇒ <code>object</code></dt>
+<dd><p>Todo el estado y los efectos del tablero de estatus de cajas.</p>
+<p>Existe para que la pantalla se quede solo con la composición: aquí viven la
+consulta, las dos mutaciones, quién captura y qué diálogo está abierto, y
+hacia afuera sale una superficie plana de datos y acciones.</p>
+</dd>
+<dt><a href="#useGastoDtops">useGastoDtops(parametros)</a> ⇒ <code>object</code></dt>
+<dd><p>Lleva el estado y el guardado del alta del gasto de un DTOPS.</p>
+<p>Pide los tres catálogos, resuelve con ellos la clasificación, guarda el
+monto y la fecha que se capturan, y da de alta el gasto.</p>
+</dd>
+<dt><a href="#useGastoDtopsPendiente">useGastoDtopsPendiente()</a> ⇒ <code>object</code></dt>
+<dd><p>Espera la subida de un DTOPS para ofrecer el alta de su gasto.</p>
+<p>Quien sube documentos solo avisa de cada subida con <code>alSubirDocumento</code>; este
+hook decide si es un DTOPS que genera gasto y guarda lo que el modal
+necesita. Así el editor de viajes no sabe nada de gastos, y la regla vive en
+un solo lugar para todas las pantallas que suben documentos.</p>
+</dd>
+<dt><a href="#filtrarInspecciones">filtrarInspecciones(inspecciones, filtros, lado)</a> ⇒ <code>Array.&lt;object&gt;</code></dt>
+<dd><p>Aplica los filtros a la lista de inspecciones.</p>
+<p>El viaje se busca sobre la nomenclatura completa y sobre el número, porque la
+gente escribe cualquiera de los dos.</p>
+</dd>
+<dt><a href="#filtrarPendientes">filtrarPendientes(pendientes, filtros, lado)</a> ⇒ <code>Array.&lt;object&gt;</code></dt>
+<dd><p>Aplica los filtros a las reparaciones pendientes.</p>
+</dd>
+<dt><a href="#cuerpoDelGasto">cuerpoDelGasto(gasto, contexto)</a> ⇒ <code>object</code></dt>
+<dd><p>Arma el cuerpo con el que se da de alta el gasto en el Administrador de Gastos.</p>
+<p>Lleva <code>omitir_inventario</code>: la orden ya no consume refacciones del inventario,
+así que si el gasto lo alimentara, el stock crecería sin que nada lo bajara.</p>
+</dd>
+<dt><a href="#useConstructorOrden">useConstructorOrden(apertura, onCreada)</a> ⇒ <code>object</code></dt>
+<dd><p>El estado y el guardado de la orden que se arma dentro de la pantalla.</p>
+</dd>
+<dt><a href="#usePanelInspecciones">usePanelInspecciones()</a> ⇒ <code>object</code></dt>
+<dd><p>El estado y las acciones de la lista de inspecciones.</p>
+<p>Existe para que <code>PanelInspecciones</code> sea solo JSX: aquí viven las consultas, la
+selección de puntos, los filtros y la paginación. Nada de esto se repite en la
+pantalla de pendientes, que tiene su propio controlador.</p>
+</dd>
+<dt><a href="#usePanelPendientes">usePanelPendientes()</a> ⇒ <code>object</code></dt>
+<dd><p>El estado y las acciones de las reparaciones pendientes.</p>
+<p>La paginación cuenta <strong>unidades</strong>, no reparaciones: cada renglón es un camión
+con todo lo que se le debe junto, y partir una unidad entre dos páginas haría
+que alguien levante una orden sin ver el resto.</p>
+</dd>
+<dt><a href="#sonar">sonar()</a> ⇒ <code>void</code></dt>
+<dd><p>Reproduce el sonido de notificación sin arriesgar la aplicación.</p>
+<p><code>play()</code> devuelve una promesa que el navegador <strong>rechaza</strong> cuando bloquea el
+audio —la política de reproducción automática exige que la persona haya
+interactuado antes con la página—. Sin este <code>catch</code>, ese rechazo llega al
+manejador global de errores y la persona ve un aviso de fallo por algo que no
+pidió y que no significa nada. Que no suene es aceptable; que aparezca un
+error, no.</p>
+</dd>
+<dt><a href="#useAvisoDeNotificaciones">useAvisoDeNotificaciones([idUsuario])</a> ⇒ <code>Array.&lt;object&gt;</code></dt>
+<dd><p>Anuncia las notificaciones nuevas mientras la persona trabaja.</p>
+<p>Se monta una sola vez, en el layout, y no pinta nada: su trabajo es mirar lo
+que trae la entidad y avisar de lo que todavía no se ha visto.</p>
+<p>Va como aviso flotante y no como diálogo a propósito. Una notificación llega
+sola, sin que nadie la haya pedido, así que taparle la pantalla a quien está
+capturando un gasto sería exactamente el anti-patrón que el estándar prohíbe.
+El aviso aparece arriba a la derecha y se va solo.</p>
+<p>Los identificadores ya anunciados viven en un <code>ref</code> y no en estado: cambiarlos
+no tiene que repintar nada, y guardarlos en <code>useState</code> provocaría un ciclo de
+render por cada notificación.</p>
+<p>El reinicio al cambiar de persona va <strong>dentro del mismo efecto</strong>, y no en uno
+aparte, porque dos efectos separados dependen del orden en que React los
+ejecuta y de que la lista cambie de referencia. Si no cambiara, quien entra
+después heredaría los avisos ya callados del anterior.</p>
+</dd>
+<dt><a href="#leerVistas">leerVistas(llave)</a> ⇒ <code>Set.&lt;string&gt;</code></dt>
+<dd><p>Lee del navegador los identificadores ya leídos.</p>
+<p>Nunca lanza: en una ventana privada o con el almacenamiento bloqueado, leer
+<code>localStorage</code> falla, y eso no es motivo para dejar a la persona sin campana.
+Lo peor que pasa es que todo se vea como no leído.</p>
+</dd>
+<dt><a href="#guardarVistas">guardarVistas(llave, vistas)</a> ⇒ <code>void</code></dt>
+<dd><p>Guarda en el navegador los identificadores ya leídos.</p>
+</dd>
+<dt><a href="#useCampanaNotificaciones">useCampanaNotificaciones()</a> ⇒ <code>object</code></dt>
+<dd><p>Lleva el estado de la campana de notificaciones.</p>
+<p>Se apoya en la misma consulta que el aviso emergente, así que las dos cosas
+comparten una sola petición cada quince segundos en lugar de una cada una.
+Lo único propio de la campana es qué se ha leído, que vive en el navegador
+porque el backend no lo guarda.</p>
+</dd>
 <dt><a href="#iconoUnidad">iconoUnidad(rumbo, color)</a> ⇒ <code>object</code></dt>
 <dd><p>Marcador de una unidad, apuntando hacia donde va.</p>
 </dd>
@@ -2498,6 +3057,9 @@ React escapa por su cuenta y la puerta se cierra sola.</p>
 </dd>
 <dt><a href="#PuntoRuta">PuntoRuta</a> : <code>object</code></dt>
 <dd><p>Un punto de la ruta, como lo entienden el mapa y el trazador.</p>
+</dd>
+<dt><a href="#EstatusCaja">EstatusCaja</a> : <code>object</code></dt>
+<dd><p>Una caja con su estatus resuelto.</p>
 </dd>
 <dt><a href="#TotalesViaje">TotalesViaje</a> : <code>object</code></dt>
 <dd><p>Los totales de un viaje: lo que se cobra y lo que cuesta.</p>
@@ -2786,6 +3348,24 @@ Estados del pago a un conductor.
 
 **Kind**: global enum  
 **Read only**: true  
+<a name="UNIDAD"></a>
+
+## UNIDAD : <code>enum</code>
+De qué unidad habla un punto. El mismo viaje se trabaja por los dos lados.
+
+**Kind**: global enum  
+**Read only**: true  
+<a name="ESTATUS_PUNTO"></a>
+
+## ESTATUS\_PUNTO : <code>enum</code>
+En qué puede estar un punto reportado.
+
+Es la pieza que no existía: antes un punto del checklist no tenía identidad ni
+estado, así que lo que la oficina decidía sobre él vivía en un Excel. Mientras
+quede uno en `SIN_RESOLVER`, el lado de la inspección no se puede cerrar.
+
+**Kind**: global enum  
+**Read only**: true  
 <a name="ESTADO_PERIODO"></a>
 
 ## ESTADO\_PERIODO : <code>enum</code>
@@ -2890,6 +3470,28 @@ Cómo se muestra cada estado de parada.
 
 ## MODO\_PING : <code>enum</code>
 Modos en que se puede colocar el segundo punto de una ruta.
+
+**Kind**: global enum  
+**Read only**: true  
+<a name="UBICACION_CAJA"></a>
+
+## UBICACION\_CAJA : <code>enum</code>
+Los lugares donde puede estar una caja.
+
+Es una lista cerrada por decisión de operaciones: fuera de estos no hay
+dónde poner una caja, y dejar el campo libre volvía la columna incomparable
+entre sí misma. PENSION USA, MANTENIMIENTO y AGENCIA ADUANAL solo se
+capturan a mano: el endpoint nunca las calcula.
+
+**Kind**: global enum  
+**Read only**: true  
+<a name="OBSERVACION_CAJA"></a>
+
+## OBSERVACION\_CAJA : <code>enum</code>
+Si la caja lleva carga, va vacía o la están cargando o descargando.
+
+CARGANDO y DESCARGANDO solo se capturan a mano: el endpoint nunca las
+calcula.
 
 **Kind**: global enum  
 **Read only**: true  
@@ -3011,6 +3613,13 @@ Son los que existen hoy en `Users_credentials`, no los del catálogo canónico:
 el backend guarda este campo tal cual, así que mandarle un valor normalizado
 lo cambiaría en la base. La normalización es **de lectura**, para decidir en el
 frontend; lo que viaja al servidor es el valor crudo.
+
+**Kind**: global enum  
+**Read only**: true  
+<a name="FILTRO_CAMPANA"></a>
+
+## FILTRO\_CAMPANA : <code>enum</code>
+Las tres vistas de la campana.
 
 **Kind**: global enum  
 **Read only**: true  
@@ -4119,6 +4728,36 @@ comparten una sola función.
 | [opciones] | <code>object</code> | Ajustes de la petición. |
 | [opciones.signal] | <code>AbortSignal</code> | Señal de cancelación. |
 
+<a name="MONTOS_DTOPS"></a>
+
+## MONTOS\_DTOPS : <code>Array.&lt;number&gt;</code>
+Los importes de los botones del alta de un DTOPS.
+
+**Kind**: global constant  
+<a name="DOCUMENTO_DTOPS"></a>
+
+## DOCUMENTO\_DTOPS : <code>string</code>
+La clave con la que una etapa de cruce guarda su DTOPS.
+
+**Kind**: global constant  
+<a name="SUBCATEGORIA_DTOPS"></a>
+
+## SUBCATEGORIA\_DTOPS : <code>string</code>
+La subcategoría con la que un DTOPS entra a Expense Manager.
+
+**Kind**: global constant  
+<a name="PAIS_DTOPS"></a>
+
+## PAIS\_DTOPS : <code>string</code>
+El país de un gasto de DTOPS.
+
+**Kind**: global constant  
+<a name="MONEDA_DTOPS"></a>
+
+## MONEDA\_DTOPS : <code>string</code>
+La moneda de un gasto de DTOPS.
+
+**Kind**: global constant  
 <a name="TODOS"></a>
 
 ## TODOS : <code>string</code>
@@ -4569,6 +5208,206 @@ Indica si un artículo está agotado.
 | --- | --- | --- |
 | articulo | [<code>Articulo</code>](#Articulo) | El artículo a evaluar. |
 
+<a name="LLAVE_MANTENIMIENTO"></a>
+
+## LLAVE\_MANTENIMIENTO : <code>Array.&lt;string&gt;</code>
+Llave raíz de todo lo que toca el flujo de mantenimiento.
+
+Cuelgan de ella las inspecciones, los puntos de cada viaje y las reparaciones
+pendientes. Resolver un punto mueve las tres cosas a la vez —sale de la
+inspección y entra a pendientes, o al revés—, así que se invalidan juntas.
+
+**Kind**: global constant  
+<a name="llaveInspecciones"></a>
+
+## llaveInspecciones ⇒ <code>Array</code>
+Llave de las inspecciones de un lado.
+
+**Kind**: global constant  
+**Returns**: <code>Array</code> - La llave de caché.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| lado | <code>string</code> | `camion` o `caja`. |
+
+<a name="llavePuntos"></a>
+
+## llavePuntos ⇒ <code>Array</code>
+Llave de los puntos de una inspección.
+
+**Kind**: global constant  
+**Returns**: <code>Array</code> - La llave de caché.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| viajeId | <code>string</code> | El viaje. |
+| lado | <code>string</code> | `camion` o `caja`. |
+
+<a name="llavePendientes"></a>
+
+## llavePendientes ⇒ <code>Array</code>
+Llave de las reparaciones pendientes de un lado.
+
+**Kind**: global constant  
+**Returns**: <code>Array</code> - La llave de caché.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| unidadTipo | <code>string</code> | `camion` o `caja`. |
+
+<a name="ETIQUETA_ESTATUS"></a>
+
+## ETIQUETA\_ESTATUS : <code>Object.&lt;string, string&gt;</code>
+Cómo se nombra cada estado en pantalla.
+
+**Kind**: global constant  
+**Read only**: true  
+<a name="RUBROS"></a>
+
+## RUBROS : <code>Array.&lt;{clave: string, etiqueta: string, tabla: string, unidad: string}&gt;</code>
+Los seis rubros del checklist del operador.
+
+El remolque es de la caja; el resto, del tractor. De ahí sale que una misma
+inspección se trabaje y se cierre por dos lados distintos.
+
+**Kind**: global constant  
+**Read only**: true  
+<a name="SIN_FALLA"></a>
+
+## SIN\_FALLA : <code>Set.&lt;string&gt;</code>
+Lo que el operador escribe cuando no hay nada que reparar.
+
+Medido contra producción: 64 de 145 renglones. Esconderlos es la diferencia
+entre leer una lista de trabajo y leer una lista de "todo bien". El servidor
+aplica el mismo filtro; esta copia es para lo que ya llegó al cliente.
+
+**Kind**: global constant  
+**Read only**: true  
+<a name="esPuntoSinFalla"></a>
+
+## esPuntoSinFalla ⇒ <code>boolean</code>
+Indica si un punto del checklist dice que no hay nada que hacer.
+
+**Kind**: global constant  
+**Returns**: <code>boolean</code> - `true` si no es trabajo.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| texto | <code>string</code> | Lo que escribió el operador. |
+
+<a name="esquemaInspeccionMtto"></a>
+
+## esquemaInspeccionMtto
+Una inspección con lo que falta por atender de un lado.
+
+**Kind**: global constant  
+<a name="esquemaPunto"></a>
+
+## esquemaPunto
+Un punto del checklist, con el estado que la oficina le haya dado.
+
+**Kind**: global constant  
+<a name="esquemaPendiente"></a>
+
+## esquemaPendiente
+Una reparación que espera a que la unidad vuelva.
+
+**Kind**: global constant  
+<a name="estaResuelto"></a>
+
+## estaResuelto ⇒ <code>boolean</code>
+Indica si un punto ya tiene destino.
+
+Un punto resuelto se sigue viendo en la inspección —con su etiqueta y, si fue
+descartado, tachado— pero ya no se puede volver a mandar: eso lo duplicaría.
+
+**Kind**: global constant  
+**Returns**: <code>boolean</code> - `true` si alguien ya decidió qué hacer con él.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| punto | <code>object</code> | El punto a evaluar. |
+
+<a name="clavePunto"></a>
+
+## clavePunto ⇒ <code>string</code>
+La clave con la que se identifica un punto en la pantalla.
+
+El renglón del checklist no tiene id propio en la respuesta: lo identifica el
+par tabla + id de origen, que es también la llave única del servidor.
+
+**Kind**: global constant  
+**Returns**: <code>string</code> - Su clave estable.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| punto | <code>object</code> | El punto. |
+
+<a name="rubrosDeLado"></a>
+
+## rubrosDeLado ⇒ <code>Array.&lt;object&gt;</code>
+Los rubros que se trabajan de un lado.
+
+**Kind**: global constant  
+**Returns**: <code>Array.&lt;object&gt;</code> - Los rubros de ese lado.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| lado | <code>string</code> | `camion` o `caja`. |
+
+<a name="INTERVALO_NOTIFICACIONES_MS"></a>
+
+## INTERVALO\_NOTIFICACIONES\_MS : <code>number</code>
+Cada cuánto se le pregunta al servidor si hay notificaciones nuevas.
+
+Quince segundos es lo que ya usaba la app antes de este refactor. Se deja
+igual para no cambiar dos cosas a la vez: si hay que ajustarlo, se ajusta
+aquí y afecta a toda la aplicación.
+
+**Kind**: global constant  
+<a name="llaveNotificaciones"></a>
+
+## llaveNotificaciones ⇒ <code>Array</code>
+Llave de caché de las notificaciones de una persona.
+
+**Kind**: global constant  
+**Returns**: <code>Array</code> - La llave para `useQuery`.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| idUsuario | <code>string</code> | Identificador de la persona. |
+
+<a name="LLAVE_SUSCRIPTORES"></a>
+
+## LLAVE\_SUSCRIPTORES : <code>Array</code>
+Llave de caché de quiénes reciben las notificaciones de viajes.
+
+**Kind**: global constant  
+<a name="LLAVE_DISPONIBLES"></a>
+
+## LLAVE\_DISPONIBLES : <code>Array</code>
+Llave de caché de quiénes todavía pueden suscribirse.
+
+**Kind**: global constant  
+<a name="esquemaNotificacion"></a>
+
+## esquemaNotificacion : <code>object</code>
+Una notificación tal como la manda `Notifications.php`.
+
+Los campos son los que devuelve el endpoint de verdad, comprobados contra
+producción: `id`, `mensaje` y `created_at`.
+
+El mensaje llega con dos nombres según qué parte del backend responda:
+`mensaje` y `Mensaje`, que es como se llama la columna. Se acepta cualquiera
+de los dos y a partir de aquí, en toda la aplicación, es `mensaje`.
+
+Solo se exigen las dos cosas sin las que la notificación no sirve de nada: el
+identificador, que es lo que distingue una nueva de una ya anunciada, y el
+mensaje, que es lo que la persona lee. Todo lo demás se acepta como venga,
+porque el backend puede agregar campos sin avisar y eso no es motivo para
+tirar la notificación.
+
+**Kind**: global constant  
 <a name="LLAVE_PERIODOS"></a>
 
 ## LLAVE\_PERIODOS : <code>Array.&lt;string&gt;</code>
@@ -4997,7 +5836,7 @@ Llave de caché de las órdenes de servicio.
 <a name="esquemaServicio"></a>
 
 ## esquemaServicio
-Un servicio dentro de una orden: qué se le hizo al camión.
+Un servicio dentro de una orden: qué se le hizo a la unidad.
 
 `detalles` son las refacciones y la mano de obra; puede venir vacío.
 
@@ -5011,6 +5850,22 @@ La API los devuelve así, en una sola llamada: no hay que pedir el detalle
 aparte. `tipo_cambio` viene nulo cuando la orden es en pesos.
 
 **Kind**: global constant  
+<a name="nombreUnidad"></a>
+
+## nombreUnidad ⇒ <code>string</code>
+El número de la unidad de una orden, sea camión o caja.
+
+Una orden es de una o de otra, nunca de las dos: Reparaciones arma órdenes
+de caja desde la inspección y esas llegan sin camión. Es lo que se compara
+al filtrar por unidad.
+
+**Kind**: global constant  
+**Returns**: <code>string</code> - El número de la unidad; cadena vacía si no tiene.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| orden | [<code>Orden</code>](#Orden) | La orden. |
+
 <a name="estaAbierta"></a>
 
 ## estaAbierta ⇒ <code>boolean</code>
@@ -5220,6 +6075,66 @@ Cuántos metros tiene una milla.
 Las tarifas de IMA se cotizan por milla aunque el servicio de rutas conteste
 en metros, así que la conversión aparece en cada pantalla que calcula un
 precio.
+
+**Kind**: global constant  
+<a name="LLAVE_ESTATUS_CAJAS"></a>
+
+## LLAVE\_ESTATUS\_CAJAS : <code>Array.&lt;string&gt;</code>
+Llave de caché del tablero de estatus de cajas.
+
+**Kind**: global constant  
+<a name="REFRESCO_TABLERO_MS"></a>
+
+## REFRESCO\_TABLERO\_MS : <code>number</code>
+Cada cuánto se vuelve a pedir el tablero mientras está abierto, en milisegundos.
+
+La operación lo deja abierto en pantalla todo el día y reportó que «no se
+actualizan las cajas»: cargaba al entrar y nada más. Cinco minutos es lo que
+pidió Emiliano, y con el refresco solo en primer plano son doce peticiones por
+hora y por persona, que el hosting aguanta de sobra.
+
+**Kind**: global constant  
+<a name="UBICACIONES_CAJA"></a>
+
+## UBICACIONES\_CAJA : <code>Array.&lt;string&gt;</code>
+Las ubicaciones en el orden en que se ofrecen.
+
+**Kind**: global constant  
+<a name="OBSERVACIONES_CAJA"></a>
+
+## OBSERVACIONES\_CAJA : <code>Array.&lt;string&gt;</code>
+Las observaciones en el orden en que se ofrecen.
+
+**Kind**: global constant  
+<a name="LARGO_COMENTARIO"></a>
+
+## LARGO\_COMENTARIO : <code>number</code>
+Cuánto texto cabe en el comentario de una caja.
+
+Es el largo de `caja_estatus.comentarios`. Vive aquí y no en la pantalla
+porque el recorte tiene que ser el mismo en el campo, en el envío y en la
+columna; si se separan, el texto se corta en el servidor sin avisar.
+
+**Kind**: global constant  
+<a name="TIPO_DOCUMENTO_FIANZA"></a>
+
+## TIPO\_DOCUMENTO\_FIANZA : <code>string</code>
+El tipo de documento con el que la fianza vive en el expediente de la caja.
+
+En la base aparece escrito de las dos formas, `Fianza` y `FIANZA`; el
+endpoint compara en mayúsculas y al subir una nueva se escribe así.
+
+**Kind**: global constant  
+<a name="esquemaEstatusCaja"></a>
+
+## esquemaEstatusCaja
+El renglón de una caja en el tablero de estatus.
+
+Trae junto lo automático —el viaje en turno, su operador, la dirección de la
+etapa y el broker— y lo capturado a mano. `ubicacion` y `observacion` ya
+vienen resueltos por el endpoint: son lo manual mientras siga vigente, y lo
+automático en cuanto deja de estarlo. El comentario sigue la misma vigencia,
+pero sin equivalente automático: o hay nota, o no hay.
 
 **Kind**: global constant  
 <a name="llaveViajeUpcoming"></a>
@@ -5441,6 +6356,17 @@ Los galones cargados en el viaje.
 | --- | --- | --- |
 | [resumen] | <code>object</code> | La respuesta de `trip_summary`. |
 
+<a name="STATUS_CAJA_POR_PAIS"></a>
+
+## STATUS\_CAJA\_POR\_PAIS : <code>object</code>
+Los status de caja que admite cada país al marcar un viaje como casi
+finalizado.
+
+En Estados Unidos no existe la exportación, así que ofrecer «Expo» ahí sería
+ofrecer un dato que el viaje no puede tener.
+
+**Kind**: global constant  
+**Read only**: true  
 <a name="ESTADO_POR_OMISION"></a>
 
 ## ESTADO\_POR\_OMISION : <code>string</code>
@@ -5765,6 +6691,12 @@ Indica si un usuario está activo.
 | --- | --- | --- |
 | usuario | [<code>Usuario</code>](#Usuario) | El usuario a evaluar. |
 
+<a name="COLORES_ESTATUS_CAJA"></a>
+
+## COLORES\_ESTATUS\_CAJA : <code>Object.&lt;string, {fondo: string, texto: string, punto: string}&gt;</code>
+El color de cada ubicación y cada observación, como los pidió operaciones.
+
+**Kind**: global constant  
 <a name="money"></a>
 
 ## money ⇒ <code>string</code>
@@ -5791,6 +6723,177 @@ se compara contra facturas mexicanas.
 | Param | Type | Description |
 | --- | --- | --- |
 | v | <code>\*</code> | La cantidad. |
+
+<a name="MONTO_MANUAL"></a>
+
+## MONTO\_MANUAL : <code>string</code>
+El valor que marca «otro monto» frente a los botones de importe fijo.
+
+**Kind**: global constant  
+<a name="SIN_FILTROS_INSPECCION"></a>
+
+## SIN\_FILTROS\_INSPECCION : <code>object</code>
+Los filtros vacíos de la lista de inspecciones.
+
+**Kind**: global constant  
+**Read only**: true  
+<a name="SIN_FILTROS_PENDIENTE"></a>
+
+## SIN\_FILTROS\_PENDIENTE : <code>object</code>
+Los filtros vacíos de la lista de reparaciones pendientes.
+
+**Kind**: global constant  
+**Read only**: true  
+<a name="ORIGENES"></a>
+
+## ORIGENES : <code>Array.&lt;{id: string, etiqueta: string}&gt;</code>
+De dónde salió una reparación pendiente.
+
+Separar las dos cosas importa: lo que reportó el operador en un viaje y lo que
+el taller levantó con la unidad enfrente son dos conversaciones distintas.
+
+**Kind**: global constant  
+**Read only**: true  
+<a name="hayFiltros"></a>
+
+## hayFiltros ⇒ <code>boolean</code>
+Indica si algún filtro tiene algo escrito.
+
+**Kind**: global constant  
+**Returns**: <code>boolean</code> - `true` si hay al menos uno con valor.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| filtros | <code>object</code> | Los filtros puestos. |
+
+<a name="deLaPestana"></a>
+
+## deLaPestana ⇒ <code>Array.&lt;object&gt;</code>
+Deja las inspecciones de la pestaña que se está viendo.
+
+**Kind**: global constant  
+**Returns**: <code>Array.&lt;object&gt;</code> - Las de esa pestaña.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| inspecciones | <code>Array.&lt;object&gt;</code> | Las inspecciones del lado. |
+| completadas | <code>boolean</code> | `true` para las cerradas. |
+
+<a name="TIPO_GASTO_MANTENIMIENTO"></a>
+
+## TIPO\_GASTO\_MANTENIMIENTO : <code>string</code>
+El tipo de gasto bajo el que entra todo lo del taller.
+
+**Kind**: global constant  
+**Read only**: true  
+<a name="conceptoEnBlanco"></a>
+
+## conceptoEnBlanco ⇒ <code>object</code>
+Un concepto vacío, listo para capturar.
+
+**Kind**: global constant  
+**Returns**: <code>object</code> - El concepto.  
+<a name="gastoEnBlanco"></a>
+
+## gastoEnBlanco ⇒ <code>object</code>
+Un gasto vacío del servicio, con un concepto ya puesto.
+
+**Kind**: global constant  
+**Returns**: <code>object</code> - El gasto.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| fecha | <code>string</code> | La fecha de la orden, que sirve de inicial. |
+
+<a name="servicioDesdePunto"></a>
+
+## servicioDesdePunto ⇒ <code>object</code>
+Un servicio nacido de un punto de la inspección.
+
+El texto del operador llega al tipo de reparación y se puede corregir ahí
+mismo; lo original queda guardado del lado del servidor.
+
+**Kind**: global constant  
+**Returns**: <code>object</code> - El servicio.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| punto | <code>object</code> | El punto marcado. |
+| [inspeccion] | <code>object</code> | La inspección de la que salió. |
+
+<a name="servicioDesdePendiente"></a>
+
+## servicioDesdePendiente ⇒ <code>object</code>
+Un servicio nacido de una reparación que ya estaba pendiente.
+
+**Kind**: global constant  
+**Returns**: <code>object</code> - El servicio.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| pendiente | <code>object</code> | La reparación. |
+
+<a name="servicioEnBlanco"></a>
+
+## servicioEnBlanco ⇒ <code>object</code>
+Un servicio extra, el que el taller agrega y nadie reportó.
+
+**Kind**: global constant  
+**Returns**: <code>object</code> - El servicio.  
+<a name="totalDeGasto"></a>
+
+## totalDeGasto ⇒ <code>number</code>
+Lo que suman los conceptos de un gasto.
+
+**Kind**: global constant  
+**Returns**: <code>number</code> - Su total.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| gasto | <code>object</code> | El gasto. |
+
+<a name="totalDeOrden"></a>
+
+## totalDeOrden ⇒ <code>number</code>
+Lo que suma la orden: mano de obra más gastos de cada servicio.
+
+**Kind**: global constant  
+**Returns**: <code>number</code> - El total.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| servicios | <code>Array.&lt;object&gt;</code> | Los servicios de la orden. |
+
+<a name="gastoIncompleto"></a>
+
+## gastoIncompleto ⇒ <code>boolean</code>
+Indica si a un gasto le falta algo para poder darse de alta.
+
+Un gasto no se puede crear a medias: sin país no hay moneda, y sin categoría y
+subcategoría el Administrador de Gastos no lo puede clasificar —y el servidor
+truena con un error fatal que no deja mensaje—.
+
+**Kind**: global constant  
+**Returns**: <code>boolean</code> - `true` si todavía no se puede guardar.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| gasto | <code>object</code> | El gasto a revisar. |
+
+<a name="llaveVistas"></a>
+
+## llaveVistas ⇒ <code>string</code>
+Dónde guarda el navegador lo que esta persona ya leyó.
+
+Va por persona: en las máquinas de oficina se turnan varias, y sin el
+identificador una heredaría los avisos leídos de la anterior.
+
+**Kind**: global constant  
+**Returns**: <code>string</code> - La llave de `localStorage`.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [idUsuario] | <code>string</code> \| <code>number</code> | Identificador de la persona. |
 
 <a name="COLOR_PUNTO_1"></a>
 
@@ -5861,6 +6964,31 @@ captura el CI: es lo que marca que el cruce ya se hizo.
 | --- | --- | --- |
 | numeroCi | <code>string</code> | El número de CI capturado. |
 
+<a name="useActualizarPantalla"></a>
+
+## useActualizarPantalla() ⇒ <code>Object</code>
+Vuelve a pedir todo lo que la pantalla tiene a la vista.
+
+Refresca las consultas **activas**, que son justo las de los componentes
+montados: la tabla y los catálogos que la acompañan. No hace falta enumerar
+llaves ni mantener una lista por pantalla, así que una pantalla que mañana
+pida un dato más lo refresca sin tocar esto.
+
+Existe porque el operador sube cosas desde la app móvil —documentos de etapa,
+salidas, tickets de gasto y diesel— contra la misma API, y el escritorio solo
+las pedía al montar la pantalla.
+
+El estado de avance es local y no `useIsFetching`: así el botón solo se
+bloquea por el refresco que él mismo disparó, y no cada vez que una consulta
+de fondo —el tablero de cajas, la campana— sale a la red por su cuenta.
+
+**Kind**: global function  
+**Returns**: <code>Object</code> - La acción y si está en curso.  
+**Example**  
+```js
+const { actualizar, actualizando } = useActualizarPantalla()
+<BotonActualizar onActualizar={actualizar} actualizando={actualizando} />
+```
 <a name="construirFormData"></a>
 
 ## construirFormData(op, [payload]) ⇒ <code>FormData</code>
@@ -5972,6 +7100,12 @@ Crea el cliente de TanStack Query con la configuración del proyecto.
 Se crea con una función y no como constante de módulo para que cada test
 pueda tener el suyo: una caché compartida entre tests los vuelve dependientes
 del orden en que corren.
+
+Una consulta puede pedir que su fallo **no** se anuncie declarando
+`meta: { silencioso: true }`. Es para los sondeos de fondo: uno que se repite
+cada 15 segundos y falla llenaría la pantalla de avisos por algo que la
+persona no pidió y que se arregla solo en cuanto vuelva la red. El fallo se
+sigue registrando en la consola.
 
 **Kind**: global function  
 **Returns**: <code>object</code> - Cliente de TanStack Query listo para el provider.  
@@ -6921,34 +8055,11 @@ Separa los requisitos activos por región, que es como se pintan.
 ## obtenerConductoresActivos([opciones]) ⇒ <code>Promise.&lt;Array&gt;</code>
 Conductores activos, para los selectores de viaje.
 
-**Kind**: global function  
-**Returns**: <code>Promise.&lt;Array&gt;</code> - La lista, o `[]` si la API no la devolvió.  
-**Throws**:
-
-- [<code>ApiError</code>](#ApiError) Si la petición falla.
-
-**Endpoint**: POST drivers.php · op=getDriversActivos  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| [opciones] | <code>object</code> | Ajustes de la petición. |
-| [opciones.signal] | <code>AbortSignal</code> | Señal de cancelación. |
-
-<a name="useConductoresActivos"></a>
-
-## useConductoresActivos() ⇒ <code>object</code>
-Conductores activos, para los selectores de viaje.
-
-Es un catálogo: se cachea [FRESCURA_CATALOGO_MS](#FRESCURA_CATALOGO_MS) y se comparte entre
-todas las pantallas que lo pidan, así que varias a la vez hacen una sola
-petición en lugar de una cada una.
-
-**Kind**: global function  
-**Returns**: <code>object</code> - El resultado de `useQuery`: `{data, isLoading, isError, error}`.  
-<a name="obtenerConductoresActivosCompletos"></a>
-
-## obtenerConductoresActivosCompletos([opciones]) ⇒ <code>Promise.&lt;Array&gt;</code>
-Conductores activos con los campos extra que pide la edición completa de viaje.
+Usa la operación «Complete», que es la que trae a todos los conductores con
+los campos que piden los formularios de viaje. La operación corta se dejó de
+usar en la rama de trabajo el 2026-09-13 porque devolvía menos gente; aquí
+había dos consultas, una por operación, y se quedó solo esta para que ninguna
+pantalla vuelva a ver una lista distinta que la de al lado.
 
 **Kind**: global function  
 **Returns**: <code>Promise.&lt;Array&gt;</code> - La lista, o `[]` si la API no la devolvió.  
@@ -6963,10 +8074,10 @@ Conductores activos con los campos extra que pide la edición completa de viaje.
 | [opciones] | <code>object</code> | Ajustes de la petición. |
 | [opciones.signal] | <code>AbortSignal</code> | Señal de cancelación. |
 
-<a name="useConductoresActivosCompletos"></a>
+<a name="useConductoresActivos"></a>
 
-## useConductoresActivosCompletos() ⇒ <code>object</code>
-Conductores activos con los campos extra que pide la edición completa de viaje.
+## useConductoresActivos() ⇒ <code>object</code>
+Conductores activos, para los selectores de viaje.
 
 Es un catálogo: se cachea [FRESCURA_CATALOGO_MS](#FRESCURA_CATALOGO_MS) y se comparte entre
 todas las pantallas que lo pidan, así que varias a la vez hacen una sola
@@ -7324,6 +8435,76 @@ Guarda un gasto y refresca la lista.
 
 **Kind**: global function  
 **Returns**: <code>object</code> - El resultado de `useMutation`.  
+<a name="resolverClasificacionDtops"></a>
+
+## resolverClasificacionDtops([tipos], [categorias], [subcategorias]) ⇒ <code>object</code> \| <code>null</code>
+Busca en los catálogos el trío tipo/categoría/subcategoría de un DTOPS.
+
+Localiza la subcategoría «Dtops» por nombre, sube a la categoría que la
+contiene y de ahí al tipo de gasto de esa categoría.
+
+**Kind**: global function  
+**Returns**: <code>object</code> \| <code>null</code> - Los tres ids del renglón, o `null` si falta alguno.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [tipos] | <code>Array</code> | Catálogo `getExpenseTypes`. |
+| [categorias] | <code>Array</code> | Catálogo `getCategories`. |
+| [subcategorias] | <code>Array</code> | Catálogo `getAllSubcategories`. |
+
+<a name="requiereGastoDtops"></a>
+
+## requiereGastoDtops(subida) ⇒ <code>boolean</code>
+Decide si un documento recién subido a un viaje genera el gasto de un DTOPS.
+
+Solo cuenta el DTOPS de la etapa, no el de una parada, con un archivo nuevo
+y en un viaje de Estados Unidos. Da igual en qué estado esté el viaje.
+
+**Kind**: global function  
+**Returns**: <code>boolean</code> - `true` si hay que ofrecer el alta del gasto.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| subida | <code>object</code> | El documento que se acaba de subir. |
+| subida.tipoDocumento | <code>string</code> | Clave del documento en la etapa. |
+| [subida.indiceParada] | <code>number</code> \| <code>null</code> | La parada, si el documento es de una. |
+| [subida.archivo] | <code>File</code> | El archivo elegido. |
+| subida.pais | <code>string</code> | País del viaje. |
+
+<a name="montoDtopsValido"></a>
+
+## montoDtopsValido(monto) ⇒ <code>boolean</code>
+Comprueba si un importe capturado sirve como monto de un DTOPS.
+
+**Kind**: global function  
+**Returns**: <code>boolean</code> - `true` si es un número mayor que cero.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| monto | <code>\*</code> | Lo que se escribió en el campo. |
+
+<a name="construirGastoDtops"></a>
+
+## construirGastoDtops(datos) ⇒ <code>object</code>
+Arma el alta de Expense Manager que corresponde a un DTOPS.
+
+El gasto queda en Estados Unidos y en dólares, con un solo renglón de
+cantidad 1 y precio unitario igual al monto, descrito con el número de
+viaje y con el DTOPS como ticket.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El cuerpo para `crearGasto`.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| datos | <code>object</code> | Lo capturado más el contexto del viaje. |
+| datos.monto | <code>number</code> \| <code>string</code> | Importe en dólares. |
+| datos.fecha | <code>string</code> | Fecha de pago, en `AAAA-MM-DD`. |
+| datos.viaje | <code>string</code> | Número de viaje, que va como descripción. |
+| [datos.archivo] | <code>File</code> | El DTOPS, que se guarda como ticket. |
+| datos.usuarioId | <code>string</code> \| <code>number</code> | Quien sube el documento. |
+| datos.clasificacion | <code>object</code> | Lo que devuelve `resolverClasificacionDtops`. |
+
 <a name="algunRenglon"></a>
 
 ## algunRenglon(gasto, cumple) ⇒ <code>boolean</code>
@@ -7927,6 +9108,578 @@ Agrupa los artículos por categoría, conservando el orden alfabético.
 | Param | Type | Description |
 | --- | --- | --- |
 | articulos | [<code>Array.&lt;Articulo&gt;</code>](#Articulo) | Los artículos ya validados. |
+
+<a name="obtenerInspeccionesMtto"></a>
+
+## obtenerInspeccionesMtto(lado, [opciones]) ⇒ <code>Promise.&lt;Array&gt;</code>
+Trae las inspecciones de un lado, con lo que de verdad falta por atender.
+
+El conteo viene del servidor ya descontando lo resuelto: `All_CL_Final` cuenta
+renglones del checklist, incluidos los "ok", y por eso una inspección con tres
+cosas que hacer aparecía con cinco.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;Array&gt;</code> - Las inspecciones normalizadas.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la API falla.
+
+**Endpoint**: POST mtto.php · op=getInspecciones  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| lado | <code>string</code> | `camion` o `caja`. |
+| [opciones] | <code>object</code> | Ajustes de la petición. |
+| [opciones.signal] | <code>AbortSignal</code> | Señal de cancelación. |
+
+<a name="obtenerPuntos"></a>
+
+## obtenerPuntos(viajeId, lado, [opciones]) ⇒ <code>Promise.&lt;Array&gt;</code>
+Trae los puntos de un lado de una inspección, con el estado de cada uno.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;Array&gt;</code> - Los puntos, con su clave estable.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la API falla.
+
+**Endpoint**: POST mtto.php · op=getPuntos  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| viajeId | <code>string</code> | El viaje. |
+| lado | <code>string</code> | `camion` o `caja`. |
+| [opciones] | <code>object</code> | Ajustes de la petición. |
+| [opciones.signal] | <code>AbortSignal</code> | Señal de cancelación. |
+
+<a name="obtenerPendientes"></a>
+
+## obtenerPendientes(unidadTipo, [opciones]) ⇒ <code>Promise.&lt;Array&gt;</code>
+Trae las reparaciones pendientes de camiones o de cajas.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;Array&gt;</code> - Las reparaciones normalizadas.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la API falla.
+
+**Endpoint**: POST mtto.php · op=getPendientes  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| unidadTipo | <code>string</code> | `camion` o `caja`. |
+| [opciones] | <code>object</code> | Ajustes de la petición. |
+| [opciones.signal] | <code>AbortSignal</code> | Señal de cancelación. |
+
+<a name="obtenerNomenclaturas"></a>
+
+## obtenerNomenclaturas([opciones]) ⇒ <code>Promise.&lt;Map.&lt;string, string&gt;&gt;</code>
+Trae la nomenclatura de cada viaje con inspección final.
+
+La arma un procedimiento del servidor y no sale de las columnas de `trips`, así
+que no se puede reconstruir aquí. Se lee del resumen viejo, que es su única
+fuente, para que el viaje se nombre igual en toda la aplicación.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;Map.&lt;string, string&gt;&gt;</code> - Viaje contra su nomenclatura.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la API falla.
+
+**Endpoint**: POST formularios.php · op=All_CL_Final  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [opciones] | <code>object</code> | Ajustes de la petición. |
+| [opciones.signal] | <code>AbortSignal</code> | Señal de cancelación. |
+
+<a name="useNomenclaturas"></a>
+
+## useNomenclaturas() ⇒ <code>object</code>
+Las nomenclaturas, cacheadas largo: cambian cuando nace un viaje.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useQuery`.  
+<a name="resolverPuntos"></a>
+
+## resolverPuntos(datos) ⇒ <code>Promise.&lt;object&gt;</code>
+Manda puntos a pendientes o los descarta.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;object&gt;</code> - La respuesta de la API.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la API rechaza la operación.
+
+**Endpoint**: POST mtto.php · op=resolverPuntos  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| datos | <code>object</code> | Lo que se resuelve. |
+| datos.items | <code>Array.&lt;object&gt;</code> | Los puntos, con su origen y su unidad. |
+| datos.estatus | <code>string</code> | El estado destino. |
+| [datos.usuarioId] | <code>string</code> | Quién lo decidió. |
+
+<a name="crearPendiente"></a>
+
+## crearPendiente(datos) ⇒ <code>Promise.&lt;object&gt;</code>
+Levanta una reparación pendiente que no vino de ninguna inspección.
+
+Es la otra mitad del reporte: lo que el taller ve con la unidad enfrente y no
+pasó por el checklist del operador.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;object&gt;</code> - La respuesta de la API.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la API rechaza la operación.
+
+**Endpoint**: POST mtto.php · op=crearPendiente  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| datos | <code>object</code> | La reparación. |
+| datos.unidadTipo | <code>string</code> | `camion` o `caja`. |
+| datos.unidadId | <code>string</code> | La unidad. |
+| datos.descripcion | <code>string</code> | Qué hay que atender. |
+| [datos.usuarioId] | <code>string</code> | Quién la levantó. |
+
+<a name="completarLado"></a>
+
+## completarLado(datos) ⇒ <code>Promise.&lt;object&gt;</code>
+Cierra el lado de camión o de caja de una inspección.
+
+El servidor vuelve a contar los puntos sin resolver y rechaza el cierre si
+queda alguno: la validación de la pantalla es comodidad, no la garantía.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;object&gt;</code> - La respuesta de la API.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si quedan puntos sin resolver.
+
+**Endpoint**: POST mtto.php · op=completarLado  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| datos | <code>object</code> | El lado a cerrar. |
+| datos.clFinalId | <code>string</code> | La inspección. |
+| datos.viajeId | <code>string</code> | El viaje. |
+| datos.lado | <code>string</code> | `camion` o `caja`. |
+| [datos.usuarioId] | <code>string</code> | Quién lo cerró. |
+
+<a name="crearOrden"></a>
+
+## crearOrden(datos) ⇒ <code>Promise.&lt;object&gt;</code>
+Levanta la orden de servicio con un servicio por reparación.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;object&gt;</code> - La orden creada, con su `id_orden`.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la API rechaza la operación.
+
+**Endpoint**: POST mtto.php · op=crearOrden  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| datos | <code>object</code> | La orden. |
+| datos.unidadTipo | <code>string</code> | `camion` o `caja`. |
+| datos.unidadId | <code>string</code> | La unidad. |
+| datos.fecha | <code>string</code> | Fecha de la orden. |
+| [datos.tipoCambio] | <code>string</code> | Tipo de cambio, si aplica. |
+| datos.servicios | <code>Array.&lt;object&gt;</code> | Un servicio por punto, con sus gastos. |
+| [datos.usuarioId] | <code>string</code> | Quién la levantó. |
+
+<a name="useInspeccionesMtto"></a>
+
+## useInspeccionesMtto(lado) ⇒ <code>object</code>
+Las inspecciones de un lado, cacheadas.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useQuery`.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| lado | <code>string</code> | `camion` o `caja`. |
+
+<a name="usePuntos"></a>
+
+## usePuntos(viajeId, lado) ⇒ <code>object</code>
+Los puntos de una inspección. Solo se piden cuando la fila está abierta.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useQuery`.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| viajeId | <code>string</code> | El viaje, o `null` si no hay ninguna abierta. |
+| lado | <code>string</code> | `camion` o `caja`. |
+
+<a name="usePendientes"></a>
+
+## usePendientes(unidadTipo) ⇒ <code>object</code>
+Las reparaciones pendientes de un lado, cacheadas.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useQuery`.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| unidadTipo | <code>string</code> | `camion` o `caja`. |
+
+<a name="useRefrescarMantenimiento"></a>
+
+## useRefrescarMantenimiento() ⇒ <code>function</code>
+Invalida todo el flujo: inspecciones, puntos y pendientes.
+
+**Kind**: global function  
+**Returns**: <code>function</code> - La función que refresca.  
+<a name="useResolverPuntos"></a>
+
+## useResolverPuntos() ⇒ <code>object</code>
+Resuelve puntos y refresca el flujo.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useMutation`.  
+<a name="useCrearPendiente"></a>
+
+## useCrearPendiente() ⇒ <code>object</code>
+Levanta una reparación a mano y refresca el flujo.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useMutation`.  
+<a name="useCompletarLado"></a>
+
+## useCompletarLado() ⇒ <code>object</code>
+Cierra un lado y refresca el flujo.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useMutation`.  
+<a name="useCrearOrdenMtto"></a>
+
+## useCrearOrdenMtto() ⇒ <code>object</code>
+Crea la orden y refresca el flujo.
+
+No invalida las órdenes de servicio: de eso se encarga quien las lista.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useMutation`.  
+<a name="agruparPorRubro"></a>
+
+## agruparPorRubro(puntos) ⇒ <code>Array.&lt;{clave: string, etiqueta: string, puntos: Array.&lt;object&gt;}&gt;</code>
+Agrupa los puntos por rubro, en el orden del checklist.
+
+**Kind**: global function  
+**Returns**: <code>Array.&lt;{clave: string, etiqueta: string, puntos: Array.&lt;object&gt;}&gt;</code> - Los rubros con contenido.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| puntos | <code>Array.&lt;object&gt;</code> | Los puntos de una inspección. |
+
+<a name="agruparPorUnidad"></a>
+
+## agruparPorUnidad(pendientes, lado) ⇒ <code>Array.&lt;{clave: string, unidadId: string, etiqueta: string, reparaciones: Array.&lt;object&gt;}&gt;</code>
+Agrupa las reparaciones pendientes por unidad.
+
+Se agrupa, y no se lista plano, porque la orden se levanta por unidad: ver
+sueltas las reparaciones de un mismo camión es lo que hacía que se olvidaran.
+
+**Kind**: global function  
+**Returns**: <code>Array.&lt;{clave: string, unidadId: string, etiqueta: string, reparaciones: Array.&lt;object&gt;}&gt;</code> - Las unidades.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| pendientes | <code>Array.&lt;object&gt;</code> | Las reparaciones. |
+| lado | <code>string</code> | `camion` o `caja`. |
+
+<a name="normalizarCon"></a>
+
+## normalizarCon(esquema, filas) ⇒ <code>Object</code>
+Valida una lista descartando lo que no cumple el esquema.
+
+**Kind**: global function  
+**Returns**: <code>Object</code> - Las válidas y cuántas se cayeron.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| esquema | <code>object</code> | El esquema zod a aplicar. |
+| filas | <code>Array</code> | Lo que vino en la respuesta. |
+
+<a name="obtenerNotificaciones"></a>
+
+## obtenerNotificaciones(parametros) ⇒ <code>Promise.&lt;Array.&lt;object&gt;&gt;</code>
+Trae las notificaciones de una persona.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;Array.&lt;object&gt;&gt;</code> - Las notificaciones válidas.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la petición falla.
+
+**Endpoint**: POST Notifications.php · op=getAll  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| parametros | <code>object</code> | Datos de la consulta. |
+| parametros.idUsuario | <code>string</code> | Identificador de la persona. |
+| [parametros.signal] | <code>AbortSignal</code> | Señal de cancelación. |
+
+<a name="useNotificaciones"></a>
+
+## useNotificaciones([idUsuario]) ⇒ <code>object</code>
+Mantiene al día las notificaciones de una persona.
+
+Sustituye al `setInterval` que vivía dentro del layout. La diferencia que
+importa no es de estilo:
+
+- **Se detiene sola cuando la ventana no está al frente.** `refetchInterval`
+  no dispara en segundo plano, así que una máquina con la app abierta y
+  minimizada toda la tarde deja de pegarle al servidor. El `setInterval`
+  seguía sondeando.
+- **Cancela la petición en vuelo** al desmontarse o al cambiar de persona,
+  en lugar de dejarla llegar tarde y escribir sobre estado que ya no existe.
+- **No anuncia sus fallos.** Con `silencioso`, una racha sin red no llena la
+  pantalla de avisos por algo que nadie pidió y que se arregla solo.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useQuery`; `data` es la lista de notificaciones.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [idUsuario] | <code>string</code> | Identificador de la persona. Sin él no consulta nada. |
+
+**Example**  
+```js
+const { data: notificaciones = [] } = useNotificaciones(user?.id)
+```
+<a name="obtenerSuscriptores"></a>
+
+## obtenerSuscriptores([opciones]) ⇒ <code>Promise.&lt;Array.&lt;object&gt;&gt;</code>
+Las personas que hoy reciben las notificaciones de viajes.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;Array.&lt;object&gt;&gt;</code> - Los suscriptores, o `[]`.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la petición falla.
+
+**Endpoint**: POST Notifications.php · op=getSubscribers  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [opciones] | <code>object</code> | Ajustes de la petición. |
+| [opciones.signal] | <code>AbortSignal</code> | Señal de cancelación. |
+
+<a name="obtenerUsuariosDisponibles"></a>
+
+## obtenerUsuariosDisponibles([opciones]) ⇒ <code>Promise.&lt;Array.&lt;object&gt;&gt;</code>
+Las personas que todavía no reciben las notificaciones de viajes.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;Array.&lt;object&gt;&gt;</code> - Los candidatos, o `[]`.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la petición falla.
+
+**Endpoint**: POST Notifications.php · op=getAvailableUsers  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [opciones] | <code>object</code> | Ajustes de la petición. |
+| [opciones.signal] | <code>AbortSignal</code> | Señal de cancelación. |
+
+<a name="suscribir"></a>
+
+## suscribir(idUsuario) ⇒ <code>Promise.&lt;object&gt;</code>
+Da de alta a una persona en las notificaciones de viajes.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;object&gt;</code> - La respuesta del servidor.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la petición falla.
+
+**Endpoint**: POST Notifications.php · op=subscribe  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| idUsuario | <code>string</code> \| <code>number</code> | A quién se suscribe. |
+
+<a name="desuscribir"></a>
+
+## desuscribir(idUsuario) ⇒ <code>Promise.&lt;object&gt;</code>
+Da de baja a una persona de las notificaciones de viajes.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;object&gt;</code> - La respuesta del servidor.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la petición falla.
+
+**Endpoint**: POST Notifications.php · op=unsubscribe  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| idUsuario | <code>string</code> \| <code>number</code> | A quién se da de baja. |
+
+<a name="useSuscriptores"></a>
+
+## useSuscriptores() ⇒ <code>object</code>
+Quiénes reciben hoy las notificaciones de viajes.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useQuery`.  
+<a name="useUsuariosDisponibles"></a>
+
+## useUsuariosDisponibles([habilitada]) ⇒ <code>object</code>
+Quiénes pueden suscribirse. No consulta hasta que hace falta la lista.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useQuery`.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [habilitada] | <code>boolean</code> | Si la lista está a la vista. |
+
+<a name="refrescarListas"></a>
+
+## refrescarListas(cliente) ⇒ <code>Promise</code>
+Invalida las dos listas: quien entra a una sale de la otra.
+
+**Kind**: global function  
+**Returns**: <code>Promise</code> - Cuando ambas quedan marcadas para recargarse.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| cliente | <code>object</code> | El cliente de TanStack Query. |
+
+<a name="useSuscribir"></a>
+
+## useSuscribir() ⇒ <code>object</code>
+Suscribe a una persona y refresca las dos listas.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useMutation`.  
+<a name="useDesuscribir"></a>
+
+## useDesuscribir() ⇒ <code>object</code>
+Da de baja a una persona y refresca las dos listas.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useMutation`.  
+<a name="normalizarNotificaciones"></a>
+
+## normalizarNotificaciones(crudas) ⇒ <code>Object</code>
+Valida la lista que vino del servidor y descarta lo que no se puede usar.
+
+Descarta en vez de fallar a propósito. Es un sondeo de fondo: si una
+notificación llega sin mensaje, lo correcto es no enseñarla y seguir con las
+demás, no dejar a la persona sin ninguna. Las descartadas se cuentan para que
+quede rastro en la consola.
+
+**Kind**: global function  
+**Returns**: <code>Object</code> - Las válidas y cuántas se cayeron.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| crudas | <code>\*</code> | Lo que devolvió el endpoint en `notifications`. |
+
+**Example**  
+```js
+const { notificaciones, descartadas } = normalizarNotificaciones(cuerpo?.notifications)
+```
+<a name="sinAnunciar"></a>
+
+## sinAnunciar(notificaciones, yaAnunciadas) ⇒ <code>Array.&lt;object&gt;</code>
+Separa las notificaciones que todavía no se le han anunciado a la persona.
+
+Vive aquí, y no dentro del componente, porque es la única regla de negocio de
+esta entidad y es la que hay que poder probar sin montar React ni esperar
+quince segundos.
+
+**Kind**: global function  
+**Returns**: <code>Array.&lt;object&gt;</code> - Las que faltan por anunciar, en el orden que llegaron.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| notificaciones | <code>Array.&lt;object&gt;</code> | Las que trae el servidor ahora mismo. |
+| yaAnunciadas | <code>Set.&lt;string&gt;</code> | Los identificadores ya mostrados. |
+
+**Example**  
+```js
+const nuevas = sinAnunciar(notificaciones, anunciadas.current)
+```
+<a name="fechaDeNotificacion"></a>
+
+## fechaDeNotificacion([texto]) ⇒ <code>Date</code> \| <code>null</code>
+Convierte la fecha de PHP en una `Date`.
+
+PHP la manda como `2026-09-17 08:30:00`, con espacio en vez de `T`. Safari no
+acepta ese formato y devuelve una fecha inválida, así que se normaliza aquí y
+no en cada pantalla que quiera enseñarla.
+
+**Kind**: global function  
+**Returns**: <code>Date</code> \| <code>null</code> - La fecha, o `null` si no se puede leer.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [texto] | <code>string</code> | La fecha tal como viene del servidor. |
+
+<a name="diasDeDiferencia"></a>
+
+## diasDeDiferencia(fecha, ahora) ⇒ <code>number</code>
+Cuántos días naturales separan una fecha de otra.
+
+Cuenta días de calendario, no de 24 horas: las once de la noche y la una de
+la madrugada siguiente son un día de diferencia, aunque pasen dos horas.
+
+**Kind**: global function  
+**Returns**: <code>number</code> - Los días completos entre las dos.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| fecha | <code>Date</code> | La fecha a medir. |
+| ahora | <code>Date</code> | Contra qué momento se mide. |
+
+<a name="etiquetaDeDia"></a>
+
+## etiquetaDeDia([creadaEn], [ahora]) ⇒ <code>string</code>
+El encabezado del grupo al que pertenece una notificación.
+
+**Kind**: global function  
+**Returns**: <code>string</code> - `Hoy`, `Ayer` o la fecha corta.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [creadaEn] | <code>string</code> | La fecha del servidor. |
+| [ahora] | <code>Date</code> | Momento contra el que se compara. |
+
+<a name="tiempoRelativo"></a>
+
+## tiempoRelativo([creadaEn], [ahora]) ⇒ <code>string</code>
+Hace cuánto llegó una notificación, en palabras.
+
+**Kind**: global function  
+**Returns**: <code>string</code> - `Justo ahora`, `Hace 5 min`, `Hace 3 h` o la fecha corta.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [creadaEn] | <code>string</code> | La fecha del servidor. |
+| [ahora] | <code>Date</code> | Momento contra el que se compara. |
+
+<a name="agruparPorDia"></a>
+
+## agruparPorDia(notificaciones, [ahora]) ⇒ <code>Array.&lt;{etiqueta: string, notificaciones: Array.&lt;object&gt;}&gt;</code>
+Agrupa las notificaciones por día, conservando el orden en que llegaron.
+
+**Kind**: global function  
+**Returns**: <code>Array.&lt;{etiqueta: string, notificaciones: Array.&lt;object&gt;}&gt;</code> - Los grupos, en orden.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| notificaciones | <code>Array.&lt;object&gt;</code> | Las notificaciones a agrupar. |
+| [ahora] | <code>Date</code> | Momento contra el que se calculan las etiquetas. |
 
 <a name="obtenerPeriodos"></a>
 
@@ -8782,6 +10535,19 @@ Valida una lista de órdenes descartando las que no cumplen lo mínimo.
 | --- | --- | --- |
 | filas | <code>Array</code> | Lo que vino en la respuesta. |
 
+<a name="etiquetaUnidad"></a>
+
+## etiquetaUnidad(orden) ⇒ <code>string</code>
+Cómo se muestra la unidad de una orden: el camión tal cual y la caja con su
+prefijo, para que «104» no se confunda con el camión 104.
+
+**Kind**: global function  
+**Returns**: <code>string</code> - La etiqueta; cadena vacía si no tiene unidad.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| orden | [<code>Orden</code>](#Orden) | La orden. |
+
 <a name="resumenServicios"></a>
 
 ## resumenServicios(orden) ⇒ <code>Object</code>
@@ -9618,6 +11384,173 @@ Da de alta una caja externa y refresca el catálogo.
 
 **Kind**: global function  
 **Returns**: <code>object</code> - El resultado de `useMutation`.  
+<a name="obtenerEstatusCajas"></a>
+
+## obtenerEstatusCajas([opciones]) ⇒ <code>Promise.&lt;Array.&lt;object&gt;&gt;</code>
+Trae una fila por caja activa, con lo automático ya resuelto.
+
+Lo automático —viaje en turno, operador, dirección y broker— no se guarda en
+ninguna parte: el endpoint lo calcula al consultar, así que nunca queda
+viejo. Lo capturado a mano viene ya aplicado encima cuando sigue vigente.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;Array.&lt;object&gt;&gt;</code> - Las cajas normalizadas.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la petición falla.
+
+**Endpoint**: POST cajas_estatus.php · op=getEstatusCajas  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [opciones] | <code>object</code> | Ajustes de la petición. |
+| [opciones.signal] | <code>AbortSignal</code> | Señal de cancelación. |
+
+<a name="useEstatusCajas"></a>
+
+## useEstatusCajas() ⇒ <code>object</code>
+El tablero de estatus de cajas, al día mientras esté a la vista.
+
+No se cachea como catálogo: refleja dónde está cada caja ahora mismo, así
+que se vuelve a pedir cada vez que la pantalla se monta, cada
+[REFRESCO_TABLERO_MS](#REFRESCO_TABLERO_MS) y al volver a la ventana. El refresco de fondo no
+levanta `isLoading` —solo `isFetching`—, así que la tabla no parpadea encima
+de quien está escribiendo un comentario.
+
+Con la pestaña en segundo plano el reloj se detiene: `refetchIntervalInBackground`
+queda en su valor por omisión a propósito, para no golpear el hosting desde
+pantallas que nadie está mirando.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useQuery`: `{data, isLoading, isFetching, isError, error, refetch}`.  
+<a name="guardarEstatusCaja"></a>
+
+## guardarEstatusCaja(datos) ⇒ <code>Promise.&lt;object&gt;</code>
+Guarda lo que se captura a mano para una caja: ubicación, observación y
+comentario.
+
+Lo capturado queda amarrado al viaje en turno: el endpoint anota con qué
+viaje se fijó, y en cuanto la caja pasa a otro deja de aplicar y vuelve a
+mandar lo automático, sin que nadie tenga que acordarse de quitarlo.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;object&gt;</code> - La respuesta de la API.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la API rechaza el guardado.
+
+**Endpoint**: POST cajas_estatus.php · op=saveEstatusCaja  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| datos | <code>object</code> | Lo capturado. |
+| datos.cajaId | <code>number</code> | Caja que se está tocando. |
+| [datos.ubicacion] | <code>string</code> | Una de `UBICACIONES_CAJA`. |
+| [datos.observacion] | <code>string</code> | Una de `OBSERVACIONES_CAJA`. |
+| [datos.comentario] | <code>string</code> | Nota libre; se recorta a `LARGO_COMENTARIO`. |
+| [datos.usuarioId] | <code>number</code> \| <code>string</code> | Quién capturó, para la bitácora. |
+
+<a name="useGuardarEstatusCaja"></a>
+
+## useGuardarEstatusCaja() ⇒ <code>object</code>
+Guarda lo capturado y deja la tabla al día.
+
+Pinta el cambio antes de que la API conteste y lo revierte si falla: la
+captura es un combo por fila y esperar al servidor en cada cambio hacía que
+el valor elegido parpadeara de vuelta al anterior.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useMutation`.  
+<a name="subirFianza"></a>
+
+## subirFianza(datos) ⇒ <code>Promise.&lt;object&gt;</code>
+Sube una fianza nueva al expediente de una caja.
+
+Es el mismo endpoint del expediente que usa el Administrador de Cajas, con
+el tipo de documento fijo. La anterior no se borra: el procedimiento de la
+base la apaga y conserva el archivo, así que el histórico queda completo.
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;object&gt;</code> - La respuesta de la API.  
+**Throws**:
+
+- [<code>ApiError</code>](#ApiError) Si la API rechaza la subida.
+
+**Endpoint**: POST cajas_docs.php · op=Alta  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| datos | <code>object</code> | Lo que se sube. |
+| datos.cajaId | <code>number</code> | Caja a la que pertenece la fianza. |
+| datos.archivo | <code>File</code> | El PDF. |
+| datos.vencimiento | <code>string</code> | Fecha de vencimiento en `AAAA-MM-DD`. |
+
+<a name="useSubirFianza"></a>
+
+## useSubirFianza() ⇒ <code>object</code>
+Sube una fianza y refresca el tablero de estatus.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El resultado de `useMutation`.  
+<a name="recortarComentario"></a>
+
+## recortarComentario(texto) ⇒ <code>string</code>
+Deja un comentario listo para guardar: sin espacios sobrantes y sin pasarse
+del largo de la columna.
+
+**Kind**: global function  
+**Returns**: <code>string</code> - El comentario recortado; cadena vacía si no hay nada.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| texto | <code>\*</code> | Lo que se escribió. |
+
+<a name="normalizarEstatusCajas"></a>
+
+## normalizarEstatusCajas(lista) ⇒ <code>Object</code>
+Valida la lista que devuelve la API y descarta los renglones que no cumplen.
+
+Un renglón mal formado se omite en vez de tumbar la pantalla: el tablero
+sirve igual con siete cajas que con ocho, y quien mira necesita ver las que
+sí llegaron bien.
+
+**Kind**: global function  
+**Returns**: <code>Object</code> - Las válidas y cuántas se omitieron.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| lista | <code>Array</code> | Lo que vino en el campo `cajas` de la respuesta. |
+
+<a name="estadoFianza"></a>
+
+## estadoFianza([fianza], [hoy]) ⇒ <code>Object</code>
+En qué estado está la fianza de una caja.
+
+Reutiliza la regla del expediente de unidades en lugar de tener la suya: una
+fianza es un documento con vencimiento como cualquier otro, y que el tablero
+la pintara vencida un día distinto que el Administrador de Cajas sería un
+error que nadie sabría explicar.
+
+**Kind**: global function  
+**Returns**: <code>Object</code> - El estado y su porqué.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [fianza] | <code>object</code> | La fianza tal como viene del endpoint. |
+| [hoy] | <code>Date</code> | Con qué día comparar; por omisión, hoy. |
+
+<a name="contarPorObservacion"></a>
+
+## contarPorObservacion(cajas) ⇒ <code>Object</code>
+Cuántas cajas van cargadas y cuántas vacías.
+
+**Kind**: global function  
+**Returns**: <code>Object</code> - El conteo de cada una.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| cajas | [<code>Array.&lt;EstatusCaja&gt;</code>](#EstatusCaja) | Las cajas del tablero. |
+
 <a name="obtenerViajePorId"></a>
 
 ## obtenerViajePorId(parametros) ⇒ <code>Promise.&lt;object&gt;</code>
@@ -9819,6 +11752,43 @@ Convierte un documento de la API en el estado que maneja el formulario.
 | Param | Type | Description |
 | --- | --- | --- |
 | doc | <code>object</code> | El documento como vino de la API. |
+
+<a name="urlDeDocumento"></a>
+
+## urlDeDocumento([documento], base) ⇒ <code>string</code> \| <code>null</code>
+La URL con la que se abre o previsualiza un documento de viaje.
+
+Los documentos viven todos en `Uploads/Trips`, y la ruta que guarda la API
+puede venir con separadores de Windows, así que se usa solo el nombre del
+archivo. Un documento recién elegido todavía no está en el servidor: se ve
+desde el propio archivo.
+
+**Kind**: global function  
+**Returns**: <code>string</code> \| <code>null</code> - La URL, o `null` si no hay nada que abrir.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [documento] | <code>object</code> | El documento del formulario. |
+| documento.serverPath | <code>string</code> | Ruta con la que lo guardó la API. |
+| [documento.file] | <code>File</code> | Archivo recién elegido, si lo hay. |
+| base | <code>string</code> | Origen de la API, sin barra final. |
+
+<a name="documentoParaModal"></a>
+
+## documentoParaModal([documento], base) ⇒ <code>object</code> \| <code>null</code>
+El documento que recibe el modal de archivo, con su URL ya resuelta.
+
+El modal solo previsualiza lo que trae `url`, y los documentos que vienen de
+la API traen la ruta del servidor. Sin esto, abrir un BL ya subido mostraba
+un modal vacío: el archivo estaba bien, pero nunca se pintaba.
+
+**Kind**: global function  
+**Returns**: <code>object</code> \| <code>null</code> - El documento con `url`, o `null` si no hay documento.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [documento] | <code>object</code> | El documento del formulario. |
+| base | <code>string</code> | Origen de la API, sin barra final. |
 
 <a name="documentosDeEtapa"></a>
 
@@ -10025,6 +11995,34 @@ que no cuadran sin decir nada.
 | --- | --- | --- | --- |
 | totales | [<code>TotalesViaje</code>](#TotalesViaje) |  | Los totales del viaje. |
 | [tolerancia] | <code>number</code> | <code>1</code> | Cuánto se admite de diferencia por redondeos. |
+
+<a name="statusCajaDe"></a>
+
+## statusCajaDe([pais]) ⇒ <code>Array.&lt;string&gt;</code>
+Los status de caja que se le pueden ofrecer a un viaje.
+
+Un país desconocido cae en los de México, que es el juego completo: más vale
+ofrecer una opción de más que dejar la pantalla sin ninguna.
+
+**Kind**: global function  
+**Returns**: <code>Array.&lt;string&gt;</code> - Los status admitidos, en orden.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [pais] | <code>string</code> | Código de país del viaje. |
+
+<a name="statusCajaValido"></a>
+
+## statusCajaValido(status, [pais]) ⇒ <code>boolean</code>
+Comprueba que un status elegido valga para el país del viaje.
+
+**Kind**: global function  
+**Returns**: <code>boolean</code> - `true` si el status existe para ese país.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| status | <code>string</code> | Lo que se eligió. |
+| [pais] | <code>string</code> | Código de país del viaje. |
 
 <a name="obtenerCamionesActivos"></a>
 
@@ -10846,6 +12844,222 @@ Da de alta una bodega y refresca el catálogo.
 
 **Kind**: global function  
 **Returns**: <code>object</code> - El resultado de `useMutation`.  
+<a name="useTableroCajas"></a>
+
+## useTableroCajas() ⇒ <code>object</code>
+Todo el estado y los efectos del tablero de estatus de cajas.
+
+Existe para que la pantalla se quede solo con la composición: aquí viven la
+consulta, las dos mutaciones, quién captura y qué diálogo está abierto, y
+hacia afuera sale una superficie plana de datos y acciones.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - `{cajas, cargando, mensajeError, recargar, recargando, resumen,
+  guardandoId, capturar, fianzaEnModal, pedirFianza, cerrarFianza, subiendoFianza,
+  subirFianzaElegida}`.  
+<a name="useGastoDtops"></a>
+
+## useGastoDtops(parametros) ⇒ <code>object</code>
+Lleva el estado y el guardado del alta del gasto de un DTOPS.
+
+Pide los tres catálogos, resuelve con ellos la clasificación, guarda el
+monto y la fecha que se capturan, y da de alta el gasto.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - Lo que el modal necesita para pintarse y guardar.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| parametros | <code>object</code> | Contexto del documento recién subido. |
+| parametros.archivo | <code>File</code> | El DTOPS, que se guarda como ticket. |
+| parametros.viaje | <code>string</code> | Número de viaje, que va como descripción. |
+| parametros.onListo | <code>function</code> | Se llama al registrar el gasto. |
+
+<a name="useGastoDtopsPendiente"></a>
+
+## useGastoDtopsPendiente() ⇒ <code>object</code>
+Espera la subida de un DTOPS para ofrecer el alta de su gasto.
+
+Quien sube documentos solo avisa de cada subida con `alSubirDocumento`; este
+hook decide si es un DTOPS que genera gasto y guarda lo que el modal
+necesita. Así el editor de viajes no sabe nada de gastos, y la regla vive en
+un solo lugar para todas las pantallas que suben documentos.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El gasto pendiente, el aviso de subida y cómo descartarlo.  
+<a name="filtrarInspecciones"></a>
+
+## filtrarInspecciones(inspecciones, filtros, lado) ⇒ <code>Array.&lt;object&gt;</code>
+Aplica los filtros a la lista de inspecciones.
+
+El viaje se busca sobre la nomenclatura completa y sobre el número, porque la
+gente escribe cualquiera de los dos.
+
+**Kind**: global function  
+**Returns**: <code>Array.&lt;object&gt;</code> - Las que pasan.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| inspecciones | <code>Array.&lt;object&gt;</code> | Las inspecciones de la pestaña. |
+| filtros | <code>object</code> | Lo que hay puesto. |
+| lado | <code>string</code> | `camion` o `caja`. |
+
+<a name="filtrarPendientes"></a>
+
+## filtrarPendientes(pendientes, filtros, lado) ⇒ <code>Array.&lt;object&gt;</code>
+Aplica los filtros a las reparaciones pendientes.
+
+**Kind**: global function  
+**Returns**: <code>Array.&lt;object&gt;</code> - Las que pasan.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| pendientes | <code>Array.&lt;object&gt;</code> | Las reparaciones del lado. |
+| filtros | <code>object</code> | Lo que hay puesto. |
+| lado | <code>string</code> | `camion` o `caja`. |
+
+<a name="cuerpoDelGasto"></a>
+
+## cuerpoDelGasto(gasto, contexto) ⇒ <code>object</code>
+Arma el cuerpo con el que se da de alta el gasto en el Administrador de Gastos.
+
+Lleva `omitir_inventario`: la orden ya no consume refacciones del inventario,
+así que si el gasto lo alimentara, el stock crecería sin que nada lo bajara.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - El cuerpo para `crearGasto`.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| gasto | <code>object</code> | El gasto capturado. |
+| contexto | <code>object</code> | Datos de alrededor. |
+| [contexto.usuarioId] | <code>string</code> | Quién lo captura. |
+
+<a name="useConstructorOrden"></a>
+
+## useConstructorOrden(apertura, onCreada) ⇒ <code>object</code>
+El estado y el guardado de la orden que se arma dentro de la pantalla.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - Lo que el diálogo necesita pintar y disparar.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| apertura | <code>object</code> | Con qué se abrió: puntos de una inspección o pendientes. |
+| onCreada | <code>function</code> | Se llama con `(idOrden, cuantosGastos)` al terminar. |
+
+<a name="usePanelInspecciones"></a>
+
+## usePanelInspecciones() ⇒ <code>object</code>
+El estado y las acciones de la lista de inspecciones.
+
+Existe para que `PanelInspecciones` sea solo JSX: aquí viven las consultas, la
+selección de puntos, los filtros y la paginación. Nada de esto se repite en la
+pantalla de pendientes, que tiene su propio controlador.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - Lo que la pantalla necesita pintar y disparar.  
+<a name="usePanelPendientes"></a>
+
+## usePanelPendientes() ⇒ <code>object</code>
+El estado y las acciones de las reparaciones pendientes.
+
+La paginación cuenta **unidades**, no reparaciones: cada renglón es un camión
+con todo lo que se le debe junto, y partir una unidad entre dos páginas haría
+que alguien levante una orden sin ver el resto.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - Lo que la pantalla necesita pintar y disparar.  
+<a name="sonar"></a>
+
+## sonar() ⇒ <code>void</code>
+Reproduce el sonido de notificación sin arriesgar la aplicación.
+
+`play()` devuelve una promesa que el navegador **rechaza** cuando bloquea el
+audio —la política de reproducción automática exige que la persona haya
+interactuado antes con la página—. Sin este `catch`, ese rechazo llega al
+manejador global de errores y la persona ve un aviso de fallo por algo que no
+pidió y que no significa nada. Que no suene es aceptable; que aparezca un
+error, no.
+
+**Kind**: global function  
+<a name="useAvisoDeNotificaciones"></a>
+
+## useAvisoDeNotificaciones([idUsuario]) ⇒ <code>Array.&lt;object&gt;</code>
+Anuncia las notificaciones nuevas mientras la persona trabaja.
+
+Se monta una sola vez, en el layout, y no pinta nada: su trabajo es mirar lo
+que trae la entidad y avisar de lo que todavía no se ha visto.
+
+Va como aviso flotante y no como diálogo a propósito. Una notificación llega
+sola, sin que nadie la haya pedido, así que taparle la pantalla a quien está
+capturando un gasto sería exactamente el anti-patrón que el estándar prohíbe.
+El aviso aparece arriba a la derecha y se va solo.
+
+Los identificadores ya anunciados viven en un `ref` y no en estado: cambiarlos
+no tiene que repintar nada, y guardarlos en `useState` provocaría un ciclo de
+render por cada notificación.
+
+El reinicio al cambiar de persona va **dentro del mismo efecto**, y no en uno
+aparte, porque dos efectos separados dependen del orden en que React los
+ejecuta y de que la lista cambie de referencia. Si no cambiara, quien entra
+después heredaría los avisos ya callados del anterior.
+
+**Kind**: global function  
+**Returns**: <code>Array.&lt;object&gt;</code> - Las notificaciones actuales, por si la pantalla las quiere.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [idUsuario] | <code>string</code> | Identificador de la persona conectada. |
+
+**Example**  
+```js
+function DashboardLayout() {
+  const { user } = useAuthStore()
+  useAvisoDeNotificaciones(user?.id)
+  return <Outlet />
+}
+```
+<a name="leerVistas"></a>
+
+## leerVistas(llave) ⇒ <code>Set.&lt;string&gt;</code>
+Lee del navegador los identificadores ya leídos.
+
+Nunca lanza: en una ventana privada o con el almacenamiento bloqueado, leer
+`localStorage` falla, y eso no es motivo para dejar a la persona sin campana.
+Lo peor que pasa es que todo se vea como no leído.
+
+**Kind**: global function  
+**Returns**: <code>Set.&lt;string&gt;</code> - Los identificadores leídos.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| llave | <code>string</code> | Dónde se guardaron. |
+
+<a name="guardarVistas"></a>
+
+## guardarVistas(llave, vistas) ⇒ <code>void</code>
+Guarda en el navegador los identificadores ya leídos.
+
+**Kind**: global function  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| llave | <code>string</code> | Dónde guardarlos. |
+| vistas | <code>Set.&lt;string&gt;</code> | Los identificadores leídos. |
+
+<a name="useCampanaNotificaciones"></a>
+
+## useCampanaNotificaciones() ⇒ <code>object</code>
+Lleva el estado de la campana de notificaciones.
+
+Se apoya en la misma consulta que el aviso emergente, así que las dos cosas
+comparten una sola petición cada quince segundos en lugar de una cada una.
+Lo único propio de la campana es qué se ha leído, que vive en el navegador
+porque el backend no lo guarda.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - Lo que el componente necesita para pintarse.  
 <a name="iconoUnidad"></a>
 
 ## iconoUnidad(rumbo, color) ⇒ <code>object</code>
@@ -11208,7 +13422,8 @@ Una orden de servicio ya validada.
 | fecha_orden | <code>string</code> | Fecha, solo el día. |
 | estatus | <code>string</code> | `Abierta`, `Pendiente` o `Completado`. |
 | truck_id | <code>string</code> | Camión al que pertenece. |
-| nombre_camion | <code>string</code> | Número de unidad. |
+| nombre_camion | <code>string</code> | Número del camión; vacío si la orden es de una caja. |
+| nombre_caja | <code>string</code> | Número de la caja; vacío si la orden es de un camión. |
 | tipo_cambio | <code>number</code> \| <code>null</code> | Tipo de cambio, o `null` si es en pesos. |
 | servicios | <code>Array</code> | Los servicios de la orden. |
 
@@ -11255,6 +13470,30 @@ Un punto de la ruta, como lo entienden el mapa y el trazador.
 | lon | <code>number</code> | Longitud. |
 | name | <code>string</code> | Cómo se llama el punto en pantalla. |
 | [id] | <code>string</code> \| <code>number</code> | Id de la unidad, si el punto es un camión. |
+
+<a name="EstatusCaja"></a>
+
+## EstatusCaja : <code>object</code>
+Una caja con su estatus resuelto.
+
+**Kind**: global typedef  
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| caja_id | <code>number</code> | Identificador de la caja. |
+| no_caja | <code>string</code> | Número con el que la conoce la operación. |
+| operador | <code>string</code> \| <code>null</code> | Conductor del viaje en turno. |
+| trip_id | <code>number</code> \| <code>null</code> | Viaje en turno, o `null` si no trae uno abierto. |
+| trip_number | <code>string</code> \| <code>null</code> | Número visible de ese viaje. |
+| ubicacion | <code>string</code> | Dónde está, ya resuelto entre lo manual y lo automático. |
+| observacion | <code>string</code> | Si va cargada o vacía, con la misma resolución. |
+| comentario | <code>string</code> \| <code>null</code> | Nota libre del viaje en curso, o `null`. |
+| ubicacion_auto | <code>string</code> | Lo que dirían los viajes si nadie capturara nada. |
+| observacion_auto | <code>string</code> | Lo mismo para la observación. |
+| manual | <code>boolean</code> | Si lo que se ve viene de una captura vigente. |
+| broker | <code>string</code> \| <code>null</code> | Compañía de la etapa en curso; solo si va cargada. |
+| fianza | <code>Object</code> \| <code>null</code> | La fianza vigente de la caja, o `null` si no tiene ninguna. |
 
 <a name="TotalesViaje"></a>
 

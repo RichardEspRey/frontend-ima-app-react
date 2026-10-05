@@ -56,14 +56,20 @@ Detalle de cada uno en `05-INCREMENTOS.md`.
 
 ## Lo que se integró después de la fase 1
 
-Lo que se desarrolla en `Emiliano` se integra con merge y **se porta en el mismo commit**:
-un módulo nuevo no entra como pantalla suelta en `src/screens/`, que ya no existe.
+Lo que se desarrolla en `Emiliano` **se reescribe aquí con la arquitectura de esta rama y
+entra como commit normal**, citando los hashes de origen. Desde el 2026-10-05 ya no se
+mergea `Emiliano`: el merge arrastraba las pantallas viejas que el refactor ya había
+reescrito: el intento del 2026-10-05 traía de vuelta `components/Mantenimientos/` y
+`services/mantenimiento.js`, ya reescritos en `features/maintenance`, y se canceló.
+Ver `CONTRIBUYENDO.md`.
 
 | Fecha | Qué | Dónde quedó |
 |---|---|---|
 | 2026-09-17 | La campana, el IMA Manager y el status de caja al marcar Almost Over | `e2a3e01` |
 | 2026-09-23 | **Estatus de cajas** | `entities/trailer` (modelo, estatus y fianzas), `features/estatus-cajas`, `pages/viajes/EstatusCajasPage.jsx` |
 | 2026-10-01 | **Flujo de mantenimiento**: de la inspección final a la orden | `entities/maintenance-point`, `features/maintenance`, `pages/mantenimientos/MantenimientoPage.jsx` |
+| 2026-10-05 | Estatus de cajas: PENSION USA, MANTENIMIENTO, AGENCIA ADUANAL, CARGANDO y DESCARGANDO, y un color por estado | `cc4e17f` · `entities/trailer`, `features/estatus-cajas/ui/coloresEstatus.js` |
+| 2026-10-05 | Las órdenes de servicio de caja muestran su caja (`8fbffde` de `Emiliano`, que se había quedado fuera) | `ca88399` · `entities/service-order` (`nombreUnidad`, `etiquetaUnidad`) |
 
 Del flujo de mantenimiento, lo que cambió al portarlo: el estado de un punto y las
 reglas de agrupación bajan a `entities/maintenance-point` con sus esquemas zod y once
@@ -112,7 +118,12 @@ El incremento 9 está partido en **9a, 9b y 9c** (ver `05-INCREMENTOS.md`).
 3. Lint en **0 errores** (de 112).
 4. Fase 1 verificada de punta a punta: ver `07-VERIFICACION-FASE-1.md`.
 
-**La fase 1 está lista para plantear el merge a `main`.** Antes conviene:
+**La fase 1 está lista para plantear el merge a `main`**, con una salvedad medida el
+2026-10-05 (`npm run estandar:medir`): ocho entidades se construyeron y sus pantallas no
+las usan, quedan 25 archivos con `fetch` propio en la zona nueva y 46 usos de `Grid` que
+MUI 7 ignora. Nada de eso rompe la app —son las mismas pantallas que en `Emiliano`—, pero
+es deuda del refactor y no de la estructura vieja. Detalle y orden en `PENDIENTES.md`
+§4–§8. Antes del merge conviene, además:
 
 - Que Emiliano y Richard la usen unos días contra producción.
 - Decidir lo que quedó a la vista y es de negocio, no del refactor: la columna de déficit,
@@ -142,6 +153,15 @@ Ojo con qué mide: **no** los commits propios del refactor. Que el refactor acum
 trabajo propio es su función, no un síntoma. Lo que lo mata es quedarse **atrás** de lo
 que se sigue desarrollando en `Emiliano` — así murió la rama de abril, con 116 commits de
 divergencia porque nadie la sincronizaba, no porque hubiera hecho demasiado.
+
+## Documentación
+
+Desde el 2026-10-05 están escritos los documentos que el plan de `06-DOCUMENTACION.md`
+dejaba pendientes: `ONBOARDING.md`, `ARQUITECTURA.md` (la estructura como está hoy),
+`GLOSARIO.md`, `CREAR-UNA-PANTALLA.md` (la receta para construir algo nuevo) y un
+`README.md` en cada una de las 46 carpetas de `entities/` y `features/`. El `README.md` de
+la raíz dejó de ser la plantilla de Vite, y `.env.example` existe —el mensaje de error lo
+pedía y no estaba—.
 
 ## Decisiones ya tomadas
 

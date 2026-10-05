@@ -1,12 +1,41 @@
-# React + Vite
+# IMA Desktop
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Aplicación de escritorio para la operación de **IMA Express**: viajes y despacho, estatus
+de cajas, gastos y diesel, mantenimiento y reparaciones, finanzas, nómina, safety e IFTA, y
+seguimiento de unidades en el mapa.
 
-Currently, two official plugins are available:
+**Electron + React 19 + Vite + MUI 7**, con TanStack Query y zod frente a una API PHP.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+```bash
+npm ci
+cp .env.example .env     # VITE_API_HOST apunta a la API
+npm run dev              # http://localhost:5173
+```
 
-## Expanding the ESLint configuration
+> La app local trabaja contra **producción**: no hay ambiente de pruebas. Guardar desde la
+> pantalla escribe datos reales.
 
-If you are developing a production application, we recommend using TypeScript and enable type-aware lint rules. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Documentación
+
+| Para | Lee |
+|---|---|
+| Arrancar desde cero | [`docs/ONBOARDING.md`](docs/ONBOARDING.md) |
+| Entender la estructura | [`docs/ARQUITECTURA.md`](docs/ARQUITECTURA.md) |
+| Construir una pantalla o un componente | [`docs/CREAR-UNA-PANTALLA.md`](docs/CREAR-UNA-PANTALLA.md) |
+| Las reglas y su porqué | [`docs/ESTANDAR-DE-INGENIERIA.md`](docs/ESTANDAR-DE-INGENIERIA.md) |
+| Convenciones del repo | [`docs/CONTRIBUYENDO.md`](docs/CONTRIBUYENDO.md) |
+| El vocabulario del negocio | [`docs/GLOSARIO.md`](docs/GLOSARIO.md) |
+| Todo lo demás | [`docs/README.md`](docs/README.md) |
+
+## Comandos
+
+```bash
+npm run dev              # servidor de desarrollo
+npm test                 # pruebas (vitest)
+npm run lint             # arquitectura, JSDoc y seguridad
+npm run build            # compila a dist/
+npm start                # Electron sobre dist/
+npm run dist             # empaqueta el instalador
+npm run docs:api         # regenera docs/api/ desde el JSDoc
+npm run estandar:medir   # mide la deuda contra el estándar
+```

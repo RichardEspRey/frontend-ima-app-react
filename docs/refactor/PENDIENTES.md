@@ -156,12 +156,117 @@ toca la fase 3.
 
 ---
 
+## 4 · Ocho entidades construidas que ninguna pantalla usa
+
+**Medido el 2026-10-05** con `npm run estandar:medir`, sección 2.
+
+Los incrementos 9a, 9b, 9c, 10 y 11 crearon la entidad —esquema, reglas, peticiones, hooks y
+pruebas— pero las pantallas siguieron con su propio `fetch`. El resultado es lo peor de los
+dos mundos: el código nuevo existe, se mantiene y se prueba, y la pantalla no se beneficia
+de nada (ni caché, ni cancelación, ni validación, ni reintento).
+
+| Entidad | Pantallas que deberían usarla | Lo que hoy hacen |
+|---|---|---|
+| `autonomy` | `pages/mantenimientos/AutonomiaPage.jsx` | `fetch` a `autonomia.php` |
+| `finance` | `pages/finanzas/FinanzasPage.jsx`, `PagosConductoresPage.jsx`, `TarifasConductorPage.jsx` | `fetch` a `formularios.php` |
+| `ifta` | `pages/safety/IftaPage.jsx` | `fetch` a `IFTA.php` |
+| `inspection` | `features/inspections/ui/TablaInspecciones.jsx`, `InspeccionModal.jsx` | `fetch` a `inspecciones.php` |
+| `inventory` | `features/service-order/ui/TablaInventario.jsx` | `fetch` a `inventory.php` |
+| `roadside-repair` | `features/inspections/ui/TablaReparaciones.jsx`, `ReparacionModal.jsx` | `fetch` a `roadside_repairs.php` |
+| `safety` | `pages/safety/SafetyPage.jsx` | `fetch` a `safety.php` |
+| `tuning` | `pages/mantenimientos/AfinacionesPage.jsx`, `AfinacionesHistorialPage.jsx` | `fetch` a `afinaciones.php` |
+
+`service-order` está a medias: `TablaOrdenes.jsx` usa sus reglas (`nombreUnidad`,
+`etiquetaUnidad`) pero no `useOrdenes`.
+
+### Cómo hacerlo
+
+Por pantalla, siguiendo `docs/CREAR-UNA-PANTALLA.md` desde el paso 6: un controlador en la
+feature que use el hook de la entidad, la interfaz que solo pinta, y la página que compone.
+**Comparar contra la pantalla vieja en `Emiliano`** antes de dar por bueno el cambio: la
+entidad se escribió contra la API real, pero nadie la ha visto pintada.
+
+Orden propuesto, de menor a mayor riesgo: `autonomy` y `safety` (una lista, solo lectura) →
+`ifta` → `inventory` → `tuning` → `finance` → `inspection` y `roadside-repair` (modales con
+guardado y archivos).
+
+**Esfuerzo:** de medio día (autonomía) a dos días (inspecciones) por pantalla.
+
+---
+
+## 5 · Los otros `fetch` de la zona nueva
+
+Además de los ocho anteriores, quedan con `fetch` propio: `MargenPage`, `ResiduosPage` y
+`TicketPagoPage` (finanzas), `CotizadorPage`, `NuevaOrdenPage`, `EditarOrdenPage` e
+`InspeccionFinalPage` (mantenimiento), `ExpenseManagerPage`, `EditarGastoGeneralPage` y
+`ModalNuevoGasto` (gastos). Para estas **no** existe la petición en una entidad: hay que
+escribirla.
+
+`entities/tracking/api/geo.js` también usa `fetch`, pero contra servicios públicos de mapas,
+no contra la API de IMA. Es una excepción consciente.
+
+En la estructura vieja (`components/`, `hooks/`) quedan 13 archivos más; se resuelven al
+migrar cada uno.
+
+---
+
+## 6 · Layouts rotos por `Grid` de MUI 7 — 46 usos en 8 archivos
+
+MUI 7 eliminó `item`, `xs`, `md`… como props de `Grid`: los ignora, los hijos quedan sin
+ancho y solo avisa en consola. Afecta a `NuevaOrdenPage` y `EditarOrdenPage` (12 cada una),
+`TablaOrdenes` (6), `FinanzasPage` (5), `TicketPagoPage` (4), `AfinacionesHistorialPage`
+(3), `DocumentosPage` y `ConfigRequirementModal` (2 cada uno).
+
+### Cómo hacerlo
+
+```bash
+npx @mui/codemod@latest v7.0.0/grid-props src/pages/mantenimientos
+```
+
+El codemod oficial funciona bien (ya se usó en Gastos). **Arreglarlo cambia el aspecto**:
+hoy esos layouts se acomodan por accidente y al migrar se ven como el código siempre dijo.
+Por eso va módulo por módulo, con revisión visual de cada pantalla.
+
+---
+
+## 7 · El menú y las pantallas leen permisos distintos
+
+`components/Sidebar.jsx` decide qué entradas mostrar con `userPermissions` de
+`features.php` (vía `useAuthStore`). `<Can>`, `usePermisos()` y `useSesion().can` usan
+`calcularPermisosEfectivos`, que suma lo que da el rol. Resultado: a alguien de
+operaciones su rol le da `viajes_*`, las pestañas internas lo dejan pasar, pero la entrada
+del menú solo aparece si además tiene la clave en `features.php`.
+
+### Cómo hacerlo
+
+El menú pasa a preguntar con `useSesion().can(featureKey)`. Antes, **medir a quién le
+cambia el menú**: para cada usuario, comparar lo que ve hoy con lo que vería con los
+permisos efectivos. Si alguien gana entradas que no debía ver, el problema está en
+`PERMISOS_POR_ROL`, no en el menú.
+
+---
+
+## 8 · Deuda menor, medida
+
+| Qué | Dónde | Cómo |
+|---|---|---|
+| Sesión desde `useAuthStore` en vez de `useSesion` | `ModalNuevoGasto`, `useAvisoDeNotificaciones`, `AdminViajesPage`, `OrdenesServicioPage`, `EditarGastoGeneralPage`, `DieselDeViajePage`, `AccesosPage` | Cambiar a `useSesion()`. `LoginPage` sí debe usar el store: es quien abre la sesión |
+| 39 archivos de más de 250 líneas | Encabeza `EditarGastoGeneralPage` (724) | Extraer el controlador a la feature; ninguno pasa de 1 000 |
+| 99 colores escritos a mano | Casi todos paletas categóricas de mapas y gráficas | Revisar los que no sean categóricos; los categóricos se quedan |
+| Features sin `index.js` | `access-manager`, `documentos`, `inspections`, `service-order` | Crear el índice y que las páginas importen de él |
+| Sin `React.lazy` por ruta | `navigation/AppRouter.jsx` importa las 48 páginas | Cargar por ruta; mejora el arranque, no la corrección |
+
+---
+
 ## Orden sugerido
 
-1. **Paginar las tablas.** Es el único de los tres que corrige un problema que ya está
-   pasando, y el más barato.
-2. **Unificar el idioma de la interfaz** aunque no se ponga el botón. Arregla una
+1. **Arreglar los `Grid` (§6).** Son layouts rotos hoy mismo, y el codemod es mecánico.
+2. **Conectar las ocho entidades (§4).** El código ya está escrito y probado; falta usarlo.
+3. **Unificar la lectura de permisos del menú (§7).** Hoy dos personas con el mismo rol
+   pueden ver menús distintos sin que nadie lo haya decidido.
+4. **Paginar las tablas.** Corrige un problema que ya está pasando, y es barato.
+5. **Unificar el idioma de la interfaz** aunque no se ponga el botón. Arregla una
    inconsistencia real y es prerrequisito de lo demás.
-3. **Modo oscuro**, si alguien lo va a usar.
-4. **El botón de idioma**, al final: es el que más trabajo pide y el único que no arregla
+6. **Modo oscuro**, si alguien lo va a usar.
+7. **El botón de idioma**, al final: es el que más trabajo pide y el único que no arregla
    nada que hoy esté roto.

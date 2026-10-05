@@ -1,16 +1,32 @@
 # Convenciones de trabajo
 
+> Para construir algo nuevo, la receta completa es
+> [`CREAR-UNA-PANTALLA.md`](CREAR-UNA-PANTALLA.md). Este archivo es el resumen de reglas.
+
 ## Ramas
 
-- `main` — lo que se libera. Se mergea aquí, no se trabaja aquí.
-- `Emiliano`, `Richard` — ramas personales de features.
-- `refactor-NN-nombre` — un incremento del refactor. Vida máxima: **una semana**.
-
-Antes de abrir una rama y todos los días mientras viva:
-
-```bash
-git fetch origin && git rebase origin/main
 ```
+main  →  Emiliano  →  refactor-fase-1
+```
+
+- `main` — lo que se libera. Se mergea aquí, no se trabaja aquí.
+- `Emiliano`, `Richard` — ramas personales de features. `Emiliano` es además la
+  referencia contra la que se compara que el refactor funcione igual: no recibe nada del
+  refactor.
+- `refactor-fase-1` — la rama larga del refactor. Reemplaza a `Emiliano` de una sola vez,
+  cuando la app funcione al 100 %.
+
+El flujo va en **una sola dirección**. Contra una rama publicada se usa **merge, nunca
+rebase**: rebasar commits que ya están en `origin` crea duplicados con otro hash.
+
+**Una feature nueva de `Emiliano` llega al refactor reescrita, no mergeada.** Se vuelve a
+escribir con la arquitectura de esta rama —regla en `entities/`, interfaz en `features/`,
+pruebas— y entra como un commit normal que cita los hashes de origen. Un merge de
+`Emiliano` arrastra las pantallas viejas que el refactor ya reescribió y las deja
+duplicadas.
+
+`npm run refactor:estado` mide cuánto lleva el refactor sin incorporar lo de `Emiliano`. El
+tope es **15 commits o 14 días**.
 
 ## Commits
 
@@ -66,7 +82,10 @@ app → pages → features → entities → shared
 
 - Un componente **pide datos**, **decide** o **pinta**. Nunca las tres.
 - Un componente que pinta no monta `useEffect` de datos ni arma un `FormData`.
-- Techo blando: **250 líneas**. Pasarlo es señal de dos responsabilidades, no una falta.
+- Techo blando: **250 líneas** por componente, hook o módulo. Pasarlo es señal de dos
+  responsabilidades. Techo duro: **1 000 líneas** por archivo.
+- La identidad sale de `useSesion()` y los permisos de `usePermisos()` / `<Can>`, nunca de
+  `useAuthStore` en una feature o una página.
 - Nada de `fetch()` directo: todo pasa por `entities/<x>/api`.
 
 ## Estado
@@ -75,7 +94,8 @@ app → pages → features → entities → shared
 |---|---|
 | De servidor (listas, catálogos) | TanStack Query |
 | De sesión / global | zustand |
-| Compartido dentro de una pantalla | Context de la feature |
+| De una pantalla (diálogos, fila en edición, filtros locales) | El controlador `features/<y>/model/use<Algo>.js` |
+| Compartido por componentes muy anidados de una feature | Context de la feature |
 | Local | `useState` |
 
 Si estás bajando una prop por tres niveles, el estado está en el lugar equivocado.
@@ -102,7 +122,10 @@ npm test          # verde
 npm run build     # verde
 npm run lint      # sin errores nuevos
 npm run docs:api  # regenerar la referencia
+npm run estandar:medir  # la deuda no sube
 ```
+
+Y la pantalla vista en la app, con la consola limpia.
 
 ## Seguridad
 

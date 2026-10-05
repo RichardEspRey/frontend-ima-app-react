@@ -71,7 +71,7 @@ Los principios sirven cuando se traducen a decisiones observables. Así se tradu
 
 | Principio | Traducción operativa | Se detecta cuando… |
 |---|---|---|
-| **SRP** | Una pantalla orquesta; la lógica vive en un hook o en el modelo de la entidad | Un componente pasa de ~300 líneas o mezcla `fetch`, cálculo y JSX |
+| **SRP** | Una pantalla orquesta; la lógica vive en un hook o en el modelo de la entidad | Un componente pasa de ~250 líneas o mezcla `fetch`, cálculo y JSX |
 | **OCP** | Agregar un caso es agregar una entrada a una tabla, no un `if` más | Aparece el tercer `else if` sobre el mismo valor |
 | **LSP / ISP** | Props angostas y con un solo significado | Un componente recibe un objeto entero para usar dos campos |
 | **DIP** | Los componentes hablan con la capa de API, nunca con `fetch` | Aparece un `fetch(` fuera de `shared/api` |

@@ -93,7 +93,7 @@ directo: `import { DARK_BTN_SX } from "../../shared/ui/estilos"`. Nada de colore
   etiqueta="Nómina total (MXN)"
   valor="$18,800.00"
   pie="Pagado a 7 empleado(s)"
-  acento="#15803d"
+  acento={COLOR.EXITO}
   icono={<MonetizationOnIcon fontSize="small" />}
 />
 ```

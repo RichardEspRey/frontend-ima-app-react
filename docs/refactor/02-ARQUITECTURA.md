@@ -1,5 +1,8 @@
 # Arquitectura destino
 
+> **Para la arquitectura como está construida hoy**, con lo que ya se migró y lo que no,
+> ver [`../ARQUITECTURA.md`](../ARQUITECTURA.md). Este documento es el plan original.
+
 > Este documento describe la arquitectura **de este proyecto**. Los principios que hay
 > detrás —incluidos los de consistencia visual, estados de carga y manejo de errores, que
 > no estaban en el brief original— viven en

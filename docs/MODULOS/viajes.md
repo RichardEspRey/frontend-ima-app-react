@@ -66,7 +66,17 @@ Cubre todo el ciclo de un viaje, desde que se cotiza hasta que se cierra y se re
 - El tablero **se refresca solo cada cinco minutos** mientras está en primer plano, y al
   volver a la ventana. El refresco de fondo no levanta el indicador de carga.
 - **TALLER solo puede ser manual**: ningún dato del sistema dice que una caja está en el
-  taller, y por eso existen los combos.
+  taller, y por eso existen los combos. Lo mismo PENSION USA, MANTENIMIENTO, AGENCIA
+  ADUANAL, CARGANDO y DESCARGANDO, que se agregaron el 2026-10-05 sin ninguna lógica: solo
+  se eligen a mano. El PHP los admite en su lista cerrada.
+- **Cada estado tiene su color**, como fondo suave del combo con el texto oscuro del mismo
+  tono: PENSION NLD y CARGANDO azul, PENSION USA rojo, RUTA SUBIENDO y CARGADA verde, RUTA
+  BAJANDO y DESCARGANDO celeste, TALLER café, MANTENIMIENTO y VACIA amarillo, AGENCIA
+  ADUANAL morado. Viven en `features/estatus-cajas/ui/coloresEstatus.js`.
+- El encabezado cuenta cargadas y vacías **cada una por su nombre**. Restar las cargadas
+  del total contaba como vacías a las que se están cargando o descargando.
+- El broker solo se muestra con la caja CARGADA: lo decide el PHP. Si debe salir también
+  con CARGANDO o DESCARGANDO es una decisión pendiente de operaciones.
 - El tablero muestra **todas las cajas internas**, estén donde estén y traigan viaje o no.
   Lo único que se deja fuera es el registro sin placa ni VIN, que no es una caja real; se
   filtra por los datos y no por su id. Las cajas externas viven en otra tabla y no

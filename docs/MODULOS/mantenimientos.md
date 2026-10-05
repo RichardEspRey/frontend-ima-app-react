@@ -35,6 +35,10 @@ partes (9a, 9b, 9c en `docs/refactor/05-INCREMENTOS.md`).
   Verificado contra las 345 órdenes reales: no hay más valores.
 - Una orden **sin servicios no cuenta como completada**: no hay nada hecho todavía.
 - `tipo_cambio` viene nulo en las órdenes en pesos. **No es 0.**
+- Una orden es **de un camión o de una caja**, nunca de las dos: las que arma Reparaciones
+  para una caja llegan sin camión. La columna y el filtro se llaman «Unidad», la caja se
+  muestra como «Caja 102» para no confundirla con el camión 102, y el filtro busca en la
+  unidad que tenga (`nombreUnidad`, `etiquetaUnidad`).
 - Cada pestaña declara el permiso que la habilita, así que un usuario solo ve las suyas y
   la primera visible se selecciona sola.
 
