@@ -13,7 +13,7 @@ import Swal from 'sweetalert2';
 import ModalArchivo from '../../components/ModalArchivo';
 import { useAuthStore } from '../../store/useAuthStore';
 import {
-    LARGO_COMENTARIO, OBSERVACIONES_CAJA, UBICACIONES_CAJA, guardarEstatusCaja, obtenerEstatusCajas,
+    COLORES_ESTATUS_CAJA, LARGO_COMENTARIO, OBSERVACIONES_CAJA, UBICACIONES_CAJA, guardarEstatusCaja, obtenerEstatusCajas,
     subirFianzaCaja
 } from '../../services/estatusCajas';
 import { HEADER_ROW_SX, HEADER_CELL_SX } from '../../styles/estilosTabla';
@@ -48,6 +48,42 @@ const CeldaComentario = ({ caja, deshabilitado, onGuardar }) => {
             helperText={texto.length > LARGO_COMENTARIO - 50 ? `${texto.length}/${LARGO_COMENTARIO}` : undefined}
             sx={{ minWidth: 260, bgcolor: 'white' }}
         />
+    );
+};
+
+const MuestraColor = ({ color }) => (
+    <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: color?.punto ?? '#cbd5e1', flexShrink: 0 }} />
+);
+
+const SelectorEstatus = ({ valor, opciones, vacio, ancho, deshabilitado, onCambiar }) => {
+    const color = COLORES_ESTATUS_CAJA[valor];
+
+    return (
+        <Select
+            size="small"
+            value={valor || ''}
+            onChange={(e) => onCambiar(e.target.value)}
+            disabled={deshabilitado}
+            displayEmpty
+            sx={{
+                minWidth: ancho,
+                bgcolor: color?.fondo ?? 'white',
+                color: color?.texto,
+                fontWeight: color ? 700 : 400,
+                '& .MuiOutlinedInput-notchedOutline': { borderColor: color ? 'transparent' : undefined },
+                '& .MuiSelect-icon': { color: color?.texto },
+            }}
+        >
+            <MenuItem value="" disabled>{vacio}</MenuItem>
+            {opciones.map(opcion => (
+                <MenuItem key={opcion} value={opcion}>
+                    <Stack direction="row" spacing={1} alignItems="center">
+                        <MuestraColor color={COLORES_ESTATUS_CAJA[opcion]} />
+                        <span>{opcion}</span>
+                    </Stack>
+                </MenuItem>
+            ))}
+        </Select>
     );
 };
 
@@ -218,35 +254,25 @@ const EstatusCajas = () => {
                                 </TableCell>
 
                                 <TableCell>
-                                    <Select
-                                        size="small"
-                                        value={caja.ubicacion || ''}
-                                        onChange={(e) => guardarCampo(caja, 'ubicacion', e.target.value)}
-                                        disabled={guardando === caja.caja_id}
-                                        displayEmpty
-                                        sx={{ minWidth: 175, bgcolor: 'white' }}
-                                    >
-                                        <MenuItem value="" disabled>Sin ubicación</MenuItem>
-                                        {UBICACIONES_CAJA.map(opcion => (
-                                            <MenuItem key={opcion} value={opcion}>{opcion}</MenuItem>
-                                        ))}
-                                    </Select>
+                                    <SelectorEstatus
+                                        valor={caja.ubicacion}
+                                        opciones={UBICACIONES_CAJA}
+                                        vacio="Sin ubicación"
+                                        ancho={190}
+                                        deshabilitado={guardando === caja.caja_id}
+                                        onCambiar={(valor) => guardarCampo(caja, 'ubicacion', valor)}
+                                    />
                                 </TableCell>
 
                                 <TableCell>
-                                    <Select
-                                        size="small"
-                                        value={caja.observacion || ''}
-                                        onChange={(e) => guardarCampo(caja, 'observacion', e.target.value)}
-                                        disabled={guardando === caja.caja_id}
-                                        displayEmpty
-                                        sx={{ minWidth: 145, bgcolor: 'white' }}
-                                    >
-                                        <MenuItem value="" disabled>Sin observación</MenuItem>
-                                        {OBSERVACIONES_CAJA.map(opcion => (
-                                            <MenuItem key={opcion} value={opcion}>{opcion}</MenuItem>
-                                        ))}
-                                    </Select>
+                                    <SelectorEstatus
+                                        valor={caja.observacion}
+                                        opciones={OBSERVACIONES_CAJA}
+                                        vacio="Sin observación"
+                                        ancho={145}
+                                        deshabilitado={guardando === caja.caja_id}
+                                        onCambiar={(valor) => guardarCampo(caja, 'observacion', valor)}
+                                    />
                                 </TableCell>
 
                                 <TableCell>
