@@ -586,7 +586,7 @@ Antes de pedir que alguien lo vea:
 - [ ] La página solo compone; el controlador tiene el estado; la UI solo pinta.
 - [ ] Ningún import de una feature a otra (el lint lo dice).
 - [ ] Ningún color, tamaño ni radio escrito a mano: tokens de `shared/ui`.
-- [ ] `Grid` con `size={{ xs, md }}`; nunca `item`, `xs` ni `md` sueltos.
+- [ ] `Grid` con `size={{ xs, md }}`; nunca `item`, `xs` ni `md` sueltos (el lint lo rechaza).
 - [ ] Carga, error, vacío y trabajando, los cuatro, en cada sección.
 - [ ] Todo lo exportado con JSDoc; cero comentarios dentro de las funciones.
 - [ ] `npm test`, `npm run lint`, `npm run build` y `npm run docs:api` en verde.
@@ -604,7 +604,7 @@ Cada uno salió de un caso real.
 | `fetch` en la página "porque es una sola llamada" | Sin caché, sin cancelación, sin validar, sin reintento; y la próxima pantalla lo copia | La entidad, aunque sea una función y un hook |
 | Construir la entidad y no conectarla | Hay 8 entidades con modelo y pruebas que ninguna pantalla usa (ver `refactor/PENDIENTES.md`) | La pantalla pasa a la entidad en el mismo incremento |
 | `useAuthStore` en una feature | Dos puertas a la sesión; la fase 2 tendría que cambiar las dos | `useSesion()` de `shared/auth` |
-| `<Grid item xs={6}>` | MUI 7 ignora esos props: los hijos quedan sin ancho y solo avisa en consola | `<Grid size={{ xs: 6 }}>` |
+| `<Grid item xs={6}>` | MUI 7 ignora esos props: los hijos quedan sin ancho. Hubo 187 en el repo; hoy el lint lo rechaza | `<Grid size={{ xs: 6 }}>` |
 | Un `<Box>` o un `<Chip>` dentro de `<Typography>` | HTML inválido; React avisa en consola y jsdom no lo detecta | `<Typography component="div">` |
 | `Tabs` o `ToggleButton` de MUI | El linter lo rechaza: el aspecto vive en `Pestanas` y `Selector` | Los de `shared/ui` |
 | Detalle que lee `useLocation().state` | El enlace directo y el recargar abren la pantalla vacía | El id en la ruta (`/editar/:id`) y la consulta por id |

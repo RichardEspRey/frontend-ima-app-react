@@ -14,7 +14,6 @@ El Administrador de Órdenes de Servicio: la tabla de órdenes con sus filtros y
 ## Pendiente
 
 - `TablaOrdenes.jsx` y `TablaInventario.jsx` hacen `fetch` propio en lugar de usar `useOrdenes` y `useInventario`, que ya existen.
-- `TablaOrdenes.jsx` usa `<Grid item xs>`, que MUI 7 ignora.
 - No tiene `index.js` ni controlador.
 
 ## Quién lo usa

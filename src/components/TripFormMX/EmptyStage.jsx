@@ -8,7 +8,7 @@ import { COLOR } from '../../shared/ui/tokens';
 const EmptyStage = ({ etapa, index, updateStage, origenes }) => {
     return (
         <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
                 <Paper variant="outlined" sx={{ p: 2, height: '100%', bgcolor: COLOR.LIENZO }}>
                     <Typography variant="subtitle2" color="primary" sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                         <PlaceIcon fontSize="small" /> ORIGEN (MOVIMIENTO VACÍO)
@@ -45,7 +45,7 @@ const EmptyStage = ({ etapa, index, updateStage, origenes }) => {
                 </Paper>
             </Grid>
 
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
                 <Paper variant="outlined" sx={{ p: 2, height: '100%', bgcolor: COLOR.LIENZO }}>
                     <Typography variant="subtitle2" color="error" sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                         <FlagIcon fontSize="small" /> DESTINO (MOVIMIENTO VACÍO)
@@ -64,15 +64,15 @@ const EmptyStage = ({ etapa, index, updateStage, origenes }) => {
                 </Paper>
             </Grid>
 
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
                 <Grid container spacing={2}>
-                    <Grid item xs={12} sm={4}>
+                    <Grid size={{ xs: 12, sm: 4 }}>
                         <TextField fullWidth size="small" label="Millas PC*Miler" type="number" value={etapa.millas_pcmiller || ''} onChange={e => updateStage(index, 'millas_pcmiller', e.target.value)} />
                     </Grid>
-                    <Grid item xs={12} sm={4}>
+                    <Grid size={{ xs: 12, sm: 4 }}>
                         <TextField fullWidth size="small" label="Millas Prácticas" type="number" value={etapa.millas_pcmiller_practicas || ''} onChange={e => updateStage(index, 'millas_pcmiller_practicas', e.target.value)} />
                     </Grid>
-                    <Grid item xs={12} sm={4}>
+                    <Grid size={{ xs: 12, sm: 4 }}>
                         <TextField fullWidth size="small" label="Comentarios" value={etapa.comments || ''} onChange={e => updateStage(index, 'comments', e.target.value)} />
                     </Grid>
                 </Grid>

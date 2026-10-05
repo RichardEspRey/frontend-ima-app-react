@@ -210,22 +210,20 @@ migrar cada uno.
 
 ---
 
-## 6 · Layouts rotos por `Grid` de MUI 7 — 46 usos en 8 archivos
+## 6 · Layouts rotos por `Grid` de MUI 7 — HECHO
 
-MUI 7 eliminó `item`, `xs`, `md`… como props de `Grid`: los ignora, los hijos quedan sin
-ancho y solo avisa en consola. Afecta a `NuevaOrdenPage` y `EditarOrdenPage` (12 cada una),
-`TablaOrdenes` (6), `FinanzasPage` (5), `TicketPagoPage` (4), `AfinacionesHistorialPage`
-(3), `DocumentosPage` y `ConfigRequirementModal` (2 cada uno).
+**Resuelto el 2026-10-05.** MUI 7 ignora `item`, `xs`, `sm`, `md`, `lg` y `xl` en `Grid`: los
+hijos quedaban sin ancho. Había **187 usos en 31 archivos**: 46 en la zona nueva y 141 en
+`components/` (formularios de viaje, tarjetas de etapa, modal de factura, ticket,
+inspección final, tablero de combustible). Todos pasaron a `size={{ ... }}`, línea por
+línea; el codemod oficial reindentaba archivos enteros y no se usó.
 
-### Cómo hacerlo
+Al verse como el código decía, tres pantallas pidieron ajuste: los filtros de órdenes de
+servicio (cortaban el texto), el botón Guardar de Finanzas (los filtros sumaban 15
+columnas) y el resumen del Ticket de pago (el total no cabía en un cuarto del ancho).
 
-```bash
-npx @mui/codemod@latest v7.0.0/grid-props src/pages/mantenimientos
-```
-
-El codemod oficial funciona bien (ya se usó en Gastos). **Arreglarlo cambia el aspecto**:
-hoy esos layouts se acomodan por accidente y al migrar se ven como el código siempre dijo.
-Por eso va módulo por módulo, con revisión visual de cada pantalla.
+**No puede volver:** `no-restricted-syntax` en `eslint.config.js` rechaza esos props en
+`Grid`, en todo `src/`, con un mensaje que dice qué usar.
 
 ---
 
@@ -260,7 +258,7 @@ permisos efectivos. Si alguien gana entradas que no debía ver, el problema est�
 
 ## Orden sugerido
 
-1. **Arreglar los `Grid` (§6).** Son layouts rotos hoy mismo, y el codemod es mecánico.
+1. ~~Arreglar los `Grid` (§6).~~ Hecho el 2026-10-05.
 2. **Conectar las ocho entidades (§4).** El código ya está escrito y probado; falta usarlo.
 3. **Unificar la lectura de permisos del menú (§7).** Hoy dos personas con el mismo rol
    pueden ver menús distintos sin que nadie lo haya decidido.

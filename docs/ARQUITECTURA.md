@@ -203,7 +203,7 @@ La estructura vieja convive con la nueva y se va vaciando. Medido el 2026-10-05:
 | `no-usadas/` | 23 | Código congelado, fuera del lint | Se borra cuando se confirme que nadie lo necesita |
 
 Y dentro de las capas nuevas, la deuda medida —`fetch` directo, entidades sin conectar,
-archivos largos, props viejas de `Grid`— está en
+archivos largos— está en
 [`refactor/PENDIENTES.md`](refactor/PENDIENTES.md).
 
 ### Diferencias con el destino de `refactor/02`

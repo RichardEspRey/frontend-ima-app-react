@@ -7,18 +7,18 @@ import { COLOR } from '../../shared/ui/tokens';
 const TicketInfoCards = ({ driverName, unidad, customRate, setCustomRate }) => {
   return (
     <Grid container spacing={3} mb={4}>
-      <Grid item xs={12} md={8}>
+      <Grid size={{ xs: 12, md: 8 }}>
           <Card variant="outlined" sx={{ bgcolor: COLOR.LIENZO, height: '100%' }}>
               <CardContent>
                   <Grid container spacing={2}>
-                      <Grid item xs={6}>
+                      <Grid size={{ xs: 6 }}>
                           <Stack direction="row" spacing={1} alignItems="center" mb={1}>
                               <PersonIcon color="action" fontSize="small" />
                               <Typography variant="caption" textTransform="uppercase" fontWeight={700} color="text.secondary">Driver</Typography>
                           </Stack>
                           <Typography variant="h6" fontWeight={600}>{driverName}</Typography>
                       </Grid>
-                      <Grid item xs={6}>
+                      <Grid size={{ xs: 6 }}>
                           <Stack direction="row" spacing={1} alignItems="center" mb={1}>
                               <LocalShippingIcon color="action" fontSize="small" />
                               <Typography variant="caption" textTransform="uppercase" fontWeight={700} color="text.secondary">Unidad</Typography>
@@ -30,7 +30,7 @@ const TicketInfoCards = ({ driverName, unidad, customRate, setCustomRate }) => {
           </Card>
       </Grid>
       
-      <Grid item xs={12} md={4}>
+      <Grid size={{ xs: 12, md: 4 }}>
             <Card variant="outlined" sx={{ height: '100%', borderColor: 'primary.light', bgcolor: COLOR.INFO_FONDO }}>
               <CardContent>
                   <Typography variant="caption" textTransform="uppercase" fontWeight={700} color="primary.main">Tarifa por Milla</Typography>

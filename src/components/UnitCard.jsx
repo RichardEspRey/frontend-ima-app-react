@@ -95,14 +95,14 @@ const UnitCard = ({ truck, onUpdate, onConfig }) => {
                 </Box>
 
                 <Grid container spacing={1} sx={{ pt: 1, borderTop: `1px dashed ${COLOR.BORDE}` }}>
-                    <Grid item xs={6} sx={{ textAlign: 'center', borderRight: '1px solid #eee' }}>
+                    <Grid size={{ xs: 6 }} sx={{ textAlign: 'center', borderRight: '1px solid #eee' }}>
                         <Typography variant="caption" color="text.secondary" display="block">Autonomía</Typography>
                         <Typography variant="body1" fontWeight={800} color="primary.main">
                             {truck.avg_mpg > 0 ? Number(truck.avg_mpg).toFixed(2) : '--'}
                             <span style={{ fontSize: '0.7em', marginLeft: 2, fontWeight: 400 }}>MPG</span>
                         </Typography>
                     </Grid>
-                    <Grid item xs={6} sx={{ textAlign: 'center' }}>
+                    <Grid size={{ xs: 6 }} sx={{ textAlign: 'center' }}>
                         <Typography variant="caption" color="text.secondary" display="block">Rango Est.</Typography>
                         <Typography variant="body1" fontWeight={800} color="secondary.main">
                             {truck.estimated_range > 0 ? Number(truck.estimated_range).toFixed(0) : '--'}

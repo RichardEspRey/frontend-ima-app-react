@@ -178,24 +178,24 @@ const InvoiceModal = ({ isOpen, onClose, stageData, tripData, onSaveInvoice }) =
                 
                 {viewMode === 'form' && (
                     <Grid container spacing={3}>
-                        <Grid item xs={12}>
+                        <Grid size={{ xs: 12 }}>
                             <Paper elevation={0} sx={{ p: 2, border: `1px solid ${COLOR.BORDE}` }}>
                                 <Grid container spacing={2}>
-                                    <Grid item xs={12} sm={6}>
+                                    <Grid size={{ xs: 12, sm: 6 }}>
                                         <TextField fullWidth size="small" label="Número de Invoice" name="pdf_number" value={invoiceForm.pdf_number} onChange={handleChange} />
                                     </Grid>
-                                    <Grid item xs={12} sm={6}>
+                                    <Grid size={{ xs: 12, sm: 6 }}>
                                         <TextField fullWidth size="small" label="Fecha" name="save_date" value={invoiceForm.save_date} onChange={handleChange} />
                                     </Grid>
                                 </Grid>
                             </Paper>
                         </Grid>
 
-                        <Grid item xs={12}>
+                        <Grid size={{ xs: 12 }}>
                             <Paper elevation={0} sx={{ p: 2, border: `1px solid ${COLOR.BORDE}` }}>
                                 <Typography variant="caption" fontWeight={700} color="textSecondary" mb={1} display="block">DATOS DEL CLIENTE</Typography>
                                 <Grid container spacing={2}>
-                                    <Grid item xs={12} sm={6}>
+                                    <Grid size={{ xs: 12, sm: 6 }}>
                                         <Autocomplete
                                             freeSolo
                                             fullWidth
@@ -222,7 +222,7 @@ const InvoiceModal = ({ isOpen, onClose, stageData, tripData, onSaveInvoice }) =
                                             )}
                                         />
                                     </Grid>
-                                    <Grid item xs={12} sm={6}>
+                                    <Grid size={{ xs: 12, sm: 6 }}>
                                         <TextField
                                             fullWidth
                                             size="small"
@@ -238,23 +238,23 @@ const InvoiceModal = ({ isOpen, onClose, stageData, tripData, onSaveInvoice }) =
                             </Paper>
                         </Grid>
 
-                        <Grid item xs={12}>
+                        <Grid size={{ xs: 12 }}>
                             <Paper elevation={0} sx={{ p: 2, border: `1px solid ${COLOR.BORDE}` }}>
                                 <Typography variant="caption" fontWeight={700} color="textSecondary" mb={1} display="block">DATOS DEL FLETE</Typography>
                                 <Grid container spacing={2}>
-                                    <Grid item xs={12} sm={6}>
+                                    <Grid size={{ xs: 12, sm: 6 }}>
                                         <TextField fullWidth size="small" label="Conductor" name="driver_name" value={invoiceForm.driver_name} onChange={handleChange} />
                                     </Grid>
-                                    <Grid item xs={12} sm={6}>
+                                    <Grid size={{ xs: 12, sm: 6 }}>
                                         <TextField fullWidth size="small" label="CI Number" name="ci_number" value={invoiceForm.ci_number} onChange={handleChange} />
                                     </Grid>
-                                    <Grid item xs={12} sm={6}>
+                                    <Grid size={{ xs: 12, sm: 6 }}>
                                         <TextField fullWidth size="small" label="Pick Up Date" type="date" InputLabelProps={{ shrink: true }} name="pickup_date" value={invoiceForm.pickup_date} onChange={handleChange} />
                                     </Grid>
-                                    <Grid item xs={12} sm={6}>
+                                    <Grid size={{ xs: 12, sm: 6 }}>
                                         <TextField fullWidth size="small" label="Delivery Date" type="date" InputLabelProps={{ shrink: true }} name="delivery_date" value={invoiceForm.delivery_date} onChange={handleChange} />
                                     </Grid>
-                                    <Grid item xs={12} sm={8}>
+                                    <Grid size={{ xs: 12, sm: 8 }}>
                                         <TextField
                                             fullWidth
                                             size="small"
@@ -267,7 +267,7 @@ const InvoiceModal = ({ isOpen, onClose, stageData, tripData, onSaveInvoice }) =
                                             helperText="Una parada por línea (Origen -> Parada 1 -> ... -> Destino). Se genera automático si la etapa tiene paradas adicionales."
                                         />
                                     </Grid>
-                                    <Grid item xs={12} sm={4}>
+                                    <Grid size={{ xs: 12, sm: 4 }}>
                                         <TextField fullWidth size="small" label="Tarifa (Rate)" name="rate" type="number" value={invoiceForm.rate} onChange={handleChange} />
                                     </Grid>
                                 </Grid>

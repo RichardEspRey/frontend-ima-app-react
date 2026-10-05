@@ -77,6 +77,10 @@ export default [
           selector: 'MemberExpression[property.name="innerHTML"]',
           message: 'Prohibido: es la vía de XSS. Usa textContent o React.',
         },
+        {
+          selector: 'JSXOpeningElement[name.name="Grid"] > JSXAttribute[name.name=/^(item|xs|sm|md|lg|xl)$/]',
+          message: 'MUI 7 ignora item, xs, sm, md, lg y xl en Grid: el hijo queda sin ancho. Usa size={{ xs: 12, md: 6 }}.',
+        },
       ],
     },
   },

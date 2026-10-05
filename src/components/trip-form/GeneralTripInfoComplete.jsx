@@ -47,7 +47,7 @@ const GeneralTripInfoComplete = ({
             </Typography>
 
             <Grid container spacing={2} alignItems="flex-end"> 
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                     <Selector
                         valor={tripMode}
                         onChange={handleTripModeChange}
@@ -59,7 +59,7 @@ const GeneralTripInfoComplete = ({
                     />
                 </Grid>
 
-                <Grid item xs={12} md={4}>
+                <Grid size={{ xs: 12, md: 4 }}>
                     <Typography variant="caption" display="block" color="textSecondary" mb={0.5}>
                         País Base
                     </Typography>
@@ -78,7 +78,7 @@ const GeneralTripInfoComplete = ({
                     </TextField>
                 </Grid>
 
-                <Grid item xs={12} md={4}>
+                <Grid size={{ xs: 12, md: 4 }}>
                     <Typography variant="caption" display="block" color="textSecondary" mb={0.5}>
                         Trip Number
                     </Typography>
@@ -96,7 +96,7 @@ const GeneralTripInfoComplete = ({
                     />
                 </Grid>
 
-                <Grid item xs={12} md={4}>
+                <Grid size={{ xs: 12, md: 4 }}>
                     <Typography variant="caption" display="block" color="textSecondary" mb={0.5}>
                         Fecha de Regreso
                     </Typography>
@@ -109,7 +109,7 @@ const GeneralTripInfoComplete = ({
                     </div>
                 </Grid>
 
-                <Grid item xs={12} md={4}>
+                <Grid size={{ xs: 12, md: 4 }}>
                     <Typography variant="caption" display="block" color="textSecondary" mb={0.5}>
                         Driver Principal
                     </Typography>
@@ -129,7 +129,7 @@ const GeneralTripInfoComplete = ({
                 </Grid>
 
                 {tripMode === 'team' && (
-                    <Grid item xs={12} md={4}>
+                    <Grid size={{ xs: 12, md: 4 }}>
                         <Typography variant="caption" display="block" color="textSecondary" mb={0.5}>
                             Segundo Driver
                         </Typography>
@@ -148,7 +148,7 @@ const GeneralTripInfoComplete = ({
                     </Grid>
                 )}
 
-                <Grid item xs={12} md={4}>
+                <Grid size={{ xs: 12, md: 4 }}>
                     <Typography variant="caption" display="block" color="textSecondary" mb={0.5}>
                         Camión (Truck)
                     </Typography>
@@ -168,7 +168,7 @@ const GeneralTripInfoComplete = ({
                 </Grid>
 
                 {isExistingTransnationalTrip && (
-                    <Grid item xs={12} md={4}>
+                    <Grid size={{ xs: 12, md: 4 }}>
                         <Typography variant="caption" display="block" color="textSecondary" mb={0.5}>
                             Trasnacional Number
                         </Typography>
@@ -188,7 +188,7 @@ const GeneralTripInfoComplete = ({
             <Box sx={{ mt: 3, pt: 2, borderTop: `1px dashed ${COLOR.BORDE}` }}>
                 <Typography variant="subtitle2" gutterBottom>Configuración de Caja (Trailer)</Typography>
                 <Grid container spacing={2} alignItems="center">
-                    <Grid item>
+                    <Grid>
                         <Selector
                             valor={trailerType}
                             onChange={handleTrailerTypeChange}
@@ -200,7 +200,7 @@ const GeneralTripInfoComplete = ({
                         />
                     </Grid>
                     
-                    <Grid item xs={12} md={6}>
+                    <Grid size={{ xs: 12, md: 6 }}>
                         {trailerType === 'interna' ? (
                             <SelectorBusqueda
                                 value={formData.caja_id ? { value: formData.caja_id, label: formData.caja_no_caja || `ID: ${formData.caja_id}` } : null}

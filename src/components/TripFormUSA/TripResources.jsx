@@ -19,7 +19,7 @@ const TripResources = ({
             <Divider sx={{ mb: 3 }} />
             
             <Grid container spacing={3}>
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                     <Typography variant="subtitle2">Conductor Principal</Typography>
                     <SelectWrapper
                         label="Driver Principal:" isCreatable={false}
@@ -41,7 +41,7 @@ const TripResources = ({
                     )}
                 </Grid>
 
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                     <Typography variant="subtitle2">Tipo de viaje</Typography>
                     <InputLabel sx={{ fontWeight: 600, mb: 0.5, color: 'text.primary' }}>Tipo de Viaje:</InputLabel>
                     <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
@@ -50,7 +50,7 @@ const TripResources = ({
                     </Stack>
                 </Grid>
 
-                <Grid item xs={12} md={4}>
+                <Grid size={{ xs: 12, md: 4 }}>
                     <Typography variant="subtitle2">Camión</Typography>
                     <SelectWrapper
                         label="Truck:" isCreatable={false}
@@ -62,8 +62,8 @@ const TripResources = ({
                     />
                 </Grid>
 
-                <Grid item xs={12} md={8}>
-                    <Grid item xs={12} md={4}>
+                <Grid size={{ xs: 12, md: 8 }}>
+                    <Grid size={{ xs: 12, md: 4 }}>
                         <InputLabel sx={{ fontWeight: 600, mb: 0.5, color: 'text.primary' }}>Tipo de Trailer:</InputLabel>
                         <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
                             <Button variant={trailerType === 'interna' ? 'contained' : 'outlined'} size="small" onClick={() => handleTrailerTypeChange('interna')}>Caja Interna</Button>

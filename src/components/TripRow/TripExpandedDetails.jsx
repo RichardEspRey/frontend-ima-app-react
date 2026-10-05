@@ -54,7 +54,7 @@ export const TripExpandedDetails = ({
 
             if (isUpcomingTab || isDespachoTab) {
                 return (
-                    <Grid item xs={12} key={etapa.trip_stage_id || etapa.id || Math.random()}>
+                    <Grid size={{ xs: 12 }} key={etapa.trip_stage_id || etapa.id || Math.random()}>
                         <StageUpcomingCard etapa={etapa} getDocumentUrl={getDocumentUrl} />
                     </Grid>
                 );

@@ -100,12 +100,12 @@ export const InspeccionRow = ({ row, abierto, loading, error, det, toggleOpen, h
 
                             {det && !loading && !error && (
                                 <Grid container spacing={2}> 
-                                    <Grid item xs={12} sm={6}><Categoria titulo="Motor" items={det.motor} /></Grid>
-                                    <Grid item xs={12} sm={6}><Categoria titulo="Exterior" items={det.exterior} /></Grid>
-                                    <Grid item xs={12} sm={6}><Categoria titulo="Neumáticos" items={det.neumaticos} /></Grid>
-                                    <Grid item xs={12} sm={6}><Categoria titulo="Cabina" items={det.cabina} /></Grid>
-                                    <Grid item xs={12} sm={6}><Categoria titulo="Remolque" items={det.remolque} /></Grid>
-                                    <Grid item xs={12} sm={6}><Categoria titulo="Otro" items={det.otro} /></Grid>
+                                    <Grid size={{ xs: 12, sm: 6 }}><Categoria titulo="Motor" items={det.motor} /></Grid>
+                                    <Grid size={{ xs: 12, sm: 6 }}><Categoria titulo="Exterior" items={det.exterior} /></Grid>
+                                    <Grid size={{ xs: 12, sm: 6 }}><Categoria titulo="Neumáticos" items={det.neumaticos} /></Grid>
+                                    <Grid size={{ xs: 12, sm: 6 }}><Categoria titulo="Cabina" items={det.cabina} /></Grid>
+                                    <Grid size={{ xs: 12, sm: 6 }}><Categoria titulo="Remolque" items={det.remolque} /></Grid>
+                                    <Grid size={{ xs: 12, sm: 6 }}><Categoria titulo="Otro" items={det.otro} /></Grid>
                                 </Grid>
                             )}
                         </Box>

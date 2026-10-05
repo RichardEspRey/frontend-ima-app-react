@@ -81,7 +81,7 @@ export const StageUpcomingCard = ({ etapa, getDocumentUrl }) => {
 
             <Box sx={{ p: 2.5, pb: tieneParadas ? 1 : 2.5 }}>
                 <Grid container spacing={2} alignItems="center">
-                    <Grid item xs={12} md={5}>
+                    <Grid size={{ xs: 12, md: 5 }}>
                         <Paper variant="outlined" sx={{ p: 2, bgcolor: COLOR.CABECERA, borderRadius: 2, borderLeft: `3px solid ${COLOR.INFO}`, borderColor: COLOR.BORDE }}>
                             <Stack direction="row" alignItems="center" spacing={1} mb={1.5}>
                                 <RoomOutlinedIcon sx={{ fontSize: 18, color: COLOR.INFO }} />
@@ -101,11 +101,11 @@ export const StageUpcomingCard = ({ etapa, getDocumentUrl }) => {
                         </Paper>
                     </Grid>
 
-                    <Grid item xs={12} md={2} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                    <Grid size={{ xs: 12, md: 2 }} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                         <ArrowForwardIcon sx={{ fontSize: 24, color: COLOR.BORDE_FUERTE, display: { xs: 'none', md: 'block' } }} />
                     </Grid>
 
-                    <Grid item xs={12} md={5}>
+                    <Grid size={{ xs: 12, md: 5 }}>
                         <Paper variant="outlined" sx={{ p: 2, bgcolor: COLOR.CABECERA, borderRadius: 2, borderLeft: `3px solid ${COLOR.PELIGRO}`, borderColor: COLOR.BORDE }}>
                             <Stack direction="row" alignItems="center" spacing={1} mb={1.5}>
                                 <FlagOutlinedIcon sx={{ fontSize: 18, color: COLOR.PELIGRO }} />
@@ -197,7 +197,7 @@ export const StageUpcomingCard = ({ etapa, getDocumentUrl }) => {
 
             <Box sx={{ px: 2.5, py: 2, bgcolor: COLOR.BLANCO }}>
                 <Grid container spacing={2}>
-                    <Grid item xs={12} md={7}>
+                    <Grid size={{ xs: 12, md: 7 }}>
                         <Typography variant="overline" fontWeight={700} color={COLOR.TENUE} mb={1} sx={{ display: 'flex', alignItems: 'center', gap: 0.5, fontSize: '0.65rem', letterSpacing: '0.06em' }}>
                             <InsertDriveFileOutlinedIcon sx={{ fontSize: 15 }} /> Documentos de la Etapa
                         </Typography>
@@ -226,7 +226,7 @@ export const StageUpcomingCard = ({ etapa, getDocumentUrl }) => {
                     </Grid>
 
                     {etapa.comments && (
-                        <Grid item xs={12} md={5}>
+                        <Grid size={{ xs: 12, md: 5 }}>
                             <Box sx={{ bgcolor: COLOR.AVISO_FONDO, p: 1.5, borderRadius: 2, border: `1px dashed ${COLOR.AVISO_BORDE}` }}>
                                 <Typography variant="caption" fontWeight={700} color={COLOR.AVISO} display="block">Comentarios:</Typography>
                                 <Typography variant="body2" fontStyle="italic" color="#78350f">"{etapa.comments}"</Typography>

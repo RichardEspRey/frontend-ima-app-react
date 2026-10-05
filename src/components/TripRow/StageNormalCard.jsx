@@ -84,7 +84,7 @@ export const StageNormalCard = ({ etapa, getDocumentUrl, isCompleted }) => {
   const directionColor = etapa.travel_direction === 'Going Up' ? COLOR.EXITO : COLOR.AVISO;
 
   return (
-    <Grid item xs={12} sm={6} md={4}>
+    <Grid size={{ xs: 12, sm: 6, md: 4 }}>
       <Paper elevation={0} sx={{ border: `1px solid ${COLOR.BORDE}`, p: 2, height: '100%', borderRadius: 2, position: 'relative', overflow: 'hidden' }}>
         <Box sx={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, bgcolor: directionColor }} />
 
@@ -150,7 +150,7 @@ export const StageNormalCard = ({ etapa, getDocumentUrl, isCompleted }) => {
             <RoomOutlinedIcon sx={{ fontSize: 18, color: COLOR.TENUE, mt: 0.2 }} />
 
             <Grid container spacing={1} alignItems="flex-start">
-              <Grid item xs={5} sx={{ display: 'flex', flexDirection: 'column' }}>
+              <Grid size={{ xs: 5 }} sx={{ display: 'flex', flexDirection: 'column' }}>
                 <Typography variant="body2" fontWeight={600} color={COLOR.TEXTO} sx={{ lineHeight: 1.2 }}>{etapa.origin}</Typography>
                 <Box sx={{ mt: 0.8 }}>
                     <Typography variant="caption" color={COLOR.TENUE} display="block" sx={{ fontSize: '0.65rem', textTransform: 'uppercase' }}>
@@ -179,11 +179,11 @@ export const StageNormalCard = ({ etapa, getDocumentUrl, isCompleted }) => {
                 </Box>
               </Grid>
 
-              <Grid item xs={2} sx={{ display: 'flex', justifyContent: 'center', pt: 0.5 }}>
+              <Grid size={{ xs: 2 }} sx={{ display: 'flex', justifyContent: 'center', pt: 0.5 }}>
                 <ArrowForwardIcon sx={{ fontSize: 16, color: COLOR.BORDE_FUERTE }} />
               </Grid>
 
-              <Grid item xs={5} sx={{ display: 'flex', flexDirection: 'column' }}>
+              <Grid size={{ xs: 5 }} sx={{ display: 'flex', flexDirection: 'column' }}>
                 <Typography variant="body2" fontWeight={600} color={COLOR.TEXTO} sx={{ lineHeight: 1.2 }}>{etapa.destination}</Typography>
                 <Box sx={{ mt: 0.8 }}>
                     <Typography variant="caption" color={COLOR.TENUE} display="block" sx={{ fontSize: '0.65rem', textTransform: 'uppercase' }}>Fecha Entrega</Typography>

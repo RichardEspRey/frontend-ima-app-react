@@ -18,7 +18,7 @@ const BorderCrossingStage = ({
 }) => {
     return (
         <Grid container spacing={3}>
-            <Grid item xs={12} md={3}>
+            <Grid size={{ xs: 12, md: 3 }}>
                 <Typography variant="caption" fontWeight={700}>Compañía</Typography>
                 <SelectWrapper
                     label="Company:" isCreatable
@@ -31,7 +31,7 @@ const BorderCrossingStage = ({
                 />
             </Grid>
 
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
                 <Paper variant="outlined" sx={{ p: 2, height: '100%', bgcolor: COLOR.LIENZO }}>
                     <Typography variant="subtitle2" color="primary" sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                         <PlaceIcon fontSize="small" /> ORIGEN
@@ -85,7 +85,7 @@ const BorderCrossingStage = ({
                 </Paper>
             </Grid>
 
-            <Grid item xs={12} md={5}>
+            <Grid size={{ xs: 12, md: 5 }}>
                 <Paper variant="outlined" sx={{ p: 2, height: '100%' }}>
                     <Typography variant="subtitle2" color="error" sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                         <FlagIcon fontSize="small" /> DESTINO
@@ -119,13 +119,13 @@ const BorderCrossingStage = ({
 
             <StopsSection stops={etapa.stops_in_transit} stageIndex={index} updateStop={updateStop} removeStop={removeStop} openDocModal={openDocModal} />
 
-            <Grid item xs={12}><Divider /></Grid>
+            <Grid size={{ xs: 12 }}><Divider /></Grid>
             
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
                 <Typography variant="subtitle2" fontWeight={700}>Documentación Aduanal</Typography>
                 <Grid container spacing={2} sx={{ mt: 1 }}>
                     {['doda', 'entry', 'manifiesto', 'bl', 'orden_retiro', 'DTOPS', 'qr_manifesto'].map(docKey => (
-                        <Grid item xs={6} sm={4} md={2} key={docKey}>
+                        <Grid size={{ xs: 6, sm: 4, md: 2 }} key={docKey}>
                             <DocButton label={docKey.toUpperCase().replace(/_/g, ' ')} doc={etapa.documentos[docKey]} onClick={() => openDocModal(index, docKey)} />
                         </Grid>
                     ))}

@@ -107,15 +107,15 @@ const StageCard = ({
             <Box sx={{ p: 3 }}>
                 {etapa.stageType === 'emptyMileage' ? (
                     <Grid container spacing={2}>
-                        <Grid item xs={12} sm={6}>
+                        <Grid size={{ xs: 12, sm: 6 }}>
                             <TextField fullWidth label="Millas PC*Miler Cortas" type="number" size="small"
                                 value={etapa.millas_pcmiller} onChange={(e) => handleStageChange(index, 'millas_pcmiller', e.target.value)} disabled={isFormDisabled} />
                         </Grid>
-                        <Grid item xs={12} sm={6}>
+                        <Grid size={{ xs: 12, sm: 6 }}>
                             <TextField fullWidth label="Millas Prácticas" type="number" size="small"
                                 value={etapa.millas_pcmiller_practicas} onChange={(e) => handleStageChange(index, 'millas_pcmiller_practicas', e.target.value)} disabled={isFormDisabled} />
                         </Grid>
-                        <Grid item xs={12}>
+                        <Grid size={{ xs: 12 }}>
                             <TextField fullWidth label="Comentarios" multiline minRows={4} size="small"
                                 value={etapa.comments} onChange={(e) => handleStageChange(index, 'comments', e.target.value)} disabled={isFormDisabled} />
                         </Grid>
@@ -123,7 +123,7 @@ const StageCard = ({
                 ) : (
                     <>
                         <Grid container spacing={2} mb={3}>
-                            <Grid item xs={12} md={4}>
+                            <Grid size={{ xs: 12, md: 4 }}>
                                 <Typography variant="caption" color="textSecondary">Compañía</Typography>
                                 <SelectorBusqueda permitirCrear
                                     value={options.companies.find(opt => opt.value === etapa.company_id) || null}
@@ -135,7 +135,7 @@ const StageCard = ({
                                     placeholder="Seleccionar/Crear..."
                                 />
                             </Grid>
-                            <Grid item xs={12} md={4}>
+                            <Grid size={{ xs: 12, md: 4 }}>
                                 <Typography variant="caption" color="textSecondary">Dirección Viaje</Typography>
                                 <SelectorBusqueda
                                     value={etapa.travel_direction ? { value: etapa.travel_direction, label: etapa.travel_direction } : null}
@@ -146,14 +146,14 @@ const StageCard = ({
                                 />
                             </Grid>
                             {canManageInvoice && (
-                                <Grid item xs={12} md={4}>
+                                <Grid size={{ xs: 12, md: 4 }}>
                                     <TextField fullWidth label="CI Number" size="small"
                                         value={etapa.ci_number} onChange={(e) => handleStageChange(index, 'ci_number', e.target.value)} disabled={isFormDisabled}
                                         sx={{ mt: 2.5 }} />
                                 </Grid>
                             )}
 
-                            <Grid item xs={12} md={6}>
+                            <Grid size={{ xs: 12, md: 6 }}>
                                 <Typography variant="caption" color="textSecondary">Bodega Origen</Typography>
                                 <SelectorBusqueda permitirCrear
                                     value={options.warehouses.find(opt => opt.value === etapa.warehouse_origin_id) || null}
@@ -173,7 +173,7 @@ const StageCard = ({
                                 </Box>
                             </Grid>
 
-                            <Grid item xs={12} md={6}>
+                            <Grid size={{ xs: 12, md: 6 }}>
                                 <Typography variant="caption" color="textSecondary">Bodega Destino</Typography>
                                 <SelectorBusqueda permitirCrear
                                     value={options.warehouses.find(opt => opt.value === etapa.warehouse_destination_id) || null}
@@ -194,13 +194,13 @@ const StageCard = ({
                             </Grid>
 
                             {canManageInvoice && (
-                                <Grid item xs={6} md={3}>
+                                <Grid size={{ xs: 6, md: 3 }}>
                                     <TextField fullWidth label="Tarifa (Rate)" type="number" size="small"
                                         value={etapa.rate_tarifa} onChange={(e) => handleStageChange(index, 'rate_tarifa', e.target.value)} disabled={isFormDisabled} />
                                 </Grid>
                             )}
                             {canManageInvoice && (
-                                <Grid item xs={6} md={3}>
+                                <Grid size={{ xs: 6, md: 3 }}>
                                     <TextField
                                         fullWidth
                                         label="Invoice Number"
@@ -211,16 +211,16 @@ const StageCard = ({
                                     />
                                 </Grid>
                             )}
-                            <Grid item xs={6} md={3}>
+                            <Grid size={{ xs: 6, md: 3 }}>
                                 <TextField fullWidth label="Millas Cortas" type="number" size="small"
                                     value={etapa.millas_pcmiller} onChange={(e) => handleStageChange(index, 'millas_pcmiller', e.target.value)} disabled={isFormDisabled} />
                             </Grid>
-                            <Grid item xs={6} md={3}>
+                            <Grid size={{ xs: 6, md: 3 }}>
                                 <TextField fullWidth label="Millas Prácticas" type="number" size="small"
                                     value={etapa.millas_pcmiller_practicas} onChange={(e) => handleStageChange(index, 'millas_pcmiller_practicas', e.target.value)} disabled={isFormDisabled} />
                             </Grid>
                             {canManageInvoice && (
-                                <Grid item xs={12} sm={6}>
+                                <Grid size={{ xs: 12, sm: 6 }}>
                                     <Typography variant="caption" display="block" fontWeight={500}>Invoice Generado (PDF)</Typography>
                                     <Button
                                         variant="outlined"
@@ -239,7 +239,7 @@ const StageCard = ({
                                     </Button>
                                 </Grid>
                             )}
-                            <Grid item xs={12}>
+                            <Grid size={{ xs: 12 }}>
                                 <TextField fullWidth label="Comentarios" multiline size="small"
                                     value={etapa.comments} onChange={(e) => handleStageChange(index, 'comments', e.target.value)} disabled={isFormDisabled}  
                                     minRows={4}
@@ -262,7 +262,7 @@ const StageCard = ({
                                         const shouldDisable = isFormDisabled || (isNormalTrip && !isAllowedInNormal);
 
                                         return (
-                                            <Grid item xs={6} sm={4} md={3} key={docKey}>
+                                            <Grid size={{ xs: 6, sm: 4, md: 3 }} key={docKey}>
                                                 <DocButton
                                                     label={docKey.replace(/_/g, ' ').toUpperCase()}
                                                     doc={docValue}
@@ -275,7 +275,7 @@ const StageCard = ({
                                     })}
 
                                     {(etapa.stageType === 'borderCrossing'|| etapa.stageType === 'normalTrip') && (
-                                        <Grid item xs={12} sm={4} md={3}>
+                                        <Grid size={{ xs: 12, sm: 4, md: 3 }}>
                                             <TextField
                                                 fullWidth
                                                 label="Cita Entrega"
@@ -302,15 +302,15 @@ const StageCard = ({
                                             <DeleteIcon fontSize="small" />
                                         </IconButton>
                                         <Grid container spacing={2}>
-                                            <Grid item xs={12} sm={6}>
+                                            <Grid size={{ xs: 12, sm: 6 }}>
                                                 <TextField fullWidth label={`Destino Parada #${stopIndex + 1}`} size="small" placeholder="Ciudad, Estado, Zip"
                                                     value={stop.location} onChange={(e) => handleStopChange(index, stopIndex, 'location', e.target.value)} disabled={isFormDisabled} />
                                             </Grid>
-                                            <Grid item xs={6} sm={3}>
+                                            <Grid size={{ xs: 6, sm: 3 }}>
                                                 <TextField fullWidth label="Hora Entrega" type="time" size="small" InputLabelProps={{ shrink: true }}
                                                     value={stop.time_of_delivery || ''} onChange={(e) => handleStopChange(index, stopIndex, 'time_of_delivery', e.target.value)} disabled={isFormDisabled} />
                                             </Grid>
-                                            <Grid item xs={6} sm={3}>
+                                            <Grid size={{ xs: 6, sm: 3 }}>
                                                 <DocButton label="BL Firmado (Parada)" doc={stop.bl_firmado_doc} onClick={() => abrirModal('bl_firmado_doc', index, stopIndex)} disabled={isFormDisabled} apiHost={apiHost} />
                                             </Grid>
                                         </Grid>

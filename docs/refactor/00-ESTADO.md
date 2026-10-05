@@ -120,8 +120,8 @@ El incremento 9 está partido en **9a, 9b y 9c** (ver `05-INCREMENTOS.md`).
 
 **La fase 1 está lista para plantear el merge a `main`**, con una salvedad medida el
 2026-10-05 (`npm run estandar:medir`): ocho entidades se construyeron y sus pantallas no
-las usan, quedan 25 archivos con `fetch` propio en la zona nueva y 46 usos de `Grid` que
-MUI 7 ignora. Nada de eso rompe la app —son las mismas pantallas que en `Emiliano`—, pero
+las usan, quedan 25 archivos con `fetch` propio en la zona nueva. (Los `Grid` que MUI 7
+ignoraba, 187 usos, se corrigieron el mismo día.) Nada de eso rompe la app —son las mismas pantallas que en `Emiliano`—, pero
 es deuda del refactor y no de la estructura vieja. Detalle y orden en `PENDIENTES.md`
 §4–§8. Antes del merge conviene, además:
 

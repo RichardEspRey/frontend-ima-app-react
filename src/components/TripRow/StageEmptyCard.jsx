@@ -8,7 +8,7 @@ export const StageEmptyCard = ({ etapa }) => {
   const isStageOne = etapa.stage_number === 1 || etapa.stage_number === '1';
 
   return (
-    <Grid item xs={12} sm={6} md={4}>
+    <Grid size={{ xs: 12, sm: 6, md: 4 }}>
       <Paper 
         elevation={0} 
         sx={{
@@ -72,7 +72,7 @@ export const StageEmptyCard = ({ etapa }) => {
         <Box sx={{ p: 2, flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
             
             <Grid container spacing={1.5} sx={{ mb: 2 }}>
-                <Grid item xs={6}>
+                <Grid size={{ xs: 6 }}>
                     <Box sx={{ p: 1.5, bgcolor: COLOR.INFO_FONDO, borderRadius: 2, border: `1px dashed ${COLOR.INFO_BORDE}` }}>
                         <Stack direction="row" alignItems="center" spacing={0.5} mb={0.5}>
                             <RouteOutlinedIcon sx={{ fontSize: 14, color: COLOR.INFO }} />
@@ -86,7 +86,7 @@ export const StageEmptyCard = ({ etapa }) => {
                     </Box>
                 </Grid>
 
-                <Grid item xs={6}>
+                <Grid size={{ xs: 6 }}>
                     <Box sx={{ p: 1.5, bgcolor: COLOR.EXITO_FONDO, borderRadius: 2, border: `1px dashed ${COLOR.EXITO_BORDE}` }}>
                         <Stack direction="row" alignItems="center" spacing={0.5} mb={0.5}>
                             <RouteOutlinedIcon sx={{ fontSize: 14, color: COLOR.EXITO }} />
