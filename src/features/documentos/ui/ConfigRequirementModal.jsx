@@ -25,13 +25,13 @@ const ConfigRequirementModal = ({ open, onClose, newField, setNewField, onSave }
                 <Stack spacing={3}>
                     <TextField label="Nombre del Requisito" fullWidth value={newField.label} onChange={(e) => setNewField({...newField, label: e.target.value})} placeholder="Ej. Número de Fianza" variant="outlined" />
                     <Grid container spacing={2}>
-                        <Grid item xs={6}>
+                        <Grid size={{ xs: 6 }}>
                             <TextField select label="Región" fullWidth value={newField.region} onChange={(e) => setNewField({...newField, region: e.target.value})}>
                                 <MenuItem value="USA">USA</MenuItem>
                                 <MenuItem value="MEX">MEX</MenuItem>
                             </TextField>
                         </Grid>
-                        <Grid item xs={6}>
+                        <Grid size={{ xs: 6 }}>
                             <TextField select label="Tipo de Dato" fullWidth value={newField.tipo} onChange={(e) => setNewField({...newField, tipo: e.target.value})}>
                                 <MenuItem value="file">Archivo (PDF/IMG)</MenuItem>
                                 <MenuItem value="text">Texto</MenuItem>

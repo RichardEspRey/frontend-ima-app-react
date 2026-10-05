@@ -168,7 +168,7 @@ const DocumentosPage = () => {
               <Grid container spacing={3}>
                   {usaReqs.map((req, i) => (
                       <Zoom in style={{ transitionDelay: `${i * 50}ms` }} key={req.key_name}>
-                          <Grid item xs={12} sm={6} md={4} lg={3}>
+                          <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
                               <DocumentCard req={req} theme={getCardTheme(req)} val={valores[req.key_name]} onEdit={() => openEditor(req)} />
                           </Grid>
                       </Zoom>
@@ -186,7 +186,7 @@ const DocumentosPage = () => {
               <Grid container spacing={3}>
                   {mexReqs.map((req, i) => (
                       <Zoom in style={{ transitionDelay: `${i * 50}ms` }} key={req.key_name}>
-                          <Grid item xs={12} sm={6} md={4} lg={3}>
+                          <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
                               <DocumentCard req={req} theme={getCardTheme(req)} val={valores[req.key_name]} onEdit={() => openEditor(req)} />
                           </Grid>
                       </Zoom>

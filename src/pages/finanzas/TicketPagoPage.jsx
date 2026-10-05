@@ -333,7 +333,7 @@ const TicketPagoPage = () => {
         <Divider sx={{ mb: 4 }} />
 
         <Grid container spacing={4}>
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
                 <TicketDeductions 
                     avances={avances}
                     handleAvanceChange={handleAvanceChange}
@@ -346,10 +346,10 @@ const TicketPagoPage = () => {
                 />
             </Grid>
 
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
                 <Grid container spacing={3}> 
 
-                    <Grid item xs={12} sm={6}>
+                    <Grid size={{ xs: 12 }}>
                         <TicketSummary 
                             totalMillasAjustadas={totalMillasAjustadas}
                             customRate={customRate}
@@ -359,7 +359,7 @@ const TicketPagoPage = () => {
                         />
                     </Grid>
                     
-                    <Grid item xs={12} sm={6}>
+                    <Grid size={{ xs: 12 }}>
                         <Stack spacing={2} sx={{ height: '100%' }}>
                             <Paper elevation={0} sx={{ p: 2, bgcolor: COLOR.LIENZO, border: '1px dashed #cfd8dc', borderRadius: 2 }}>
                                 <Typography variant="caption" fontWeight={700} color="text.secondary" gutterBottom sx={{ textTransform: 'uppercase', mb: 1.5, display: 'block' }}>

@@ -159,12 +159,12 @@ export default function NuevaOrdenPage() {
             </Box>
 
             <Grid container spacing={3}>
-                <Grid item xs={12} lg={8}>
+                <Grid size={{ xs: 12, lg: 8 }}>
                     
                     <Paper sx={{ p: 3, mb: 3, borderRadius: 2 }} elevation={2}>
                         <Typography variant="h6" gutterBottom fontWeight={600} color="primary">Datos Generales</Typography>
                         <Grid container spacing={2}>
-                            <Grid item xs={12} md={4}>
+                            <Grid size={{ xs: 12, md: 4 }}>
                                 <Typography variant="caption" fontWeight={600}>Camión</Typography>
                                 <SelectorBusqueda 
                                     options={truckOptions} 
@@ -173,7 +173,7 @@ export default function NuevaOrdenPage() {
                                     placeholder="Seleccionar..."
                                 />
                             </Grid>
-                            <Grid item xs={12} md={4}>
+                            <Grid size={{ xs: 12, md: 4 }}>
                                 <Typography variant="caption" fontWeight={600}>Fecha</Typography>
                                 <TextField 
                                     type="date" 
@@ -182,7 +182,7 @@ export default function NuevaOrdenPage() {
                                     onChange={e => setDateForm(e.target.value)} 
                                 />
                             </Grid>
-                            <Grid item xs={12} md={4}>
+                            <Grid size={{ xs: 12, md: 4 }}>
                                 <Typography variant="caption" fontWeight={600}>Tipo Cambio (Opcional)</Typography>
                                 <TextField 
                                     type="number" 
@@ -202,7 +202,7 @@ export default function NuevaOrdenPage() {
                         </Typography>
                         
                         <Grid container spacing={2} sx={{ mt: 0 }} alignItems="end">
-                            <Grid item xs={12} md={4}>
+                            <Grid size={{ xs: 12, md: 4 }}>
                                 <TextField 
                                     select label="Tipo Mantenimiento" fullWidth 
                                     value={tipoMantenimiento} onChange={e => setTipoMantenimiento(e.target.value)}
@@ -212,7 +212,7 @@ export default function NuevaOrdenPage() {
                                 </TextField>
                             </Grid>
                             
-                            <Grid item xs={12} md={4}>
+                            <Grid size={{ xs: 12, md: 4 }}>
                                 <TextField 
                                     select label="Origen Mantenimiento" fullWidth 
                                     value={origenServicio} onChange={e => setOrigenServicio(e.target.value)}
@@ -222,7 +222,7 @@ export default function NuevaOrdenPage() {
                                 </TextField>
                             </Grid>
 
-                            <Grid item xs={12} md={4}>
+                            <Grid size={{ xs: 12, md: 4 }}>
                                 <TextField 
                                     label="Costo Mano Obra" type="number" fullWidth 
                                     value={costoMO} onChange={e => setCostoMO(e.target.value)}
@@ -230,7 +230,7 @@ export default function NuevaOrdenPage() {
                                 />
                             </Grid>
 
-                            <Grid item xs={12}>
+                            <Grid size={{ xs: 12 }}>
                                 <Typography variant="caption" fontWeight={600}>Tipo de Reparación</Typography>
                                 <SelectorBusqueda permitirCrear
                                     isClearable
@@ -253,7 +253,7 @@ export default function NuevaOrdenPage() {
                         {usarItems && (
                             <Box sx={{ mt: 2, p: 2, bgcolor: COLOR.LIENZO, borderRadius: 2 }}>
                                 <Grid container spacing={2} alignItems="flex-end">
-                                    <Grid item xs={12} md={6}>
+                                    <Grid size={{ xs: 12, md: 6 }}>
                                         <Typography variant="caption">Artículo</Typography>
                                         <SelectorBusqueda 
                                             options={invOptions} 
@@ -264,10 +264,10 @@ export default function NuevaOrdenPage() {
                                         />
                                         <Typography variant="caption" color="text.secondary">Stock: {stockSelected}</Typography>
                                     </Grid>
-                                    <Grid item xs={6} md={2}>
+                                    <Grid size={{ xs: 6, md: 2 }}>
                                         <TextField label="Cant." type="number" size="small" fullWidth value={cant} onChange={e => setCant(e.target.value)} />
                                     </Grid>
-                                    <Grid item xs={6} md={4}>
+                                    <Grid size={{ xs: 6, md: 4 }}>
                                         <Stack direction="row" spacing={1}>
                                             <Button variant="outlined" fullWidth onClick={() => addItemToPending('consumible')}>Consumible</Button>
                                             <Button variant="contained" fullWidth onClick={() => addItemToPending('refaccion')}>Refacción</Button>
@@ -322,7 +322,7 @@ export default function NuevaOrdenPage() {
                     </Paper>
                 </Grid>
 
-                <Grid item xs={12} lg={4}>
+                <Grid size={{ xs: 12, lg: 4 }}>
                     <Paper sx={{ p: 3, borderRadius: 2, position: 'sticky', top: 20 }} elevation={4}>
                         <Typography variant="h6" fontWeight={700} gutterBottom>Detalle de Orden</Typography>
                         <Divider sx={{ mb: 2 }} />

@@ -273,7 +273,7 @@ const FinanzasPage = () => {
       <Paper elevation={0} sx={{ p: 2, mb: 3, bgcolor: COLOR.LIENZO, borderRadius: 2, border: `1px solid ${COLOR.BORDE}` }}>
         <Grid container spacing={2} alignItems="center">
             
-            <Grid item xs={12} md={2}>
+            <Grid size={{ xs: 12, md: 2 }}>
                 <TextField 
                     fullWidth
                     size="small" 
@@ -288,7 +288,7 @@ const FinanzasPage = () => {
                 />
             </Grid>
 
-            <Grid item xs={12} md={3}>
+            <Grid size={{ xs: 12, md: 3 }}>
                 <TextField 
                     fullWidth
                     size="small" 
@@ -303,7 +303,7 @@ const FinanzasPage = () => {
                 />
             </Grid>
 
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
                 <Autocomplete
                     fullWidth
                     options={companiesList}
@@ -334,7 +334,7 @@ const FinanzasPage = () => {
                 />
             </Grid>
 
-            <Grid item xs={12} md={3}>
+            <Grid size={{ xs: 12, md: 3 }}>
                 <TextField
                     select
                     fullWidth
@@ -359,7 +359,7 @@ const FinanzasPage = () => {
                 </TextField>
             </Grid>
 
-            <Grid item xs={12} md={3} display="flex" justifyContent="flex-end">
+            <Grid size={{ xs: 12 }} display="flex" justifyContent="flex-end">
                 <Tooltip title={dirtyCount ? `Guardar ${dirtyCount} cambios` : 'No hay cambios pendientes'}>
                     <span>
                         <Badge badgeContent={dirtyCount} color="error" overlap="circular">

@@ -171,7 +171,7 @@ const TablaOrdenes = () => {
                 
                 <Grid container spacing={2} alignItems="center">
                     
-                    <Grid item xs={6} sm={4} md={1.5}>
+                    <Grid size={{ xs: 6, sm: 4, md: 2 }}>
                         <TextField
                             label="ID Orden"
                             placeholder="#"
@@ -183,7 +183,7 @@ const TablaOrdenes = () => {
                         />
                     </Grid>
 
-                    <Grid item xs={6} sm={4} md={1.5}>
+                    <Grid size={{ xs: 6, sm: 4, md: 2 }}>
                         <TextField
                             label="Unidad (Exacto)"
                             placeholder="Ej: 101"
@@ -195,7 +195,7 @@ const TablaOrdenes = () => {
                         />
                     </Grid>
 
-                    <Grid item xs={12} sm={4} md={2}>
+                    <Grid size={{ xs: 12, sm: 4, md: 2 }}>
                         <FormControl fullWidth size="small">
                             <InputLabel>Mantenimiento</InputLabel>
                             <Select
@@ -210,7 +210,7 @@ const TablaOrdenes = () => {
                         </FormControl>
                     </Grid>
 
-                    <Grid item xs={12} sm={6} md={2}>
+                    <Grid size={{ xs: 12, sm: 6, md: 2 }}>
                         <FormControl fullWidth size="small">
                             <InputLabel>Tipo Reparación</InputLabel>
                             <Select
@@ -229,7 +229,7 @@ const TablaOrdenes = () => {
                         </FormControl>
                     </Grid>
 
-                    <Grid item xs={12} sm={6} md={3}>
+                    <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                         <Stack direction="row" spacing={1} alignItems="center">
                             <CampoFecha
                                 value={startDate}
@@ -244,7 +244,7 @@ const TablaOrdenes = () => {
                         </Stack>
                     </Grid>
 
-                    <Grid item xs={12} md={2} display="flex" justifyContent="flex-end" gap={1}>
+                    <Grid size={{ xs: 12 }} display="flex" justifyContent="flex-end" gap={1}>
                         <IconButton 
                             color="error" 
                             onClick={clearFilters}

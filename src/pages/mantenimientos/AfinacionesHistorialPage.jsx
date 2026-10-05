@@ -104,7 +104,7 @@ export default function AfinacionesHistorialPage() {
         </Typography>
         
         <Grid container spacing={2} alignItems="center">
-            <Grid item xs={12} sm={3}>
+            <Grid size={{ xs: 12, sm: 3 }}>
                 <TextField 
                     label="Buscar Camión" 
                     size="small" 
@@ -114,7 +114,7 @@ export default function AfinacionesHistorialPage() {
                     placeholder="Ej: 101"
                 />
             </Grid>
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center">
                     <CampoFecha
                         value={startDate}
@@ -128,7 +128,7 @@ export default function AfinacionesHistorialPage() {
                     />
                 </Stack>
             </Grid>
-            <Grid item xs={12} sm={3} display="flex" justifyContent="flex-end">
+            <Grid size={{ xs: 12, sm: 3 }} display="flex" justifyContent="flex-end">
                 <Button 
                     variant="outlined" 
                     color="error" 
