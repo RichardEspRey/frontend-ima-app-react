@@ -6,8 +6,8 @@ import {
   useGuardarEstatusCaja,
   useSubirFianza,
 } from "../../../entities/trailer"
+import { useSesion } from "../../../shared/auth"
 import { notify } from "../../../shared/ui"
-import { useAuthStore } from "../../../store/useAuthStore"
 
 /**
  * Todo el estado y los efectos del tablero de estatus de cajas.
@@ -21,7 +21,7 @@ import { useAuthStore } from "../../../store/useAuthStore"
  *   subirFianzaElegida}`.
  */
 export function useTableroCajas() {
-  const usuario = useAuthStore((estado) => estado.user)
+  const { usuario } = useSesion()
   const consulta = useEstatusCajas()
   const guardado = useGuardarEstatusCaja()
   const subida = useSubirFianza()

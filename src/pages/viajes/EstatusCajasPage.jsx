@@ -1,10 +1,9 @@
 import { Box, Button } from "@mui/material"
 import ArrowBackIcon from "@mui/icons-material/ArrowBack"
-import RefreshIcon from "@mui/icons-material/Refresh"
 import { useNavigate } from "react-router-dom"
 
 import { ModalFianza, TablaEstatusCajas, useTableroCajas } from "../../features/estatus-cajas"
-import { COLOR, PageHeader } from "../../shared/ui"
+import { BotonActualizar, GHOST_BTN_SX, PAGE_SHELL_SX, PageHeader } from "../../shared/ui"
 
 /**
  * Estatus de cajas: dónde está cada caja y con qué viaje.
@@ -20,7 +19,7 @@ export default function EstatusCajasPage() {
   const tablero = useTableroCajas()
 
   return (
-    <Box sx={{ p: { xs: 2, md: 4 }, minHeight: "100vh", bgcolor: COLOR.LIENZO }}>
+    <Box sx={PAGE_SHELL_SX}>
       <PageHeader
         seccion="Viajes · Unidades"
         titulo="Estatus de cajas"
@@ -31,19 +30,11 @@ export default function EstatusCajasPage() {
               variant="outlined"
               startIcon={<ArrowBackIcon />}
               onClick={() => navigate("/admin-trips")}
-              sx={{ textTransform: "none" }}
+              sx={GHOST_BTN_SX}
             >
               Volver a Viajes
             </Button>
-            <Button
-              variant="contained"
-              startIcon={<RefreshIcon />}
-              onClick={() => tablero.recargar()}
-              disabled={tablero.recargando}
-              sx={{ bgcolor: COLOR.TINTA, textTransform: "none" }}
-            >
-              Actualizar
-            </Button>
+            <BotonActualizar onActualizar={() => tablero.recargar()} actualizando={tablero.recargando} />
           </>
         }
       />
