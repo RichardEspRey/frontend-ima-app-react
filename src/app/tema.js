@@ -46,9 +46,9 @@ export const tema = createTheme({
 
   typography: {
     fontFamily: TIPO.FAMILIA,
-    h4: { fontWeight: 800, color: COLOR.TINTA },
-    h5: { fontWeight: 700, color: COLOR.TINTA },
-    h6: { fontWeight: 700, color: COLOR.TINTA },
+    h4: { fontWeight: 800 },
+    h5: { fontWeight: 700 },
+    h6: { fontWeight: 700 },
     subtitle1: { fontWeight: 600 },
     subtitle2: { fontWeight: 600, color: COLOR.TEXTO_SUAVE },
     body2: { color: COLOR.TEXTO },
@@ -92,6 +92,7 @@ export const tema = createTheme({
     },
 
     MuiDialogTitle: {
+      defaultProps: { component: "div" },
       styleOverrides: {
         root: { fontWeight: 700, color: COLOR.TINTA, borderBottom: BORDE },
       },
