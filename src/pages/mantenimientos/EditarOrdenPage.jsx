@@ -14,6 +14,7 @@ import useFetchInventoryItems from "../../hooks/expense_hooks/useFetchInventoryI
 import useFetchRepairTypes from "../../hooks/service_order/useFetchRepairTypes";
 import { COLOR } from "../../shared/ui/tokens";
 import { SelectorBusqueda, notify } from "../../shared/ui";
+import { etiquetaUnidad } from "../../entities/service-order";
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -47,6 +48,7 @@ export default function EditarOrdenPage() {
     }, []);
 
     const [selectedTruck, setSelectedTruck] = useState(null);
+    const [ordenDeCaja, setOrdenDeCaja] = useState(null);
     const [dateForm, setDateForm] = useState("");
     const [tipoCambioOrden, setTipoCambioOrden] = useState("");
 
@@ -86,6 +88,8 @@ export default function EditarOrdenPage() {
                     const o = json.data.orden;
                     setDateForm(o.fecha_orden);
                     setTipoCambioOrden(o.tipo_cambio || "");
+                    setOrdenDeCaja(o.caja_id ? etiquetaUnidad({ nombre_caja: o.nombre_caja ?? String(o.caja_id) }) : null);
+                    setSelectedTruck(o.truck_id ? { value: String(o.truck_id), label: o.nombre_camion || String(o.truck_id) } : null);
                     
                     const mappedServices = json.data.servicios.map(s => {
                         let moCost = 0;
@@ -243,13 +247,17 @@ export default function EditarOrdenPage() {
                         <Typography variant="h6" gutterBottom fontWeight={600} color="primary">Datos Generales</Typography>
                         <Grid container spacing={2}>
                             <Grid size={{ xs: 12, md: 4 }}>
-                                <Typography variant="caption" fontWeight={600}>Camión</Typography>
-                                <SelectorBusqueda 
-                                    options={truckOptions} 
-                                    value={selectedTruck} 
-                                    onChange={setSelectedTruck} 
-                                    placeholder={selectedTruck ? "Cargado..." : "Seleccionar..."}
-                                />
+                                <Typography variant="caption" fontWeight={600}>{ordenDeCaja ? "Unidad" : "Camión"}</Typography>
+                                {ordenDeCaja ? (
+                                    <TextField fullWidth value={ordenDeCaja} disabled />
+                                ) : (
+                                    <SelectorBusqueda 
+                                        options={truckOptions} 
+                                        value={selectedTruck} 
+                                        onChange={setSelectedTruck} 
+                                        placeholder="Seleccionar..."
+                                    />
+                                )}
                             </Grid>
                             <Grid size={{ xs: 12, md: 4 }}>
                                 <Typography variant="caption" fontWeight={600}>Fecha</Typography>
