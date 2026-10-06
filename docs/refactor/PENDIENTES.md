@@ -156,7 +156,7 @@ toca la fase 3.
 
 ---
 
-## 4 · Ocho entidades construidas que ninguna pantalla usa
+## 4 · Entidades construidas que ninguna pantalla usa — 2 de 8 hechas
 
 **Medido el 2026-10-05** con `npm run estandar:medir`, sección 2.
 
@@ -167,13 +167,13 @@ de nada (ni caché, ni cancelación, ni validación, ni reintento).
 
 | Entidad | Pantallas que deberían usarla | Lo que hoy hacen |
 |---|---|---|
-| `autonomy` | `pages/mantenimientos/AutonomiaPage.jsx` | `fetch` a `autonomia.php` |
+| ~~`autonomy`~~ | `pages/mantenimientos/AutonomiaPage.jsx` | **Hecho el 2026-10-06**: `features/autonomia` |
 | `finance` | `pages/finanzas/FinanzasPage.jsx`, `PagosConductoresPage.jsx`, `TarifasConductorPage.jsx` | `fetch` a `formularios.php` |
 | `ifta` | `pages/safety/IftaPage.jsx` | `fetch` a `IFTA.php` |
 | `inspection` | `features/inspections/ui/TablaInspecciones.jsx`, `InspeccionModal.jsx` | `fetch` a `inspecciones.php` |
 | `inventory` | `features/service-order/ui/TablaInventario.jsx` | `fetch` a `inventory.php` |
 | `roadside-repair` | `features/inspections/ui/TablaReparaciones.jsx`, `ReparacionModal.jsx` | `fetch` a `roadside_repairs.php` |
-| `safety` | `pages/safety/SafetyPage.jsx` | `fetch` a `safety.php` |
+| ~~`safety`~~ | `pages/safety/SafetyPage.jsx` | **Hecho el 2026-10-06**: `features/safety`. Los modales de subida siguen con `fetch` propio |
 | `tuning` | `pages/mantenimientos/AfinacionesPage.jsx`, `AfinacionesHistorialPage.jsx` | `fetch` a `afinaciones.php` |
 
 `service-order` está a medias: `TablaOrdenes.jsx` usa sus reglas (`nombreUnidad`,
@@ -186,8 +186,7 @@ feature que use el hook de la entidad, la interfaz que solo pinta, y la página 
 **Comparar contra la pantalla vieja en `Emiliano`** antes de dar por bueno el cambio: la
 entidad se escribió contra la API real, pero nadie la ha visto pintada.
 
-Orden propuesto, de menor a mayor riesgo: `autonomy` y `safety` (una lista, solo lectura) →
-`ifta` → `inventory` → `tuning` → `finance` → `inspection` y `roadside-repair` (modales con
+Orden propuesto, de menor a mayor riesgo: ~~`autonomy` y `safety`~~ (hechas) → `ifta` → `inventory` → `tuning` → `finance` → `inspection` y `roadside-repair` (modales con
 guardado y archivos).
 
 **Esfuerzo:** de medio día (autonomía) a dos días (inspecciones) por pantalla.
@@ -259,7 +258,8 @@ permisos efectivos. Si alguien gana entradas que no debía ver, el problema est�
 ## Orden sugerido
 
 1. ~~Arreglar los `Grid` (§6).~~ Hecho el 2026-10-05.
-2. **Conectar las ocho entidades (§4).** El código ya está escrito y probado; falta usarlo.
+2. **Conectar las seis entidades que quedan (§4).** El código ya está escrito y probado;
+   falta usarlo. Autonomía y Safety ya están.
 3. **Unificar la lectura de permisos del menú (§7).** Hoy dos personas con el mismo rol
    pueden ver menús distintos sin que nadie lo haya decidido.
 4. **Paginar las tablas.** Corrige un problema que ya está pasando, y es barato.

@@ -26,8 +26,9 @@ printf '%s\n' "$nuevas_fetch" | sed '/^$/d; s/^/    /'
 titulo "2 · Entidades que ninguna pantalla usa"
 for dir in src/entities/*/; do
   nombre=$(basename "$dir")
-  if ! grep -rqlE "entities/${nombre}([\"'/])" src --include='*.js' --include='*.jsx' \
-       --exclude-dir=__tests__ --exclude-dir=no-usadas --exclude-dir="$nombre" 2>/dev/null; then
+  usos=$(grep -rlE "entities/${nombre}([\"'/])" src --include='*.js' --include='*.jsx' \
+       --exclude-dir=__tests__ --exclude-dir=no-usadas 2>/dev/null | grep -v "^src/entities/${nombre}/")
+  if [ -z "$usos" ]; then
     printf '    %s\n' "$nombre"
   fi
 done

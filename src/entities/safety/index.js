@@ -7,6 +7,7 @@ export {
   cumplimientoCompleto,
   separarPorCumplimiento,
   contarFaltantes,
+  filtrarPorNumero,
   normalizarViajesSafety,
 } from "./model/cumplimiento"
 

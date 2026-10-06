@@ -7,6 +7,7 @@ import {
   cumplimientoCompleto,
   separarPorCumplimiento,
   contarFaltantes,
+  filtrarPorNumero,
   normalizarViajesSafety,
 } from "../model/cumplimiento"
 
@@ -97,5 +98,18 @@ describe("contra la respuesta real de la API", () => {
     const { viajes } = normalizarViajesSafety(REAL.data)
     const { pendientes, completos } = separarPorCumplimiento(viajes)
     expect(pendientes.length + completos.length).toBe(viajes.length)
+  })
+})
+
+describe("filtrarPorNumero", () => {
+  const VIAJES = [{ trip_number: "222-US-75T2-26" }, { trip_number: "86-MX-77T1-26" }]
+
+  it("encuentra por cualquier parte del número, sin importar mayúsculas", () => {
+    expect(filtrarPorNumero(VIAJES, "us")).toHaveLength(1)
+    expect(filtrarPorNumero(VIAJES, "26")).toHaveLength(2)
+  })
+
+  it("sin texto devuelve todos", () => {
+    expect(filtrarPorNumero(VIAJES, "  ")).toHaveLength(2)
   })
 })

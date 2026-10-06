@@ -5,7 +5,7 @@ El cumplimiento documental de los viajes: libro electrónico, reporte diesel y r
 ## Contenido
 
 - `api/cumplimiento.js` — `obtenerViajesSafety`, `useViajesSafety`
-- `model/cumplimiento.js` — `DOCUMENTOS_REQUERIDOS`, `NOMBRE_DOCUMENTO`, `esquemaViajeSafety`, `tieneDocumento`, `documentosFaltantes`, `cumplimientoCompleto`… (9)
+- `model/cumplimiento.js` — `DOCUMENTOS_REQUERIDOS`, `NOMBRE_DOCUMENTO`, `esquemaViajeSafety`, `tieneDocumento`, `documentosFaltantes`, `cumplimientoCompleto`… (10)
 
 Pruebas: `cumplimiento.test.js`.
 
@@ -19,11 +19,12 @@ Pruebas: `cumplimiento.test.js`.
 
 - Cada documento llega como URL o como `null`; `null` significa que falta, no que haya error.
 - `separarPorCumplimiento` alimenta las pestañas de la pantalla y `contarFaltantes` los contadores de cada columna.
+- La búsqueda encuentra por cualquier parte del número del viaje, sin importar mayúsculas (`filtrarPorNumero`).
 
 ## Pendiente
 
-- `pages/safety/SafetyPage.jsx` pide `safety.php` con `fetch`. Conectarla a esta entidad es parte del incremento de su módulo: ver `docs/refactor/PENDIENTES.md`.
+- La subida y el borrado de documentos siguen dentro de `components/DocPreviewModal.jsx` y `components/PCMillerModal.jsx`, con `fetch` propio. La entidad todavía no tiene esas mutaciones.
 
 ## Quién lo usa
 
-**Nadie.** Ver *Pendiente*.
+`features/safety`

@@ -114,6 +114,19 @@ export function contarFaltantes(viajes = []) {
 }
 
 /**
+ * Deja los viajes cuyo número contiene lo que se escribió.
+ *
+ * @param {Array.<ViajeSafety>} viajes Los viajes.
+ * @param {string} texto Lo escrito en el buscador.
+ * @returns {Array.<ViajeSafety>} Los que coinciden; todos si no se escribió nada.
+ */
+export function filtrarPorNumero(viajes = [], texto = "") {
+  const buscado = String(texto).trim().toLowerCase()
+  if (!buscado) return viajes
+  return viajes.filter((viaje) => String(viaje.trip_number).toLowerCase().includes(buscado))
+}
+
+/**
  * Valida la lista de viajes descartando lo que no cumple.
  *
  * @param {Array} filas Lo que vino en la respuesta.
