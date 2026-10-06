@@ -12,13 +12,34 @@ export const esquemaRegistroAutonomia = z.object({
 })
 
 /**
+ * Cuántas cargas entran en el cálculo de cada camión: las últimas cinco de más
+ * de 100 galones. Es también el número de columnas de la tabla.
+ *
+ * @type {number}
+ */
+export const REGISTROS_POR_CAMION = 5
+
+const registrosValidos = z
+  .array(z.unknown())
+  .catch([])
+  .transform((lista) =>
+    lista.flatMap((registro) => {
+      const resultado = esquemaRegistroAutonomia.safeParse(registro)
+      return resultado.success ? [resultado.data] : []
+    }),
+  )
+
+/**
  * La autonomía de un camión, con sus registros de rendimiento anidados.
+ *
+ * Un registro vacío o mal formado se omite sin tirar los demás: un camión con
+ * tres cargas válidas sigue mostrando esas tres.
  */
 export const esquemaAutonomia = z.object({
   truck_id: idPhp(),
   unidad: z.string().catch(""),
   placa: nullable(z.string()),
-  registros: z.array(esquemaRegistroAutonomia).catch([]),
+  registros: registrosValidos,
 })
 
 /**
@@ -44,6 +65,53 @@ export function promedioMpg(autonomia) {
   const utiles = (autonomia?.registros ?? []).filter((r) => Number(r.mpg) > 0)
   if (utiles.length === 0) return 0
   return utiles.reduce((suma, r) => suma + Number(r.mpg), 0) / utiles.length
+}
+
+/**
+ * Qué tan bueno es un rendimiento.
+ *
+ * @readonly
+ * @enum {string}
+ */
+export const NIVEL_RENDIMIENTO = {
+  BUENO: "bueno",
+  REGULAR: "regular",
+  BAJO: "bajo",
+  SIN_DATO: "sin_dato",
+}
+
+/**
+ * Millas por galón desde las que un rendimiento es bueno, y desde las que es
+ * regular. Por debajo de la segunda es bajo.
+ *
+ * @readonly
+ */
+export const UMBRAL_RENDIMIENTO = { BUENO: 7, REGULAR: 5.5 }
+
+/**
+ * Clasifica un rendimiento en millas por galón.
+ *
+ * @param {*} mpg El rendimiento.
+ * @returns {string} Uno de `NIVEL_RENDIMIENTO`; `SIN_DATO` si no hay un número positivo.
+ */
+export function nivelRendimiento(mpg) {
+  const valor = Number(mpg)
+  if (!Number.isFinite(valor) || valor <= 0) return NIVEL_RENDIMIENTO.SIN_DATO
+  if (valor >= UMBRAL_RENDIMIENTO.BUENO) return NIVEL_RENDIMIENTO.BUENO
+  if (valor >= UMBRAL_RENDIMIENTO.REGULAR) return NIVEL_RENDIMIENTO.REGULAR
+  return NIVEL_RENDIMIENTO.BAJO
+}
+
+/**
+ * Los registros de un camión acomodados en sus casillas, del más reciente al
+ * más antiguo, con `null` en las que no tienen carga.
+ *
+ * @param {Autonomia} autonomia El camión.
+ * @returns {Array.<(object|null)>} Siempre `REGISTROS_POR_CAMION` casillas.
+ */
+export function registrosEnCasillas(autonomia) {
+  const registros = (autonomia?.registros ?? []).slice(0, REGISTROS_POR_CAMION)
+  return Array.from({ length: REGISTROS_POR_CAMION }, (_, i) => registros[i] ?? null)
 }
 
 /**

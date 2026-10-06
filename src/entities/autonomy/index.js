@@ -1,4 +1,9 @@
 export {
+  REGISTROS_POR_CAMION,
+  NIVEL_RENDIMIENTO,
+  UMBRAL_RENDIMIENTO,
+  nivelRendimiento,
+  registrosEnCasillas,
   esquemaAutonomia,
   esquemaRegistroAutonomia,
   promedioMpg,
