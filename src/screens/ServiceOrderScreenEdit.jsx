@@ -53,6 +53,7 @@ export default function ServiceOrderScreenEdit() {
 
     // --- Estados Generales ---
     const [selectedTruck, setSelectedTruck] = useState(null);
+    const [ordenDeCaja, setOrdenDeCaja] = useState(null);
     const [dateForm, setDateForm] = useState("");
     const [tipoCambioOrden, setTipoCambioOrden] = useState("");
 
@@ -97,6 +98,8 @@ export default function ServiceOrderScreenEdit() {
                     const o = json.data.orden;
                     setDateForm(o.fecha_orden);
                     setTipoCambioOrden(o.tipo_cambio || "");
+                    setOrdenDeCaja(o.caja_id ? `Caja ${o.nombre_caja ?? o.caja_id}` : null);
+                    setSelectedTruck(o.truck_id ? { value: String(o.truck_id), label: o.nombre_camion || String(o.truck_id) } : null);
                     
                     // Mapear Servicios
                     const mappedServices = json.data.servicios.map(s => {
@@ -263,14 +266,18 @@ export default function ServiceOrderScreenEdit() {
                         <Typography variant="h6" gutterBottom fontWeight={600} color="primary">Datos Generales</Typography>
                         <Grid container spacing={2}>
                             <Grid item xs={12} md={4}>
-                                <Typography variant="caption" fontWeight={600}>Camión</Typography>
-                                <Select 
-                                    options={truckOptions} 
-                                    value={selectedTruck} 
-                                    onChange={setSelectedTruck} 
-                                    placeholder={selectedTruck ? "Cargado..." : "Seleccionar..."}
-                                    styles={customSelectStyles}
-                                />
+                                <Typography variant="caption" fontWeight={600}>{ordenDeCaja ? "Unidad" : "Camión"}</Typography>
+                                {ordenDeCaja ? (
+                                    <TextField fullWidth value={ordenDeCaja} disabled />
+                                ) : (
+                                    <Select 
+                                        options={truckOptions} 
+                                        value={selectedTruck} 
+                                        onChange={setSelectedTruck} 
+                                        placeholder="Seleccionar..."
+                                        styles={customSelectStyles}
+                                    />
+                                )}
                             </Grid>
                             <Grid item xs={12} md={4}>
                                 <Typography variant="caption" fontWeight={600}>Fecha</Typography>
