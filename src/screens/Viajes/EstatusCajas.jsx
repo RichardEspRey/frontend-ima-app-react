@@ -13,7 +13,7 @@ import Swal from 'sweetalert2';
 import ModalArchivo from '../../components/ModalArchivo';
 import { useAuthStore } from '../../store/useAuthStore';
 import {
-    COLORES_ESTATUS_CAJA, LARGO_COMENTARIO, OBSERVACIONES_CAJA, UBICACIONES_CAJA, guardarEstatusCaja, obtenerEstatusCajas,
+    COLORES_ESTATUS_CAJA, LARGO_COMENTARIO, OBSERVACIONES_CAJA, UBICACIONES_CAJA, UBICACIONES_SIN_OPERADOR, guardarEstatusCaja, obtenerEstatusCajas,
     subirFianzaCaja
 } from '../../services/estatusCajas';
 import { HEADER_ROW_SX, HEADER_CELL_SX } from '../../styles/estilosTabla';
@@ -248,7 +248,7 @@ const EstatusCajas = () => {
                                 </TableCell>
 
                                 <TableCell>
-                                    {caja.operador
+                                    {caja.operador && !UBICACIONES_SIN_OPERADOR.includes(caja.ubicacion)
                                         ? <Typography variant="body2" color="#334155">{caja.operador}</Typography>
                                         : celdaVacia}
                                 </TableCell>

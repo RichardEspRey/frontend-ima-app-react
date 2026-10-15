@@ -15,8 +15,11 @@ import CreatableSelect from "react-select/creatable";
 
 import useFetchInventoryItems from "../hooks/expense_hooks/useFetchInventoryItems";
 import useFetchRepairTypes from "../hooks/service_order/useFetchRepairTypes";
+import { obtenerOrden } from "../services/mantenimiento";
 
 const apiHost = import.meta.env.VITE_API_HOST;
+
+const RUTA_ORDENES = '/mantenimiento?pestana=ordenes';
 
 const customSelectStyles = {
   control: (provided) => ({
@@ -88,55 +91,54 @@ export default function ServiceOrderScreenEdit() {
         if (!orderId) return;
         const loadOrder = async () => {
             setLoadingData(true);
-            const fd = new FormData();
-            fd.append('op', 'getOrderById');
-            fd.append('id_orden', orderId);
             try {
-                const res = await fetch(`${apiHost}/service_order.php`, { method: "POST", body: fd });
-                const json = await res.json();
-                if (json.status === 'success') {
-                    const o = json.data.orden;
-                    setDateForm(o.fecha_orden);
-                    setTipoCambioOrden(o.tipo_cambio || "");
-                    setOrdenDeCaja(o.caja_id ? `Caja ${o.nombre_caja ?? o.caja_id}` : null);
-                    setSelectedTruck(o.truck_id ? { value: String(o.truck_id), label: o.nombre_camion || String(o.truck_id) } : null);
-                    
-                    // Mapear Servicios
-                    const mappedServices = json.data.servicios.map(s => {
-                        let moCost = 0;
-                        const items = [];
-                        
-                        s.detalles.forEach(d => {
-                            if (d.tipo_detalle === 'Mano de Obra') {
-                                moCost += Number(d.costo);
-                            } else {
-                                items.push({
-                                    uid: d.id_detalle, 
-                                    id_articulo: d.id_articulo,
-                                    descripcion: d.descripcion,
-                                    tipo_detalle: d.tipo_detalle,
-                                    cantidad: Number(d.cantidad),
-                                    costo: Number(d.costo),
-                                    subtotal: Number(d.cantidad) * Number(d.costo)
-                                });
-                            }
-                        });
+                const { orden: o, servicios } = await obtenerOrden(orderId);
+                setDateForm(o.fecha_orden);
+                setTipoCambioOrden(o.tipo_cambio || "");
+                setOrdenDeCaja(o.caja_id ? `Caja ${o.nombre_caja ?? o.caja_id}` : null);
+                setSelectedTruck(o.truck_id ? { value: String(o.truck_id), label: o.nombre_camion || String(o.truck_id) } : null);
 
-                        return {
-                            id_local: seq.current++, 
-                            id_servicio: s.id_servicio, 
-                            estatus: s.estatus,
-                            tipo_mantenimiento: s.tipo_mantenimiento,
-                            origen_servicio: s.origen_servicio || '',
-                            tipo_reparacion: s.tipo_reparacion, 
-                            costo_mano_obra: moCost,
-                            detalles: items 
-                        };
+                setServices(servicios.map(s => {
+                    let moCost = 0;
+                    const items = [];
+
+                    s.detalles.forEach(d => {
+                        if (d.tipo_detalle === 'Mano de Obra') {
+                            moCost += Number(d.costo);
+                        } else {
+                            items.push({
+                                uid: d.id_detalle,
+                                id_articulo: d.id_articulo,
+                                descripcion: d.descripcion,
+                                tipo_detalle: d.tipo_detalle,
+                                categoria: d.categoria,
+                                id_gasto: d.id_gasto,
+                                cantidad: Number(d.cantidad),
+                                costo: Number(d.costo),
+                                subtotal: Number(d.cantidad) * Number(d.costo)
+                            });
+                        }
                     });
-                    setServices(mappedServices);
-                }
-            } catch (e) { console.error(e); } 
-            finally { setLoadingData(false); }
+
+                    return {
+                        id_local: seq.current++,
+                        id_servicio: s.id_servicio,
+                        estatus: s.estatus,
+                        tipo_mantenimiento: s.tipo_mantenimiento,
+                        origen_servicio: s.origen_servicio || '',
+                        tipo_reparacion: s.tipo_reparacion,
+                        punto: s.punto_origen ? {
+                            origen: s.punto_origen,
+                            categoria: s.punto_categoria,
+                            viaje: s.trip_number,
+                        } : null,
+                        costo_mano_obra: moCost,
+                        detalles: items
+                    };
+                }));
+            } catch (e) {
+                Swal.fire("No se pudo cargar la orden", e.message, "error");
+            } finally { setLoadingData(false); }
         };
         loadOrder();
     }, [orderId]);
@@ -182,6 +184,9 @@ export default function ServiceOrderScreenEdit() {
         setPendItems([]);
         setUsarItems(false);
     };
+
+    const actualizarServicio = (idLocal, cambios) =>
+        setServices(prev => prev.map(x => (x.id_local === idLocal ? { ...x, ...cambios } : x)));
 
     const handleCreateRepair = (val) => setTipoReparacion({label: val, value: val});
 
@@ -240,7 +245,7 @@ export default function ServiceOrderScreenEdit() {
             const json = await res.json();
             if (json.status === 'success') {
                 Swal.fire("Actualizado", "La orden se actualizó correctamente", "success");
-                navigate('/admin-service-order');
+                navigate(RUTA_ORDENES);
             } else {
                 throw new Error(json.message);
             }
@@ -257,15 +262,15 @@ export default function ServiceOrderScreenEdit() {
         <Container maxWidth="xl" sx={{ py: 4 }}>
             <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Typography variant="h4" fontWeight={700}>Editar Orden #{orderId}</Typography>
-                <Button variant="outlined" onClick={() => navigate('/admin-service-order')}>Cancelar</Button>
+                <Button variant="outlined" onClick={() => navigate(RUTA_ORDENES)}>Cancelar</Button>
             </Box>
 
             <Grid container spacing={3}>
-                <Grid item xs={12} lg={8}>
+                <Grid size={{ xs: 12, lg: 8 }}>
                     <Paper sx={{ p: 3, mb: 3, borderRadius: 2 }} elevation={2}>
                         <Typography variant="h6" gutterBottom fontWeight={600} color="primary">Datos Generales</Typography>
                         <Grid container spacing={2}>
-                            <Grid item xs={12} md={4}>
+                            <Grid size={{ xs: 12, md: 4 }}>
                                 <Typography variant="caption" fontWeight={600}>{ordenDeCaja ? "Unidad" : "Camión"}</Typography>
                                 {ordenDeCaja ? (
                                     <TextField fullWidth value={ordenDeCaja} disabled />
@@ -279,21 +284,125 @@ export default function ServiceOrderScreenEdit() {
                                     />
                                 )}
                             </Grid>
-                            <Grid item xs={12} md={4}>
+                            <Grid size={{ xs: 12, md: 4 }}>
                                 <Typography variant="caption" fontWeight={600}>Fecha</Typography>
                                 <TextField type="date" fullWidth value={dateForm} onChange={e => setDateForm(e.target.value)} />
                             </Grid>
-                            <Grid item xs={12} md={4}>
+                            <Grid size={{ xs: 12, md: 4 }}>
                                 <Typography variant="caption" fontWeight={600}>Tipo Cambio</Typography>
-                                <TextField type="number" fullWidth value={tipoCambioOrden} onChange={e => setTipoCambioOrden(e.target.value)} />
+                                <TextField type="number" fullWidth value={tipoCambioOrden} placeholder="Sin tipo de cambio" onChange={e => setTipoCambioOrden(e.target.value)} />
                             </Grid>
                         </Grid>
+                    </Paper>
+
+                    <Paper sx={{ p: 3, mb: 3, borderRadius: 2 }} elevation={2}>
+                        <Typography variant="h6" gutterBottom fontWeight={600} color="primary">Servicios de la Orden</Typography>
+                        {services.length === 0 && (
+                            <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+                                La orden no tiene servicios.
+                            </Typography>
+                        )}
+                        <Stack spacing={2}>
+                            {services.map((s, idx) => (
+                                <Paper key={s.id_local} variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
+                                    <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1.5 }}>
+                                        <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
+                                            <Typography fontWeight={700}>Servicio #{idx + 1}</Typography>
+                                            {s.punto && (
+                                                <Chip
+                                                    size="small"
+                                                    label={s.punto.origen === 'manual'
+                                                        ? 'Pendiente levantada a mano'
+                                                        : `Inspección · ${s.punto.categoria}${s.punto.viaje ? ` · viaje ${s.punto.viaje}` : ''}`}
+                                                    sx={{ bgcolor: '#eff6ff', color: '#1d4ed8', fontWeight: 600 }}
+                                                />
+                                            )}
+                                        </Stack>
+                                        <IconButton size="small" color="error" onClick={() => setServices(prev => prev.filter(x => x.id_local !== s.id_local))}>
+                                            <DeleteIcon fontSize="small" />
+                                        </IconButton>
+                                    </Stack>
+
+                                    <Grid container spacing={2}>
+                                        <Grid size={12}>
+                                            <TextField
+                                                label="Tipo de Reparación" fullWidth size="small" multiline maxRows={3}
+                                                value={s.tipo_reparacion || ''}
+                                                onChange={e => actualizarServicio(s.id_local, { tipo_reparacion: e.target.value.slice(0, 100) })}
+                                            />
+                                        </Grid>
+                                        <Grid size={{ xs: 12, md: 4 }}>
+                                            <TextField
+                                                select label="Tipo Mantenimiento" fullWidth size="small"
+                                                value={s.tipo_mantenimiento || ''}
+                                                onChange={e => actualizarServicio(s.id_local, { tipo_mantenimiento: e.target.value })}
+                                            >
+                                                <MenuItem value="Correctivo">Correctivo</MenuItem>
+                                                <MenuItem value="Preventivo">Preventivo</MenuItem>
+                                            </TextField>
+                                        </Grid>
+                                        <Grid size={{ xs: 12, md: 4 }}>
+                                            <TextField
+                                                select label="Origen Mantenimiento" fullWidth size="small"
+                                                value={s.origen_servicio || ''}
+                                                onChange={e => actualizarServicio(s.id_local, { origen_servicio: e.target.value })}
+                                            >
+                                                <MenuItem value="Interno">Interno</MenuItem>
+                                                <MenuItem value="Externo">Externo</MenuItem>
+                                            </TextField>
+                                        </Grid>
+                                        <Grid size={{ xs: 12, md: 4 }}>
+                                            <TextField
+                                                label="Costo Mano Obra" type="number" fullWidth size="small"
+                                                value={s.costo_mano_obra || ''}
+                                                onChange={e => actualizarServicio(s.id_local, { costo_mano_obra: Number(e.target.value) || 0 })}
+                                                InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }}
+                                            />
+                                        </Grid>
+                                    </Grid>
+
+                                    {s.detalles.length > 0 && (
+                                        <TableContainer sx={{ mt: 2 }}>
+                                            <Table size="small">
+                                                <TableHead>
+                                                    <TableRow>
+                                                        <TableCell>Concepto</TableCell>
+                                                        <TableCell>Tipo</TableCell>
+                                                        <TableCell>Categoría</TableCell>
+                                                        <TableCell align="right">Cant.</TableCell>
+                                                        <TableCell align="right">Costo u.</TableCell>
+                                                        <TableCell align="right">Subtotal</TableCell>
+                                                    </TableRow>
+                                                </TableHead>
+                                                <TableBody>
+                                                    {s.detalles.map(d => (
+                                                        <TableRow key={d.uid}>
+                                                            <TableCell>
+                                                                {d.descripcion}
+                                                                {d.id_gasto && (
+                                                                    <Typography variant="caption" color="text.secondary" display="block">Gasto #{d.id_gasto}</Typography>
+                                                                )}
+                                                            </TableCell>
+                                                            <TableCell>{d.tipo_detalle}</TableCell>
+                                                            <TableCell>{d.categoria || '—'}</TableCell>
+                                                            <TableCell align="right">{d.cantidad}</TableCell>
+                                                            <TableCell align="right">{money(d.costo)}</TableCell>
+                                                            <TableCell align="right">{money(d.subtotal ?? d.cantidad * d.costo)}</TableCell>
+                                                        </TableRow>
+                                                    ))}
+                                                </TableBody>
+                                            </Table>
+                                        </TableContainer>
+                                    )}
+                                </Paper>
+                            ))}
+                        </Stack>
                     </Paper>
 
                     <Paper sx={{ p: 3, borderRadius: 2 }} elevation={2}>
                         <Typography variant="h6" gutterBottom fontWeight={600} color="primary">Agregar Nuevo Servicio</Typography>
                         <Grid container spacing={2} alignItems="end">
-                            <Grid item xs={12} md={4}>
+                            <Grid size={{ xs: 12, md: 4 }}>
                                 <TextField 
                                     select label="Tipo Mantenimiento" fullWidth 
                                     value={tipoMantenimiento} onChange={e => setTipoMantenimiento(e.target.value)}
@@ -303,7 +412,7 @@ export default function ServiceOrderScreenEdit() {
                                 </TextField>
                             </Grid>
                             
-                            <Grid item xs={12} md={4}>
+                            <Grid size={{ xs: 12, md: 4 }}>
                                 <TextField 
                                     select label="Origen Mantenimiento" fullWidth 
                                     value={origenServicio} onChange={e => setOrigenServicio(e.target.value)}
@@ -313,7 +422,7 @@ export default function ServiceOrderScreenEdit() {
                                 </TextField>
                             </Grid>
 
-                            <Grid item xs={12} md={4}>
+                            <Grid size={{ xs: 12, md: 4 }}>
                                 <TextField 
                                     label="Costo Mano Obra" type="number" fullWidth 
                                     value={costoMO} onChange={e => setCostoMO(e.target.value)}
@@ -321,7 +430,7 @@ export default function ServiceOrderScreenEdit() {
                                 />
                             </Grid>
 
-                            <Grid item xs={12}>
+                            <Grid size={12}>
                                 <Typography variant="caption" fontWeight={600}>Tipo de Reparación</Typography>
                                 <CreatableSelect
                                     isClearable
@@ -344,7 +453,7 @@ export default function ServiceOrderScreenEdit() {
                         {usarItems && (
                             <Box sx={{ mt: 2, p: 2, bgcolor: '#f5f5f5', borderRadius: 2 }}>
                                 <Grid container spacing={2} alignItems="flex-end">
-                                    <Grid item xs={12} md={6}>
+                                    <Grid size={{ xs: 12, md: 6 }}>
                                         <Select 
                                             options={invOptions} 
                                             value={itemSeleccionado} 
@@ -354,10 +463,10 @@ export default function ServiceOrderScreenEdit() {
                                             styles={customSelectStyles}
                                         />
                                     </Grid>
-                                    <Grid item xs={6} md={2}>
+                                    <Grid size={{ xs: 6, md: 2 }}>
                                         <TextField label="Cant." type="number" size="small" fullWidth value={cant} onChange={e => setCant(e.target.value)} />
                                     </Grid>
-                                    <Grid item xs={6} md={4}>
+                                    <Grid size={{ xs: 6, md: 4 }}>
                                         <Stack direction="row" spacing={1}>
                                             <Button variant="outlined" fullWidth onClick={() => addItemToPending('consumible')}>Consumible</Button>
                                             <Button variant="contained" fullWidth onClick={() => addItemToPending('refaccion')}>Refacción</Button>
@@ -395,7 +504,7 @@ export default function ServiceOrderScreenEdit() {
                     </Paper>
                 </Grid>
 
-                <Grid item xs={12} lg={4}>
+                <Grid size={{ xs: 12, lg: 4 }}>
                     <Paper sx={{ p: 3, borderRadius: 2, position: 'sticky', top: 20 }} elevation={4}>
                         <Typography variant="h6" fontWeight={700} gutterBottom>Detalle de Orden</Typography>
                         <Divider sx={{ mb: 2 }} />

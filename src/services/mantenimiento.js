@@ -2,6 +2,8 @@ const apiHost = import.meta.env.VITE_API_HOST;
 
 export const UNIDAD = { CAMION: 'camion', CAJA: 'caja' };
 
+export const COLOR_INSPECCION = { [UNIDAD.CAMION]: '#3b82f6', [UNIDAD.CAJA]: '#a855f7' };
+
 export const ESTATUS_PUNTO = {
     SIN_RESOLVER: 'sin_resolver',
     EN_PENDIENTES: 'en_pendientes',
@@ -81,6 +83,12 @@ export const obtenerInspeccionesDeLado = async (lado) => {
     }));
 };
 
+export const obtenerInspeccionesPorAtender = async (lado) => {
+    const result = await pedirMtto('getInspecciones', { lado });
+    return (Array.isArray(result.inspecciones) ? result.inspecciones : [])
+        .filter(fila => fila.estatus_lado !== 'completada').length;
+};
+
 export const obtenerPuntos = async (viajeId, lado) => {
     const result = await pedirMtto('getPuntos', { viaje_id: viajeId, lado });
     return (Array.isArray(result.puntos) ? result.puntos : []).map(punto => ({
@@ -99,6 +107,17 @@ export const obtenerPendientes = async (unidadTipo) => {
     const result = await pedirMtto('getPendientes', { unidad_tipo: unidadTipo });
     return Array.isArray(result.pendientes) ? result.pendientes : [];
 };
+
+export const descartarPendientes = ({ ids, usuarioId }) =>
+    pedirMtto('descartarPendientes', { ids: JSON.stringify(ids), id_usuario: usuarioId });
+
+export const obtenerOrden = async (idOrden) => {
+    const result = await pedirMtto('getOrden', { id_orden: idOrden });
+    return { orden: result.orden, servicios: Array.isArray(result.servicios) ? result.servicios : [] };
+};
+
+export const eliminarOrden = ({ idOrden, usuarioId }) =>
+    pedirMtto('eliminarOrden', { id_orden: idOrden, id_usuario: usuarioId });
 
 export const crearPendienteManual = ({ unidadTipo, unidadId, descripcion, usuarioId }) =>
     pedirMtto('crearPendiente', { unidad_tipo: unidadTipo, unidad_id: unidadId, descripcion, id_usuario: usuarioId });
@@ -153,7 +172,7 @@ export const crearGasto = async ({ gasto, usuarioId }) => {
         cantidad_articulo: Number(concepto.cantidad) || 0,
         precio_unitario: Number(concepto.precio_unitario) || 0,
         id_categoria_mantenimiento: concepto.categoria || null,
-        id_subcategoria_mantenimiento: concepto.subcategoria || null,
+        id_subcategoria_mantenimiento: null,
     }))));
 
     // La orden ya no consume del inventario, así que su gasto tampoco lo alimenta: sin

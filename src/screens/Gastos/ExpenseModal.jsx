@@ -24,12 +24,15 @@ import useFetchExpenseTypes from '../../hooks/expense_hooks/useFetchExpenseTypes
 import useFetchExchangeRate from '../../hooks/useFetchExchangeRate';
 import { useAuthStore } from '../../store/useAuthStore';
 import FieldLabel from '../../components/Gastos/FieldLabel';
+import { TIPO_GASTO_MANTENIMIENTO } from '../../services/mantenimiento';
 import {
     SECTION_LABEL_SX, CARD_SX, DARK_BTN_SX, GHOST_BTN_SX, INPUT_SX,
     customSelectStyles, DATEPICKER_CSS, money,
 } from './estilosGastos';
 
 const apiHost = import.meta.env.VITE_API_HOST;
+
+const esMantenimiento = (tipoGasto) => String(tipoGasto) === TIPO_GASTO_MANTENIMIENTO;
 
 const ExpenseModal = ({ open, onClose, onSuccess }) => {
     const { user } = useAuthStore();
@@ -95,7 +98,7 @@ const ExpenseModal = ({ open, onClose, onSuccess }) => {
                 updated.category = null;
                 updated.subcategory = null;
             }
-            if (field === 'category') {
+            if (field === 'category' && !esMantenimiento(d.expenseType)) {
                 const propias = subcategories.filter(sub => String(sub.id_categoria) === String(value));
                 updated.subcategory = propias.length === 1 ? propias[0].value : null;
             }
@@ -175,7 +178,7 @@ const ExpenseModal = ({ open, onClose, onSuccess }) => {
             cantidad_articulo: detail.quantity,
             precio_unitario: detail.price,
             id_categoria_mantenimiento: detail.category || null,
-            id_subcategoria_mantenimiento: detail.subcategory || null,
+            id_subcategoria_mantenimiento: esMantenimiento(detail.expenseType) ? null : (detail.subcategory || null),
         }));
         apiFormData.append('detailsData', JSON.stringify(detailsData));
         apiFormData.append('op', 'Alta');
@@ -326,7 +329,9 @@ const ExpenseModal = ({ open, onClose, onSuccess }) => {
                                 {expenseDetails.map((detail) => {
                                     const relevantCategories = maintenanceCategories.filter(c => String(c.id_tipo_gasto) === String(detail.expenseType));
                                     const hasCategories = relevantCategories.length > 0;
-                                    const relevantSubs = subcategories.filter(s => String(s.id_categoria) === String(detail.category));
+                                    const relevantSubs = esMantenimiento(detail.expenseType)
+                                        ? []
+                                        : subcategories.filter(s => String(s.id_categoria) === String(detail.category));
                                     const hasSubcategories = relevantSubs.length > 0;
 
                                     let mdSelectSize = 12;

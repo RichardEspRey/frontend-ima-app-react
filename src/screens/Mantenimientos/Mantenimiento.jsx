@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Box, Stack, Tab, Tabs, Typography } from '@mui/material';
 import PanelInspecciones from '../../components/Mantenimientos/PanelInspecciones';
 import PanelPendientes from '../../components/Mantenimientos/PanelPendientes';
@@ -18,7 +18,9 @@ const PESTANAS = [
  * y las órdenes de servicio, sin saltar entre pantallas ni pasar por un Excel.
  */
 const Mantenimiento = () => {
-    const [pestana, setPestana] = useState('inspecciones');
+    const [parametros, setParametros] = useSearchParams();
+    const pestana = PESTANAS.some(p => p.id === parametros.get('pestana')) ? parametros.get('pestana') : 'inspecciones';
+    const setPestana = (valor) => setParametros({ pestana: valor }, { replace: true });
 
     return (
         <Box sx={PAGE_SHELL_SX}>

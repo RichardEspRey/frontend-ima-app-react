@@ -4,8 +4,8 @@ import {
     ToggleButton, ToggleButtonGroup, Typography
 } from '@mui/material';
 
-import useFetchActiveTrucks from '../../hooks/useFetchActiveTrucks';
-import useFetchActiveTrailers from '../../hooks/useFetchActiveTrailers';
+import useFetchActiveTrucks from '../../hooks/Edit_Trips_complete/useFetchActiveTrucks';
+import useFetchActiveTrailers from '../../hooks/Edit_Trips_complete/useFetchActiveTrailers';
 import { UNIDAD } from '../../services/mantenimiento';
 import { DIALOG_PAPER_SX, SECTION_LABEL_SX } from '../../styles/estilosTabla';
 
@@ -28,9 +28,10 @@ const ModalPendienteManual = ({ unidadTipo: tipoInicial, onCancelar, onGuardar }
 
     useEffect(() => { setUnidadId(''); }, [unidadTipo]);
 
-    const opciones = unidadTipo === UNIDAD.CAJA
+    const opciones = (unidadTipo === UNIDAD.CAJA
         ? (activeTrailers || []).map(caja => ({ valor: caja.caja_id, etiqueta: caja.no_caja }))
-        : (activeTrucks || []).map(camion => ({ valor: camion.truck_id, etiqueta: camion.unidad }));
+        : (activeTrucks || []).map(camion => ({ valor: camion.truck_id, etiqueta: camion.unidad })))
+        .sort((a, b) => String(a.etiqueta).localeCompare(String(b.etiqueta), 'es', { numeric: true }));
 
     const guardar = async () => {
         setGuardando(true);

@@ -17,6 +17,7 @@ import logo from '../assets/images/logo_white.png';
 import iconUpdate from '../assets/images/icons/update.png';
 
 import { UpdateContext } from '../App';
+import { COLOR_INSPECCION, UNIDAD, obtenerInspeccionesPorAtender } from '../services/mantenimiento';
 import { menuItemsConfig } from '../config/menuConfig';
 import { useAuthStore } from '../store/useAuthStore';
 import {
@@ -155,31 +156,19 @@ const Sidebar = () => {
 
   const fetchInspecciones = useCallback(async () => {
     try {
-      const fd = new URLSearchParams();
-      fd.append('op', 'All_CL_Final');
-      
-      const res = await fetch(`${apiHost}/formularios.php`, { 
-          method: 'POST', 
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: fd 
-      });
-      const data = await res.json();
-      
-      if (data.status === 'success') {
-        const list = data.rows || data.row || data.data || [];
-        const pendientes = list.filter(r => Number(r.status) !== 1).length;
-        
-        setNotificaciones(prev => ({
-            ...prev,
-            'Mantenimientos': { red: pendientes, yellow: 0 }
-        }));
-        setSubnotificaciones(prev => ({
-            ...prev,
-            'Reparaciones': { red: pendientes, yellow: 0 }
-        }));
-      }
+      const [camion, caja] = await Promise.all([
+        obtenerInspeccionesPorAtender(UNIDAD.CAMION),
+        obtenerInspeccionesPorAtender(UNIDAD.CAJA),
+      ]);
+      const insignias = [
+        { valor: camion, color: COLOR_INSPECCION.camion, titulo: 'Inspecciones de camión' },
+        { valor: caja, color: COLOR_INSPECCION.caja, titulo: 'Inspecciones de caja' },
+      ];
+
+      setNotificaciones(prev => ({ ...prev, 'Mantenimientos': { insignias } }));
+      setSubnotificaciones(prev => ({ ...prev, 'Reparaciones': { insignias } }));
     } catch (error) { console.error("Error cargando inspecciones:", error); }
-  }, [apiHost]);
+  }, []);
 
   useEffect(() => {
     fetchdocs(); 
@@ -206,10 +195,14 @@ const Sidebar = () => {
 
   const NotificationBadges = ({ counts, compact }) => {
       const { red = 0, yellow = 0 } = counts || {};
-      if (!red && !yellow) return null;
+      const insignias = (counts?.insignias ?? [
+        { valor: red, color: '#ef4444', titulo: 'Vencidos' },
+        { valor: yellow, color: '#f59e0b', titulo: 'Por Vencer' },
+      ]).filter(insignia => insignia.valor > 0);
+      if (insignias.length === 0) return null;
 
       if (compact) {
-        const total = red + yellow;
+        const total = insignias.reduce((suma, insignia) => suma + insignia.valor, 0);
         return (
           <Box
             sx={{
@@ -219,7 +212,7 @@ const Sidebar = () => {
               width: 8,
               height: 8,
               borderRadius: '50%',
-              bgcolor: red > 0 ? '#ef4444' : '#f59e0b',
+              bgcolor: insignias[0].color,
               border: '2px solid #0f172a',
             }}
             title={`${total} alerta(s)`}
@@ -229,8 +222,11 @@ const Sidebar = () => {
 
       return (
           <Stack direction="row" spacing={0.5} alignItems="center" pl={1} sx={labelSx(isVisuallyExpanded)}>
-              {red > 0 && <Tooltip title="Vencidos" placement="right"><Avatar sx={{ width: 22, height: 22, bgcolor: '#ef4444', fontSize: '0.75rem', fontWeight: 800 }}>{red}</Avatar></Tooltip>}
-              {yellow > 0 && <Tooltip title="Por Vencer" placement="right"><Avatar sx={{ width: 22, height: 22, bgcolor: '#f59e0b', fontSize: '0.75rem', fontWeight: 800 }}>{yellow}</Avatar></Tooltip>}
+              {insignias.map(insignia => (
+                  <Tooltip key={insignia.titulo} title={insignia.titulo} placement="right">
+                      <Avatar sx={{ width: 22, height: 22, bgcolor: insignia.color, fontSize: '0.75rem', fontWeight: 800 }}>{insignia.valor}</Avatar>
+                  </Tooltip>
+              ))}
           </Stack>
       );
   };

@@ -4,6 +4,8 @@ export const UBICACIONES_CAJA = [
     'PENSION NLD', 'PENSION USA', 'TALLER', 'MANTENIMIENTO', 'RUTA SUBIENDO', 'RUTA BAJANDO', 'AGENCIA ADUANAL',
 ];
 
+export const UBICACIONES_SIN_OPERADOR = ['PENSION NLD'];
+
 export const OBSERVACIONES_CAJA = ['VACIA', 'CARGADA', 'CARGANDO', 'DESCARGANDO'];
 
 const AZUL = { fondo: '#dbeafe', texto: '#1e40af', punto: '#3b82f6' };

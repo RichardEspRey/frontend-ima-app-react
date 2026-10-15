@@ -14,7 +14,7 @@ import ConstructorOrden from './ConstructorOrden';
 import ModalPendienteManual from './ModalPendienteManual';
 import { useAuthStore } from '../../store/useAuthStore';
 import {
-    ESTATUS_PUNTO, UNIDAD, crearPendienteManual, obtenerPendientes, resolverPuntos
+    ESTATUS_PUNTO, ETIQUETA_ESTATUS, UNIDAD, crearPendienteManual, descartarPendientes, obtenerPendientes
 } from '../../services/mantenimiento';
 import {
     TABLE_CONTAINER_SX, HEADER_ROW_SX, HEADER_CELL_SX, DARK_BTN_SX,
@@ -33,6 +33,8 @@ const ORIGENES = [
 ];
 
 const SIN_FILTROS = { unidad: '', texto: '', origen: '' };
+
+const esDescartada = (reparacion) => reparacion.estatus === ESTATUS_PUNTO.DESCARTADO;
 
 const agruparPorUnidad = (pendientes, lado) => {
     const unidades = new Map();
@@ -130,7 +132,7 @@ const PanelPendientes = () => {
         prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
 
     const alternarUnidad = (unidad, encender) => {
-        const ids = unidad.reparaciones.map(r => r.id);
+        const ids = unidad.reparaciones.filter(r => !esDescartada(r)).map(r => r.id);
         setElegidos(prev => encender
             ? [...new Set([...prev, ...ids])]
             : prev.filter(id => !ids.includes(id)));
@@ -142,7 +144,7 @@ const PanelPendientes = () => {
         const seleccion = elegidosDe(unidad);
         const confirmacion = await Swal.fire({
             title: `¿Descartar ${seleccion.length} reparación(es)?`,
-            text: 'Dejan de aparecer en el reporte y no entran a ninguna orden.',
+            text: 'Se quedan en la lista como descartadas y ya no pueden entrar a una orden.',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonText: 'Sí, descartar',
@@ -151,20 +153,7 @@ const PanelPendientes = () => {
         if (!confirmacion.isConfirmed) return;
 
         try {
-            await resolverPuntos({
-                items: seleccion.map(r => ({
-                    viaje_id: r.viaje_id,
-                    categoria: r.categoria,
-                    origen_tabla: r.origen_tabla,
-                    origen_id: r.origen_id,
-                    unidad_tipo: r.unidad_tipo,
-                    truck_id: r.truck_id,
-                    caja_id: r.caja_id,
-                    descripcion: r.descripcion,
-                })),
-                estatus: ESTATUS_PUNTO.DESCARTADO,
-                usuarioId: usuario?.id,
-            });
+            await descartarPendientes({ ids: seleccion.map(r => r.id), usuarioId: usuario?.id });
             cargar();
         } catch (err) {
             Swal.fire('Error', err.message, 'error');
@@ -216,7 +205,7 @@ const PanelPendientes = () => {
             <BarraFiltros
                 hayFiltros={hayFiltros}
                 onLimpiar={limpiarFiltros}
-                resumen={`${filtrados.length} reparación(es) en ${todasLasUnidades.length} unidad(es)`}
+                resumen={`${filtrados.filter(r => !esDescartada(r)).length} reparación(es) en ${todasLasUnidades.length} unidad(es)`}
             >
                 <TextField
                     size="small" label={lado === UNIDAD.CAJA ? 'Caja (exacto)' : 'Camión (exacto)'}
@@ -265,14 +254,15 @@ const PanelPendientes = () => {
 
                         {!cargando && unidades.map(unidad => {
                             const seleccion = elegidosDe(unidad);
-                            const todas = seleccion.length === unidad.reparaciones.length;
+                            const vigentes = unidad.reparaciones.filter(r => !esDescartada(r)).length;
+                            const todas = vigentes > 0 && seleccion.length === vigentes;
 
                             return (
                                 <TableRow key={unidad.clave} hover>
                                     <TableCell sx={{ verticalAlign: 'top' }}>
                                         <Typography fontWeight={800} color="#0f172a">{unidad.etiqueta}</Typography>
                                         <Typography variant="caption" color="#64748b">
-                                            {unidad.reparaciones.length} pendiente{unidad.reparaciones.length === 1 ? '' : 's'}
+                                            {vigentes} pendiente{vigentes === 1 ? '' : 's'}
                                         </Typography>
                                     </TableCell>
 
@@ -281,7 +271,7 @@ const PanelPendientes = () => {
                                             sx={{ ml: 0, mb: 0.5 }}
                                             control={
                                                 <Checkbox
-                                                    size="small" checked={todas}
+                                                    size="small" checked={todas} disabled={vigentes === 0}
                                                     indeterminate={!todas && seleccion.length > 0}
                                                     onChange={() => alternarUnidad(unidad, !todas)}
                                                 />
@@ -294,12 +284,20 @@ const PanelPendientes = () => {
                                                 <Checkbox
                                                     size="small" sx={{ p: 0.5 }}
                                                     checked={elegidos.includes(reparacion.id)}
+                                                    disabled={esDescartada(reparacion)}
                                                     onChange={() => alternar(reparacion.id)}
                                                 />
                                                 <Box sx={{ pt: 0.4 }}>
-                                                    <Typography variant="body2" color="#334155" component="span">
+                                                    <Typography
+                                                        variant="body2" component="span"
+                                                        color={esDescartada(reparacion) ? '#94a3b8' : '#334155'}
+                                                        sx={esDescartada(reparacion) ? { textDecoration: 'line-through' } : undefined}
+                                                    >
                                                         {indice + 1}. {reparacion.descripcion}
                                                     </Typography>
+                                                    {esDescartada(reparacion) && (
+                                                        <Chip size="small" label={ETIQUETA_ESTATUS[ESTATUS_PUNTO.DESCARTADO]} sx={{ ml: 1, height: 18, fontSize: '0.65rem', fontWeight: 700, bgcolor: '#fef2f2', color: '#b91c1c' }} />
+                                                    )}
                                                     {reparacion.categoria && (
                                                         <Chip size="small" label={reparacion.categoria} sx={{ ml: 1, height: 18, fontSize: '0.65rem', bgcolor: '#f1f5f9', color: '#475569' }} />
                                                     )}

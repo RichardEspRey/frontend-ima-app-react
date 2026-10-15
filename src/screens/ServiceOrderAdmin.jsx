@@ -16,8 +16,9 @@ import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 
 import useFetchRepairTypes from '../hooks/service_order/useFetchRepairTypes.jsx';
-import EditDetailModal from '../components/EditDetailModa';
 import { OrderRow } from '../components/OrderRow';
+import { useAuthStore } from '../store/useAuthStore';
+import { eliminarOrden } from '../services/mantenimiento';
 import {
     HEADER_ROW_SX, HEADER_CELL_SX, TABLE_CONTAINER_SX, CARD_SX,
     SECTION_LABEL_SX, PAGINATION_BOX_SX, PAGINATION_SX, GHOST_BTN_SX,
@@ -30,11 +31,11 @@ const apiHost = import.meta.env.VITE_API_HOST;
 
 const ServiceOrderAdmin = () => {
     const navigate = useNavigate();
+    const usuario = useAuthStore(estado => estado.user);
     
     // --- ESTADOS DE DATOS ---
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [editingDetail, setEditingDetail] = useState(null);
 
     // --- ESTADOS DE FILTROS ---
     const [filterId, setFilterId] = useState(''); // <--- NUEVO
@@ -79,23 +80,25 @@ const ServiceOrderAdmin = () => {
         fetchOrders();
     }, [fetchOrders]);
     
-    const handleSaveDetail = async (updated) => { 
-        const formData = new FormData();
-        formData.append('op', 'updateDetailStatus');
-        formData.append('id_servicio', updated.id_servicio); 
-        formData.append('estatus', updated.estatus);
+    const handleDeleteOrder = async (order) => {
+        const unidad = order.nombre_camion || (order.nombre_caja ? `caja ${order.nombre_caja}` : 'sin unidad');
+        const confirmacion = await Swal.fire({
+            title: `¿Eliminar la orden #${order.id_orden}?`,
+            html: `Se borra la orden de ${unidad} con sus ${(order.servicios || []).length} servicio(s).<br/>`
+                + 'Las reparaciones que atendía regresan a pendientes. Si generó un gasto, '
+                + 'ese se queda en el Administrador de Gastos.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#dc2626',
+        });
+        if (!confirmacion.isConfirmed) return;
 
         try {
-            const response = await fetch(`${apiHost}/service_order.php`, { method: 'POST', body: formData });
-            const result = await response.json();
-
-            if (result.status === 'success') {
-                Swal.fire('¡Éxito!', 'Servicio actualizado.', 'success');
-                setEditingDetail(null);
-                fetchOrders();
-            } else {
-                throw new Error(result.message || 'No se pudo actualizar.');
-            }
+            await eliminarOrden({ idOrden: order.id_orden, usuarioId: usuario?.id });
+            Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: `Orden #${order.id_orden} eliminada`, showConfirmButton: false, timer: 2000 });
+            fetchOrders();
         } catch (error) {
             Swal.fire('Error', error.message, 'error');
         }
@@ -294,7 +297,6 @@ const ServiceOrderAdmin = () => {
                             <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'right' }}>Refacciones</TableCell>
                             <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'right' }}>T. cambio</TableCell>
                             <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'right' }}>Total</TableCell>
-                            <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'center' }}>Estatus</TableCell>
                             <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'center' }}>Acciones</TableCell>
                         </TableRow>
                     </TableHead>
@@ -302,13 +304,13 @@ const ServiceOrderAdmin = () => {
                     <TableBody>
                         {loading ? (
                             <TableRow>
-                                <TableCell colSpan={11} align="center" sx={{ py: 6 }}>
+                                <TableCell colSpan={10} align="center" sx={{ py: 6 }}>
                                     <CircularProgress size={24} />
                                 </TableCell>
                             </TableRow>
                         ) : filteredOrders.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={11} align="center" sx={{ py: 6 }}>
+                                <TableCell colSpan={10} align="center" sx={{ py: 6 }}>
                                     <Typography variant="body2" color="#64748b" fontWeight={600}>
                                         No se encontraron órdenes.
                                     </Typography>
@@ -325,7 +327,7 @@ const ServiceOrderAdmin = () => {
                                         key={order.id_orden}
                                         order={order}
                                         onEdit={handleEditOrder}
-                                        onEditDetail={(detail) => setEditingDetail(detail)}
+                                        onDelete={handleDeleteOrder}
                                     />
                                 ))
                         )}
@@ -347,12 +349,6 @@ const ServiceOrderAdmin = () => {
                 />
             </Box>
 
-            <EditDetailModal
-                isOpen={!!editingDetail}
-                detail={editingDetail}
-                onClose={() => setEditingDetail(null)}
-                onSave={handleSaveDetail}
-            />
         </Box>
     );
 };
