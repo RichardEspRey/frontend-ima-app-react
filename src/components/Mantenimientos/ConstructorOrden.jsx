@@ -10,9 +10,8 @@ import CloseIcon from '@mui/icons-material/Close';
 import ServicioOrden from './ServicioOrden';
 import { useAuthStore } from '../../store/useAuthStore';
 import useFetchCategories from '../../hooks/expense_hooks/useFetchCategories';
-import useFetchSubcategories from '../../hooks/expense_hooks/useFetchSubcategories';
 import {
-    TIPO_GASTO_MANTENIMIENTO, UNIDAD, crearGasto, crearOrden, obtenerPendientes
+    ESTATUS_PUNTO, TIPO_GASTO_MANTENIMIENTO, UNIDAD, crearGasto, crearOrden, obtenerPendientes
 } from '../../services/mantenimiento';
 import {
     CARD_SX, DARK_BTN_SX, DIALOG_ACTIONS_SX, DIALOG_CONTENT_SX, DIALOG_PAPER_SX,
@@ -71,7 +70,6 @@ const servicioEnBlanco = () => ({
 const ConstructorOrden = ({ apertura, onCerrar, onCreada }) => {
     const usuario = useAuthStore(estado => estado.user);
     const { maintenanceCategories } = useFetchCategories();
-    const { subcategories } = useFetchSubcategories();
     const categorias = useMemo(
         () => (maintenanceCategories || []).filter(c => String(c.id_tipo_gasto) === TIPO_GASTO_MANTENIMIENTO),
         [maintenanceCategories],
@@ -91,7 +89,8 @@ const ConstructorOrden = ({ apertura, onCerrar, onCreada }) => {
     const cargarPrevios = useCallback(async () => {
         try {
             const pendientes = await obtenerPendientes(lado);
-            setPrevios(pendientes.filter(p => String(lado === UNIDAD.CAJA ? p.caja_id : p.truck_id) === String(unidadId)));
+            setPrevios(pendientes.filter(p => p.estatus === ESTATUS_PUNTO.EN_PENDIENTES
+                && String(lado === UNIDAD.CAJA ? p.caja_id : p.truck_id) === String(unidadId)));
         } catch {
             setPrevios([]);
         }
@@ -124,7 +123,7 @@ const ConstructorOrden = ({ apertura, onCerrar, onCreada }) => {
     const gastoIncompleto = servicios.some(servicio => servicio.gastos.some(gasto =>
         !gasto.pais
         || gasto.conceptos.length === 0
-        || gasto.conceptos.some(c => !c.categoria || !c.subcategoria || !c.descripcion.trim() || !(Number(c.cantidad) > 0))));
+        || gasto.conceptos.some(c => !c.categoria || !c.descripcion.trim() || !(Number(c.cantidad) > 0))));
 
     const guardar = async () => {
         setGuardando(true);
@@ -248,7 +247,6 @@ const ConstructorOrden = ({ apertura, onCerrar, onCreada }) => {
                                 servicio={servicio}
                                 indice={indice}
                                 categorias={categorias}
-                                subcategorias={subcategories || []}
                                 onCambiar={(actualizado) => cambiarServicio(servicio.clave, actualizado)}
                                 onEliminar={() => quitarServicio(servicio.clave)}
                             />
