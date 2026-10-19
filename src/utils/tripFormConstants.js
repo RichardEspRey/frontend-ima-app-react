@@ -8,6 +8,7 @@ export const initialBorderCrossingDocs = {
   orden_retiro: null,
   bl_firmado: null,
   DTOPS: null,
+  avc: null,
   qr_manifesto: null,
 };
 
@@ -31,6 +32,7 @@ export const NORMAL_TRIP_DOCS_BY_COUNTRY = {
     orden_retiro: null,
     qr_manifesto: null,
     DTOPS: null,
+    avc: null,
   },
   MX: {
     carta_porte: null,
