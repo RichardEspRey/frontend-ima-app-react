@@ -1,4 +1,8 @@
+import dayjs from 'dayjs';
+
 const apiHost = import.meta.env.VITE_API_HOST;
+
+export const hoy = () => dayjs().format('YYYY-MM-DD');
 
 export const UNIDAD = { CAMION: 'camion', CAJA: 'caja' };
 
