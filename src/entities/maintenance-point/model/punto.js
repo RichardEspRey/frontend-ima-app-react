@@ -39,6 +39,18 @@ export const ETIQUETA_ESTATUS = {
 }
 
 /**
+ * En qué está un lado de la inspección: abierto mientras le queden puntos sin
+ * resolver, o cerrado.
+ *
+ * @readonly
+ * @enum {string}
+ */
+export const ESTATUS_LADO = {
+  PENDIENTE: "pendiente",
+  COMPLETADA: "completada",
+}
+
+/**
  * Los seis rubros del checklist del operador.
  *
  * El remolque es de la caja; el resto, del tractor. De ahí sale que una misma
@@ -88,6 +100,8 @@ const normalizar = (texto) =>
  */
 export const esPuntoSinFalla = (texto) => SIN_FALLA.has(normalizar(texto))
 
+const textoPhp = () => z.preprocess((valor) => valor ?? "", z.coerce.string()).catch("")
+
 /**
  * Una inspección con lo que falta por atender de un lado.
  */
@@ -96,14 +110,14 @@ export const esquemaInspeccionMtto = z.object({
   viaje_id: idPhp(),
   fecha_creacion: z.string().catch(""),
   truck_id: nullable(idPhp()),
-  no_camion: z.coerce.string().catch(""),
-  trip_number: z.coerce.string().catch(""),
+  no_camion: textoPhp(),
+  trip_number: textoPhp(),
   caja_id: nullable(idPhp()),
-  no_caja: z.coerce.string().catch(""),
+  no_caja: textoPhp(),
   operador: z.string().catch(""),
   por_atender: z.coerce.number().catch(0),
   reportados: z.coerce.number().catch(0),
-  estatus_lado: z.string().catch("pendiente"),
+  estatus_lado: z.string().catch(ESTATUS_LADO.PENDIENTE),
 })
 
 /**
@@ -128,17 +142,58 @@ export const esquemaPendiente = z.object({
   id: idPhp(),
   origen: z.string().catch("inspeccion"),
   viaje_id: nullable(idPhp()),
-  trip_number: z.coerce.string().catch(""),
+  trip_number: textoPhp(),
   categoria: z.string().catch(""),
   origen_tabla: z.string().catch(""),
   origen_id: nullable(z.coerce.number()),
   unidad_tipo: z.string().catch(UNIDAD.CAMION),
   truck_id: nullable(idPhp()),
-  no_camion: z.coerce.string().catch(""),
+  no_camion: textoPhp(),
   caja_id: nullable(idPhp()),
-  no_caja: z.coerce.string().catch(""),
+  no_caja: textoPhp(),
   descripcion: z.string().catch(""),
+  estatus: z.string().catch(ESTATUS_PUNTO.EN_PENDIENTES),
 })
+
+/**
+ * Indica si un lado de la inspección ya se cerró.
+ *
+ * @param {object} inspeccion La inspección de un lado.
+ * @returns {boolean} `true` si está completada.
+ */
+export const ladoCompletado = (inspeccion) => inspeccion?.estatus_lado === ESTATUS_LADO.COMPLETADA
+
+/**
+ * Cuántas inspecciones de un lado siguen sin cerrarse.
+ *
+ * Es lo que avisa el ícono de Mantenimientos en el menú. Antes contaba los
+ * renglones de `All_CL_Final` con `status` distinto de 1, que vale 1 en todas.
+ *
+ * @param {Array.<object>} [inspecciones] Las inspecciones de un lado.
+ * @returns {number} Las que faltan por atender.
+ */
+export const contarPorAtender = (inspecciones = []) =>
+  inspecciones.filter((inspeccion) => !ladoCompletado(inspeccion)).length
+
+/**
+ * Indica si una reparación pendiente se descartó.
+ *
+ * La descartada no desaparece de la lista: se queda tachada y con su etiqueta,
+ * pero ya no se puede elegir ni entrar a una orden.
+ *
+ * @param {object} reparacion La reparación.
+ * @returns {boolean} `true` si se descartó.
+ */
+export const esDescartada = (reparacion) => reparacion?.estatus === ESTATUS_PUNTO.DESCARTADO
+
+/**
+ * Las reparaciones que todavía pueden entrar a una orden.
+ *
+ * @param {Array.<object>} [reparaciones] Las reparaciones de una unidad o de un lado.
+ * @returns {Array.<object>} Las que no se descartaron.
+ */
+export const reparacionesVigentes = (reparaciones = []) =>
+  reparaciones.filter((reparacion) => !esDescartada(reparacion))
 
 /**
  * Indica si un punto ya tiene destino.

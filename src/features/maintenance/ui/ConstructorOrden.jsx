@@ -18,7 +18,7 @@ import {
 import AddIcon from "@mui/icons-material/Add"
 import SaveIcon from "@mui/icons-material/Save"
 import CloseIcon from "@mui/icons-material/Close"
-import { UNIDAD, usePendientes } from "../../../entities/maintenance-point"
+import { UNIDAD, reparacionesVigentes, usePendientes } from "../../../entities/maintenance-point"
 import {
   CARD_SX,
   COLOR,
@@ -45,7 +45,7 @@ import { ServicioOrden } from "./ServicioOrden"
 function PendientesPrevios({ orden }) {
   const { data: pendientes } = usePendientes(orden.lado)
 
-  const deLaUnidad = (pendientes ?? []).filter(
+  const deLaUnidad = reparacionesVigentes(pendientes ?? []).filter(
     (pendiente) =>
       String(orden.lado === UNIDAD.CAJA ? pendiente.caja_id : pendiente.truck_id) ===
       String(orden.unidadId),
@@ -234,7 +234,6 @@ export function ConstructorOrden({ apertura, onCerrar, onCreada }) {
                 indice={indice}
                 fecha={orden.fecha}
                 categorias={orden.categorias}
-                subcategorias={orden.subcategorias}
                 onCambiar={(actualizado) => orden.cambiarServicio(servicio.clave, actualizado)}
                 onEliminar={() => orden.quitarServicio(servicio.clave)}
               />

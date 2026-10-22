@@ -196,10 +196,13 @@ guardado y archivos).
 ## 5 · Los otros `fetch` de la zona nueva
 
 Además de los ocho anteriores, quedan con `fetch` propio: `MargenPage`, `ResiduosPage` y
-`TicketPagoPage` (finanzas), `CotizadorPage`, `NuevaOrdenPage`, `EditarOrdenPage` e
+`TicketPagoPage` (finanzas), `CotizadorPage`, `NuevaOrdenPage` e
 `InspeccionFinalPage` (mantenimiento), `ExpenseManagerPage`, `EditarGastoGeneralPage` y
 `ModalNuevoGasto` (gastos). Para estas **no** existe la petición en una entidad: hay que
 escribirla.
+
+~~`EditarOrdenPage`~~: **hecha el 2026-10-21**. Carga con `useOrden` (`mtto.php · getOrden`),
+guarda con `useActualizarOrden` y pide los camiones con `useCamionesDeOrden`.
 
 `entities/tracking/api/geo.js` también usa `fetch`, pero contra servicios públicos de mapas,
 no contra la API de IMA. Es una excepción consciente.

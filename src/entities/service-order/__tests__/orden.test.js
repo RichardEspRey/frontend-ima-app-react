@@ -2,7 +2,11 @@ import { describe, it, expect } from "vitest"
 import { readFileSync } from "node:fs"
 import {
   ESTATUS_ORDEN,
+  DETALLE_MANO_DE_OBRA,
   esquemaOrden,
+  esquemaOrdenCompleta,
+  origenDeServicio,
+  separarManoDeObra,
   normalizarOrdenes,
   nombreUnidad,
   etiquetaUnidad,
@@ -137,5 +141,82 @@ describe("la unidad de una orden", () => {
   it("sin unidad no inventa una", () => {
     expect(nombreUnidad({})).toBe("")
     expect(etiquetaUnidad(undefined)).toBe("")
+  })
+})
+
+describe("esquemaOrdenCompleta", () => {
+  const RESPUESTA = {
+    status: "success",
+    orden: {
+      id_orden: 360,
+      fecha_orden: "2026-10-13 00:00:00",
+      estatus: "Abierta",
+      truck_id: null,
+      caja_id: "7",
+      tipo_cambio: null,
+      nombre_camion: null,
+      nombre_caja: "107",
+    },
+    servicios: [
+      {
+        id_servicio: "901",
+        tipo_mantenimiento: "Correctivo",
+        origen_servicio: "Interno",
+        tipo_reparacion: "Cambiar luz trasera",
+        estatus: "Pendiente",
+        punto_origen: "inspeccion",
+        punto_categoria: "Remolque",
+        trip_number: 4512,
+        detalles: [
+          { id_detalle: "1", id_articulo: null, tipo_detalle: "Mano de Obra", descripcion: "Mano de Obra", cantidad: "1", costo: "250.00", categoria: null, id_gasto: null },
+          { id_detalle: "2", id_articulo: null, tipo_detalle: "Refaccion", descripcion: "Foco", cantidad: "2", costo: "40.5", categoria: "Eléctrico", id_gasto: "88" },
+        ],
+      },
+    ],
+  }
+
+  it("valida la orden de caja con los números como texto que manda PHP", () => {
+    const { orden, servicios } = esquemaOrdenCompleta.parse(RESPUESTA)
+    expect(orden.id_orden).toBe("360")
+    expect(orden.fecha_orden).toBe("2026-10-13")
+    expect(orden.truck_id).toBeNull()
+    expect(orden.caja_id).toBe("7")
+    expect(servicios[0].trip_number).toBe("4512")
+    expect(servicios[0].detalles[1]).toMatchObject({ cantidad: 2, costo: 40.5, id_gasto: "88" })
+  })
+
+  it("un servicio sin reparación de origen no trae etiqueta", () => {
+    const servicio = esquemaOrdenCompleta.parse({
+      ...RESPUESTA,
+      servicios: [{ ...RESPUESTA.servicios[0], punto_origen: null, punto_categoria: null, trip_number: null }],
+    }).servicios[0]
+    expect(origenDeServicio(servicio)).toBeNull()
+  })
+})
+
+describe("origenDeServicio", () => {
+  it("nombra la inspección con su rubro y su viaje", () => {
+    expect(origenDeServicio({ punto_origen: "inspeccion", punto_categoria: "Motor", trip_number: "4512" }))
+      .toBe("Inspección · Motor · viaje 4512")
+  })
+
+  it("la pendiente levantada a mano no tiene viaje", () => {
+    expect(origenDeServicio({ punto_origen: "manual" })).toBe("Pendiente levantada a mano")
+  })
+})
+
+describe("separarManoDeObra", () => {
+  it("suma la mano de obra y deja el resto como conceptos", () => {
+    const { manoDeObra, conceptos } = separarManoDeObra([
+      { tipo_detalle: DETALLE_MANO_DE_OBRA, costo: 200 },
+      { tipo_detalle: DETALLE_MANO_DE_OBRA, costo: 50 },
+      { tipo_detalle: "Refaccion", costo: 40 },
+    ])
+    expect(manoDeObra).toBe(250)
+    expect(conceptos).toHaveLength(1)
+  })
+
+  it("sin detalles no hay mano de obra", () => {
+    expect(separarManoDeObra()).toEqual({ manoDeObra: 0, conceptos: [] })
   })
 })

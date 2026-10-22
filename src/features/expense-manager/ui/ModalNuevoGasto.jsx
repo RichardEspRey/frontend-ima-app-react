@@ -25,6 +25,7 @@ import {
 } from '../estilos';
 import { COLOR } from '../../../shared/ui/tokens';
 import { SelectorBusqueda, CampoFecha, aTextoFecha, notify } from '../../../shared/ui';
+import { llevaSubcategoria } from '../../../entities/expense';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -106,7 +107,7 @@ const ExpenseModal = ({ open, onClose, onSuccess }) => {
                 updated.category = null;
                 updated.subcategory = null;
             }
-            if (field === 'category') {
+            if (field === 'category' && llevaSubcategoria(d.expenseType)) {
                 const propias = subcategories.filter(sub => String(sub.id_categoria) === String(value));
                 updated.subcategory = propias.length === 1 ? propias[0].value : null;
             }
@@ -186,7 +187,7 @@ const ExpenseModal = ({ open, onClose, onSuccess }) => {
             cantidad_articulo: detail.quantity,
             precio_unitario: detail.price,
             id_categoria_mantenimiento: detail.category || null,
-            id_subcategoria_mantenimiento: detail.subcategory || null,
+            id_subcategoria_mantenimiento: llevaSubcategoria(detail.expenseType) ? (detail.subcategory || null) : null,
         }));
         apiFormData.append('detailsData', JSON.stringify(detailsData));
         apiFormData.append('op', 'Alta');
@@ -329,7 +330,9 @@ const ExpenseModal = ({ open, onClose, onSuccess }) => {
                                 {expenseDetails.map((detail) => {
                                     const relevantCategories = maintenanceCategories.filter(c => String(c.id_tipo_gasto) === String(detail.expenseType));
                                     const hasCategories = relevantCategories.length > 0;
-                                    const relevantSubs = subcategories.filter(s => String(s.id_categoria) === String(detail.category));
+                                    const relevantSubs = llevaSubcategoria(detail.expenseType)
+                                        ? subcategories.filter(s => String(s.id_categoria) === String(detail.category))
+                                        : [];
                                     const hasSubcategories = relevantSubs.length > 0;
 
                                     let mdSelectSize = 12;

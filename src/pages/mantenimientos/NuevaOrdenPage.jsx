@@ -14,6 +14,7 @@ import useFetchInventoryItems from "../../hooks/expense_hooks/useFetchInventoryI
 import useFetchRepairTypes from "../../hooks/service_order/useFetchRepairTypes";
 import { COLOR } from "../../shared/ui/tokens";
 import { SelectorBusqueda, notify } from "../../shared/ui";
+import { hoyLocal } from "../../shared/lib/formato";
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -45,7 +46,7 @@ export default function NuevaOrdenPage() {
     }, []);
 
     const [selectedTruck, setSelectedTruck] = useState(null);
-    const [dateForm, setDateForm] = useState(new Date().toISOString().slice(0, 10));
+    const [dateForm, setDateForm] = useState(hoyLocal);
     const [tipoCambioOrden, setTipoCambioOrden] = useState("");
     
     const [tipoMantenimiento, setTipoMantenimiento] = useState("Correctivo");

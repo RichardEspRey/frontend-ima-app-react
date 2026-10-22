@@ -1,11 +1,11 @@
 import { useMemo, useState } from "react"
 import {
-  ESTATUS_PUNTO,
   UNIDAD,
   agruparPorUnidad,
+  reparacionesVigentes,
   useCrearPendiente,
+  useDescartarPendientes,
   usePendientes,
-  useResolverPuntos,
 } from "../../../entities/maintenance-point"
 import { useSesion } from "../../../shared/auth"
 import { notify, usePaginacion } from "../../../shared/ui"
@@ -30,7 +30,7 @@ export function usePanelPendientes() {
   const [altaAbierta, setAltaAbierta] = useState(false)
 
   const consulta = usePendientes(lado)
-  const resolver = useResolverPuntos()
+  const descartarMutacion = useDescartarPendientes()
   const levantar = useCrearPendiente()
 
   const filtrados = useMemo(
@@ -49,7 +49,7 @@ export function usePanelPendientes() {
     )
 
   const alternarUnidad = (unidad, encender) => {
-    const ids = unidad.reparaciones.map((r) => r.id)
+    const ids = reparacionesVigentes(unidad.reparaciones).map((r) => r.id)
     setElegidos((previos) =>
       encender ? [...new Set([...previos, ...ids])] : previos.filter((id) => !ids.includes(id)),
     )
@@ -65,24 +65,14 @@ export function usePanelPendientes() {
 
     const confirmado = await notify.confirmar({
       titulo: `¿Descartar ${seleccion.length} reparación(es)?`,
-      mensaje: "Dejan de aparecer en el reporte y no entran a ninguna orden.",
+      mensaje: "Se quedan en la lista como descartadas y ya no pueden entrar a una orden.",
       confirmar: "Sí, descartar",
     })
     if (!confirmado) return
 
     try {
-      await resolver.mutateAsync({
-        items: seleccion.map((reparacion) => ({
-          viaje_id: reparacion.viaje_id,
-          categoria: reparacion.categoria,
-          origen_tabla: reparacion.origen_tabla,
-          origen_id: reparacion.origen_id,
-          unidad_tipo: reparacion.unidad_tipo,
-          truck_id: reparacion.truck_id,
-          caja_id: reparacion.caja_id,
-          descripcion: reparacion.descripcion,
-        })),
-        estatus: ESTATUS_PUNTO.DESCARTADO,
+      await descartarMutacion.mutateAsync({
+        ids: seleccion.map((reparacion) => reparacion.id),
         usuarioId: usuario?.id,
       })
       setElegidos([])
@@ -116,7 +106,7 @@ export function usePanelPendientes() {
     },
     hayFiltros: tieneFiltros(filtros),
     consulta,
-    totalFiltrado: filtrados.length,
+    totalFiltrado: reparacionesVigentes(filtrados).length,
     totalUnidades: unidades.length,
     paginacion,
     elegidos,
@@ -147,6 +137,6 @@ export function usePanelPendientes() {
     abrirAlta: () => setAltaAbierta(true),
     cerrarAlta: () => setAltaAbierta(false),
     guardarManual,
-    guardando: resolver.isPending || levantar.isPending,
+    guardando: descartarMutacion.isPending || levantar.isPending,
   }
 }

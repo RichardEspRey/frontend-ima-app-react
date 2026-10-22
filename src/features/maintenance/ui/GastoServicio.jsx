@@ -26,12 +26,11 @@ const PAISES = [
  * @param {object} props Propiedades del componente.
  * @param {object} props.concepto El concepto.
  * @param {Array.<object>} props.categorias Las categorías de mantenimiento.
- * @param {Array.<object>} props.subcategorias Todas las subcategorías.
  * @param {Function} props.onCambiar Recibe los cambios juntos.
  * @param {Function} props.onEliminar Quitar este concepto.
  * @returns {object} El renglón renderizado.
  */
-function Concepto({ concepto, categorias, subcategorias, onCambiar, onEliminar }) {
+function Concepto({ concepto, categorias, onCambiar, onEliminar }) {
   return (
     <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }} flexWrap="wrap" useFlexGap>
       <TextField
@@ -41,32 +40,13 @@ function Concepto({ concepto, categorias, subcategorias, onCambiar, onEliminar }
         required
         sx={{ width: 160 }}
         value={concepto.categoria}
-        onChange={(evento) => onCambiar({ categoria: evento.target.value, subcategoria: "" })}
+        onChange={(evento) => onCambiar({ categoria: evento.target.value })}
       >
         {categorias.map((categoria) => (
           <MenuItem key={categoria.value} value={categoria.value}>
             {categoria.label}
           </MenuItem>
         ))}
-      </TextField>
-
-      <TextField
-        select
-        size="small"
-        label="Subcategoría"
-        required
-        sx={{ width: 170 }}
-        value={concepto.subcategoria}
-        disabled={!concepto.categoria}
-        onChange={(evento) => onCambiar({ subcategoria: evento.target.value })}
-      >
-        {subcategorias
-          .filter((sub) => String(sub.id_categoria) === String(concepto.categoria))
-          .map((sub) => (
-            <MenuItem key={sub.value} value={sub.value}>
-              {sub.label}
-            </MenuItem>
-          ))}
       </TextField>
 
       <TextField
@@ -110,7 +90,6 @@ function Concepto({ concepto, categorias, subcategorias, onCambiar, onEliminar }
  * @param {object} props.gasto El gasto.
  * @param {number} props.indice Su número dentro del servicio.
  * @param {Array.<object>} props.categorias Las categorías de mantenimiento.
- * @param {Array.<object>} props.subcategorias Todas las subcategorías.
  * @param {Function} props.onCambiar Recibe el gasto completo ya actualizado.
  * @param {Function} props.onEliminar Quitar este gasto.
  * @returns {object} La tarjeta renderizada.
@@ -119,15 +98,11 @@ export function GastoServicio({
   gasto,
   indice,
   categorias,
-  subcategorias,
   onCambiar,
   onEliminar,
 }) {
   const cambiar = (campo, valor) => onCambiar({ ...gasto, [campo]: valor })
 
-  // Los cambios del concepto llegan juntos: dos llamadas seguidas se calculan
-  // sobre el mismo `gasto` y la segunda pisa a la primera, que es lo que borraba
-  // la categoría al elegirla, porque enseguida se limpiaba la subcategoría.
   const cambiarConcepto = (posicion, cambios) =>
     onCambiar({
       ...gasto,
@@ -235,7 +210,6 @@ export function GastoServicio({
           key={i}
           concepto={concepto}
           categorias={categorias}
-          subcategorias={subcategorias}
           onCambiar={(cambios) => cambiarConcepto(i, cambios)}
           onEliminar={() =>
             cambiar(

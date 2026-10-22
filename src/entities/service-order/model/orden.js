@@ -1,4 +1,5 @@
 import { z } from "zod"
+import { fechaDia, idPhp, nullable, numeroPhp } from "../../../shared/api/zodPhp"
 
 /**
  * Estados por los que pasa una orden de servicio y cada uno de sus servicios.
@@ -66,6 +67,98 @@ export const esquemaOrden = z.object({
  * @property {(number|null)} tipo_cambio Tipo de cambio, o `null` si es en pesos.
  * @property {Array} servicios Los servicios de la orden.
  */
+
+/**
+ * Lo que es mano de obra dentro de los detalles de un servicio.
+ *
+ * @readonly
+ * @type {string}
+ */
+export const DETALLE_MANO_DE_OBRA = "Mano de Obra"
+
+/**
+ * Un concepto de un servicio, con la categoría y el gasto del que salió.
+ *
+ * `categoria` e `id_gasto` solo existen en las órdenes que se armaron desde
+ * Reparaciones; en las demás llegan nulos.
+ */
+export const esquemaDetalleCompleto = z.object({
+  id_detalle: idPhp(),
+  id_articulo: nullable(idPhp()),
+  tipo_detalle: z.string().catch(""),
+  descripcion: z.string().catch(""),
+  cantidad: numeroPhp(),
+  costo: numeroPhp(),
+  categoria: nullable(z.string()),
+  id_gasto: nullable(idPhp()),
+})
+
+/**
+ * Un servicio con la reparación que atendía, si salió de una.
+ *
+ * `punto_origen` es `inspeccion` o `manual`; nulo si el servicio se agregó en la
+ * orden sin venir de ninguna reparación.
+ */
+export const esquemaServicioCompleto = z.object({
+  id_servicio: idPhp(),
+  tipo_mantenimiento: z.string().catch(""),
+  origen_servicio: z.string().catch(""),
+  tipo_reparacion: z.string().catch(""),
+  estatus: z.string().catch(ESTATUS_ORDEN.PENDIENTE),
+  punto_origen: nullable(z.string()),
+  punto_categoria: z.string().nullable().catch(""),
+  trip_number: nullable(z.coerce.string()),
+  detalles: z.array(esquemaDetalleCompleto).catch([]),
+})
+
+/**
+ * Una orden lista para editarse: sus datos generales y cada servicio completo.
+ */
+export const esquemaOrdenCompleta = z.object({
+  orden: z.object({
+    id_orden: idPhp(),
+    fecha_orden: fechaDia(),
+    estatus: z.string().catch(ESTATUS_ORDEN.ABIERTA),
+    truck_id: nullable(idPhp()),
+    caja_id: nullable(idPhp()),
+    tipo_cambio: nullable(z.coerce.number()),
+    nombre_camion: z.string().nullable().catch(""),
+    nombre_caja: z.string().nullable().catch(""),
+  }),
+  servicios: z.array(esquemaServicioCompleto).catch([]),
+})
+
+/**
+ * De dónde salió un servicio, para mostrarlo en la orden.
+ *
+ * @param {object} servicio El servicio completo.
+ * @returns {(string|null)} La etiqueta, o `null` si no salió de una reparación.
+ */
+export function origenDeServicio(servicio) {
+  if (!servicio?.punto_origen) return null
+  if (servicio.punto_origen === "manual") return "Pendiente levantada a mano"
+
+  const partes = ["Inspección", servicio.punto_categoria, servicio.trip_number && `viaje ${servicio.trip_number}`]
+  return partes.filter(Boolean).join(" · ")
+}
+
+/**
+ * Separa la mano de obra de las refacciones y consumibles de un servicio.
+ *
+ * La mano de obra se guarda como un detalle más, pero en pantalla es un solo
+ * importe del servicio; lo demás se lista renglón por renglón.
+ *
+ * @param {Array.<object>} [detalles] Los detalles del servicio.
+ * @returns {{manoDeObra: number, conceptos: Array.<object>}} La suma de mano de obra y el resto.
+ */
+export function separarManoDeObra(detalles = []) {
+  return {
+    manoDeObra: detalles
+      .filter((detalle) => detalle.tipo_detalle === DETALLE_MANO_DE_OBRA)
+      .reduce((suma, detalle) => suma + detalle.costo, 0),
+    conceptos: detalles.filter((detalle) => detalle.tipo_detalle !== DETALLE_MANO_DE_OBRA),
+  }
+}
 
 /**
  * Valida una lista de órdenes descartando las que no cumplen lo mínimo.

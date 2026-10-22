@@ -61,6 +61,8 @@ export {
   etiquetasDe,
   categoriasDeTipo,
   subcategoriasDeCategoria,
+  TIPO_GASTO_MANTENIMIENTO,
+  llevaSubcategoria,
   filaPorEtiqueta,
   totalesDe,
 } from "./model/gastos"

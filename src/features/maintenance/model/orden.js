@@ -1,10 +1,4 @@
-/**
- * El tipo de gasto bajo el que entra todo lo del taller.
- *
- * @readonly
- * @type {string}
- */
-export const TIPO_GASTO_MANTENIMIENTO = "3"
+import { TIPO_GASTO_MANTENIMIENTO } from "../../../entities/expense"
 
 /**
  * Un concepto vacío, listo para capturar.
@@ -13,7 +7,6 @@ export const TIPO_GASTO_MANTENIMIENTO = "3"
  */
 export const conceptoEnBlanco = () => ({
   categoria: "",
-  subcategoria: "",
   descripcion: "",
   precio_unitario: "",
   cantidad: 1,
@@ -129,9 +122,10 @@ export const totalDeOrden = (servicios = []) =>
 /**
  * Indica si a un gasto le falta algo para poder darse de alta.
  *
- * Un gasto no se puede crear a medias: sin país no hay moneda, y sin categoría y
- * subcategoría el Administrador de Gastos no lo puede clasificar —y el servidor
- * truena con un error fatal que no deja mensaje—.
+ * Un gasto no se puede crear a medias: sin país no hay moneda, y sin categoría
+ * el Administrador de Gastos no lo puede clasificar —y el servidor truena con un
+ * error fatal que no deja mensaje—. La subcategoría no se pide: mantenimiento se
+ * queda en categoría (`llevaSubcategoria` de `entities/expense`).
  *
  * @param {object} gasto El gasto a revisar.
  * @returns {boolean} `true` si todavía no se puede guardar.
@@ -142,7 +136,6 @@ export const gastoIncompleto = (gasto) =>
   gasto.conceptos.some(
     (concepto) =>
       !concepto.categoria ||
-      !concepto.subcategoria ||
       !concepto.descripcion.trim() ||
       !(Number(concepto.cantidad) > 0),
   )
@@ -180,7 +173,7 @@ export function cuerpoDelGasto(gasto, { usuarioId }) {
       cantidad_articulo: Number(concepto.cantidad) || 0,
       precio_unitario: Number(concepto.precio_unitario) || 0,
       id_categoria_mantenimiento: concepto.categoria || null,
-      id_subcategoria_mantenimiento: concepto.subcategoria || null,
+      id_subcategoria_mantenimiento: null,
     })),
     omitir_inventario: true,
     factura_pdf_file: gasto.factura,

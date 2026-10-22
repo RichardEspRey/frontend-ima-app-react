@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { ENDPOINTS, post, postLista } from "../../../shared/api"
-import { normalizarOrdenes } from "../model/orden"
+import { LLAVE_MANTENIMIENTO } from "../../maintenance-point"
+import { esquemaOrdenCompleta, normalizarOrdenes } from "../model/orden"
 
 /**
  * Llave de caché de las órdenes de servicio.
@@ -37,17 +38,65 @@ export async function obtenerOrdenes(opciones = {}) {
 }
 
 /**
- * Trae una orden concreta para editarla.
+ * Trae una orden completa para editarla.
  *
- * @endpoint POST service_order.php · op=getOrderById
+ * Sale de `mtto.php` y no de `service_order.php · getOrderById`, que no trae el
+ * origen de cada servicio ni la categoría y el gasto de cada concepto: sin eso,
+ * editar la orden la enseñaba a medias.
+ *
+ * @endpoint POST mtto.php · op=getOrden
  * @param {object} parametros Datos de la consulta.
  * @param {string} parametros.ordenId Identificador de la orden.
  * @param {AbortSignal} [parametros.signal] Señal de cancelación.
- * @returns {Promise.<object>} La orden tal como la devuelve la API.
- * @throws {ApiError} Si la API falla.
+ * @returns {Promise.<{orden: object, servicios: Array.<object>}>} La orden validada.
+ * @throws {ApiError} Si la orden no existe o la API falla.
+ * @throws {ZodError} Si la respuesta no trae la orden.
  */
-export function obtenerOrden({ ordenId, signal }) {
-  return post(ENDPOINTS.serviceOrder, "getOrderById", { id_orden: ordenId }, { signal })
+export async function obtenerOrden({ ordenId, signal }) {
+  const cuerpo = await post(ENDPOINTS.mantenimiento, "getOrden", { id_orden: ordenId }, { signal })
+  return esquemaOrdenCompleta.parse(cuerpo)
+}
+
+/**
+ * Guarda una orden editada: sus datos generales y la lista completa de servicios.
+ *
+ * Los servicios nuevos van sin `id_servicio`.
+ *
+ * @endpoint POST service_order.php · op=UpdateOrder
+ * @param {object} parametros La orden.
+ * @param {string} parametros.ordenId Identificador de la orden.
+ * @param {{fecha: string, truck_id: (string|null), tipo_cambio: string}} parametros.orden Datos generales.
+ * @param {Array.<object>} parametros.servicios Los servicios con sus detalles.
+ * @returns {Promise.<object>} La respuesta de la API.
+ * @throws {ApiError} Si la API rechaza la operación.
+ */
+export function actualizarOrden({ ordenId, orden, servicios }) {
+  return post(ENDPOINTS.serviceOrder, "UpdateOrder", {
+    id_orden: ordenId,
+    ordenData: orden,
+    serviciosData: servicios,
+  })
+}
+
+/**
+ * Elimina una orden con todos sus servicios.
+ *
+ * Lo que la orden atendía no se pierde: vuelve a reparaciones pendientes. El
+ * gasto se queda en el Administrador de Gastos, porque se pagó, y el inventario
+ * que haya descontado una orden vieja no se regresa.
+ *
+ * @endpoint POST mtto.php · op=eliminarOrden
+ * @param {object} parametros La orden.
+ * @param {string} parametros.ordenId Identificador de la orden.
+ * @param {string} [parametros.usuarioId] Quién la elimina.
+ * @returns {Promise.<object>} La respuesta, con cuántas reparaciones regresaron.
+ * @throws {ApiError} Si la orden no existe o la API falla.
+ */
+export function eliminarOrden({ ordenId, usuarioId }) {
+  return post(ENDPOINTS.mantenimiento, "eliminarOrden", {
+    id_orden: ordenId,
+    id_usuario: usuarioId,
+  })
 }
 
 /**
@@ -95,6 +144,25 @@ export function useOrdenes() {
 }
 
 /**
+ * Una orden completa para editarla.
+ *
+ * No se vuelve a pedir sola mientras la pantalla está abierta: una recarga a
+ * media captura no debe pisar lo que se está editando.
+ *
+ * @param {string} ordenId La orden.
+ * @returns {object} El resultado de `useQuery`.
+ */
+export function useOrden(ordenId) {
+  return useQuery({
+    queryKey: [...LLAVE_ORDENES, String(ordenId)],
+    queryFn: ({ signal }) => obtenerOrden({ ordenId, signal }),
+    enabled: Boolean(ordenId),
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+  })
+}
+
+/**
  * Camiones para el formulario de orden. Es un catálogo: se cachea más tiempo.
  *
  * @returns {object} El resultado de `useQuery`.
@@ -116,6 +184,36 @@ export function useCambiarEstatusServicio() {
   const cliente = useQueryClient()
   return useMutation({
     mutationFn: cambiarEstatusServicio,
+    onSuccess: () => cliente.invalidateQueries({ queryKey: LLAVE_ORDENES }),
+  })
+}
+
+/**
+ * Elimina una orden y refresca las órdenes y el flujo de Reparaciones, a donde
+ * regresan sus reparaciones.
+ *
+ * @returns {object} El resultado de `useMutation`.
+ */
+export function useEliminarOrden() {
+  const cliente = useQueryClient()
+  return useMutation({
+    mutationFn: eliminarOrden,
+    onSuccess: () => {
+      cliente.invalidateQueries({ queryKey: LLAVE_ORDENES })
+      cliente.invalidateQueries({ queryKey: LLAVE_MANTENIMIENTO })
+    },
+  })
+}
+
+/**
+ * Guarda una orden editada y refresca las órdenes, incluida la que se editó.
+ *
+ * @returns {object} El resultado de `useMutation`.
+ */
+export function useActualizarOrden() {
+  const cliente = useQueryClient()
+  return useMutation({
+    mutationFn: actualizarOrden,
     onSuccess: () => cliente.invalidateQueries({ queryKey: LLAVE_ORDENES }),
   })
 }

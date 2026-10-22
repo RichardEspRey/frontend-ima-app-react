@@ -7,6 +7,7 @@ import {
   contarPorObservacion,
   estadoFianza,
   normalizarEstatusCajas,
+  operadorVisible,
   recortarComentario,
 } from "../model/estatusCaja"
 
@@ -148,5 +149,20 @@ describe("las listas cerradas", () => {
 
   it("la observación solo admite los estados acordados", () => {
     expect(Object.values(OBSERVACION_CAJA)).toEqual(["VACIA", "CARGADA", "CARGANDO", "DESCARGANDO"])
+  })
+})
+
+describe("operadorVisible", () => {
+  it("en la pensión de Nuevo Laredo la caja no tiene operador", () => {
+    expect(operadorVisible({ ubicacion: UBICACION_CAJA.PENSION, operador: "JUAN PEREZ" })).toBe("")
+  })
+
+  it("en cualquier otra ubicación se muestra el del viaje", () => {
+    expect(operadorVisible({ ubicacion: UBICACION_CAJA.RUTA_SUBIENDO, operador: "JUAN PEREZ" })).toBe("JUAN PEREZ")
+    expect(operadorVisible({ ubicacion: UBICACION_CAJA.PENSION_USA, operador: "JUAN PEREZ" })).toBe("JUAN PEREZ")
+  })
+
+  it("sin operador da cadena vacía", () => {
+    expect(operadorVisible({ ubicacion: UBICACION_CAJA.TALLER })).toBe("")
   })
 })

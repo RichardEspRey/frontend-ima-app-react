@@ -36,7 +36,8 @@ import {
     SIDEBAR_WIDTH_COLLAPSED,
 } from '../store/useSidebarStore';
 import { useSesion } from '../shared/auth';
-import { COLOR } from '../shared/ui/tokens';
+import { COLOR, TINTE } from '../shared/ui/tokens';
+import { useInspeccionesPorAtender } from '../entities/maintenance-point';
 
 const iconMap = {
     'Inicio': DashboardIcon,
@@ -163,45 +164,26 @@ const Sidebar = () => {
     } catch (error) { console.error(error); }
   }, [apiHost]);
 
-  const fetchInspecciones = useCallback(async () => {
-    try {
-      const fd = new URLSearchParams();
-      fd.append('op', 'All_CL_Final');
-      
-      const res = await fetch(`${apiHost}/formularios.php`, { 
-          method: 'POST', 
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: fd 
-      });
-      const data = await res.json();
-      
-      if (data.status === 'success') {
-        const list = data.rows || data.row || data.data || [];
-        const pendientes = list.filter(r => Number(r.status) !== 1).length;
-        
-        setNotificaciones(prev => ({
-            ...prev,
-            'Mantenimientos': { red: pendientes, yellow: 0 }
-        }));
-        setSubnotificaciones(prev => ({
-            ...prev,
-            'Reparaciones': { red: pendientes, yellow: 0 }
-        }));
-      }
-    } catch (error) { console.error("Error cargando inspecciones:", error); }
-  }, [apiHost]);
+  const porAtender = useInspeccionesPorAtender({ refetchInterval: 300000 });
+
+  useEffect(() => {
+    const insignias = [
+      { valor: porAtender.camion, color: COLOR.INFO, titulo: 'Inspecciones de camión' },
+      { valor: porAtender.caja, color: TINTE.VIOLETA.acento, titulo: 'Inspecciones de caja' },
+    ];
+    setNotificaciones(prev => ({ ...prev, 'Mantenimientos': { insignias } }));
+    setSubnotificaciones(prev => ({ ...prev, 'Reparaciones': { insignias } }));
+  }, [porAtender.camion, porAtender.caja]);
 
   useEffect(() => {
     fetchdocs(); 
-    fetchInspecciones();
     
     const interval = setInterval(() => {
         fetchdocs();
-        fetchInspecciones();
     }, 300000); 
     
     return () => clearInterval(interval);
-  }, [fetchdocs, fetchInspecciones]);
+  }, [fetchdocs]);
 
   const toggleMenu = (name) => setOpenMenus(prev => ({ ...prev, [name]: !prev[name] }));
 
@@ -216,10 +198,14 @@ const Sidebar = () => {
 
   const NotificationBadges = ({ counts, compact }) => {
       const { red = 0, yellow = 0 } = counts || {};
-      if (!red && !yellow) return null;
+      const insignias = (counts?.insignias ?? [
+        { valor: red, color: COLOR.PELIGRO, titulo: 'Vencidos' },
+        { valor: yellow, color: COLOR.AVISO, titulo: 'Por Vencer' },
+      ]).filter(insignia => insignia.valor > 0);
+      if (insignias.length === 0) return null;
 
       if (compact) {
-        const total = red + yellow;
+        const total = insignias.reduce((suma, insignia) => suma + insignia.valor, 0);
         return (
           <Box
             sx={{
@@ -229,7 +215,7 @@ const Sidebar = () => {
               width: 8,
               height: 8,
               borderRadius: '50%',
-              bgcolor: red > 0 ? COLOR.PELIGRO : COLOR.AVISO,
+              bgcolor: insignias[0].color,
               border: `2px solid ${COLOR.TINTA}`,
             }}
             title={`${total} alerta(s)`}
@@ -239,8 +225,11 @@ const Sidebar = () => {
 
       return (
           <Stack direction="row" spacing={0.5} alignItems="center" pl={1} sx={labelSx(isVisuallyExpanded)}>
-              {red > 0 && <Tooltip title="Vencidos" placement="right"><Avatar sx={{ width: 22, height: 22, bgcolor: COLOR.PELIGRO, fontSize: '0.75rem', fontWeight: 800 }}>{red}</Avatar></Tooltip>}
-              {yellow > 0 && <Tooltip title="Por Vencer" placement="right"><Avatar sx={{ width: 22, height: 22, bgcolor: COLOR.AVISO, fontSize: '0.75rem', fontWeight: 800 }}>{yellow}</Avatar></Tooltip>}
+              {insignias.map(insignia => (
+                  <Tooltip key={insignia.titulo} title={insignia.titulo} placement="right">
+                      <Avatar sx={{ width: 22, height: 22, bgcolor: insignia.color, fontSize: '0.75rem', fontWeight: 800 }}>{insignia.valor}</Avatar>
+                  </Tooltip>
+              ))}
           </Stack>
       );
   };

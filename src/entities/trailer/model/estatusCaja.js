@@ -31,6 +31,25 @@ export const UBICACION_CAJA = {
 export const UBICACIONES_CAJA = Object.values(UBICACION_CAJA)
 
 /**
+ * Las ubicaciones donde la caja ya no está con un operador.
+ *
+ * En la pensión la caja está estacionada, así que el tablero no le muestra el
+ * operador del viaje.
+ *
+ * @type {Array.<string>}
+ */
+export const UBICACIONES_SIN_OPERADOR = [UBICACION_CAJA.PENSION]
+
+/**
+ * El operador que se muestra para una caja, según dónde está.
+ *
+ * @param {object} caja La caja del tablero.
+ * @returns {string} El operador, o cadena vacía si no aplica.
+ */
+export const operadorVisible = (caja) =>
+  UBICACIONES_SIN_OPERADOR.includes(caja?.ubicacion) ? "" : caja?.operador || ""
+
+/**
  * Si la caja lleva carga, va vacía o la están cargando o descargando.
  *
  * CARGANDO y DESCARGANDO solo se capturan a mano: el endpoint nunca las

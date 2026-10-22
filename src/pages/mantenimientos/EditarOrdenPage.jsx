@@ -13,15 +13,21 @@ import { useNavigate, useParams } from "react-router-dom";
 import useFetchInventoryItems from "../../hooks/expense_hooks/useFetchInventoryItems";
 import useFetchRepairTypes from "../../hooks/service_order/useFetchRepairTypes";
 import { COLOR } from "../../shared/ui/tokens";
-import { SelectorBusqueda, notify } from "../../shared/ui";
-import { etiquetaUnidad } from "../../entities/service-order";
+import { EstadoError, SelectorBusqueda, notify } from "../../shared/ui";
+import { etiquetaUnidad, origenDeServicio, separarManoDeObra, useActualizarOrden, useCamionesDeOrden, useOrden } from "../../entities/service-order";
+import { ServiciosDeOrden } from "../../features/service-order";
 
-const apiHost = import.meta.env.VITE_API_HOST;
+const RUTA_ORDENES = "/mantenimiento?pestana=ordenes";
 
 const money = (v) => new Intl.NumberFormat("es-MX", { style: "currency", currency: "USD" }).format(Number(v || 0));
 
 /**
  * Edición de una orden de servicio existente.
+ *
+ * La orden llega completa de `mtto.php`: cada servicio con la reparación de la
+ * que salió y cada concepto con su categoría y su gasto. Los servicios que ya
+ * tiene se editan ahí mismo; al guardar o cancelar se vuelve a la pestaña de
+ * órdenes de Reparaciones.
  *
  * @returns {object} La pantalla.
  */
@@ -31,21 +37,10 @@ export default function EditarOrdenPage() {
 
     const { inventoryItems, loading: itemsLoading } = useFetchInventoryItems();
     const { repairTypes } = useFetchRepairTypes();
-    const [trucks, setTrucks] = useState([]);
-    const [loadingData, setLoadingData] = useState(true);
-
-    useEffect(() => {
-        const fetchTrucks = async () => {
-            const formData = new FormData();
-            formData.append("op", "getTrucks");
-            try {
-                const res = await fetch(`${apiHost}/service_order.php`, { method: "POST", body: formData });
-                const json = await res.json();
-                setTrucks(json.data || []);
-            } catch (e) { console.error(e); }
-        };
-        fetchTrucks();
-    }, []);
+    const { data: trucks = [] } = useCamionesDeOrden();
+    const consultaOrden = useOrden(orderId);
+    const actualizar = useActualizarOrden();
+    const [cargada, setCargada] = useState(false);
 
     const [selectedTruck, setSelectedTruck] = useState(null);
     const [ordenDeCaja, setOrdenDeCaja] = useState(null);
@@ -75,60 +70,39 @@ export default function EditarOrdenPage() {
     })), [inventoryItems]);
 
     useEffect(() => {
-        if (!orderId) return;
-        const loadOrder = async () => {
-            setLoadingData(true);
-            const fd = new FormData();
-            fd.append('op', 'getOrderById');
-            fd.append('id_orden', orderId);
-            try {
-                const res = await fetch(`${apiHost}/service_order.php`, { method: "POST", body: fd });
-                const json = await res.json();
-                if (json.status === 'success' && json.data?.orden) {
-                    const o = json.data.orden;
-                    setDateForm(o.fecha_orden);
-                    setTipoCambioOrden(o.tipo_cambio || "");
-                    setOrdenDeCaja(o.caja_id ? etiquetaUnidad({ nombre_caja: o.nombre_caja ?? String(o.caja_id) }) : null);
-                    setSelectedTruck(o.truck_id ? { value: String(o.truck_id), label: o.nombre_camion || String(o.truck_id) } : null);
-                    
-                    const mappedServices = json.data.servicios.map(s => {
-                        let moCost = 0;
-                        const items = [];
-                        
-                        s.detalles.forEach(d => {
-                            if (d.tipo_detalle === 'Mano de Obra') {
-                                moCost += Number(d.costo);
-                            } else {
-                                items.push({
-                                    uid: d.id_detalle, 
-                                    id_articulo: d.id_articulo,
-                                    descripcion: d.descripcion,
-                                    tipo_detalle: d.tipo_detalle,
-                                    cantidad: Number(d.cantidad),
-                                    costo: Number(d.costo),
-                                    subtotal: Number(d.cantidad) * Number(d.costo)
-                                });
-                            }
-                        });
+        if (!consultaOrden.data || cargada) return;
+        const { orden: o, servicios } = consultaOrden.data;
 
-                        return {
-                            id_local: seq.current++, 
-                            id_servicio: s.id_servicio, 
-                            estatus: s.estatus,
-                            tipo_mantenimiento: s.tipo_mantenimiento,
-                            origen_servicio: s.origen_servicio || '',
-                            tipo_reparacion: s.tipo_reparacion, 
-                            costo_mano_obra: moCost,
-                            detalles: items 
-                        };
-                    });
-                    setServices(mappedServices);
-                }
-            } catch (e) { console.error(e); } 
-            finally { setLoadingData(false); }
-        };
-        loadOrder();
-    }, [orderId]);
+        setDateForm(o.fecha_orden);
+        setTipoCambioOrden(o.tipo_cambio || "");
+        setOrdenDeCaja(o.caja_id ? etiquetaUnidad({ nombre_caja: o.nombre_caja || o.caja_id }) : null);
+        setSelectedTruck(o.truck_id ? { value: o.truck_id, label: o.nombre_camion || o.truck_id } : null);
+        setServices(servicios.map(s => {
+            const { manoDeObra, conceptos } = separarManoDeObra(s.detalles);
+            return {
+                id_local: seq.current++,
+                id_servicio: s.id_servicio,
+                estatus: s.estatus,
+                tipo_mantenimiento: s.tipo_mantenimiento,
+                origen_servicio: s.origen_servicio,
+                tipo_reparacion: s.tipo_reparacion,
+                origen: origenDeServicio(s),
+                costo_mano_obra: manoDeObra,
+                detalles: conceptos.map(d => ({
+                    uid: d.id_detalle,
+                    id_articulo: d.id_articulo,
+                    descripcion: d.descripcion,
+                    tipo_detalle: d.tipo_detalle,
+                    categoria: d.categoria,
+                    id_gasto: d.id_gasto,
+                    cantidad: d.cantidad,
+                    costo: d.costo,
+                    subtotal: d.cantidad * d.costo,
+                })),
+            };
+        }));
+        setCargada(true);
+    }, [consultaOrden.data, cargada]);
 
     const addItemToPending = (tipo) => {
         if (!itemSeleccionado || !cant) return;
@@ -165,6 +139,11 @@ export default function EditarOrdenPage() {
         setPendItems([]);
         setUsarItems(false);
     };
+
+    const actualizarServicio = (idLocal, cambios) =>
+        setServices(prev => prev.map(x => (x.id_local === idLocal ? { ...x, ...cambios } : x)));
+
+    const quitarServicio = (idLocal) => setServices(prev => prev.filter(x => x.id_local !== idLocal));
 
     const handleCreateRepair = (val) => setTipoReparacion({label: val, value: val});
 
@@ -204,41 +183,41 @@ export default function EditarOrdenPage() {
             };
         });
 
-        const fd = new FormData();
-        fd.append('op', 'UpdateOrder');
-        fd.append('id_orden', orderId);
-        
-        const ordenData = {
-            fecha: dateForm,
-            truck_id: selectedTruck ? selectedTruck.value : null, 
-            tipo_cambio: tipoCambioOrden
-        };
-        fd.append('ordenData', JSON.stringify(ordenData));
-        fd.append('serviciosData', JSON.stringify(serviciosPayload));
-
         try {
-            const res = await fetch(`${apiHost}/service_order.php`, { method: 'POST', body: fd });
-            const json = await res.json();
-            if (json.status === 'success') {
-                notify.exito("La orden se actualizó correctamente", "Actualizado");
-                navigate('/admin-service-order');
-            } else {
-                throw new Error(json.message);
-            }
+            await actualizar.mutateAsync({
+                ordenId: orderId,
+                orden: {
+                    fecha: dateForm,
+                    truck_id: selectedTruck ? selectedTruck.value : null,
+                    tipo_cambio: tipoCambioOrden,
+                },
+                servicios: serviciosPayload,
+            });
+            notify.exito("La orden se actualizó correctamente", "Actualizado");
+            navigate(RUTA_ORDENES);
         } catch (e) {
-            notify.error(e.message, "Error");
+            notify.error(e);
         } finally {
             setSaving(false);
         }
     };
 
-    if (loadingData) return <Box p={5} display="flex" justifyContent="center"><CircularProgress /></Box>;
+    if (consultaOrden.isError) {
+        return (
+            <Container maxWidth="md" sx={{ py: 4 }}>
+                <EstadoError error={consultaOrden.error} onReintentar={consultaOrden.refetch} />
+                <Button variant="outlined" sx={{ mt: 2 }} onClick={() => navigate(RUTA_ORDENES)}>Volver a órdenes</Button>
+            </Container>
+        );
+    }
+
+    if (!cargada) return <Box p={5} display="flex" justifyContent="center"><CircularProgress /></Box>;
 
     return (
         <Container maxWidth="xl" sx={{ py: 4 }}>
             <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Typography variant="h4" fontWeight={700}>Editar Orden #{orderId}</Typography>
-                <Button variant="outlined" onClick={() => navigate('/admin-service-order')}>Cancelar</Button>
+                <Button variant="outlined" onClick={() => navigate(RUTA_ORDENES)}>Cancelar</Button>
             </Box>
 
             <Grid container spacing={3}>
@@ -265,10 +244,12 @@ export default function EditarOrdenPage() {
                             </Grid>
                             <Grid size={{ xs: 12, md: 4 }}>
                                 <Typography variant="caption" fontWeight={600}>Tipo Cambio</Typography>
-                                <TextField type="number" fullWidth value={tipoCambioOrden} onChange={e => setTipoCambioOrden(e.target.value)} />
+                                <TextField type="number" fullWidth value={tipoCambioOrden} placeholder="Sin tipo de cambio" onChange={e => setTipoCambioOrden(e.target.value)} />
                             </Grid>
                         </Grid>
                     </Paper>
+
+                    <ServiciosDeOrden servicios={services} onCambiar={actualizarServicio} onQuitar={quitarServicio} />
 
                     <Paper sx={{ p: 3, borderRadius: 2 }} elevation={2}>
                         <Typography variant="h6" gutterBottom fontWeight={600} color="primary">Agregar Nuevo Servicio</Typography>
@@ -383,7 +364,7 @@ export default function EditarOrdenPage() {
                                 <Paper key={s.id_local} variant="outlined" sx={{ p: 2, position: 'relative', bgcolor: COLOR.LIENZO }}>
                                     <IconButton 
                                         size="small" color="error" sx={{ position: 'absolute', top: 5, right: 5 }} 
-                                        onClick={() => setServices(prev => prev.filter(x => x.id_local !== s.id_local))}
+                                        onClick={() => quitarServicio(s.id_local)}
                                     >
                                         <DeleteIcon fontSize="small" />
                                     </IconButton>

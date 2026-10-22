@@ -36,7 +36,6 @@ const CHIP_ORIGEN = {
  * @param {number} props.indice Su número dentro de la orden.
  * @param {string} props.fecha La fecha de la orden, inicial de sus gastos.
  * @param {Array.<object>} props.categorias Las categorías de mantenimiento.
- * @param {Array.<object>} props.subcategorias Todas las subcategorías.
  * @param {Function} props.onCambiar Recibe el servicio completo ya actualizado.
  * @param {Function} props.onEliminar Quitar este servicio.
  * @returns {object} La tarjeta renderizada.
@@ -46,7 +45,6 @@ export function ServicioOrden({
   indice,
   fecha,
   categorias,
-  subcategorias,
   onCambiar,
   onEliminar,
 }) {
@@ -152,7 +150,6 @@ export function ServicioOrden({
           gasto={gasto}
           indice={i}
           categorias={categorias}
-          subcategorias={subcategorias}
           onCambiar={(actualizado) =>
             cambiar(
               "gastos",

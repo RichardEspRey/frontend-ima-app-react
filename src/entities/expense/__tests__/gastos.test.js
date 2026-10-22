@@ -8,6 +8,8 @@ import {
   etiquetasDe,
   categoriasDeTipo,
   subcategoriasDeCategoria,
+  TIPO_GASTO_MANTENIMIENTO,
+  llevaSubcategoria,
   filaPorEtiqueta,
   totalesDe,
 } from "../model/gastos"
@@ -184,5 +186,17 @@ describe("totalesDe", () => {
 
   it("sin gastos los totales son cero", () => {
     expect(totalesDe([], () => ({ valor: 0 }))).toEqual({ usd: 0, mxn: 0, sinConversion: 0 })
+  })
+})
+
+describe("llevaSubcategoria", () => {
+  it("mantenimiento se queda en categoría", () => {
+    expect(llevaSubcategoria(TIPO_GASTO_MANTENIMIENTO)).toBe(false)
+    expect(llevaSubcategoria(3)).toBe(false)
+  })
+
+  it("los demás tipos siguen hasta subcategoría", () => {
+    expect(llevaSubcategoria("1")).toBe(true)
+    expect(llevaSubcategoria(null)).toBe(true)
   })
 })

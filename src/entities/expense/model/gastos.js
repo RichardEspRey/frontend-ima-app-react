@@ -124,6 +124,26 @@ export const etiquetasDe = (catalogo = []) => [
 ]
 
 /**
+ * El tipo de gasto bajo el que entra todo lo del taller.
+ *
+ * @readonly
+ * @type {string}
+ */
+export const TIPO_GASTO_MANTENIMIENTO = "3"
+
+/**
+ * Indica si los renglones de un tipo de gasto se clasifican hasta subcategoría.
+ *
+ * Mantenimiento se queda en categoría desde el 2026-10-15: las órdenes de
+ * Reparaciones lo capturan así, y el gasto que se da de alta a mano tiene que
+ * quedar igual que el que nace de una orden.
+ *
+ * @param {*} tipoGasto El id del tipo de gasto.
+ * @returns {boolean} `true` si el renglón lleva subcategoría.
+ */
+export const llevaSubcategoria = (tipoGasto) => String(tipoGasto) !== TIPO_GASTO_MANTENIMIENTO
+
+/**
  * Las categorías que cuelgan de un tipo de gasto.
  *
  * Sin tipo elegido se ofrecen todas; con uno, solo las suyas. Es lo que evita

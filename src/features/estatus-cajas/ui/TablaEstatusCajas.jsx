@@ -4,6 +4,7 @@ import { Typography } from "@mui/material"
 import {
   OBSERVACIONES_CAJA,
   UBICACIONES_CAJA,
+  operadorVisible,
 } from "../../../entities/trailer"
 import { COLOR, DataTable } from "../../../shared/ui"
 import { CeldaComentario } from "./CeldaComentario"
@@ -64,9 +65,9 @@ export function TablaEstatusCajas({
         label: "Operador",
         ordenable: true,
         render: (caja) =>
-          caja.operador ? (
+          operadorVisible(caja) ? (
             <Typography variant="body2" color={COLOR.TEXTO}>
-              {caja.operador}
+              {operadorVisible(caja)}
             </Typography>
           ) : (
             SIN_DATO

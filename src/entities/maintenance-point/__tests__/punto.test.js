@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest"
 import {
+  ESTATUS_LADO,
   ESTATUS_PUNTO,
   UNIDAD,
+  contarPorAtender,
+  esDescartada,
+  esquemaPendiente,
+  reparacionesVigentes,
   agruparPorRubro,
   agruparPorUnidad,
   clavePunto,
@@ -86,5 +91,50 @@ describe("agruparPorUnidad", () => {
 describe("clavePunto", () => {
   it("identifica el renglón por su tabla y su id de origen", () => {
     expect(clavePunto({ origen_tabla: "cl_motor", origen_id: 87 })).toBe("cl_motor-87")
+  })
+})
+
+describe("reparaciones descartadas", () => {
+  const PENDIENTES = [
+    { id: "1", estatus: ESTATUS_PUNTO.EN_PENDIENTES },
+    { id: "2", estatus: ESTATUS_PUNTO.DESCARTADO },
+    { id: "3", estatus: ESTATUS_PUNTO.EN_PENDIENTES },
+  ]
+
+  it("la descartada se reconoce por su estatus", () => {
+    expect(esDescartada(PENDIENTES[1])).toBe(true)
+    expect(esDescartada(PENDIENTES[0])).toBe(false)
+  })
+
+  it("solo las vigentes pueden entrar a una orden", () => {
+    expect(reparacionesVigentes(PENDIENTES).map((p) => p.id)).toEqual(["1", "3"])
+  })
+
+  it("una pendiente sin estatus, como las de antes de descartar por id, cuenta como vigente", () => {
+    const pendiente = esquemaPendiente.parse({ id: 9, descripcion: "Fuga de aire" })
+    expect(pendiente.estatus).toBe(ESTATUS_PUNTO.EN_PENDIENTES)
+    expect(esDescartada(pendiente)).toBe(false)
+  })
+
+  it("la levantada a mano no tiene viaje, y no dice «null»", () => {
+    const pendiente = esquemaPendiente.parse({ id: 9, origen: "manual", trip_number: null, no_caja: "101" })
+    expect(pendiente.trip_number).toBe("")
+    expect(pendiente.no_caja).toBe("101")
+  })
+})
+
+describe("contarPorAtender", () => {
+  it("cuenta las inspecciones que no se han cerrado", () => {
+    expect(
+      contarPorAtender([
+        { estatus_lado: ESTATUS_LADO.PENDIENTE },
+        { estatus_lado: ESTATUS_LADO.COMPLETADA },
+        { estatus_lado: ESTATUS_LADO.PENDIENTE },
+      ]),
+    ).toBe(2)
+  })
+
+  it("sin datos todavía da cero", () => {
+    expect(contarPorAtender(undefined)).toBe(0)
   })
 })

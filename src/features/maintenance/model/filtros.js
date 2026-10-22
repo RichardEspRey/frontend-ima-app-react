@@ -1,4 +1,4 @@
-import { UNIDAD } from "../../../entities/maintenance-point"
+import { UNIDAD, ladoCompletado } from "../../../entities/maintenance-point"
 
 /**
  * Los filtros vacíos de la lista de inspecciones.
@@ -50,7 +50,7 @@ const contiene = (texto, buscado) =>
  * @returns {Array.<object>} Las de esa pestaña.
  */
 export const deLaPestana = (inspecciones = [], completadas) =>
-  inspecciones.filter((fila) => (fila.estatus_lado === "completada") === completadas)
+  inspecciones.filter((fila) => ladoCompletado(fila) === completadas)
 
 /**
  * Aplica los filtros a la lista de inspecciones.

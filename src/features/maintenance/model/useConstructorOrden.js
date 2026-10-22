@@ -1,10 +1,15 @@
 import { useMemo, useState } from "react"
 import { useCrearOrdenMtto } from "../../../entities/maintenance-point"
-import { CATALOGO_GASTOS, crearGasto, useCatalogoGastos } from "../../../entities/expense"
+import {
+  CATALOGO_GASTOS,
+  TIPO_GASTO_MANTENIMIENTO,
+  crearGasto,
+  useCatalogoGastos,
+} from "../../../entities/expense"
 import { useSesion } from "../../../shared/auth"
+import { hoyLocal } from "../../../shared/lib/formato"
 import { notify } from "../../../shared/ui"
 import {
-  TIPO_GASTO_MANTENIMIENTO,
   cuerpoDelGasto,
   gastoIncompleto,
   servicioDesdePendiente,
@@ -12,8 +17,6 @@ import {
   servicioEnBlanco,
   totalDeOrden,
 } from "./orden"
-
-const hoy = () => new Date().toISOString().slice(0, 10)
 
 /**
  * El estado y el guardado de la orden que se arma dentro de la pantalla.
@@ -27,10 +30,9 @@ export function useConstructorOrden(apertura, onCreada) {
   const { inspeccion, lado, puntos = [], pendientes = [], unidadId, etiquetaUnidad } = apertura
 
   const { data: categorias } = useCatalogoGastos(CATALOGO_GASTOS.CATEGORIAS)
-  const { data: subcategorias } = useCatalogoGastos(CATALOGO_GASTOS.SUBCATEGORIAS)
   const crearOrden = useCrearOrdenMtto()
 
-  const [fecha, setFecha] = useState(hoy())
+  const [fecha, setFecha] = useState(hoyLocal)
   const [tipoCambio, setTipoCambio] = useState("")
   const [guardando, setGuardando] = useState(false)
   const [servicios, setServicios] = useState(() => [
@@ -127,7 +129,6 @@ export function useConstructorOrden(apertura, onCreada) {
     servicios,
     clavesEnOrden,
     categorias: categoriasMtto,
-    subcategorias: subcategorias ?? [],
     cambiarServicio,
     quitarServicio,
     agregarPendiente,

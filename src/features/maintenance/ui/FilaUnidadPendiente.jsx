@@ -11,12 +11,21 @@ import {
 } from "@mui/material"
 import BuildOutlinedIcon from "@mui/icons-material/BuildOutlined"
 import BlockOutlinedIcon from "@mui/icons-material/BlockOutlined"
+import {
+  ESTATUS_PUNTO,
+  ETIQUETA_ESTATUS,
+  esDescartada,
+  reparacionesVigentes,
+} from "../../../entities/maintenance-point"
 import { COLOR } from "../../../shared/ui"
 
 const BOTON_SX = { textTransform: "none", fontWeight: 700, borderRadius: 2 }
 
 /**
  * Una reparación pendiente, con su rubro y de dónde salió.
+ *
+ * La descartada se queda a la vista, tachada y con su etiqueta, pero ya no se
+ * puede marcar.
  *
  * @param {object} props Propiedades del componente.
  * @param {object} props.reparacion La reparación.
@@ -26,18 +35,40 @@ const BOTON_SX = { textTransform: "none", fontWeight: 700, borderRadius: 2 }
  * @returns {object} El renglón renderizado.
  */
 function Reparacion({ reparacion, indice, marcada, onAlternar }) {
+  const descartada = esDescartada(reparacion)
+
   return (
     <Stack direction="row" spacing={1} alignItems="flex-start" sx={{ ml: 0.5 }}>
       <Checkbox
         size="small"
         sx={{ p: 0.5 }}
         checked={marcada}
+        disabled={descartada}
         onChange={() => onAlternar(reparacion.id)}
       />
       <Box sx={{ pt: 0.4 }}>
-        <Typography variant="body2" color={COLOR.TEXTO} component="span">
+        <Typography
+          variant="body2"
+          component="span"
+          color={descartada ? COLOR.TENUE : COLOR.TEXTO}
+          sx={descartada ? { textDecoration: "line-through" } : undefined}
+        >
           {indice + 1}. {reparacion.descripcion}
         </Typography>
+        {descartada ? (
+          <Chip
+            size="small"
+            label={ETIQUETA_ESTATUS[ESTATUS_PUNTO.DESCARTADO]}
+            sx={{
+              ml: 1,
+              height: 18,
+              fontSize: "0.65rem",
+              fontWeight: 700,
+              bgcolor: COLOR.PELIGRO_FONDO,
+              color: COLOR.PELIGRO,
+            }}
+          />
+        ) : null}
         {reparacion.categoria ? (
           <Chip
             size="small"
@@ -87,7 +118,8 @@ function Reparacion({ reparacion, indice, marcada, onAlternar }) {
  */
 export function FilaUnidadPendiente({ unidad, panel }) {
   const seleccion = panel.elegidosDe(unidad)
-  const todas = seleccion.length === unidad.reparaciones.length
+  const vigentes = reparacionesVigentes(unidad.reparaciones).length
+  const todas = vigentes > 0 && seleccion.length === vigentes
 
   return (
     <TableRow hover>
@@ -96,7 +128,7 @@ export function FilaUnidadPendiente({ unidad, panel }) {
           {unidad.etiqueta}
         </Typography>
         <Typography variant="caption" color={COLOR.APAGADO}>
-          {unidad.reparaciones.length} pendiente{unidad.reparaciones.length === 1 ? "" : "s"}
+          {vigentes} pendiente{vigentes === 1 ? "" : "s"}
         </Typography>
       </TableCell>
 
@@ -107,6 +139,7 @@ export function FilaUnidadPendiente({ unidad, panel }) {
             <Checkbox
               size="small"
               checked={todas}
+              disabled={vigentes === 0}
               indeterminate={!todas && seleccion.length > 0}
               onChange={() => panel.alternarUnidad(unidad, !todas)}
             />

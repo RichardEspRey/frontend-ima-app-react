@@ -12,14 +12,14 @@ import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 
 import useFetchRepairTypes from '../../../hooks/service_order/useFetchRepairTypes.jsx';
-import EditDetailModal from '../../../components/EditDetailModa';
-import { OrderRow } from '../../../components/OrderRow';
+import { FilaOrden } from './FilaOrden';
 import {
     HEADER_ROW_SX, HEADER_CELL_SX, TABLE_CONTAINER_SX, CARD_SX,
     SECTION_LABEL_SX, PAGINATION_BOX_SX, GHOST_BTN_SX,
 } from '../../../shared/ui/estilos';
 import { COLOR } from '../../../shared/ui/tokens';
-import { nombreUnidad } from '../../../entities/service-order';
+import { etiquetaUnidad, nombreUnidad, useEliminarOrden } from '../../../entities/service-order';
+import { useSesion } from '../../../shared/auth';
 import { FilasEsqueleto, Paginacion, CampoFecha, notify } from '../../../shared/ui';
 
 dayjs.extend(isSameOrAfter);
@@ -38,10 +38,11 @@ const apiHost = import.meta.env.VITE_API_HOST;
  */
 const TablaOrdenes = () => {
     const navigate = useNavigate();
+    const { usuario } = useSesion();
+    const eliminar = useEliminarOrden();
     
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [editingDetail, setEditingDetail] = useState(null);
 
     const [filterId, setFilterId] = useState('');
     const [filterTruck, setFilterTruck] = useState('');
@@ -82,25 +83,26 @@ const TablaOrdenes = () => {
         fetchOrders();
     }, [fetchOrders]);
     
-    const handleSaveDetail = async (updated) => { 
-        const formData = new FormData();
-        formData.append('op', 'updateDetailStatus');
-        formData.append('id_servicio', updated.id_servicio); 
-        formData.append('estatus', updated.estatus);
+    const handleDeleteOrder = async (order) => {
+        const confirmado = await notify.confirmar({
+            titulo: `¿Eliminar la orden #${order.id_orden}?`,
+            mensaje: `Se borra la orden de ${etiquetaUnidad(order) || 'sin unidad'} con sus ${(order.servicios || []).length} servicio(s).`,
+            detalle: {
+                lista: [
+                    'Las reparaciones que atendía regresan a pendientes.',
+                    'Si generó un gasto, ese se queda en el Administrador de Gastos.',
+                ],
+            },
+            confirmar: 'Sí, eliminar',
+        });
+        if (!confirmado) return;
 
         try {
-            const response = await fetch(`${apiHost}/service_order.php`, { method: 'POST', body: formData });
-            const result = await response.json();
-
-            if (result.status === 'success') {
-                notify.exito('Servicio actualizado.', '¡Éxito!');
-                setEditingDetail(null);
-                fetchOrders();
-            } else {
-                throw new Error(result.message || 'No se pudo actualizar.');
-            }
+            await eliminar.mutateAsync({ ordenId: order.id_orden, usuarioId: usuario?.id });
+            notify.exito(`Orden #${order.id_orden} eliminada.`);
+            fetchOrders();
         } catch (error) {
-            notify.error(error.message, 'Error');
+            notify.error(error);
         }
     };
 
@@ -279,17 +281,16 @@ const TablaOrdenes = () => {
                             <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'right' }}>Refacciones</TableCell>
                             <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'right' }}>T. cambio</TableCell>
                             <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'right' }}>Total</TableCell>
-                            <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'center' }}>Estatus</TableCell>
                             <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'center' }}>Acciones</TableCell>
                         </TableRow>
                     </TableHead>
 
                     <TableBody>
                         {loading ? (
-                            <FilasEsqueleto columnas={11} filas={Math.min(rowsPerPage, 10)} />
+                            <FilasEsqueleto columnas={10} filas={Math.min(rowsPerPage, 10)} />
                         ) : filteredOrders.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={11} align="center" sx={{ py: 6 }}>
+                                <TableCell colSpan={10} align="center" sx={{ py: 6 }}>
                                     <Typography variant="body2" color={COLOR.APAGADO} fontWeight={600}>
                                         No se encontraron órdenes.
                                     </Typography>
@@ -302,11 +303,11 @@ const TablaOrdenes = () => {
                             filteredOrders
                                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                                 .map((order) => (
-                                    <OrderRow
+                                    <FilaOrden
                                         key={order.id_orden}
                                         order={order}
                                         onEdit={handleEditOrder}
-                                        onEditDetail={(detail) => setEditingDetail(detail)}
+                                        onDelete={handleDeleteOrder}
                                     />
                                 ))
                         )}
@@ -324,13 +325,6 @@ const TablaOrdenes = () => {
                     tamanos={[10, 25, 50]}
                 />
             </Box>
-
-            <EditDetailModal
-                isOpen={!!editingDetail}
-                detail={editingDetail}
-                onClose={() => setEditingDetail(null)}
-                onSave={handleSaveDetail}
-            />
         </Box>
     );
 };

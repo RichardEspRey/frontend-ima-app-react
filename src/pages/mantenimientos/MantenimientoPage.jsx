@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useSearchParams } from "react-router-dom"
 import { Box, Typography } from "@mui/material"
 import { PanelInspecciones, PanelPendientes } from "../../features/maintenance"
 import TablaOrdenes from "../../features/service-order/ui/TablaOrdenes.jsx"
@@ -23,12 +23,17 @@ const PESTANAS = [
  * operadores y nadie ha atendido, qué le debemos a cada unidad, y qué se mandó a
  * reparar. Antes eso vivía en dos pantallas y un Excel.
  *
- * Se montan de forma perezosa: cada panel pide sus datos cuando se abre.
+ * Se montan de forma perezosa: cada panel pide sus datos cuando se abre. La
+ * pestaña va en la URL (`?pestana=ordenes`) para que editar una orden regrese a
+ * la lista de órdenes y no a las inspecciones.
  *
  * @returns {object} La pantalla.
  */
 const MantenimientoPage = () => {
-  const [pestana, setPestana] = useState("inspecciones")
+  const [parametros, setParametros] = useSearchParams()
+  const pedida = parametros.get("pestana")
+  const pestana = PESTANAS.some((p) => p.id === pedida) ? pedida : PESTANAS[0].id
+  const setPestana = (valor) => setParametros({ pestana: valor }, { replace: true })
 
   return (
     <Box sx={PAGE_SHELL_SX}>

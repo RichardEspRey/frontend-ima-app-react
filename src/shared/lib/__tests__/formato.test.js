@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest"
-import { moneda, fechaHora, soloFecha, soloHora, decimales } from "../formato"
+import { moneda, fechaHora, soloFecha, soloHora, decimales, hoyLocal } from "../formato"
 
 describe("moneda", () => {
   it("formatea una cantidad como dólares", () => {
@@ -50,5 +50,16 @@ describe("decimales", () => {
   it("lo que no es número se muestra como cero", () => {
     expect(decimales(null)).toBe("0.00")
     expect(decimales("abc")).toBe("0.00")
+  })
+})
+
+describe("hoyLocal", () => {
+  it("da el día del reloj local, no el de UTC", () => {
+    const nochePorLaTarde = new Date(2026, 9, 21, 22, 30)
+    expect(hoyLocal(nochePorLaTarde)).toBe("2026-10-21")
+  })
+
+  it("rellena mes y día con cero", () => {
+    expect(hoyLocal(new Date(2026, 0, 5, 9))).toBe("2026-01-05")
   })
 })

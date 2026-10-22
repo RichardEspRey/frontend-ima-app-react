@@ -11,8 +11,8 @@ import {
   Typography,
 } from "@mui/material"
 import { UNIDAD } from "../../../entities/maintenance-point"
-import { useCamionesActivos } from "../../../entities/truck"
-import { useCajasActivas } from "../../../entities/trailer"
+import { useCamionesActivosCompletos } from "../../../entities/truck"
+import { useCajasActivasCompletas } from "../../../entities/trailer"
 import { COLOR, DIALOG_PAPER_SX, Pestanas, SECTION_LABEL_SX } from "../../../shared/ui"
 
 const LARGO_DESCRIPCION = 250
@@ -27,6 +27,7 @@ const LADOS = [
  *
  * Es la otra mitad del reporte: lo que el taller ve con la unidad enfrente y no
  * pasó por el checklist del operador. Sin esto, eso seguiría viviendo en el Excel.
+ * Se ofrecen todos los camiones y cajas activos, no solo los disponibles.
  *
  * @param {object} props Propiedades del componente.
  * @param {string} props.unidadTipo El lado en el que se abrió, `camion` o `caja`.
@@ -40,17 +41,18 @@ export function ModalPendienteManual({ unidadTipo: tipoInicial, guardando, onCan
   const [unidadId, setUnidadId] = useState("")
   const [descripcion, setDescripcion] = useState("")
 
-  const { data: camiones } = useCamionesActivos()
-  const { data: cajas } = useCajasActivas()
+  const { data: camiones } = useCamionesActivosCompletos()
+  const { data: cajas } = useCajasActivasCompletas()
 
   useEffect(() => {
     setUnidadId("")
   }, [unidadTipo])
 
-  const opciones =
+  const opciones = (
     unidadTipo === UNIDAD.CAJA
       ? (cajas ?? []).map((caja) => ({ valor: caja.caja_id, etiqueta: caja.no_caja }))
       : (camiones ?? []).map((camion) => ({ valor: camion.truck_id, etiqueta: camion.unidad }))
+  ).sort((a, b) => String(a.etiqueta).localeCompare(String(b.etiqueta), "es", { numeric: true }))
 
   return (
     <Dialog

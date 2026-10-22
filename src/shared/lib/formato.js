@@ -66,6 +66,20 @@ export function soloFecha(valor, locale = LOCALE) {
 }
 
 /**
+ * La fecha de hoy en `AAAA-MM-DD`, según el reloj de la máquina.
+ *
+ * `toISOString()` da el día en UTC: en Monterrey, después de las 6 p.m. ya es
+ * mañana. Un campo de fecha que se prellena así guarda el día siguiente.
+ *
+ * @param {Date} [ahora=new Date()] El instante a convertir.
+ * @returns {string} El día local, como lo espera un `<input type="date">`.
+ */
+export function hoyLocal(ahora = new Date()) {
+  const dos = (n) => String(n).padStart(2, "0")
+  return `${ahora.getFullYear()}-${dos(ahora.getMonth() + 1)}-${dos(ahora.getDate())}`
+}
+
+/**
  * Recorta una hora `HH:MM:SS` a `HH:MM`.
  *
  * @param {*} valor La hora, como la manda la API.

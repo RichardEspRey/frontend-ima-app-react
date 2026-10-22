@@ -2,27 +2,28 @@ import React, { useState, useMemo } from 'react';
 import {
     Table, TableBody, TableCell, TableHead, TableRow, Paper,
     Button, Typography, CircularProgress,
-    IconButton, Collapse, Chip, Stack, Divider, Card, CardContent, CardActions, CardHeader, Box
+    IconButton, Collapse, Chip, Stack, Divider, Card, CardContent, CardHeader, Box
 } from '@mui/material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import { COLOR } from '../shared/ui/tokens';
-import { etiquetaUnidad } from '../entities/service-order';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import { COLOR } from '../../../shared/ui/tokens';
+import { etiquetaUnidad } from '../../../entities/service-order';
 
 const money = (v) =>
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, currencyDisplay: 'symbol' })
     .format(Number(v || 0));
 
-const getStatusChipColor = (status) => {
-    if (!status) return 'default';
-    const s = String(status).toLowerCase();
-    if (s === 'completado' || s === 'cerrada' || s === 'cerrado') return 'success';
-    if (s === 'pendiente' || s === 'abierta' || s === 'abierto') return 'warning';
-    if (s === 'cancelado' || s === 'cancelada') return 'error';
-    return 'default';
-};
-
-export const OrderRow = ({ order, onEdit, onEditDetail }) => {
+/**
+ * Una orden de servicio con sus servicios desplegables.
+ *
+ * @param {object} props Propiedades del componente.
+ * @param {object} props.order La orden, con sus servicios anidados.
+ * @param {Function} props.onEdit Recibe el id de la orden para editarla.
+ * @param {Function} props.onDelete Recibe la orden para eliminarla.
+ * @returns {object} La fila y su detalle.
+ */
+export const FilaOrden = ({ order, onEdit, onDelete }) => {
     const [open, setOpen] = useState(false);
     const servicios = order?.servicios ?? [];
     const tipoCambio = Number(order?.tipo_cambio ?? 0) || 0;
@@ -75,18 +76,20 @@ export const OrderRow = ({ order, onEdit, onEditDetail }) => {
                     <Typography fontWeight={700}>{money(totalMostrado)}</Typography>
                 </TableCell>
 
-                <TableCell>
-                    <Chip label={order.estatus || '—'} color={getStatusChipColor(order.estatus)} size="small" sx={{ fontWeight: 600 }} />
-                </TableCell>
                 <TableCell sx={{ whiteSpace: 'nowrap' }}>
-                    <Button size="small" variant="contained" onClick={() => onEdit(order.id_orden)}>
-                        {String(order.estatus).toLowerCase() === 'completado' ? 'Ver' : 'Editar'}
-                    </Button>
+                    <Stack direction="row" spacing={1} justifyContent="center">
+                        <Button size="small" variant="contained" onClick={() => onEdit(order.id_orden)}>
+                            {String(order.estatus).toLowerCase() === 'completado' ? 'Ver' : 'Editar'}
+                        </Button>
+                        <Button size="small" variant="outlined" color="error" startIcon={<DeleteOutlineIcon />} onClick={() => onDelete(order)}>
+                            Eliminar
+                        </Button>
+                    </Stack>
                 </TableCell>
             </TableRow>
 
             <TableRow>
-                <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={11}>
+                <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={10}>
                     <Collapse in={open} timeout="auto" unmountOnExit>
                         <Box sx={{ m: 1, p: 2, border: '1px solid #eee', borderRadius: '8px' }}>
                             <Typography variant="h6" fontWeight={700} sx={{ fontSize: '1rem', mb: 2 }}>
@@ -129,17 +132,9 @@ export const OrderRow = ({ order, onEdit, onEditDetail }) => {
                                             <Card key={svc.id_servicio} sx={{ minWidth: 360, maxWidth: 420, flex: '0 0 auto' }} elevation={2}>
                                                 <CardHeader
                                                     title={
-                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-                                                            <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
-                                                                Servicio {idx + 1}
-                                                            </Typography>
-                                                            <Chip
-                                                                label={svc.estatus || 'Abierta'}
-                                                                size="small"
-                                                                color={getStatusChipColor(svc.estatus)}
-                                                                sx={{ fontWeight: 600 }}
-                                                            />
-                                                        </Box>
+                                                        <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+                                                            Servicio {idx + 1}
+                                                        </Typography>
                                                     }
                                                     subheader={
                                                         <Box>
@@ -230,23 +225,6 @@ export const OrderRow = ({ order, onEdit, onEditDetail }) => {
                                                         </Typography>
                                                     </Box>
                                                 </CardContent>
-                                                <CardActions sx={{ justifyContent: 'center', pt: 0, pb: 2 }}>
-                                                    <Button
-                                                        size="small"
-                                                        variant="outlined"
-                                                        onClick={() =>
-                                                            onEditDetail({
-                                                                id_servicio: svc.id_servicio,         
-                                                                estatus: svc.estatus || 'Pendiente',  
-                                                                titulo: `Servicio ${idx + 1}`,
-                                                                tipo_mantenimiento: svc.tipo_mantenimiento,
-                                                                tipo_reparacion: svc.tipo_reparacion,
-                                                            })
-                                                        }
-                                                    >
-                                                        EDITAR
-                                                    </Button>
-                                                </CardActions>
                                             </Card>
                                         );
                                     })}

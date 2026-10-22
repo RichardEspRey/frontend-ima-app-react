@@ -1,7 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/react-query"
 import { ENDPOINTS, FRESCURA_CATALOGO_MS, post, postLista } from "../../../shared/api"
 import {
+  UNIDAD,
   clavePunto,
+  contarPorAtender,
   esquemaInspeccionMtto,
   esquemaPendiente,
   esquemaPunto,
@@ -159,6 +161,28 @@ export function resolverPuntos({ items, estatus, usuarioId }) {
 }
 
 /**
+ * Descarta reparaciones que ya estaban en pendientes.
+ *
+ * Va por id y no por renglón del checklist, como `resolverPuntos`: las
+ * levantadas a mano no tienen renglón, y por eso antes no se descartaban. El
+ * servidor solo toca las que siguen pendientes, así que no pisa una que entró a
+ * una orden mientras la pantalla estaba abierta.
+ *
+ * @endpoint POST mtto.php · op=descartarPendientes
+ * @param {object} datos Lo que se descarta.
+ * @param {Array.<string>} datos.ids Las reparaciones.
+ * @param {string} [datos.usuarioId] Quién lo decidió.
+ * @returns {Promise.<object>} La respuesta de la API, con cuántas se descartaron.
+ * @throws {ApiError} Si la API rechaza la operación.
+ */
+export function descartarPendientes({ ids, usuarioId }) {
+  return post(ENDPOINTS.mantenimiento, "descartarPendientes", {
+    ids,
+    id_usuario: usuarioId,
+  })
+}
+
+/**
  * Levanta una reparación pendiente que no vino de ninguna inspección.
  *
  * Es la otra mitad del reporte: lo que el taller ve con la unidad enfrente y no
@@ -273,6 +297,31 @@ export function usePendientes(unidadTipo) {
 }
 
 /**
+ * Cuántas inspecciones de camión y de caja faltan por atender.
+ *
+ * Comparte la caché con la pestaña de inspecciones: cerrar un lado ahí baja el
+ * número del menú sin esperar a la siguiente vuelta.
+ *
+ * @param {object} [opciones] Ajustes de la consulta.
+ * @param {number} [opciones.refetchInterval] Cada cuánto se vuelve a pedir, en ms.
+ * @returns {{camion: number, caja: number}} Los conteos; cero mientras cargan.
+ */
+export function useInspeccionesPorAtender({ refetchInterval } = {}) {
+  const [camion, caja] = useQueries({
+    queries: [UNIDAD.CAMION, UNIDAD.CAJA].map((lado) => ({
+      queryKey: llaveInspecciones(lado),
+      queryFn: ({ signal }) => obtenerInspeccionesMtto(lado, { signal }),
+      refetchInterval,
+    })),
+  })
+
+  return {
+    camion: contarPorAtender(camion.data),
+    caja: contarPorAtender(caja.data),
+  }
+}
+
+/**
  * Invalida todo el flujo: inspecciones, puntos y pendientes.
  *
  * @returns {Function} La función que refresca.
@@ -322,4 +371,14 @@ export function useCompletarLado() {
 export function useCrearOrdenMtto() {
   const refrescar = useRefrescarMantenimiento()
   return useMutation({ mutationFn: crearOrden, onSuccess: refrescar })
+}
+
+/**
+ * Descarta reparaciones pendientes y refresca el flujo.
+ *
+ * @returns {object} El resultado de `useMutation`.
+ */
+export function useDescartarPendientes() {
+  const refrescar = useRefrescarMantenimiento()
+  return useMutation({ mutationFn: descartarPendientes, onSuccess: refrescar })
 }
