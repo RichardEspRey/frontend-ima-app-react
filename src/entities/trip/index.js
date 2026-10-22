@@ -69,4 +69,7 @@ export {
   useAccionViaje,
 } from "./api/viajes"
 
-export { STATUS_CAJA_POR_PAIS, statusCajaDe, statusCajaValido } from "./model/statusCaja"
+export { STATUS_CAJA_POR_PAIS, statusCajaDe, statusCajaValido, registraStatusCaja } from "./model/statusCaja"
+export { ahoraParaCampo, validarFechasFinalizacion, cuerpoFinalizacion } from "./model/finalizacion"
+export { esquemaRutaViaje, puntosDeRuta } from "./model/ruta"
+export { obtenerRutaViaje, useRutaViaje } from "./api/ruta"

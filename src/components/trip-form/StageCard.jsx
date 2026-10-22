@@ -1,15 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Box, Paper, Typography, Grid, IconButton, Button, TextField, Chip, Divider, Stack } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import DownloadIcon from '@mui/icons-material/Download';
+import DocumentScannerIcon from '@mui/icons-material/DocumentScanner';
 import { getDocumentUrl } from '../../utils/tripFormConstants';
 import ReceiptIcon from '@mui/icons-material/Receipt';
 import { usePermisos, PERMISOS } from '../../shared/auth';
 import { urlSegura } from '../../shared/security';
 import { COLOR } from '../../shared/ui/tokens';
 import { SelectorBusqueda, CampoFecha } from '../../shared/ui';
+import { LADO_ESCANEO, ModalLeerDocumento, cambiosDeEtapa } from '../../features/document-scan';
 
 const DocButton = ({ label, doc, onClick, disabled, apiHost }) => (
     <Box sx={{ mb: 1 }}>
@@ -36,6 +38,24 @@ const DocButton = ({ label, doc, onClick, disabled, apiHost }) => (
     </Box>
 );
 
+/**
+ * El título de una bodega con el botón para llenarla desde un documento.
+ *
+ * @param {object} props Propiedades del componente.
+ * @param {string} props.etiqueta El título.
+ * @param {Function} props.onLeer Abre el lector.
+ * @param {boolean} props.disabled Si el formulario está bloqueado.
+ * @returns {object} El encabezado.
+ */
+const EncabezadoBodega = ({ etiqueta, onLeer, disabled }) => (
+    <Stack direction="row" justifyContent="space-between" alignItems="center">
+        <Typography variant="caption" color="textSecondary">{etiqueta}</Typography>
+        <Button size="small" startIcon={<DocumentScannerIcon />} onClick={onLeer} disabled={disabled} sx={{ py: 0, textTransform: 'none' }}>
+            Leer documento
+        </Button>
+    </Stack>
+);
+
 const StageCard = ({
     etapa,
     index,
@@ -54,6 +74,13 @@ const StageCard = ({
 }) => {
     const { can } = usePermisos();
     const canManageInvoice = can(PERMISOS.VIAJES_INVOICES);
+    const [ladoEscaneo, setLadoEscaneo] = useState(null);
+
+    const aplicarEscaneo = (valores) => {
+        const { bodegaNueva, campoBodega, cambios } = cambiosDeEtapa(valores, ladoEscaneo);
+        if (bodegaNueva) creators.createWarehouse(bodegaNueva, index, campoBodega);
+        cambios.forEach(([campo, valor]) => handleStageChange(index, campo, valor));
+    };
 
     const getHeaderInfo = () => {
         switch (etapa.stageType) {
@@ -154,7 +181,7 @@ const StageCard = ({
                             )}
 
                             <Grid size={{ xs: 12, md: 6 }}>
-                                <Typography variant="caption" color="textSecondary">Bodega Origen</Typography>
+                                <EncabezadoBodega etiqueta="Bodega Origen" onLeer={() => setLadoEscaneo(LADO_ESCANEO.ORIGEN)} disabled={isFormDisabled} />
                                 <SelectorBusqueda permitirCrear
                                     value={options.warehouses.find(opt => opt.value === etapa.warehouse_origin_id) || null}
                                     onChange={(sel) => handleStageChange(index, 'warehouse_origin_id', sel?.value || '')}
@@ -174,7 +201,7 @@ const StageCard = ({
                             </Grid>
 
                             <Grid size={{ xs: 12, md: 6 }}>
-                                <Typography variant="caption" color="textSecondary">Bodega Destino</Typography>
+                                <EncabezadoBodega etiqueta="Bodega Destino" onLeer={() => setLadoEscaneo(LADO_ESCANEO.DESTINO)} disabled={isFormDisabled} />
                                 <SelectorBusqueda permitirCrear
                                     value={options.warehouses.find(opt => opt.value === etapa.warehouse_destination_id) || null}
                                     onChange={(sel) => handleStageChange(index, 'warehouse_destination_id', sel?.value || '')}
@@ -321,6 +348,16 @@ const StageCard = ({
                     </>
                 )}
             </Box>
+
+            {etapa.stageType !== 'emptyMileage' && (
+                <ModalLeerDocumento
+                    abierto={Boolean(ladoEscaneo)}
+                    lado={ladoEscaneo || LADO_ESCANEO.ORIGEN}
+                    bodegas={options.warehouses}
+                    onCerrar={() => setLadoEscaneo(null)}
+                    onAplicar={aplicarEscaneo}
+                />
+            )}
         </Paper>
     );
 };

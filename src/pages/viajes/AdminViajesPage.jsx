@@ -25,7 +25,9 @@ import {
   PESTANA_PROXIMOS,
   filtrosActivos,
   pestanaDeReemplazo,
+  cuerpoFinalizacion,
   pestanasPermitidas,
+  registraStatusCaja,
   useAccionViaje,
   useViajes,
 } from "../../entities/trip"
@@ -35,6 +37,7 @@ import {
   FiltrosViajes,
   MapaRutaCamion,
   ModalProgramacion,
+  ModalFinalizarViaje,
   ModalStatusCaja,
   TablaProgramaciones,
   TablaViajes,
@@ -136,6 +139,7 @@ export default function AdminViajesPage() {
   const [viajeEnReparacion, setViajeEnReparacion] = useState(null)
   const [viajeEnInspeccion, setViajeEnInspeccion] = useState(null)
   const [viajeParaStatusCaja, setViajeParaStatusCaja] = useState(null)
+  const [viajeAFinalizar, setViajeAFinalizar] = useState(null)
 
   const [rutaSeleccionada, setRutaSeleccionada] = useState(null)
   const [trazo, setTrazo] = useState(null)
@@ -232,16 +236,19 @@ export default function AdminViajesPage() {
       exito: "Viaje marcado como casi finalizado.",
     })
 
-  const finalizar = (tripId, numero) =>
-    ejecutar({
-      accion: ACCION_VIAJE.FINALIZAR,
-      tripId,
-      confirmacion: {
-        titulo: "¿Finalizar Viaje?",
-        mensaje: `Viaje #${numero} será completado.`,
-      },
-      exito: "Viaje finalizado.",
-    })
+  const finalizar = async (fechas) => {
+    try {
+      const respuesta = await accion.mutateAsync({
+        accion: ACCION_VIAJE.FINALIZAR,
+        tripId: viajeAFinalizar.tripId,
+        extra: cuerpoFinalizacion(fechas),
+      })
+      setViajeAFinalizar(null)
+      notify.exito(respuesta?.message || "Viaje finalizado.")
+    } catch (fallo) {
+      notify.error(fallo)
+    }
+  }
 
   const darSalida = (tripId, numero) =>
     ejecutar({
@@ -574,9 +581,15 @@ export default function AdminViajesPage() {
               onSummary: (tripId) => navigate(`/ResumenTrip/${tripId}`),
               onSpecialEdit: (tripId) => navigate(`/edit-trip-complete/${tripId}`),
               onDelete: eliminarViaje,
-              onAlmostOver: (tripId, numero, pais) =>
-                setViajeParaStatusCaja({ tripId, numero, pais }),
-              onFinalize: finalizar,
+              onAlmostOver: (viaje) =>
+                registraStatusCaja(viaje)
+                  ? setViajeParaStatusCaja({
+                      tripId: viaje.trip_id,
+                      numero: viaje.trip_number,
+                      pais: viaje.country_code,
+                    })
+                  : marcarCasiFinalizado(viaje.trip_id, viaje.trip_number),
+              onFinalize: (tripId, numero) => setViajeAFinalizar({ tripId, numero }),
               onReactivate: reactivar,
               onSalida: darSalida,
               onOpenRoadRepair: setViajeEnReparacion,
@@ -627,6 +640,14 @@ export default function AdminViajesPage() {
         onClose={() => setViajeEnInspeccion(null)}
         onSuccess={() => setViajeEnInspeccion(null)}
         initialTrip={inspeccionInicial}
+      />
+
+      <ModalFinalizarViaje
+        abierto={Boolean(viajeAFinalizar)}
+        numeroViaje={viajeAFinalizar?.numero}
+        guardando={accion.isPending}
+        onCancelar={() => setViajeAFinalizar(null)}
+        onConfirmar={finalizar}
       />
 
       <ModalStatusCaja

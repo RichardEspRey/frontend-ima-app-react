@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest"
 
-import { statusCajaDe, statusCajaValido } from "../model/statusCaja"
+import { registraStatusCaja, statusCajaDe, statusCajaValido } from "../model/statusCaja"
 
 describe("statusCajaDe", () => {
   it("en Estados Unidos no ofrece exportación", () => {
@@ -30,5 +30,16 @@ describe("statusCajaValido", () => {
   it("rechaza lo que no es un status", () => {
     expect(statusCajaValido("", "MX")).toBe(false)
     expect(statusCajaValido("impo", "MX")).toBe(false)
+  })
+})
+
+describe("registraStatusCaja", () => {
+  it("la caja propia registra su status", () => {
+    expect(registraStatusCaja({ caja_id: "7", caja_externa_id: null, caja_externa_numero: "" })).toBe(true)
+  })
+
+  it("la caja externa se marca directo, sin status", () => {
+    expect(registraStatusCaja({ caja_externa_id: "12" })).toBe(false)
+    expect(registraStatusCaja({ caja_externa_numero: "TRL-55" })).toBe(false)
   })
 })

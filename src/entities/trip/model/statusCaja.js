@@ -36,3 +36,15 @@ export function statusCajaDe(pais) {
 export function statusCajaValido(status, pais) {
   return statusCajaDe(pais).includes(status)
 }
+
+/**
+ * Indica si al marcar el viaje como casi finalizado hay que registrar el status
+ * de su caja.
+ *
+ * Las cajas externas no son de la empresa: no se lleva su status, así que el
+ * viaje se marca directo.
+ *
+ * @param {object} viaje El viaje de la lista.
+ * @returns {boolean} `true` si la caja es propia.
+ */
+export const registraStatusCaja = (viaje) => !(viaje?.caja_externa_id || viaje?.caja_externa_numero)

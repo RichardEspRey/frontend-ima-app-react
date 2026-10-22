@@ -27,6 +27,7 @@ import { notify, PantallaEsqueleto, EstadoError } from "../../../shared/ui"
 import { initialBorderCrossingDocs, NORMAL_TRIP_DOCS_BY_COUNTRY } from "../../../utils/tripFormConstants"
 import { admiteFacturas, ajustesDe, estadoPorCi, pideVencimiento } from "../model/modos"
 import { useEnlaceTransnacional } from "../model/useEnlaceTransnacional"
+import { ResumenRutaViaje } from "./ResumenRutaViaje"
 
 const VIAJE_EN_BLANCO = {
   trip_number: "",
@@ -533,6 +534,10 @@ export function EditorViaje({ modo, onDocumentoSubido }) {
         agregarNuevaEtapa={agregarEtapa}
         handleOpenInvoiceModal={abrirModalFactura}
       />
+
+      {ajustes.resumenRuta && datosViaje.status === "Completed" ? (
+        <ResumenRutaViaje tripId={tripId} />
+      ) : null}
 
       <ModalsContainer
         modalAbierto={modalDocumento}

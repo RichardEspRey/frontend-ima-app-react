@@ -7,6 +7,7 @@ El Administrador de viajes: la tabla de viajes por pestaña con sus filtros, la 
 - `model/documentos.js` — `documentosFaltantesDeViaje`, `urlDocumento`, `columnasDeTabla`
 - `ui/FiltrosViajes.jsx` — `FiltrosViajes`
 - `ui/MapaRutaCamion.jsx` — `MapaRutaCamion`
+- `ui/ModalFinalizarViaje.jsx` — `ModalFinalizarViaje`
 - `ui/ModalProgramacion.jsx` — `ModalProgramacion`
 - `ui/ModalStatusCaja.jsx` — `ModalStatusCaja`
 - `ui/TablaProgramaciones.jsx` — `TablaProgramaciones`
@@ -15,7 +16,8 @@ El Administrador de viajes: la tabla de viajes por pestaña con sus filtros, la 
 ## Cómo funciona
 
 - Las pestañas, los filtros y las acciones son reglas de `entities/trip` y `entities/schedule`.
-- `ModalStatusCaja` pregunta el status de la caja antes de marcar un viaje como Almost Over.
+- `ModalStatusCaja` pregunta el status de la caja antes de marcar un viaje como Almost Over; con caja externa no se abre.
+- `ModalFinalizarViaje` pide la fecha de inicio y la final antes de finalizar un viaje.
 - Los filtros sobreviven a la navegación en `store/useViajesFiltrosStore.js`.
 
 ## Pendiente

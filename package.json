@@ -1,7 +1,7 @@
 {
   "name": "imaappdesktopreact",
   "private": true,
-  "version": "1.5.4",
+  "version": "1.5.7",
   "description": "IMA Express Desktop Application",
   "author": "IMA Express",
   "type": "module",
@@ -46,6 +46,7 @@
     "react-photo-view": "^1.2.7",
     "react-router-dom": "^7.4.1",
     "react-tooltip": "^5.28.0",
+    "tesseract.js": "^6.0.1",
     "zod": "^4.5.4",
     "zustand": "^5.0.13"
   },

@@ -19,6 +19,8 @@ export const MODO_EDICION = {
 /**
  * Lo que cambia entre los dos modos de edición.
  *
+ * `resumenRuta` enseña, en un viaje completado, la ruta que hizo la unidad.
+ *
  * @type {Object.<string, object>}
  */
 export const AJUSTES_MODO = {
@@ -26,11 +28,13 @@ export const AJUSTES_MODO = {
     op: OP_GUARDADO.NORMAL,
     catalogosCompletos: false,
     editaTransnacional: false,
+    resumenRuta: true,
   },
   [MODO_EDICION.COMPLETO]: {
     op: OP_GUARDADO.COMPLETO,
     catalogosCompletos: true,
     editaTransnacional: true,
+    resumenRuta: false,
   },
 }
 
