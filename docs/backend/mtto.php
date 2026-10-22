@@ -4,11 +4,14 @@
 // getInspecciones   · las inspecciones de un lado, con lo que REALMENTE hay que atender
 // getPuntos         · los puntos de una inspección, con el estado de cada uno
 // resolverPuntos    · manda puntos a pendientes o los descarta
-// getPendientes     · las reparaciones pendientes, por unidad
+// getPendientes     · las reparaciones pendientes, por unidad, con las que se descartaron ahí
+// descartarPendientes · descarta reparaciones pendientes por su id
 // crearPendiente    · levanta una reparación a mano, sin inspección de por medio
 // completarLado     · cierra el lado de camión o de caja de una inspección
 // crearOrden        · levanta la orden de servicio con un servicio por punto
 // ligarGasto        · amarra un gasto ya creado con el concepto de la orden (reparación)
+// getOrden          · una orden completa: unidad, servicios, de dónde salió cada uno y sus conceptos
+// eliminarOrden     · borra una orden y regresa sus reparaciones a pendientes
 //
 // No escribe en ninguna tabla del checklist del operador ni en `cl_final`: lo que él
 // reportó queda como lo escribió. El estado vive en `mtto_puntos` y en
@@ -214,11 +217,14 @@ try {
                     actualizado_por = VALUES(creado_por)
             ");
 
+            // Sin renglón del checklist el índice único no aplica y el INSERT crea una
+            // fila nueva en vez de cambiar la existente: así se perdían los descartes
+            // de pendientes levantadas a mano. Esas van por `descartarPendientes`.
             $tocados = 0;
             foreach ($items as $item) {
                 $descripcion = trim($item['descripcion'] ?? '');
                 $unidad_tipo = ($item['unidad_tipo'] ?? '') === 'caja' ? 'caja' : 'camion';
-                if ($descripcion === '') continue;
+                if ($descripcion === '' || empty($item['origen_tabla']) || empty($item['origen_id'])) continue;
 
                 $stmt->execute([
                     ':cl_final_id'  => $item['cl_final_id'] ?? null,
@@ -250,7 +256,8 @@ try {
              LEFT JOIN trucks tr ON tr.truck_id = p.truck_id
              LEFT JOIN caja   c  ON c.caja_id   = p.caja_id
              LEFT JOIN trips  t  ON t.trip_id   = p.viaje_id
-                 WHERE p.estatus = 'en_pendientes'
+                 WHERE (p.estatus = 'en_pendientes'
+                        OR (p.estatus = 'descartado' AND p.descartado_en_pendientes = 1))
             ";
 
             $parametros = [];
@@ -258,12 +265,37 @@ try {
                 $sql .= " AND p.unidad_tipo = ?";
                 $parametros[] = $unidad_tipo;
             }
-            $sql .= " ORDER BY p.unidad_tipo, COALESCE(tr.unidad, c.no_caja), p.creado_en";
+            $sql .= " ORDER BY p.unidad_tipo, COALESCE(tr.unidad, c.no_caja), p.estatus = 'descartado', p.creado_en";
 
             $stmt = $db->prepare($sql);
             $stmt->execute($parametros);
 
             echo json_encode(['status' => 'success', 'pendientes' => $stmt->fetchAll(PDO::FETCH_ASSOC)]);
+            break;
+
+        case 'descartarPendientes':
+            // Por id y no por renglón del checklist: las levantadas a mano no tienen
+            // renglón. Solo toca las que siguen pendientes, para no pisar una que ya
+            // entró a una orden mientras la pantalla estaba abierta.
+            $ids = json_decode($_POST['ids'] ?? '', true);
+            $id_usuario = $_POST['id_usuario'] ?? null;
+
+            $ids = is_array($ids) ? array_values(array_filter(array_map('intval', $ids))) : [];
+            if (count($ids) === 0) {
+                http_response_code(400);
+                echo json_encode(['status' => 'error', 'message' => 'No se recibió ninguna reparación.']);
+                break;
+            }
+
+            $marcas = implode(',', array_fill(0, count($ids), '?'));
+            $stmt = $db->prepare("
+                UPDATE mtto_puntos
+                   SET estatus = 'descartado', descartado_en_pendientes = 1, actualizado_por = ?
+                 WHERE estatus = 'en_pendientes' AND id IN ({$marcas})
+            ");
+            $stmt->execute(array_merge([$id_usuario ?: null], $ids));
+
+            echo json_encode(['status' => 'success', 'descartados' => $stmt->rowCount()]);
             break;
 
         case 'crearPendiente':
@@ -526,6 +558,113 @@ try {
             }
 
             echo json_encode(['status' => 'success', 'ligados' => $ligados]);
+            break;
+
+        case 'getOrden':
+            // `service_order.php · getOrderById` no trae el origen del servicio ni la
+            // categoría y el gasto de cada concepto, que solo existen en las tablas de
+            // este flujo. Sin eso, editar la orden la enseñaba a medias.
+            $id_orden = $_POST['id_orden'] ?? '';
+
+            if (!filter_var($id_orden, FILTER_VALIDATE_INT)) {
+                http_response_code(400);
+                echo json_encode(['status' => 'error', 'message' => 'Falta id_orden.']);
+                break;
+            }
+
+            $stmt = $db->prepare("
+                SELECT o.id_orden, o.fecha_orden, o.estatus, o.truck_id, o.caja_id, o.tipo_cambio,
+                       o.fecha_creacion, t.unidad AS nombre_camion, cj.no_caja AS nombre_caja
+                  FROM ordenes_servicio o
+             LEFT JOIN trucks t  ON t.truck_id = o.truck_id
+             LEFT JOIN caja   cj ON cj.caja_id = o.caja_id
+                 WHERE o.id_orden = ?
+            ");
+            $stmt->execute([(int)$id_orden]);
+            $orden = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$orden) {
+                http_response_code(404);
+                echo json_encode(['status' => 'error', 'message' => 'La orden no existe.']);
+                break;
+            }
+
+            $stmt = $db->prepare("
+                SELECT s.id_servicio, s.tipo_mantenimiento, s.origen_servicio, s.tipo_reparacion,
+                       s.estatus, s.fecha_termino,
+                       p.origen AS punto_origen, p.categoria AS punto_categoria,
+                       p.descripcion AS punto_descripcion, tr.trip_number
+                  FROM servicios_orden s
+             LEFT JOIN mtto_puntos p ON p.id_servicio = s.id_servicio
+             LEFT JOIN trips tr ON tr.trip_id = p.viaje_id
+                 WHERE s.id_orden = ?
+              ORDER BY s.id_servicio
+            ");
+            $stmt->execute([(int)$id_orden]);
+            $servicios = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            $stmtDetalles = $db->prepare("
+                SELECT d.id_detalle, d.id_articulo, d.tipo_detalle, d.descripcion, d.cantidad, d.costo,
+                       m.categoria, m.id_gasto
+                  FROM orden_servicio_detalles d
+             LEFT JOIN mtto_concepto_detalle m ON m.id_detalle = d.id_detalle
+                 WHERE d.id_servicio = ?
+              ORDER BY d.id_detalle
+            ");
+            foreach ($servicios as &$servicio) {
+                $stmtDetalles->execute([(int)$servicio['id_servicio']]);
+                $servicio['detalles'] = $stmtDetalles->fetchAll(PDO::FETCH_ASSOC);
+            }
+            unset($servicio);
+
+            echo json_encode(['status' => 'success', 'orden' => $orden, 'servicios' => $servicios]);
+            break;
+
+        case 'eliminarOrden':
+            // Las tablas de la orden no tienen llaves con cascada, así que se borra de
+            // abajo hacia arriba. Lo que la orden atendía no se pierde: vuelve a
+            // pendientes. El gasto se queda en el Administrador de Gastos (se pagó) y el
+            // inventario que haya descontado una orden vieja no se regresa.
+            $id_orden = $_POST['id_orden'] ?? '';
+            $id_usuario = $_POST['id_usuario'] ?? null;
+
+            if (!filter_var($id_orden, FILTER_VALIDATE_INT)) {
+                http_response_code(400);
+                echo json_encode(['status' => 'error', 'message' => 'Falta id_orden.']);
+                break;
+            }
+
+            try {
+                $db->beginTransaction();
+
+                $stmt = $db->prepare("
+                    UPDATE mtto_puntos
+                       SET estatus = 'en_pendientes', id_orden = NULL, id_servicio = NULL, actualizado_por = ?
+                     WHERE id_orden = ?
+                ");
+                $stmt->execute([$id_usuario ?: null, (int)$id_orden]);
+                $regresados = $stmt->rowCount();
+
+                $db->prepare("
+                    DELETE d FROM orden_servicio_detalles d
+                      JOIN servicios_orden s ON s.id_servicio = d.id_servicio
+                     WHERE s.id_orden = ?
+                ")->execute([(int)$id_orden]);
+                $db->prepare("DELETE FROM servicios_orden WHERE id_orden = ?")->execute([(int)$id_orden]);
+
+                $stmt = $db->prepare("DELETE FROM ordenes_servicio WHERE id_orden = ?");
+                $stmt->execute([(int)$id_orden]);
+                if ($stmt->rowCount() === 0) {
+                    throw new Exception('La orden no existe.');
+                }
+
+                $db->commit();
+                echo json_encode(['status' => 'success', 'regresados' => $regresados]);
+            } catch (Exception $e) {
+                if ($db->inTransaction()) $db->rollBack();
+                http_response_code(500);
+                echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+            }
             break;
 
         default:
