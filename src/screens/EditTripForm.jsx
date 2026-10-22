@@ -19,6 +19,7 @@ import StageList from '../components/EditTripForm/StageList';
 import ModalsContainer from '../components/EditTripForm/ModalsContainer';
 import { esDtopsConGasto } from '../utils/gastoDtops';
 import InvoiceModal from '../components/InvoiceModal';
+import TripRouteSummary from '../components/EditTripForm/TripRouteSummary';
 
 const EditTripForm = () => {
     const apiHost = import.meta.env.VITE_API_HOST;
@@ -390,6 +391,8 @@ const EditTripForm = () => {
                 loadingStates={{ companies: loadingCompanies || isCreatingCompany, warehouses: loadingWarehouses || isCreatingWarehouse }}
                 apiHost={apiHost} agregarNuevaEtapa={agregarNuevaEtapa} handleOpenInvoiceModal={handleOpenInvoiceModal}
             />
+
+            {formData.status === 'Completed' && <TripRouteSummary tripId={tripId} apiHost={apiHost} />}
 
             {/* Modales Limpios */}
             <ModalsContainer

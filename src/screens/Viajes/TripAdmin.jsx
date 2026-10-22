@@ -361,8 +361,10 @@ const TripAdmin = () => {
         }
     };
 
-    const handleOpenAlmostOverModal = (tripId, tripNumber, countryCode) => {
+    const handleOpenAlmostOverModal = (tripId, tripNumber, countryCode, isCajaExterna) => {
         if (!tripId) return;
+        // Las cajas externas no son nuestras: no se registra su status, se marca directo
+        if (isCajaExterna) return handleAlmostOverTrip(tripId, tripNumber);
         setAlmostOverModal({ open: true, tripId, tripNumber, countryCode });
     };
 
@@ -396,10 +398,37 @@ const TripAdmin = () => {
 
     const handleFinalizeTrip = async (tripId, tripNumber) => {
         if (!tripId) return;
-        const confirmation = await Swal.fire({ title: '¿Finalizar Viaje?', text: `Viaje #${tripNumber} será completado.`, icon: 'warning', showCancelButton: true, confirmButtonText: 'Sí, finalizar' });
+        const now = dayjs().format('YYYY-MM-DDTHH:mm');
+        const inputStyle = 'width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:15px;box-sizing:border-box';
+        const confirmation = await Swal.fire({
+            title: '¿Finalizar Viaje?',
+            html: `
+                <p style="margin:0 0 12px">Viaje #${tripNumber} será completado. Indica cuándo inició y cuándo terminó.</p>
+                <div style="text-align:left">
+                    <label for="swal-fecha-inicio" style="font-weight:600;font-size:14px">Fecha de inicio</label>
+                    <input id="swal-fecha-inicio" type="datetime-local" max="${now}" style="${inputStyle};margin:4px 0 12px">
+                    <label for="swal-fecha-fin" style="font-weight:600;font-size:14px">Fecha final</label>
+                    <input id="swal-fecha-fin" type="datetime-local" max="${now}" value="${now}" style="${inputStyle};margin-top:4px">
+                </div>`,
+            icon: 'warning',
+            focusConfirm: false,
+            showCancelButton: true,
+            confirmButtonText: 'Guardar',
+            cancelButtonText: 'Cancelar',
+            preConfirm: () => {
+                const inicio = document.getElementById('swal-fecha-inicio').value;
+                const fin = document.getElementById('swal-fecha-fin').value;
+                if (!inicio || !fin) return Swal.showValidationMessage('Selecciona la fecha de inicio y la fecha final.');
+                if (dayjs(fin).isAfter(dayjs())) return Swal.showValidationMessage('La fecha final no puede ser futura.');
+                if (!dayjs(inicio).isBefore(dayjs(fin))) return Swal.showValidationMessage('La fecha de inicio debe ser anterior a la fecha final.');
+                return { inicio, fin };
+            },
+        });
         if (confirmation.isConfirmed) {
             try {
                 const formData = new FormData(); formData.append('op', 'FinalizeTrip'); formData.append('trip_id', tripId);
+                formData.append('fecha_inicio', dayjs(confirmation.value.inicio).format('YYYY-MM-DD HH:mm:ss'));
+                formData.append('fecha_finalizacion', dayjs(confirmation.value.fin).format('YYYY-MM-DD HH:mm:ss'));
                 const response = await fetch(`${apiHost}/new_trips.php`, { method: 'POST', body: formData });
                 const result = await response.json();
                 if (response.ok && result.status === 'success') { Swal.fire('¡Finalizado!', result.message, 'success'); fetchTrips(); }
