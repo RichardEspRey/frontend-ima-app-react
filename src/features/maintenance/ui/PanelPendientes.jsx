@@ -30,6 +30,7 @@ import { BarraFiltros } from "./BarraFiltros"
 import { ConstructorOrden } from "./ConstructorOrden"
 import { FilaUnidadPendiente } from "./FilaUnidadPendiente"
 import { ModalPendienteManual } from "./ModalPendienteManual"
+import { ModalDatosPendiente } from "./ModalDatosPendiente"
 
 const LADOS = [
   { id: UNIDAD.CAMION, etiqueta: "Camiones", columna: "Camión" },
@@ -150,6 +151,15 @@ export function PanelPendientes() {
           apertura={panel.apertura}
           onCerrar={panel.cerrarOrden}
           onCreada={panel.ordenCreada}
+        />
+      ) : null}
+
+      {panel.enEdicion ? (
+        <ModalDatosPendiente
+          reparacion={panel.enEdicion}
+          guardando={panel.guardando}
+          onCancelar={panel.cerrarEdicion}
+          onGuardar={panel.guardarDatos}
         />
       ) : null}
 

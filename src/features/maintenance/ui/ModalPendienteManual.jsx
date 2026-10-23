@@ -14,6 +14,8 @@ import { UNIDAD } from "../../../entities/maintenance-point"
 import { useCamionesActivosCompletos } from "../../../entities/truck"
 import { useCajasActivasCompletas } from "../../../entities/trailer"
 import { COLOR, DIALOG_PAPER_SX, Pestanas, SECTION_LABEL_SX } from "../../../shared/ui"
+import { hoyLocal } from "../../../shared/lib/formato"
+import { CamposOperadorFecha } from "./CamposOperadorFecha"
 
 const LARGO_DESCRIPCION = 250
 
@@ -33,13 +35,15 @@ const LADOS = [
  * @param {string} props.unidadTipo El lado en el que se abrió, `camion` o `caja`.
  * @param {boolean} props.guardando Si la alta está en curso.
  * @param {Function} props.onCancelar Qué hacer al cerrar sin guardar.
- * @param {Function} props.onGuardar Recibe `{unidadTipo, unidadId, descripcion}`.
+ * @param {Function} props.onGuardar Recibe `{unidadTipo, unidadId, descripcion, driverId, fechaReporte}`.
  * @returns {object} El diálogo renderizado.
  */
 export function ModalPendienteManual({ unidadTipo: tipoInicial, guardando, onCancelar, onGuardar }) {
   const [unidadTipo, setUnidadTipo] = useState(tipoInicial || UNIDAD.CAMION)
   const [unidadId, setUnidadId] = useState("")
   const [descripcion, setDescripcion] = useState("")
+  const [driverId, setDriverId] = useState("")
+  const [fechaReporte, setFechaReporte] = useState(hoyLocal)
 
   const { data: camiones } = useCamionesActivosCompletos()
   const { data: cajas } = useCajasActivasCompletas()
@@ -104,6 +108,14 @@ export function ModalPendienteManual({ unidadTipo: tipoInicial, guardando, onCan
             onChange={(evento) => setDescripcion(evento.target.value.slice(0, LARGO_DESCRIPCION))}
             inputProps={{ maxLength: LARGO_DESCRIPCION }}
           />
+
+          <CamposOperadorFecha
+            driverId={driverId}
+            fecha={fechaReporte}
+            disabled={guardando}
+            onCambiarOperador={(id) => setDriverId(id)}
+            onCambiarFecha={setFechaReporte}
+          />
         </Stack>
       </DialogContent>
 
@@ -114,7 +126,9 @@ export function ModalPendienteManual({ unidadTipo: tipoInicial, guardando, onCan
         <Button
           variant="contained"
           disabled={!unidadId || !descripcion.trim() || guardando}
-          onClick={() => onGuardar({ unidadTipo, unidadId, descripcion: descripcion.trim() })}
+          onClick={() =>
+            onGuardar({ unidadTipo, unidadId, descripcion: descripcion.trim(), driverId, fechaReporte })
+          }
         >
           {guardando ? "Guardando…" : "Levantar"}
         </Button>

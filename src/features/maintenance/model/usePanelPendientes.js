@@ -3,6 +3,7 @@ import {
   UNIDAD,
   agruparPorUnidad,
   reparacionesVigentes,
+  useActualizarPendiente,
   useCrearPendiente,
   useDescartarPendientes,
   usePendientes,
@@ -28,10 +29,12 @@ export function usePanelPendientes() {
   const [filtros, setFiltros] = useState(SIN_FILTROS_PENDIENTE)
   const [apertura, setApertura] = useState(null)
   const [altaAbierta, setAltaAbierta] = useState(false)
+  const [enEdicion, setEnEdicion] = useState(null)
 
   const consulta = usePendientes(lado)
   const descartarMutacion = useDescartarPendientes()
   const levantar = useCrearPendiente()
+  const corregir = useActualizarPendiente()
 
   const filtrados = useMemo(
     () => filtrarPendientes(consulta.data ?? [], filtros, lado),
@@ -91,6 +94,15 @@ export function usePanelPendientes() {
     }
   }
 
+  const guardarDatos = async (datos) => {
+    try {
+      await corregir.mutateAsync({ ...datos, usuarioId: usuario?.id })
+      setEnEdicion(null)
+    } catch (error) {
+      notify.error(error)
+    }
+  }
+
   return {
     lado,
     cambiarLado: (valor) => {
@@ -137,6 +149,10 @@ export function usePanelPendientes() {
     abrirAlta: () => setAltaAbierta(true),
     cerrarAlta: () => setAltaAbierta(false),
     guardarManual,
-    guardando: descartarMutacion.isPending || levantar.isPending,
+    enEdicion,
+    abrirEdicion: (reparacion) => setEnEdicion(reparacion),
+    cerrarEdicion: () => setEnEdicion(null),
+    guardarDatos,
+    guardando: descartarMutacion.isPending || levantar.isPending || corregir.isPending,
   }
 }

@@ -4,25 +4,30 @@ import {
   Checkbox,
   Chip,
   FormControlLabel,
+  IconButton,
   Stack,
   TableCell,
   TableRow,
+  Tooltip,
   Typography,
 } from "@mui/material"
 import BuildOutlinedIcon from "@mui/icons-material/BuildOutlined"
 import BlockOutlinedIcon from "@mui/icons-material/BlockOutlined"
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined"
 import {
   ESTATUS_PUNTO,
   ETIQUETA_ESTATUS,
   esDescartada,
   reparacionesVigentes,
 } from "../../../entities/maintenance-point"
-import { COLOR } from "../../../shared/ui"
+import { COLOR, aFecha } from "../../../shared/ui"
+import { soloFecha } from "../../../shared/lib/formato"
 
 const BOTON_SX = { textTransform: "none", fontWeight: 700, borderRadius: 2 }
 
 /**
- * Una reparación pendiente, con su rubro y de dónde salió.
+ * Una reparación pendiente, con su rubro, de dónde salió, el operador y la
+ * fecha de enviado.
  *
  * La descartada se queda a la vista, tachada y con su etiqueta, pero ya no se
  * puede marcar.
@@ -32,9 +37,10 @@ const BOTON_SX = { textTransform: "none", fontWeight: 700, borderRadius: 2 }
  * @param {number} props.indice Su número dentro de la unidad.
  * @param {boolean} props.marcada Si está seleccionada.
  * @param {Function} props.onAlternar Marcar o desmarcar.
+ * @param {Function} props.onEditar Abrir la corrección de operador y fecha.
  * @returns {object} El renglón renderizado.
  */
-function Reparacion({ reparacion, indice, marcada, onAlternar }) {
+function Reparacion({ reparacion, indice, marcada, onAlternar, onEditar }) {
   const descartada = esDescartada(reparacion)
 
   return (
@@ -100,6 +106,20 @@ function Reparacion({ reparacion, indice, marcada, onAlternar }) {
             viaje {reparacion.trip_number}
           </Typography>
         ) : null}
+        <Stack direction="row" alignItems="center" spacing={0.5}>
+          <Typography variant="caption" color={COLOR.APAGADO}>
+            {reparacion.operador || "Sin operador"}
+            {" · enviado "}
+            {reparacion.fecha_reporte ? soloFecha(aFecha(reparacion.fecha_reporte)) : "sin fecha"}
+          </Typography>
+          {descartada ? null : (
+            <Tooltip title="Editar operador y fecha de enviado">
+              <IconButton size="small" sx={{ p: 0.25 }} onClick={() => onEditar(reparacion)}>
+                <EditOutlinedIcon sx={{ fontSize: 14, color: COLOR.TENUE }} />
+              </IconButton>
+            </Tooltip>
+          )}
+        </Stack>
       </Box>
     </Stack>
   )
@@ -158,6 +178,7 @@ export function FilaUnidadPendiente({ unidad, panel }) {
             indice={indice}
             marcada={panel.elegidos.includes(reparacion.id)}
             onAlternar={panel.alternar}
+            onEditar={panel.abrirEdicion}
           />
         ))}
       </TableCell>

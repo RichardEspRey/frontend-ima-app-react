@@ -99,7 +99,7 @@ export function filtrarPendientes(pendientes = [], filtros, lado) {
 
     if (
       filtros.texto.trim() &&
-      !contiene(`${pendiente.descripcion} ${pendiente.categoria}`, filtros.texto)
+      !contiene(`${pendiente.descripcion} ${pendiente.categoria} ${pendiente.operador}`, filtros.texto)
     ) {
       return false
     }

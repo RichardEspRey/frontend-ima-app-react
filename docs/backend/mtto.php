@@ -65,6 +65,11 @@ $SIN_FALLA = [
 ];
 
 // La expresión que decide si un renglón del checklist es trabajo o es "todo bien".
+function fechaValida($texto) {
+    $fecha = DateTime::createFromFormat('Y-m-d', (string)$texto);
+    return $fecha && $fecha->format('Y-m-d') === $texto;
+}
+
 function filtroConFalla($columna = 'contenido') {
     return "TRIM(TRAILING '.' FROM TRIM(COALESCE({$columna}, ''))) NOT IN (" .
         implode(',', array_fill(0, count($GLOBALS['SIN_FALLA']), '?')) . ")";
@@ -251,11 +256,16 @@ try {
             $sql = "
                 SELECT p.id, p.origen, p.categoria, p.descripcion, p.estatus, p.unidad_tipo,
                        p.truck_id, p.caja_id, p.viaje_id, p.creado_en,
-                       tr.unidad AS no_camion, c.no_caja, t.trip_number
+                       tr.unidad AS no_camion, c.no_caja, t.trip_number,
+                       COALESCE(p.driver_id, cf.driver_id) AS driver_id,
+                       dr.nombre AS operador,
+                       COALESCE(p.fecha_reporte, DATE(cf.fecha_creacion), DATE(p.creado_en)) AS fecha_reporte
                   FROM mtto_puntos p
              LEFT JOIN trucks tr ON tr.truck_id = p.truck_id
              LEFT JOIN caja   c  ON c.caja_id   = p.caja_id
              LEFT JOIN trips  t  ON t.trip_id   = p.viaje_id
+             LEFT JOIN cl_final cf ON cf.id     = p.cl_final_id
+             LEFT JOIN drivers  dr ON dr.driver_id = COALESCE(p.driver_id, cf.driver_id)
                  WHERE (p.estatus = 'en_pendientes'
                         OR (p.estatus = 'descartado' AND p.descartado_en_pendientes = 1))
             ";
@@ -303,28 +313,80 @@ try {
             $descripcion = trim($_POST['descripcion'] ?? '');
             $unidad_id = $_POST['unidad_id'] ?? '';
             $id_usuario = $_POST['id_usuario'] ?? null;
+            $driver_id = $_POST['driver_id'] ?? '';
+            $fecha_reporte = $_POST['fecha_reporte'] ?? '';
 
             if ($descripcion === '' || !filter_var($unidad_id, FILTER_VALIDATE_INT)) {
                 http_response_code(400);
                 echo json_encode(['status' => 'error', 'message' => 'Faltan la unidad y la descripción.']);
                 break;
             }
+            if (($driver_id !== '' && !filter_var($driver_id, FILTER_VALIDATE_INT))
+                || ($fecha_reporte !== '' && !fechaValida($fecha_reporte))) {
+                http_response_code(400);
+                echo json_encode(['status' => 'error', 'message' => 'El operador o la fecha de enviado no son válidos.']);
+                break;
+            }
 
             $stmt = $db->prepare("
                 INSERT INTO mtto_puntos
-                    (origen, unidad_tipo, truck_id, caja_id, descripcion, estatus, creado_por)
+                    (origen, unidad_tipo, truck_id, caja_id, driver_id, fecha_reporte, descripcion, estatus, creado_por)
                 VALUES
-                    ('manual', :unidad_tipo, :truck_id, :caja_id, :descripcion, 'en_pendientes', :usuario)
+                    ('manual', :unidad_tipo, :truck_id, :caja_id, :driver_id, :fecha_reporte, :descripcion, 'en_pendientes', :usuario)
             ");
             $stmt->execute([
-                ':unidad_tipo' => $unidad_tipo,
-                ':truck_id'    => $unidad_tipo === 'camion' ? (int)$unidad_id : null,
-                ':caja_id'     => $unidad_tipo === 'caja'   ? (int)$unidad_id : null,
-                ':descripcion' => mb_substr($descripcion, 0, LARGO_DESCRIPCION),
-                ':usuario'     => $id_usuario ?: null,
+                ':unidad_tipo'   => $unidad_tipo,
+                ':truck_id'      => $unidad_tipo === 'camion' ? (int)$unidad_id : null,
+                ':caja_id'       => $unidad_tipo === 'caja'   ? (int)$unidad_id : null,
+                ':driver_id'     => $driver_id !== '' ? (int)$driver_id : null,
+                ':fecha_reporte' => $fecha_reporte !== '' ? $fecha_reporte : null,
+                ':descripcion'   => mb_substr($descripcion, 0, LARGO_DESCRIPCION),
+                ':usuario'       => $id_usuario ?: null,
             ]);
 
             echo json_encode(['status' => 'success', 'id' => (int)$db->lastInsertId()]);
+            break;
+
+        case 'actualizarPendiente':
+            $id = $_POST['id'] ?? '';
+            $driver_id = $_POST['driver_id'] ?? '';
+            $fecha_reporte = $_POST['fecha_reporte'] ?? '';
+            $id_usuario = $_POST['id_usuario'] ?? null;
+
+            if (!filter_var($id, FILTER_VALIDATE_INT)
+                || ($driver_id !== '' && !filter_var($driver_id, FILTER_VALIDATE_INT))
+                || ($fecha_reporte !== '' && !fechaValida($fecha_reporte))) {
+                http_response_code(400);
+                echo json_encode(['status' => 'error', 'message' => 'Parámetros inválidos: id, operador y fecha de enviado.']);
+                break;
+            }
+
+            $stmt = $db->prepare("
+                UPDATE mtto_puntos
+                   SET driver_id = :driver_id, fecha_reporte = :fecha_reporte, actualizado_por = :usuario
+                 WHERE id = :id AND estatus = 'en_pendientes'
+            ");
+            $stmt->execute([
+                ':driver_id'     => $driver_id !== '' ? (int)$driver_id : null,
+                ':fecha_reporte' => $fecha_reporte !== '' ? $fecha_reporte : null,
+                ':usuario'       => $id_usuario ?: null,
+                ':id'            => (int)$id,
+            ]);
+
+            if ($stmt->rowCount() === 0) {
+                $existe = $db->prepare("SELECT estatus FROM mtto_puntos WHERE id = ?");
+                $existe->execute([(int)$id]);
+                $estatus = $existe->fetchColumn();
+                if ($estatus !== 'en_pendientes') {
+                    http_response_code(409);
+                    echo json_encode(['status' => 'error', 'message' => $estatus === false
+                        ? 'La reparación ya no existe.'
+                        : 'La reparación ya no está en pendientes; recarga la lista.']);
+                    break;
+                }
+            }
+
+            echo json_encode(['status' => 'success']);
             break;
 
         case 'completarLado':

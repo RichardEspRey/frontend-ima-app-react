@@ -153,6 +153,9 @@ export const esquemaPendiente = z.object({
   no_caja: textoPhp(),
   descripcion: z.string().catch(""),
   estatus: z.string().catch(ESTATUS_PUNTO.EN_PENDIENTES),
+  driver_id: nullable(idPhp()),
+  operador: textoPhp(),
+  fecha_reporte: textoPhp(),
 })
 
 /**

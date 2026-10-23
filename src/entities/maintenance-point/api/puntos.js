@@ -193,15 +193,42 @@ export function descartarPendientes({ ids, usuarioId }) {
  * @param {string} datos.unidadTipo `camion` o `caja`.
  * @param {string} datos.unidadId La unidad.
  * @param {string} datos.descripcion Qué hay que atender.
+ * @param {string} [datos.driverId] El operador.
+ * @param {string} [datos.fechaReporte] La fecha de enviado, `AAAA-MM-DD`.
  * @param {string} [datos.usuarioId] Quién la levantó.
  * @returns {Promise.<object>} La respuesta de la API.
  * @throws {ApiError} Si la API rechaza la operación.
  */
-export function crearPendiente({ unidadTipo, unidadId, descripcion, usuarioId }) {
+export function crearPendiente({ unidadTipo, unidadId, descripcion, driverId, fechaReporte, usuarioId }) {
   return post(ENDPOINTS.mantenimiento, "crearPendiente", {
     unidad_tipo: unidadTipo,
     unidad_id: unidadId,
     descripcion,
+    driver_id: driverId || "",
+    fecha_reporte: fechaReporte || "",
+    id_usuario: usuarioId,
+  })
+}
+
+/**
+ * Corrige el operador y la fecha de enviado de una reparación pendiente.
+ *
+ * Vacíos, el servidor vuelve a tomar los de la inspección del operador.
+ *
+ * @endpoint POST mtto.php · op=actualizarPendiente
+ * @param {object} datos Lo que se corrige.
+ * @param {string} datos.id La reparación.
+ * @param {string} [datos.driverId] El operador.
+ * @param {string} [datos.fechaReporte] La fecha de enviado, `AAAA-MM-DD`.
+ * @param {string} [datos.usuarioId] Quién lo corrigió.
+ * @returns {Promise.<object>} La respuesta de la API.
+ * @throws {ApiError} Si la reparación ya no está en pendientes.
+ */
+export function actualizarPendiente({ id, driverId, fechaReporte, usuarioId }) {
+  return post(ENDPOINTS.mantenimiento, "actualizarPendiente", {
+    id,
+    driver_id: driverId || "",
+    fecha_reporte: fechaReporte || "",
     id_usuario: usuarioId,
   })
 }
@@ -371,6 +398,16 @@ export function useCompletarLado() {
 export function useCrearOrdenMtto() {
   const refrescar = useRefrescarMantenimiento()
   return useMutation({ mutationFn: crearOrden, onSuccess: refrescar })
+}
+
+/**
+ * Corrige operador y fecha de una pendiente y refresca el flujo.
+ *
+ * @returns {object} El resultado de `useMutation`.
+ */
+export function useActualizarPendiente() {
+  const refrescar = useRefrescarMantenimiento()
+  return useMutation({ mutationFn: actualizarPendiente, onSuccess: refrescar })
 }
 
 /**

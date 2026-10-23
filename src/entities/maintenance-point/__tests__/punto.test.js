@@ -121,6 +121,25 @@ describe("reparaciones descartadas", () => {
     expect(pendiente.trip_number).toBe("")
     expect(pendiente.no_caja).toBe("101")
   })
+
+  it("conserva el operador y la fecha de enviado", () => {
+    const pendiente = esquemaPendiente.parse({
+      id: 9,
+      driver_id: "42",
+      operador: "Juan Pérez",
+      fecha_reporte: "2026-10-21",
+    })
+    expect(pendiente.driver_id).toBe("42")
+    expect(pendiente.operador).toBe("Juan Pérez")
+    expect(pendiente.fecha_reporte).toBe("2026-10-21")
+  })
+
+  it("sin operador ni fecha no dice «null»", () => {
+    const pendiente = esquemaPendiente.parse({ id: 9, driver_id: null, operador: null, fecha_reporte: null })
+    expect(pendiente.driver_id).toBeNull()
+    expect(pendiente.operador).toBe("")
+    expect(pendiente.fecha_reporte).toBe("")
+  })
 })
 
 describe("contarPorAtender", () => {
