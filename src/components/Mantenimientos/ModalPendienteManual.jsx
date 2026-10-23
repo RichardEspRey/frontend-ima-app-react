@@ -6,7 +6,8 @@ import {
 
 import useFetchActiveTrucks from '../../hooks/Edit_Trips_complete/useFetchActiveTrucks';
 import useFetchActiveTrailers from '../../hooks/Edit_Trips_complete/useFetchActiveTrailers';
-import { UNIDAD } from '../../services/mantenimiento';
+import { UNIDAD, hoy } from '../../services/mantenimiento';
+import CamposOperadorFecha from './CamposOperadorFecha';
 import { DIALOG_PAPER_SX, SECTION_LABEL_SX } from '../../styles/estilosTabla';
 
 const LARGO_DESCRIPCION = 250;
@@ -24,6 +25,8 @@ const ModalPendienteManual = ({ unidadTipo: tipoInicial, onCancelar, onGuardar }
     const [unidadTipo, setUnidadTipo] = useState(tipoInicial || UNIDAD.CAMION);
     const [unidadId, setUnidadId] = useState('');
     const [descripcion, setDescripcion] = useState('');
+    const [driverId, setDriverId] = useState('');
+    const [fechaReporte, setFechaReporte] = useState(hoy());
     const [guardando, setGuardando] = useState(false);
 
     useEffect(() => { setUnidadId(''); }, [unidadTipo]);
@@ -36,7 +39,7 @@ const ModalPendienteManual = ({ unidadTipo: tipoInicial, onCancelar, onGuardar }
     const guardar = async () => {
         setGuardando(true);
         try {
-            await onGuardar({ unidadTipo, unidadId, descripcion: descripcion.trim() });
+            await onGuardar({ unidadTipo, unidadId, descripcion: descripcion.trim(), driverId, fechaReporte });
         } finally {
             setGuardando(false);
         }
@@ -79,6 +82,14 @@ const ModalPendienteManual = ({ unidadTipo: tipoInicial, onCancelar, onGuardar }
                         value={descripcion} disabled={guardando}
                         onChange={(evento) => setDescripcion(evento.target.value.slice(0, LARGO_DESCRIPCION))}
                         inputProps={{ maxLength: LARGO_DESCRIPCION }}
+                    />
+
+                    <CamposOperadorFecha
+                        driverId={driverId}
+                        fecha={fechaReporte}
+                        disabled={guardando}
+                        onCambiarOperador={(id) => setDriverId(id)}
+                        onCambiarFecha={setFechaReporte}
                     />
                 </Stack>
             </DialogContent>

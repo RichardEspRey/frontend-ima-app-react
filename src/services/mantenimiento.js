@@ -123,8 +123,23 @@ export const obtenerOrden = async (idOrden) => {
 export const eliminarOrden = ({ idOrden, usuarioId }) =>
     pedirMtto('eliminarOrden', { id_orden: idOrden, id_usuario: usuarioId });
 
-export const crearPendienteManual = ({ unidadTipo, unidadId, descripcion, usuarioId }) =>
-    pedirMtto('crearPendiente', { unidad_tipo: unidadTipo, unidad_id: unidadId, descripcion, id_usuario: usuarioId });
+export const crearPendienteManual = ({ unidadTipo, unidadId, descripcion, driverId, fechaReporte, usuarioId }) =>
+    pedirMtto('crearPendiente', {
+        unidad_tipo: unidadTipo,
+        unidad_id: unidadId,
+        descripcion,
+        driver_id: driverId || '',
+        fecha_reporte: fechaReporte || '',
+        id_usuario: usuarioId,
+    });
+
+export const actualizarPendiente = ({ id, driverId, fechaReporte, usuarioId }) =>
+    pedirMtto('actualizarPendiente', {
+        id,
+        driver_id: driverId || '',
+        fecha_reporte: fechaReporte || '',
+        id_usuario: usuarioId,
+    });
 
 export const crearOrden = ({ unidadTipo, unidadId, fecha, tipoCambio, servicios, usuarioId }) =>
     pedirMtto('crearOrden', {
