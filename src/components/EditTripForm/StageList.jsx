@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { Typography, Stack, Button } from '@mui/material';
 import StageCard from '../trip-form/StageCard'; 
 
@@ -5,6 +6,17 @@ const StageList = ({
     etapas, handleStageChange, eliminarEtapa, agregarParadaEnRuta, eliminarParadaEnRuta,
     handleStopChange, abrirModal, isFormDisabled, options, creators, loadingStates, apiHost, agregarNuevaEtapa, handleOpenInvoiceModal
 }) => {
+    const [origenes, setOrigenes] = useState([]);
+
+    useEffect(() => {
+        const fd = new FormData();
+        fd.append('op', 'get_origenes');
+        fetch(`${apiHost}/new_tripsv2.php`, { method: 'POST', body: fd })
+            .then((res) => res.json())
+            .then((data) => { if (data.status === 'success') setOrigenes(data.data); })
+            .catch((err) => console.error('Error cargando orígenes:', err));
+    }, [apiHost]);
+
     return (
         <>
             <Typography variant="h6" sx={{ mb: 2, mt: 4, fontWeight: 600 }}>Itinerario (Etapas)</Typography>
@@ -26,6 +38,7 @@ const StageList = ({
                     loadingStates={loadingStates}
                     apiHost={apiHost}
                     handleOpenInvoiceModal={handleOpenInvoiceModal}
+                    origenes={origenes}
                 />
             ))}
 

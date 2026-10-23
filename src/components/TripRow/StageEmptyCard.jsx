@@ -27,6 +27,7 @@ export const StageEmptyCard = ({ etapa }) => {
                       Etapa {etapa.stage_number}
                     </Typography>
                 </Stack>
+                {isStageOne && (
                 <Chip
                   label="Vacío Inicial"
                   size="small"
@@ -39,6 +40,7 @@ export const StageEmptyCard = ({ etapa }) => {
                       '& .MuiChip-icon': { color: '#475569' },
                   }}
                 />
+                )}
             </Stack>
 
             {isStageOne && (

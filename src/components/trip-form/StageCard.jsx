@@ -6,6 +6,7 @@ import UploadFileIcon from '@mui/icons-material/UploadFile';
 import DownloadIcon from '@mui/icons-material/Download';
 import DocumentScannerIcon from '@mui/icons-material/DocumentScanner';
 import DocumentScanModal from '../DocumentScanModal';
+import EmptyStage from '../TripFormUSA/EmptyStage';
 import Select from 'react-select';
 import CreatableSelect from 'react-select/creatable';
 import DatePicker from 'react-datepicker';
@@ -67,7 +68,8 @@ const StageCard = ({
     creators,
     loadingStates,
     apiHost,
-    handleOpenInvoiceModal
+    handleOpenInvoiceModal,
+    origenes
 }) => {
     const user = useAuthStore(state => state.user);
     const userPermissions = useAuthStore(state => state.userPermissions);
@@ -137,20 +139,7 @@ const StageCard = ({
 
             <Box sx={{ p: 3 }}>
                 {etapa.stageType === 'emptyMileage' ? (
-                    <Grid container spacing={2}>
-                        <Grid item xs={12} sm={6}>
-                            <TextField fullWidth label="Millas PC*Miler Cortas" type="number" size="small"
-                                value={etapa.millas_pcmiller} onChange={(e) => handleStageChange(index, 'millas_pcmiller', e.target.value)} disabled={isFormDisabled} />
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                            <TextField fullWidth label="Millas Prácticas" type="number" size="small"
-                                value={etapa.millas_pcmiller_practicas} onChange={(e) => handleStageChange(index, 'millas_pcmiller_practicas', e.target.value)} disabled={isFormDisabled} />
-                        </Grid>
-                        <Grid item xs={12}>
-                            <TextField fullWidth label="Comentarios" multiline minRows={4} size="small"
-                                value={etapa.comments} onChange={(e) => handleStageChange(index, 'comments', e.target.value)} disabled={isFormDisabled} />
-                        </Grid>
-                    </Grid>
+                    <EmptyStage etapa={etapa} index={index} updateStage={handleStageChange} origenes={origenes} />
                 ) : (
                     <>
                         <Grid container spacing={2} mb={3}>
