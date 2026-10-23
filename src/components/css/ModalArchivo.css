@@ -61,6 +61,26 @@
   .dropzone:hover {
     border-color: var(--ima-marca-activo);
   }
+
+  .dropzone-activa {
+    border-color: var(--ima-marca-activo);
+    background-color: var(--ima-relleno);
+  }
+
+  .archivo-nombre {
+    margin-top: 12px;
+    font-size: 14px;
+    color: var(--ima-texto);
+    word-break: break-all;
+  }
+
+  .modal-aviso {
+    padding: 10px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--ima-peligro);
+    color: var(--ima-peligro);
+    font-size: 14px;
+  }
   
   .drop-text {
     display: flex;

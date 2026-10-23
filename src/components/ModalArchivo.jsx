@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { archivoDelEvento, GRUPOS_ARCHIVO } from '../shared/security';
-import { CampoFecha, aTextoFecha } from '../shared/ui';
+import { archivoDelEvento, validarArchivo, GRUPOS_ARCHIVO } from '../shared/security';
+import { CampoFecha, aTextoFecha, aFecha } from '../shared/ui';
 import './css/ModalArchivo.css';
 import { esImagen } from '../utils/tripFormConstants';
 
@@ -9,11 +9,15 @@ const ModalArchivo = ({ isOpen, onClose, onSave, title = "Subir/Editar Archivo",
   const [archivo, setArchivo] = useState(null);
   const [fechaVencimiento, setFechaVencimiento] = useState(new Date());
   const [previewUrl, setPreviewUrl] = useState(null);
+  const [arrastrando, setArrastrando] = useState(false);
+  const [aviso, setAviso] = useState('');
   const fileInputRef = useRef(null);
 
   useEffect(() => {
     if (isOpen) {
       setArchivo(null);
+      setAviso('');
+      setArrastrando(false);
 
       if (valorActual?.url) {
         setPreviewUrl(valorActual.url);
@@ -21,9 +25,7 @@ const ModalArchivo = ({ isOpen, onClose, onSave, title = "Subir/Editar Archivo",
         setPreviewUrl(null);
       }
 
-      setFechaVencimiento(
-        valorActual?.vencimiento ? new Date(valorActual.vencimiento) : new Date()
-      );
+      setFechaVencimiento(aFecha(aTextoFecha(valorActual?.vencimiento)) ?? new Date());
     }
   }, [isOpen, valorActual]);
 
@@ -33,33 +35,59 @@ const ModalArchivo = ({ isOpen, onClose, onSave, title = "Subir/Editar Archivo",
     return GRUPOS_ARCHIVO.DOCUMENTO;
   };
 
-  const handleArchivoChange = async (e) => {
-    const file = await archivoDelEvento(e, { grupo: grupoDelAccept() });
-    if (!file) return;
-
+  const usarArchivo = (file) => {
     setArchivo(file);
+    setAviso('');
     if (previewUrl) URL.revokeObjectURL(previewUrl);
     setPreviewUrl(URL.createObjectURL(file));
   };
 
+  const handleArchivoChange = async (e) => {
+    const file = await archivoDelEvento(e, { grupo: grupoDelAccept() });
+    if (file) usarArchivo(file);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setArrastrando(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    setArrastrando(false);
+  };
+
+  const handleDrop = async (e) => {
+    e.preventDefault();
+    setArrastrando(false);
+    const file = e.dataTransfer.files[0];
+    if (!file) return;
+    const resultado = await validarArchivo(file, { grupo: grupoDelAccept() });
+    if (resultado.valido) usarArchivo(file);
+    else setAviso(`${file.name}: ${resultado.motivo}`);
+  };
+
   const handleGuardar = () => {
-    if (archivo) {
-      const dataToSave = {
-        file: archivo,
-        fileName: archivo.name,
-        hasNewFile: true,
-      };
-      if (mostrarFechaVencimiento && fechaVencimiento) {
-        dataToSave.vencimiento = aTextoFecha(fechaVencimiento);
-      } else if (mostrarFechaVencimiento && !fechaVencimiento) {
-        alert('Por favor, selecciona una fecha de vencimiento.');
-        return;
-      }
-      onSave(dataToSave);
-      onClose();
-    } else {
-      alert('Selecciona un archivo y una fecha');
+    if (!archivo) {
+      setAviso(valorActual?.fileName
+        ? 'Para reemplazar el documento, selecciona o arrastra el archivo nuevo.'
+        : 'Selecciona o arrastra el archivo que quieres subir.');
+      return;
     }
+    if (mostrarFechaVencimiento && !fechaVencimiento) {
+      setAviso('Selecciona la fecha de vencimiento.');
+      return;
+    }
+    const dataToSave = {
+      file: archivo,
+      fileName: archivo.name,
+      hasNewFile: true,
+    };
+    if (mostrarFechaVencimiento) {
+      dataToSave.vencimiento = aTextoFecha(fechaVencimiento);
+    }
+    onSave(dataToSave);
+    onClose();
   };
 
   const handleBrowseClick = () => {
@@ -90,14 +118,25 @@ const ModalArchivo = ({ isOpen, onClose, onSave, title = "Subir/Editar Archivo",
           </div>
         )}
 
-        <div className="dropzone">
+        <div
+          className={`dropzone${arrastrando ? ' dropzone-activa' : ''}`}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+        >
           <label className="drop-text">
-            <div>Deje aquí sus archivos para cargarlos</div>
+            <div>Arrastra aquí el archivo o selecciónalo</div>
           </label>
 
           <button type='button' className="browse-button" onClick={handleBrowseClick}>
-            Seleccionar Archivo
+            {valorActual?.fileName ? 'Seleccionar archivo nuevo' : 'Seleccionar Archivo'}
           </button>
+
+          <div className="archivo-nombre">
+            {archivo
+              ? <>Archivo nuevo: <strong>{archivo.name}</strong></>
+              : valorActual?.fileName && <>Archivo actual: <strong>{valorActual.fileName}</strong></>}
+          </div>
           <input
             type="file"
             ref={fileInputRef}
@@ -118,9 +157,11 @@ const ModalArchivo = ({ isOpen, onClose, onSave, title = "Subir/Editar Archivo",
           )}
         </div>
 
+        {aviso && <div className="modal-aviso">{aviso}</div>}
+
         <div className="modal-actions">
           <button onClick={onClose} className="cancelar">Cancelar</button>
-          <button onClick={handleGuardar} className="guardar">Actualizar</button>
+          <button onClick={handleGuardar} className="guardar">{valorActual?.fileName ? 'Reemplazar' : 'Subir'}</button>
         </div>
       </div>
     </div>
