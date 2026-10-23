@@ -61,6 +61,27 @@
   .dropzone:hover {
     border-color: #0a3d91;
   }
+
+  .dropzone-activa {
+    border-color: #0a3d91;
+    background-color: #eef3fb;
+  }
+
+  .archivo-nombre {
+    margin-top: 12px;
+    font-size: 14px;
+    color: #334155;
+    word-break: break-all;
+  }
+
+  .modal-aviso {
+    padding: 10px 12px;
+    border-radius: 6px;
+    background-color: #fef2f2;
+    border: 1px solid #fca5a5;
+    color: #b91c1c;
+    font-size: 14px;
+  }
   
   .drop-text {
     display: flex;
