@@ -39,16 +39,28 @@ function viajeEnTurno($db, $caja_id) {
     return $trip_id === false ? null : (int)$trip_id;
 }
 
-// La etapa en curso de un viaje: la primera que no está completada.
+// La etapa en curso de un viaje: la primera etapa con carga sin BL firmado; si todas lo tienen, la última.
+function sqlEtapaEnCurso($tripId) {
+    $terminada = "(COALESCE(s2.estatus, '') = 'Completed' OR EXISTS (
+                        SELECT 1
+                          FROM trip_document_relationship tdr
+                          JOIN documents dbl ON dbl.document_id = tdr.document_id
+                         WHERE tdr.trip_stage_id = s2.trip_stage_id
+                           AND tdr.is_active = 1
+                           AND LOWER(dbl.tipo_documento) = 'bl_firmado'))";
+
+    return "
+                            SELECT s2.trip_stage_id
+                              FROM trip_stages s2
+                             WHERE s2.trip_id = {$tripId}
+                               AND COALESCE(s2.stageType, '') <> 'emptyMileage'
+                          ORDER BY {$terminada} ASC,
+                                   CASE WHEN {$terminada} THEN -s2.stage_number ELSE s2.stage_number END ASC
+                             LIMIT 1";
+}
+
 function etapaEnCurso($db, $trip_id) {
-    $stmt = $db->prepare("
-        SELECT trip_stage_id
-          FROM trip_stages
-         WHERE trip_id = :trip_id
-           AND (estatus IS NULL OR estatus <> 'Completed')
-      ORDER BY stage_number ASC
-         LIMIT 1
-    ");
+    $stmt = $db->prepare(sqlEtapaEnCurso(':trip_id'));
     $stmt->execute([':trip_id' => $trip_id]);
     $etapa_id = $stmt->fetchColumn();
 
@@ -70,8 +82,8 @@ try {
 
         case 'getEstatusCajas':
             // Por cada caja activa: su viaje en turno (el más reciente que no está
-            // cerrado), el operador de ese viaje, la etapa en curso —la primera que
-            // no está Completed— y el broker de la etapa con carga más cercana a ella.
+            // cerrado), el operador de ese viaje, la etapa en curso —ver
+            // sqlEtapaEnCurso— y el broker de la etapa con carga más cercana a ella.
             $sql = "
                 SELECT
                     c.caja_id,
@@ -108,13 +120,7 @@ try {
                        ON d.driver_id = t.driver_id
 
                 LEFT JOIN trip_stages s
-                       ON s.trip_stage_id = (
-                            SELECT s2.trip_stage_id
-                              FROM trip_stages s2
-                             WHERE s2.trip_id = t.trip_id
-                               AND (s2.estatus IS NULL OR s2.estatus <> 'Completed')
-                          ORDER BY s2.stage_number ASC
-                             LIMIT 1)
+                       ON s.trip_stage_id = (" . sqlEtapaEnCurso('t.trip_id') . ")
 
                 LEFT JOIN trip_stages sb
                        ON sb.trip_stage_id = (
@@ -187,9 +193,9 @@ try {
                 }
 
                 // Ubicación automática: cargada va en ruta, según la dirección de la
-                // etapa en curso; vacía se queda en la pensión.
+                // etapa en curso; vacía o en Almost Over se queda en la pensión.
                 $ubicacionAuto = 'PENSION NLD';
-                if ($observacionAuto === 'CARGADA') {
+                if ($observacionAuto === 'CARGADA' && $fila['trip_status'] !== 'Almost Over') {
                     $ubicacionAuto = ubicacionPorDireccion($fila['direccion']) ?? 'PENSION NLD';
                 }
 
