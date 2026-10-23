@@ -67,6 +67,8 @@ export function useEstatusCajas() {
     queryKey: LLAVE_ESTATUS_CAJAS,
     queryFn: ({ signal }) => obtenerEstatusCajas({ signal }),
     refetchInterval: REFRESCO_TABLERO_MS,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: "always",
   })
 }
 
