@@ -46,6 +46,7 @@ const TintedBadge = ({ tone, icon, label, component, href, target }) => {
 };
 
 export const StageNormalCard = ({ etapa, getDocumentUrl, isCompleted }) => {
+  const esEtapaUno = Number(etapa.stage_number) === 1;
   const user = useAuthStore(state => state.user);
   const userPermissions = useAuthStore(state => state.userPermissions);
   const isAdmin = String(user?.tipo_usuario || '').trim().toLowerCase() === 'admin';
@@ -156,25 +157,11 @@ export const StageNormalCard = ({ etapa, getDocumentUrl, isCompleted }) => {
                 <Typography variant="body2" fontWeight={600} color="#334155" sx={{ lineHeight: 1.2 }}>{etapa.origin}</Typography>
                 <Box sx={{ mt: 0.8 }}>
                     <Typography variant="caption" color="#94a3b8" display="block" sx={{ fontSize: '0.65rem', textTransform: 'uppercase' }}>
-                      Fecha Salida
+                      {esEtapaUno ? 'Fecha Salida' : 'Fecha Carga'}
                     </Typography>
                     <Stack direction="row" alignItems="center" spacing={0.5}>
                       <CalendarTodayOutlinedIcon sx={{ fontSize: 12, color: '#94a3b8' }} />
                       <Typography variant="caption" fontWeight={700} color="#0f172a">
-                        {etapa.date_of_departure
-                          ? dayjs(etapa.date_of_departure).format("DD/MM/YY")
-                          : (etapa.creation_date ? dayjs(etapa.creation_date).format("DD/MM/YY") : '--')}
-                      </Typography>
-                    </Stack>
-                </Box>
-
-                <Box sx={{ mt: 0.5 }}>
-                    <Typography variant="caption" color="#94a3b8" display="block" sx={{ fontSize: '0.65rem', textTransform: 'uppercase' }}>
-                      Fecha Carga
-                    </Typography>
-                    <Stack direction="row" alignItems="center" spacing={0.5}>
-                      <CalendarTodayOutlinedIcon sx={{ fontSize: 12, color: '#94a3b8' }} />
-                      <Typography variant="caption" fontWeight={500} color="#475569">
                         {etapa.loading_date ? dayjs(etapa.loading_date).format("DD/MM/YY") : '--'}
                       </Typography>
                     </Stack>
