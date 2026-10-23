@@ -28,18 +28,20 @@ export const StageEmptyCard = ({ etapa }) => {
                       Etapa {etapa.stage_number}
                     </Typography>
                 </Stack>
-                <Chip
-                  label="Vacío Inicial"
-                  size="small"
-                  icon={<LocalShippingOutlinedIcon fontSize="small" />}
-                  sx={{
-                      bgcolor: COLOR.RELLENO,
-                      color: COLOR.TEXTO_SUAVE,
-                      fontWeight: 700,
-                      borderRadius: 1.5,
-                      '& .MuiChip-icon': { color: COLOR.TEXTO_SUAVE },
-                  }}
-                />
+                {isStageOne && (
+                    <Chip
+                      label="Vacío Inicial"
+                      size="small"
+                      icon={<LocalShippingOutlinedIcon fontSize="small" />}
+                      sx={{
+                          bgcolor: COLOR.RELLENO,
+                          color: COLOR.TEXTO_SUAVE,
+                          fontWeight: 700,
+                          borderRadius: 1.5,
+                          '& .MuiChip-icon': { color: COLOR.TEXTO_SUAVE },
+                      }}
+                    />
+                )}
             </Stack>
 
             {isStageOne && (

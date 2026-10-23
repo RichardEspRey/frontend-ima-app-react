@@ -12,6 +12,8 @@ import { urlSegura } from '../../shared/security';
 import { COLOR } from '../../shared/ui/tokens';
 import { SelectorBusqueda, CampoFecha } from '../../shared/ui';
 import { LADO_ESCANEO, ModalLeerDocumento, cambiosDeEtapa } from '../../features/document-scan';
+import { useOrigenes } from '../../entities/trip';
+import EmptyStage from '../TripFormUSA/EmptyStage';
 
 const DocButton = ({ label, doc, onClick, disabled, apiHost }) => (
     <Box sx={{ mb: 1 }}>
@@ -55,6 +57,11 @@ const EncabezadoBodega = ({ etiqueta, onLeer, disabled }) => (
         </Button>
     </Stack>
 );
+
+const EtapaVaciaEditable = (props) => {
+    const { data: origenes = [] } = useOrigenes();
+    return <EmptyStage {...props} origenes={origenes} />;
+};
 
 const StageCard = ({
     etapa,
@@ -133,20 +140,7 @@ const StageCard = ({
 
             <Box sx={{ p: 3 }}>
                 {etapa.stageType === 'emptyMileage' ? (
-                    <Grid container spacing={2}>
-                        <Grid size={{ xs: 12, sm: 6 }}>
-                            <TextField fullWidth label="Millas PC*Miler Cortas" type="number" size="small"
-                                value={etapa.millas_pcmiller} onChange={(e) => handleStageChange(index, 'millas_pcmiller', e.target.value)} disabled={isFormDisabled} />
-                        </Grid>
-                        <Grid size={{ xs: 12, sm: 6 }}>
-                            <TextField fullWidth label="Millas Prácticas" type="number" size="small"
-                                value={etapa.millas_pcmiller_practicas} onChange={(e) => handleStageChange(index, 'millas_pcmiller_practicas', e.target.value)} disabled={isFormDisabled} />
-                        </Grid>
-                        <Grid size={{ xs: 12 }}>
-                            <TextField fullWidth label="Comentarios" multiline minRows={4} size="small"
-                                value={etapa.comments} onChange={(e) => handleStageChange(index, 'comments', e.target.value)} disabled={isFormDisabled} />
-                        </Grid>
-                    </Grid>
+                    <EtapaVaciaEditable etapa={etapa} index={index} updateStage={handleStageChange} />
                 ) : (
                     <>
                         <Grid container spacing={2} mb={3}>

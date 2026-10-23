@@ -73,3 +73,4 @@ export { STATUS_CAJA_POR_PAIS, statusCajaDe, statusCajaValido, registraStatusCaj
 export { ahoraParaCampo, validarFechasFinalizacion, cuerpoFinalizacion } from "./model/finalizacion"
 export { esquemaRutaViaje, puntosDeRuta } from "./model/ruta"
 export { obtenerRutaViaje, useRutaViaje } from "./api/ruta"
+export { obtenerOrigenes, useOrigenes } from "./api/origenes"
