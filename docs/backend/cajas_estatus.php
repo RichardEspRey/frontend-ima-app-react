@@ -15,9 +15,10 @@ header("Content-Type: application/json");
 
 $op = $_POST['op'] ?? '';
 
-// Las cuatro ubicaciones y las dos observaciones que admite la pantalla.
-$UBICACIONES  = ['PENSION NLD', 'TALLER', 'RUTA SUBIENDO', 'RUTA BAJANDO'];
-$OBSERVACIONES = ['VACIA', 'CARGADA'];
+// Las ubicaciones y observaciones que admite la pantalla. PENSION USA, MANTENIMIENTO,
+// AGENCIA ADUANAL, CARGANDO y DESCARGANDO solo se capturan a mano: ningún cálculo las produce.
+$UBICACIONES  = ['PENSION NLD', 'PENSION USA', 'TALLER', 'MANTENIMIENTO', 'RUTA SUBIENDO', 'RUTA BAJANDO', 'AGENCIA ADUANAL'];
+$OBSERVACIONES = ['VACIA', 'CARGADA', 'CARGANDO', 'DESCARGANDO'];
 
 // Lo que cabe en caja_estatus.comentarios.
 define('LARGO_COMENTARIO', 300);
@@ -70,7 +71,7 @@ try {
         case 'getEstatusCajas':
             // Por cada caja activa: su viaje en turno (el más reciente que no está
             // cerrado), el operador de ese viaje, la etapa en curso —la primera que
-            // no está Completed— y el broker de esa etapa.
+            // no está Completed— y el broker de la etapa con carga más cercana a ella.
             $sql = "
                 SELECT
                     c.caja_id,
@@ -115,8 +116,19 @@ try {
                           ORDER BY s2.stage_number ASC
                              LIMIT 1)
 
+                LEFT JOIN trip_stages sb
+                       ON sb.trip_stage_id = (
+                            SELECT s3.trip_stage_id
+                              FROM trip_stages s3
+                             WHERE s3.trip_id = t.trip_id
+                               AND s3.company_id IS NOT NULL
+                          ORDER BY s3.stage_number < s.stage_number,
+                                   ABS(s3.stage_number - s.stage_number),
+                                   s3.stage_number DESC
+                             LIMIT 1)
+
                 LEFT JOIN companies co
-                       ON co.company_id = s.company_id
+                       ON co.company_id = sb.company_id
 
                 LEFT JOIN caja_estatus ce
                        ON ce.caja_id = c.caja_id
