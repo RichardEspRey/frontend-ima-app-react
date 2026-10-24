@@ -1,19 +1,30 @@
 import React, { useState, useEffect, useRef } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import { format, isValid, parseISO } from 'date-fns';
 import './css/ModalArchivo.css';
 import { esImagen } from '../utils/tripFormConstants';
 
-const ModalArchivo = ({ isOpen, onClose, onSave, title = "Subir/Editar Archivo", saveButtonText = "Guardar", valorActual, mostrarFechaVencimiento = true, accept = "application/pdf" }) => {
+const fechaInicial = (valor) => {
+  if (!valor) return new Date();
+  const fecha = valor instanceof Date ? valor : parseISO(String(valor));
+  return isValid(fecha) ? fecha : new Date();
+};
+
+const ModalArchivo = ({ isOpen, onClose, onSave, title = "Subir/Editar Archivo", valorActual, mostrarFechaVencimiento = true, accept = "application/pdf" }) => {
 
   const [archivo, setArchivo] = useState(null);
   const [fechaVencimiento, setFechaVencimiento] = useState(new Date());
   const [previewUrl, setPreviewUrl] = useState(null);
+  const [arrastrando, setArrastrando] = useState(false);
+  const [aviso, setAviso] = useState('');
   const fileInputRef = useRef(null);
 
   useEffect(() => {
     if (isOpen) {
       setArchivo(null);
+      setAviso('');
+      setArrastrando(false);
 
       if (valorActual?.url) {
         setPreviewUrl(valorActual.url);
@@ -21,16 +32,13 @@ const ModalArchivo = ({ isOpen, onClose, onSave, title = "Subir/Editar Archivo",
         setPreviewUrl(null);
       }
 
-      setFechaVencimiento(
-        valorActual?.vencimiento ? new Date(valorActual.vencimiento) : new Date()
-      );
+      setFechaVencimiento(fechaInicial(valorActual?.vencimiento));
     }
   }, [isOpen, valorActual]);
 
 
 
-  const handleArchivoChange = (e) => {
-    const file = e.target.files[0];
+  const seleccionarArchivo = (file) => {
     if (!file) return;
 
     const allowedTypes = accept.split(',').map(type => type.trim().toLowerCase());
@@ -44,32 +52,56 @@ const ModalArchivo = ({ isOpen, onClose, onSave, title = "Subir/Editar Archivo",
 
     if (isAllowed) {
       setArchivo(file);
-      // Limpia la previsualización anterior para evitar fugas de memoria
+      setAviso('');
       if (previewUrl) URL.revokeObjectURL(previewUrl);
       setPreviewUrl(URL.createObjectURL(file));
     } else {
-      alert(`Tipo de archivo no válido. Se esperaba: ${accept}`);
+      setAviso(`Tipo de archivo no válido. Se esperaba: ${accept}`);
     }
   };
 
+  const handleArchivoChange = (e) => {
+    seleccionarArchivo(e.target.files[0]);
+    e.target.value = '';
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setArrastrando(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    setArrastrando(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setArrastrando(false);
+    seleccionarArchivo(e.dataTransfer.files[0]);
+  };
+
   const handleGuardar = () => {
-    if (archivo) {
-      const dataToSave = {
-        file: archivo,
-        fileName: archivo.name,
-        hasNewFile: true,
-      };
-      if (mostrarFechaVencimiento && fechaVencimiento) {
-        dataToSave.vencimiento = fechaVencimiento.toISOString().split('T')[0];
-      } else if (mostrarFechaVencimiento && !fechaVencimiento) {
-        alert('Por favor, selecciona una fecha de vencimiento.');
-        return;
-      }
-      onSave(dataToSave);
-      onClose();
-    } else {
-      alert('Selecciona un archivo y una fecha');
+    if (!archivo) {
+      setAviso(valorActual?.fileName
+        ? 'Para reemplazar el documento, selecciona o arrastra el archivo nuevo.'
+        : 'Selecciona o arrastra el archivo que quieres subir.');
+      return;
     }
+    if (mostrarFechaVencimiento && !fechaVencimiento) {
+      setAviso('Selecciona la fecha de vencimiento.');
+      return;
+    }
+    const dataToSave = {
+      file: archivo,
+      fileName: archivo.name,
+      hasNewFile: true,
+    };
+    if (mostrarFechaVencimiento) {
+      dataToSave.vencimiento = format(fechaVencimiento, 'yyyy-MM-dd');
+    }
+    onSave(dataToSave);
+    onClose();
   };
 
   const handleBrowseClick = () => {
@@ -104,14 +136,25 @@ const ModalArchivo = ({ isOpen, onClose, onSave, title = "Subir/Editar Archivo",
           </div>
         )}
 
-        <div className="dropzone">
+        <div
+          className={`dropzone${arrastrando ? ' dropzone-activa' : ''}`}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+        >
           <label className="drop-text">
-            <div>Deje aquí sus archivos para cargarlos</div>
+            <div>Arrastra aquí el archivo o selecciónalo</div>
           </label>
 
           <button type='button' className="browse-button" onClick={handleBrowseClick}>
-            Seleccionar Archivo
+            {valorActual?.fileName ? 'Seleccionar archivo nuevo' : 'Seleccionar Archivo'}
           </button>
+
+          <div className="archivo-nombre">
+            {archivo
+              ? <>Archivo nuevo: <strong>{archivo.name}</strong></>
+              : valorActual?.fileName && <>Archivo actual: <strong>{valorActual.fileName}</strong></>}
+          </div>
           <input
             type="file"
             ref={fileInputRef}
@@ -132,9 +175,11 @@ const ModalArchivo = ({ isOpen, onClose, onSave, title = "Subir/Editar Archivo",
           )}
         </div>
 
+        {aviso && <div className="modal-aviso">{aviso}</div>}
+
         <div className="modal-actions">
           <button onClick={onClose} className="cancelar">Cancelar</button>
-          <button onClick={handleGuardar} className="guardar">Actualizar</button>
+          <button onClick={handleGuardar} className="guardar">{valorActual?.fileName ? 'Reemplazar' : 'Subir'}</button>
         </div>
       </div>
     </div>

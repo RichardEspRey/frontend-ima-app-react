@@ -11,14 +11,12 @@ import ServicioOrden from './ServicioOrden';
 import { useAuthStore } from '../../store/useAuthStore';
 import useFetchCategories from '../../hooks/expense_hooks/useFetchCategories';
 import {
-    ESTATUS_PUNTO, TIPO_GASTO_MANTENIMIENTO, UNIDAD, crearGasto, crearOrden, obtenerPendientes
+    ESTATUS_PUNTO, TIPO_GASTO_MANTENIMIENTO, UNIDAD, crearGasto, hoy, crearOrden, obtenerPendientes
 } from '../../services/mantenimiento';
 import {
     CARD_SX, DARK_BTN_SX, DIALOG_ACTIONS_SX, DIALOG_CONTENT_SX, DIALOG_PAPER_SX,
     DIALOG_TITLE_SX, SECTION_LABEL_SX,
 } from '../../styles/estilosTabla';
-
-const hoy = () => new Date().toISOString().slice(0, 10);
 
 const servicioDesdePunto = (punto, inspeccion) => ({
     clave: `punto-${punto.clave}`,

@@ -2,19 +2,22 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
     Alert, Box, Button, Checkbox, Chip, CircularProgress, FormControlLabel, MenuItem, Paper,
     Stack, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow,
-    TextField, ToggleButton, ToggleButtonGroup, Typography
+    IconButton, TextField, ToggleButton, ToggleButtonGroup, Tooltip, Typography
 } from '@mui/material';
+import dayjs from 'dayjs';
 import AddIcon from '@mui/icons-material/Add';
 import BuildOutlinedIcon from '@mui/icons-material/BuildOutlined';
 import BlockOutlinedIcon from '@mui/icons-material/BlockOutlined';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import Swal from 'sweetalert2';
 
 import BarraFiltros from './BarraFiltros';
 import ConstructorOrden from './ConstructorOrden';
 import ModalPendienteManual from './ModalPendienteManual';
+import ModalDatosPendiente from './ModalDatosPendiente';
 import { useAuthStore } from '../../store/useAuthStore';
 import {
-    ESTATUS_PUNTO, ETIQUETA_ESTATUS, UNIDAD, crearPendienteManual, descartarPendientes, obtenerPendientes
+    ESTATUS_PUNTO, ETIQUETA_ESTATUS, UNIDAD, actualizarPendiente, crearPendienteManual, descartarPendientes, obtenerPendientes
 } from '../../services/mantenimiento';
 import {
     TABLE_CONTAINER_SX, HEADER_ROW_SX, HEADER_CELL_SX, DARK_BTN_SX,
@@ -74,6 +77,7 @@ const PanelPendientes = () => {
     const [elegidos, setElegidos] = useState([]);
     const [apertura, setApertura] = useState(null);
     const [altaAbierta, setAltaAbierta] = useState(false);
+    const [enEdicion, setEnEdicion] = useState(null);
 
     const [filtros, setFiltros] = useState(SIN_FILTROS);
     const [pagina, setPagina] = useState(0);
@@ -100,7 +104,7 @@ const PanelPendientes = () => {
 
         if (filtros.origen && pendiente.origen !== filtros.origen) return false;
 
-        const texto = `${pendiente.descripcion || ''} ${pendiente.categoria || ''}`.toLowerCase();
+        const texto = `${pendiente.descripcion || ''} ${pendiente.categoria || ''} ${pendiente.operador || ''}`.toLowerCase();
         if (filtros.texto.trim() && !texto.includes(filtros.texto.trim().toLowerCase())) return false;
 
         return true;
@@ -165,6 +169,16 @@ const PanelPendientes = () => {
             await crearPendienteManual({ ...datos, usuarioId: usuario?.id });
             setAltaAbierta(false);
             setLado(datos.unidadTipo);
+            cargar();
+        } catch (err) {
+            Swal.fire('Error', err.message, 'error');
+        }
+    };
+
+    const guardarDatos = async (datos) => {
+        try {
+            await actualizarPendiente({ ...datos, usuarioId: usuario?.id });
+            setEnEdicion(null);
             cargar();
         } catch (err) {
             Swal.fire('Error', err.message, 'error');
@@ -309,6 +323,20 @@ const PanelPendientes = () => {
                                                             viaje {reparacion.trip_number}
                                                         </Typography>
                                                     )}
+                                                    <Stack direction="row" alignItems="center" spacing={0.5}>
+                                                        <Typography variant="caption" color="#64748b">
+                                                            {reparacion.operador || 'Sin operador'}
+                                                            {' · enviado '}
+                                                            {reparacion.fecha_reporte ? dayjs(reparacion.fecha_reporte).format('DD/MM/YY') : 'sin fecha'}
+                                                        </Typography>
+                                                        {!esDescartada(reparacion) && (
+                                                            <Tooltip title="Editar operador y fecha de enviado">
+                                                                <IconButton size="small" sx={{ p: 0.25 }} onClick={() => setEnEdicion(reparacion)}>
+                                                                    <EditOutlinedIcon sx={{ fontSize: 14, color: '#94a3b8' }} />
+                                                                </IconButton>
+                                                            </Tooltip>
+                                                        )}
+                                                    </Stack>
                                                 </Box>
                                             </Stack>
                                         ))}
@@ -379,6 +407,14 @@ const PanelPendientes = () => {
                             'success',
                         );
                     }}
+                />
+            )}
+
+            {enEdicion && (
+                <ModalDatosPendiente
+                    reparacion={enEdicion}
+                    onCancelar={() => setEnEdicion(null)}
+                    onGuardar={guardarDatos}
                 />
             )}
 

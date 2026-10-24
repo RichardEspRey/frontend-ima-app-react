@@ -134,7 +134,14 @@ const EstatusCajas = () => {
 
     useEffect(() => {
         const reloj = setInterval(() => cargar(true), REFRESCO_MS);
-        return () => clearInterval(reloj);
+        const alVolver = () => { if (document.visibilityState === 'visible') cargar(true); };
+        window.addEventListener('focus', alVolver);
+        document.addEventListener('visibilitychange', alVolver);
+        return () => {
+            clearInterval(reloj);
+            window.removeEventListener('focus', alVolver);
+            document.removeEventListener('visibilitychange', alVolver);
+        };
     }, [cargar]);
 
     const guardarCampo = async (caja, campo, valor) => {
@@ -150,6 +157,7 @@ const EstatusCajas = () => {
                 comentario: campo === 'comentario' ? valor : caja.comentario,
                 usuarioId: user?.id,
             });
+            cargar(true);
         } catch (err) {
             setCajas(previo);
             Swal.fire('Error', err.message, 'error');

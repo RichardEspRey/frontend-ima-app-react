@@ -5,9 +5,8 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import AddIcon from '@mui/icons-material/Add';
 
 import GastoServicio from './GastoServicio';
+import { hoy } from '../../services/mantenimiento';
 import { CARD_SX, SECTION_LABEL_SX } from '../../styles/estilosTabla';
-
-const hoy = () => new Date().toISOString().slice(0, 10);
 
 const gastoEnBlanco = () => ({
     pais: '',
