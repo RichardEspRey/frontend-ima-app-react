@@ -1,10 +1,12 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, Fragment } from 'react';
 import {
     Box, Typography, Tabs, Tab, Table, TableBody, TableCell,
     TableContainer, TableHead, TableRow, Paper, Chip, TextField,
     InputAdornment, CircularProgress, Stack, Button, MenuItem, Select,
-    FormControl, InputLabel
+    FormControl, InputLabel, Collapse, IconButton
 } from '@mui/material';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import SearchIcon from '@mui/icons-material/Search';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import RefreshIcon from '@mui/icons-material/Refresh';
@@ -53,12 +55,15 @@ export default function IFTA() {
         );
     }, [trips, search]);
 
-    // ── Tab 1: Totales por Estado ─────────────────────────────────────────────
+    // ── Tab 1: Millas IFTA ────────────────────────────────────────────────────
     const [totals, setTotals]               = useState([]);
     const [loadingTotals, setLoadingTotals] = useState(false);
     const [filterState, setFilterState]     = useState('');
     const [filterFrom, setFilterFrom]       = useState('');
     const [filterTo, setFilterTo]           = useState('');
+
+    // Filtros con los que se obtuvo `totals` (el despliegue de viajes usa estos, no los inputs)
+    const [appliedFilters, setAppliedFilters] = useState({ from: '', to: '' });
 
     const fetchTotals = async () => {
         setLoadingTotals(true);
@@ -70,7 +75,10 @@ export default function IFTA() {
             if (filterTo)           fd.append('date_to', filterTo);
             const res  = await fetch(`${apiHost}/IFTA.php`, { method: 'POST', body: fd });
             const json = await res.json();
-            if (json.status === 'success') setTotals(json.data);
+            if (json.status === 'success') {
+                setAppliedFilters({ from: filterFrom, to: filterTo });
+                setTotals(json.data);
+            }
         } catch (err) {
             console.error('IFTA fetchTotals:', err);
         } finally {
@@ -85,7 +93,87 @@ export default function IFTA() {
 
     const grandTotal = useMemo(() => totals.reduce((sum, r) => sum + r.total, 0), [totals]);
 
-    // ── Tab 2: Millas por Periodo ─────────────────────────────────────────────
+    // Ajuste de millas por estado: positivo suma, negativo resta (solo en pantalla; el PDF exporta el resultado final)
+    const [ajustes, setAjustes] = useState({});
+
+    // Despliegue de viajes por estado
+    const [expandedState, setExpandedState] = useState(null);
+    const [stateTrips, setStateTrips]       = useState({});   // { TX: [...] }
+    const [loadingStateTrips, setLoadingStateTrips] = useState(null);
+
+    useEffect(() => {
+        setAjustes({});
+        setExpandedState(null);
+        setStateTrips({});
+    }, [totals]);
+
+    const toggleStateTrips = async (state) => {
+        if (expandedState === state) {
+            setExpandedState(null);
+            return;
+        }
+        setExpandedState(state);
+        if (stateTrips[state]) return;
+
+        setLoadingStateTrips(state);
+        try {
+            const fd = new FormData();
+            fd.append('op', 'get_ifta_trips_by_state');
+            fd.append('state', state);
+            if (appliedFilters.from) fd.append('date_from', appliedFilters.from);
+            if (appliedFilters.to)   fd.append('date_to', appliedFilters.to);
+            const res  = await fetch(`${apiHost}/IFTA.php`, { method: 'POST', body: fd });
+            const json = await res.json();
+            if (json.status === 'success') setStateTrips(prev => ({ ...prev, [state]: json.data }));
+        } catch (err) {
+            console.error('IFTA fetchStateTrips:', err);
+        } finally {
+            setLoadingStateTrips(null);
+        }
+    };
+
+    const totalFinal = (row) => row.total + (parseFloat(ajustes[row.state]) || 0);
+
+    const grandTotalFinal = useMemo(() =>
+        totals.reduce((sum, r) => sum + r.total + (parseFloat(ajustes[r.state]) || 0), 0),
+    [totals, ajustes]);
+
+    const printTotalsPDF = () => {
+        const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'letter' });
+        const margin = 40;
+        const pageW = doc.internal.pageSize.getWidth();
+
+        doc.setFontSize(16);
+        doc.setFont('helvetica', 'bold');
+        doc.text('IFTA — Millas', pageW / 2, margin, { align: 'center' });
+
+        const rows = totals.map(r => [r.state, fmt(totalFinal(r))]);
+        rows.push(['TOTAL', fmt(grandTotalFinal)]);
+
+        autoTable(doc, {
+            startY: margin + 24,
+            margin: { left: margin, right: margin, top: margin, bottom: margin },
+            head: [['Estado', 'Total Mi']],
+            body: rows,
+            styles: { fontSize: 9, cellPadding: 5 },
+            headStyles: { fillColor: [245, 245, 245], textColor: 0, fontStyle: 'bold' },
+            didParseCell: (data) => {
+                if (data.column.index > 0) {
+                    data.cell.styles.halign = 'right';
+                }
+                if (data.row.index === rows.length - 1 && data.section === 'body') {
+                    data.cell.styles.fontStyle = 'bold';
+                    data.cell.styles.fillColor = [245, 245, 245];
+                }
+            },
+            pageBreak: 'auto',
+            rowPageBreak: 'avoid',
+        });
+
+        doc.save('IFTA_Millas.pdf');
+    };
+
+    // ── Tab 2: Galones IFTA ───────────────────────────────────────────────────
     const [periodos, setPeriodos]               = useState([]);
     const [loadingPeriodos, setLoadingPeriodos] = useState(false);
     const [filterPeriodo, setFilterPeriodo]     = useState('');
@@ -128,6 +216,43 @@ export default function IFTA() {
     const grandTotalPeriodos = useMemo(() =>
         filteredPeriodos.reduce((sum, r) => sum + r.total_millas, 0),
     [filteredPeriodos]);
+
+    // Despliegue de viajes por estado + periodo + año
+    const periodoKey = (r) => `${r.estado}|${r.periodo}|${r.trip_year}`;
+    const [expandedPeriodo, setExpandedPeriodo] = useState(null);
+    const [periodoTrips, setPeriodoTrips]       = useState({});   // { 'TX|Q1|26': [...] }
+    const [loadingPeriodoTrips, setLoadingPeriodoTrips] = useState(null);
+
+    useEffect(() => {
+        setExpandedPeriodo(null);
+        setPeriodoTrips({});
+    }, [periodos]);
+
+    const togglePeriodoTrips = async (row) => {
+        const key = periodoKey(row);
+        if (expandedPeriodo === key) {
+            setExpandedPeriodo(null);
+            return;
+        }
+        setExpandedPeriodo(key);
+        if (periodoTrips[key]) return;
+
+        setLoadingPeriodoTrips(key);
+        try {
+            const fd = new FormData();
+            fd.append('op', 'periodo_trips');
+            fd.append('state', row.estado);
+            fd.append('periodo', row.periodo);
+            if (row.trip_year) fd.append('year', row.trip_year);
+            const res  = await fetch(`${apiHost}/IFTA.php`, { method: 'POST', body: fd });
+            const json = await res.json();
+            if (json.status === 'success') setPeriodoTrips(prev => ({ ...prev, [key]: json.data }));
+        } catch (err) {
+            console.error('IFTA fetchPeriodoTrips:', err);
+        } finally {
+            setLoadingPeriodoTrips(null);
+        }
+    };
 
     const printPDF = () => {
         const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'letter' });
@@ -179,8 +304,8 @@ export default function IFTA() {
 
             <Tabs value={tabValue} onChange={(_, v) => setTabValue(v)} sx={{ mb: 2.5 }}>
                 <Tab label="Por Viaje" />
-                <Tab label="Totales por Estado" />
-                <Tab label="Millas por Periodo" />
+                <Tab label="Millas IFTA" />
+                <Tab label="Galones IFTA" />
             </Tabs>
 
             {/* ── TAB 0: Por Viaje ─────────────────────────────────────────── */}
@@ -261,7 +386,7 @@ export default function IFTA() {
                 </Box>
             )}
 
-            {/* ── TAB 1: Totales por Estado ────────────────────────────────── */}
+            {/* ── TAB 1: Millas IFTA ─────────────────────────────────────────── */}
             {tabValue === 1 && (
                 <Box>
                     {/* Filtros */}
@@ -317,6 +442,15 @@ export default function IFTA() {
                             >
                                 Limpiar
                             </Button>
+                            <Button
+                                variant="outlined"
+                                size="small"
+                                onClick={printTotalsPDF}
+                                disabled={loadingTotals || totals.length === 0}
+                                startIcon={<PictureAsPdfIcon />}
+                            >
+                                Exportar PDF
+                            </Button>
                         </Stack>
                     </Paper>
 
@@ -332,32 +466,91 @@ export default function IFTA() {
                                     <TableRow sx={{ bgcolor: '#f5f5f5' }}>
                                         <TableCell sx={{ fontWeight: 700 }}>Estado</TableCell>
                                         <TableCell sx={{ fontWeight: 700 }} align="right">Total Mi</TableCell>
-                                        <TableCell sx={{ fontWeight: 700 }} align="right"># Viajes</TableCell>
+                                        <TableCell sx={{ fontWeight: 700 }} align="right">Modificar Millas</TableCell>
+                                        <TableCell sx={{ fontWeight: 700 }} align="right">Total Final</TableCell>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
                                     {totals.length === 0 ? (
                                         <TableRow>
-                                            <TableCell colSpan={3} align="center" sx={{ py: 4, color: 'text.secondary' }}>
+                                            <TableCell colSpan={4} align="center" sx={{ py: 4, color: 'text.secondary' }}>
                                                 Sin datos para los filtros aplicados.
                                             </TableCell>
                                         </TableRow>
                                     ) : (
                                         <>
                                             {totals.map(row => (
-                                                <TableRow key={row.state} hover>
+                                                <Fragment key={row.state}>
+                                                <TableRow hover sx={{ '& > td': { borderBottom: expandedState === row.state ? 'unset' : undefined } }}>
                                                     <TableCell>
-                                                        <Chip label={row.state} size="small" sx={{ fontWeight: 700, minWidth: 42 }} />
+                                                        <Stack direction="row" alignItems="center" gap={0.5}>
+                                                            <IconButton size="small" onClick={() => toggleStateTrips(row.state)}>
+                                                                {expandedState === row.state
+                                                                    ? <KeyboardArrowUpIcon fontSize="small" />
+                                                                    : <KeyboardArrowDownIcon fontSize="small" />}
+                                                            </IconButton>
+                                                            <Chip label={row.state} size="small" sx={{ fontWeight: 700, minWidth: 42 }} />
+                                                        </Stack>
                                                     </TableCell>
                                                     <TableCell align="right">{fmt(row.total)}</TableCell>
-                                                    <TableCell align="right">{row.trips}</TableCell>
+                                                    <TableCell align="right" sx={{ py: 0.5 }}>
+                                                        <TextField
+                                                            size="small"
+                                                            type="number"
+                                                            placeholder="0"
+                                                            value={ajustes[row.state] ?? ''}
+                                                            onChange={e => setAjustes(prev => ({ ...prev, [row.state]: e.target.value }))}
+                                                            sx={{ width: 110 }}
+                                                            slotProps={{ htmlInput: { step: 'any', style: { textAlign: 'right' } } }}
+                                                        />
+                                                    </TableCell>
+                                                    <TableCell align="right" sx={{ fontWeight: 600 }}>{fmt(totalFinal(row))}</TableCell>
                                                 </TableRow>
+                                                <TableRow>
+                                                    <TableCell colSpan={4} sx={{ py: 0, ...(expandedState !== row.state && { borderBottom: 'none' }) }}>
+                                                        <Collapse in={expandedState === row.state} timeout="auto" unmountOnExit>
+                                                            <Box sx={{ py: 1.5, pl: 6 }}>
+                                                                {loadingStateTrips === row.state ? (
+                                                                    <Box display="flex" alignItems="center" gap={1.5}>
+                                                                        <CircularProgress size={18} />
+                                                                        <Typography variant="body2" color="text.secondary">Cargando viajes...</Typography>
+                                                                    </Box>
+                                                                ) : !stateTrips[row.state]?.length ? (
+                                                                    <Typography variant="body2" color="text.secondary">Sin viajes.</Typography>
+                                                                ) : (
+                                                                    <Table size="small">
+                                                                        <TableHead>
+                                                                            <TableRow>
+                                                                                <TableCell sx={{ fontWeight: 700 }}>Viaje #</TableCell>
+                                                                                <TableCell sx={{ fontWeight: 700 }}>Fecha Carga</TableCell>
+                                                                                <TableCell sx={{ fontWeight: 700 }}>Fecha Entrega</TableCell>
+                                                                                <TableCell sx={{ fontWeight: 700 }} align="right">Mi en {row.state}</TableCell>
+                                                                            </TableRow>
+                                                                        </TableHead>
+                                                                        <TableBody>
+                                                                            {stateTrips[row.state].map(trip => (
+                                                                                <TableRow key={trip.trip_id}>
+                                                                                    <TableCell sx={{ fontWeight: 600 }}>{trip.trip_number}</TableCell>
+                                                                                    <TableCell>{fmtDate(trip.creation_date)}</TableCell>
+                                                                                    <TableCell>{fmtDate(trip.return_date)}</TableCell>
+                                                                                    <TableCell align="right">{fmt(trip.total)}</TableCell>
+                                                                                </TableRow>
+                                                                            ))}
+                                                                        </TableBody>
+                                                                    </Table>
+                                                                )}
+                                                            </Box>
+                                                        </Collapse>
+                                                    </TableCell>
+                                                </TableRow>
+                                                </Fragment>
                                             ))}
                                             {/* Totales footer */}
                                             <TableRow sx={{ bgcolor: '#f5f5f5' }}>
                                                 <TableCell sx={{ fontWeight: 700 }}>TOTAL</TableCell>
                                                 <TableCell align="right" sx={{ fontWeight: 700 }}>{fmt(grandTotal)}</TableCell>
                                                 <TableCell />
+                                                <TableCell align="right" sx={{ fontWeight: 700 }}>{fmt(grandTotalFinal)}</TableCell>
                                             </TableRow>
                                         </>
                                     )}
@@ -368,7 +561,7 @@ export default function IFTA() {
                 </Box>
             )}
 
-            {/* ── TAB 2: Millas por Periodo ────────────────────────────────── */}
+            {/* ── TAB 2: Galones IFTA ──────────────────────────────────────── */}
             {tabValue === 2 && (
                 <Box>
                     {/* Filtros */}
@@ -458,16 +651,27 @@ export default function IFTA() {
                                 <TableBody>
                                     {filteredPeriodos.length === 0 ? (
                                         <TableRow>
-                                            <TableCell colSpan={3} align="center" sx={{ py: 4, color: 'text.secondary' }}>
+                                            <TableCell colSpan={4} align="center" sx={{ py: 4, color: 'text.secondary' }}>
                                                 Sin datos para los filtros aplicados.
                                             </TableCell>
                                         </TableRow>
                                     ) : (
                                         <>
-                                            {filteredPeriodos.map((row, i) => (
-                                                <TableRow key={`${row.estado}-${row.periodo}-${row.trip_year}-${i}`} hover>
+                                            {filteredPeriodos.map((row, i) => {
+                                                const key = periodoKey(row);
+                                                const isOpen = expandedPeriodo === key;
+                                                return (
+                                                <Fragment key={`${key}-${i}`}>
+                                                <TableRow hover sx={{ '& > td': { borderBottom: isOpen ? 'unset' : undefined } }}>
                                                     <TableCell>
-                                                        <Chip label={row.estado} size="small" sx={{ fontWeight: 700, minWidth: 42 }} />
+                                                        <Stack direction="row" alignItems="center" gap={0.5}>
+                                                            <IconButton size="small" onClick={() => togglePeriodoTrips(row)}>
+                                                                {isOpen
+                                                                    ? <KeyboardArrowUpIcon fontSize="small" />
+                                                                    : <KeyboardArrowDownIcon fontSize="small" />}
+                                                            </IconButton>
+                                                            <Chip label={row.estado} size="small" sx={{ fontWeight: 700, minWidth: 42 }} />
+                                                        </Stack>
                                                     </TableCell>
                                                     <TableCell>
                                                         <Chip label={row.periodo} size="small" variant="outlined" color="primary" sx={{ fontWeight: 600 }} />
@@ -478,7 +682,46 @@ export default function IFTA() {
 
                                                     <TableCell align="right">{fmt(row.total_millas)}</TableCell>
                                                 </TableRow>
-                                            ))}
+                                                <TableRow>
+                                                    <TableCell colSpan={4} sx={{ py: 0, ...(!isOpen && { borderBottom: 'none' }) }}>
+                                                        <Collapse in={isOpen} timeout="auto" unmountOnExit>
+                                                            <Box sx={{ py: 1.5, pl: 6 }}>
+                                                                {loadingPeriodoTrips === key ? (
+                                                                    <Box display="flex" alignItems="center" gap={1.5}>
+                                                                        <CircularProgress size={18} />
+                                                                        <Typography variant="body2" color="text.secondary">Cargando viajes...</Typography>
+                                                                    </Box>
+                                                                ) : !periodoTrips[key]?.length ? (
+                                                                    <Typography variant="body2" color="text.secondary">Sin viajes.</Typography>
+                                                                ) : (
+                                                                    <Table size="small">
+                                                                        <TableHead>
+                                                                            <TableRow>
+                                                                                <TableCell sx={{ fontWeight: 700 }}>Viaje #</TableCell>
+                                                                                <TableCell sx={{ fontWeight: 700 }}>Fecha Carga</TableCell>
+                                                                                <TableCell sx={{ fontWeight: 700 }}>Fecha Entrega</TableCell>
+                                                                                <TableCell sx={{ fontWeight: 700 }} align="right">Total Galones</TableCell>
+                                                                            </TableRow>
+                                                                        </TableHead>
+                                                                        <TableBody>
+                                                                            {periodoTrips[key].map(trip => (
+                                                                                <TableRow key={trip.trip_id}>
+                                                                                    <TableCell sx={{ fontWeight: 600 }}>{trip.trip_number}</TableCell>
+                                                                                    <TableCell>{fmtDate(trip.creation_date)}</TableCell>
+                                                                                    <TableCell>{fmtDate(trip.return_date)}</TableCell>
+                                                                                    <TableCell align="right">{fmt(trip.total_millas)}</TableCell>
+                                                                                </TableRow>
+                                                                            ))}
+                                                                        </TableBody>
+                                                                    </Table>
+                                                                )}
+                                                            </Box>
+                                                        </Collapse>
+                                                    </TableCell>
+                                                </TableRow>
+                                                </Fragment>
+                                                );
+                                            })}
                                             <TableRow sx={{ bgcolor: '#f5f5f5' }}>
                                                 <TableCell sx={{ fontWeight: 700,  textAlign: 'right' }} colSpan={3}>TOTAL</TableCell>
                                                 <TableCell align="right" sx={{ fontWeight: 700 }}>{fmt(grandTotalPeriodos)}</TableCell>
