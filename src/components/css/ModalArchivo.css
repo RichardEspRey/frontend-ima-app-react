@@ -17,6 +17,9 @@
     background-color: var(--ima-blanco);
     width: 600px;
     max-width: 90%;
+    max-height: calc(100vh - 32px);
+    overflow-y: auto;
+    box-sizing: border-box;
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.2);
@@ -107,6 +110,15 @@
     margin-top: 20px;
   }
 
+  .archivo-preview iframe {
+    height: min(400px, 40vh);
+  }
+
+  .archivo-preview img {
+    max-height: 40vh;
+    object-fit: contain;
+  }
+
   .modal-header {
     display: flex;
     justify-content: end; 
@@ -122,6 +134,11 @@
     display: flex;
     justify-content: space-between;
     margin-top: 20px;
+    position: sticky;
+    bottom: -20px;
+    margin-bottom: -20px;
+    padding: 12px 0 20px;
+    background-color: var(--ima-blanco);
   }
   
   .cancelar {
