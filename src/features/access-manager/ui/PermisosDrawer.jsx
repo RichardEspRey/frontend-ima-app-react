@@ -8,6 +8,7 @@ import {
     InputAdornment, Autocomplete
 } from '@mui/material';
 import { useConductoresActivos } from '../../../entities/driver';
+import { TIPO_USUARIO_API } from '../../../entities/user';
 import {
     Close as CloseIcon,
     Computer as ComputerIcon,
@@ -369,7 +370,7 @@ const PermisosDrawer = ({
     featuresDesktop, featuresMobile, featuresLoading, onToggleFeature,
     onUpdateUser
 }) => {
-    const [activeTab, setActiveTab] = useState(0);
+    const [activeTab, setActiveTab] = useState('datos');
     const [form, setForm] = useState({ name: '', user: '', pass: '', type: '', active: '1', driver_id: '' });
     const [showPass, setShowPass] = useState(false);
     const { data: activeDrivers = [] } = useConductoresActivos();
@@ -411,6 +412,9 @@ const PermisosDrawer = ({
 
     if (!user) return null;
 
+    const esOperador = user.type === TIPO_USUARIO_API.DRIVER;
+    const pestana = esOperador && activeTab === 'desktop' ? 'datos' : activeTab;
+
     return (
         <Drawer
             anchor="right"
@@ -450,19 +454,19 @@ const PermisosDrawer = ({
 
             <Box sx={{ borderBottom: 1, borderColor: 'divider', flexShrink: 0, px: 2, py: 1.5 }}>
                 <Pestanas
-                    valor={activeTab}
+                    valor={pestana}
                     onChange={setActiveTab}
                     pestanas={[
-                      { etiqueta: 'Datos', icono: <ManageAccountsIcon fontSize="small" /> },
-                      { etiqueta: 'Desktop', icono: <ComputerIcon fontSize="small" /> },
-                      { etiqueta: 'Mobile', icono: <PhoneAndroidIcon fontSize="small" /> },
+                      { id: 'datos', etiqueta: 'Datos', icono: <ManageAccountsIcon fontSize="small" /> },
+                      ...(esOperador ? [] : [{ id: 'desktop', etiqueta: 'Desktop', icono: <ComputerIcon fontSize="small" /> }]),
+                      { id: 'mobile', etiqueta: 'Mobile', icono: <PhoneAndroidIcon fontSize="small" /> },
                     ]}
                     sx={{ mb: 0 }}
                 />
             </Box>
 
             <Box sx={{ flex: 1, overflowY: 'auto' }}>
-                {activeTab === 0 && (
+                {pestana === 'datos' && (
                     <Box sx={{ p: 3 }}>
                         <Typography variant="overline" color="text.secondary" fontWeight="bold">
                             Información del usuario
@@ -510,7 +514,7 @@ const PermisosDrawer = ({
                     </Box>
                 )}
 
-                {activeTab === 1 && (
+                {pestana === 'desktop' && (
                     featuresLoading ? <Box sx={{ p: 2 }}><TarjetasEsqueleto cantidad={5} alto={64} conIcono={false} /></Box> : (
                         <Box sx={{ p: 2 }}>
                             <TextField
@@ -535,7 +539,7 @@ const PermisosDrawer = ({
                     )
                 )}
 
-                {activeTab === 2 && (
+                {pestana === 'mobile' && (
                     featuresLoading
                         ? <Box sx={{ p: 2 }}><TarjetasEsqueleto cantidad={5} alto={64} conIcono={false} /></Box>
                         : <FeatureSection features={featuresMobile} userId={user.id} onToggleFeature={onToggleFeature} />
