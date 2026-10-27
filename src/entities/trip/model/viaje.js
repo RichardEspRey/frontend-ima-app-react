@@ -78,3 +78,24 @@ const NOMBRE_TIPO_ETAPA = {
  */
 export const etiquetaTipoEtapa = (tipo) =>
   NOMBRE_TIPO_ETAPA[String(tipo ?? "").toLowerCase()] || tipo || "—"
+
+/**
+ * La nomenclatura con que la gente reconoce un viaje: `241-US-86T2-26`.
+ *
+ * Los viajes transnacionales llevan en medio su número de transnacional y de
+ * movimiento; los demás quedan como `163-US-26`. Coincide con la que arma
+ * `All_CL_Final` en el servidor en sus 261 viajes.
+ *
+ * @param {object} viaje El viaje como lo devuelve `getById`.
+ * @returns {string} La nomenclatura, o vacío si el viaje no trae número.
+ *
+ * @example
+ * nomenclaturaViaje({ trip_number: "241", country_code: "US", trip_year: "26",
+ *   is_transnational: "1", transnational_number: "86", movement_number: "2" })
+ */
+export function nomenclaturaViaje(viaje) {
+  if (!viaje?.trip_number) return ""
+  const transnacional = String(viaje.is_transnational) === "1" && viaje.transnational_number
+  const medio = transnacional ? `-${viaje.transnational_number}T${viaje.movement_number}` : ""
+  return `${viaje.trip_number}-${viaje.country_code}${medio}-${viaje.trip_year}`
+}

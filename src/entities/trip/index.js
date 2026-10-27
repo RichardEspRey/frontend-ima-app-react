@@ -5,6 +5,7 @@ export {
   colorEstadoViaje,
   TIPO_ETAPA,
   etiquetaTipoEtapa,
+  nomenclaturaViaje,
 } from "./model/viaje"
 
 export {
@@ -74,3 +75,4 @@ export { ahoraParaCampo, validarFechasFinalizacion, cuerpoFinalizacion } from ".
 export { esquemaRutaViaje, puntosDeRuta } from "./model/ruta"
 export { obtenerRutaViaje, useRutaViaje } from "./api/ruta"
 export { obtenerOrigenes, useOrigenes } from "./api/origenes"
+export { llaveNomenclaturaViaje, useNomenclaturasDeViajes } from "./api/nomenclatura"

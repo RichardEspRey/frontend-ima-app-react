@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from "react"
 
 import { agruparPorDia, sinAnunciar, useNotificaciones } from "../../../entities/notification"
+import { useNomenclaturasDeViajes } from "../../../entities/trip"
 import { useSesion } from "../../../shared/auth"
 
 /**
@@ -77,6 +78,7 @@ export function useCampanaNotificaciones() {
   const { data: notificaciones = [] } = useNotificaciones(usuario?.id)
   const [vistas, setVistas] = useState(() => leerVistas(llave))
   const [filtro, setFiltro] = useState(FILTRO_CAMPANA.TODAS)
+  const nomenclaturas = useNomenclaturasDeViajes(notificaciones.map((una) => una.trip_id))
 
   const sinLeer = useMemo(() => sinAnunciar(notificaciones, vistas).length, [notificaciones, vistas])
 
@@ -100,12 +102,21 @@ export function useCampanaNotificaciones() {
 
   const estaLeida = useCallback((notificacion) => vistas.has(notificacion.id), [vistas])
 
+  const tituloDe = useCallback(
+    (notificacion) => {
+      if (!notificacion.trip_id) return "Aviso"
+      return nomenclaturas.get(String(notificacion.trip_id)) || "Viaje"
+    },
+    [nomenclaturas],
+  )
+
   return {
     grupos,
     sinLeer,
     filtro,
     setFiltro,
     estaLeida,
+    tituloDe,
     marcarTodasLeidas,
     puedeAdministrar: esTotal,
   }
