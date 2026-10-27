@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   IconButton,
@@ -48,6 +48,12 @@ const relativeTime = (createdAt) => {
 
 const seenKey = (userId) => `notif_seen_ids_${userId}`;
 
+const nomenclaturaDe = (trip) => {
+  const transnacional = trip.is_transnational === "1" && trip.transnational_number;
+  const medio = transnacional ? `-${trip.transnational_number}T${trip.movement_number}` : "";
+  return `${trip.trip_number}-${trip.country_code}${medio}-${trip.trip_year}`;
+};
+
 const NotificationBell = () => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
@@ -57,6 +63,8 @@ const NotificationBell = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [tab, setTab] = useState(0);
   const [notifications, setNotifications] = useState([]);
+  const [nomenclaturas, setNomenclaturas] = useState({});
+  const pedidas = useRef(new Set());
   const [seenIds, setSeenIds] = useState(() => {
     try {
       return new Set(JSON.parse(localStorage.getItem(seenKey(user?.id)) || "[]"));
@@ -91,6 +99,34 @@ const NotificationBell = () => {
     return () => clearInterval(intervalId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
+
+  useEffect(() => {
+    const faltantes = [...new Set(notifications.map((n) => String(n.trip_id)))].filter(
+      (id) => id && !pedidas.current.has(id)
+    );
+    if (faltantes.length === 0) return;
+    faltantes.forEach((id) => pedidas.current.add(id));
+
+    Promise.all(
+      faltantes.map(async (id) => {
+        try {
+          const formData = new FormData();
+          formData.append("op", "getById");
+          formData.append("trip_id", id);
+          const res = await fetch(`${apiHost}/new_tripsv2.php`, { method: "POST", body: formData });
+          const data = await res.json();
+          return data.status === "success" && data.trip ? [id, nomenclaturaDe(data.trip)] : null;
+        } catch (err) {
+          pedidas.current.delete(id);
+          console.error("[NotificationBell] Error al obtener el viaje:", err);
+          return null;
+        }
+      })
+    ).then((pares) => {
+      const nuevas = Object.fromEntries(pares.filter(Boolean));
+      if (Object.keys(nuevas).length > 0) setNomenclaturas((prev) => ({ ...prev, ...nuevas }));
+    });
+  }, [notifications, apiHost]);
 
   const unreadCount = notifications.filter((n) => !seenIds.has(n.id)).length;
 
@@ -221,7 +257,7 @@ const NotificationBell = () => {
                       <ListItemText
                         primary={
                           <Typography variant="body2" fontWeight={800} color="#0f172a">
-                            {`Viaje #${n.trip_id}`}
+                            {nomenclaturas[String(n.trip_id)] || "Viaje"}
                           </Typography>
                         }
                         secondary={
