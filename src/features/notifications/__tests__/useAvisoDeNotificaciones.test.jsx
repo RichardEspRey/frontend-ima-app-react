@@ -152,8 +152,8 @@ describe("useAvisoDeNotificaciones", () => {
 
   it("no anuncia las inspecciones que ya estaban al entrar, sí las que llegan después", async () => {
     servidorDevuelve([])
-    const vieja = { id: "inspeccion-264-camion", clFinalId: "264", operador: "Juan Manuel Ruiz Torres" }
-    const nueva = { id: "inspeccion-266-camion", clFinalId: "266", operador: "Alberto Cruz Galindo" }
+    const vieja = { id: "inspeccion-264-camion", nomenclatura: "237-US-84T2-26", operador: "Juan Manuel Ruiz Torres" }
+    const nueva = { id: "inspeccion-266-camion", nomenclatura: "238-US-26", operador: "Alberto Cruz Galindo" }
     llegan([vieja])
 
     const { rerender } = renderHook(() => useAvisoDeNotificaciones("7"), { wrapper: Envoltura })
@@ -163,7 +163,7 @@ describe("useAvisoDeNotificaciones", () => {
     rerender()
 
     await waitFor(() => expect(notify.discreto).toHaveBeenCalledTimes(1))
-    expect(notify.discreto).toHaveBeenCalledWith("Nueva inspección #266 · Alberto Cruz Galindo", "info")
+    expect(notify.discreto).toHaveBeenCalledWith("Nueva inspección 238-US-26 · Alberto Cruz Galindo", "info")
     expect(reproducir).toHaveBeenCalledTimes(1)
   })
 })

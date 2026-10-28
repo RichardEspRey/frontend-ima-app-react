@@ -84,7 +84,7 @@ export function useAvisoDeNotificaciones(idUsuario) {
     if (inspeccionesConocidas.current) {
       const nuevas = sinAnunciar(inspecciones, inspeccionesConocidas.current)
       for (const una of nuevas) {
-        notify.discreto(`Nueva inspección #${una.clFinalId} · ${una.operador}`, "info")
+        notify.discreto(`Nueva inspección ${una.nomenclatura} · ${una.operador}`, "info")
       }
       if (nuevas.length > 0) sonar()
     }

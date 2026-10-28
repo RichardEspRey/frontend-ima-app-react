@@ -6,6 +6,7 @@ import {
   useActualizarPendiente,
   useCrearPendiente,
   useDescartarPendientes,
+  useNomenclaturas,
   usePendientes,
 } from "../../../entities/maintenance-point"
 import { useSesion } from "../../../shared/auth"
@@ -32,13 +33,23 @@ export function usePanelPendientes() {
   const [enEdicion, setEnEdicion] = useState(null)
 
   const consulta = usePendientes(lado)
+  const { data: nomenclaturas } = useNomenclaturas()
   const descartarMutacion = useDescartarPendientes()
   const levantar = useCrearPendiente()
   const corregir = useActualizarPendiente()
 
+  const conNomenclatura = useMemo(
+    () =>
+      (consulta.data ?? []).map((reparacion) => ({
+        ...reparacion,
+        nomenclatura: (reparacion.viaje_id && nomenclaturas?.get(String(reparacion.viaje_id))) || "",
+      })),
+    [consulta.data, nomenclaturas],
+  )
+
   const filtrados = useMemo(
-    () => filtrarPendientes(consulta.data ?? [], filtros, lado),
-    [consulta.data, filtros, lado],
+    () => filtrarPendientes(conNomenclatura, filtros, lado),
+    [conNomenclatura, filtros, lado],
   )
 
   const unidades = useMemo(() => agruparPorUnidad(filtrados, lado), [filtrados, lado])

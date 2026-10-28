@@ -44,7 +44,7 @@ const PESTANAS = [
  */
 function Renglon({ notificacion, viaje, leida, onAbrir }) {
   const esInspeccion = notificacion.tipo === "inspeccion"
-  const titulo = esInspeccion ? `Nueva inspección #${notificacion.clFinalId}` : "BL Firmado"
+  const titulo = esInspeccion ? `Nueva inspección ${notificacion.nomenclatura}` : "BL Firmado"
   const subtitulo = esInspeccion
     ? `${notificacion.lado === UNIDAD.CAJA ? "Caja" : "Camión"}${notificacion.unidad ? ` ${notificacion.unidad}` : ""} · ${notificacion.operador}`
     : viaje

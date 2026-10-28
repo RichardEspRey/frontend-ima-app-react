@@ -353,8 +353,8 @@ export function useInspeccionesPorAtender({ refetchInterval } = {}) {
 /**
  * Las inspecciones de los dos lados como avisos para la campana.
  *
- * Comparte la caché con la pestaña de inspecciones y con el ícono del menú, así
- * que no agrega peticiones cuando la pantalla ya las tiene.
+ * Comparte la caché con la pestaña de inspecciones, con el ícono del menú y con
+ * las nomenclaturas, así que no agrega peticiones cuando la pantalla ya las tiene.
  *
  * @param {object} [opciones] Ajustes de la consulta.
  * @param {boolean} [opciones.enabled] Si se piden; quien no ve Reparaciones no los necesita.
@@ -371,9 +371,17 @@ export function useAvisosDeInspecciones({ enabled = true, refetchInterval } = {}
     })),
   })
 
+  const { data: nomenclaturas } = useQuery({
+    queryKey: [...LLAVE_MANTENIMIENTO, "nomenclaturas"],
+    queryFn: ({ signal }) => obtenerNomenclaturas({ signal }),
+    staleTime: FRESCURA_CATALOGO_MS,
+    enabled,
+  })
+
   const avisos = useMemo(
-    () => (enabled ? avisosDeInspecciones({ camion: camion.data, caja: caja.data }) : []),
-    [enabled, camion.data, caja.data],
+    () =>
+      enabled ? avisosDeInspecciones({ camion: camion.data, caja: caja.data }, nomenclaturas) : [],
+    [enabled, camion.data, caja.data, nomenclaturas],
   )
 
   return { avisos, cargados: enabled && camion.isSuccess && caja.isSuccess }

@@ -163,6 +163,8 @@ describe("avisosDeInspecciones", () => {
   const ahora = new Date(2026, 9, 28, 12, 0)
   const fila = (extra) => ({
     cl_final_id: "264",
+    viaje_id: "567",
+    trip_number: "237",
     operador: "Juan Manuel Ruiz Torres",
     no_camion: "9",
     no_caja: "103",
@@ -172,11 +174,20 @@ describe("avisosDeInspecciones", () => {
   })
 
   it("da un aviso por lado aunque camión y caja sean de la misma inspección", () => {
-    const avisos = avisosDeInspecciones({ camion: [fila()], caja: [fila()] }, ahora)
+    const avisos = avisosDeInspecciones(
+      { camion: [fila()], caja: [fila()] },
+      new Map([["567", "237-US-84T2-26"]]),
+      ahora,
+    )
 
     expect(avisos.map((aviso) => aviso.id)).toEqual(["inspeccion-264-camion", "inspeccion-264-caja"])
     expect(avisos.map((aviso) => aviso.unidad)).toEqual(["9", "103"])
-    expect(avisos[0]).toMatchObject({ tipo: "inspeccion", clFinalId: "264", operador: "Juan Manuel Ruiz Torres" })
+    expect(avisos[0]).toMatchObject({
+      tipo: "inspeccion",
+      clFinalId: "264",
+      nomenclatura: "237-US-84T2-26",
+      operador: "Juan Manuel Ruiz Torres",
+    })
   })
 
   it("deja las abiertas aunque sean viejas y las cerradas solo si son recientes", () => {
@@ -188,13 +199,15 @@ describe("avisosDeInspecciones", () => {
           fila({ cl_final_id: "3", fecha_creacion: "2026-10-20 10:00:00", estatus_lado: ESTATUS_LADO.COMPLETADA }),
         ],
       },
+      new Map(),
       ahora,
     )
 
     expect(avisos.map((aviso) => aviso.clFinalId)).toEqual(["1", "3"])
+    expect(avisos[0].nomenclatura).toBe("237")
   })
 
   it("no falla mientras los lados no han llegado", () => {
-    expect(avisosDeInspecciones({ camion: undefined, caja: undefined }, ahora)).toEqual([])
+    expect(avisosDeInspecciones({ camion: undefined, caja: undefined }, undefined, ahora)).toEqual([])
   })
 })

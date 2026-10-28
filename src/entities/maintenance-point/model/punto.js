@@ -193,14 +193,15 @@ export const DIAS_DE_AVISO = 14
  * últimos {@link DIAS_DE_AVISO} días.
  *
  * @param {{camion: Array.<object>, caja: Array.<object>}} porLado Las inspecciones de cada lado.
+ * @param {Map.<string, string>} [nomenclaturas] Viaje contra su nomenclatura; sin ella se usa el número corto.
  * @param {Date} [ahora] Momento contra el que se mide la antigüedad.
- * @returns {Array.<{id: string, tipo: string, lado: string, clFinalId: string, operador: string, unidad: string, created_at: string}>} Los avisos.
+ * @returns {Array.<{id: string, tipo: string, lado: string, clFinalId: string, nomenclatura: string, operador: string, unidad: string, created_at: string}>} Los avisos.
  *
  * @example
- * avisosDeInspecciones({ camion: [fila], caja: [] })
- * // [{ id: "inspeccion-266-camion", tipo: "inspeccion", lado: "camion", clFinalId: "266", ... }]
+ * avisosDeInspecciones({ camion: [fila], caja: [] }, nomenclaturas)
+ * // [{ id: "inspeccion-266-camion", lado: "camion", nomenclatura: "238-US-26", ... }]
  */
-export function avisosDeInspecciones(porLado, ahora = new Date()) {
+export function avisosDeInspecciones(porLado, nomenclaturas = new Map(), ahora = new Date()) {
   const limite = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate() - DIAS_DE_AVISO)
   const desde = `${limite.getFullYear()}-${String(limite.getMonth() + 1).padStart(2, "0")}-${String(limite.getDate()).padStart(2, "0")}`
 
@@ -212,6 +213,7 @@ export function avisosDeInspecciones(porLado, ahora = new Date()) {
         tipo: "inspeccion",
         lado,
         clFinalId: String(fila.cl_final_id),
+        nomenclatura: nomenclaturas.get(String(fila.viaje_id)) || String(fila.trip_number || ""),
         operador: fila.operador || "",
         unidad: String((lado === UNIDAD.CAJA ? fila.no_caja : fila.no_camion) || ""),
         created_at: fila.fecha_creacion,

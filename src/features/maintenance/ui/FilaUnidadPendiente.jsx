@@ -101,9 +101,9 @@ function Reparacion({ reparacion, indice, marcada, onAlternar, onEditar }) {
             }}
           />
         ) : null}
-        {reparacion.trip_number ? (
+        {reparacion.nomenclatura || reparacion.trip_number ? (
           <Typography variant="caption" color={COLOR.TENUE} sx={{ ml: 1 }}>
-            viaje {reparacion.trip_number}
+            viaje {reparacion.nomenclatura || reparacion.trip_number}
           </Typography>
         ) : null}
         <Stack direction="row" alignItems="center" spacing={0.5}>

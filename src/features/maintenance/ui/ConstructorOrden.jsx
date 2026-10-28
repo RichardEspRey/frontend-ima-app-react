@@ -174,8 +174,8 @@ export function ConstructorOrden({ apertura, onCerrar, onCreada }) {
           </Typography>
           <Typography variant="body2" color={COLOR.APAGADO}>
             Un servicio por cada reparación.
-            {orden.inspeccion?.trip_number
-              ? ` Del viaje ${orden.inspeccion.trip_number}.`
+            {orden.inspeccion?.nomenclatura || orden.inspeccion?.trip_number
+              ? ` Del viaje ${orden.inspeccion.nomenclatura || orden.inspeccion.trip_number}.`
               : " De las reparaciones pendientes."}
           </Typography>
         </Box>
