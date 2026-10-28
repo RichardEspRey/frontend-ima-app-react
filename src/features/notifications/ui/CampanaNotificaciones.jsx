@@ -34,12 +34,12 @@ const PESTANAS = [
  *
  * @param {object} props Propiedades del componente.
  * @param {object} props.notificacion La notificación a mostrar.
- * @param {string} props.titulo La nomenclatura del viaje, o `Aviso` si no es de un viaje.
+ * @param {string} props.viaje La nomenclatura del viaje, o el mensaje si no es de un viaje.
  * @param {boolean} props.leida Si la persona ya la vio.
  * @param {Function} props.onAbrir Qué hacer al tocarla.
  * @returns {object} El renglón renderizado.
  */
-function Renglon({ notificacion, titulo, leida, onAbrir }) {
+function Renglon({ notificacion, viaje, leida, onAbrir }) {
   return (
     <ListItemButton
       onClick={onAbrir}
@@ -60,12 +60,12 @@ function Renglon({ notificacion, titulo, leida, onAbrir }) {
       <ListItemText
         primary={
           <Typography variant="body2" fontWeight={800} color={COLOR.TINTA}>
-            {titulo}
+            BL Firmado
           </Typography>
         }
         secondary={
           <Typography variant="caption" color={COLOR.APAGADO} noWrap sx={{ display: "block" }}>
-            {notificacion.mensaje}
+            {viaje}
           </Typography>
         }
       />
@@ -92,7 +92,7 @@ function Renglon({ notificacion, titulo, leida, onAbrir }) {
 export function CampanaNotificaciones() {
   const navigate = useNavigate()
   const [ancla, setAncla] = useState(null)
-  const { grupos, sinLeer, filtro, setFiltro, estaLeida, tituloDe, marcarTodasLeidas, puedeAdministrar } =
+  const { grupos, sinLeer, filtro, setFiltro, estaLeida, viajeDe, marcarTodasLeidas, puedeAdministrar } =
     useCampanaNotificaciones()
 
   const cerrar = () => {
@@ -166,7 +166,7 @@ export function CampanaNotificaciones() {
                   <Renglon
                     key={notificacion.id}
                     notificacion={notificacion}
-                    titulo={tituloDe(notificacion)}
+                    viaje={viajeDe(notificacion)}
                     leida={estaLeida(notificacion)}
                     onAbrir={() =>
                       notificacion.trip_id ? irA(`/edit-trip/${notificacion.trip_id}`) : cerrar()

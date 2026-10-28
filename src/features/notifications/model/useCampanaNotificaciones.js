@@ -102,9 +102,9 @@ export function useCampanaNotificaciones() {
 
   const estaLeida = useCallback((notificacion) => vistas.has(notificacion.id), [vistas])
 
-  const tituloDe = useCallback(
+  const viajeDe = useCallback(
     (notificacion) => {
-      if (!notificacion.trip_id) return "Aviso"
+      if (!notificacion.trip_id) return notificacion.mensaje
       return nomenclaturas.get(String(notificacion.trip_id)) || "Viaje"
     },
     [nomenclaturas],
@@ -116,7 +116,7 @@ export function useCampanaNotificaciones() {
     filtro,
     setFiltro,
     estaLeida,
-    tituloDe,
+    viajeDe,
     marcarTodasLeidas,
     puedeAdministrar: esTotal,
   }
