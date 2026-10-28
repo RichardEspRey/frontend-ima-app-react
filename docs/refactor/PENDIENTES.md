@@ -258,6 +258,52 @@ permisos efectivos. Si alguien gana entradas que no debía ver, el problema est�
 
 ---
 
+## 9 · Seguridad de la API: tres pasos — EN ESPERA
+
+Revisado el 2026-10-28 a raíz de la lista de quién recibe los avisos de inspección.
+Emiliano pidió dejarlo anotado; **no empezar sin su visto bueno**, porque los tres tocan
+producción.
+
+**El hueco de fondo:** la API no sabe quién manda cada petición. La identidad es el
+`id_usuario` que manda el cliente, así que cualquiera que conozca la dirección puede llamar
+cualquier operación, incluidas las cuatro de avisos de inspección en `mtto.php`. Esas cuatro
+son de bajo daño (ver nombres de la oficina; agregar o quitar a alguien del aviso); lo grave
+es lo de abajo.
+
+### 9.1 · Pasar la app a `https://` — una línea
+
+- **Medido 2026-10-28:** HTTPS ya responde. Certificado ZeroSSL `CN=imaexpressllc.com`,
+  válido hasta el **2026-12-10**; 5 de 5 peticiones con 200 y verificación correcta. En
+  agosto el handshake se cortaba.
+- El `.env` sigue en `VITE_API_HOST=http://imaexpressllc.com/API`, así que el login y todo
+  lo demás viajan sin cifrar.
+- **Cambio:** `https://` en el `.env` de las dos ramas y en el del pipeline de publicación.
+- **Antes:** probar la app completa (subidas de archivos y PDFs incluidos). **Después:**
+  alguien tiene que renovar el certificado antes del 10 de diciembre o la app deja de
+  conectar.
+
+### 9.2 · Que `get_users` deje de mandar las contraseñas — chico
+
+- **Medido 2026-10-28:** `features.php` · `op=get_users`, sin credenciales, devuelve **34
+  de 34** cuentas con `pass` en claro, operadores incluidos. Con eso cualquiera entra
+  como admin, así que ponerles candado a otras operaciones no sirve mientras esto siga.
+- **Quién lo usa:** el Gestor de accesos. `components/AccessDrawer.jsx:369` rellena el campo
+  Contraseña con `user.pass` al editar. El campo ya dice «Dejar vacío para no cambiar» y
+  `AccessManager.jsx:154` solo manda `pass` si viene lleno.
+- **Cambio:** el PHP deja de seleccionar `pass`; el front deja el campo vacío al editar.
+- **Falta revisar:** si la app móvil lee `pass` de `get_users`.
+- Hashear las contraseñas va con 9.3.
+
+### 9.3 · Sesión de verdad — grande, fase 2
+
+- Al iniciar sesión, `Auth.php` entrega una llave de sesión; cada PHP la valida y saca de
+  ahí quién es la persona, en lugar de creerle al `id_usuario` del cliente.
+- Toca el login, todos los PHP y la app móvil, que consume la misma API.
+- No existe ninguna infraestructura de sesión en la base (ver «Bloqueantes» en
+  `00-ESTADO.md` y `03-AUTH-ROLES.md`).
+
+---
+
 ## Orden sugerido
 
 1. ~~Arreglar los `Grid` (§6).~~ Hecho el 2026-10-05.

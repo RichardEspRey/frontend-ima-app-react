@@ -182,12 +182,12 @@ pedía y no estaba—.
 
 ## Bloqueantes fuera del frontend
 
-- **No hay HTTPS.** El hosting acepta TCP en 443 pero el handshake TLS se corta.
-  Todas las credenciales viajan en claro. Hay que reparar el certificado en GoDaddy;
-  no se arregla desde este repo. **Es el pendiente de seguridad más grande que queda**:
-  además de exponer las contraseñas, permite alterar lo que llega al renderer.
+- **HTTPS ya funciona en el hosting, pero la app no lo usa** (actualizado 2026-10-28).
+  Certificado ZeroSSL válido hasta el 2026-12-10; el `.env` sigue en `http://`, así que
+  las credenciales viajan en claro. Ver [`PENDIENTES.md` § 9](PENDIENTES.md).
 - **`features.php` · `op=get_users` devuelve las contraseñas en claro de todos los
-  usuarios, sin autenticación.** Verificado el 2026-08-31.
+  usuarios, sin autenticación.** Verificado el 2026-08-31 y otra vez el 2026-10-28 (34 de
+  34 cuentas). Plan en [`PENDIENTES.md` § 9](PENDIENTES.md).
 - **Son 43 contraseñas en claro, no 31: hay dos tablas.** `users` duplica a 10 personas que
   ya están en `Users_credentials`, cada una con su propia copia. Medido sobre el dump del
   2026-09-02; ver [`08-DIAGNOSTICO-BD.md`](08-DIAGNOSTICO-BD.md).
