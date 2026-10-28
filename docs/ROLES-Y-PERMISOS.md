@@ -64,14 +64,14 @@ cambiar el paquete de un rol no le quita nada a quien ya lo tuviera concedido a 
 
 | Rol | Clave | Permisos de fábrica |
 |---|---|---:|
-| Administrador | `administrador` | 38 de 38 |
-| Operaciones | `operaciones` | 21 de 38 |
-| Finanzas | `finanzas` | 16 de 38 |
-| Mantenimiento | `mantenimiento` | 14 de 38 |
-| Safety | `safety` | 9 de 38 |
-| Administrativo | `administrativo` | 1 de 38 |
-| Consulta | `consulta` | 1 de 38 |
-| Operador | `operador` | 0 de 38 |
+| Administrador | `administrador` | 39 de 39 |
+| Operaciones | `operaciones` | 21 de 39 |
+| Finanzas | `finanzas` | 16 de 39 |
+| Mantenimiento | `mantenimiento` | 14 de 39 |
+| Safety | `safety` | 9 de 39 |
+| Administrativo | `administrativo` | 1 de 39 |
+| Consulta | `consulta` | 1 de 39 |
+| Operador | `operador` | 0 de 39 |
 
 `Administrativo` tiene el paquete mínimo **a propósito**: es el destino de transición del
 `Administrativo` actual mientras no se decida en qué área cae cada persona. Nadie pierde
@@ -134,6 +134,8 @@ se vuelve a generar — hay un test que impide que el SQL y el frontend discrepe
 | `finanzas_pagos` | ● | · | ● | · | · | · | · | · |
 | `finanzas_ventas` | ● | · | ● | · | · | · | · | · |
 | `finanzas_margen` | ● | · | ● | · | · | · | · | · |
+| **accesos** | | | | | | | | |
+| `gestor_accesos_drivers` | ● | · | · | · | · | · | · | · |
 
 ## Cómo se usa en el código
 
@@ -221,7 +223,7 @@ como está. `fetchPermissions` manda `app: "Desktop"`, lo que implica que existe
 
 | Archivo | Qué tiene |
 |---|---|
-| `src/shared/auth/permisos.js` | Los 38 permisos y su agrupación por módulo |
+| `src/shared/auth/permisos.js` | Los 39 permisos y su agrupación por módulo |
 | `src/shared/auth/roles.js` | Catálogo de roles, alias y `normalizarRol` |
 | `src/shared/auth/permisosEfectivos.js` | El cálculo `rol ∪/∖ ajustes` |
 | `src/shared/auth/SesionContext.jsx` | `SesionProvider`, `useSesion`, `usePermisos` |

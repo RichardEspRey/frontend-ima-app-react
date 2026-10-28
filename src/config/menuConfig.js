@@ -7,6 +7,21 @@
  * `Users_credentials.type` —los únicos son Admin, Administrativo y Driver—, así
  * que nunca coincidían con nadie. Los permisos los resuelve `shared/auth`.
  */
+/**
+ * El permiso que deja entrar al Gestor de accesos solo para los operadores.
+ *
+ * No va dentro de `menuItemsConfig` porque el Gestor no es una entrada normal del
+ * menú: el `Sidebar` lo agrega aparte. Se suma al árbol de permisos del panel de
+ * cada usuario para que los administradores puedan concederlo.
+ *
+ * @type {{name: string, featureKey: string, route: string}}
+ */
+export const GESTOR_ACCESOS_DRIVERS = {
+  name: "Gestor de accesos · solo Drivers",
+  featureKey: "gestor_accesos_drivers",
+  route: "/access-manager",
+}
+
 export const menuItemsConfig = [
   {
     name: "Inicio",

@@ -124,7 +124,8 @@ INSERT INTO permisos (clave, modulo, nombre) VALUES
   ('finanzas_nomina',         'finanzas',       'Nómina'),
   ('finanzas_pagos',          'finanzas',       'Pagos'),
   ('finanzas_ventas',         'finanzas',       'Ventas'),
-  ('finanzas_margen',         'finanzas',       'Margen')
+  ('finanzas_margen',         'finanzas',       'Margen'),
+  ('gestor_accesos_drivers',  'accesos',        'Gestor de accesos · solo Drivers')
 ON DUPLICATE KEY UPDATE nombre = VALUES(nombre), modulo = VALUES(modulo);
 
 -- ============================================================================

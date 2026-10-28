@@ -27,23 +27,28 @@ const VACIO = { name: "", user: "", pass: "", type: "", driver_id: "" }
  * @param {boolean} props.abierto Si el diálogo está visible.
  * @param {Function} props.onCerrar Se llama al cerrar, con o sin guardar.
  * @param {Array} props.conductores Conductores activos, para los usuarios de tipo Driver.
+ * @param {boolean} [props.soloDrivers] Si quien crea solo administra Drivers: el tipo queda fijo en Operador.
  * @returns {object} El diálogo renderizado.
  */
-export function NuevoUsuarioDialog({ abierto, onCerrar, conductores = [] }) {
-  const [form, setForm] = useState(VACIO)
+export function NuevoUsuarioDialog({ abierto, onCerrar, conductores = [], soloDrivers = false }) {
+  const inicial = soloDrivers ? { ...VACIO, type: TIPO_USUARIO_API.DRIVER } : VACIO
+  const [form, setForm] = useState(inicial)
   const crear = useCrearUsuario()
 
   const cambiar = (campo) => (evento) =>
     setForm((previo) => ({ ...previo, [campo]: evento.target.value }))
 
   const cerrar = () => {
-    setForm(VACIO)
+    setForm(inicial)
     onCerrar()
   }
 
   const guardar = async () => {
     const validacion = validarFormularioUsuario(form, { esAlta: true })
     if (!validacion.valido) return notify.aviso(validacion.mensaje)
+    if (soloDrivers && form.type !== TIPO_USUARIO_API.DRIVER) {
+      return notify.aviso("Solo puedes crear accesos de operadores.")
+    }
 
     try {
       await crear.mutateAsync(form)
@@ -56,7 +61,7 @@ export function NuevoUsuarioDialog({ abierto, onCerrar, conductores = [] }) {
 
   return (
     <Dialog open={abierto} onClose={cerrar} maxWidth="sm" fullWidth>
-      <DialogTitle sx={DIALOG_TITLE_SX}>Nuevo usuario</DialogTitle>
+      <DialogTitle sx={DIALOG_TITLE_SX}>{soloDrivers ? "Nuevo operador" : "Nuevo usuario"}</DialogTitle>
 
       <DialogContent sx={DIALOG_CONTENT_SX}>
         <Stack spacing={2.5} sx={{ mt: 1 }}>
@@ -89,9 +94,10 @@ export function NuevoUsuarioDialog({ abierto, onCerrar, conductores = [] }) {
             onChange={cambiar("type")}
             fullWidth
             size="small"
+            disabled={soloDrivers}
           >
-            <MenuItem value={TIPO_USUARIO_API.ADMIN}>Administrador</MenuItem>
-            <MenuItem value={TIPO_USUARIO_API.ADMINISTRATIVO}>Administrativo</MenuItem>
+            {soloDrivers ? null : <MenuItem value={TIPO_USUARIO_API.ADMIN}>Administrador</MenuItem>}
+            {soloDrivers ? null : <MenuItem value={TIPO_USUARIO_API.ADMINISTRATIVO}>Administrativo</MenuItem>}
             <MenuItem value={TIPO_USUARIO_API.DRIVER}>Operador (conductor)</MenuItem>
           </TextField>
 

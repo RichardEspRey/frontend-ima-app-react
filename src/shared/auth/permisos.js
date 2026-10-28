@@ -57,6 +57,8 @@ export const PERMISOS = {
   FINANZAS_PAGOS: "finanzas_pagos",
   FINANZAS_VENTAS: "finanzas_ventas",
   FINANZAS_MARGEN: "finanzas_margen",
+
+  GESTOR_ACCESOS_DRIVERS: "gestor_accesos_drivers",
 }
 
 /**
@@ -111,6 +113,7 @@ export const MODULOS = {
     PERMISOS.FINANZAS_VENTAS,
     PERMISOS.FINANZAS_MARGEN,
   ],
+  accesos: [PERMISOS.GESTOR_ACCESOS_DRIVERS],
 }
 
 /**

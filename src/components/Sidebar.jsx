@@ -28,7 +28,7 @@ import logo from '../assets/images/logo_white.png';
 import iconUpdate from '../assets/images/icons/update.png';
 
 import { UpdateContext } from '../App';
-import { menuItemsConfig } from '../config/menuConfig';
+import { GESTOR_ACCESOS_DRIVERS, menuItemsConfig } from '../config/menuConfig';
 import { useAuthStore } from '../store/useAuthStore';
 import {
     useSidebarStore,
@@ -117,7 +117,7 @@ const Sidebar = () => {
   const { esTotal: isAdmin } = useSesion();
 
   const isSectionAllowed = useCallback((item, visibleSubs = true) => {
-      if (item.name === MANAGEMENT_ITEM.name) return isAdmin;
+      if (item.name === MANAGEMENT_ITEM.name) return isAdmin || userPermissions[GESTOR_ACCESOS_DRIVERS.featureKey] === true;
       if (isAdmin) return true;
       const dynamicPermission = userPermissions[item.featureKey ?? item.name];
       if (dynamicPermission !== undefined) return dynamicPermission;

@@ -3,7 +3,7 @@ import { screen } from "@testing-library/react";
 import PermisosDrawer from "../ui/PermisosDrawer";
 import { renderPantalla, sesionDePrueba } from "../../../test/utils";
 
-const panel = (type) => (
+const panel = (type, extra = {}) => (
   <PermisosDrawer
     open
     handleClose={() => {}}
@@ -14,8 +14,17 @@ const panel = (type) => (
     featuresLoading={false}
     onToggleFeature={() => {}}
     onUpdateUser={() => {}}
+    {...extra}
   />
 );
+
+/**
+ * El selector de tipo del usuario: el único combo que muestra «Driver».
+ *
+ * @returns {HTMLElement} El combo.
+ */
+const selectorDeTipo = () =>
+  screen.getAllByRole("combobox").find((combo) => combo.textContent === "Driver");
 
 describe("PermisosDrawer", () => {
   beforeEach(() => { sesionDePrueba(); });
@@ -31,5 +40,19 @@ describe("PermisosDrawer", () => {
     renderPantalla(panel("Administrativo"));
     expect(await screen.findByRole("tab", { name: /Desktop/ })).toBeInTheDocument();
     expect(screen.getByRole("tab", { name: /Mobile/ })).toBeInTheDocument();
+  });
+
+  it("a quien solo administra Drivers no le deja cambiar el tipo", async () => {
+    renderPantalla(panel("Driver", { soloDrivers: true }));
+    await screen.findByRole("tab", { name: /Datos/ });
+    const tipo = selectorDeTipo();
+    expect(tipo).toHaveAttribute("aria-disabled", "true");
+  });
+
+  it("al administrador sí le deja cambiar el tipo", async () => {
+    renderPantalla(panel("Driver"));
+    await screen.findByRole("tab", { name: /Datos/ });
+    const tipo = selectorDeTipo();
+    expect(tipo).not.toHaveAttribute("aria-disabled", "true");
   });
 });

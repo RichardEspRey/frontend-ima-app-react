@@ -363,12 +363,13 @@ const FeatureSection = ({ features, userId, onToggleFeature }) => {
  * @param {Function} props.onToggleFeature `(userId, featureId, plataforma, concedido)`.
  * @param {Function} props.onUpdateUser `(userId, datos)` al guardar los datos del usuario.
  * @param {Array} props.sectionsToManage Árbol del menú con las secciones a gestionar.
+ * @param {boolean} [props.soloDrivers] Si quien edita solo administra Drivers: el tipo queda fijo.
  * @returns {object} El panel renderizado.
  */
 const PermisosDrawer = ({
     open, handleClose, user, sectionsToManage,
     featuresDesktop, featuresMobile, featuresLoading, onToggleFeature,
-    onUpdateUser
+    onUpdateUser, soloDrivers = false
 }) => {
     const [activeTab, setActiveTab] = useState('datos');
     const [form, setForm] = useState({ name: '', user: '', pass: '', type: '', active: '1', driver_id: '' });
@@ -482,8 +483,8 @@ const PermisosDrawer = ({
                             />
                             <FormControl fullWidth size="small">
                                 <InputLabel>Tipo</InputLabel>
-                                <Select value={form.type} label="Tipo" onChange={handleFormChange('type')}>
-                                    <MenuItem value="Administrativo">Administrativo</MenuItem>
+                                <Select value={form.type} label="Tipo" onChange={handleFormChange('type')} disabled={soloDrivers}>
+                                    {!soloDrivers && <MenuItem value="Administrativo">Administrativo</MenuItem>}
                                     <MenuItem value="Driver">Driver</MenuItem>
                                 </Select>
                             </FormControl>

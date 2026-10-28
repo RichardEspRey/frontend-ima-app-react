@@ -3,9 +3,9 @@ import { Alert, Box, Button, Chip, Container, TextField } from "@mui/material"
 import GroupIcon from "@mui/icons-material/Group"
 import PersonAddIcon from "@mui/icons-material/PersonAdd"
 
-import { menuItemsConfig } from "../../config/menuConfig"
+import { GESTOR_ACCESOS_DRIVERS, menuItemsConfig } from "../../config/menuConfig"
 import { useConductoresActivos } from "../../entities/driver"
-import { useSesion } from "../../shared/auth"
+import { PERMISOS, useSesion } from "../../shared/auth"
 import { useAuthStore } from "../../store/useAuthStore"
 import { DataTable, PageHeader, notify, Pestanas } from "../../shared/ui"
 import { DARK_BTN_SX, GHOST_BTN_SX, CELL_STRONG_SX, CHIP_SX } from "../../shared/ui/estilos"
@@ -29,13 +29,17 @@ import { COLOR } from "../../shared/ui/tokens"
  * —alta de usuario, equipos, permisos— vive en `features/access-manager`, y los
  * datos en `entities/user` y `entities/team`.
  *
- * Solo la ven los roles totales. Es una comprobación de experiencia, no de
- * seguridad: la autorización real vive en el servidor, y hoy la API no autentica.
+ * La ven completa los roles totales. Quien tiene `gestor_accesos_drivers` entra
+ * solo a la pestaña de Conductores: los da de alta, edita sus datos y sus
+ * permisos del móvil, sin ver al personal ni los equipos. Es una comprobación de
+ * experiencia, no de seguridad: la autorización real vive en el servidor, y hoy
+ * la API no autentica.
  *
  * @returns {object} La pantalla.
  */
 export default function AccesosPage() {
-  const { esTotal, usuario } = useSesion()
+  const { esTotal, usuario, can } = useSesion()
+  const soloDrivers = !esTotal && can(PERMISOS.GESTOR_ACCESOS_DRIVERS)
   const refrescarPermisosPropios = useAuthStore((estado) => estado.fetchPermissions)
   const { data: usuarios = [], isLoading, isError, error } = useUsuarios()
   const { data: activeDrivers = [] } = useConductoresActivos()
@@ -50,11 +54,11 @@ export default function AccesosPage() {
   const cambiarPermiso = useCambiarPermisoUsuario()
   const actualizar = useActualizarUsuario()
 
-  if (!esTotal) {
+  if (!esTotal && !soloDrivers) {
     return (
       <Container maxWidth="lg" sx={{ mt: 4 }}>
         <Alert severity="error">
-          Acceso denegado. Solo los administradores pueden ver esta sección.
+          Acceso denegado. No tienes permiso para ver esta sección.
         </Alert>
       </Container>
     )
@@ -70,6 +74,9 @@ export default function AccesosPage() {
   }
 
   const alGuardarUsuario = async (userId, datos) => {
+    if (soloDrivers && datos.type !== TIPO_USUARIO_API.DRIVER) {
+      return notify.aviso("Solo puedes administrar accesos de operadores.")
+    }
     try {
       await actualizar.mutateAsync({ userId, datos })
       notify.exito("Usuario actualizado")
@@ -80,7 +87,8 @@ export default function AccesosPage() {
   }
 
   const esConductor = (usuario) => usuario.type === TIPO_USUARIO_API.DRIVER
-  const dePestana = usuarios.filter((u) => (pestana === 1 ? esConductor(u) : !esConductor(u)))
+  const verConductores = soloDrivers || pestana === 1
+  const dePestana = usuarios.filter((u) => (verConductores ? esConductor(u) : !esConductor(u)))
   const visibles = busqueda
     ? dePestana.filter((u) =>
         `${u.name} ${u.user}`.toLowerCase().includes(busqueda.trim().toLowerCase()),
@@ -119,7 +127,11 @@ export default function AccesosPage() {
       label: "",
       align: "right",
       render: (u) => (
-        <Button size="small" onClick={() => setUsuarioEnEdicion(u)} sx={GHOST_BTN_SX}>
+        <Button
+          size="small"
+          onClick={() => (soloDrivers && !esConductor(u) ? null : setUsuarioEnEdicion(u))}
+          sx={GHOST_BTN_SX}
+        >
           Gestionar accesos
         </Button>
       ),
@@ -131,24 +143,30 @@ export default function AccesosPage() {
       <PageHeader
         seccion="Administración"
         titulo="Gestor de Perfiles y Accesos"
-        descripcion="Usuarios, permisos por plataforma y equipos de trabajo."
+        descripcion={
+          soloDrivers
+            ? "Da de alta a los operadores y decide qué pueden usar en la app móvil."
+            : "Usuarios, permisos por plataforma y equipos de trabajo."
+        }
         acciones={
           <>
-            <Button
-              variant="outlined"
-              startIcon={<GroupIcon />}
-              onClick={() => setEquiposAbierto(true)}
-              sx={GHOST_BTN_SX}
-            >
-              Gestor de equipos
-            </Button>
+            {soloDrivers ? null : (
+              <Button
+                variant="outlined"
+                startIcon={<GroupIcon />}
+                onClick={() => setEquiposAbierto(true)}
+                sx={GHOST_BTN_SX}
+              >
+                Gestor de equipos
+              </Button>
+            )}
             <Button
               variant="contained"
               startIcon={<PersonAddIcon />}
               onClick={() => setNuevoAbierto(true)}
               sx={DARK_BTN_SX}
             >
-              Nuevo usuario
+              {soloDrivers ? "Nuevo operador" : "Nuevo usuario"}
             </Button>
           </>
         }
@@ -156,12 +174,16 @@ export default function AccesosPage() {
 
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
         <Pestanas
-          valor={pestana}
+          valor={soloDrivers ? 0 : pestana}
           onChange={setPestana}
-          pestanas={[
-            { etiqueta: `Personal (${usuarios.filter((u) => !esConductor(u)).length})` },
-            { etiqueta: `Conductores (${usuarios.filter(esConductor).length})` },
-          ]}
+          pestanas={
+            soloDrivers
+              ? [{ etiqueta: `Conductores (${usuarios.filter(esConductor).length})` }]
+              : [
+                  { etiqueta: `Personal (${usuarios.filter((u) => !esConductor(u)).length})` },
+                  { etiqueta: `Conductores (${usuarios.filter(esConductor).length})` },
+                ]
+          }
         />
 
         <TextField
@@ -172,6 +194,13 @@ export default function AccesosPage() {
           sx={{ minWidth: 260, mb: 3 }}
         />
       </Box>
+
+      {soloDrivers ? (
+        <Alert severity="info" sx={{ mb: 3, borderRadius: 2 }}>
+          Tienes acceso al gestor solo para los operadores: puedes darlos de alta, editar sus
+          datos y sus permisos del móvil.
+        </Alert>
+      ) : null}
 
       <DataTable
         filas={visibles}
@@ -191,16 +220,20 @@ export default function AccesosPage() {
         featuresLoading={cargandoPermisos}
         onToggleFeature={alCambiarPermiso}
         onUpdateUser={alGuardarUsuario}
-        sectionsToManage={menuItemsConfig}
+        sectionsToManage={esTotal ? [...menuItemsConfig, GESTOR_ACCESOS_DRIVERS] : menuItemsConfig}
+        soloDrivers={soloDrivers}
       />
 
       <NuevoUsuarioDialog
         abierto={nuevoAbierto}
         onCerrar={() => setNuevoAbierto(false)}
         conductores={activeDrivers}
+        soloDrivers={soloDrivers}
       />
 
-      <EquiposDialog abierto={equiposAbierto} onCerrar={() => setEquiposAbierto(false)} />
+      {soloDrivers ? null : (
+        <EquiposDialog abierto={equiposAbierto} onCerrar={() => setEquiposAbierto(false)} />
+      )}
     </Container>
   )
 }
