@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
     Alert, Box, Button, Chip, CircularProgress, Collapse, IconButton, Paper, Stack, Tab,
     Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, Tabs,
@@ -40,7 +41,9 @@ const SIN_FILTROS = { viaje: '', operador: '', unidad: '', desde: '', hasta: '' 
  */
 const PanelInspecciones = () => {
     const usuario = useAuthStore(estado => estado.user);
-    const [lado, setLado] = useState(UNIDAD.CAMION);
+    const [parametros] = useSearchParams();
+    const ladoPedido = parametros.get('lado') === UNIDAD.CAJA ? UNIDAD.CAJA : parametros.get('lado') === UNIDAD.CAMION ? UNIDAD.CAMION : null;
+    const [lado, setLado] = useState(ladoPedido || UNIDAD.CAMION);
     const [pestana, setPestana] = useState('pendientes');
     const [filas, setFilas] = useState([]);
     const [cargando, setCargando] = useState(true);
@@ -69,6 +72,15 @@ const PanelInspecciones = () => {
     }, [lado]);
 
     useEffect(() => { cargar(); }, [cargar]);
+
+    useEffect(() => {
+        if (!ladoPedido) return;
+        setLado(ladoPedido);
+        setPestana('pendientes');
+        setSeleccionados([]);
+        setPagina(0);
+        setAbierta(null);
+    }, [ladoPedido, parametros]);
 
     const filtradas = useMemo(() => filas.filter(fila => {
         const completada = fila.estatus_lado === 'completada';

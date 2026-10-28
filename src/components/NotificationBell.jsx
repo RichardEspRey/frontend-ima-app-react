@@ -21,7 +21,12 @@ import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
 import CloseIcon from "@mui/icons-material/Close";
 import SettingsIcon from "@mui/icons-material/Settings";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
+import BuildIcon from "@mui/icons-material/Build";
+import { toast } from "react-toastify";
 import { useAuthStore } from "../store/useAuthStore";
+import { menuItemsConfig } from "../config/menuConfig";
+import { UNIDAD, obtenerAvisosDeInspecciones } from "../services/mantenimiento";
+import notiSound from "../assets/sounds/update.mp3";
 
 const dateGroupLabel = (createdAt) => {
   const date = new Date(createdAt.replace(" ", "T"));
@@ -56,13 +61,16 @@ const nomenclaturaDe = (trip) => {
 
 const NotificationBell = () => {
   const navigate = useNavigate();
-  const { user } = useAuthStore();
+  const { user, checkAccess } = useAuthStore();
+  const veReparaciones = checkAccess("Reparaciones", menuItemsConfig, "mant_inspeccion_final");
   const apiHost = import.meta.env.VITE_API_HOST;
   const isAdmin = user?.tipo_usuario?.toLowerCase() === "admin";
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [tab, setTab] = useState(0);
   const [notifications, setNotifications] = useState([]);
+  const [inspecciones, setInspecciones] = useState([]);
+  const conocidas = useRef(null);
   const [nomenclaturas, setNomenclaturas] = useState({});
   const pedidas = useRef(new Set());
   const [seenIds, setSeenIds] = useState(() => {
@@ -101,6 +109,40 @@ const NotificationBell = () => {
   }, [user?.id]);
 
   useEffect(() => {
+    if (!user?.id || !veReparaciones) {
+      setInspecciones([]);
+      return;
+    }
+
+    const consultar = async () => {
+      try {
+        const avisos = await obtenerAvisosDeInspecciones();
+        if (conocidas.current) {
+          const nuevas = avisos.filter((a) => !conocidas.current.has(a.id));
+          nuevas.forEach((a) => toast.info(`Nueva inspección #${a.clFinalId} · ${a.operador}`, { position: "top-right" }));
+          if (nuevas.length > 0) new Audio(notiSound).play().catch(() => {});
+        }
+        conocidas.current = new Set(avisos.map((a) => a.id));
+        setInspecciones(avisos);
+      } catch (err) {
+        console.error("[NotificationBell] Error al obtener inspecciones:", err);
+      }
+    };
+
+    consultar();
+    const intervalId = setInterval(consultar, 60000);
+    return () => clearInterval(intervalId);
+  }, [user?.id, veReparaciones]);
+
+  const todas = useMemo(
+    () =>
+      [...notifications, ...inspecciones].sort((a, b) =>
+        String(b.created_at).localeCompare(String(a.created_at))
+      ),
+    [notifications, inspecciones]
+  );
+
+  useEffect(() => {
     const faltantes = [...new Set(notifications.map((n) => String(n.trip_id)))].filter(
       (id) => id && !pedidas.current.has(id)
     );
@@ -128,14 +170,14 @@ const NotificationBell = () => {
     });
   }, [notifications, apiHost]);
 
-  const unreadCount = notifications.filter((n) => !seenIds.has(n.id)).length;
+  const unreadCount = todas.filter((n) => !seenIds.has(n.id)).length;
 
   const handleOpen = (e) => setAnchorEl(e.currentTarget);
 
   const handleClose = () => {
     setAnchorEl(null);
     const updated = new Set(seenIds);
-    notifications.forEach((n) => updated.add(n.id));
+    todas.forEach((n) => updated.add(n.id));
     setSeenIds(updated);
     try {
       localStorage.setItem(seenKey(user?.id), JSON.stringify([...updated]));
@@ -145,10 +187,10 @@ const NotificationBell = () => {
   };
 
   const filtered = useMemo(() => {
-    if (tab === 1) return notifications.filter((n) => !seenIds.has(n.id));
-    if (tab === 2) return notifications.filter((n) => seenIds.has(n.id));
-    return notifications;
-  }, [notifications, seenIds, tab]);
+    if (tab === 1) return todas.filter((n) => !seenIds.has(n.id));
+    if (tab === 2) return todas.filter((n) => seenIds.has(n.id));
+    return todas;
+  }, [todas, seenIds, tab]);
 
   const groups = useMemo(() => {
     const order = [];
@@ -234,12 +276,17 @@ const NotificationBell = () => {
               <List disablePadding>
                 {items.map((n) => {
                   const isUnread = !seenIds.has(n.id);
+                  const esInspeccion = n.tipo === "inspeccion";
                   return (
                     <ListItemButton
                       key={n.id}
                       onClick={() => {
                         handleClose();
-                        navigate(`/edit-trip/${n.trip_id}`);
+                        navigate(
+                          esInspeccion
+                            ? `/mantenimiento?pestana=inspecciones&lado=${n.lado}`
+                            : `/edit-trip/${n.trip_id}`
+                        );
                       }}
                       sx={{
                         px: 2.5,
@@ -250,19 +297,27 @@ const NotificationBell = () => {
                       }}
                     >
                       <ListItemAvatar sx={{ minWidth: 44 }}>
-                        <Avatar sx={{ bgcolor: "#e0e9fd", color: "#1d4ed8", width: 36, height: 36 }}>
-                          <LocalShippingIcon fontSize="small" />
-                        </Avatar>
+                        {esInspeccion ? (
+                          <Avatar sx={{ bgcolor: "#ffedd5", color: "#ea580c", width: 36, height: 36 }}>
+                            <BuildIcon fontSize="small" />
+                          </Avatar>
+                        ) : (
+                          <Avatar sx={{ bgcolor: "#e0e9fd", color: "#1d4ed8", width: 36, height: 36 }}>
+                            <LocalShippingIcon fontSize="small" />
+                          </Avatar>
+                        )}
                       </ListItemAvatar>
                       <ListItemText
                         primary={
                           <Typography variant="body2" fontWeight={800} color="#0f172a">
-                            BL Firmado
+                            {esInspeccion ? `Nueva inspección #${n.clFinalId}` : "BL Firmado"}
                           </Typography>
                         }
                         secondary={
                           <Typography variant="caption" color="#64748b" noWrap sx={{ display: "block" }}>
-                            {nomenclaturas[String(n.trip_id)] || "Viaje"}
+                            {esInspeccion
+                              ? `${n.lado === UNIDAD.CAJA ? "Caja" : "Camión"}${n.unidad ? ` ${n.unidad}` : ""} · ${n.operador}`
+                              : nomenclaturas[String(n.trip_id)] || "Viaje"}
                           </Typography>
                         }
                       />

@@ -93,6 +93,29 @@ export const obtenerInspeccionesPorAtender = async (lado) => {
         .filter(fila => fila.estatus_lado !== 'completada').length;
 };
 
+const DIAS_DE_AVISO = 14;
+
+export const obtenerAvisosDeInspecciones = async () => {
+    const lados = [UNIDAD.CAMION, UNIDAD.CAJA];
+    const respuestas = await Promise.all(lados.map(lado => pedirMtto('getInspecciones', { lado })));
+    const limite = dayjs().subtract(DIAS_DE_AVISO, 'day').format('YYYY-MM-DD');
+
+    return respuestas.flatMap((result, indice) => {
+        const lado = lados[indice];
+        return (Array.isArray(result.inspecciones) ? result.inspecciones : [])
+            .filter(fila => fila.estatus_lado !== 'completada' || (fila.fecha_creacion || '').slice(0, 10) >= limite)
+            .map(fila => ({
+                id: `inspeccion-${fila.cl_final_id}-${lado}`,
+                tipo: 'inspeccion',
+                lado,
+                clFinalId: fila.cl_final_id,
+                operador: fila.operador || '',
+                unidad: (lado === UNIDAD.CAJA ? fila.no_caja : fila.no_camion) || '',
+                created_at: fila.fecha_creacion,
+            }));
+    });
+};
+
 export const obtenerPuntos = async (viajeId, lado) => {
     const result = await pedirMtto('getPuntos', { viaje_id: viajeId, lado });
     return (Array.isArray(result.puntos) ? result.puntos : []).map(punto => ({
