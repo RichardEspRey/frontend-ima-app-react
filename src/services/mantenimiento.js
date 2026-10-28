@@ -121,6 +121,22 @@ export const obtenerAvisosDeInspecciones = async () => {
     });
 };
 
+export const obtenerSuscriptoresInspeccion = async () => {
+    const result = await pedirMtto('getSuscriptoresInspeccion');
+    return Array.isArray(result.users) ? result.users : [];
+};
+
+export const obtenerDisponiblesInspeccion = async () => {
+    const result = await pedirMtto('getDisponiblesInspeccion');
+    return Array.isArray(result.users) ? result.users : [];
+};
+
+export const suscribirInspeccion = ({ userId, usuarioId }) =>
+    pedirMtto('suscribirInspeccion', { user_id: userId, id_usuario: usuarioId });
+
+export const desuscribirInspeccion = ({ userId }) =>
+    pedirMtto('desuscribirInspeccion', { user_id: userId });
+
 export const obtenerPuntos = async (viajeId, lado) => {
     const result = await pedirMtto('getPuntos', { viaje_id: viajeId, lado });
     return (Array.isArray(result.puntos) ? result.puntos : []).map(punto => ({

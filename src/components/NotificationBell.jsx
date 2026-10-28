@@ -24,8 +24,7 @@ import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import BuildIcon from "@mui/icons-material/Build";
 import { toast } from "react-toastify";
 import { useAuthStore } from "../store/useAuthStore";
-import { menuItemsConfig } from "../config/menuConfig";
-import { UNIDAD, obtenerAvisosDeInspecciones } from "../services/mantenimiento";
+import { UNIDAD, obtenerAvisosDeInspecciones, obtenerSuscriptoresInspeccion } from "../services/mantenimiento";
 import notiSound from "../assets/sounds/update.mp3";
 
 const dateGroupLabel = (createdAt) => {
@@ -61,8 +60,8 @@ const nomenclaturaDe = (trip) => {
 
 const NotificationBell = () => {
   const navigate = useNavigate();
-  const { user, checkAccess } = useAuthStore();
-  const veReparaciones = checkAccess("Reparaciones", menuItemsConfig, "mant_inspeccion_final");
+  const { user } = useAuthStore();
+  const [recibeInspecciones, setRecibeInspecciones] = useState(false);
   const apiHost = import.meta.env.VITE_API_HOST;
   const isAdmin = user?.tipo_usuario?.toLowerCase() === "admin";
 
@@ -109,7 +108,27 @@ const NotificationBell = () => {
   }, [user?.id]);
 
   useEffect(() => {
-    if (!user?.id || !veReparaciones) {
+    if (!user?.id) {
+      setRecibeInspecciones(false);
+      return;
+    }
+
+    const consultar = async () => {
+      try {
+        const suscriptores = await obtenerSuscriptoresInspeccion();
+        setRecibeInspecciones(suscriptores.some((s) => String(s.id) === String(user.id)));
+      } catch (err) {
+        console.error("[NotificationBell] Error al obtener suscriptores de inspecciones:", err);
+      }
+    };
+
+    consultar();
+    const intervalId = setInterval(consultar, 300000);
+    return () => clearInterval(intervalId);
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (!user?.id || !recibeInspecciones) {
       setInspecciones([]);
       return;
     }
@@ -132,7 +151,7 @@ const NotificationBell = () => {
     consultar();
     const intervalId = setInterval(consultar, 60000);
     return () => clearInterval(intervalId);
-  }, [user?.id, veReparaciones]);
+  }, [user?.id, recibeInspecciones]);
 
   const todas = useMemo(
     () =>
@@ -236,9 +255,24 @@ const NotificationBell = () => {
           <Typography variant="subtitle1" fontWeight={800} color="#0f172a">
             Notice Board
           </Typography>
-          <CloseButton size="small" onClick={handleClose}>
-            <CloseIcon fontSize="small" />
-          </CloseButton>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+            {isAdmin && (
+              <Button
+                size="small"
+                startIcon={<SettingsIcon fontSize="small" />}
+                sx={{ textTransform: "none", fontWeight: 700, color: "#475569", borderRadius: 2 }}
+                onClick={() => {
+                  handleClose();
+                  navigate("/notifications-manager");
+                }}
+              >
+                Administrar
+              </Button>
+            )}
+            <CloseButton size="small" onClick={handleClose}>
+              <CloseIcon fontSize="small" />
+            </CloseButton>
+          </Box>
         </Box>
 
         <Tabs
@@ -338,22 +372,6 @@ const NotificationBell = () => {
           ))}
         </Box>
 
-        {isAdmin && (
-          <Box sx={{ px: 2, py: 1.25 }}>
-            <Button
-              fullWidth
-              size="small"
-              startIcon={<SettingsIcon fontSize="small" />}
-              sx={{ textTransform: "none", fontWeight: 700, color: "#0f172a" }}
-              onClick={() => {
-                handleClose();
-                navigate("/notifications-manager");
-              }}
-            >
-              Notificaciones manager
-            </Button>
-          </Box>
-        )}
       </Popover>
     </>
   );
