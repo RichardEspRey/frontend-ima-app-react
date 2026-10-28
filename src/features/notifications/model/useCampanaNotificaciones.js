@@ -29,6 +29,38 @@ export const FILTRO_CAMPANA = {
 export const llaveVistas = (idUsuario) => `notificaciones-vistas-${idUsuario}`
 
 /**
+ * Dónde guarda el navegador las notificaciones que la persona ya abrió.
+ *
+ * Una notificación abierta se quita de la campana; va por persona por la misma
+ * razón que {@link llaveVistas}.
+ *
+ * @param {(string|number)} [idUsuario] Identificador de la persona.
+ * @returns {string} La llave de `localStorage`.
+ */
+export const llaveOcultas = (idUsuario) => `notificaciones-ocultas-${idUsuario}`
+
+/**
+ * Cuántos identificadores se guardan como máximo en cada lista del navegador.
+ *
+ * @type {number}
+ */
+export const MAX_GUARDADAS = 500
+
+/**
+ * Quita de la lista las notificaciones que la persona ya abrió.
+ *
+ * @param {Array.<object>} notificaciones Las notificaciones.
+ * @param {Set.<string>} ocultas Los identificadores abiertos.
+ * @returns {Array.<object>} Las que siguen en la campana.
+ *
+ * @example
+ * sinOcultas([{ id: "1" }, { id: "2" }], new Set(["1"])) // [{ id: "2" }]
+ */
+export function sinOcultas(notificaciones, ocultas) {
+  return notificaciones.filter((una) => !ocultas.has(String(una.id)))
+}
+
+/**
  * Lee del navegador los identificadores ya leídos.
  *
  * Nunca lanza: en una ventana privada o con el almacenamiento bloqueado, leer
@@ -56,7 +88,7 @@ function leerVistas(llave) {
  */
 function guardarVistas(llave, vistas) {
   try {
-    localStorage.setItem(llave, JSON.stringify([...vistas]))
+    localStorage.setItem(llave, JSON.stringify([...vistas].slice(-MAX_GUARDADAS)))
   } catch {
     return
   }
@@ -81,8 +113,9 @@ export const INTERVALO_SUSCRIPCION_MS = 300000
  *
  * Se apoya en la misma consulta que el aviso emergente, así que las dos cosas
  * comparten una sola petición cada quince segundos en lugar de una cada una.
- * Lo único propio de la campana es qué se ha leído, que vive en el navegador
- * porque el backend no lo guarda.
+ * Lo único propio de la campana es qué se ha leído y qué se abrió, que viven
+ * en el navegador porque el backend no lo guarda. Lo que se abre se quita de la
+ * campana para que no se acumule.
  *
  * A los BL firmados se suman las inspecciones que llegan a Reparaciones, solo
  * para quien está en la lista de Inspecciones de Notificaciones manager.
@@ -96,6 +129,8 @@ export function useCampanaNotificaciones() {
   })
   const llave = llaveVistas(usuario?.id)
 
+  const llaveDeOcultas = llaveOcultas(usuario?.id)
+  const [ocultas, setOcultas] = useState(() => leerVistas(llaveDeOcultas))
   const { data: delServidor = [] } = useNotificaciones(usuario?.id)
   const { avisos: inspecciones } = useAvisosDeInspecciones({
     enabled: recibeInspecciones,
@@ -103,10 +138,10 @@ export function useCampanaNotificaciones() {
   })
   const notificaciones = useMemo(
     () =>
-      [...delServidor, ...inspecciones].sort((a, b) =>
+      sinOcultas([...delServidor, ...inspecciones], ocultas).sort((a, b) =>
         String(b.created_at ?? "").localeCompare(String(a.created_at ?? "")),
       ),
-    [delServidor, inspecciones],
+    [delServidor, inspecciones, ocultas],
   )
   const [vistas, setVistas] = useState(() => leerVistas(llave))
   const [filtro, setFiltro] = useState(FILTRO_CAMPANA.TODAS)
@@ -132,6 +167,18 @@ export function useCampanaNotificaciones() {
     })
   }, [notificaciones, llave])
 
+  const ocultar = useCallback(
+    (notificacion) => {
+      setOcultas((previas) => {
+        const actualizadas = new Set(previas)
+        actualizadas.add(String(notificacion.id))
+        guardarVistas(llaveDeOcultas, actualizadas)
+        return actualizadas
+      })
+    },
+    [llaveDeOcultas],
+  )
+
   const estaLeida = useCallback((notificacion) => vistas.has(notificacion.id), [vistas])
 
   const viajeDe = useCallback(
@@ -150,6 +197,7 @@ export function useCampanaNotificaciones() {
     estaLeida,
     viajeDe,
     marcarTodasLeidas,
+    ocultar,
     puedeAdministrar: esTotal,
   }
 }

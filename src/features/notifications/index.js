@@ -5,6 +5,8 @@ export {
   INTERVALO_SUSCRIPCION_MS,
   useCampanaNotificaciones,
   llaveVistas,
+  llaveOcultas,
+  sinOcultas,
 } from "./model/useCampanaNotificaciones"
 export { CampanaNotificaciones } from "./ui/CampanaNotificaciones"
 export { SuscriptoresDeAvisos } from "./ui/SuscriptoresDeAvisos"

@@ -107,7 +107,7 @@ function Renglon({ notificacion, viaje, leida, onAbrir }) {
 export function CampanaNotificaciones() {
   const navigate = useNavigate()
   const [ancla, setAncla] = useState(null)
-  const { grupos, sinLeer, filtro, setFiltro, estaLeida, viajeDe, marcarTodasLeidas, puedeAdministrar } =
+  const { grupos, sinLeer, filtro, setFiltro, estaLeida, viajeDe, marcarTodasLeidas, ocultar, puedeAdministrar } =
     useCampanaNotificaciones()
 
   const cerrar = () => {
@@ -196,6 +196,7 @@ export function CampanaNotificaciones() {
                     viaje={viajeDe(notificacion)}
                     leida={estaLeida(notificacion)}
                     onAbrir={() => {
+                      ocultar(notificacion)
                       if (notificacion.tipo === "inspeccion") {
                         irA(`/mantenimiento?pestana=inspecciones&lado=${notificacion.lado}`)
                       } else if (notificacion.trip_id) {
