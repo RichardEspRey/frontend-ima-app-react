@@ -79,13 +79,16 @@ function filtroConFalla($columna = 'contenido') {
         implode(',', array_fill(0, count($GLOBALS['SIN_FALLA']), '?')) . ")";
 }
 
-// Lo que se manda de una persona en las listas de avisos. Se elige campo por campo
-// porque `users` guarda la contraseña y no debe salir de aquí.
+// Las personas que pueden recibir avisos: las cuentas de la oficina, las mismas que
+// usa Notifications.php para los BL. Los operadores entran por el móvil y no ven la
+// campana.
+define('PERSONAS_DE_OFICINA', "Users_credentials uc WHERE uc.type <> 'Driver' AND COALESCE(uc.active, 1) = 1");
+
 function personaPublica($fila) {
     return [
         'id' => (string)$fila['id'],
         'name' => $fila['name'] ?? '',
-        'user' => $fila['user'] ?? ($fila['email'] ?? ''),
+        'user' => $fila['user'] ?? '',
         'subscribed_at' => $fila['subscribed_at'] ?? null,
     ];
 }
@@ -746,10 +749,10 @@ try {
 
         case 'getSuscriptoresInspeccion':
             $stmt = $db->query("
-                SELECT u.*, s.creado_en AS subscribed_at
+                SELECT uc.id, uc.name, uc.user, s.creado_en AS subscribed_at
                   FROM mtto_notif_suscriptores s
-                  JOIN users u ON u.id = s.user_id
-              ORDER BY u.name
+                  JOIN Users_credentials uc ON uc.id = s.user_id
+              ORDER BY uc.name
             ");
             echo json_encode([
                 'status' => 'success',
@@ -759,11 +762,10 @@ try {
 
         case 'getDisponiblesInspeccion':
             $stmt = $db->query("
-                SELECT u.*
-                  FROM users u
-             LEFT JOIN mtto_notif_suscriptores s ON s.user_id = u.id
-                 WHERE s.user_id IS NULL
-              ORDER BY u.name
+                SELECT uc.id, uc.name, uc.user
+                  FROM " . PERSONAS_DE_OFICINA . "
+                   AND uc.id NOT IN (SELECT user_id FROM mtto_notif_suscriptores)
+              ORDER BY uc.name
             ");
             echo json_encode([
                 'status' => 'success',
@@ -783,7 +785,7 @@ try {
 
             $stmt = $db->prepare("
                 INSERT IGNORE INTO mtto_notif_suscriptores (user_id, creado_por)
-                SELECT id, ? FROM users WHERE id = ?
+                SELECT uc.id, ? FROM " . PERSONAS_DE_OFICINA . " AND uc.id = ?
             ");
             $stmt->execute([$id_usuario ?: null, (int)$user_id]);
 
