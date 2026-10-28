@@ -354,7 +354,7 @@ const FeatureSection = ({ features, userId, onToggleFeature }) => {
 const AccessDrawer = ({
     open, handleClose, user, sectionsToManage,
     featuresDesktop, featuresMobile, featuresLoading, onToggleFeature,
-    onUpdateUser
+    onUpdateUser, soloDrivers = false
 }) => {
     const [activeTab, setActiveTab] = useState('datos');
     const [form, setForm] = useState({ name: '', user: '', pass: '', type: '', active: '1', driver_id: '' });
@@ -410,10 +410,10 @@ const AccessDrawer = ({
                 sx: { width: { xs: '100%', sm: 450 }, padding: 0, display: 'flex', flexDirection: 'column' }
             }}
         >
-            <Box sx={{ p: 3, bgcolor: 'primary.main', color: 'white', flexShrink: 0 }}>
+            <Box sx={{ p: 3, bgcolor: '#0f172a', color: 'white', flexShrink: 0 }}>
                 <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
                     <Stack direction="row" spacing={2} alignItems="center">
-                        <Avatar sx={{ bgcolor: 'white', color: 'primary.main', fontWeight: 'bold' }}>
+                        <Avatar sx={{ bgcolor: 'rgba(255,255,255,0.12)', color: 'white', fontWeight: 'bold' }}>
                             {getInitials(user.name)}
                         </Avatar>
                         <Box>
@@ -463,8 +463,8 @@ const AccessDrawer = ({
                             />
                             <FormControl fullWidth size="small">
                                 <InputLabel>Tipo</InputLabel>
-                                <Select value={form.type} label="Tipo" onChange={handleFormChange('type')}>
-                                    <MenuItem value="Administrativo">Administrativo</MenuItem>
+                                <Select value={form.type} label="Tipo" onChange={handleFormChange('type')} disabled={soloDrivers}>
+                                    {!soloDrivers && <MenuItem value="Administrativo">Administrativo</MenuItem>}
                                     <MenuItem value="Driver">Driver</MenuItem>
                                 </Select>
                             </FormControl>
@@ -488,7 +488,7 @@ const AccessDrawer = ({
                                     <MenuItem value="0">Inactivo</MenuItem>
                                 </Select>
                             </FormControl>
-                            <Button variant="contained" startIcon={<SaveIcon />} onClick={() => onUpdateUser(user.id, form)} fullWidth>
+                            <Button variant="contained" startIcon={<SaveIcon />} onClick={() => onUpdateUser(user.id, form)} fullWidth sx={{ bgcolor: '#0f172a', fontWeight: 700, borderRadius: 2, textTransform: 'none', boxShadow: 'none', '&:hover': { bgcolor: '#1e293b' } }}>
                                 Guardar
                             </Button>
                         </Stack>

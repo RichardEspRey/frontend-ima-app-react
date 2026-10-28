@@ -1,26 +1,32 @@
 import { useState, useEffect, useCallback } from 'react';
 import Flashy from '@pablotheblink/flashyjs';
 import { useAuthStore } from '../store/useAuthStore';
-import { menuItemsConfig } from '../config/menuConfig';
+import { GESTOR_ACCESOS_DRIVERS, menuItemsConfig } from '../config/menuConfig';
 import TableUser from '../components/TableUser';
+import { isDriver } from '../utils/usuarios';
 import AccessDrawer from '../components/AccessDrawer';
 import useFetchActiveDrivers from '../hooks/useFetchActiveDrivers';
 import {
-    Container, Typography, Box, CircularProgress,
+    Typography, Box, CircularProgress,
     Alert, Snackbar, Button, Dialog, DialogTitle,
     DialogContent, DialogActions, TextField,
     FormControl, InputLabel, Select, MenuItem, Stack,
     List, ListItem, ListItemText, Checkbox, Divider, IconButton,
     Autocomplete,
 } from '@mui/material';
-import { Settings as SettingsIcon, PersonAdd as PersonAddIcon, Group as GroupIcon, Delete as DeleteIcon, Edit as EditIcon, Search as SearchIcon } from '@mui/icons-material';
+import { PersonAdd as PersonAddIcon, Group as GroupIcon, Delete as DeleteIcon, Edit as EditIcon, Search as SearchIcon } from '@mui/icons-material';
 import { InputAdornment, Chip } from '@mui/material';
+import {
+    PAGE_SHELL_SX, PAGE_OVERLINE_SX, PAGE_TITLE_SX, DARK_BTN_SX, GHOST_BTN_SX,
+} from '../styles/estilosTabla';
 
-const getSectionsToManage = () => menuItemsConfig;
 const ADMIN_TYPES = new Set(["admin"]);
 
 const ProfileAccessManager = () => {
-    const { user, fetchPermissions } = useAuthStore();
+    const { user, fetchPermissions, userPermissions } = useAuthStore();
+    const userType = String(user?.tipo_usuario || '').trim().toLowerCase();
+    const isAdmin = ADMIN_TYPES.has(userType);
+    const soloDrivers = !isAdmin && userPermissions?.[GESTOR_ACCESOS_DRIVERS.featureKey] === true;
     const apiHost = import.meta.env.VITE_API_HOST;
     const { activeDrivers } = useFetchActiveDrivers();
 
@@ -45,8 +51,9 @@ const ProfileAccessManager = () => {
     const [editingTeamId, setEditingTeamId] = useState(null);
     const [userSearchTerm, setUserSearchTerm] = useState('');
 
-    const [newUserModal, setNewUserModal] = useState({ open: false, name: '', user: '', pass: '', type: '', driver_id: '' });
-    const sectionsToManage = getSectionsToManage();
+    const tipoInicial = soloDrivers ? 'Driver' : '';
+    const [newUserModal, setNewUserModal] = useState({ open: false, name: '', user: '', pass: '', type: tipoInicial, driver_id: '' });
+    const sectionsToManage = isAdmin ? [...menuItemsConfig, GESTOR_ACCESOS_DRIVERS] : menuItemsConfig;
 
     const fetchUsers = useCallback(async () => {
         setLoading(true);
@@ -58,13 +65,14 @@ const ProfileAccessManager = () => {
             const data = await response.json();
             if (data.status === 'success') setUsers(data.users);
             else setError(data.message || 'Error al cargar usuarios.');
-        } catch (err) { setError('No se pudo conectar con el servidor.'); }
+        } catch { setError('No se pudo conectar con el servidor.'); }
         setLoading(false);
     }, [apiHost]);
 
     useEffect(() => { fetchUsers(); }, [fetchUsers]);
 
     const handleOpenDrawer = async (userToEdit) => {
+        if (soloDrivers && !isDriver(userToEdit.type)) return;
         setSelectedUser(userToEdit);
         setIsDrawerOpen(true);
         setFeaturesDesktop([]);
@@ -116,18 +124,19 @@ const ProfileAccessManager = () => {
                 else setFeaturesMobile(prev => reverter(prev));
                 setSnackbar({ open: true, message: data.message || 'Error al actualizar.', severity: 'error' });
             }
-        } catch (err) {
+        } catch {
             setSnackbar({ open: true, message: 'Error de conexión.', severity: 'error' });
         }
     };
 
-    const handleOpenNewUser = () => setNewUserModal({ open: true, name: '', user: '', pass: '', type: '', driver_id: '' });
-    const handleCloseNewUser = () => setNewUserModal({ open: false, name: '', user: '', pass: '', type: '', driver_id: '' });
+    const handleOpenNewUser = () => setNewUserModal({ open: true, name: '', user: '', pass: '', type: tipoInicial, driver_id: '' });
+    const handleCloseNewUser = () => setNewUserModal({ open: false, name: '', user: '', pass: '', type: tipoInicial, driver_id: '' });
     const handleNewUserChange = (field) => (e) => setNewUserModal(prev => ({ ...prev, [field]: e.target.value }));
 
     const handleCreateUser = async () => {
         const { name, user: username, pass, type, driver_id } = newUserModal;
         if (!name || !username || !pass || !type) return Flashy.error('Todos los campos son requeridos para crear el usuario.');
+        if (soloDrivers && type !== 'Driver') return Flashy.error('Solo puedes crear accesos de Drivers.');
         if (type === 'Driver' && !driver_id) return Flashy.error('Selecciona el Conductor al que pertenece este acceso.');
         try {
             const formData = new FormData();
@@ -140,10 +149,11 @@ const ProfileAccessManager = () => {
                 setSnackbar({ open: true, message: 'Usuario creado exitosamente.', severity: 'success' });
                 handleCloseNewUser(); fetchUsers();
             } else setSnackbar({ open: true, message: data.message || 'Error al crear.', severity: 'error' });
-        } catch (err) { setSnackbar({ open: true, message: 'Error de conexión.', severity: 'error' }); }
+        } catch { setSnackbar({ open: true, message: 'Error de conexión.', severity: 'error' }); }
     };
 
     const handleUpdateUser = async (userId, data) => {
+        if (soloDrivers && data.type !== 'Driver') return Flashy.error('Solo puedes administrar accesos de Drivers.');
         if (data.type === 'Driver' && !data.driver_id) return Flashy.error('Selecciona el Conductor al que pertenece este acceso.');
         try {
             const formData = new FormData();
@@ -158,7 +168,7 @@ const ProfileAccessManager = () => {
                 Flashy.success('Usuario actualizado.');
                 fetchUsers(); handleCloseDrawer();
             } else setSnackbar({ open: true, message: response.message || 'Error al actualizar.', severity: 'error' });
-        } catch (err) { setSnackbar({ open: true, message: 'Error de conexión.', severity: 'error' }); }
+        } catch { setSnackbar({ open: true, message: 'Error de conexión.', severity: 'error' }); }
     };
 
     const handleOpenTeamsManager = async () => {
@@ -279,43 +289,52 @@ const ProfileAccessManager = () => {
     };
 
     const handleCloseSnackbar = () => setSnackbar(prev => ({ ...prev, open: false }));
-    const userType = String(user?.tipo_usuario || '').trim().toLowerCase();
 
-    if (!user || !ADMIN_TYPES.has(userType)) {
+    if (!user || (!isAdmin && !soloDrivers)) {
         return (
-            <Container maxWidth="lg" sx={{ mt: 4 }}>
-                <Alert severity="error">Acceso denegado. Solo administradores pueden ver esta sección.</Alert>
-            </Container>
+            <Box sx={PAGE_SHELL_SX}>
+                <Alert severity="error">Acceso denegado. No tienes permiso para ver esta sección.</Alert>
+            </Box>
         );
     }
 
     if (loading) return <Box display="flex" justifyContent="center" alignItems="center" height="80vh"><CircularProgress /></Box>;
 
     return (
-        <Container maxWidth="xl" sx={{ mt: 4 }}>
-            <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <Box sx={PAGE_SHELL_SX}>
+            <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems={{ xs: 'flex-start', md: 'flex-end' }} gap={2} sx={{ mb: 4 }}>
                 <Box>
-                    <Typography variant="h4" component="h1" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
-                        <SettingsIcon sx={{ mr: 1, color: 'primary.main' }} />
-                        Gestor de Perfiles y Accesos
+                    <Typography variant="overline" sx={PAGE_OVERLINE_SX}>Administración</Typography>
+                    <Typography variant="h4" fontWeight={800} color="#0f172a" sx={PAGE_TITLE_SX}>
+                        Gestor de accesos
                     </Typography>
-                    <Typography variant="body1" color="text.secondary">
-                        Sincronización en tiempo real para todos los usuarios.
+                    <Typography variant="body2" color="#64748b" sx={{ mt: 0.5 }}>
+                        {soloDrivers
+                            ? 'Da de alta a los Drivers y decide qué pueden usar en la app móvil.'
+                            : 'Usuarios, sus permisos en escritorio y en el móvil, y los equipos de trabajo.'}
                     </Typography>
                 </Box>
 
-                <Box>
-                    <Button variant="outlined" startIcon={<GroupIcon />} onClick={handleOpenTeamsManager} sx={{ mt: 1, mr: 2 }}>
-                        Gestor de Equipos
+                <Stack direction="row" spacing={1.5}>
+                    {isAdmin && (
+                        <Button variant="outlined" startIcon={<GroupIcon />} onClick={handleOpenTeamsManager} sx={GHOST_BTN_SX}>
+                            Gestor de equipos
+                        </Button>
+                    )}
+                    <Button variant="contained" startIcon={<PersonAddIcon />} onClick={handleOpenNewUser} sx={DARK_BTN_SX}>
+                        {soloDrivers ? 'Nuevo Driver' : 'Nuevo usuario'}
                     </Button>
-                    <Button variant="contained" startIcon={<PersonAddIcon />} onClick={handleOpenNewUser} sx={{ mt: 1 }}>
-                        Nuevo Usuario
-                    </Button>
-                </Box>
-            </Box>
+                </Stack>
+            </Stack>
+
+            {soloDrivers && (
+                <Alert severity="info" sx={{ mb: 3, borderRadius: 2 }}>
+                    Tienes acceso al gestor solo para los Drivers: puedes darlos de alta, editar sus datos y sus permisos del móvil.
+                </Alert>
+            )}
 
             {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
-            <TableUser users={users} onEditUser={handleOpenDrawer} />
+            <TableUser users={users} onEditUser={handleOpenDrawer} soloDrivers={soloDrivers} />
 
             <AccessDrawer
                 open={isDrawerOpen}
@@ -326,7 +345,8 @@ const ProfileAccessManager = () => {
                 featuresLoading={featuresLoading}
                 onToggleFeature={handleToggleFeature}
                 onUpdateUser={handleUpdateUser}
-                sectionsToManage={sectionsToManage} 
+                sectionsToManage={sectionsToManage}
+                soloDrivers={soloDrivers}
             />
 
             <Dialog open={newUserModal.open} onClose={handleCloseNewUser} maxWidth="sm" fullWidth>
@@ -338,8 +358,8 @@ const ProfileAccessManager = () => {
                         <TextField label="Contraseña" type="password" value={newUserModal.pass} onChange={handleNewUserChange('pass')} fullWidth size="small" />
                         <FormControl fullWidth size="small">
                             <InputLabel>Tipo</InputLabel>
-                            <Select value={newUserModal.type} label="Tipo" onChange={handleNewUserChange('type')}>
-                                <MenuItem value="Administrativo">Administrativo</MenuItem>
+                            <Select value={newUserModal.type} label="Tipo" onChange={handleNewUserChange('type')} disabled={soloDrivers}>
+                                {!soloDrivers && <MenuItem value="Administrativo">Administrativo</MenuItem>}
                                 <MenuItem value="Driver">Driver</MenuItem>
                             </Select>
                         </FormControl>
@@ -507,7 +527,7 @@ const ProfileAccessManager = () => {
                     <Button variant="contained" color="error" onClick={confirmDeleteTeam} sx={{ fontWeight: 'bold' }}>Sí, Eliminar</Button>
                 </DialogActions>
             </Dialog>
-        </Container>
+        </Box>
     );
 };
 

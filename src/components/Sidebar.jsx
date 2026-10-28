@@ -18,7 +18,7 @@ import iconUpdate from '../assets/images/icons/update.png';
 
 import { UpdateContext } from '../App';
 import { COLOR_INSPECCION, UNIDAD, obtenerInspeccionesPorAtender } from '../services/mantenimiento';
-import { menuItemsConfig } from '../config/menuConfig';
+import { GESTOR_ACCESOS_DRIVERS, menuItemsConfig } from '../config/menuConfig';
 import { useAuthStore } from '../store/useAuthStore';
 import {
     useSidebarStore,
@@ -107,7 +107,7 @@ const Sidebar = () => {
   const isAdmin = ADMIN_TYPES.has(tipoUsuario);
 
   const isSectionAllowed = useCallback((item, visibleSubs = true) => {
-      if (item.name === MANAGEMENT_ITEM.name) return isAdmin;
+      if (item.name === MANAGEMENT_ITEM.name) return isAdmin || userPermissions[GESTOR_ACCESOS_DRIVERS.featureKey] === true;
       if (isAdmin) return true;
       const dynamicPermission = userPermissions[item.featureKey ?? item.name];
       if (dynamicPermission !== undefined) return dynamicPermission;
