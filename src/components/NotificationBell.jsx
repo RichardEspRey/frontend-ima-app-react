@@ -119,7 +119,7 @@ const NotificationBell = () => {
         const avisos = await obtenerAvisosDeInspecciones();
         if (conocidas.current) {
           const nuevas = avisos.filter((a) => !conocidas.current.has(a.id));
-          nuevas.forEach((a) => toast.info(`Nueva inspección #${a.clFinalId} · ${a.operador}`, { position: "top-right" }));
+          nuevas.forEach((a) => toast.info(`Nueva inspección ${a.nomenclatura} · ${a.operador}`, { position: "top-right" }));
           if (nuevas.length > 0) new Audio(notiSound).play().catch(() => {});
         }
         conocidas.current = new Set(avisos.map((a) => a.id));
@@ -310,7 +310,7 @@ const NotificationBell = () => {
                       <ListItemText
                         primary={
                           <Typography variant="body2" fontWeight={800} color="#0f172a">
-                            {esInspeccion ? `Nueva inspección #${n.clFinalId}` : "BL Firmado"}
+                            {esInspeccion ? `Nueva inspección ${n.nomenclatura}` : "BL Firmado"}
                           </Typography>
                         }
                         secondary={

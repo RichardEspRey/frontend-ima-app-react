@@ -182,8 +182,8 @@ const ConstructorOrden = ({ apertura, onCerrar, onCreada }) => {
                     <Typography variant="h5" fontWeight={800} color="#0f172a">Nueva Orden de Servicio</Typography>
                     <Typography variant="body2" color="#64748b">
                         Un servicio por cada reparación.
-                        {inspeccion?.trip_number
-                            ? ` Del viaje ${inspeccion.trip_number}.`
+                        {inspeccion?.nomenclatura || inspeccion?.trip_number
+                            ? ` Del viaje ${inspeccion.nomenclatura || inspeccion.trip_number}.`
                             : ' De las reparaciones pendientes.'}
                     </Typography>
                 </Box>

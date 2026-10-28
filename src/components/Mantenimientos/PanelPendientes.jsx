@@ -318,9 +318,9 @@ const PanelPendientes = () => {
                                                     {reparacion.origen === 'manual' && (
                                                         <Chip size="small" label="a mano" sx={{ ml: 0.5, height: 18, fontSize: '0.65rem', bgcolor: '#eff6ff', color: '#1d4ed8' }} />
                                                     )}
-                                                    {reparacion.trip_number && (
+                                                    {(reparacion.nomenclatura || reparacion.trip_number) && (
                                                         <Typography variant="caption" color="#94a3b8" sx={{ ml: 1 }}>
-                                                            viaje {reparacion.trip_number}
+                                                            viaje {reparacion.nomenclatura || reparacion.trip_number}
                                                         </Typography>
                                                     )}
                                                     <Stack direction="row" alignItems="center" spacing={0.5}>

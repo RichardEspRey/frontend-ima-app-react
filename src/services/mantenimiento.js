@@ -97,7 +97,11 @@ const DIAS_DE_AVISO = 14;
 
 export const obtenerAvisosDeInspecciones = async () => {
     const lados = [UNIDAD.CAMION, UNIDAD.CAJA];
-    const respuestas = await Promise.all(lados.map(lado => pedirMtto('getInspecciones', { lado })));
+    const [catalogo, ...respuestas] = await Promise.all([
+        obtenerInspecciones().catch(() => []),
+        ...lados.map(lado => pedirMtto('getInspecciones', { lado })),
+    ]);
+    const nomenclaturas = new Map(catalogo.map(fila => [String(fila.viaje_id), fila.nomenclatura]));
     const limite = dayjs().subtract(DIAS_DE_AVISO, 'day').format('YYYY-MM-DD');
 
     return respuestas.flatMap((result, indice) => {
@@ -109,6 +113,7 @@ export const obtenerAvisosDeInspecciones = async () => {
                 tipo: 'inspeccion',
                 lado,
                 clFinalId: fila.cl_final_id,
+                nomenclatura: nomenclaturas.get(String(fila.viaje_id)) || fila.trip_number || '',
                 operador: fila.operador || '',
                 unidad: (lado === UNIDAD.CAJA ? fila.no_caja : fila.no_camion) || '',
                 created_at: fila.fecha_creacion,
@@ -131,8 +136,16 @@ export const resolverPuntos = ({ items, estatus, usuarioId }) =>
     pedirMtto('resolverPuntos', { items: JSON.stringify(items), estatus, id_usuario: usuarioId });
 
 export const obtenerPendientes = async (unidadTipo) => {
-    const result = await pedirMtto('getPendientes', { unidad_tipo: unidadTipo });
-    return Array.isArray(result.pendientes) ? result.pendientes : [];
+    const [result, catalogo] = await Promise.all([
+        pedirMtto('getPendientes', { unidad_tipo: unidadTipo }),
+        obtenerInspecciones().catch(() => []),
+    ]);
+    const nomenclaturas = new Map(catalogo.map(fila => [String(fila.viaje_id), fila.nomenclatura]));
+
+    return (Array.isArray(result.pendientes) ? result.pendientes : []).map(fila => ({
+        ...fila,
+        nomenclatura: (fila.viaje_id && nomenclaturas.get(String(fila.viaje_id))) || '',
+    }));
 };
 
 export const descartarPendientes = ({ ids, usuarioId }) =>
