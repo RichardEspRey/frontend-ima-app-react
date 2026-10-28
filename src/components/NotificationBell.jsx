@@ -257,12 +257,12 @@ const NotificationBell = () => {
                       <ListItemText
                         primary={
                           <Typography variant="body2" fontWeight={800} color="#0f172a">
-                            {nomenclaturas[String(n.trip_id)] || "Viaje"}
+                            BL Firmado
                           </Typography>
                         }
                         secondary={
                           <Typography variant="caption" color="#64748b" noWrap sx={{ display: "block" }}>
-                            {n.Mensaje}
+                            {nomenclaturas[String(n.trip_id)] || "Viaje"}
                           </Typography>
                         }
                       />
