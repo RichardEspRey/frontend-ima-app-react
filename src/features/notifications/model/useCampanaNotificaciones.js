@@ -1,9 +1,9 @@
 import { useCallback, useMemo, useState } from "react"
 
 import { agruparPorDia, sinAnunciar, useNotificaciones } from "../../../entities/notification"
-import { useAvisosDeInspecciones } from "../../../entities/maintenance-point"
+import { useAvisosDeInspecciones, useRecibeAvisoInspeccion } from "../../../entities/maintenance-point"
 import { useNomenclaturasDeViajes } from "../../../entities/trip"
-import { PERMISOS, useSesion } from "../../../shared/auth"
+import { useSesion } from "../../../shared/auth"
 
 /**
  * Las tres vistas de la campana.
@@ -70,6 +70,13 @@ function guardarVistas(llave, vistas) {
 export const INTERVALO_INSPECCIONES_MS = 60000
 
 /**
+ * Cada cuánto se vuelve a pedir quién recibe el aviso de inspección.
+ *
+ * @type {number}
+ */
+export const INTERVALO_SUSCRIPCION_MS = 300000
+
+/**
  * Lleva el estado de la campana de notificaciones.
  *
  * Se apoya en la misma consulta que el aviso emergente, así que las dos cosas
@@ -78,17 +85,20 @@ export const INTERVALO_INSPECCIONES_MS = 60000
  * porque el backend no lo guarda.
  *
  * A los BL firmados se suman las inspecciones que llegan a Reparaciones, solo
- * para quien tiene acceso a esa pantalla.
+ * para quien está en la lista de Inspecciones de Notificaciones manager.
  *
  * @returns {object} Lo que el componente necesita para pintarse.
  */
 export function useCampanaNotificaciones() {
-  const { usuario, esTotal, can } = useSesion()
+  const { usuario, esTotal } = useSesion()
+  const recibeInspecciones = useRecibeAvisoInspeccion(usuario?.id, {
+    refetchInterval: INTERVALO_SUSCRIPCION_MS,
+  })
   const llave = llaveVistas(usuario?.id)
 
   const { data: delServidor = [] } = useNotificaciones(usuario?.id)
   const { avisos: inspecciones } = useAvisosDeInspecciones({
-    enabled: Boolean(usuario?.id) && can(PERMISOS.MANT_INSPECCION_FINAL),
+    enabled: recibeInspecciones,
     refetchInterval: INTERVALO_INSPECCIONES_MS,
   })
   const notificaciones = useMemo(

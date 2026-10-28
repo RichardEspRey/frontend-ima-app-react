@@ -1,14 +1,15 @@
-import { Alert, Box, Container } from "@mui/material"
+import { Alert, Box } from "@mui/material"
 
-import { SuscriptoresDeViajes } from "../../features/notifications"
+import { SuscriptoresDeAvisos } from "../../features/notifications"
 import { useSesion } from "../../shared/auth"
-import { PageHeader } from "../../shared/ui"
+import { PAGE_SHELL_SX, PageHeader } from "../../shared/ui"
 
 /**
  * Administración de quién recibe cada notificación.
  *
  * Solo la ven los administradores, igual que el gestor de accesos: decidir a
- * quién le llegan los avisos de los viajes es una decisión de permisos.
+ * quién le llegan los avisos —BL firmados e inspecciones— es una decisión de
+ * permisos.
  *
  * @returns {object} La pantalla renderizada.
  */
@@ -17,24 +18,23 @@ export default function NotificacionesManagerPage() {
 
   if (!esTotal) {
     return (
-      <Container maxWidth="md" sx={{ mt: 4 }}>
+      <Box sx={PAGE_SHELL_SX}>
         <Alert severity="error">
           Acceso denegado. Solo los administradores pueden ver esta sección.
         </Alert>
-      </Container>
+      </Box>
     )
   }
 
   return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
+    <Box sx={PAGE_SHELL_SX}>
       <PageHeader
-        titulo="Notificaciones Manager"
-        descripcion="Funcionalidades disponibles y los usuarios que reciben sus notificaciones."
+        seccion="Configuración"
+        titulo="Notificaciones"
+        descripcion="Qué avisos existen y quién los recibe en la campana."
       />
 
-      <Box sx={{ mt: 3 }}>
-        <SuscriptoresDeViajes />
-      </Box>
-    </Container>
+      <SuscriptoresDeAvisos />
+    </Box>
   )
 }

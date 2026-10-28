@@ -458,3 +458,141 @@ export function useDescartarPendientes() {
   const refrescar = useRefrescarMantenimiento()
   return useMutation({ mutationFn: descartarPendientes, onSuccess: refrescar })
 }
+
+/**
+ * Llave raíz de quién recibe el aviso de inspección nueva.
+ *
+ * @type {Array.<string>}
+ */
+export const LLAVE_AVISO_INSPECCION = ["aviso-inspeccion"]
+
+/**
+ * Quiénes reciben el aviso de inspección nueva.
+ *
+ * @endpoint POST mtto.php · op=getSuscriptoresInspeccion
+ * @param {object} [opciones] Ajustes de la petición.
+ * @param {AbortSignal} [opciones.signal] Señal de cancelación.
+ * @returns {Promise.<Array.<{id: string, name: string, user: string, subscribed_at: string}>>} Las personas.
+ * @throws {ApiError} Si la API falla.
+ */
+export function obtenerSuscriptoresInspeccion(opciones = {}) {
+  return postLista(ENDPOINTS.mantenimiento, "getSuscriptoresInspeccion", {
+    campo: "users",
+    signal: opciones.signal,
+  })
+}
+
+/**
+ * Quiénes todavía no reciben el aviso de inspección nueva.
+ *
+ * @endpoint POST mtto.php · op=getDisponiblesInspeccion
+ * @param {object} [opciones] Ajustes de la petición.
+ * @param {AbortSignal} [opciones.signal] Señal de cancelación.
+ * @returns {Promise.<Array.<{id: string, name: string, user: string}>>} Las personas.
+ * @throws {ApiError} Si la API falla.
+ */
+export function obtenerDisponiblesInspeccion(opciones = {}) {
+  return postLista(ENDPOINTS.mantenimiento, "getDisponiblesInspeccion", {
+    campo: "users",
+    signal: opciones.signal,
+  })
+}
+
+/**
+ * Da de alta a una persona en el aviso de inspección nueva.
+ *
+ * @endpoint POST mtto.php · op=suscribirInspeccion
+ * @param {object} datos A quién y quién lo hace.
+ * @param {(string|number)} datos.userId La persona que va a recibir el aviso.
+ * @param {(string|number)} [datos.usuarioId] Quién la da de alta.
+ * @returns {Promise.<object>} La respuesta de la API.
+ * @throws {ApiError} Si la API rechaza la operación.
+ */
+export function suscribirInspeccion({ userId, usuarioId }) {
+  return post(ENDPOINTS.mantenimiento, "suscribirInspeccion", { user_id: userId, id_usuario: usuarioId })
+}
+
+/**
+ * Da de baja a una persona del aviso de inspección nueva.
+ *
+ * @endpoint POST mtto.php · op=desuscribirInspeccion
+ * @param {object} datos A quién.
+ * @param {(string|number)} datos.userId La persona que deja de recibir el aviso.
+ * @returns {Promise.<object>} La respuesta de la API.
+ * @throws {ApiError} Si la API rechaza la operación.
+ */
+export function desuscribirInspeccion({ userId }) {
+  return post(ENDPOINTS.mantenimiento, "desuscribirInspeccion", { user_id: userId })
+}
+
+/**
+ * Quiénes reciben el aviso de inspección nueva, cacheado.
+ *
+ * @param {object} [opciones] Ajustes de la consulta.
+ * @param {number} [opciones.refetchInterval] Cada cuánto se vuelve a pedir, en ms.
+ * @returns {object} El resultado de `useQuery`.
+ */
+export function useSuscriptoresInspeccion({ refetchInterval } = {}) {
+  return useQuery({
+    queryKey: [...LLAVE_AVISO_INSPECCION, "suscriptores"],
+    queryFn: ({ signal }) => obtenerSuscriptoresInspeccion({ signal }),
+    refetchInterval,
+  })
+}
+
+/**
+ * Quiénes pueden darse de alta. No consulta hasta que hace falta la lista.
+ *
+ * @param {boolean} [habilitada] Si la lista está a la vista.
+ * @returns {object} El resultado de `useQuery`.
+ */
+export function useDisponiblesInspeccion(habilitada = true) {
+  return useQuery({
+    queryKey: [...LLAVE_AVISO_INSPECCION, "disponibles"],
+    queryFn: ({ signal }) => obtenerDisponiblesInspeccion({ signal }),
+    enabled: habilitada,
+  })
+}
+
+/**
+ * Si una persona recibe el aviso de inspección nueva.
+ *
+ * @param {(string|number)} [idUsuario] La persona conectada.
+ * @param {object} [opciones] Ajustes de la consulta.
+ * @param {number} [opciones.refetchInterval] Cada cuánto se vuelve a pedir la lista, en ms.
+ * @returns {boolean} `true` si está en la lista; `false` mientras carga o si falla.
+ */
+export function useRecibeAvisoInspeccion(idUsuario, { refetchInterval } = {}) {
+  const { data } = useSuscriptoresInspeccion({ refetchInterval })
+  return Boolean(idUsuario) && (data ?? []).some((persona) => String(persona.id) === String(idUsuario))
+}
+
+/**
+ * Invalida las dos listas del aviso de inspección: quien entra a una sale de la otra.
+ *
+ * @returns {Function} La función que refresca.
+ */
+function useRefrescarAvisoInspeccion() {
+  const cliente = useQueryClient()
+  return () => cliente.invalidateQueries({ queryKey: LLAVE_AVISO_INSPECCION })
+}
+
+/**
+ * Da de alta a alguien en el aviso de inspección y refresca las listas.
+ *
+ * @returns {object} El resultado de `useMutation`.
+ */
+export function useSuscribirInspeccion() {
+  const refrescar = useRefrescarAvisoInspeccion()
+  return useMutation({ mutationFn: suscribirInspeccion, onSuccess: refrescar })
+}
+
+/**
+ * Da de baja a alguien del aviso de inspección y refresca las listas.
+ *
+ * @returns {object} El resultado de `useMutation`.
+ */
+export function useDesuscribirInspeccion() {
+  const refrescar = useRefrescarAvisoInspeccion()
+  return useMutation({ mutationFn: desuscribirInspeccion, onSuccess: refrescar })
+}

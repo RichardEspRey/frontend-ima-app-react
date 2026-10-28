@@ -1,10 +1,9 @@
 import { useEffect, useRef } from "react"
-import { useAvisosDeInspecciones } from "../../../entities/maintenance-point"
+import { useAvisosDeInspecciones, useRecibeAvisoInspeccion } from "../../../entities/maintenance-point"
 import { sinAnunciar, useNotificacionesNuevas } from "../../../entities/notification"
-import { PERMISOS, useSesion } from "../../../shared/auth"
 import { notify } from "../../../shared/ui"
 import sonidoNotificacion from "../../../assets/sounds/update.mp3"
-import { INTERVALO_INSPECCIONES_MS } from "./useCampanaNotificaciones"
+import { INTERVALO_INSPECCIONES_MS, INTERVALO_SUSCRIPCION_MS } from "./useCampanaNotificaciones"
 
 /**
  * Reproduce el sonido de notificación sin arriesgar la aplicación.
@@ -55,9 +54,11 @@ function sonar() {
  */
 export function useAvisoDeNotificaciones(idUsuario) {
   const { data: notificaciones } = useNotificacionesNuevas(idUsuario)
-  const { can } = useSesion()
+  const recibeInspecciones = useRecibeAvisoInspeccion(idUsuario, {
+    refetchInterval: INTERVALO_SUSCRIPCION_MS,
+  })
   const { avisos: inspecciones, cargados } = useAvisosDeInspecciones({
-    enabled: Boolean(idUsuario) && can(PERMISOS.MANT_INSPECCION_FINAL),
+    enabled: recibeInspecciones,
     refetchInterval: INTERVALO_INSPECCIONES_MS,
   })
   const inspeccionesConocidas = useRef(null)

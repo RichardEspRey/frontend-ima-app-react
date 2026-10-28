@@ -12,6 +12,10 @@
 // ligarGasto        · amarra un gasto ya creado con el concepto de la orden (reparación)
 // getOrden          · una orden completa: unidad, servicios, de dónde salió cada uno y sus conceptos
 // eliminarOrden     · borra una orden y regresa sus reparaciones a pendientes
+// getSuscriptoresInspeccion · quiénes reciben el aviso de inspección nueva
+// getDisponiblesInspeccion  · quiénes todavía no lo reciben
+// suscribirInspeccion       · da de alta a alguien en el aviso
+// desuscribirInspeccion     · lo da de baja
 //
 // No escribe en ninguna tabla del checklist del operador ni en `cl_final`: lo que él
 // reportó queda como lo escribió. El estado vive en `mtto_puntos` y en
@@ -73,6 +77,17 @@ function fechaValida($texto) {
 function filtroConFalla($columna = 'contenido') {
     return "TRIM(TRAILING '.' FROM TRIM(COALESCE({$columna}, ''))) NOT IN (" .
         implode(',', array_fill(0, count($GLOBALS['SIN_FALLA']), '?')) . ")";
+}
+
+// Lo que se manda de una persona en las listas de avisos. Se elige campo por campo
+// porque `users` guarda la contraseña y no debe salir de aquí.
+function personaPublica($fila) {
+    return [
+        'id' => (string)$fila['id'],
+        'name' => $fila['name'] ?? '',
+        'user' => $fila['user'] ?? ($fila['email'] ?? ''),
+        'subscribed_at' => $fila['subscribed_at'] ?? null,
+    ];
 }
 
 function rubrosDeLado($lado) {
@@ -727,6 +742,67 @@ try {
                 http_response_code(500);
                 echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
             }
+            break;
+
+        case 'getSuscriptoresInspeccion':
+            $stmt = $db->query("
+                SELECT u.*, s.creado_en AS subscribed_at
+                  FROM mtto_notif_suscriptores s
+                  JOIN users u ON u.id = s.user_id
+              ORDER BY u.name
+            ");
+            echo json_encode([
+                'status' => 'success',
+                'users' => array_map('personaPublica', $stmt->fetchAll(PDO::FETCH_ASSOC)),
+            ]);
+            break;
+
+        case 'getDisponiblesInspeccion':
+            $stmt = $db->query("
+                SELECT u.*
+                  FROM users u
+             LEFT JOIN mtto_notif_suscriptores s ON s.user_id = u.id
+                 WHERE s.user_id IS NULL
+              ORDER BY u.name
+            ");
+            echo json_encode([
+                'status' => 'success',
+                'users' => array_map('personaPublica', $stmt->fetchAll(PDO::FETCH_ASSOC)),
+            ]);
+            break;
+
+        case 'suscribirInspeccion':
+            $user_id = $_POST['user_id'] ?? '';
+            $id_usuario = $_POST['id_usuario'] ?? null;
+
+            if (!filter_var($user_id, FILTER_VALIDATE_INT)) {
+                http_response_code(400);
+                echo json_encode(['status' => 'error', 'message' => 'Falta user_id.']);
+                break;
+            }
+
+            $stmt = $db->prepare("
+                INSERT IGNORE INTO mtto_notif_suscriptores (user_id, creado_por)
+                SELECT id, ? FROM users WHERE id = ?
+            ");
+            $stmt->execute([$id_usuario ?: null, (int)$user_id]);
+
+            echo json_encode(['status' => 'success', 'agregado' => $stmt->rowCount() > 0]);
+            break;
+
+        case 'desuscribirInspeccion':
+            $user_id = $_POST['user_id'] ?? '';
+
+            if (!filter_var($user_id, FILTER_VALIDATE_INT)) {
+                http_response_code(400);
+                echo json_encode(['status' => 'error', 'message' => 'Falta user_id.']);
+                break;
+            }
+
+            $stmt = $db->prepare("DELETE FROM mtto_notif_suscriptores WHERE user_id = ?");
+            $stmt->execute([(int)$user_id]);
+
+            echo json_encode(['status' => 'success', 'quitado' => $stmt->rowCount() > 0]);
             break;
 
         default:

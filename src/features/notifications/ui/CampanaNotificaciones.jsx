@@ -149,9 +149,21 @@ export function CampanaNotificaciones() {
           <Typography variant="subtitle1" fontWeight={800} color={COLOR.TINTA}>
             Notificaciones
           </Typography>
-          <IconButton size="small" onClick={cerrar}>
-            <CloseIcon fontSize="small" />
-          </IconButton>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+            {puedeAdministrar && (
+              <Button
+                size="small"
+                startIcon={<SettingsIcon fontSize="small" />}
+                onClick={() => irA("/notifications-manager")}
+                sx={{ textTransform: "none", fontWeight: 700, color: COLOR.TEXTO_SUAVE, borderRadius: 2 }}
+              >
+                Administrar
+              </Button>
+            )}
+            <IconButton size="small" onClick={cerrar}>
+              <CloseIcon fontSize="small" />
+            </IconButton>
+          </Box>
         </Box>
 
         <Pestanas valor={filtro} onChange={setFiltro} pestanas={PESTANAS} sx={{ mx: 2.5, mb: 1 }} />
@@ -200,19 +212,6 @@ export function CampanaNotificaciones() {
           ))}
         </Box>
 
-        {puedeAdministrar && (
-          <Box sx={{ px: 2, py: 1.25 }}>
-            <Button
-              fullWidth
-              size="small"
-              startIcon={<SettingsIcon fontSize="small" />}
-              onClick={() => irA("/notifications-manager")}
-              sx={{ textTransform: "none", fontWeight: 700, color: COLOR.TINTA }}
-            >
-              Notificaciones manager
-            </Button>
-          </Box>
-        )}
       </Popover>
     </>
   )

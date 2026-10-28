@@ -8,10 +8,6 @@ vi.mock("../../../shared/ui", () => ({
   notify: { discreto: vi.fn() },
 }))
 vi.mock("../../../assets/sounds/update.mp3", () => ({ default: "update.mp3" }))
-vi.mock("../../../shared/auth", () => ({
-  PERMISOS: { MANT_INSPECCION_FINAL: "mant_inspeccion_final" },
-  useSesion: () => ({ can: () => true }),
-}))
 
 vi.stubGlobal(
   "Audio",
@@ -69,6 +65,7 @@ function llegan(avisos) {
 beforeEach(() => {
   vi.clearAllMocks()
   vi.spyOn(mantenimiento, "useAvisosDeInspecciones").mockReturnValue({ avisos: [], cargados: false })
+  vi.spyOn(mantenimiento, "useRecibeAvisoInspeccion").mockReturnValue(true)
 })
 afterEach(() => vi.restoreAllMocks())
 
