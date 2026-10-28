@@ -75,6 +75,56 @@ export function useNotificaciones(idUsuario) {
 }
 
 /**
+ * Llave de caché de las notificaciones que el servidor todavía no le entregó a una persona.
+ *
+ * @param {string} idUsuario Identificador de la persona.
+ * @returns {Array} La llave para `useQuery`.
+ */
+export const llaveNotificacionesNuevas = (idUsuario) => ["notificaciones-nuevas", idUsuario]
+
+/**
+ * Trae solo las notificaciones que la persona no ha recibido.
+ *
+ * Es el servidor el que sabe cuáles son nuevas: al entregarlas, deja de
+ * mandarlas. Por eso al abrir la app no se repiten las que ya se anunciaron.
+ *
+ * @endpoint POST Notifications.php · op=getNew
+ * @param {object} parametros Datos de la consulta.
+ * @param {string} parametros.idUsuario Identificador de la persona.
+ * @param {AbortSignal} [parametros.signal] Señal de cancelación.
+ * @returns {Promise.<Array.<{mensaje: string}>>} Las nuevas que traen mensaje.
+ * @throws {ApiError} Si la petición falla.
+ */
+export async function obtenerNotificacionesNuevas({ idUsuario, signal }) {
+  const cuerpo = await post(ENDPOINTS.notificaciones, "getNew", { user_id: idUsuario }, { signal })
+  const crudas = Array.isArray(cuerpo?.notifications) ? cuerpo.notifications : []
+
+  return crudas
+    .map((cruda) => ({ ...cruda, mensaje: cruda?.mensaje ?? cruda?.Mensaje }))
+    .filter((una) => typeof una.mensaje === "string" && una.mensaje.length > 0)
+}
+
+/**
+ * Pregunta cada quince segundos si llegó algo nuevo para la persona.
+ *
+ * @param {string} [idUsuario] Identificador de la persona. Sin él no consulta nada.
+ * @returns {object} El resultado de `useQuery`; `data` son las recién llegadas.
+ *
+ * @example
+ * const { data: nuevas = [] } = useNotificacionesNuevas(user?.id)
+ */
+export function useNotificacionesNuevas(idUsuario) {
+  return useQuery({
+    queryKey: llaveNotificacionesNuevas(idUsuario),
+    queryFn: ({ signal }) => obtenerNotificacionesNuevas({ idUsuario, signal }),
+    enabled: Boolean(idUsuario),
+    refetchInterval: INTERVALO_NOTIFICACIONES_MS,
+    staleTime: 0,
+    meta: { silencioso: true },
+  })
+}
+
+/**
  * Llave de caché de quiénes reciben las notificaciones de viajes.
  *
  * @type {Array}

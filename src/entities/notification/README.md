@@ -4,7 +4,7 @@ Las notificaciones de la campana y quiénes reciben las de viajes.
 
 ## Contenido
 
-- `api/notificaciones.js` — `INTERVALO_NOTIFICACIONES_MS`, `obtenerNotificaciones`, `useNotificaciones`, `obtenerSuscriptores`, `obtenerUsuariosDisponibles`, `suscribir`… (11)
+- `api/notificaciones.js` — `INTERVALO_NOTIFICACIONES_MS`, `obtenerNotificaciones`, `useNotificaciones`, `obtenerNotificacionesNuevas`, `useNotificacionesNuevas`, `obtenerSuscriptores`, `obtenerUsuariosDisponibles`, `suscribir`… (14)
 - `model/notificaciones.js` — `esquemaNotificacion`, `normalizarNotificaciones`, `sinAnunciar`, `fechaDeNotificacion`, `diasDeDiferencia`, `etiquetaDeDia`… (8)
 
 Pruebas: `notificaciones.test.js`, `presentacion.test.js`.
@@ -14,6 +14,7 @@ Pruebas: `notificaciones.test.js`, `presentacion.test.js`.
 | Endpoint | op | Función |
 |---|---|---|
 | `Notifications.php` | `getAll` | `obtenerNotificaciones()` |
+| `Notifications.php` | `getNew` | `obtenerNotificacionesNuevas()` |
 | `Notifications.php` | `getSubscribers` | `obtenerSuscriptores()` |
 | `Notifications.php` | `getAvailableUsers` | `obtenerUsuariosDisponibles()` |
 | `Notifications.php` | `subscribe` | `suscribir()` |

@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react"
 import { useAvisosDeInspecciones } from "../../../entities/maintenance-point"
-import { sinAnunciar, useNotificaciones } from "../../../entities/notification"
+import { sinAnunciar, useNotificacionesNuevas } from "../../../entities/notification"
 import { PERMISOS, useSesion } from "../../../shared/auth"
 import { notify } from "../../../shared/ui"
 import sonidoNotificacion from "../../../assets/sounds/update.mp3"
@@ -30,29 +30,21 @@ function sonar() {
 /**
  * Anuncia las notificaciones nuevas mientras la persona trabaja.
  *
- * Se monta una sola vez, en el layout, y no pinta nada: su trabajo es mirar lo
- * que trae la entidad y avisar de lo que todavía no se ha visto.
+ * Se monta una sola vez, en el layout, y no pinta nada: anuncia lo que el
+ * servidor entrega como nuevo (`getNew`). Como es el servidor el que lleva la
+ * cuenta, al abrir la app no se repiten los BL que ya se anunciaron.
  *
  * Va como aviso flotante y no como diálogo a propósito. Una notificación llega
  * sola, sin que nadie la haya pedido, así que taparle la pantalla a quien está
  * capturando un gasto sería exactamente el anti-patrón que el estándar prohíbe.
  * El aviso aparece arriba a la derecha y se va solo.
  *
- * Los identificadores ya anunciados viven en un `ref` y no en estado: cambiarlos
- * no tiene que repintar nada, y guardarlos en `useState` provocaría un ciclo de
- * render por cada notificación.
- *
- * El reinicio al cambiar de persona va **dentro del mismo efecto**, y no en uno
- * aparte, porque dos efectos separados dependen del orden en que React los
- * ejecuta y de que la lista cambie de referencia. Si no cambiara, quien entra
- * después heredaría los avisos ya callados del anterior.
- *
  * Las inspecciones que llegan a Reparaciones también se anuncian, pero no las que
  * ya estaban la primera vez que se consultan: eso sería anunciar el historial
  * entero al entrar.
  *
  * @param {string} [idUsuario] Identificador de la persona conectada.
- * @returns {Array.<object>} Las notificaciones actuales, por si la pantalla las quiere.
+ * @returns {Array.<object>} Las recién llegadas, por si la pantalla las quiere.
  *
  * @example
  * function DashboardLayout() {
@@ -62,9 +54,7 @@ function sonar() {
  * }
  */
 export function useAvisoDeNotificaciones(idUsuario) {
-  const { data: notificaciones } = useNotificaciones(idUsuario)
-  const anunciadas = useRef(new Set())
-  const personaAnterior = useRef(idUsuario)
+  const { data: notificaciones } = useNotificacionesNuevas(idUsuario)
   const { can } = useSesion()
   const { avisos: inspecciones, cargados } = useAvisosDeInspecciones({
     enabled: Boolean(idUsuario) && can(PERMISOS.MANT_INSPECCION_FINAL),
@@ -74,23 +64,14 @@ export function useAvisoDeNotificaciones(idUsuario) {
   const inspeccionesDe = useRef(idUsuario)
 
   useEffect(() => {
-    if (personaAnterior.current !== idUsuario) {
-      personaAnterior.current = idUsuario
-      anunciadas.current = new Set()
-    }
-
     if (!notificaciones?.length) return
 
-    const nuevas = sinAnunciar(notificaciones, anunciadas.current)
-    if (nuevas.length === 0) return
-
-    for (const una of nuevas) {
-      anunciadas.current.add(una.id)
+    for (const una of notificaciones) {
       notify.discreto(una.mensaje, "info")
     }
 
     sonar()
-  }, [notificaciones, idUsuario])
+  }, [notificaciones])
 
   useEffect(() => {
     if (inspeccionesDe.current !== idUsuario) {

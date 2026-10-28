@@ -53,7 +53,7 @@ function Envoltura({ children }) {
  * @returns {void}
  */
 function servidorDevuelve(notificaciones) {
-  vi.spyOn(entidad, "useNotificaciones").mockReturnValue({ data: notificaciones })
+  vi.spyOn(entidad, "useNotificacionesNuevas").mockReturnValue({ data: notificaciones })
 }
 
 /**
@@ -130,7 +130,7 @@ describe("useAvisoDeNotificaciones", () => {
   })
 
   it("aguanta que la consulta todavía no haya devuelto nada", async () => {
-    vi.spyOn(entidad, "useNotificaciones").mockReturnValue({ data: undefined })
+    vi.spyOn(entidad, "useNotificacionesNuevas").mockReturnValue({ data: undefined })
 
     const { result } = renderHook(() => useAvisoDeNotificaciones("7"), { wrapper: Envoltura })
 
@@ -138,16 +138,14 @@ describe("useAvisoDeNotificaciones", () => {
     expect(notify.discreto).not.toHaveBeenCalled()
   })
 
-  it("al cambiar de persona vuelve a empezar, para no callar los avisos del siguiente", async () => {
+  it("anuncia cada tanda que entrega el servidor, aunque repita el texto", async () => {
     servidorDevuelve([{ id: "1", mensaje: "una" }])
 
-    const { rerender } = renderHook(({ id }) => useAvisoDeNotificaciones(id), {
-      wrapper: Envoltura,
-      initialProps: { id: "7" },
-    })
+    const { rerender } = renderHook(() => useAvisoDeNotificaciones("7"), { wrapper: Envoltura })
     await waitFor(() => expect(notify.discreto).toHaveBeenCalledTimes(1))
 
-    rerender({ id: "9" })
+    servidorDevuelve([{ id: "2", mensaje: "una" }])
+    rerender()
 
     await waitFor(() => expect(notify.discreto).toHaveBeenCalledTimes(2))
   })
