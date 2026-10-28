@@ -1,7 +1,9 @@
+import { useMemo } from "react"
 import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/react-query"
 import { ENDPOINTS, FRESCURA_CATALOGO_MS, post, postLista } from "../../../shared/api"
 import {
   UNIDAD,
+  avisosDeInspecciones,
   clavePunto,
   contarPorAtender,
   esquemaInspeccionMtto,
@@ -346,6 +348,35 @@ export function useInspeccionesPorAtender({ refetchInterval } = {}) {
     camion: contarPorAtender(camion.data),
     caja: contarPorAtender(caja.data),
   }
+}
+
+/**
+ * Las inspecciones de los dos lados como avisos para la campana.
+ *
+ * Comparte la caché con la pestaña de inspecciones y con el ícono del menú, así
+ * que no agrega peticiones cuando la pantalla ya las tiene.
+ *
+ * @param {object} [opciones] Ajustes de la consulta.
+ * @param {boolean} [opciones.enabled] Si se piden; quien no ve Reparaciones no los necesita.
+ * @param {number} [opciones.refetchInterval] Cada cuánto se vuelven a pedir, en ms.
+ * @returns {{avisos: Array.<object>, cargados: boolean}} Los avisos y si ya llegaron los dos lados.
+ */
+export function useAvisosDeInspecciones({ enabled = true, refetchInterval } = {}) {
+  const [camion, caja] = useQueries({
+    queries: [UNIDAD.CAMION, UNIDAD.CAJA].map((lado) => ({
+      queryKey: llaveInspecciones(lado),
+      queryFn: ({ signal }) => obtenerInspeccionesMtto(lado, { signal }),
+      enabled,
+      refetchInterval,
+    })),
+  })
+
+  const avisos = useMemo(
+    () => (enabled ? avisosDeInspecciones({ camion: camion.data, caja: caja.data }) : []),
+    [enabled, camion.data, caja.data],
+  )
+
+  return { avisos, cargados: enabled && camion.isSuccess && caja.isSuccess }
 }
 
 /**

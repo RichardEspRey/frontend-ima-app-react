@@ -14,13 +14,15 @@ import {
   Popover,
   Typography,
 } from "@mui/material"
+import BuildIcon from "@mui/icons-material/Build"
 import CloseIcon from "@mui/icons-material/Close"
 import LocalShippingIcon from "@mui/icons-material/LocalShipping"
 import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone"
 import SettingsIcon from "@mui/icons-material/Settings"
 
+import { UNIDAD } from "../../../entities/maintenance-point"
 import { tiempoRelativo } from "../../../entities/notification"
-import { COLOR, Pestanas } from "../../../shared/ui"
+import { COLOR, Pestanas, TINTE } from "../../../shared/ui"
 import { FILTRO_CAMPANA, useCampanaNotificaciones } from "../model/useCampanaNotificaciones"
 
 const PESTANAS = [
@@ -35,11 +37,18 @@ const PESTANAS = [
  * @param {object} props Propiedades del componente.
  * @param {object} props.notificacion La notificación a mostrar.
  * @param {string} props.viaje La nomenclatura del viaje, o el mensaje si no es de un viaje.
+ *   En una inspección no se usa: el renglón enseña el lado, la unidad y el operador.
  * @param {boolean} props.leida Si la persona ya la vio.
  * @param {Function} props.onAbrir Qué hacer al tocarla.
  * @returns {object} El renglón renderizado.
  */
 function Renglon({ notificacion, viaje, leida, onAbrir }) {
+  const esInspeccion = notificacion.tipo === "inspeccion"
+  const titulo = esInspeccion ? `Nueva inspección #${notificacion.clFinalId}` : "BL Firmado"
+  const subtitulo = esInspeccion
+    ? `${notificacion.lado === UNIDAD.CAJA ? "Caja" : "Camión"}${notificacion.unidad ? ` ${notificacion.unidad}` : ""} · ${notificacion.operador}`
+    : viaje
+
   return (
     <ListItemButton
       onClick={onAbrir}
@@ -52,20 +61,26 @@ function Renglon({ notificacion, viaje, leida, onAbrir }) {
       }}
     >
       <ListItemAvatar sx={{ minWidth: 44 }}>
-        <Avatar sx={{ bgcolor: COLOR.INFO_FONDO, color: COLOR.INFO, width: 36, height: 36 }}>
-          <LocalShippingIcon fontSize="small" />
-        </Avatar>
+        {esInspeccion ? (
+          <Avatar sx={{ bgcolor: TINTE.NARANJA.fondo, color: TINTE.NARANJA.texto, width: 36, height: 36 }}>
+            <BuildIcon fontSize="small" />
+          </Avatar>
+        ) : (
+          <Avatar sx={{ bgcolor: COLOR.INFO_FONDO, color: COLOR.INFO, width: 36, height: 36 }}>
+            <LocalShippingIcon fontSize="small" />
+          </Avatar>
+        )}
       </ListItemAvatar>
 
       <ListItemText
         primary={
           <Typography variant="body2" fontWeight={800} color={COLOR.TINTA}>
-            BL Firmado
+            {titulo}
           </Typography>
         }
         secondary={
           <Typography variant="caption" color={COLOR.APAGADO} noWrap sx={{ display: "block" }}>
-            {viaje}
+            {subtitulo}
           </Typography>
         }
       />
@@ -168,9 +183,15 @@ export function CampanaNotificaciones() {
                     notificacion={notificacion}
                     viaje={viajeDe(notificacion)}
                     leida={estaLeida(notificacion)}
-                    onAbrir={() =>
-                      notificacion.trip_id ? irA(`/edit-trip/${notificacion.trip_id}`) : cerrar()
-                    }
+                    onAbrir={() => {
+                      if (notificacion.tipo === "inspeccion") {
+                        irA(`/mantenimiento?pestana=inspecciones&lado=${notificacion.lado}`)
+                      } else if (notificacion.trip_id) {
+                        irA(`/edit-trip/${notificacion.trip_id}`)
+                      } else {
+                        cerrar()
+                      }
+                    }}
                   />
                 ))}
               </List>

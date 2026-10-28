@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
+import { useSearchParams } from "react-router-dom"
 import {
   ESTATUS_PUNTO,
   UNIDAD,
@@ -24,12 +25,19 @@ import {
  * selección de puntos, los filtros y la paginación. Nada de esto se repite en la
  * pantalla de pendientes, que tiene su propio controlador.
  *
+ * Si la URL trae `?lado=caja` o `?lado=camion`, como al llegar desde la campana,
+ * abre en ese lado y en las pendientes.
+ *
  * @returns {object} Lo que la pantalla necesita pintar y disparar.
  */
 export function usePanelInspecciones() {
   const { usuario } = useSesion()
 
-  const [lado, setLado] = useState(UNIDAD.CAMION)
+  const [parametros] = useSearchParams()
+  const pedido = parametros.get("lado")
+  const ladoPedido = pedido === UNIDAD.CAJA || pedido === UNIDAD.CAMION ? pedido : null
+
+  const [lado, setLado] = useState(ladoPedido ?? UNIDAD.CAMION)
   const [verCompletadas, setVerCompletadas] = useState(false)
   const [abierta, setAbierta] = useState(null)
   const [seleccionados, setSeleccionados] = useState([])
@@ -69,6 +77,14 @@ export function usePanelInspecciones() {
     setSeleccionados([])
     paginacion.irAPagina(0)
   }
+
+  useEffect(() => {
+    if (!ladoPedido) return
+    setLado(ladoPedido)
+    setVerCompletadas(false)
+    setAbierta(null)
+    setSeleccionados([])
+  }, [ladoPedido, parametros])
 
   const cambiarFiltro = (campo, valor) => {
     setFiltros((previos) => ({ ...previos, [campo]: valor }))

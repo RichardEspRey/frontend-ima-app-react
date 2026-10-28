@@ -77,6 +77,7 @@ export const TINTE = {
   TEAL: { fondo: "#f0fdfa", texto: "#0f766e", borde: "#99f6e4", acento: "#14b8a6" },
   VIOLETA: { fondo: "#f5f3ff", texto: "#6d28d9", borde: "#ddd6fe", acento: "#8b5cf6" },
   AMBAR: { fondo: "#fffbeb", texto: "#b45309", borde: "#fde68a", acento: "#f59e0b" },
+  NARANJA: { fondo: "#ffedd5", texto: "#ea580c", borde: "#fed7aa", acento: "#f97316" },
 }
 
 /**

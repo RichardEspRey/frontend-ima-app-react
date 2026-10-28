@@ -179,6 +179,47 @@ export const contarPorAtender = (inspecciones = []) =>
   inspecciones.filter((inspeccion) => !ladoCompletado(inspeccion)).length
 
 /**
+ * Cuántos días se queda en la campana una inspección ya cerrada.
+ *
+ * @type {number}
+ */
+export const DIAS_DE_AVISO = 14
+
+/**
+ * Convierte las inspecciones de los dos lados en avisos para la campana.
+ *
+ * Camión y caja avisan por separado aunque vengan del mismo viaje, porque así
+ * se trabajan y se cierran. Entran las que siguen abiertas y las cerradas de los
+ * últimos {@link DIAS_DE_AVISO} días.
+ *
+ * @param {{camion: Array.<object>, caja: Array.<object>}} porLado Las inspecciones de cada lado.
+ * @param {Date} [ahora] Momento contra el que se mide la antigüedad.
+ * @returns {Array.<{id: string, tipo: string, lado: string, clFinalId: string, operador: string, unidad: string, created_at: string}>} Los avisos.
+ *
+ * @example
+ * avisosDeInspecciones({ camion: [fila], caja: [] })
+ * // [{ id: "inspeccion-266-camion", tipo: "inspeccion", lado: "camion", clFinalId: "266", ... }]
+ */
+export function avisosDeInspecciones(porLado, ahora = new Date()) {
+  const limite = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate() - DIAS_DE_AVISO)
+  const desde = `${limite.getFullYear()}-${String(limite.getMonth() + 1).padStart(2, "0")}-${String(limite.getDate()).padStart(2, "0")}`
+
+  return [UNIDAD.CAMION, UNIDAD.CAJA].flatMap((lado) =>
+    (porLado?.[lado] ?? [])
+      .filter((fila) => !ladoCompletado(fila) || (fila.fecha_creacion || "").slice(0, 10) >= desde)
+      .map((fila) => ({
+        id: `inspeccion-${fila.cl_final_id}-${lado}`,
+        tipo: "inspeccion",
+        lado,
+        clFinalId: String(fila.cl_final_id),
+        operador: fila.operador || "",
+        unidad: String((lado === UNIDAD.CAJA ? fila.no_caja : fila.no_camion) || ""),
+        created_at: fila.fecha_creacion,
+      })),
+  )
+}
+
+/**
  * Indica si una reparación pendiente se descartó.
  *
  * La descartada no desaparece de la lista: se queda tachada y con su etiqueta,

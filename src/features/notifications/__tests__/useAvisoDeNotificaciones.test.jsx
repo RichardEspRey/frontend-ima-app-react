@@ -8,6 +8,10 @@ vi.mock("../../../shared/ui", () => ({
   notify: { discreto: vi.fn() },
 }))
 vi.mock("../../../assets/sounds/update.mp3", () => ({ default: "update.mp3" }))
+vi.mock("../../../shared/auth", () => ({
+  PERMISOS: { MANT_INSPECCION_FINAL: "mant_inspeccion_final" },
+  useSesion: () => ({ can: () => true }),
+}))
 
 vi.stubGlobal(
   "Audio",
@@ -26,6 +30,7 @@ vi.stubGlobal(
 const { useAvisoDeNotificaciones } = await import("../model/useAvisoDeNotificaciones")
 const { notify } = await import("../../../shared/ui")
 const entidad = await import("../../../entities/notification")
+const mantenimiento = await import("../../../entities/maintenance-point")
 
 /**
  * Envuelve el hook en un cliente de consultas propio de cada prueba.
@@ -51,7 +56,20 @@ function servidorDevuelve(notificaciones) {
   vi.spyOn(entidad, "useNotificaciones").mockReturnValue({ data: notificaciones })
 }
 
-beforeEach(() => vi.clearAllMocks())
+/**
+ * Simula las inspecciones que llegan a Reparaciones.
+ *
+ * @param {Array.<object>} avisos Los avisos de inspección.
+ * @returns {void}
+ */
+function llegan(avisos) {
+  vi.spyOn(mantenimiento, "useAvisosDeInspecciones").mockReturnValue({ avisos, cargados: true })
+}
+
+beforeEach(() => {
+  vi.clearAllMocks()
+  vi.spyOn(mantenimiento, "useAvisosDeInspecciones").mockReturnValue({ avisos: [], cargados: false })
+})
 afterEach(() => vi.restoreAllMocks())
 
 describe("useAvisoDeNotificaciones", () => {
@@ -132,5 +150,22 @@ describe("useAvisoDeNotificaciones", () => {
     rerender({ id: "9" })
 
     await waitFor(() => expect(notify.discreto).toHaveBeenCalledTimes(2))
+  })
+
+  it("no anuncia las inspecciones que ya estaban al entrar, sí las que llegan después", async () => {
+    servidorDevuelve([])
+    const vieja = { id: "inspeccion-264-camion", clFinalId: "264", operador: "Juan Manuel Ruiz Torres" }
+    const nueva = { id: "inspeccion-266-camion", clFinalId: "266", operador: "Alberto Cruz Galindo" }
+    llegan([vieja])
+
+    const { rerender } = renderHook(() => useAvisoDeNotificaciones("7"), { wrapper: Envoltura })
+    expect(notify.discreto).not.toHaveBeenCalled()
+
+    llegan([nueva, vieja])
+    rerender()
+
+    await waitFor(() => expect(notify.discreto).toHaveBeenCalledTimes(1))
+    expect(notify.discreto).toHaveBeenCalledWith("Nueva inspección #266 · Alberto Cruz Galindo", "info")
+    expect(reproducir).toHaveBeenCalledTimes(1)
   })
 })

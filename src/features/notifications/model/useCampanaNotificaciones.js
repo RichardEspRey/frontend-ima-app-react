@@ -1,8 +1,9 @@
 import { useCallback, useMemo, useState } from "react"
 
 import { agruparPorDia, sinAnunciar, useNotificaciones } from "../../../entities/notification"
+import { useAvisosDeInspecciones } from "../../../entities/maintenance-point"
 import { useNomenclaturasDeViajes } from "../../../entities/trip"
-import { useSesion } from "../../../shared/auth"
+import { PERMISOS, useSesion } from "../../../shared/auth"
 
 /**
  * Las tres vistas de la campana.
@@ -62,6 +63,13 @@ function guardarVistas(llave, vistas) {
 }
 
 /**
+ * Cada cuánto se vuelven a pedir las inspecciones para avisar de las nuevas.
+ *
+ * @type {number}
+ */
+export const INTERVALO_INSPECCIONES_MS = 60000
+
+/**
  * Lleva el estado de la campana de notificaciones.
  *
  * Se apoya en la misma consulta que el aviso emergente, así que las dos cosas
@@ -69,16 +77,30 @@ function guardarVistas(llave, vistas) {
  * Lo único propio de la campana es qué se ha leído, que vive en el navegador
  * porque el backend no lo guarda.
  *
+ * A los BL firmados se suman las inspecciones que llegan a Reparaciones, solo
+ * para quien tiene acceso a esa pantalla.
+ *
  * @returns {object} Lo que el componente necesita para pintarse.
  */
 export function useCampanaNotificaciones() {
-  const { usuario, esTotal } = useSesion()
+  const { usuario, esTotal, can } = useSesion()
   const llave = llaveVistas(usuario?.id)
 
-  const { data: notificaciones = [] } = useNotificaciones(usuario?.id)
+  const { data: delServidor = [] } = useNotificaciones(usuario?.id)
+  const { avisos: inspecciones } = useAvisosDeInspecciones({
+    enabled: Boolean(usuario?.id) && can(PERMISOS.MANT_INSPECCION_FINAL),
+    refetchInterval: INTERVALO_INSPECCIONES_MS,
+  })
+  const notificaciones = useMemo(
+    () =>
+      [...delServidor, ...inspecciones].sort((a, b) =>
+        String(b.created_at ?? "").localeCompare(String(a.created_at ?? "")),
+      ),
+    [delServidor, inspecciones],
+  )
   const [vistas, setVistas] = useState(() => leerVistas(llave))
   const [filtro, setFiltro] = useState(FILTRO_CAMPANA.TODAS)
-  const nomenclaturas = useNomenclaturasDeViajes(notificaciones.map((una) => una.trip_id))
+  const nomenclaturas = useNomenclaturasDeViajes(delServidor.map((una) => una.trip_id))
 
   const sinLeer = useMemo(() => sinAnunciar(notificaciones, vistas).length, [notificaciones, vistas])
 

@@ -3,6 +3,7 @@ import {
   ESTATUS_LADO,
   ESTATUS_PUNTO,
   UNIDAD,
+  avisosDeInspecciones,
   contarPorAtender,
   esDescartada,
   esquemaPendiente,
@@ -155,5 +156,45 @@ describe("contarPorAtender", () => {
 
   it("sin datos todavía da cero", () => {
     expect(contarPorAtender(undefined)).toBe(0)
+  })
+})
+
+describe("avisosDeInspecciones", () => {
+  const ahora = new Date(2026, 9, 28, 12, 0)
+  const fila = (extra) => ({
+    cl_final_id: "264",
+    operador: "Juan Manuel Ruiz Torres",
+    no_camion: "9",
+    no_caja: "103",
+    fecha_creacion: "2026-10-27 20:45:18",
+    estatus_lado: ESTATUS_LADO.PENDIENTE,
+    ...extra,
+  })
+
+  it("da un aviso por lado aunque camión y caja sean de la misma inspección", () => {
+    const avisos = avisosDeInspecciones({ camion: [fila()], caja: [fila()] }, ahora)
+
+    expect(avisos.map((aviso) => aviso.id)).toEqual(["inspeccion-264-camion", "inspeccion-264-caja"])
+    expect(avisos.map((aviso) => aviso.unidad)).toEqual(["9", "103"])
+    expect(avisos[0]).toMatchObject({ tipo: "inspeccion", clFinalId: "264", operador: "Juan Manuel Ruiz Torres" })
+  })
+
+  it("deja las abiertas aunque sean viejas y las cerradas solo si son recientes", () => {
+    const avisos = avisosDeInspecciones(
+      {
+        camion: [
+          fila({ cl_final_id: "1", fecha_creacion: "2026-01-08 08:49:46" }),
+          fila({ cl_final_id: "2", fecha_creacion: "2026-01-08 08:49:46", estatus_lado: ESTATUS_LADO.COMPLETADA }),
+          fila({ cl_final_id: "3", fecha_creacion: "2026-10-20 10:00:00", estatus_lado: ESTATUS_LADO.COMPLETADA }),
+        ],
+      },
+      ahora,
+    )
+
+    expect(avisos.map((aviso) => aviso.clFinalId)).toEqual(["1", "3"])
+  })
+
+  it("no falla mientras los lados no han llegado", () => {
+    expect(avisosDeInspecciones({ camion: undefined, caja: undefined }, ahora)).toEqual([])
   })
 })
