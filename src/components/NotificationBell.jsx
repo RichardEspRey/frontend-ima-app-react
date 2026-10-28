@@ -51,6 +51,24 @@ const relativeTime = (createdAt) => {
 };
 
 const seenKey = (userId) => `notif_seen_ids_${userId}`;
+const hiddenKey = (userId) => `notif_hidden_ids_${userId}`;
+const MAX_GUARDADAS = 500;
+
+const leerIds = (key) => {
+  try {
+    return new Set(JSON.parse(localStorage.getItem(key) || "[]"));
+  } catch {
+    return new Set();
+  }
+};
+
+const guardarIds = (key, ids) => {
+  try {
+    localStorage.setItem(key, JSON.stringify([...ids].slice(-MAX_GUARDADAS)));
+  } catch {
+    return;
+  }
+};
 
 const nomenclaturaDe = (trip) => {
   const transnacional = trip.is_transnational === "1" && trip.transnational_number;
@@ -72,13 +90,8 @@ const NotificationBell = () => {
   const conocidas = useRef(null);
   const [nomenclaturas, setNomenclaturas] = useState({});
   const pedidas = useRef(new Set());
-  const [seenIds, setSeenIds] = useState(() => {
-    try {
-      return new Set(JSON.parse(localStorage.getItem(seenKey(user?.id)) || "[]"));
-    } catch {
-      return new Set();
-    }
-  });
+  const [seenIds, setSeenIds] = useState(() => leerIds(seenKey(user?.id)));
+  const [ocultas, setOcultas] = useState(() => leerIds(hiddenKey(user?.id)));
 
   const open = Boolean(anchorEl);
 
@@ -155,10 +168,10 @@ const NotificationBell = () => {
 
   const todas = useMemo(
     () =>
-      [...notifications, ...inspecciones].sort((a, b) =>
-        String(b.created_at).localeCompare(String(a.created_at))
-      ),
-    [notifications, inspecciones]
+      [...notifications, ...inspecciones]
+        .filter((n) => !ocultas.has(n.id))
+        .sort((a, b) => String(b.created_at).localeCompare(String(a.created_at))),
+    [notifications, inspecciones, ocultas]
   );
 
   useEffect(() => {
@@ -198,11 +211,14 @@ const NotificationBell = () => {
     const updated = new Set(seenIds);
     todas.forEach((n) => updated.add(n.id));
     setSeenIds(updated);
-    try {
-      localStorage.setItem(seenKey(user?.id), JSON.stringify([...updated]));
-    } catch {
-      // localStorage no disponible, se pierde el estado de "leído" al refrescar
-    }
+    guardarIds(seenKey(user?.id), updated);
+  };
+
+  const ocultar = (n) => {
+    const updated = new Set(ocultas);
+    updated.add(n.id);
+    setOcultas(updated);
+    guardarIds(hiddenKey(user?.id), updated);
   };
 
   const filtered = useMemo(() => {
@@ -315,6 +331,7 @@ const NotificationBell = () => {
                     <ListItemButton
                       key={n.id}
                       onClick={() => {
+                        ocultar(n);
                         handleClose();
                         navigate(
                           esInspeccion
