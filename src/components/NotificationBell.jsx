@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   IconButton,
@@ -21,7 +21,11 @@ import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
 import CloseIcon from "@mui/icons-material/Close";
 import SettingsIcon from "@mui/icons-material/Settings";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
+import BuildIcon from "@mui/icons-material/Build";
+import { toast } from "react-toastify";
 import { useAuthStore } from "../store/useAuthStore";
+import { UNIDAD, obtenerAvisosDeInspecciones, obtenerSuscriptoresInspeccion } from "../services/mantenimiento";
+import notiSound from "../assets/sounds/update.mp3";
 
 const dateGroupLabel = (createdAt) => {
   const date = new Date(createdAt.replace(" ", "T"));
@@ -47,23 +51,47 @@ const relativeTime = (createdAt) => {
 };
 
 const seenKey = (userId) => `notif_seen_ids_${userId}`;
+const hiddenKey = (userId) => `notif_hidden_ids_${userId}`;
+const MAX_GUARDADAS = 500;
+
+const leerIds = (key) => {
+  try {
+    return new Set(JSON.parse(localStorage.getItem(key) || "[]"));
+  } catch {
+    return new Set();
+  }
+};
+
+const guardarIds = (key, ids) => {
+  try {
+    localStorage.setItem(key, JSON.stringify([...ids].slice(-MAX_GUARDADAS)));
+  } catch {
+    return;
+  }
+};
+
+const nomenclaturaDe = (trip) => {
+  const transnacional = trip.is_transnational === "1" && trip.transnational_number;
+  const medio = transnacional ? `-${trip.transnational_number}T${trip.movement_number}` : "";
+  return `${trip.trip_number}-${trip.country_code}${medio}-${trip.trip_year}`;
+};
 
 const NotificationBell = () => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
+  const [recibeInspecciones, setRecibeInspecciones] = useState(false);
   const apiHost = import.meta.env.VITE_API_HOST;
   const isAdmin = user?.tipo_usuario?.toLowerCase() === "admin";
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [tab, setTab] = useState(0);
   const [notifications, setNotifications] = useState([]);
-  const [seenIds, setSeenIds] = useState(() => {
-    try {
-      return new Set(JSON.parse(localStorage.getItem(seenKey(user?.id)) || "[]"));
-    } catch {
-      return new Set();
-    }
-  });
+  const [inspecciones, setInspecciones] = useState([]);
+  const conocidas = useRef(null);
+  const [nomenclaturas, setNomenclaturas] = useState({});
+  const pedidas = useRef(new Set());
+  const [seenIds, setSeenIds] = useState(() => leerIds(seenKey(user?.id)));
+  const [ocultas, setOcultas] = useState(() => leerIds(hiddenKey(user?.id)));
 
   const open = Boolean(anchorEl);
 
@@ -92,27 +120,112 @@ const NotificationBell = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
-  const unreadCount = notifications.filter((n) => !seenIds.has(n.id)).length;
+  useEffect(() => {
+    if (!user?.id) {
+      setRecibeInspecciones(false);
+      return;
+    }
+
+    const consultar = async () => {
+      try {
+        const suscriptores = await obtenerSuscriptoresInspeccion();
+        setRecibeInspecciones(suscriptores.some((s) => String(s.id) === String(user.id)));
+      } catch (err) {
+        console.error("[NotificationBell] Error al obtener suscriptores de inspecciones:", err);
+      }
+    };
+
+    consultar();
+    const intervalId = setInterval(consultar, 300000);
+    return () => clearInterval(intervalId);
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (!user?.id || !recibeInspecciones) {
+      setInspecciones([]);
+      return;
+    }
+
+    const consultar = async () => {
+      try {
+        const avisos = await obtenerAvisosDeInspecciones();
+        if (conocidas.current) {
+          const nuevas = avisos.filter((a) => !conocidas.current.has(a.id));
+          nuevas.forEach((a) => toast.info(`Nueva inspección ${a.nomenclatura} · ${a.operador}`, { position: "top-right" }));
+          if (nuevas.length > 0) new Audio(notiSound).play().catch(() => {});
+        }
+        conocidas.current = new Set(avisos.map((a) => a.id));
+        setInspecciones(avisos);
+      } catch (err) {
+        console.error("[NotificationBell] Error al obtener inspecciones:", err);
+      }
+    };
+
+    consultar();
+    const intervalId = setInterval(consultar, 60000);
+    return () => clearInterval(intervalId);
+  }, [user?.id, recibeInspecciones]);
+
+  const todas = useMemo(
+    () =>
+      [...notifications, ...inspecciones]
+        .filter((n) => !ocultas.has(n.id))
+        .sort((a, b) => String(b.created_at).localeCompare(String(a.created_at))),
+    [notifications, inspecciones, ocultas]
+  );
+
+  useEffect(() => {
+    const faltantes = [...new Set(notifications.map((n) => String(n.trip_id)))].filter(
+      (id) => id && !pedidas.current.has(id)
+    );
+    if (faltantes.length === 0) return;
+    faltantes.forEach((id) => pedidas.current.add(id));
+
+    Promise.all(
+      faltantes.map(async (id) => {
+        try {
+          const formData = new FormData();
+          formData.append("op", "getById");
+          formData.append("trip_id", id);
+          const res = await fetch(`${apiHost}/new_tripsv2.php`, { method: "POST", body: formData });
+          const data = await res.json();
+          return data.status === "success" && data.trip ? [id, nomenclaturaDe(data.trip)] : null;
+        } catch (err) {
+          pedidas.current.delete(id);
+          console.error("[NotificationBell] Error al obtener el viaje:", err);
+          return null;
+        }
+      })
+    ).then((pares) => {
+      const nuevas = Object.fromEntries(pares.filter(Boolean));
+      if (Object.keys(nuevas).length > 0) setNomenclaturas((prev) => ({ ...prev, ...nuevas }));
+    });
+  }, [notifications, apiHost]);
+
+  const unreadCount = todas.filter((n) => !seenIds.has(n.id)).length;
 
   const handleOpen = (e) => setAnchorEl(e.currentTarget);
 
   const handleClose = () => {
     setAnchorEl(null);
     const updated = new Set(seenIds);
-    notifications.forEach((n) => updated.add(n.id));
+    todas.forEach((n) => updated.add(n.id));
     setSeenIds(updated);
-    try {
-      localStorage.setItem(seenKey(user?.id), JSON.stringify([...updated]));
-    } catch {
-      // localStorage no disponible, se pierde el estado de "leído" al refrescar
-    }
+    guardarIds(seenKey(user?.id), updated);
+  };
+
+  const ocultar = (n) => {
+    const updated = new Set(ocultas);
+    updated.add(n.id);
+    setOcultas(updated);
+    guardarIds(hiddenKey(user?.id), updated);
   };
 
   const filtered = useMemo(() => {
-    if (tab === 1) return notifications.filter((n) => !seenIds.has(n.id));
-    if (tab === 2) return notifications.filter((n) => seenIds.has(n.id));
-    return notifications;
-  }, [notifications, seenIds, tab]);
+    if (tab === 1) return todas.filter((n) => !seenIds.has(n.id));
+    if (tab === 2) return todas.filter((n) => seenIds.has(n.id));
+    return todas;
+  }, [todas, seenIds, tab]);
 
   const groups = useMemo(() => {
     const order = [];
@@ -158,9 +271,24 @@ const NotificationBell = () => {
           <Typography variant="subtitle1" fontWeight={800} color="#0f172a">
             Notice Board
           </Typography>
-          <CloseButton size="small" onClick={handleClose}>
-            <CloseIcon fontSize="small" />
-          </CloseButton>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+            {isAdmin && (
+              <Button
+                size="small"
+                startIcon={<SettingsIcon fontSize="small" />}
+                sx={{ textTransform: "none", fontWeight: 700, color: "#475569", borderRadius: 2 }}
+                onClick={() => {
+                  handleClose();
+                  navigate("/notifications-manager");
+                }}
+              >
+                Administrar
+              </Button>
+            )}
+            <CloseButton size="small" onClick={handleClose}>
+              <CloseIcon fontSize="small" />
+            </CloseButton>
+          </Box>
         </Box>
 
         <Tabs
@@ -198,12 +326,18 @@ const NotificationBell = () => {
               <List disablePadding>
                 {items.map((n) => {
                   const isUnread = !seenIds.has(n.id);
+                  const esInspeccion = n.tipo === "inspeccion";
                   return (
                     <ListItemButton
                       key={n.id}
                       onClick={() => {
+                        ocultar(n);
                         handleClose();
-                        navigate(`/edit-trip/${n.trip_id}`);
+                        navigate(
+                          esInspeccion
+                            ? `/mantenimiento?pestana=inspecciones&lado=${n.lado}`
+                            : `/edit-trip/${n.trip_id}`
+                        );
                       }}
                       sx={{
                         px: 2.5,
@@ -214,19 +348,27 @@ const NotificationBell = () => {
                       }}
                     >
                       <ListItemAvatar sx={{ minWidth: 44 }}>
-                        <Avatar sx={{ bgcolor: "#e0e9fd", color: "#1d4ed8", width: 36, height: 36 }}>
-                          <LocalShippingIcon fontSize="small" />
-                        </Avatar>
+                        {esInspeccion ? (
+                          <Avatar sx={{ bgcolor: "#ffedd5", color: "#ea580c", width: 36, height: 36 }}>
+                            <BuildIcon fontSize="small" />
+                          </Avatar>
+                        ) : (
+                          <Avatar sx={{ bgcolor: "#e0e9fd", color: "#1d4ed8", width: 36, height: 36 }}>
+                            <LocalShippingIcon fontSize="small" />
+                          </Avatar>
+                        )}
                       </ListItemAvatar>
                       <ListItemText
                         primary={
                           <Typography variant="body2" fontWeight={800} color="#0f172a">
-                            {`Viaje #${n.trip_id}`}
+                            {esInspeccion ? `Nueva inspección ${n.nomenclatura}` : "BL Firmado"}
                           </Typography>
                         }
                         secondary={
                           <Typography variant="caption" color="#64748b" noWrap sx={{ display: "block" }}>
-                            {n.Mensaje}
+                            {esInspeccion
+                              ? `${n.lado === UNIDAD.CAJA ? "Caja" : "Camión"}${n.unidad ? ` ${n.unidad}` : ""} · ${n.operador}`
+                              : nomenclaturas[String(n.trip_id)] || "Viaje"}
                           </Typography>
                         }
                       />
@@ -247,22 +389,6 @@ const NotificationBell = () => {
           ))}
         </Box>
 
-        {isAdmin && (
-          <Box sx={{ px: 2, py: 1.25 }}>
-            <Button
-              fullWidth
-              size="small"
-              startIcon={<SettingsIcon fontSize="small" />}
-              sx={{ textTransform: "none", fontWeight: 700, color: "#0f172a" }}
-              onClick={() => {
-                handleClose();
-                navigate("/notifications-manager");
-              }}
-            >
-              Notificaciones manager
-            </Button>
-          </Box>
-        )}
       </Popover>
     </>
   );

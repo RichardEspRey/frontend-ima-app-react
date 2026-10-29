@@ -268,3 +268,9 @@ export const menuItemsConfig = [
     ],
   },
 ];
+
+export const GESTOR_ACCESOS_DRIVERS = {
+  name: "Gestor de accesos · solo Drivers",
+  featureKey: "gestor_accesos_drivers",
+  route: "/access-manager",
+};

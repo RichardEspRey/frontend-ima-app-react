@@ -354,9 +354,9 @@ const FeatureSection = ({ features, userId, onToggleFeature }) => {
 const AccessDrawer = ({
     open, handleClose, user, sectionsToManage,
     featuresDesktop, featuresMobile, featuresLoading, onToggleFeature,
-    onUpdateUser
+    onUpdateUser, soloDrivers = false
 }) => {
-    const [activeTab, setActiveTab] = useState(0);
+    const [activeTab, setActiveTab] = useState('datos');
     const [form, setForm] = useState({ name: '', user: '', pass: '', type: '', active: '1', driver_id: '' });
     const [showPass, setShowPass] = useState(false);
     const { activeDrivers } = useFetchActiveDrivers();
@@ -398,6 +398,9 @@ const AccessDrawer = ({
 
     if (!user) return null;
 
+    const esOperador = user.type === 'Driver';
+    const pestana = esOperador && activeTab === 'desktop' ? 'datos' : activeTab;
+
     return (
         <Drawer
             anchor="right"
@@ -407,10 +410,10 @@ const AccessDrawer = ({
                 sx: { width: { xs: '100%', sm: 450 }, padding: 0, display: 'flex', flexDirection: 'column' }
             }}
         >
-            <Box sx={{ p: 3, bgcolor: 'primary.main', color: 'white', flexShrink: 0 }}>
+            <Box sx={{ p: 3, bgcolor: '#0f172a', color: 'white', flexShrink: 0 }}>
                 <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
                     <Stack direction="row" spacing={2} alignItems="center">
-                        <Avatar sx={{ bgcolor: 'white', color: 'primary.main', fontWeight: 'bold' }}>
+                        <Avatar sx={{ bgcolor: 'rgba(255,255,255,0.12)', color: 'white', fontWeight: 'bold' }}>
                             {getInitials(user.name)}
                         </Avatar>
                         <Box>
@@ -436,15 +439,15 @@ const AccessDrawer = ({
             </Box>
 
             <Box sx={{ borderBottom: 1, borderColor: 'divider', flexShrink: 0 }}>
-                <Tabs value={activeTab} onChange={(_, v) => setActiveTab(v)} variant="fullWidth">
-                    <Tab icon={<ManageAccountsIcon fontSize="small" />} label="Datos" iconPosition="start" sx={{ minHeight: 48 }} />
-                    <Tab icon={<ComputerIcon fontSize="small" />} label="Desktop" iconPosition="start" sx={{ minHeight: 48 }} />
-                    <Tab icon={<PhoneAndroidIcon fontSize="small" />} label="Mobile" iconPosition="start" sx={{ minHeight: 48 }} />
+                <Tabs value={pestana} onChange={(_, v) => setActiveTab(v)} variant="fullWidth">
+                    <Tab value="datos" icon={<ManageAccountsIcon fontSize="small" />} label="Datos" iconPosition="start" sx={{ minHeight: 48 }} />
+                    {!esOperador && <Tab value="desktop" icon={<ComputerIcon fontSize="small" />} label="Desktop" iconPosition="start" sx={{ minHeight: 48 }} />}
+                    <Tab value="mobile" icon={<PhoneAndroidIcon fontSize="small" />} label="Mobile" iconPosition="start" sx={{ minHeight: 48 }} />
                 </Tabs>
             </Box>
 
             <Box sx={{ flex: 1, overflowY: 'auto' }}>
-                {activeTab === 0 && (
+                {pestana === 'datos' && (
                     <Box sx={{ p: 3 }}>
                         <Typography variant="overline" color="text.secondary" fontWeight="bold">
                             Información del usuario
@@ -460,8 +463,8 @@ const AccessDrawer = ({
                             />
                             <FormControl fullWidth size="small">
                                 <InputLabel>Tipo</InputLabel>
-                                <Select value={form.type} label="Tipo" onChange={handleFormChange('type')}>
-                                    <MenuItem value="Administrativo">Administrativo</MenuItem>
+                                <Select value={form.type} label="Tipo" onChange={handleFormChange('type')} disabled={soloDrivers}>
+                                    {!soloDrivers && <MenuItem value="Administrativo">Administrativo</MenuItem>}
                                     <MenuItem value="Driver">Driver</MenuItem>
                                 </Select>
                             </FormControl>
@@ -485,14 +488,14 @@ const AccessDrawer = ({
                                     <MenuItem value="0">Inactivo</MenuItem>
                                 </Select>
                             </FormControl>
-                            <Button variant="contained" startIcon={<SaveIcon />} onClick={() => onUpdateUser(user.id, form)} fullWidth>
+                            <Button variant="contained" startIcon={<SaveIcon />} onClick={() => onUpdateUser(user.id, form)} fullWidth sx={{ bgcolor: '#0f172a', fontWeight: 700, borderRadius: 2, textTransform: 'none', boxShadow: 'none', '&:hover': { bgcolor: '#1e293b' } }}>
                                 Guardar
                             </Button>
                         </Stack>
                     </Box>
                 )}
 
-                {activeTab === 1 && (
+                {pestana === 'desktop' && (
                     featuresLoading ? <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}><CircularProgress /></Box> : (
                         <Box sx={{ p: 2 }}>
                             <TextField
@@ -517,7 +520,7 @@ const AccessDrawer = ({
                     )
                 )}
 
-                {activeTab === 2 && (
+                {pestana === 'mobile' && (
                     featuresLoading
                         ? <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}><CircularProgress /></Box>
                         : <FeatureSection features={featuresMobile} userId={user.id} onToggleFeature={onToggleFeature} />
