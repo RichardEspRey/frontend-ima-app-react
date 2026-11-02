@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { format, isValid, parseISO } from 'date-fns';
@@ -19,22 +19,18 @@ const ModalArchivo = ({ isOpen, onClose, onSave, title = "Subir/Editar Archivo",
   const [arrastrando, setArrastrando] = useState(false);
   const [aviso, setAviso] = useState('');
   const fileInputRef = useRef(null);
+  const [estabaAbierto, setEstabaAbierto] = useState(false);
 
-  useEffect(() => {
+  if (isOpen !== estabaAbierto) {
+    setEstabaAbierto(isOpen);
     if (isOpen) {
       setArchivo(null);
       setAviso('');
       setArrastrando(false);
-
-      if (valorActual?.url) {
-        setPreviewUrl(valorActual.url);
-      } else {
-        setPreviewUrl(null);
-      }
-
+      setPreviewUrl(valorActual?.url || null);
       setFechaVencimiento(fechaInicial(valorActual?.vencimiento));
     }
-  }, [isOpen, valorActual]);
+  }
 
 
 
