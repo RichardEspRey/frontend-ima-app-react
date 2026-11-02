@@ -232,7 +232,7 @@ export default function IFTA() {
     }, [periodos, filterPeriodo, filterPeriodoEstado, filterYear]);
 
     const grandTotalPeriodos = useMemo(() =>
-        filteredPeriodos.reduce((sum, r) => sum + r.total_millas, 0),
+        filteredPeriodos.reduce((sum, r) => sum + (Number(r.galones) || 0), 0),
     [filteredPeriodos]);
 
     // Despliegue de viajes por estado + periodo + año
@@ -275,21 +275,20 @@ export default function IFTA() {
 
         doc.setFontSize(16);
         doc.setFont('helvetica', 'bold');
-        doc.text('IFTA — Registros', pageW / 2, margin, { align: 'center' });
+        doc.text('IFTA — Galones', pageW / 2, margin, { align: 'center' });
 
         const rows = filteredPeriodos.map(r => [
             r.estado,
             fmtPeriodo(r.periodo),
             r.trip_year ?? '—',
             fmtInt(r.galones),
-            fmtInt(r.total_millas),
         ]);
         rows.push(['TOTAL', '', '', fmtInt(grandTotalPeriodos)]);
 
         autoTable(doc, {
             startY: margin + 24,
             margin: { left: margin, right: margin, top: margin, bottom: margin },
-            head: [['Estado', 'Periodo', 'Año', 'Total Mi']],
+            head: [['Estado', 'Periodo', 'Año', 'Total Galones']],
             body: rows,
             styles: { fontSize: 9, cellPadding: 5 },
             headStyles: { fillColor: [245, 245, 245], textColor: 0, fontStyle: 'bold' },
@@ -306,7 +305,7 @@ export default function IFTA() {
             rowPageBreak: 'avoid',
         });
 
-        doc.save('IFTA_Registros.pdf');
+        doc.save('IFTA_Galones.pdf');
     };
 
     // ── Render ────────────────────────────────────────────────────────────────
@@ -687,7 +686,7 @@ export default function IFTA() {
                     {loadingPeriodos ? (
                         <Box display="flex" alignItems="center" gap={1.5} py={4}>
                             <CircularProgress size={22} />
-                            <Typography color="text.secondary">Cargando millas por periodo...</Typography>
+                            <Typography color="text.secondary">Cargando galones por periodo...</Typography>
                         </Box>
                     ) : (
                         <TableContainer component={Paper} variant="outlined">
@@ -730,7 +729,7 @@ export default function IFTA() {
                                                         <Chip label={row.trip_year} size="small" variant="outlined" color="primary" sx={{ fontWeight: 600 }} />
                                                     </TableCell>
 
-                                                    <TableCell align="right">{fmtInt(row.total_millas)}</TableCell>
+                                                    <TableCell align="right">{fmtInt(row.galones)}</TableCell>
                                                 </TableRow>
                                                 </Fragment>
                                                 );
@@ -778,7 +777,7 @@ export default function IFTA() {
                                                 <TableCell sx={{ fontWeight: 600 }}>{trip.trip_number}</TableCell>
                                                 <TableCell>{fmtDate(trip.creation_date)}</TableCell>
                                                 <TableCell>{fmtDate(trip.return_date)}</TableCell>
-                                                <TableCell align="right">{fmtInt(trip.total_millas)}</TableCell>
+                                                <TableCell align="right">{fmtInt(trip.galones)}</TableCell>
                                             </TableRow>
                                         ))}
                                     </TableBody>
