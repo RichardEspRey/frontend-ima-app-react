@@ -5,6 +5,13 @@ export {
   totalesIfta,
   agruparPorAnio,
   normalizarLista,
+  PERIODO_VACIO,
+  etiquetaPeriodo,
+  filtrosTotalesIfta,
+  totalConAjuste,
+  periodosDisponibles,
+  filtrarPeriodos,
+  llavePeriodo,
 } from "./model/ifta"
 
 export {

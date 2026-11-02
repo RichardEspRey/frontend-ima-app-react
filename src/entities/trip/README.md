@@ -13,7 +13,7 @@ Los viajes: la lista paginada con sus filtros, las acciones que cambian su estad
 - `model/pestanas.js` — `PESTANAS_VIAJES`, `PESTANA_PROGRAMACION`, `PESTANA_PROXIMOS`, `pestanasPermitidas`, `pestanaDeReemplazo`, `FILTROS_VIAJES`… (8)
 - `model/resumen.js` — `totalesViaje`, `utilidadCuadra`, `utilidadNeta`, `etapasDeResumen`, `dieselDeResumen`, `gastosDeResumen`… (7)
 - `model/finalizacion.js` — `ahoraParaCampo`, `validarFechasFinalizacion`, `cuerpoFinalizacion`
-- `model/ruta.js` — `esquemaRutaViaje`, `esquemaTramo`, `puntosDeRuta`
+- `model/ruta.js` — `esquemaRutaViaje`, `esquemaResumenRuta`, `esquemaParada`, `TIPO_PARADA`, `contarParadas`, `duracionLegible`
 - `model/statusCaja.js` — `STATUS_CAJA_POR_PAIS`, `statusCajaDe`, `statusCajaValido`, `registraStatusCaja`
 - `model/viaje.js` — `ESTADO_VIAJE`, `ESTADO_POR_OMISION`, `COLOR_ESTADO_VIAJE`, `colorEstadoViaje`, `TIPO_ETAPA`, `etiquetaTipoEtapa`, `nomenclaturaViaje`
 
@@ -38,7 +38,7 @@ Pruebas: `edicion.test.js`, `pestanas.test.js`, `resumen.test.js`, `statusCaja.t
 - Hay tres formas de guardar un viaje según la pantalla desde la que se edita (`OP_GUARDADO`).
 - Al marcar Almost Over se pide el status de caja: Impo, Expo o Vacio; en EUA no existe Expo (`STATUS_CAJA_POR_PAIS`). Con caja externa no se pide: el viaje se marca directo (`registraStatusCaja`).
 - Finalizar un viaje pide la fecha de inicio y la final; la final no puede ser futura y el inicio va antes (`validarFechasFinalizacion`). `FinalizeTrip` las recibe como `fecha_inicio` y `fecha_finalizacion`.
-- Con esas fechas el servidor arma, con Wialon, la ruta que hizo la unidad (`getTripRoute`).
+- Con esas fechas el servidor arma, con Wialon, la ruta que hizo la unidad (`getTripRoute`): el trazo GPS (`track`), los altos (`paradas`, de tipo parada o estacionamiento: `TIPO_PARADA`) y el `resumen` con salida, llegada y distancia. Un punto o un alto ilegible se descarta sin tirar la ruta.
 - Las pestañas del administrador dependen de los permisos de cada quien, y si la elegida deja de estar permitida se cae a otra (`pestanasPermitidas`, `pestanaDeReemplazo`).
 - La nomenclatura (`241-US-86T2-26`) se arma con `trip_number`, `country_code`, `transnational_number`T`movement_number` y `trip_year`; sin transnacional queda `163-US-26` (`nomenclaturaViaje`). Coincide con `All_CL_Final` en sus 261 viajes, que solo trae los que tienen inspección final.
 - La utilidad que manda el backend se comprueba contra sus propios números (`utilidadCuadra`).

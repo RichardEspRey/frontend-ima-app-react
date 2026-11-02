@@ -72,7 +72,7 @@ export {
 
 export { STATUS_CAJA_POR_PAIS, statusCajaDe, statusCajaValido, registraStatusCaja } from "./model/statusCaja"
 export { ahoraParaCampo, validarFechasFinalizacion, cuerpoFinalizacion } from "./model/finalizacion"
-export { esquemaRutaViaje, puntosDeRuta } from "./model/ruta"
+export { esquemaRutaViaje, TIPO_PARADA, contarParadas, duracionLegible } from "./model/ruta"
 export { obtenerRutaViaje, useRutaViaje } from "./api/ruta"
 export { obtenerOrigenes, useOrigenes } from "./api/origenes"
 export { llaveNomenclaturaViaje, useNomenclaturasDeViajes } from "./api/nomenclatura"

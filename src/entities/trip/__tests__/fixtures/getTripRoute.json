@@ -1,0 +1,76 @@
+{
+ "status": "success",
+ "fecha_inicio": "2026-10-15 00:04:00",
+ "fecha_fin": "2026-10-16 12:04:00",
+ "unidad": "6",
+ "ruta": {
+  "resumen": {
+   "inicio": "2026-10-15 05:04:21",
+   "fin": "2026-10-16 07:19:08",
+   "ubicacion_inicial": "Avenida 7 912, Fraccionamiento Valles De Anáhuac, Nuevo Laredo, Tamaulipas 88285, Mexico",
+   "coords_inicial": {
+    "lat": 27.4972383,
+    "lng": -99.6015149
+   },
+   "ubicacion_final": "Calle Milán 217, Fraccionamiento Lomas De San Martín, Pesquería, Nuevo León 66673, Mexico",
+   "coords_final": {
+    "lat": 25.7524466,
+    "lng": -100.1193133
+   },
+   "km_total": 769.02,
+   "millas_total": 477.85
+  },
+  "track": [
+   [
+    27.49726,
+    -99.60152
+   ],
+   [
+    27.49966,
+    -99.59499
+   ],
+   [
+    27.49558,
+    -99.59205
+   ],
+   [
+    27.49155,
+    -99.5897
+   ],
+   [
+    25.75229,
+    -100.11968
+   ],
+   [
+    25.75272,
+    -100.11883
+   ]
+  ],
+  "paradas": [
+   {
+    "tipo": "estacionamiento",
+    "llegada": "2026-10-15 00:31:56",
+    "salida": "2026-10-15 05:04:51",
+    "minutos": 273,
+    "lat": 27.49726,
+    "lng": -99.60152
+   },
+   {
+    "tipo": "parada",
+    "llegada": "2026-10-15 05:12:02",
+    "salida": "2026-10-15 05:30:10",
+    "minutos": 18,
+    "lat": 27.48046,
+    "lng": -99.58876
+   },
+   {
+    "tipo": "parada",
+    "llegada": "2026-10-15 05:40:17",
+    "salida": "2026-10-15 05:54:20",
+    "minutos": 14,
+    "lat": 27.54205,
+    "lng": -99.57078
+   }
+  ]
+ }
+}

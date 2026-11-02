@@ -22,6 +22,27 @@ export function iconoPunto(color, tamano = 14) {
 }
 
 /**
+ * Un marcador con texto adentro, para distinguir tipos de punto en el mismo mapa.
+ *
+ * @param {string} texto Lo que se lee en el marcador, por ejemplo `P`.
+ * @param {string} color Color de fondo.
+ * @param {object} [opciones] Forma y tamaño.
+ * @param {boolean} [opciones.cuadrado=false] Esquinas casi rectas en vez de círculo.
+ * @param {number} [opciones.tamano=20] Lado en píxeles.
+ * @returns {object} El icono de Leaflet.
+ */
+export function iconoEtiqueta(texto, color, { cuadrado = false, tamano = 20 } = {}) {
+  const radio = cuadrado ? "3px" : "50%"
+  const letra = texto.length > 1 ? 7 : 12
+  return L.divIcon({
+    className: "",
+    html: `<div style="width:${tamano}px;height:${tamano}px;border-radius:${radio};background:${color};border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,.45);color:white;font:700 ${letra}px/1 sans-serif;display:flex;align-items:center;justify-content:center">${texto}</div>`,
+    iconSize: [tamano, tamano],
+    iconAnchor: [tamano / 2, tamano / 2],
+  })
+}
+
+/**
  * Encuadra el mapa sobre una ruta.
  *
  * Solo reencuadra cuando la ruta cambia de verdad: sin esa comprobación, cada

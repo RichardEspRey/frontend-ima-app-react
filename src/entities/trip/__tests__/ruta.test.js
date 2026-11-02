@@ -1,46 +1,35 @@
 import { describe, it, expect } from "vitest"
+import { readFileSync } from "node:fs"
 
-import { esquemaRutaViaje, puntosDeRuta } from "../model/ruta"
+import { esquemaRutaViaje, contarParadas, duracionLegible, TIPO_PARADA } from "../model/ruta"
 
-const RESPUESTA = {
-  status: "success",
-  fecha_inicio: "2026-10-18 07:15:00",
-  fecha_fin: "2026-10-21 17:40:00",
-  unidad: 11,
-  ruta: {
-    millas_total: "512.4",
-    km_total: "824.6",
-    segmentos: [
-      {
-        inicio: "2026-10-18 07:20:00",
-        fin: "2026-10-18 12:05:00",
-        ubicacion_inicial: "Nuevo Laredo, TAM",
-        ubicacion_final: "Laredo, TX",
-        coords_inicial: { lat: "27.47", lng: "-99.51" },
-        coords_final: { lat: 27.53, lng: -99.48 },
-        km: "18.2",
-      },
-      {
-        inicio: "2026-10-18 13:00:00",
-        fin: "2026-10-18 19:30:00",
-        ubicacion_inicial: "Laredo, TX",
-        ubicacion_final: null,
-        coords_inicial: { lat: 27.53, lng: -99.48 },
-        coords_final: null,
-        km: 400,
-      },
-    ],
-  },
-}
+const REAL = JSON.parse(readFileSync("src/entities/trip/__tests__/fixtures/getTripRoute.json", "utf8"))
 
 describe("esquemaRutaViaje", () => {
-  it("convierte números y coordenadas que llegan como texto", () => {
-    const { ruta, unidad } = esquemaRutaViaje.parse(RESPUESTA)
-    expect(unidad).toBe("11")
-    expect(ruta.km_total).toBe(824.6)
-    expect(ruta.segmentos[0].coords_inicial).toEqual({ lat: 27.47, lng: -99.51 })
-    expect(ruta.segmentos[1].ubicacion_final).toBe("")
-    expect(ruta.segmentos[1].coords_final).toBeNull()
+  it("lee la respuesta real: resumen, trazo y altos", () => {
+    const { ruta, unidad } = esquemaRutaViaje.parse(REAL)
+    expect(unidad).toBe("6")
+    expect(ruta.resumen.millas_total).toBe(477.85)
+    expect(ruta.resumen.coords_inicial).toEqual({ lat: 27.4972383, lng: -99.6015149 })
+    expect(ruta.track).toHaveLength(6)
+    expect(ruta.track[0]).toEqual([27.49726, -99.60152])
+    expect(ruta.paradas[0]).toMatchObject({ tipo: TIPO_PARADA.ESTACIONAMIENTO, minutos: 273 })
+  })
+
+  it("convierte lo que llega como texto y descarta puntos y altos ilegibles", () => {
+    const { ruta } = esquemaRutaViaje.parse({
+      ruta: {
+        resumen: { km_total: "10.5", millas_total: "6.5", ubicacion_final: null },
+        track: [["27.1", "-99.2"], [27.3], "basura", [27.4, -99.5]],
+        paradas: [{ tipo: "otro", minutos: "5", lat: "27", lng: "-99" }, { tipo: "parada" }],
+      },
+    })
+    expect(ruta.resumen.km_total).toBe(10.5)
+    expect(ruta.resumen.ubicacion_final).toBe("")
+    expect(ruta.track).toEqual([[27.1, -99.2], [27.4, -99.5]])
+    expect(ruta.paradas).toEqual([
+      { tipo: TIPO_PARADA.PARADA, llegada: "", salida: "", minutos: 5, lat: 27, lng: -99 },
+    ])
   })
 
   it("sin ruta trae el motivo", () => {
@@ -50,17 +39,19 @@ describe("esquemaRutaViaje", () => {
   })
 })
 
-describe("puntosDeRuta", () => {
-  it("traza el inicio y el final de cada tramo y se salta los que faltan", () => {
-    const { ruta } = esquemaRutaViaje.parse(RESPUESTA)
-    expect(puntosDeRuta(ruta.segmentos)).toEqual([
-      [27.47, -99.51],
-      [27.53, -99.48],
-      [27.53, -99.48],
-    ])
+describe("contarParadas", () => {
+  it("separa paradas de estacionamientos", () => {
+    const { ruta } = esquemaRutaViaje.parse(REAL)
+    expect(contarParadas(ruta.paradas)).toEqual({ paradas: 2, estacionamientos: 1 })
+    expect(contarParadas()).toEqual({ paradas: 0, estacionamientos: 0 })
   })
+})
 
-  it("sin tramos no hay puntos", () => {
-    expect(puntosDeRuta()).toEqual([])
+describe("duracionLegible", () => {
+  it("usa la unidad más grande que aplica", () => {
+    expect(duracionLegible(18)).toBe("18 min")
+    expect(duracionLegible(273)).toBe("4 h 33 min")
+    expect(duracionLegible(1440 + 185)).toBe("1 d 3 h")
+    expect(duracionLegible(undefined)).toBe("0 min")
   })
 })

@@ -11,7 +11,7 @@ export { ErrorBoundary } from "./ErrorBoundary"
 export { EstadoError, describirError } from "./EstadoError"
 export { notify } from "./notify"
 export { AnfitrionAvisos } from "./avisos/AnfitrionAvisos"
-export { iconoPunto, EncuadrarRuta } from "./mapa"
+export { iconoPunto, iconoEtiqueta, EncuadrarRuta } from "./mapa"
 export { COLOR, TINTE, MARCA, SERIE, RADIO, SOMBRA, TIPO, BORDE, RELLENO_PANTALLA } from "./tokens"
 export * from "./estilos"
 export {
