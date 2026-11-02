@@ -1,9 +1,23 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { archivoDelEvento, validarArchivo, GRUPOS_ARCHIVO } from '../shared/security';
 import { CampoFecha, aTextoFecha, aFecha } from '../shared/ui';
 import './css/ModalArchivo.css';
 import { esImagen } from '../utils/tripFormConstants';
 
+/**
+ * Modal para subir o reemplazar un documento. Se reinicia solo al abrirse: si la
+ * pantalla se vuelve a pintar mientras está abierto, el archivo elegido se conserva.
+ *
+ * @param {object} props Propiedades del modal.
+ * @param {boolean} props.isOpen Si el modal se muestra.
+ * @param {() => void} props.onClose Cierra el modal.
+ * @param {(datos: { file: File, fileName: string, hasNewFile: true, vencimiento?: string }) => void} props.onSave Recibe el archivo elegido.
+ * @param {string} [props.title] Título del modal.
+ * @param {{ fileName?: string, url?: string, vencimiento?: string } | null} [props.valorActual] Documento ya guardado.
+ * @param {boolean} [props.mostrarFechaVencimiento] Si pide fecha de vencimiento.
+ * @param {string} [props.accept] Tipos de archivo admitidos, como en el atributo `accept`.
+ * @returns {import("react").ReactElement | null} El modal, o nada si está cerrado.
+ */
 const ModalArchivo = ({ isOpen, onClose, onSave, title = "Subir/Editar Archivo", valorActual, mostrarFechaVencimiento = true, accept = "application/pdf" }) => {
 
   const [archivo, setArchivo] = useState(null);
@@ -13,21 +27,18 @@ const ModalArchivo = ({ isOpen, onClose, onSave, title = "Subir/Editar Archivo",
   const [aviso, setAviso] = useState('');
   const fileInputRef = useRef(null);
 
-  useEffect(() => {
+  const [estabaAbierto, setEstabaAbierto] = useState(false);
+
+  if (isOpen !== estabaAbierto) {
+    setEstabaAbierto(isOpen);
     if (isOpen) {
       setArchivo(null);
       setAviso('');
       setArrastrando(false);
-
-      if (valorActual?.url) {
-        setPreviewUrl(valorActual.url);
-      } else {
-        setPreviewUrl(null);
-      }
-
+      setPreviewUrl(valorActual?.url || null);
       setFechaVencimiento(aFecha(aTextoFecha(valorActual?.vencimiento)) ?? new Date());
     }
-  }, [isOpen, valorActual]);
+  }
 
   const grupoDelAccept = () => {
     if (accept.includes('pdf') && !accept.includes('image')) return GRUPOS_ARCHIVO.SOLO_PDF;
