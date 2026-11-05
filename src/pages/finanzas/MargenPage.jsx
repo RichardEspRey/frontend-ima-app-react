@@ -1,13 +1,17 @@
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
-  TextField, Box, Typography, Stack, Button
+  TextField, Box, Typography, Stack, Button, Collapse
 } from '@mui/material';
+import InsertChartOutlinedIcon from '@mui/icons-material/InsertChartOutlined';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 import { MargenRow } from '../../components/MargenRow'; 
 import { COLOR } from '../../shared/ui/tokens';
 import { PantallaEsqueleto, Pestanas, Paginacion, notify } from '../../shared/ui';
 import { useViajesFinanzas } from '../../entities/finance';
+import { GraficasMargen } from '../../features/margen';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -24,6 +28,7 @@ const MargenPage = () => {
   const [rowsPerPage, setRowsPerPage] = useState(25); 
   
   const [tabValue, setTabValue] = useState(0); 
+  const [graficasAbiertas, setGraficasAbiertas] = useState(false);
 
   const ventas = useViajesFinanzas();
 
@@ -144,7 +149,23 @@ const MargenPage = () => {
           sx={{ width: 300 }}
         />
         <Button variant="contained" onClick={() => { fetchMarginData(); ventas.refetch(); }} size="small">Refrescar Datos</Button>
+        <Button
+          variant="outlined"
+          size="small"
+          startIcon={<InsertChartOutlinedIcon />}
+          endIcon={graficasAbiertas ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+          onClick={() => setGraficasAbiertas((abiertas) => !abiertas)}
+          sx={{ bgcolor: 'white', borderColor: COLOR.BORDE_FUERTE, color: COLOR.TEXTO, fontWeight: 600, textTransform: 'none' }}
+        >
+          Gráficas de Margen
+        </Button>
       </Stack>
+
+      <Collapse in={graficasAbiertas}>
+        <Paper sx={{ p: 3, borderRadius: 2, border: `1px solid ${COLOR.BORDE}`, mb: 3 }} elevation={0}>
+          <GraficasMargen viajes={calculatedTrips} />
+        </Paper>
+      </Collapse>
 
       <Paper elevation={1}>
         <TableContainer component={Paper} variant="outlined" sx={{ overflowX: 'auto' }}>

@@ -17,6 +17,8 @@ export {
   normalizarLista,
 } from "./model/finanzas"
 
+export { MESES_CORTOS, mesesMoviles, margenPorMes } from "./model/margen"
+
 export {
   LLAVE_FINANZAS,
   LLAVE_PAGOS,
