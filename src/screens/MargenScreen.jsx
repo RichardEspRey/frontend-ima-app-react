@@ -2,11 +2,15 @@ import { useEffect, useMemo, useState, useCallback } from 'react';
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
   TablePagination, TextField, Box, Typography, CircularProgress, Stack, Button,
-  Tabs, Tab
+  Tabs, Tab, Collapse
 } from '@mui/material';
+import InsertChartOutlinedIcon from '@mui/icons-material/InsertChartOutlined';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Swal from 'sweetalert2';
 
 import { MargenRow } from '../components/MargenRow'; 
+import { MargenCharts } from '../components/Margen/MargenCharts';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -22,6 +26,7 @@ const MargenScreen = () => {
   const [rowsPerPage, setRowsPerPage] = useState(25); 
   
   const [tabValue, setTabValue] = useState(0); 
+  const [showCharts, setShowCharts] = useState(false);
 
   const calculatedTrips = useMemo(() => {
     return trips.map(t => {
@@ -144,7 +149,23 @@ const MargenScreen = () => {
           sx={{ width: 300 }}
         />
         <Button variant="contained" onClick={fetchMarginData} size="small">Refrescar Datos</Button>
+        <Button
+          variant="outlined"
+          size="small"
+          startIcon={<InsertChartOutlinedIcon />}
+          endIcon={showCharts ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+          onClick={() => setShowCharts(p => !p)}
+          sx={{ bgcolor: 'white', borderColor: '#cbd5e1', color: '#334155', fontWeight: 600, textTransform: 'none' }}
+        >
+          Gráficas de Margen
+        </Button>
       </Stack>
+
+      <Collapse in={showCharts}>
+        <Paper sx={{ p: 3, borderRadius: 2, border: '1px solid #e2e8f0', mb: 3 }} elevation={0}>
+          <MargenCharts trips={calculatedTrips} loading={loading} />
+        </Paper>
+      </Collapse>
 
       <Paper elevation={1}>
         <TableContainer component={Paper} variant="outlined" sx={{ overflowX: 'auto' }}>
