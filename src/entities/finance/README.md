@@ -31,4 +31,4 @@ Pruebas: `finanzas.test.js`.
 
 ## Quién lo usa
 
-**Nadie.** Ver *Pendiente*.
+- `pages/finanzas/MargenPage.jsx` — `useViajesFinanzas`: el Total Tarifa de Margen es el Total Rate de Ventas.

@@ -7,6 +7,7 @@ import {
 import { MargenRow } from '../../components/MargenRow'; 
 import { COLOR } from '../../shared/ui/tokens';
 import { PantallaEsqueleto, Pestanas, Paginacion, notify } from '../../shared/ui';
+import { useViajesFinanzas } from '../../entities/finance';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -24,13 +25,22 @@ const MargenPage = () => {
   
   const [tabValue, setTabValue] = useState(0); 
 
+  const ventas = useViajesFinanzas();
+
+  const totalRatePorViaje = useMemo(
+    () => new Map((ventas.data ?? []).map(v => [v.trip_id, v.total_tarifa])),
+    [ventas.data]
+  );
+
+  useEffect(() => {
+    if (ventas.isError) notify.error('No se pudo cargar el Total Rate de Ventas.', 'Error de API');
+  }, [ventas.isError]);
+
   const calculatedTrips = useMemo(() => {
     return trips.map(t => {
       const driverPay = Number(t.driver_pay || 0); 
       
-      const isFullyPaid = Number(t.unpaid_stages || 0) === 0;
-      
-      const totalTarifa = isFullyPaid ? Number(t.rate_tarifa || 0) : Number(t.tarifa_pagada || 0); 
+      const totalTarifa = Number(totalRatePorViaje.get(Number(t.trip_id)) ?? 0); 
 
       const totalDiesel = Number(t.diesel || 0);
       
@@ -40,23 +50,22 @@ const MargenPage = () => {
       const isDieselOk = Number(t.diesel_alerts || 0) === 0;
       const isDriverPaid = Number(t.driver_payment_status || 0) === 1;
 
-      const isCompleted = isFullyPaid && isDieselOk && isDriverPaid;
+      const isCompleted = isDieselOk && isDriverPaid;
 
       return {
         ...t,
         trip_id: Number(t.trip_id),
-        tarifa_pagada: totalTarifa, 
+        total_rate: totalTarifa, 
         diesel: totalDiesel,
         driver_pay: driverPay,
         totalCost,
         totalMargin,
-        isFullyPaid,
         isDieselOk,
         isDriverPaid,
         isCompleted
       };
     });
-  }, [trips]);
+  }, [trips, totalRatePorViaje]);
 
   const fetchMarginData = useCallback(async () => {
     setLoading(true);
@@ -104,7 +113,7 @@ const MargenPage = () => {
 
   const pageTrips = filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
   
-  if (loading) {
+  if (loading || ventas.isLoading) {
       return (
           <Box sx={{ p: 3 }}>
               <PantallaEsqueleto columnas={6} />
@@ -134,7 +143,7 @@ const MargenPage = () => {
           onChange={(e) => { setSearch(e.target.value); setPage(0); }}
           sx={{ width: 300 }}
         />
-        <Button variant="contained" onClick={fetchMarginData} size="small">Refrescar Datos</Button>
+        <Button variant="contained" onClick={() => { fetchMarginData(); ventas.refetch(); }} size="small">Refrescar Datos</Button>
       </Stack>
 
       <Paper elevation={1}>
