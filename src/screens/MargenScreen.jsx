@@ -25,7 +25,7 @@ const MargenScreen = () => {
 
   const calculatedTrips = useMemo(() => {
     return trips.map(t => {
-      const driverPay = Number(t.driver_pay || 0); 
+      const driverPay = Number(t.driver_subtotal || 0); 
       
       const totalTarifa = Number(t.total_rate || 0); 
 
