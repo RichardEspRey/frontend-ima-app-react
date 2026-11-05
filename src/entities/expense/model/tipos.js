@@ -89,6 +89,7 @@ const DIESEL = {
     editar: "edit_diesel",
     eliminar: "delete_diesel",
     alta: "add_manual_diesel",
+    fuenteMargen: "set_diesel_usar_fleetone",
   },
   etiquetas: {
     singular: "Carga de diesel",
@@ -123,6 +124,7 @@ const DIESEL = {
     { clave: "created_by", etiqueta: "Registrado por" },
     { clave: "estado", etiqueta: "State" },
     { clave: "fleetone", etiqueta: "Fleet One" },
+    { clave: "usar_fleetone", etiqueta: "Margen usa", alineacion: "center", tipo: "fuenteMargen" },
   ],
   campos: [
     { clave: "trip_number", etiqueta: "Trip Number", soloLectura: true },

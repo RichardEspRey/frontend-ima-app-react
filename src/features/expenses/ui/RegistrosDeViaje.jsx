@@ -4,6 +4,7 @@ import {
   Chip,
   Paper,
   Stack,
+  Switch,
   Table,
   TableBody,
   TableCell,
@@ -16,7 +17,7 @@ import AddIcon from "@mui/icons-material/Add"
 import ArrowBackIcon from "@mui/icons-material/ArrowBack"
 import { useNavigate, useParams } from "react-router-dom"
 
-import { esManual, useRegistros } from "../../../entities/expense"
+import { esManual, usaFleetone, useRegistros } from "../../../entities/expense"
 import { decimales, moneda } from "../../../shared/lib/formato"
 import { PageHeader, PantallaEsqueleto } from "../../../shared/ui"
 import { COLOR } from "../../../shared/ui/tokens"
@@ -27,9 +28,10 @@ import { COLOR } from "../../../shared/ui/tokens"
  * @param {object} props Propiedades del componente.
  * @param {object} props.columna La columna del descriptor.
  * @param {object} props.registro El registro de la fila.
+ * @param {Function} [props.onFuenteMargen] Mueve el switch de Fleet One / Total.
  * @returns {object} La celda renderizada.
  */
-function Celda({ columna, registro }) {
+function Celda({ columna, registro, onFuenteMargen }) {
   const valor = registro?.[columna.clave]
 
   if (columna.tipo === "dinero") {
@@ -58,6 +60,24 @@ function Celda({ columna, registro }) {
     )
   }
 
+  if (columna.tipo === "fuenteMargen") {
+    const fleetone = usaFleetone(registro)
+    return (
+      <Stack direction="row" alignItems="center" justifyContent="center" spacing={0.5}>
+        <Switch
+          size="small"
+          checked={fleetone}
+          disabled={!onFuenteMargen}
+          onChange={() => onFuenteMargen?.(registro, !fleetone)}
+          slotProps={{ input: { "aria-label": "Margen toma el Fleet One" } }}
+        />
+        <Typography component="span" variant="body2" sx={{ minWidth: 60, textAlign: "left" }}>
+          {fleetone ? "Fleet One" : "Total"}
+        </Typography>
+      </Stack>
+    )
+  }
+
   if (columna.peso) {
     return (
       <Typography component="span" fontWeight={columna.peso}>
@@ -78,10 +98,11 @@ function Celda({ columna, registro }) {
  * @param {object} props Propiedades del componente.
  * @param {object} props.descriptor El descriptor del tipo de registro.
  * @param {Function} [props.onAlta] Abre el alta manual; solo diesel la tiene.
+ * @param {Function} [props.onFuenteMargen] Cambia si Margen toma el Fleet One o el Total; solo diesel la tiene.
  * @param {object} [props.children] Lo que se dibuje después de la tabla, como el modal de alta.
  * @returns {object} La pantalla renderizada.
  */
-export function RegistrosDeViaje({ descriptor, onAlta, children }) {
+export function RegistrosDeViaje({ descriptor, onAlta, onFuenteMargen, children }) {
   const { tripId } = useParams()
   const navigate = useNavigate()
 
@@ -150,7 +171,7 @@ export function RegistrosDeViaje({ descriptor, onAlta, children }) {
                     <TableCell>{indice + 1}</TableCell>
                     {descriptor.columnasDetalle.map((columna) => (
                       <TableCell key={columna.clave} align={columna.alineacion}>
-                        <Celda columna={columna} registro={registro} />
+                        <Celda columna={columna} registro={registro} onFuenteMargen={onFuenteMargen} />
                       </TableCell>
                     ))}
                     <TableCell align="center">

@@ -101,6 +101,17 @@ export const esManual = (registro) =>
   Number(registro?.is_manual ?? registro?.manual_count ?? 0) > 0
 
 /**
+ * Indica si Margen toma el Fleet One de una carga de diesel o su Total.
+ *
+ * Cada carga lo decide por separado con su switch. Las que nunca se han movido
+ * no traen el dato y cuentan como Fleet One, que es lo de siempre.
+ *
+ * @param {object} registro El registro de diesel.
+ * @returns {boolean} `true` si Margen toma el Fleet One.
+ */
+export const usaFleetone = (registro) => Number(registro?.usar_fleetone ?? 1) === 1
+
+/**
  * Valida una lista descartando lo que no cumple.
  *
  * @param {Array} filas Lo que vino en la respuesta.

@@ -8,6 +8,7 @@ export {
   totalDe,
   pendientesDe,
   esManual,
+  usaFleetone,
   normalizarLista,
 } from "./model/registros"
 
@@ -22,6 +23,7 @@ export {
   guardarRegistro,
   eliminarRegistro,
   crearRegistroManual,
+  cambiarFuenteMargen,
   useResumen,
   useRegistros,
   useRegistro,
@@ -29,6 +31,7 @@ export {
   useGuardarRegistro,
   useEliminarRegistro,
   useCrearRegistroManual,
+  useCambiarFuenteMargen,
 } from "./api/formularios"
 
 export {

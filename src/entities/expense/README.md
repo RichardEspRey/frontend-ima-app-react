@@ -4,12 +4,12 @@ Los gastos: los generales de Expense Manager (`save_expense.php`), los de viaje 
 
 ## Contenido
 
-- `api/formularios.js` — `obtenerResumen`, `obtenerRegistros`, `obtenerRegistro`, `obtenerTickets`, `guardarRegistro`, `eliminarRegistro`… (14)
+- `api/formularios.js` — `obtenerResumen`, `obtenerRegistros`, `obtenerRegistro`, `obtenerTickets`, `guardarRegistro`, `eliminarRegistro`… (16)
 - `api/gastos.js` — `obtenerGastos`, `obtenerGasto`, `crearGasto`, `actualizarGasto`, `obtenerCatalogo`, `CATALOGO_GASTOS`… (11)
 - `model/dtops.js` — `MONTOS_DTOPS`, `DOCUMENTO_DTOPS`, `SUBCATEGORIA_DTOPS`, `PAIS_DTOPS`, `MONEDA_DTOPS`, `resolverClasificacionDtops`… (9)
 - `model/gastos.js` — `TODOS`, `renglonesDe`, `filtrarGastos`, `paisesDe`, `etiquetasDe`, `categoriasDeTipo`, `TIPO_GASTO_MANTENIMIENTO`, `llevaSubcategoria`… (11)
 - `model/orden.js` — `ORDEN_ACCESSORS`, `ordenarGastos`
-- `model/registros.js` — `PAIS_REGISTRO`, `esquemaResumenViaje`, `identificadorViaje`, `filtrarResumen`, `totalDe`, `pendientesDe`… (8)
+- `model/registros.js` — `PAIS_REGISTRO`, `esquemaResumenViaje`, `identificadorViaje`, `filtrarResumen`, `totalDe`, `pendientesDe`… (9)
 - `model/tipos.js` — `TIPO_REGISTRO`, `CAMPO_RESPUESTA`, `CATALOGO_REGISTRO`, `descriptorDe`
 - `model/valores.js` — `esGastoMXN`, `totalDeDetalles`, `totalUSD`, `totalMXN`, `tipoGastoPrincipal`
 
@@ -26,6 +26,7 @@ Pruebas: `dtops.test.js`, `gastos.test.js`, `orden.test.js`, `registros.test.js`
 | `formularios.php` | `edit_gasto` / `edit_diesel` | `guardarRegistro()` |
 | `formularios.php` | `delete_gasto` / `delete_diesel` | `eliminarRegistro()` |
 | `formularios.php` | `add_manual_diesel` | `crearRegistroManual()` |
+| `formularios.php` | `set_diesel_usar_fleetone` | `cambiarFuenteMargen()` |
 | `save_expense.php` | `getAllGastos` | `obtenerGastos()` |
 | `save_expense.php` | `getGastoById` | `obtenerGasto()` |
 | `save_expense.php` | `Alta` | `crearGasto()` |
@@ -39,6 +40,7 @@ Pruebas: `dtops.test.js`, `gastos.test.js`, `orden.test.js`, `registros.test.js`
 - Un gasto de varios renglones entra en un filtro si **cualquiera** de sus renglones coincide.
 - El tipo con el que se identifica un gasto de varios renglones es el del **último** renglón: es el criterio con el que la gente ya leía la tabla.
 - `formularios.php` usa tres claves distintas según la operación: las listas vienen en `id`, un registro suelto en `row` y solo los tickets en `data` (`CAMPO_RESPUESTA`).
+- Cada carga de diesel elige si Margen toma su Fleet One o su Total; la que nunca se movió cuenta como Fleet One (`usaFleetone`). Se guarda en la tabla `diesel_fuente_margen`, no en `diesel`.
 - Gasto y diesel son la misma pantalla tres veces; lo que cambia entre ellos está en un descriptor (`TIPO_REGISTRO`, `CATALOGO_REGISTRO`).
 - Los renglones de Mantenimiento se quedan en categoría, sin subcategoría, igual que los que nacen de una orden de Reparaciones (`llevaSubcategoria`).
 - Un DTOPS genera gasto solo si es el documento de la etapa (no de una parada), es un archivo nuevo y el viaje es de EUA. El gasto queda en EUA, en dólares y con un renglón (`construirGastoDtops`).

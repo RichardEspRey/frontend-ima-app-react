@@ -166,6 +166,29 @@ export function crearRegistroManual({ tipo, registro }) {
 }
 
 /**
+ * Elige si Margen toma el Fleet One de una carga o su Total.
+ *
+ * @endpoint POST formularios.php · op=set_diesel_usar_fleetone
+ * @param {object} parametros Datos del cambio.
+ * @param {string} parametros.tipo Un valor de `TIPO_REGISTRO`.
+ * @param {string} parametros.id Registro a cambiar.
+ * @param {boolean} parametros.usarFleetone `true` para Fleet One, `false` para el Total.
+ * @param {string} [parametros.actualizadoPor] Quién lo movió.
+ * @returns {Promise.<object>} La respuesta de la API.
+ * @throws {Error} Si el tipo no tiene esta opción.
+ * @throws {ApiError} Si la API rechaza el cambio.
+ */
+export function cambiarFuenteMargen({ tipo, id, usarFleetone, actualizadoPor }) {
+  const { endpoint, ops } = descriptorDe(tipo)
+  if (!ops.fuenteMargen) throw new Error(`El tipo ${tipo} no elige fuente para Margen.`)
+  return post(endpoint, ops.fuenteMargen, {
+    id,
+    usar_fleetone: usarFleetone ? "1" : "0",
+    actualizado_por: actualizadoPor,
+  })
+}
+
+/**
  * El resumen por viaje de un tipo.
  *
  * @param {string} tipo Un valor de `TIPO_REGISTRO`.
@@ -255,6 +278,37 @@ export const useGuardarRegistro = (tipo) => useMutacionRegistro(tipo, guardarReg
  * @returns {object} El resultado de `useMutation`.
  */
 export const useEliminarRegistro = (tipo) => useMutacionRegistro(tipo, eliminarRegistro)
+
+/**
+ * Cambia la fuente de Margen de una carga. El switch se mueve al instante y
+ * regresa a como estaba si la API lo rechaza.
+ *
+ * @param {string} tipo Un valor de `TIPO_REGISTRO`.
+ * @param {string} tripId Viaje cuyos registros se muestran.
+ * @returns {object} El resultado de `useMutation`.
+ */
+export function useCambiarFuenteMargen(tipo, tripId) {
+  const cliente = useQueryClient()
+  const llave = llaveRegistros(tipo, tripId)
+
+  return useMutation({
+    mutationFn: (datos) => cambiarFuenteMargen({ tipo, ...datos }),
+    onMutate: async ({ id, usarFleetone }) => {
+      await cliente.cancelQueries({ queryKey: llave })
+      const anterior = cliente.getQueryData(llave)
+      cliente.setQueryData(llave, (registros = []) =>
+        registros.map((registro) =>
+          String(registro.id) === String(id)
+            ? { ...registro, usar_fleetone: usarFleetone ? 1 : 0 }
+            : registro
+        )
+      )
+      return { anterior }
+    },
+    onError: (_fallo, _datos, contexto) => cliente.setQueryData(llave, contexto?.anterior),
+    onSettled: () => cliente.invalidateQueries({ queryKey: llave }),
+  })
+}
 
 /**
  * Da de alta una carga manual.

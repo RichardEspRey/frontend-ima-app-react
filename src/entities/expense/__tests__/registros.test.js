@@ -9,6 +9,7 @@ import {
   totalDe,
   pendientesDe,
   esManual,
+  usaFleetone,
   normalizarLista,
 } from "../model/registros"
 
@@ -185,5 +186,18 @@ describe("normalizarLista", () => {
   it("descarta un renglón sin viaje, que no se podría abrir", () => {
     const { descartados } = normalizarLista([{ monto: "10" }], esquemaResumenViaje)
     expect(descartados).toBe(1)
+  })
+})
+
+describe("usaFleetone", () => {
+  it("una carga que nunca se movió cuenta como Fleet One", () => {
+    expect(usaFleetone({})).toBe(true)
+    expect(REGISTROS_DIESEL[CAMPO_RESPUESTA.LISTA].every(usaFleetone)).toBe(true)
+  })
+
+  it("lee el switch como número o como cadena", () => {
+    expect(usaFleetone({ usar_fleetone: 0 })).toBe(false)
+    expect(usaFleetone({ usar_fleetone: "0" })).toBe(false)
+    expect(usaFleetone({ usar_fleetone: "1" })).toBe(true)
   })
 })

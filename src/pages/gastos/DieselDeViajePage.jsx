@@ -4,6 +4,7 @@ import { useParams } from "react-router-dom"
 import {
   TIPO_REGISTRO,
   descriptorDe,
+  useCambiarFuenteMargen,
   useCrearRegistroManual,
 } from "../../entities/expense"
 import {
@@ -31,6 +32,13 @@ export default function DieselDeViajePage() {
   const [archivos, setArchivos] = useState([])
 
   const crear = useCrearRegistroManual(DESCRIPTOR.clave)
+  const fuenteMargen = useCambiarFuenteMargen(DESCRIPTOR.clave, tripId)
+
+  const cambiarFuenteMargen = (registro, usarFleetone) =>
+    fuenteMargen.mutate(
+      { id: registro.id, usarFleetone, actualizadoPor: usuario?.name || "Administrador" },
+      { onError: (fallo) => notify.error(fallo) }
+    )
 
   const cerrar = () => {
     setAbierto(false)
@@ -62,7 +70,11 @@ export default function DieselDeViajePage() {
   }
 
   return (
-    <RegistrosDeViaje descriptor={DESCRIPTOR} onAlta={() => setAbierto(true)}>
+    <RegistrosDeViaje
+      descriptor={DESCRIPTOR}
+      onAlta={() => setAbierto(true)}
+      onFuenteMargen={cambiarFuenteMargen}
+    >
       <ModalDieselManual
         abierto={abierto}
         onCerrar={cerrar}
