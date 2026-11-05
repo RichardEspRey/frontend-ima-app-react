@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
     Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-    TextField, Button, Stack, CircularProgress, Tooltip, Chip, TablePagination, Tabs, Tab, ToggleButtonGroup, ToggleButton
+    TextField, Button, Stack, CircularProgress, Tooltip, Chip, TablePagination, Tabs, Tab, ToggleButtonGroup, ToggleButton, MenuItem
 } from '@mui/material'; 
 import { useNavigate, useLocation } from 'react-router-dom';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -32,6 +32,7 @@ const DieselAdmin = () => {
 
   const [tabValue, setTabValue] = useState(location.state?.tabValue || 0);
   const [countryFilter, setCountryFilter] = useState('All');
+  const [periodoFilter, setPeriodoFilter] = useState(location.state?.periodoFilter || '');
 
   // ** LÓGICA DE FETCH **
   const fetchDiesel = useCallback(async () => {
@@ -92,6 +93,12 @@ const DieselAdmin = () => {
         result = result.filter(r => r.country_code === countryFilter);
     }
 
+    if (periodoFilter === 'EMPTY') {
+        result = result.filter(r => !r.periodo || String(r.periodo).trim() === '');
+    } else if (periodoFilter) {
+        result = result.filter(r => r.periodo === periodoFilter);
+    }
+
     const searchLower = search.toLowerCase();
     if (searchLower) {
         result = result.filter(r =>
@@ -101,11 +108,11 @@ const DieselAdmin = () => {
     }
 
     return result;
-  }, [trips, search, tabValue, countryFilter]);
+  }, [trips, search, tabValue, countryFilter, periodoFilter]);
 
   const handleVer = (tripId) => {
     navigate(`/detalle-diesel/${tripId}`, { 
-        state: { page, search, rowsPerPage, tabValue } 
+        state: { page, search, rowsPerPage, tabValue, periodoFilter }
     }); 
   };
 
@@ -169,6 +176,23 @@ const DieselAdmin = () => {
           onChange={(e) => { setSearch(e.target.value); setPage(0); }}
           sx={{ width: 300 }}
         />
+        <TextField
+          select
+          label="Periodos"
+          size="small"
+          value={periodoFilter}
+          onChange={(e) => { setPeriodoFilter(e.target.value); setPage(0); }}
+          sx={{ width: 150 }}
+          SelectProps={{ displayEmpty: true }}
+          InputLabelProps={{ shrink: true }}
+        >
+          <MenuItem value=""><em>Todos</em></MenuItem>
+          <MenuItem value="Q1">Q1</MenuItem>
+          <MenuItem value="Q2">Q2</MenuItem>
+          <MenuItem value="Q3">Q3</MenuItem>
+          <MenuItem value="Q4">Q4</MenuItem>
+          <MenuItem value="EMPTY">Vacíos</MenuItem>
+        </TextField>
         <BotonActualizar onActualizar={fetchDiesel} sx={{ py: 0.75 }} />
       </Stack>
 

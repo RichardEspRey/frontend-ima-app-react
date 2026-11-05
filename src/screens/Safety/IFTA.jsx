@@ -99,12 +99,27 @@ export default function IFTA() {
             if (json.status === 'success') {
                 setAppliedFilters(filters);
                 setTotals(json.data);
+                return json.data;
             }
         } catch (err) {
             console.error('IFTA fetchTotals:', err);
         } finally {
             setLoadingTotals(false);
         }
+        return null;
+    };
+
+    // Texto de los filtros para el encabezado del PDF
+    const describeTotalsFilters = () => {
+        if (filterByTrips) {
+            const parts = [];
+            if (filterTripFrom.trim()) parts.push(`del viaje ${filterTripFrom.trim()}`);
+            if (filterTripTo.trim())   parts.push(`al viaje ${filterTripTo.trim()}`);
+            if (filterTripYear.trim()) parts.push(`año ${filterTripYear.trim()}`);
+            return parts.length ? `Viajes: ${parts.join(', ')}` : 'Viajes: todos';
+        }
+        if (!filterFrom && !filterTo) return 'Fechas: todas';
+        return `Fechas: ${filterFrom || 'inicio'} a ${filterTo || 'hoy'}`;
     };
 
     // Cargar totales al entrar al tab
@@ -154,7 +169,17 @@ export default function IFTA() {
         totals.reduce((sum, r) => sum + r.total + (parseFloat(ajustes[r.state]) || 0), 0),
     [totals, ajustes]);
 
-    const printTotalsPDF = () => {
+    const printTotalsPDF = async () => {
+        // Si los filtros en pantalla no se han aplicado, se piden los datos con esos filtros antes de exportar
+        let data = totals;
+        let adj  = ajustes;
+        if (JSON.stringify(buildFilters()) !== JSON.stringify(appliedFilters)) {
+            data = await fetchTotals();
+            if (!data) return;
+            adj = {};
+        }
+        const final = (r) => r.total + (parseFloat(adj[r.state]) || 0);
+
         const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'letter' });
         const margin = 40;
         const pageW = doc.internal.pageSize.getWidth();
@@ -163,11 +188,15 @@ export default function IFTA() {
         doc.setFont('helvetica', 'bold');
         doc.text('IFTA — Millas', pageW / 2, margin, { align: 'center' });
 
-        const rows = totals.map(r => [r.state, fmt(totalFinal(r))]);
-        rows.push(['TOTAL', fmt(grandTotalFinal)]);
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'normal');
+        doc.text(describeTotalsFilters(), pageW / 2, margin + 22, { align: 'center' });
+
+        const rows = data.map(r => [r.state, fmtInt(final(r))]);
+        rows.push(['TOTAL', fmtInt(data.reduce((sum, r) => sum + final(r), 0))]);
 
         autoTable(doc, {
-            startY: margin + 34,
+            startY: margin + 40,
             margin: { left: margin, right: margin, top: margin, bottom: margin },
             head: [['Estado', 'Total Mi']],
             body: rows,
@@ -194,13 +223,15 @@ export default function IFTA() {
     const [loadingPeriodos, setLoadingPeriodos] = useState(false);
     const [filterPeriodo, setFilterPeriodo]     = useState('');
     const [filterPeriodoEstado, setFilterPeriodoEstado] = useState('');
-    const [filterYear, setFilterYear] = useState('');
+    const [filterYear, setFilterYear] = useState(String(new Date().getFullYear()));
 
     const fetchPeriodos = async () => {
         setLoadingPeriodos(true);
         try {
             const fd = new FormData();
             fd.append('op', 'periodos');
+            // El año se filtra en la API (2 dígitos, ej. "26"); vacío = todos los años
+            if (filterYear.trim()) fd.append('year', filterYear.trim().slice(-2));
             const res  = await fetch(`${apiHost}/IFTA.php`, { method: 'POST', body: fd });
             const json = await res.json();
             if (json.status === 'success') setPeriodos(json.data);
@@ -211,9 +242,14 @@ export default function IFTA() {
         }
     };
 
+    // Recargar al entrar al tab y al cambiar el año (con espera para no pedir en cada tecla)
     useEffect(() => {
-        if (tabValue === 2) fetchPeriodos();
-    }, [tabValue]); // eslint-disable-line react-hooks/exhaustive-deps
+        if (tabValue !== 2) return;
+        const year = filterYear.trim();
+        if (year && year.length !== 2 && year.length !== 4) return;
+        const t = setTimeout(fetchPeriodos, 500);
+        return () => clearTimeout(t);
+    }, [tabValue, filterYear]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Registros de diesel sin periodo llegan con periodo '' desde la API
     const periodosUnicos = useMemo(() =>
@@ -226,7 +262,9 @@ export default function IFTA() {
                 (filterPeriodo === PERIODO_VACIO ? !r.periodo : r.periodo === filterPeriodo);
             const matchEstado  = !filterPeriodoEstado.trim() ||
                 r.estado.toLowerCase().includes(filterPeriodoEstado.trim().toLowerCase());
-            const matchYear = !filterYear || r.trip_year === filterYear;   
+            // trip_year viene a 2 dígitos ("26"); se acepta "26" o "2026"
+            const matchYear = !filterYear.trim() ||
+                String(r.trip_year ?? '').slice(-2) === filterYear.trim().slice(-2);
             return matchPeriodo && matchEstado && matchYear;
         });
     }, [periodos, filterPeriodo, filterPeriodoEstado, filterYear]);
@@ -277,19 +315,28 @@ export default function IFTA() {
         doc.setFont('helvetica', 'bold');
         doc.text('IFTA — Registros', pageW / 2, margin, { align: 'center' });
 
+        const filtros = [
+            `Periodo: ${!filterPeriodo ? 'todos' : filterPeriodo === PERIODO_VACIO ? 'Vacío' : filterPeriodo}`,
+            `Estado: ${filterPeriodoEstado.trim() ? filterPeriodoEstado.trim().toUpperCase() : 'todos'}`,
+            `Año: ${filterYear.trim() || 'todos'}`,
+        ].join('   ·   ');
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.text(filtros, pageW / 2, margin + 18, { align: 'center' });
+
+        // Mismas columnas y valores que la tabla en pantalla
         const rows = filteredPeriodos.map(r => [
             r.estado,
             fmtPeriodo(r.periodo),
             r.trip_year ?? '—',
-            fmtInt(r.galones),
             fmtInt(r.total_millas),
         ]);
         rows.push(['TOTAL', '', '', fmtInt(grandTotalPeriodos)]);
 
         autoTable(doc, {
-            startY: margin + 24,
+            startY: margin + 32,
             margin: { left: margin, right: margin, top: margin, bottom: margin },
-            head: [['Estado', 'Periodo', 'Año', 'Total Mi']],
+            head: [['Estado', 'Periodo', 'Año', 'Total Galones']],
             body: rows,
             styles: { fontSize: 9, cellPadding: 5 },
             headStyles: { fillColor: [245, 245, 245], textColor: 0, fontStyle: 'bold' },
@@ -542,7 +589,7 @@ export default function IFTA() {
                                                             <Chip label={row.state} size="small" sx={{ fontWeight: 700, minWidth: 42 }} />
                                                         </Stack>
                                                     </TableCell>
-                                                    <TableCell align="right">{fmt(row.total)}</TableCell>
+                                                    <TableCell align="right">{fmtInt(row.total)}</TableCell>
                                                     <TableCell align="right" sx={{ py: 0.5 }}>
                                                         <TextField
                                                             size="small"
@@ -554,16 +601,16 @@ export default function IFTA() {
                                                             slotProps={{ htmlInput: { step: 'any', style: { textAlign: 'right' } } }}
                                                         />
                                                     </TableCell>
-                                                    <TableCell align="right" sx={{ fontWeight: 600 }}>{fmt(totalFinal(row))}</TableCell>
+                                                    <TableCell align="right" sx={{ fontWeight: 600 }}>{fmtInt(totalFinal(row))}</TableCell>
                                                 </TableRow>
                                                 </Fragment>
                                             ))}
                                             {/* Totales footer */}
                                             <TableRow sx={{ bgcolor: '#f5f5f5' }}>
                                                 <TableCell sx={{ fontWeight: 700 }}>TOTAL</TableCell>
-                                                <TableCell align="right" sx={{ fontWeight: 700 }}>{fmt(grandTotal)}</TableCell>
+                                                <TableCell align="right" sx={{ fontWeight: 700 }}>{fmtInt(grandTotal)}</TableCell>
                                                 <TableCell />
-                                                <TableCell align="right" sx={{ fontWeight: 700 }}>{fmt(grandTotalFinal)}</TableCell>
+                                                <TableCell align="right" sx={{ fontWeight: 700 }}>{fmtInt(grandTotalFinal)}</TableCell>
                                             </TableRow>
                                         </>
                                     )}
@@ -599,7 +646,7 @@ export default function IFTA() {
                                                 <TableCell sx={{ fontWeight: 600 }}>{trip.trip_number}</TableCell>
                                                 <TableCell>{fmtDate(trip.creation_date)}</TableCell>
                                                 <TableCell>{fmtDate(trip.return_date)}</TableCell>
-                                                <TableCell align="right">{fmt(trip.total)}</TableCell>
+                                                <TableCell align="right">{fmtInt(trip.total)}</TableCell>
                                             </TableRow>
                                         ))}
                                     </TableBody>
@@ -659,7 +706,7 @@ export default function IFTA() {
                                 onClick={() => {
                                     setFilterPeriodo('');
                                     setFilterPeriodoEstado('');
-                                    setFilterYear('');
+                                    setFilterYear(String(new Date().getFullYear()));
                                 }}
                             >
                                 Limpiar
