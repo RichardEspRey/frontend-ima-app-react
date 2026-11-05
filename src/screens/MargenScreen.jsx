@@ -27,9 +27,7 @@ const MargenScreen = () => {
     return trips.map(t => {
       const driverPay = Number(t.driver_pay || 0); 
       
-      const isFullyPaid = Number(t.unpaid_stages || 0) === 0;
-      
-      const totalTarifa = isFullyPaid ? Number(t.rate_tarifa || 0) : Number(t.tarifa_pagada || 0); 
+      const totalTarifa = Number(t.total_rate || 0); 
 
       const totalDiesel = Number(t.diesel || 0);
       
@@ -39,17 +37,16 @@ const MargenScreen = () => {
       const isDieselOk = Number(t.diesel_alerts || 0) === 0;
       const isDriverPaid = Number(t.driver_payment_status || 0) === 1;
 
-      const isCompleted = isFullyPaid && isDieselOk && isDriverPaid;
+      const isCompleted = isDieselOk && isDriverPaid;
 
       return {
         ...t,
         trip_id: Number(t.trip_id),
-        tarifa_pagada: totalTarifa, 
+        total_rate: totalTarifa, 
         diesel: totalDiesel,
         driver_pay: driverPay,
         totalCost,
         totalMargin,
-        isFullyPaid,
         isDieselOk,
         isDriverPaid,
         isCompleted
@@ -60,14 +57,19 @@ const MargenScreen = () => {
   const fetchMarginData = useCallback(async () => {
     setLoading(true);
     try {
-        const fd = new FormData();
-        fd.append('op', 'residuo_trip'); 
+        const fdMargen = new FormData();
+        fdMargen.append('op', 'residuo_trip'); 
+        const fdVentas = new FormData();
+        fdVentas.append('op', 'All_finanzas');
         
-        const res = await fetch(`${apiHost}/trips.php`, { method: 'POST', body: fd }); 
-        const json = await res.json();
+        const [json, jsonVentas] = await Promise.all([
+            fetch(`${apiHost}/trips.php`, { method: 'POST', body: fdMargen }).then(r => r.json()),
+            fetch(`${apiHost}/formularios.php`, { method: 'POST', body: fdVentas }).then(r => r.json()),
+        ]);
         
-        if (json.status === 'success' && Array.isArray(json.data)) {
-            setTrips(json.data); 
+        if (json.status === 'success' && Array.isArray(json.data) && jsonVentas.status === 'success' && Array.isArray(jsonVentas.data)) {
+            const totalRatePorViaje = new Map(jsonVentas.data.map(v => [Number(v.trip_id), v.total_tarifa]));
+            setTrips(json.data.map(t => ({ ...t, total_rate: totalRatePorViaje.get(Number(t.trip_id)) })));
         } else {
              setTrips([]); 
              Swal.fire('Error de API', 'No se pudieron cargar los datos financieros.', 'error');
