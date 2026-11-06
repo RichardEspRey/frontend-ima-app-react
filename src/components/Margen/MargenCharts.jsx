@@ -66,7 +66,8 @@ export const MargenCharts = ({ trips, loading }) => {
           height={380}
           margin={{ top: 20, right: 20, bottom: 30, left: 10 }}
           borderRadius={4}
-          slotProps={{ ...chartSlotProps, legend: { hidden: true } }}
+          hideLegend
+          slotProps={{ tooltip: { trigger: 'axis' } }}
         />
       </Box>
 
