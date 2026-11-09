@@ -137,6 +137,21 @@ export const suscribirInspeccion = ({ userId, usuarioId }) =>
 export const desuscribirInspeccion = ({ userId }) =>
     pedirMtto('desuscribirInspeccion', { user_id: userId });
 
+export const obtenerInspeccionesSinFallas = async () => {
+    const [result, catalogo] = await Promise.all([
+        pedirMtto('getSinFallas'),
+        obtenerInspecciones().catch(() => []),
+    ]);
+
+    const nomenclaturas = new Map(catalogo.map(fila => [String(fila.viaje_id), fila.nomenclatura]));
+
+    return (Array.isArray(result.inspecciones) ? result.inspecciones : []).map(fila => ({
+        ...fila,
+        nomenclatura: nomenclaturas.get(String(fila.viaje_id)) || '',
+        reporte: Array.isArray(fila.reporte) ? fila.reporte : [],
+    }));
+};
+
 export const obtenerPuntos = async (viajeId, lado) => {
     const result = await pedirMtto('getPuntos', { viaje_id: viajeId, lado });
     return (Array.isArray(result.puntos) ? result.puntos : []).map(punto => ({
