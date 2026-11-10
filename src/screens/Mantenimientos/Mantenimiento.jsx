@@ -3,6 +3,7 @@ import { Box, Stack, Tab, Tabs, Typography } from '@mui/material';
 import PanelInspecciones from '../../components/Mantenimientos/PanelInspecciones';
 import PanelPendientes from '../../components/Mantenimientos/PanelPendientes';
 import PanelSinFallas from '../../components/Mantenimientos/PanelSinFallas';
+import PanelSinInspeccion from '../../components/Mantenimientos/PanelSinInspeccion';
 import ServiceOrderAdmin from '../ServiceOrderAdmin.jsx';
 import {
     PAGE_SHELL_SX, PAGE_OVERLINE_SX, PAGE_TITLE_SX, TABS_WRAPPER_SX, TAB_SX,
@@ -11,6 +12,7 @@ import {
 const PESTANAS = [
     { id: 'inspecciones', etiqueta: 'Inspecciones' },
     { id: 'sin-fallas', etiqueta: 'Sin fallas' },
+    { id: 'sin-inspeccion', etiqueta: 'Sin inspección' },
     { id: 'pendientes', etiqueta: 'Reparaciones pendientes' },
     { id: 'ordenes', etiqueta: 'Órdenes de servicio' },
 ];
@@ -49,6 +51,8 @@ const Mantenimiento = () => {
             )}
 
             {pestana === 'sin-fallas' && <PanelSinFallas />}
+
+            {pestana === 'sin-inspeccion' && <PanelSinInspeccion />}
 
             {pestana === 'pendientes' && <PanelPendientes />}
 

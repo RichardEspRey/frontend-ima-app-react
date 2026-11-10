@@ -152,6 +152,15 @@ export const obtenerInspeccionesSinFallas = async () => {
     }));
 };
 
+export const obtenerViajesSinInspeccion = async () => {
+    const result = await pedirMtto('getSinInspeccion');
+    return (Array.isArray(result.viajes) ? result.viajes : []).map(fila => ({
+        ...fila,
+        operador: (fila.operador || '').trim(),
+        operador_2: (fila.operador_2 || '').trim(),
+    }));
+};
+
 export const obtenerPuntos = async (viajeId, lado) => {
     const result = await pedirMtto('getPuntos', { viaje_id: viajeId, lado });
     return (Array.isArray(result.puntos) ? result.puntos : []).map(punto => ({
