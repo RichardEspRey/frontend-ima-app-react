@@ -1,30 +1,27 @@
-import { useSearchParams } from "react-router-dom"
-import { Box, Typography } from "@mui/material"
-import { PanelInspecciones, PanelPendientes, PanelSinFallas, PanelSinInspeccion } from "../../features/maintenance"
-import TablaOrdenes from "../../features/service-order/ui/TablaOrdenes.jsx"
+import { useSearchParams } from "react-router-dom";
+import { Box, Typography } from "@mui/material";
+import { PanelInspecciones, PanelPendientes } from "../../features/maintenance";
+import TablaOrdenes from "../../features/service-order/ui/TablaOrdenes.jsx";
 import {
   COLOR,
   PAGE_OVERLINE_SX,
   PAGE_SHELL_SX,
   PAGE_TITLE_SX,
   Pestanas,
-} from "../../shared/ui"
+} from "../../shared/ui";
 
 const PESTANAS = [
   { id: "inspecciones", etiqueta: "Inspecciones" },
-  { id: "sin-fallas", etiqueta: "Sin fallas" },
-  { id: "sin-inspeccion", etiqueta: "Sin inspección" },
   { id: "pendientes", etiqueta: "Reparaciones pendientes" },
   { id: "ordenes", etiqueta: "Órdenes de servicio" },
-]
+];
 
 /**
  * El mantenimiento entero, de la inspección a la orden, en una sola pantalla.
  *
- * Las pestañas contestan preguntas distintas: qué reportaron los operadores y
- * nadie ha atendido, qué inspecciones llegaron sin nada que reparar, qué viajes
- * terminaron sin inspección, qué le debemos a cada unidad, y qué se mandó a
- * reparar. Antes eso vivía en dos
+ * Las pestañas contestan preguntas distintas: qué reportaron los operadores
+ * (con las inspecciones sin fallas y los viajes sin inspección dentro), qué le
+ * debemos a cada unidad, y qué se mandó a reparar. Antes eso vivía en dos
  * pantallas y un Excel.
  *
  * Se montan de forma perezosa: cada panel pide sus datos cuando se abre. La
@@ -34,32 +31,43 @@ const PESTANAS = [
  * @returns {object} La pantalla.
  */
 const MantenimientoPage = () => {
-  const [parametros, setParametros] = useSearchParams()
-  const pedida = parametros.get("pestana")
-  const pestana = PESTANAS.some((p) => p.id === pedida) ? pedida : PESTANAS[0].id
-  const setPestana = (valor) => setParametros({ pestana: valor }, { replace: true })
+  const [parametros, setParametros] = useSearchParams();
+  const pedida = parametros.get("pestana");
+  const pestana = PESTANAS.some((p) => p.id === pedida)
+    ? pedida
+    : PESTANAS[0].id;
+  const setPestana = (valor) =>
+    setParametros({ pestana: valor }, { replace: true });
 
   return (
     <Box sx={PAGE_SHELL_SX}>
       <Typography variant="overline" sx={PAGE_OVERLINE_SX}>
         Mantenimientos
       </Typography>
-      <Typography variant="h4" fontWeight={800} color={COLOR.TINTA} sx={PAGE_TITLE_SX}>
+      <Typography
+        variant="h4"
+        fontWeight={800}
+        color={COLOR.TINTA}
+        sx={PAGE_TITLE_SX}
+      >
         Reparaciones
       </Typography>
       <Typography variant="body2" color={COLOR.APAGADO} sx={{ mb: 3 }}>
         De lo que reportó el operador a la orden de servicio, sin salir de aquí.
       </Typography>
 
-      <Pestanas valor={pestana} onChange={setPestana} pestanas={PESTANAS} sx={{ mb: 3 }} />
+      <Pestanas
+        valor={pestana}
+        onChange={setPestana}
+        pestanas={PESTANAS}
+        sx={{ mb: 3 }}
+      />
 
       {pestana === "inspecciones" ? <PanelInspecciones /> : null}
-      {pestana === "sin-fallas" ? <PanelSinFallas /> : null}
-      {pestana === "sin-inspeccion" ? <PanelSinInspeccion /> : null}
       {pestana === "pendientes" ? <PanelPendientes /> : null}
       {pestana === "ordenes" ? <TablaOrdenes /> : null}
     </Box>
-  )
-}
+  );
+};
 
-export default MantenimientoPage
+export default MantenimientoPage;
