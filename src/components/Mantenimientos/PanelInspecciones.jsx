@@ -16,6 +16,8 @@ import Swal from 'sweetalert2';
 
 import BarraFiltros from './BarraFiltros';
 import ConstructorOrden from './ConstructorOrden';
+import PanelSinFallas from './PanelSinFallas';
+import PanelSinInspeccion from './PanelSinInspeccion';
 import RubrosInspeccion from './RubrosInspeccion';
 import { useAuthStore } from '../../store/useAuthStore';
 import {
@@ -217,9 +219,12 @@ const PanelInspecciones = () => {
 
     const sinResolver = puntosAbiertos.filter(p => p.estatus === ESTATUS_PUNTO.SIN_RESOLVER).length;
 
+    const otraVista = pestana === 'sin-fallas' || pestana === 'sin-inspeccion';
+
     return (
         <Box>
             <Stack direction="row" justifyContent="space-between" alignItems="center" flexWrap="wrap" gap={2} sx={{ mb: 2 }}>
+                {otraVista ? <Box /> : (
                 <ToggleButtonGroup
                     exclusive
                     size="small"
@@ -243,6 +248,7 @@ const PanelInspecciones = () => {
                         </ToggleButton>
                     ))}
                 </ToggleButtonGroup>
+                )}
 
                 <Box sx={TABS_WRAPPER_SX}>
                     <Tabs
@@ -252,10 +258,17 @@ const PanelInspecciones = () => {
                     >
                         <Tab value="pendientes" label="Pendientes" sx={TAB_SX} />
                         <Tab value="completadas" label="Completadas" sx={TAB_SX} />
+                        <Tab value="sin-fallas" label="Sin fallas" sx={TAB_SX} />
+                        <Tab value="sin-inspeccion" label="Sin inspección" sx={TAB_SX} />
                     </Tabs>
                 </Box>
             </Stack>
 
+            {pestana === 'sin-fallas' && <PanelSinFallas />}
+
+            {pestana === 'sin-inspeccion' && <PanelSinInspeccion />}
+
+            {!otraVista && (<>
             {error && <Alert severity="error" sx={{ mb: 2 }} action={<Button onClick={cargar}>Reintentar</Button>}>{error}</Alert>}
 
             <BarraFiltros
@@ -449,6 +462,7 @@ const PanelInspecciones = () => {
                     sx={PAGINATION_SX}
                 />
             </Box>
+            </>)}
 
             {apertura && (
                 <ConstructorOrden
