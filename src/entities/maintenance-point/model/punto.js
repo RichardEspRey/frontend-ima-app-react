@@ -121,6 +121,31 @@ export const esquemaInspeccionMtto = z.object({
 })
 
 /**
+ * Un renglón del checklist tal como lo escribió el operador.
+ */
+export const esquemaRenglonReporte = z.object({
+  categoria: z.string().catch(""),
+  unidad_tipo: z.string().catch(UNIDAD.CAMION),
+  texto: textoPhp(),
+})
+
+/**
+ * Una inspección en la que el operador no reportó nada que reparar, con lo que escribió.
+ */
+export const esquemaInspeccionSinFallas = z.object({
+  cl_final_id: idPhp(),
+  viaje_id: idPhp(),
+  fecha_creacion: z.string().catch(""),
+  truck_id: nullable(idPhp()),
+  no_camion: textoPhp(),
+  trip_number: textoPhp(),
+  caja_id: nullable(idPhp()),
+  no_caja: textoPhp(),
+  operador: textoPhp(),
+  reporte: z.array(esquemaRenglonReporte).catch([]),
+})
+
+/**
  * Un punto del checklist, con el estado que la oficina le haya dado.
  */
 export const esquemaPunto = z.object({

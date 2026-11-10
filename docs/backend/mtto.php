@@ -170,6 +170,84 @@ try {
             ]);
             break;
 
+        case 'getSinFallas':
+            $conFalla = [];
+            $renglones = [];
+            $parametros = [];
+            foreach ($RUBROS as $rubro) {
+                $conFalla[] = "(SELECT COUNT(*) FROM {$rubro['tabla']} r
+                                WHERE r.viaje_id = c.viaje_id AND " . filtroConFalla('r.contenido') . ")";
+                $parametros = array_merge($parametros, $SIN_FALLA);
+                $renglones[] = "(SELECT COUNT(*) FROM {$rubro['tabla']} r WHERE r.viaje_id = c.viaje_id)";
+            }
+
+            $sql = "
+                SELECT
+                    c.id                AS cl_final_id,
+                    c.viaje_id,
+                    c.fecha_creacion,
+                    c.truck_id,
+                    tr.unidad           AS no_camion,
+                    t.trip_number,
+                    t.country_code,
+                    t.trip_year,
+                    t.caja_id,
+                    cj.no_caja,
+                    d.nombre            AS operador,
+                    (" . implode(' + ', $conFalla) . ")  AS con_falla,
+                    (" . implode(' + ', $renglones) . ") AS renglones
+                  FROM cl_final c
+             LEFT JOIN trips   t  ON t.trip_id  = c.viaje_id
+             LEFT JOIN trucks  tr ON tr.truck_id = c.truck_id
+             LEFT JOIN caja    cj ON cj.caja_id  = t.caja_id
+             LEFT JOIN drivers d  ON d.driver_id = c.driver_id
+                HAVING con_falla = 0
+              ORDER BY c.id DESC
+            ";
+
+            $stmt = $db->prepare($sql);
+            $stmt->execute($parametros);
+            $inspecciones = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            $viajes = [];
+            foreach ($inspecciones as $fila) {
+                $viajes[(int)$fila['viaje_id']] = true;
+            }
+            $viajes = array_keys($viajes);
+            $porViaje = [];
+
+            if (count($viajes) > 0) {
+                $marcas = implode(',', array_fill(0, count($viajes), '?'));
+                $partes = [];
+                $parametros = [];
+                foreach ($RUBROS as $rubro) {
+                    $partes[] = "SELECT viaje_id, ? AS categoria, ? AS unidad_tipo, contenido
+                                   FROM {$rubro['tabla']} WHERE viaje_id IN ($marcas)";
+                    $parametros = array_merge($parametros, [$rubro['etiqueta'], $rubro['unidad']], $viajes);
+                }
+
+                $stmt = $db->prepare(implode(' UNION ALL ', $partes));
+                $stmt->execute($parametros);
+
+                foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $fila) {
+                    $porViaje[$fila['viaje_id']][] = [
+                        'categoria' => $fila['categoria'],
+                        'unidad_tipo' => $fila['unidad_tipo'],
+                        'texto' => trim((string)$fila['contenido']),
+                    ];
+                }
+            }
+
+            foreach ($inspecciones as $indice => $fila) {
+                $inspecciones[$indice]['reporte'] = isset($porViaje[$fila['viaje_id']]) ? $porViaje[$fila['viaje_id']] : [];
+            }
+
+            echo json_encode([
+                'status' => 'success',
+                'inspecciones' => $inspecciones,
+            ]);
+            break;
+
         case 'getPuntos':
             // Los puntos de un lado de la inspección, con el estado que ya tengan. Los
             // que nunca se tocaron salen como sin_resolver sin existir todavía en

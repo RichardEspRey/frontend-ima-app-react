@@ -7,6 +7,7 @@ import {
   clavePunto,
   contarPorAtender,
   esquemaInspeccionMtto,
+  esquemaInspeccionSinFallas,
   esquemaPendiente,
   esquemaPunto,
   normalizarCon,
@@ -68,6 +69,33 @@ export async function obtenerInspeccionesMtto(lado, opciones = {}) {
 
   if (descartados > 0) {
     console.warn(`mtto.php#getInspecciones descartó ${descartados} inspección(es).`)
+  }
+
+  return validas
+}
+
+/**
+ * Llave de las inspecciones sin fallas.
+ *
+ * @type {Array.<string>}
+ */
+export const LLAVE_SIN_FALLAS = [...LLAVE_MANTENIMIENTO, "sin-fallas"]
+
+/**
+ * Trae las inspecciones en las que el operador no reportó nada que reparar.
+ *
+ * @endpoint POST mtto.php · op=getSinFallas
+ * @param {object} [opciones] Ajustes de la petición.
+ * @param {AbortSignal} [opciones.signal] Señal de cancelación.
+ * @returns {Promise.<Array>} Las inspecciones normalizadas, con lo que escribió el operador.
+ * @throws {ApiError} Si la API falla.
+ */
+export async function obtenerInspeccionesSinFallas(opciones = {}) {
+  const cuerpo = await post(ENDPOINTS.mantenimiento, "getSinFallas", {}, opciones)
+  const { validas, descartados } = normalizarCon(esquemaInspeccionSinFallas, cuerpo?.inspecciones ?? [])
+
+  if (descartados > 0) {
+    console.warn(`mtto.php#getSinFallas descartó ${descartados} inspección(es).`)
   }
 
   return validas
@@ -294,6 +322,18 @@ export function useInspeccionesMtto(lado) {
   return useQuery({
     queryKey: llaveInspecciones(lado),
     queryFn: ({ signal }) => obtenerInspeccionesMtto(lado, { signal }),
+  })
+}
+
+/**
+ * Las inspecciones sin fallas, cacheadas.
+ *
+ * @returns {object} El resultado de `useQuery`.
+ */
+export function useInspeccionesSinFallas() {
+  return useQuery({
+    queryKey: LLAVE_SIN_FALLAS,
+    queryFn: ({ signal }) => obtenerInspeccionesSinFallas({ signal }),
   })
 }
 

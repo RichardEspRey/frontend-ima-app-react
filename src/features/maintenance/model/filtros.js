@@ -9,6 +9,14 @@ import { UNIDAD, ladoCompletado } from "../../../entities/maintenance-point"
 export const SIN_FILTROS_INSPECCION = { viaje: "", operador: "", unidad: "", desde: "", hasta: "" }
 
 /**
+ * Los filtros vacíos de la lista de inspecciones sin fallas.
+ *
+ * @readonly
+ * @type {object}
+ */
+export const SIN_FILTROS_SIN_FALLAS = { viaje: "", operador: "", camion: "", caja: "", desde: "", hasta: "" }
+
+/**
  * Los filtros vacíos de la lista de reparaciones pendientes.
  *
  * @readonly
@@ -103,6 +111,33 @@ export function filtrarPendientes(pendientes = [], filtros, lado) {
     ) {
       return false
     }
+
+    return true
+  })
+}
+
+/**
+ * Aplica los filtros a las inspecciones sin fallas.
+ *
+ * Camión y caja se filtran por separado porque la lista no se divide por lado.
+ *
+ * @param {Array.<object>} inspecciones Las inspecciones sin fallas.
+ * @param {object} filtros Lo que hay puesto.
+ * @returns {Array.<object>} Las que pasan.
+ */
+export function filtrarSinFallas(inspecciones = [], filtros) {
+  return inspecciones.filter((fila) => {
+    if (filtros.viaje.trim() && !contiene(`${fila.nomenclatura ?? ""} ${fila.trip_number}`, filtros.viaje)) {
+      return false
+    }
+
+    if (filtros.operador.trim() && !contiene(fila.operador, filtros.operador)) return false
+    if (filtros.camion.trim() && String(fila.no_camion || "") !== filtros.camion.trim()) return false
+    if (filtros.caja.trim() && String(fila.no_caja || "") !== filtros.caja.trim()) return false
+
+    const fecha = String(fila.fecha_creacion ?? "").slice(0, 10)
+    if (filtros.desde && fecha < filtros.desde) return false
+    if (filtros.hasta && fecha > filtros.hasta) return false
 
     return true
   })

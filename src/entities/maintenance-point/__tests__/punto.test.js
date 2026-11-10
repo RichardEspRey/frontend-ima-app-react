@@ -6,6 +6,7 @@ import {
   avisosDeInspecciones,
   contarPorAtender,
   esDescartada,
+  esquemaInspeccionSinFallas,
   esquemaPendiente,
   reparacionesVigentes,
   agruparPorRubro,
@@ -209,5 +210,31 @@ describe("avisosDeInspecciones", () => {
 
   it("no falla mientras los lados no han llegado", () => {
     expect(avisosDeInspecciones({ camion: undefined, caja: undefined }, undefined, ahora)).toEqual([])
+  })
+})
+
+describe("esquemaInspeccionSinFallas", () => {
+  it("normaliza la fila de getSinFallas con lo que escribió el operador", () => {
+    const fila = esquemaInspeccionSinFallas.parse({
+      cl_final_id: "274",
+      viaje_id: "594",
+      fecha_creacion: "2026-11-06 14:38:27",
+      truck_id: "13",
+      no_camion: "12",
+      trip_number: "255",
+      caja_id: null,
+      no_caja: null,
+      operador: "Jose Luis Valdes Calderon",
+      con_falla: "0",
+      reporte: [{ categoria: "Motor", unidad_tipo: "camion", texto: "NINGUNO" }],
+    })
+
+    expect(fila.no_caja).toBe("")
+    expect(fila.caja_id).toBeNull()
+    expect(fila.reporte).toEqual([{ categoria: "Motor", unidad_tipo: "camion", texto: "NINGUNO" }])
+  })
+
+  it("deja el reporte vacío si no llega", () => {
+    expect(esquemaInspeccionSinFallas.parse({ cl_final_id: "1", viaje_id: "2" }).reporte).toEqual([])
   })
 })
