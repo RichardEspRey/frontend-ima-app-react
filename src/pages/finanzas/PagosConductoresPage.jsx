@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo, useCallback } from "react";
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
   TextField, Box, Typography, Chip, Button,
-  Stack, Tooltip, IconButton, InputAdornment
+  Stack, Tooltip, IconButton, InputAdornment, Alert, MenuItem, CircularProgress
 } from "@mui/material";
 
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -12,10 +12,17 @@ import SearchIcon from '@mui/icons-material/Search';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import PendingActionsIcon from '@mui/icons-material/PendingActions';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import RouteIcon from '@mui/icons-material/Route';
+import TaskAltIcon from '@mui/icons-material/TaskAlt';
 
 import { useNavigate } from 'react-router-dom';
 import { COLOR } from '../../shared/ui/tokens';
-import { FilasEsqueleto, Pestanas, PageHeader, PAGE_SHELL_SX, TABLE_CONTAINER_SX, HEADER_ROW_SX, HEADER_CELL_SX, GHOST_BTN_SX, Paginacion, notify } from '../../shared/ui';
+import { FilasEsqueleto, Pestanas, PageHeader, PAGE_SHELL_SX, TABLE_CONTAINER_SX, HEADER_ROW_SX, HEADER_CELL_SX, GHOST_BTN_SX, Paginacion, notify, describirError } from '../../shared/ui';
+import {
+  PAIS, clavePago, pesos, sugerirTrayecto, useAutorizarPagoPorTrayecto, useDatosPagos, useTrayectos,
+} from '../../entities/finance';
+import { CatalogoTrayectos } from '../../features/pagos-mx';
+import { useSesion } from '../../shared/auth';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -93,6 +100,15 @@ const PagosConductoresPage = () => {
   const [rowsPerPage, setRowsPerPage] = useState(25);
   
   const [tabValue, setTabValue] = useState(0);
+
+  const { usuario } = useSesion();
+  const [pais, setPais] = useState(PAIS.US);
+  const [elegidos, setElegidos] = useState({});
+  const [catalogoAbierto, setCatalogoAbierto] = useState(false);
+  const datosConsulta = useDatosPagos();
+  const trayectosConsulta = useTrayectos();
+  const autorizar = useAutorizarPagoPorTrayecto();
+  const trayectos = useMemo(() => trayectosConsulta.data ?? [], [trayectosConsulta.data]);
 
   const fetchPayments = useCallback(async () => {
     setLoading(true);
@@ -191,8 +207,62 @@ const PagosConductoresPage = () => {
     })
   };
 
+  const conPais = useMemo(() => trips.map((t) => {
+    const viaje = datosConsulta.data?.viajes.get(String(t.trip_id));
+    return {
+      ...t,
+      nomenclatura: viaje?.nomenclatura || t.trip_number,
+      pais: viaje?.pais || PAIS.US,
+      recorrido: viaje?.recorrido || [],
+      asignacion: datosConsulta.data?.asignaciones.get(clavePago(t.trip_id, t.driver_id)) || null,
+    };
+  }), [trips, datosConsulta.data]);
+
+  const deLaPestana = useMemo(
+    () => conPais.filter((t) => (tabValue === 0 ? String(t.status_payment) !== "1" : String(t.status_payment) === "1")),
+    [conPais, tabValue],
+  );
+
+  const conteoPais = {
+    [PAIS.US]: deLaPestana.filter((t) => t.pais === PAIS.US).length,
+    [PAIS.MX]: deLaPestana.filter((t) => t.pais === PAIS.MX).length,
+  };
+
+  const trayectoDe = (t) => {
+    const clave = clavePago(t.trip_id, t.driver_id);
+    if (elegidos[clave] !== undefined) return trayectos.find((x) => x.id === elegidos[clave]) || null;
+    if (t.asignacion) return trayectos.find((x) => x.id === t.asignacion.trayectoId) || null;
+    return sugerirTrayecto(t.recorrido, trayectos);
+  };
+
+  const handleAutorizarTrayecto = async (t, trayecto) => {
+    const confirmado = await notify.confirmar({
+      titulo: '¿Autorizar pago?',
+      mensaje: `${t.nomenclatura} · ${t.nombre} — Trayecto ${trayecto.nombre}: ${pesos(trayecto.monto)}`,
+      confirmar: 'Sí, autorizar',
+      peligroso: false,
+    });
+    if (!confirmado) return;
+
+    try {
+      await autorizar.mutateAsync({ tripId: t.trip_id, driverId: t.driver_id, trayecto, usuarioId: usuario?.id });
+      setElegidos((previos) => {
+        const siguientes = { ...previos };
+        delete siguientes[clavePago(t.trip_id, t.driver_id)];
+        return siguientes;
+      });
+      fetchPayments();
+    } catch (error) {
+      notify.error(error);
+    }
+  };
+
+  const esMx = pais === PAIS.MX;
+  const columnas = esMx ? 9 : 8;
+  const sinMonto = trayectos.filter((x) => x.activo && x.monto <= 0);
+
   const filtered = useMemo(() => {
-    let result = trips;
+    let result = conPais.filter((t) => t.pais === pais);
 
     if (tabValue === 0) {
         result = result.filter(t => String(t.status_payment) !== "1");
@@ -202,11 +272,11 @@ const PagosConductoresPage = () => {
 
     const q = search.trim().toLowerCase();
     if (q) {
-        result = result.filter((t) => (t.trip_number || "").toLowerCase().includes(q) || (t.nombre || "").toLowerCase().includes(q));
+        result = result.filter((t) => (t.nomenclatura || "").toLowerCase().includes(q) || (t.nombre || "").toLowerCase().includes(q));
     }
     
     return result;
-  }, [trips, search, tabValue]);
+  }, [conPais, pais, search, tabValue]);
 
   const pageTrips = filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
@@ -217,6 +287,17 @@ const PagosConductoresPage = () => {
         titulo="Pago a Operadores"
         descripcion="Gestión de nómina y pagos de viajes."
         acciones={
+          <Stack direction="row" spacing={1}>
+          {esMx ? (
+            <Button
+              variant="outlined"
+              startIcon={<RouteIcon />}
+              onClick={() => setCatalogoAbierto(true)}
+              sx={GHOST_BTN_SX}
+            >
+              Trayectos MX
+            </Button>
+          ) : null}
           <Button
             variant="outlined"
             startIcon={<AssignmentIndIcon />}
@@ -225,6 +306,7 @@ const PagosConductoresPage = () => {
           >
             Administrar Drivers
           </Button>
+          </Stack>
         }
       />
 
@@ -237,6 +319,15 @@ const PagosConductoresPage = () => {
         ]}
       />
 
+      <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap" useFlexGap sx={{ mb: 3 }}>
+      <Pestanas
+        valor={pais}
+        onChange={(valor) => { setPais(valor); setPage(0); }}
+        pestanas={[
+          { id: PAIS.US, etiqueta: `US · ${conteoPais[PAIS.US]}` },
+          { id: PAIS.MX, etiqueta: `MX · ${conteoPais[PAIS.MX]}` },
+        ]}
+      />
       <TextField
         size="small"
         placeholder="Buscar Trip o Conductor..."
@@ -250,8 +341,25 @@ const PagosConductoresPage = () => {
           ),
           sx: { bgcolor: COLOR.BLANCO },
         }}
-        sx={{ minWidth: 320, mb: 3 }}
+        sx={{ minWidth: 320 }}
       />
+      </Stack>
+
+      {datosConsulta.isError || trayectosConsulta.isError ? (
+        <Alert
+          severity="warning"
+          sx={{ mb: 2 }}
+          action={<Button onClick={() => { datosConsulta.refetch(); trayectosConsulta.refetch(); }}>Reintentar</Button>}
+        >
+          No se pudo cargar la separación US / MX ni los trayectos: {describirError(datosConsulta.error || trayectosConsulta.error)}
+        </Alert>
+      ) : null}
+
+      {esMx && tabValue === 0 && sinMonto.length > 0 ? (
+        <Alert severity="info" sx={{ mb: 2 }}>
+          Hay trayectos sin monto: {sinMonto.map((x) => x.nombre).join(', ')}. Asígnales uno en «Trayectos MX» para poder autorizar esos viajes.
+        </Alert>
+      ) : null}
 
       <TableContainer component={Paper} elevation={0} sx={TABLE_CONTAINER_SX}>
         <Table stickyHeader size="small">
@@ -260,7 +368,14 @@ const PagosConductoresPage = () => {
               <TableCell sx={HEADER_CELL_SX}>Trip #</TableCell>
               <TableCell sx={HEADER_CELL_SX}>Driver</TableCell>
               <TableCell align="center" sx={HEADER_CELL_SX}>Etapas</TableCell>
-              <TableCell align="right" sx={HEADER_CELL_SX}>Millas</TableCell>
+              {esMx ? (
+                <>
+                  <TableCell sx={HEADER_CELL_SX}>Recorrido</TableCell>
+                  <TableCell sx={{ ...HEADER_CELL_SX, minWidth: 190 }}>Trayecto</TableCell>
+                </>
+              ) : (
+                <TableCell align="right" sx={HEADER_CELL_SX}>Millas</TableCell>
+              )}
               <TableCell align="right" sx={HEADER_CELL_SX}>Monto Pago</TableCell>
               <TableCell sx={HEADER_CELL_SX}>Estatus Pago</TableCell>
               <TableCell sx={HEADER_CELL_SX}>Estatus Viaje</TableCell>
@@ -270,10 +385,10 @@ const PagosConductoresPage = () => {
 
           <TableBody>
             {loading ? (
-              <FilasEsqueleto columnas={8} filas={Math.min(rowsPerPage, 10)} />
+              <FilasEsqueleto columnas={columnas} filas={Math.min(rowsPerPage, 10)} />
             ) : pageTrips.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} align="center" sx={{ py: 6 }}>
+                <TableCell colSpan={columnas} align="center" sx={{ py: 6 }}>
                   <Typography color="text.secondary" variant="body1">
                       {tabValue === 0 
                         ? "No hay pagos pendientes por procesar." 
@@ -285,12 +400,16 @@ const PagosConductoresPage = () => {
               pageTrips.map((t) => {
                 const isAutorizado = String(t.status_payment) === "2";
 
-                const uniqueKey = `${t.trip_id}-${t.driver_id}`;
+                const uniqueKey = clavePago(t.trip_id, t.driver_id);
+                const isPendiente = String(t.status_payment) === "0";
+                const trayecto = esMx ? trayectoDe(t) : null;
+                const sugerido = esMx && trayecto && elegidos[uniqueKey] === undefined && !t.asignacion;
+                const autorizandoEste = autorizar.isPending && autorizar.variables?.tripId === t.trip_id && autorizar.variables?.driverId === t.driver_id;
 
                 return (
                   <TableRow key={uniqueKey} hover>
                     <TableCell>
-                        <Typography fontWeight={700} color="primary" variant="body2">{t.trip_number}</Typography>
+                        <Typography fontWeight={700} color="primary" variant="body2" sx={{ whiteSpace: "nowrap" }}>{t.nomenclatura}</Typography>
                     </TableCell>
                     <TableCell>
                         <Stack direction="row" alignItems="center" spacing={1}>
@@ -301,12 +420,59 @@ const PagosConductoresPage = () => {
                     <TableCell align="center">
                         <Chip label={t.stages_count} size="small" />
                     </TableCell>
-                    <TableCell align="right">{t.total_millas_cortas}</TableCell>
+                    {esMx ? (
+                      <>
+                        <TableCell>
+                          <Typography variant="caption" color={COLOR.APAGADO}>
+                            {t.recorrido.length ? t.recorrido.join(' → ') : '—'}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          {isPendiente ? (
+                            <TextField
+                              select
+                              size="small"
+                              fullWidth
+                              value={trayecto?.id ?? ''}
+                              onChange={(e) => setElegidos((previos) => ({ ...previos, [uniqueKey]: e.target.value }))}
+                              helperText={sugerido ? 'Sugerido por el recorrido' : ' '}
+                              SelectProps={{ displayEmpty: true }}
+                              FormHelperTextProps={{ sx: { m: 0, mt: 0.25, fontSize: '0.68rem' } }}
+                            >
+                              <MenuItem value="" disabled>Elegir trayecto</MenuItem>
+                              {trayectos.filter((x) => x.activo).map((x) => (
+                                <MenuItem key={x.id} value={x.id}>
+                                  {x.nombre} · {x.monto > 0 ? pesos(x.monto) : 'sin monto'}
+                                </MenuItem>
+                              ))}
+                            </TextField>
+                          ) : (
+                            <Typography variant="body2" fontWeight={600}>{t.asignacion?.trayecto || '—'}</Typography>
+                          )}
+                        </TableCell>
+                      </>
+                    ) : (
+                      <TableCell align="right">{t.total_millas_cortas}</TableCell>
+                    )}
 
                     <TableCell align="right">
-                      <Typography fontWeight={700} color="success.main">
-                          {t.Pago_driver ? money(t.Pago_driver) : "---"}
-                      </Typography>
+                      {!esMx ? (
+                        <Typography fontWeight={700} color="success.main">
+                            {t.Pago_driver ? money(t.Pago_driver) : "---"}
+                        </Typography>
+                      ) : isPendiente ? (
+                        <Typography fontWeight={700} color={trayecto?.monto > 0 ? "success.main" : COLOR.APAGADO}>
+                          {trayecto?.monto > 0 ? pesos(trayecto.monto) : "---"}
+                        </Typography>
+                      ) : t.asignacion ? (
+                        <Typography fontWeight={700} color="success.main">{pesos(t.asignacion.monto)}</Typography>
+                      ) : (
+                        <Tooltip title="Pagado antes de los trayectos, por millas">
+                          <Typography fontWeight={700} color={COLOR.APAGADO} sx={{ whiteSpace: "nowrap" }}>
+                            {t.Pago_driver ? `${money(t.Pago_driver)} USD` : "---"}
+                          </Typography>
+                        </Tooltip>
+                      )}
                     </TableCell>
 
                     <TableCell>
@@ -319,6 +485,24 @@ const PagosConductoresPage = () => {
 
                     <TableCell align="center">
                       <Stack direction="row" spacing={1} justifyContent="center">
+                        {esMx && isPendiente ? (
+                          <Tooltip title={!trayecto ? "Elige el trayecto" : trayecto.monto <= 0 ? "El trayecto no tiene monto" : "Autorizar pago"}>
+                            <span>
+                              <Button
+                                variant="outlined"
+                                size="small"
+                                disabled={!trayecto || trayecto.monto <= 0 || autorizandoEste}
+                                onClick={() => handleAutorizarTrayecto(t, trayecto)}
+                                startIcon={autorizandoEste ? <CircularProgress size={14} /> : <TaskAltIcon />}
+                                sx={{ textTransform: 'none', px: 2, py: 0.5, minWidth: '100px', fontSize: '0.75rem', fontWeight: 600 }}
+                              >
+                                Autorizar
+                              </Button>
+                            </span>
+                          </Tooltip>
+                        ) : null}
+
+                        {!esMx ? (
                         <Tooltip title="Ver Ticket">
                           <span>
                               <IconButton
@@ -331,8 +515,9 @@ const PagosConductoresPage = () => {
                               </IconButton>
                           </span>
                         </Tooltip>
+                        ) : null}
 
-                        {tabValue === 0 && (
+                        {tabValue === 0 && (!esMx || isAutorizado) && (
                             <Tooltip title={!isAutorizado ? "Requiere Autorización" : "Finalizar Pago"}>
                                 <span>
                                 <Button
@@ -373,6 +558,8 @@ const PagosConductoresPage = () => {
         onPagina={setPage}
         onPorPagina={(cuantas) => { setRowsPerPage(cuantas); setPage(0); }}
       />
+
+      <CatalogoTrayectos open={catalogoAbierto} onClose={() => setCatalogoAbierto(false)} trayectos={trayectos} />
     </Box>
   );
 };

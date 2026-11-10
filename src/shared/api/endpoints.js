@@ -36,6 +36,7 @@ export const ENDPOINTS = {
   nuevosViajes: "new_trips.php",
   nuevosViajesV2: "new_tripsv2.php",
   pagosAdmin: "pagos_admin.php",
+  pagosMx: "pagos_mx.php",
   personalAdmin: "personal_admin.php",
   programacionViajes: "Programacion_viajes.php",
   reparacionesRuta: "roadside_repairs.php",

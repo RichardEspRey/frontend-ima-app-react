@@ -34,3 +34,26 @@ export {
   useGuardarTarifasConductor,
   useRegistrarCobrosEtapas,
 } from "./api/finanzas"
+
+export {
+  PAIS,
+  esquemaTrayecto,
+  esquemaViajePago,
+  esquemaAsignacionTrayecto,
+  pesos,
+  clavePago,
+  destinosDe,
+  sugerirTrayecto,
+} from "./model/trayectos"
+
+export {
+  LLAVE_TRAYECTOS,
+  obtenerTrayectos,
+  obtenerDatosPagos,
+  guardarTrayecto,
+  autorizarPagoPorTrayecto,
+  useTrayectos,
+  useDatosPagos,
+  useGuardarTrayecto,
+  useAutorizarPagoPorTrayecto,
+} from "./api/trayectos"

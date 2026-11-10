@@ -19,9 +19,14 @@ Pruebas: `finanzas.test.js`, `margen.test.js`.
 | `formularios.php` | `get_millasDriver` | `obtenerTarifasConductor()` |
 | `formularios.php` | `I_update_millasDriverBulk` | `guardarTarifasConductor()` |
 | `formularios.php` | `I_pago_stage_bulk` | `registrarCobrosEtapas()` |
+| `pagos_mx.php` | `getTrayectos` | `obtenerTrayectos()` |
+| `pagos_mx.php` | `getDatosPagos` | `obtenerDatosPagos()` |
+| `pagos_mx.php` | `guardarTrayecto` | `guardarTrayecto()` |
+| `pagos_mx.php` + `formularios.php` | `asignarTrayecto` + `send_ticket_pago` | `autorizarPagoPorTrayecto()` |
 
 ## Reglas de negocio
 
+- Los viajes mexicanos se pagan por trayecto, con un monto fijo en pesos del catálogo; los americanos, por milla (`sugerirTrayecto`, `autorizarPagoPorTrayecto`).
 - El estado de cobro sigue el ciclo pendiente de cobrar → cobrada, pendiente de pago → cobrada, pendiente RTS → pagada. `null` cuenta como pendiente: hay viajes reales sin estado (`normalizarEstadoCobro`).
 - Las etiquetas y colores de cada estado son los que la gente ya reconoce (`ETIQUETA_COBRO`).
 - Las gráficas de Margen reparten los viajes por mes de **creación** y sacan los porcentajes de los totales del mes, no del promedio por viaje (`margenPorMes`).
