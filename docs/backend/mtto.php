@@ -248,6 +248,50 @@ try {
             ]);
             break;
 
+        case 'getSinInspeccion':
+            $sql = "
+                SELECT
+                    t.trip_id           AS viaje_id,
+                    CASE WHEN t.is_transnational = 1
+                         THEN CONCAT(t.trip_number, '-', t.country_code, '-', t.transnational_number, 'T', t.movement_number, '-', t.trip_year)
+                         ELSE CONCAT(t.trip_number, '-', t.country_code, '-', t.trip_year)
+                    END                 AS nomenclatura,
+                    t.trip_number,
+                    t.country_code,
+                    t.creation_date,
+                    t.return_date,
+                    t.truck_id,
+                    tr.unidad           AS no_camion,
+                    t.caja_id,
+                    COALESCE(cj.no_caja, ce.no_caja) AS no_caja,
+                    d.nombre            AS operador,
+                    d2.nombre           AS operador_2
+                  FROM trips t
+             LEFT JOIN cl_final c        ON c.viaje_id = t.trip_id
+             LEFT JOIN trucks  tr        ON tr.truck_id = t.truck_id
+             LEFT JOIN caja    cj        ON cj.caja_id  = t.caja_id
+             LEFT JOIN cajas_externas ce ON ce.caja_externa_id = t.caja_externa_id
+             LEFT JOIN drivers d         ON d.driver_id  = t.driver_id
+             LEFT JOIN drivers d2        ON d2.driver_id = t.driver_id_second
+                 WHERE c.id IS NULL
+                   AND t.status = 'Completed'
+                   AND t.creation_date >= (
+                        SELECT MIN(t2.creation_date)
+                          FROM trips t2
+                          JOIN cl_final c2 ON c2.viaje_id = t2.trip_id
+                   )
+              ORDER BY t.creation_date DESC, t.trip_id DESC
+            ";
+
+            $stmt = $db->prepare($sql);
+            $stmt->execute();
+
+            echo json_encode([
+                'status' => 'success',
+                'viajes' => $stmt->fetchAll(PDO::FETCH_ASSOC),
+            ]);
+            break;
+
         case 'getPuntos':
             // Los puntos de un lado de la inspección, con el estado que ya tengan. Los
             // que nunca se tocaron salen como sin_resolver sin existir todavía en

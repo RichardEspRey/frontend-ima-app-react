@@ -1,4 +1,5 @@
 export { PanelInspecciones } from "./ui/PanelInspecciones"
 export { PanelPendientes } from "./ui/PanelPendientes"
 export { PanelSinFallas } from "./ui/PanelSinFallas"
+export { PanelSinInspeccion } from "./ui/PanelSinInspeccion"
 export { ConstructorOrden } from "./ui/ConstructorOrden"

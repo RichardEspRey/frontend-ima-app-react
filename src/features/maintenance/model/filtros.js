@@ -17,6 +17,14 @@ export const SIN_FILTROS_INSPECCION = { viaje: "", operador: "", unidad: "", des
 export const SIN_FILTROS_SIN_FALLAS = { viaje: "", operador: "", camion: "", caja: "", desde: "", hasta: "" }
 
 /**
+ * Los filtros vacíos de la lista de viajes sin inspección.
+ *
+ * @readonly
+ * @type {object}
+ */
+export const SIN_FILTROS_SIN_INSPECCION = { viaje: "", operador: "", camion: "", desde: "", hasta: "" }
+
+/**
  * Los filtros vacíos de la lista de reparaciones pendientes.
  *
  * @readonly
@@ -136,6 +144,36 @@ export function filtrarSinFallas(inspecciones = [], filtros) {
     if (filtros.caja.trim() && String(fila.no_caja || "") !== filtros.caja.trim()) return false
 
     const fecha = String(fila.fecha_creacion ?? "").slice(0, 10)
+    if (filtros.desde && fecha < filtros.desde) return false
+    if (filtros.hasta && fecha > filtros.hasta) return false
+
+    return true
+  })
+}
+
+/**
+ * Aplica los filtros a los viajes sin inspección.
+ *
+ * El operador se busca en los dos choferes del viaje, porque en un viaje de equipo
+ * cualquiera de los dos pudo mandarla.
+ *
+ * @param {Array.<object>} viajes Los viajes sin inspección.
+ * @param {object} filtros Lo que hay puesto.
+ * @returns {Array.<object>} Los que pasan.
+ */
+export function filtrarSinInspeccion(viajes = [], filtros) {
+  return viajes.filter((viaje) => {
+    if (filtros.viaje.trim() && !contiene(`${viaje.nomenclatura ?? ""} ${viaje.trip_number}`, filtros.viaje)) {
+      return false
+    }
+
+    if (filtros.operador.trim() && !contiene(`${viaje.operador} ${viaje.operador_2}`, filtros.operador)) {
+      return false
+    }
+
+    if (filtros.camion.trim() && String(viaje.no_camion || "") !== filtros.camion.trim()) return false
+
+    const fecha = String(viaje.creation_date ?? "").slice(0, 10)
     if (filtros.desde && fecha < filtros.desde) return false
     if (filtros.hasta && fecha > filtros.hasta) return false
 

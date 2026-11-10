@@ -1,6 +1,6 @@
 import { useSearchParams } from "react-router-dom"
 import { Box, Typography } from "@mui/material"
-import { PanelInspecciones, PanelPendientes, PanelSinFallas } from "../../features/maintenance"
+import { PanelInspecciones, PanelPendientes, PanelSinFallas, PanelSinInspeccion } from "../../features/maintenance"
 import TablaOrdenes from "../../features/service-order/ui/TablaOrdenes.jsx"
 import {
   COLOR,
@@ -13,6 +13,7 @@ import {
 const PESTANAS = [
   { id: "inspecciones", etiqueta: "Inspecciones" },
   { id: "sin-fallas", etiqueta: "Sin fallas" },
+  { id: "sin-inspeccion", etiqueta: "Sin inspección" },
   { id: "pendientes", etiqueta: "Reparaciones pendientes" },
   { id: "ordenes", etiqueta: "Órdenes de servicio" },
 ]
@@ -21,8 +22,9 @@ const PESTANAS = [
  * El mantenimiento entero, de la inspección a la orden, en una sola pantalla.
  *
  * Las pestañas contestan preguntas distintas: qué reportaron los operadores y
- * nadie ha atendido, qué inspecciones llegaron sin nada que reparar, qué le
- * debemos a cada unidad, y qué se mandó a reparar. Antes eso vivía en dos
+ * nadie ha atendido, qué inspecciones llegaron sin nada que reparar, qué viajes
+ * terminaron sin inspección, qué le debemos a cada unidad, y qué se mandó a
+ * reparar. Antes eso vivía en dos
  * pantallas y un Excel.
  *
  * Se montan de forma perezosa: cada panel pide sus datos cuando se abre. La
@@ -53,6 +55,7 @@ const MantenimientoPage = () => {
 
       {pestana === "inspecciones" ? <PanelInspecciones /> : null}
       {pestana === "sin-fallas" ? <PanelSinFallas /> : null}
+      {pestana === "sin-inspeccion" ? <PanelSinInspeccion /> : null}
       {pestana === "pendientes" ? <PanelPendientes /> : null}
       {pestana === "ordenes" ? <TablaOrdenes /> : null}
     </Box>

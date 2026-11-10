@@ -146,6 +146,41 @@ export const esquemaInspeccionSinFallas = z.object({
 })
 
 /**
+ * Un viaje terminado del que el operador no mandó la inspección final.
+ */
+export const esquemaViajeSinInspeccion = z.object({
+  viaje_id: idPhp(),
+  nomenclatura: textoPhp(),
+  trip_number: textoPhp(),
+  creation_date: textoPhp(),
+  return_date: textoPhp(),
+  truck_id: nullable(idPhp()),
+  no_camion: textoPhp(),
+  caja_id: nullable(idPhp()),
+  no_caja: textoPhp(),
+  operador: textoPhp().transform((texto) => texto.trim()),
+  operador_2: textoPhp().transform((texto) => texto.trim()),
+})
+
+/**
+ * Cuántos viajes sin inspección tiene cada operador, del que más al que menos.
+ *
+ * @param {Array.<object>} viajes Los viajes sin inspección.
+ * @returns {Array.<{operador: string, total: number}>} Un renglón por operador.
+ */
+export function contarPorOperador(viajes = []) {
+  const conteo = new Map()
+  for (const viaje of viajes) {
+    const nombre = viaje.operador || "Sin operador"
+    conteo.set(nombre, (conteo.get(nombre) ?? 0) + 1)
+  }
+
+  return [...conteo.entries()]
+    .map(([operador, total]) => ({ operador, total }))
+    .sort((a, b) => b.total - a.total || a.operador.localeCompare(b.operador))
+}
+
+/**
  * Un punto del checklist, con el estado que la oficina le haya dado.
  */
 export const esquemaPunto = z.object({

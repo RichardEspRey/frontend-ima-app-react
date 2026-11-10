@@ -7,6 +7,8 @@ import {
   contarPorAtender,
   esDescartada,
   esquemaInspeccionSinFallas,
+  esquemaViajeSinInspeccion,
+  contarPorOperador,
   esquemaPendiente,
   reparacionesVigentes,
   agruparPorRubro,
@@ -236,5 +238,40 @@ describe("esquemaInspeccionSinFallas", () => {
 
   it("deja el reporte vacío si no llega", () => {
     expect(esquemaInspeccionSinFallas.parse({ cl_final_id: "1", viaje_id: "2" }).reporte).toEqual([])
+  })
+})
+
+describe("esquemaViajeSinInspeccion", () => {
+  it("recorta los nombres y deja vacío lo que llega nulo", () => {
+    const viaje = esquemaViajeSinInspeccion.parse({
+      viaje_id: "584",
+      nomenclatura: "101-MX-91T1-26",
+      trip_number: "101",
+      creation_date: "2026-10-27 08:00:00",
+      return_date: null,
+      truck_id: "7",
+      no_camion: "6",
+      caja_id: null,
+      no_caja: null,
+      operador: "Cesar Fierro Santamaría ",
+      operador_2: null,
+    })
+
+    expect(viaje.operador).toBe("Cesar Fierro Santamaría")
+    expect(viaje.operador_2).toBe("")
+    expect(viaje.return_date).toBe("")
+    expect(viaje.no_caja).toBe("")
+  })
+})
+
+describe("contarPorOperador", () => {
+  it("cuenta por operador, del que más al que menos", () => {
+    const viajes = [{ operador: "B" }, { operador: "A" }, { operador: "B" }, { operador: "" }]
+
+    expect(contarPorOperador(viajes)).toEqual([
+      { operador: "B", total: 2 },
+      { operador: "A", total: 1 },
+      { operador: "Sin operador", total: 1 },
+    ])
   })
 })

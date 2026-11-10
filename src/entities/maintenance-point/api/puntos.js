@@ -8,6 +8,7 @@ import {
   contarPorAtender,
   esquemaInspeccionMtto,
   esquemaInspeccionSinFallas,
+  esquemaViajeSinInspeccion,
   esquemaPendiente,
   esquemaPunto,
   normalizarCon,
@@ -96,6 +97,36 @@ export async function obtenerInspeccionesSinFallas(opciones = {}) {
 
   if (descartados > 0) {
     console.warn(`mtto.php#getSinFallas descartó ${descartados} inspección(es).`)
+  }
+
+  return validas
+}
+
+/**
+ * Llave de los viajes terminados sin inspección.
+ *
+ * @type {Array.<string>}
+ */
+export const LLAVE_SIN_INSPECCION = [...LLAVE_MANTENIMIENTO, "sin-inspeccion"]
+
+/**
+ * Trae los viajes terminados de los que el operador no mandó la inspección final.
+ *
+ * Solo cuenta desde el primer viaje que tuvo inspección, porque antes la app móvil
+ * no la pedía.
+ *
+ * @endpoint POST mtto.php · op=getSinInspeccion
+ * @param {object} [opciones] Ajustes de la petición.
+ * @param {AbortSignal} [opciones.signal] Señal de cancelación.
+ * @returns {Promise.<Array>} Los viajes normalizados, del más reciente al más viejo.
+ * @throws {ApiError} Si la API falla.
+ */
+export async function obtenerViajesSinInspeccion(opciones = {}) {
+  const cuerpo = await post(ENDPOINTS.mantenimiento, "getSinInspeccion", {}, opciones)
+  const { validas, descartados } = normalizarCon(esquemaViajeSinInspeccion, cuerpo?.viajes ?? [])
+
+  if (descartados > 0) {
+    console.warn(`mtto.php#getSinInspeccion descartó ${descartados} viaje(s).`)
   }
 
   return validas
@@ -334,6 +365,18 @@ export function useInspeccionesSinFallas() {
   return useQuery({
     queryKey: LLAVE_SIN_FALLAS,
     queryFn: ({ signal }) => obtenerInspeccionesSinFallas({ signal }),
+  })
+}
+
+/**
+ * Los viajes terminados sin inspección, cacheados.
+ *
+ * @returns {object} El resultado de `useQuery`.
+ */
+export function useViajesSinInspeccion() {
+  return useQuery({
+    queryKey: LLAVE_SIN_INSPECCION,
+    queryFn: ({ signal }) => obtenerViajesSinInspeccion({ signal }),
   })
 }
 
