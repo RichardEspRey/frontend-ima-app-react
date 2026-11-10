@@ -162,7 +162,7 @@ export function PanelSinFallas() {
         <TextField
           size="small"
           label="Camión (exacto)"
-          sx={{ width: 140 }}
+          sx={{ width: 160 }}
           value={panel.filtros.camion}
           onChange={(evento) => panel.cambiarFiltro("camion", evento.target.value)}
         />
