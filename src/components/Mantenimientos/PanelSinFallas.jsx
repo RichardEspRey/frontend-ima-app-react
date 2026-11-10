@@ -99,7 +99,7 @@ const PanelSinFallas = () => {
                     onChange={(evento) => cambiarFiltro('operador', evento.target.value)}
                 />
                 <TextField
-                    size="small" label="Camión (exacto)" sx={{ width: 140 }} value={filtros.camion}
+                    size="small" label="Camión (exacto)" sx={{ width: 160 }} value={filtros.camion}
                     onChange={(evento) => cambiarFiltro('camion', evento.target.value)}
                 />
                 <TextField
