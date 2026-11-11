@@ -589,7 +589,7 @@ export default function IFTA() {
                                                             <Chip label={row.state} size="small" sx={{ fontWeight: 700, minWidth: 42 }} />
                                                         </Stack>
                                                     </TableCell>
-                                                    <TableCell align="right">{fmtInt(row.total)}</TableCell>
+                                                    <TableCell align="right">{fmt(row.total)}</TableCell>
                                                     <TableCell align="right" sx={{ py: 0.5 }}>
                                                         <TextField
                                                             size="small"
@@ -608,7 +608,7 @@ export default function IFTA() {
                                             {/* Totales footer */}
                                             <TableRow sx={{ bgcolor: '#f5f5f5' }}>
                                                 <TableCell sx={{ fontWeight: 700 }}>TOTAL</TableCell>
-                                                <TableCell align="right" sx={{ fontWeight: 700 }}>{fmtInt(grandTotal)}</TableCell>
+                                                <TableCell align="right" sx={{ fontWeight: 700 }}>{fmt(grandTotal)}</TableCell>
                                                 <TableCell />
                                                 <TableCell align="right" sx={{ fontWeight: 700 }}>{fmtInt(grandTotalFinal)}</TableCell>
                                             </TableRow>
@@ -646,7 +646,7 @@ export default function IFTA() {
                                                 <TableCell sx={{ fontWeight: 600 }}>{trip.trip_number}</TableCell>
                                                 <TableCell>{fmtDate(trip.creation_date)}</TableCell>
                                                 <TableCell>{fmtDate(trip.return_date)}</TableCell>
-                                                <TableCell align="right">{fmtInt(trip.total)}</TableCell>
+                                                <TableCell align="right">{fmt(trip.total)}</TableCell>
                                             </TableRow>
                                         ))}
                                     </TableBody>
