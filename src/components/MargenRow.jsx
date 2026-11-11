@@ -12,7 +12,6 @@ export const MargenRow = ({ trip }) => {
     const currentMargin = trip.totalMargin;
     const isMarginPositive = currentMargin >= 0;
     
-    const isPaid = trip.isFullyPaid; 
     const isDieselOk = trip.isDieselOk; 
     const isDriverPaid = trip.isDriverPaid; 
 
@@ -25,14 +24,10 @@ export const MargenRow = ({ trip }) => {
             
             <TableCell align="right">
                 <Stack direction="row" alignItems="center" justifyContent="flex-end" spacing={1}>
-                    <Tooltip title={isPaid ? "Viaje Cobrado (Pagado)" : "Pendiente de Cobro"}>
-                        {isPaid ? (
-                            <CheckCircleIcon color="success" fontSize="small" />
-                        ) : (
-                            <CancelIcon color="error" fontSize="small" />
-                        )}
+                    <Tooltip title="Total Rate de Ventas">
+                        <CheckCircleIcon color="success" fontSize="small" />
                     </Tooltip>
-                    <span>{money(trip.tarifa_pagada)}</span>
+                    <span>{money(trip.total_rate)}</span>
                 </Stack>
             </TableCell>
             

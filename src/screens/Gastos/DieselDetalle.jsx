@@ -3,7 +3,8 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
     Button, Box, Typography, Stack, CircularProgress, Chip,
-    Dialog, DialogTitle, DialogContent, DialogActions, Grid, TextField, InputAdornment
+    Dialog, DialogTitle, DialogContent, DialogActions, Grid, TextField, InputAdornment,
+    Switch, Tooltip
 } from '@mui/material';
 
 // Íconos
@@ -79,7 +80,8 @@ const DieselDetalle = () => {
           periodo: t.periodo,
           // 🚨 FORZAMOS a evaluar matemáticamente que sea 1. Esto mata el bug fantasma.
           is_manual: Number(t.is_manual) === 1, 
-          created_by: t.created_by || '' 
+          created_by: t.created_by || '',
+          usar_fleetone: Number(t.usar_fleetone ?? 1) === 1
         }));
 
         setRegistros(formatted);
@@ -88,6 +90,30 @@ const DieselDetalle = () => {
   }, [apiHost, tripId]);
 
   useEffect(() => { fetchDiesel(); }, [fetchDiesel]);
+
+  const [guardandoFuente, setGuardandoFuente] = useState({});
+
+  const handleToggleFuente = async (row) => {
+    const usarFleetone = !row.usar_fleetone;
+    setRegistros(prev => prev.map(r => r.id === row.id ? { ...r, usar_fleetone: usarFleetone } : r));
+    setGuardandoFuente(prev => ({ ...prev, [row.id]: true }));
+    try {
+      const fd = new FormData();
+      fd.append('op', 'set_diesel_usar_fleetone');
+      fd.append('id', row.id);
+      fd.append('usar_fleetone', usarFleetone ? '1' : '0');
+      fd.append('actualizado_por', user?.name || 'Administrador');
+      const response = await fetch(`${apiHost}/formularios.php`, { method: 'POST', body: fd });
+      const data = await response.json();
+      if (data.status !== 'success') throw new Error(data.message || 'No se pudo guardar.');
+    } catch (error) {
+      console.error('Error al cambiar la fuente del diesel:', error);
+      setRegistros(prev => prev.map(r => r.id === row.id ? { ...r, usar_fleetone: row.usar_fleetone } : r));
+      Swal.fire('Error', 'No se pudo cambiar de dónde toma Margen el costo de este registro.', 'error');
+    } finally {
+      setGuardandoFuente(prev => ({ ...prev, [row.id]: false }));
+    }
+  };
 
   const handleVer = (id, trip_id) => {
     navigate(`/editor-diesel/${id}/${trip_id}`);
@@ -213,6 +239,7 @@ const DieselDetalle = () => {
                     <TableCell sx={{ fontWeight: 600 }}>Registrado por</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>State</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Fleet One</TableCell>
+                    <TableCell sx={{ fontWeight: 600, textAlign: 'center' }}>Margen usa</TableCell>
                     <TableCell sx={{ fontWeight: 600, textAlign: 'center' }}>Actions</TableCell>
                   </TableRow>
                 </TableHead>
@@ -220,7 +247,7 @@ const DieselDetalle = () => {
                 <TableBody>
                   {registros.length === 0 ? (
                       <TableRow>
-                          <TableCell colSpan={11} align="center">
+                          <TableCell colSpan={12} align="center">
                               <Typography color="text.secondary" sx={{ py: 3 }}>No hay registros para este viaje.</Typography>
                           </TableCell>
                       </TableRow>
@@ -254,6 +281,21 @@ const DieselDetalle = () => {
                           
                           <TableCell>{formatCellData(row.estado)}</TableCell>
                           <TableCell>{formatCellData(row.fleetone)}</TableCell>
+                          <TableCell align="center">
+                              <Tooltip title={row.usar_fleetone ? 'Margen toma el Fleet One de este registro' : 'Margen toma el Total de este registro'}>
+                                  <Stack direction="row" alignItems="center" justifyContent="center" spacing={0.5}>
+                                      <Switch
+                                          size="small"
+                                          checked={row.usar_fleetone}
+                                          disabled={!!guardandoFuente[row.id]}
+                                          onChange={() => handleToggleFuente(row)}
+                                      />
+                                      <Typography variant="body2" sx={{ minWidth: 60, textAlign: 'left' }}>
+                                          {row.usar_fleetone ? 'Fleet One' : 'Total'}
+                                      </Typography>
+                                  </Stack>
+                              </Tooltip>
+                          </TableCell>
                           <TableCell align="center">
                               <Button variant="contained" size="small" onClick={() => handleVer(row.id, row.trip_id)} sx={{ textTransform: 'none' }}>
                                   Edit
