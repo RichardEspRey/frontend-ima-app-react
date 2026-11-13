@@ -5,6 +5,8 @@ import {
   PAIS_REGISTRO,
   esquemaResumenViaje,
   identificadorViaje,
+  PERIODO_FISCAL,
+  periodosDe,
   filtrarResumen,
   totalDe,
   pendientesDe,
@@ -199,5 +201,38 @@ describe("usaFleetone", () => {
     expect(usaFleetone({ usar_fleetone: 0 })).toBe(false)
     expect(usaFleetone({ usar_fleetone: "0" })).toBe(false)
     expect(usaFleetone({ usar_fleetone: "1" })).toBe(true)
+  })
+})
+
+describe("filtrarResumen por periodo fiscal", () => {
+  const VIAJES = [
+    { trip_id: "1", periodo: "Q2" },
+    { trip_id: "2", periodo: "Q3,Q2" },
+    { trip_id: "3", periodo: "Q2," },
+    { trip_id: "4", periodo: "" },
+    { trip_id: "5", periodo: null },
+    { trip_id: "6", periodo: "Q4" },
+  ]
+  const ids = (filas) => filas.map((fila) => fila.trip_id)
+
+  it("separa los periodos de un viaje que cargó en dos trimestres", () => {
+    expect(periodosDe(VIAJES[1])).toEqual(["Q3", "Q2"])
+    expect(periodosDe(VIAJES[2])).toEqual(["Q2", ""])
+    expect(periodosDe(VIAJES[4])).toEqual([""])
+  })
+
+  it("un viaje aparece en cada trimestre en el que cargó", () => {
+    expect(ids(filtrarResumen(VIAJES, { periodo: PERIODO_FISCAL.Q2 }))).toEqual(["1", "2", "3"])
+    expect(ids(filtrarResumen(VIAJES, { periodo: PERIODO_FISCAL.Q3 }))).toEqual(["2"])
+    expect(ids(filtrarResumen(VIAJES, { periodo: PERIODO_FISCAL.Q1 }))).toEqual([])
+  })
+
+  it("los vacíos son los viajes con alguna carga sin periodo", () => {
+    expect(ids(filtrarResumen(VIAJES, { periodo: PERIODO_FISCAL.SIN_PERIODO }))).toEqual(["3", "4", "5"])
+  })
+
+  it("sin periodo elegido no filtra", () => {
+    expect(filtrarResumen(VIAJES)).toHaveLength(6)
+    expect(filtrarResumen(VIAJES, { periodo: PERIODO_FISCAL.TODOS })).toHaveLength(6)
   })
 })

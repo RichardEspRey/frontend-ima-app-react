@@ -139,6 +139,7 @@ const DIESEL = {
   tituloEditor: "Diesel Log Editor",
   conPendientes: true,
   conPaginacion: true,
+  conFiltroPeriodo: true,
   /** Las dos pestañas del resumen de diesel, por conciliar y conciliado. */
   pestanas: [
     { etiqueta: "Pendientes", filtro: (fila) => Number(fila?.fleetone_pending_count ?? 0) > 0 },

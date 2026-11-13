@@ -4,8 +4,8 @@ IFTA: millas recorridas y galones comprados por estado de EUA, por periodo y con
 
 ## Contenido
 
-- `api/ifta.js` — `obtenerPeriodosIfta`, `obtenerTotalesPorEstado`, `obtenerViajesIfta`, `usePeriodosIfta`, `useTotalesPorEstado`
-- `model/ifta.js` — `esquemaPeriodoIfta`, `esquemaTotalEstado`, `rendimientoEstado`, `totalesIfta`, `agruparPorAnio`, `normalizarLista`, `PERIODO_VACIO`, `etiquetaPeriodo`, `filtrosTotalesIfta`, `totalConAjuste`, `periodosDisponibles`, `filtrarPeriodos`, `llavePeriodo`
+- `api/ifta.js` — `llavePeriodosIfta`, `obtenerPeriodosIfta`, `obtenerTotalesPorEstado`, `obtenerViajesIfta`, `usePeriodosIfta`, `useTotalesPorEstado`
+- `model/ifta.js` — `esquemaPeriodoIfta`, `esquemaTotalEstado`, `rendimientoEstado`, `totalesIfta`, `agruparPorAnio`, `normalizarLista`, `PERIODO_VACIO`, `etiquetaPeriodo`, `anioCorto`, `anioConsultable`, `describirFiltrosTotales`, `describirFiltrosPeriodos`, `filtrosTotalesIfta`, `totalConAjuste`, `periodosDisponibles`, `filtrarPeriodos`, `llavePeriodo`
 
 Pruebas: `ifta.test.js`, `filtros.test.js`.
 

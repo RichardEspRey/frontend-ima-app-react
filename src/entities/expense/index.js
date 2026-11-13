@@ -2,6 +2,8 @@ export { TIPO_REGISTRO, CAMPO_RESPUESTA, CATALOGO_REGISTRO, descriptorDe } from 
 
 export {
   PAIS_REGISTRO,
+  PERIODO_FISCAL,
+  periodosDe,
   esquemaResumenViaje,
   identificadorViaje,
   filtrarResumen,

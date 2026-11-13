@@ -1,13 +1,21 @@
 import { useQuery } from "@tanstack/react-query"
 import { ENDPOINTS, postLista } from "../../../shared/api"
-import { esquemaPeriodoIfta, esquemaTotalEstado, normalizarLista } from "../model/ifta"
+import { anioCorto, esquemaPeriodoIfta, esquemaTotalEstado, normalizarLista } from "../model/ifta"
 
 /**
- * Llave de caché de los periodos IFTA.
+ * Llave de caché de los periodos IFTA, que sirve de prefijo para invalidarlos todos.
  *
  * @type {Array.<string>}
  */
 export const LLAVE_PERIODOS_IFTA = ["ifta", "periodos"]
+
+/**
+ * Llave de caché de los periodos de un año.
+ *
+ * @param {string} [anio] El año, de dos o cuatro dígitos; vacío son todos.
+ * @returns {Array} La llave para `useQuery`.
+ */
+export const llavePeriodosIfta = (anio) => [...LLAVE_PERIODOS_IFTA, anioCorto(anio)]
 
 /**
  * Llave de caché de los totales por estado.
@@ -25,12 +33,17 @@ export const llaveTotalesIfta = (filtros) => ["ifta", "totales", filtros ?? {}]
  *
  * @endpoint POST IFTA.php · op=periodos
  * @param {object} [opciones] Ajustes de la petición.
+ * @param {string} [opciones.anio] Año a traer, de dos o cuatro dígitos; vacío son todos.
  * @param {AbortSignal} [opciones.signal] Señal de cancelación.
  * @returns {Promise.<Array>} Los periodos normalizados.
  * @throws {ApiError} Si la API falla.
  */
 export async function obtenerPeriodosIfta(opciones = {}) {
-  const filas = await postLista(ENDPOINTS.ifta, "periodos", { signal: opciones.signal })
+  const anio = anioCorto(opciones.anio)
+  const filas = await postLista(ENDPOINTS.ifta, "periodos", {
+    payload: anio ? { year: anio } : {},
+    signal: opciones.signal,
+  })
   const { validos } = normalizarLista(filas, esquemaPeriodoIfta)
   return validos
 }
@@ -89,12 +102,13 @@ export function obtenerViajesIfta({ estado, desde, hasta, signal } = {}) {
 /**
  * Periodos IFTA, cacheados. Cambian poco: se cachean más tiempo.
  *
+ * @param {string} [anio] Año a traer; vacío son todos.
  * @returns {object} El resultado de `useQuery`.
  */
-export function usePeriodosIfta() {
+export function usePeriodosIfta(anio) {
   return useQuery({
-    queryKey: LLAVE_PERIODOS_IFTA,
-    queryFn: ({ signal }) => obtenerPeriodosIfta({ signal }),
+    queryKey: llavePeriodosIfta(anio),
+    queryFn: ({ signal }) => obtenerPeriodosIfta({ anio, signal }),
     staleTime: 30 * 60 * 1000,
   })
 }

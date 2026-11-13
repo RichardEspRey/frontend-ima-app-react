@@ -110,6 +110,73 @@ export const PERIODO_VACIO = "__vacio__"
 export const etiquetaPeriodo = (periodo) => periodo || "Vacío"
 
 /**
+ * El año en dos dígitos, como lo guarda la base y lo espera `IFTA.php`.
+ *
+ * @param {string} [anio] El año capturado, de dos o cuatro dígitos.
+ * @returns {string} Los dos últimos dígitos, o `""` si no hay año.
+ */
+export const anioCorto = (anio) => String(anio ?? "").trim().slice(-2)
+
+/**
+ * Indica si el año capturado ya se puede consultar: vacío, que es «todos», o
+ * escrito completo. A medio teclear —`2`, `202`— todavía no es un año.
+ *
+ * @param {string} [anio] El año capturado.
+ * @returns {boolean} `true` si se puede pedir con él.
+ */
+export function anioConsultable(anio) {
+  const texto = String(anio ?? "").trim()
+  return texto.length === 0 || texto.length === 2 || texto.length === 4
+}
+
+/**
+ * Los filtros de los totales por estado, en palabras, para el encabezado del PDF.
+ *
+ * @param {object} filtros Lo capturado en pantalla, igual que en `filtrosTotalesIfta`.
+ * @param {boolean} filtros.porViajes Si se filtra por viajes en vez de por fechas.
+ * @param {string} [filtros.desde] Fecha inicial, `YYYY-MM-DD`.
+ * @param {string} [filtros.hasta] Fecha final, `YYYY-MM-DD`.
+ * @param {string} [filtros.viajeDesde] Primer número de viaje.
+ * @param {string} [filtros.viajeHasta] Último número de viaje.
+ * @param {string} [filtros.anio] Año del rango de viajes.
+ * @returns {string} Una línea como `Viajes: del viaje 200, al viaje 210, año 2026`.
+ */
+export function describirFiltrosTotales({ porViajes, desde, hasta, viajeDesde, viajeHasta, anio }) {
+  if (porViajes) {
+    const partes = [
+      [String(viajeDesde ?? "").trim(), "del viaje"],
+      [String(viajeHasta ?? "").trim(), "al viaje"],
+      [String(anio ?? "").trim(), "año"],
+    ]
+      .filter(([valor]) => valor)
+      .map(([valor, etiqueta]) => `${etiqueta} ${valor}`)
+    return partes.length ? `Viajes: ${partes.join(", ")}` : "Viajes: todos"
+  }
+
+  if (!desde && !hasta) return "Fechas: todas"
+  return `Fechas: ${desde || "inicio"} a ${hasta || "hoy"}`
+}
+
+/**
+ * Los filtros de los registros por periodo, en palabras, para el encabezado del PDF.
+ *
+ * @param {object} filtros Los mismos que recibe `filtrarPeriodos`.
+ * @param {string} [filtros.periodo] El periodo, o `PERIODO_VACIO`.
+ * @param {string} [filtros.estado] Texto buscado en el estado.
+ * @param {string} [filtros.anio] El año capturado.
+ * @returns {string} Una línea como `Periodo: Q2   ·   Estado: TX   ·   Año: 2026`.
+ */
+export function describirFiltrosPeriodos({ periodo, estado, anio } = {}) {
+  const estadoBuscado = String(estado ?? "").trim().toUpperCase()
+  const anioBuscado = String(anio ?? "").trim()
+  return [
+    `Periodo: ${!periodo ? "todos" : periodo === PERIODO_VACIO ? "Vacío" : periodo}`,
+    `Estado: ${estadoBuscado || "todos"}`,
+    `Año: ${anioBuscado || "todos"}`,
+  ].join("   ·   ")
+}
+
+/**
  * Los filtros de los totales por estado, listos para mandarse.
  *
  * Se filtra por rango de fechas o por rango de viajes, nunca por ambos. El
@@ -131,7 +198,7 @@ export function filtrosTotalesIfta({ porViajes, desde, hasta, viajeDesde, viajeH
     ? {
         trip_from: String(viajeDesde ?? "").trim(),
         trip_to: String(viajeHasta ?? "").trim(),
-        trip_year: String(anio ?? "").trim().slice(-2),
+        trip_year: anioCorto(anio),
       }
     : { date_from: desde ?? "", date_to: hasta ?? "" }
 
@@ -168,15 +235,16 @@ export function periodosDisponibles(registros = []) {
  * @param {object} filtros Los filtros; uno vacío no filtra.
  * @param {string} [filtros.periodo] El periodo, o `PERIODO_VACIO` para los que no tienen.
  * @param {string} [filtros.estado] Texto que debe contener el estado.
- * @param {string} [filtros.anio] Año exacto, como viene en `trip_year`.
+ * @param {string} [filtros.anio] Año, de dos o cuatro dígitos; `trip_year` viene en dos.
  * @returns {Array} Los registros que pasan.
  */
 export function filtrarPeriodos(registros = [], { periodo, estado, anio } = {}) {
   const estadoBuscado = String(estado ?? "").trim().toLowerCase()
+  const anioBuscado = anioCorto(anio)
   return registros.filter((r) => {
     const pasaPeriodo = !periodo || (periodo === PERIODO_VACIO ? !r.periodo : r.periodo === periodo)
     const pasaEstado = !estadoBuscado || r.estado.toLowerCase().includes(estadoBuscado)
-    const pasaAnio = !anio || r.trip_year === anio
+    const pasaAnio = !anioBuscado || anioCorto(r.trip_year) === anioBuscado
     return pasaPeriodo && pasaEstado && pasaAnio
   })
 }

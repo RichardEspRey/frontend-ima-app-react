@@ -9,7 +9,7 @@ Los gastos: los generales de Expense Manager (`save_expense.php`), los de viaje 
 - `model/dtops.js` — `MONTOS_DTOPS`, `DOCUMENTO_DTOPS`, `SUBCATEGORIA_DTOPS`, `PAIS_DTOPS`, `MONEDA_DTOPS`, `resolverClasificacionDtops`… (9)
 - `model/gastos.js` — `TODOS`, `renglonesDe`, `filtrarGastos`, `paisesDe`, `etiquetasDe`, `categoriasDeTipo`, `TIPO_GASTO_MANTENIMIENTO`, `llevaSubcategoria`… (11)
 - `model/orden.js` — `ORDEN_ACCESSORS`, `ordenarGastos`
-- `model/registros.js` — `PAIS_REGISTRO`, `esquemaResumenViaje`, `identificadorViaje`, `filtrarResumen`, `totalDe`, `pendientesDe`… (9)
+- `model/registros.js` — `PAIS_REGISTRO`, `PERIODO_FISCAL`, `periodosDe`, `esquemaResumenViaje`, `identificadorViaje`, `filtrarResumen`… (11)
 - `model/tipos.js` — `TIPO_REGISTRO`, `CAMPO_RESPUESTA`, `CATALOGO_REGISTRO`, `descriptorDe`
 - `model/valores.js` — `esGastoMXN`, `totalDeDetalles`, `totalUSD`, `totalMXN`, `tipoGastoPrincipal`
 

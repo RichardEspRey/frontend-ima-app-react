@@ -7,6 +7,10 @@ import {
   periodosDisponibles,
   filtrarPeriodos,
   llavePeriodo,
+  anioCorto,
+  anioConsultable,
+  describirFiltrosTotales,
+  describirFiltrosPeriodos,
 } from "../model/ifta"
 
 const REGISTROS = [
@@ -64,5 +68,52 @@ describe("periodos", () => {
     expect(etiquetaPeriodo("")).toBe("Vacío")
     expect(etiquetaPeriodo("Q3")).toBe("Q3")
     expect(llavePeriodo(REGISTROS[1])).toBe("TX||26")
+  })
+})
+
+describe("año", () => {
+  it("se manda y se compara en dos dígitos", () => {
+    expect(anioCorto("2026")).toBe("26")
+    expect(anioCorto(" 26 ")).toBe("26")
+    expect(anioCorto("")).toBe("")
+    expect(anioCorto(undefined)).toBe("")
+  })
+
+  it("filtra igual con el año de dos o de cuatro dígitos", () => {
+    expect(filtrarPeriodos(REGISTROS, { anio: "2026" })).toHaveLength(3)
+    expect(filtrarPeriodos(REGISTROS, { anio: "26" })).toHaveLength(3)
+    expect(filtrarPeriodos(REGISTROS, { anio: " 2025 " })).toEqual([REGISTROS[2]])
+    expect(filtrarPeriodos(REGISTROS, { anio: "  " })).toHaveLength(4)
+  })
+
+  it("a medio teclear todavía no se consulta", () => {
+    expect(anioConsultable("")).toBe(true)
+    expect(anioConsultable("26")).toBe(true)
+    expect(anioConsultable("2026")).toBe(true)
+    expect(anioConsultable("2")).toBe(false)
+    expect(anioConsultable("202")).toBe(false)
+  })
+})
+
+describe("encabezados del PDF", () => {
+  it("describe el rango de viajes con lo que haya capturado", () => {
+    expect(
+      describirFiltrosTotales({ porViajes: true, viajeDesde: " 200 ", viajeHasta: "210", anio: "2026" }),
+    ).toBe("Viajes: del viaje 200, al viaje 210, año 2026")
+    expect(describirFiltrosTotales({ porViajes: true, anio: "2026" })).toBe("Viajes: año 2026")
+    expect(describirFiltrosTotales({ porViajes: true })).toBe("Viajes: todos")
+  })
+
+  it("describe el rango de fechas, abierto por cualquiera de los dos lados", () => {
+    expect(describirFiltrosTotales({ porViajes: false })).toBe("Fechas: todas")
+    expect(describirFiltrosTotales({ porViajes: false, desde: "2026-01-01" })).toBe("Fechas: 2026-01-01 a hoy")
+    expect(describirFiltrosTotales({ porViajes: false, hasta: "2026-03-31" })).toBe("Fechas: inicio a 2026-03-31")
+  })
+
+  it("describe los filtros de los registros por periodo", () => {
+    expect(describirFiltrosPeriodos({})).toBe("Periodo: todos   ·   Estado: todos   ·   Año: todos")
+    expect(describirFiltrosPeriodos({ periodo: PERIODO_VACIO, estado: " tx ", anio: "2026" })).toBe(
+      "Periodo: Vacío   ·   Estado: TX   ·   Año: 2026",
+    )
   })
 })

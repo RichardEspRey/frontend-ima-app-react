@@ -18,6 +18,7 @@ import { Pestanas } from '../../shared/ui';
 import {
     PERIODO_VACIO, etiquetaPeriodo, filtrosTotalesIfta, totalConAjuste,
     periodosDisponibles, filtrarPeriodos, llavePeriodo, totalesIfta,
+    anioCorto, anioConsultable, describirFiltrosTotales, describirFiltrosPeriodos,
 } from '../../entities/ifta';
 
 const apiHost = import.meta.env.VITE_API_HOST;
@@ -25,6 +26,7 @@ const apiHost = import.meta.env.VITE_API_HOST;
 const fmt = (n) => Number(n).toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 const fmtDate = (d) => d ? d.split('T')[0] : '—';
 const fmtInt = (n) => Math.round(Number(n) || 0).toLocaleString('en-US');
+const anioActual = () => String(new Date().getFullYear());
 
 /**
  * IFTA: millas recorridas y combustible cargado por estado.
@@ -76,18 +78,20 @@ export default function IftaPage() {
     const [filterTo, setFilterTo]           = useState('');
     const [filterTripFrom, setFilterTripFrom] = useState('');
     const [filterTripTo, setFilterTripTo]     = useState('');
-    const [filterTripYear, setFilterTripYear] = useState(String(new Date().getFullYear()));
+    const [filterTripYear, setFilterTripYear] = useState(anioActual);
 
     const [appliedFilters, setAppliedFilters] = useState({});
 
-    const buildFilters = () => filtrosTotalesIfta({
+    const filtrosEnPantalla = {
         porViajes: filterByTrips,
         desde: filterFrom,
         hasta: filterTo,
         viajeDesde: filterTripFrom,
         viajeHasta: filterTripTo,
         anio: filterTripYear,
-    });
+    };
+
+    const buildFilters = () => filtrosTotalesIfta(filtrosEnPantalla);
 
     const appendFilters = (fd, filters) => {
         Object.entries(filters).forEach(([k, v]) => { if (v) fd.append(k, v); });
@@ -105,12 +109,14 @@ export default function IftaPage() {
             if (json.status === 'success') {
                 setAppliedFilters(filters);
                 setTotals(json.data);
+                return json.data;
             }
         } catch (err) {
             console.error('IFTA fetchTotals:', err);
         } finally {
             setLoadingTotals(false);
         }
+        return null;
     };
 
     useEffect(() => {
@@ -157,7 +163,15 @@ export default function IftaPage() {
         totals.reduce((sum, r) => sum + totalConAjuste(r, ajustes), 0),
     [totals, ajustes]);
 
-    const printTotalsPDF = () => {
+    const printTotalsPDF = async () => {
+        let data = totals;
+        let ajustesDelPdf = ajustes;
+        if (JSON.stringify(buildFilters()) !== JSON.stringify(appliedFilters)) {
+            data = await fetchTotals();
+            if (!data) return;
+            ajustesDelPdf = {};
+        }
+
         const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'letter' });
         const margin = 40;
         const pageW = doc.internal.pageSize.getWidth();
@@ -166,11 +180,15 @@ export default function IftaPage() {
         doc.setFont('helvetica', 'bold');
         doc.text('IFTA — Millas', pageW / 2, margin, { align: 'center' });
 
-        const rows = totals.map(r => [r.state, fmt(totalFinal(r))]);
-        rows.push(['TOTAL', fmt(grandTotalFinal)]);
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'normal');
+        doc.text(describirFiltrosTotales(filtrosEnPantalla), pageW / 2, margin + 22, { align: 'center' });
+
+        const rows = data.map(r => [r.state, fmtInt(totalConAjuste(r, ajustesDelPdf))]);
+        rows.push(['TOTAL', fmtInt(data.reduce((sum, r) => sum + totalConAjuste(r, ajustesDelPdf), 0))]);
 
         autoTable(doc, {
-            startY: margin + 34,
+            startY: margin + 40,
             margin: { left: margin, right: margin, top: margin, bottom: margin },
             head: [['Estado', 'Total Mi']],
             body: rows,
@@ -196,13 +214,14 @@ export default function IftaPage() {
     const [loadingPeriodos, setLoadingPeriodos] = useState(false);
     const [filterPeriodo, setFilterPeriodo]     = useState('');
     const [filterPeriodoEstado, setFilterPeriodoEstado] = useState('');
-    const [filterYear, setFilterYear] = useState('');
+    const [filterYear, setFilterYear] = useState(anioActual);
 
     const fetchPeriodos = async () => {
         setLoadingPeriodos(true);
         try {
             const fd = new FormData();
             fd.append('op', 'periodos');
+            if (anioCorto(filterYear)) fd.append('year', anioCorto(filterYear));
             const res  = await fetch(`${apiHost}/IFTA.php`, { method: 'POST', body: fd });
             const json = await res.json();
             if (json.status === 'success') setPeriodos(json.data);
@@ -214,8 +233,10 @@ export default function IftaPage() {
     };
 
     useEffect(() => {
-        if (tabValue === 2) fetchPeriodos();
-    }, [tabValue]);
+        if (tabValue !== 2 || !anioConsultable(filterYear)) return undefined;
+        const espera = setTimeout(fetchPeriodos, 500);
+        return () => clearTimeout(espera);
+    }, [tabValue, filterYear]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const periodosUnicos = useMemo(() => periodosDisponibles(periodos), [periodos]);
 
@@ -264,7 +285,14 @@ export default function IftaPage() {
 
         doc.setFontSize(16);
         doc.setFont('helvetica', 'bold');
-        doc.text('IFTA — Galones', pageW / 2, margin, { align: 'center' });
+        doc.text('IFTA — Registros', pageW / 2, margin, { align: 'center' });
+
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.text(
+            describirFiltrosPeriodos({ periodo: filterPeriodo, estado: filterPeriodoEstado, anio: filterYear }),
+            pageW / 2, margin + 18, { align: 'center' },
+        );
 
         const rows = filteredPeriodos.map(r => [
             r.estado,
@@ -275,7 +303,7 @@ export default function IftaPage() {
         rows.push(['TOTAL', '', '', fmtInt(grandTotalPeriodos)]);
 
         autoTable(doc, {
-            startY: margin + 24,
+            startY: margin + 32,
             margin: { left: margin, right: margin, top: margin, bottom: margin },
             head: [['Estado', 'Periodo', 'Año', 'Total Galones']],
             body: rows,
@@ -543,7 +571,7 @@ export default function IftaPage() {
                                                             slotProps={{ htmlInput: { step: 'any', style: { textAlign: 'right' } } }}
                                                         />
                                                     </TableCell>
-                                                    <TableCell align="right" sx={{ fontWeight: 600 }}>{fmt(totalFinal(row))}</TableCell>
+                                                    <TableCell align="right" sx={{ fontWeight: 600 }}>{fmtInt(totalFinal(row))}</TableCell>
                                                 </TableRow>
                                                 </Fragment>
                                             ))}
@@ -551,7 +579,7 @@ export default function IftaPage() {
                                                 <TableCell sx={{ fontWeight: 700 }}>TOTAL</TableCell>
                                                 <TableCell align="right" sx={{ fontWeight: 700 }}>{fmt(grandTotal)}</TableCell>
                                                 <TableCell />
-                                                <TableCell align="right" sx={{ fontWeight: 700 }}>{fmt(grandTotalFinal)}</TableCell>
+                                                <TableCell align="right" sx={{ fontWeight: 700 }}>{fmtInt(grandTotalFinal)}</TableCell>
                                             </TableRow>
                                         </>
                                     )}
@@ -644,7 +672,7 @@ export default function IftaPage() {
                                 onClick={() => {
                                     setFilterPeriodo('');
                                     setFilterPeriodoEstado('');
-                                    setFilterYear('');
+                                    setFilterYear(anioActual());
                                 }}
                             >
                                 Limpiar

@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom"
 
 import {
   PAIS_REGISTRO,
+  PERIODO_FISCAL,
   filtrarResumen,
   identificadorViaje,
   useResumen,
@@ -17,6 +18,15 @@ const PAISES = [
   { valor: PAIS_REGISTRO.TODOS, etiqueta: "Todos" },
   { valor: PAIS_REGISTRO.USA, etiqueta: "USA" },
   { valor: PAIS_REGISTRO.MEXICO, etiqueta: "México" },
+]
+
+const PERIODOS = [
+  { valor: PERIODO_FISCAL.TODOS, etiqueta: "Todos" },
+  { valor: PERIODO_FISCAL.Q1, etiqueta: "Q1" },
+  { valor: PERIODO_FISCAL.Q2, etiqueta: "Q2" },
+  { valor: PERIODO_FISCAL.Q3, etiqueta: "Q3" },
+  { valor: PERIODO_FISCAL.Q4, etiqueta: "Q4" },
+  { valor: PERIODO_FISCAL.SIN_PERIODO, etiqueta: "Vacíos" },
 ]
 
 /**
@@ -83,6 +93,7 @@ export function ResumenPorViaje({ descriptor }) {
   const navigate = useNavigate()
 
   const [pais, setPais] = useState(PAIS_REGISTRO.TODOS)
+  const [periodo, setPeriodo] = useState(PERIODO_FISCAL.TODOS)
   const [busqueda, setBusqueda] = useState("")
   const [pestana, setPestana] = useState(0)
   const [pagina, setPagina] = useState(0)
@@ -95,8 +106,8 @@ export function ResumenPorViaje({ descriptor }) {
     const porPestana = descriptor.pestanas
       ? filas.filter(descriptor.pestanas[pestana].filtro)
       : filas
-    return filtrarResumen(porPestana, { pais, busqueda })
-  }, [filas, descriptor.pestanas, pestana, pais, busqueda])
+    return filtrarResumen(porPestana, { pais, busqueda, periodo })
+  }, [filas, descriptor.pestanas, pestana, pais, busqueda, periodo])
 
   const ultimaPagina = Math.max(0, Math.ceil(visibles.length / porPagina) - 1)
   const paginaActual = Math.min(pagina, ultimaPagina)
@@ -149,6 +160,16 @@ export function ResumenPorViaje({ descriptor }) {
           }}
           sx={{ width: 300 }}
         />
+        {descriptor.conFiltroPeriodo && (
+          <Selector
+            valor={periodo}
+            onChange={(valor) => {
+              setPeriodo(valor)
+              setPagina(0)
+            }}
+            opciones={PERIODOS}
+          />
+        )}
         <BotonActualizar
           onActualizar={actualizar}
           actualizando={actualizando || isFetching}

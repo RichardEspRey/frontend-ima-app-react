@@ -7,6 +7,10 @@ export {
   normalizarLista,
   PERIODO_VACIO,
   etiquetaPeriodo,
+  anioCorto,
+  anioConsultable,
+  describirFiltrosTotales,
+  describirFiltrosPeriodos,
   filtrosTotalesIfta,
   totalConAjuste,
   periodosDisponibles,
@@ -16,6 +20,7 @@ export {
 
 export {
   LLAVE_PERIODOS_IFTA,
+  llavePeriodosIfta,
   llaveTotalesIfta,
   obtenerPeriodosIfta,
   obtenerTotalesPorEstado,
