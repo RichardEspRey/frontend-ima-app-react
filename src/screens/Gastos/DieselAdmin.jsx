@@ -93,10 +93,11 @@ const DieselAdmin = () => {
         result = result.filter(r => r.country_code === countryFilter);
     }
 
-    if (periodoFilter === 'EMPTY') {
-        result = result.filter(r => !r.periodo || String(r.periodo).trim() === '');
-    } else if (periodoFilter) {
-        result = result.filter(r => r.periodo === periodoFilter);
+    if (periodoFilter) {
+        const buscado = periodoFilter === 'EMPTY' ? '' : periodoFilter;
+        result = result.filter(r =>
+            String(r.periodo ?? '').split(',').map(p => p.trim()).includes(buscado)
+        );
     }
 
     const searchLower = search.toLowerCase();

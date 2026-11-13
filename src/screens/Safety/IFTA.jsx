@@ -329,14 +329,13 @@ export default function IFTA() {
             r.estado,
             fmtPeriodo(r.periodo),
             r.trip_year ?? '—',
-            fmtInt(r.total_millas),
+            fmtInt(r.galones),
         ]);
         rows.push(['TOTAL', '', '', fmtInt(grandTotalPeriodos)]);
 
         autoTable(doc, {
             startY: margin + 32,
             margin: { left: margin, right: margin, top: margin, bottom: margin },
-            head: [['Estado', 'Periodo', 'Año', 'Total Galones']],
             head: [['Estado', 'Periodo', 'Año', 'Total Galones']],
             body: rows,
             styles: { fontSize: 9, cellPadding: 5 },
