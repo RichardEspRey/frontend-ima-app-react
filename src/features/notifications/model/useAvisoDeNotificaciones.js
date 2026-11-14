@@ -1,9 +1,15 @@
 import { useEffect, useRef } from "react"
+import { useQueryClient } from "@tanstack/react-query"
 import { useAvisosDeInspecciones, useRecibeAvisoInspeccion } from "../../../entities/maintenance-point"
-import { sinAnunciar, useNotificacionesNuevas } from "../../../entities/notification"
+import { llaveNotificaciones, sinAnunciar, useNotificacionesNuevas } from "../../../entities/notification"
+import { intervaloSegunVentana } from "../../../shared/lib/sondeo"
 import { notify } from "../../../shared/ui"
 import sonidoNotificacion from "../../../assets/sounds/update.mp3"
-import { INTERVALO_INSPECCIONES_MS, INTERVALO_SUSCRIPCION_MS } from "./useCampanaNotificaciones"
+import {
+  INTERVALO_INSPECCIONES_MS,
+  INTERVALO_INSPECCIONES_OCULTA_MS,
+  INTERVALO_SUSCRIPCION_MS,
+} from "./useCampanaNotificaciones"
 
 /**
  * Reproduce el sonido de notificación sin arriesgar la aplicación.
@@ -31,7 +37,9 @@ function sonar() {
  *
  * Se monta una sola vez, en el layout, y no pinta nada: anuncia lo que el
  * servidor entrega como nuevo (`getNew`). Como es el servidor el que lleva la
- * cuenta, al abrir la app no se repiten los BL que ya se anunciaron.
+ * cuenta, al abrir la app no se repiten los BL que ya se anunciaron. Es también
+ * el único que sondea: la campana lee su caché, y cuando llega algo nuevo se le
+ * invalida la lista para que la vuelva a pedir.
  *
  * Va como aviso flotante y no como diálogo a propósito. Una notificación llega
  * sola, sin que nadie la haya pedido, así que taparle la pantalla a quien está
@@ -53,13 +61,15 @@ function sonar() {
  * }
  */
 export function useAvisoDeNotificaciones(idUsuario) {
+  const queryClient = useQueryClient()
   const { data: notificaciones } = useNotificacionesNuevas(idUsuario)
   const recibeInspecciones = useRecibeAvisoInspeccion(idUsuario, {
     refetchInterval: INTERVALO_SUSCRIPCION_MS,
   })
   const { avisos: inspecciones, cargados } = useAvisosDeInspecciones({
     enabled: recibeInspecciones,
-    refetchInterval: INTERVALO_INSPECCIONES_MS,
+    refetchInterval: intervaloSegunVentana(INTERVALO_INSPECCIONES_MS, INTERVALO_INSPECCIONES_OCULTA_MS),
+    refetchIntervalInBackground: true,
   })
   const inspeccionesConocidas = useRef(null)
   const inspeccionesDe = useRef(idUsuario)
@@ -73,6 +83,11 @@ export function useAvisoDeNotificaciones(idUsuario) {
 
     sonar()
   }, [notificaciones])
+
+  useEffect(() => {
+    if (!notificaciones?.length) return
+    queryClient.invalidateQueries({ queryKey: llaveNotificaciones(idUsuario) })
+  }, [notificaciones, idUsuario, queryClient])
 
   useEffect(() => {
     if (inspeccionesDe.current !== idUsuario) {

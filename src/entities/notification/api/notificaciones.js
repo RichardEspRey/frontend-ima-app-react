@@ -1,17 +1,37 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { ENDPOINTS, post, postLista } from "../../../shared/api"
+import { intervaloSegunVentana } from "../../../shared/lib/sondeo"
 import { normalizarNotificaciones } from "../model/notificaciones"
 
 /**
  * Cada cuánto se le pregunta al servidor si hay notificaciones nuevas.
  *
- * Quince segundos es lo que ya usaba la app antes de este refactor. Se deja
- * igual para no cambiar dos cosas a la vez: si hay que ajustarlo, se ajusta
- * aquí y afecta a toda la aplicación.
+ * Eran quince segundos. Una máquina en reposo hacía doce peticiones por minuto
+ * entre esto, la campana y los permisos; treinta segundos sigue avisando a
+ * tiempo de un BL firmado y deja al servidor con la mitad de la carga.
  *
  * @type {number}
  */
-export const INTERVALO_NOTIFICACIONES_MS = 15000
+export const INTERVALO_NOTIFICACIONES_MS = 30_000
+
+/**
+ * Cada cuánto se pregunta por notificaciones nuevas con la ventana oculta.
+ *
+ * No se detiene: quien tiene la app minimizada cuenta con oír el aviso.
+ *
+ * @type {number}
+ */
+export const INTERVALO_NOTIFICACIONES_OCULTA_MS = 60_000
+
+/**
+ * Cada cuánto se vuelve a pedir la lista de la campana por si acaso.
+ *
+ * La lista solo cambia cuando llega algo nuevo, y eso ya la invalida; este
+ * intervalo es la red de seguridad, no el mecanismo.
+ *
+ * @type {number}
+ */
+export const INTERVALO_CAMPANA_MS = 5 * 60_000
 
 /**
  * Llave de caché de las notificaciones de una persona.
@@ -45,6 +65,10 @@ export async function obtenerNotificaciones({ idUsuario, signal }) {
 /**
  * Mantiene al día las notificaciones de una persona.
  *
+ * No sondea para enterarse de lo nuevo: de eso se encarga
+ * {@link useNotificacionesNuevas}, y quien anuncia una notificación invalida esta
+ * lista. Aquí solo queda un repaso cada {@link INTERVALO_CAMPANA_MS}.
+ *
  * Sustituye al `setInterval` que vivía dentro del layout. La diferencia que
  * importa no es de estilo:
  *
@@ -68,7 +92,7 @@ export function useNotificaciones(idUsuario) {
     queryKey: llaveNotificaciones(idUsuario),
     queryFn: ({ signal }) => obtenerNotificaciones({ idUsuario, signal }),
     enabled: Boolean(idUsuario),
-    refetchInterval: INTERVALO_NOTIFICACIONES_MS,
+    refetchInterval: INTERVALO_CAMPANA_MS,
     staleTime: 0,
     meta: { silencioso: true },
   })
@@ -105,7 +129,8 @@ export async function obtenerNotificacionesNuevas({ idUsuario, signal }) {
 }
 
 /**
- * Pregunta cada quince segundos si llegó algo nuevo para la persona.
+ * Pregunta cada {@link INTERVALO_NOTIFICACIONES_MS} si llegó algo nuevo para la
+ * persona, y más despacio —sin detenerse— con la ventana oculta.
  *
  * @param {string} [idUsuario] Identificador de la persona. Sin él no consulta nada.
  * @returns {object} El resultado de `useQuery`; `data` son las recién llegadas.
@@ -118,7 +143,8 @@ export function useNotificacionesNuevas(idUsuario) {
     queryKey: llaveNotificacionesNuevas(idUsuario),
     queryFn: ({ signal }) => obtenerNotificacionesNuevas({ idUsuario, signal }),
     enabled: Boolean(idUsuario),
-    refetchInterval: INTERVALO_NOTIFICACIONES_MS,
+    refetchInterval: intervaloSegunVentana(INTERVALO_NOTIFICACIONES_MS, INTERVALO_NOTIFICACIONES_OCULTA_MS),
+    refetchIntervalInBackground: true,
     staleTime: 0,
     meta: { silencioso: true },
   })

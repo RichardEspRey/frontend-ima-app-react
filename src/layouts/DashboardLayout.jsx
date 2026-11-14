@@ -8,6 +8,9 @@ import { useAuthStore } from '../store/useAuthStore';
 import { useAvisoDeNotificaciones } from '../features/notifications';
 import { COLOR } from '../shared/ui/tokens';
 import { ErrorBoundary } from '../shared/ui';
+import { sondear } from '../shared/lib/sondeo';
+
+const PERMISOS_MS = 5 * 60 * 1000;
 
 const DashboardLayout = () => {
   const { user, fetchPermissions } = useAuthStore();
@@ -18,11 +21,11 @@ const DashboardLayout = () => {
   useEffect(() => {
     if (!user?.id) return;
 
-    const intervalId = setInterval(() => {
-        fetchPermissions(user.id);
-    }, 15000);
-
-    return () => clearInterval(intervalId);
+    return sondear(() => fetchPermissions(user.id), {
+      visibleMs: PERMISOS_MS,
+      ocultoMs: null,
+      alIniciar: false,
+    });
   }, [user?.id, fetchPermissions]);
 
   return (

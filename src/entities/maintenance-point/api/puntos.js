@@ -441,16 +441,18 @@ export function useInspeccionesPorAtender({ refetchInterval } = {}) {
  *
  * @param {object} [opciones] Ajustes de la consulta.
  * @param {boolean} [opciones.enabled] Si se piden; quien no ve Reparaciones no los necesita.
- * @param {number} [opciones.refetchInterval] Cada cuánto se vuelven a pedir, en ms.
+ * @param {(number|Function)} [opciones.refetchInterval] Cada cuánto se vuelven a pedir, en ms.
+ * @param {boolean} [opciones.refetchIntervalInBackground] Si sigue pidiendo con la ventana oculta.
  * @returns {{avisos: Array.<object>, cargados: boolean}} Los avisos y si ya llegaron los dos lados.
  */
-export function useAvisosDeInspecciones({ enabled = true, refetchInterval } = {}) {
+export function useAvisosDeInspecciones({ enabled = true, refetchInterval, refetchIntervalInBackground } = {}) {
   const [camion, caja] = useQueries({
     queries: [UNIDAD.CAMION, UNIDAD.CAJA].map((lado) => ({
       queryKey: llaveInspecciones(lado),
       queryFn: ({ signal }) => obtenerInspeccionesMtto(lado, { signal }),
       enabled,
       refetchInterval,
+      refetchIntervalInBackground,
     })),
   })
 

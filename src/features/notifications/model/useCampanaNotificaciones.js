@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from "react"
+import { useQueryClient } from "@tanstack/react-query"
 
-import { agruparPorDia, sinAnunciar, useNotificaciones } from "../../../entities/notification"
+import { agruparPorDia, llaveNotificaciones, sinAnunciar, useNotificaciones } from "../../../entities/notification"
 import { useAvisosDeInspecciones, useRecibeAvisoInspeccion } from "../../../entities/maintenance-point"
 import { useNomenclaturasDeViajes } from "../../../entities/trip"
 import { useSesion } from "../../../shared/auth"
@@ -102,6 +103,14 @@ function guardarVistas(llave, vistas) {
 export const INTERVALO_INSPECCIONES_MS = 60000
 
 /**
+ * Cada cuánto se piden las inspecciones con la ventana oculta. No se detiene,
+ * porque el aviso suena y quien minimizó la app cuenta con oírlo.
+ *
+ * @type {number}
+ */
+export const INTERVALO_INSPECCIONES_OCULTA_MS = 120000
+
+/**
  * Cada cuánto se vuelve a pedir quién recibe el aviso de inspección.
  *
  * @type {number}
@@ -111,8 +120,9 @@ export const INTERVALO_SUSCRIPCION_MS = 300000
 /**
  * Lleva el estado de la campana de notificaciones.
  *
- * Se apoya en la misma consulta que el aviso emergente, así que las dos cosas
- * comparten una sola petición cada quince segundos en lugar de una cada una.
+ * No sondea por su cuenta: lee la misma caché que el aviso emergente, que es
+ * quien pregunta al servidor y quien refresca la lista cuando llega algo. Al
+ * abrir la campana se vuelve a pedir, para que lo que se ve esté al día.
  * Lo único propio de la campana es qué se ha leído y qué se abrió, que viven
  * en el navegador porque el backend no lo guarda. Lo que se abre se quita de la
  * campana para que no se acumule.
@@ -124,18 +134,14 @@ export const INTERVALO_SUSCRIPCION_MS = 300000
  */
 export function useCampanaNotificaciones() {
   const { usuario, esTotal } = useSesion()
-  const recibeInspecciones = useRecibeAvisoInspeccion(usuario?.id, {
-    refetchInterval: INTERVALO_SUSCRIPCION_MS,
-  })
+  const queryClient = useQueryClient()
+  const recibeInspecciones = useRecibeAvisoInspeccion(usuario?.id)
   const llave = llaveVistas(usuario?.id)
 
   const llaveDeOcultas = llaveOcultas(usuario?.id)
   const [ocultas, setOcultas] = useState(() => leerVistas(llaveDeOcultas))
   const { data: delServidor = [] } = useNotificaciones(usuario?.id)
-  const { avisos: inspecciones } = useAvisosDeInspecciones({
-    enabled: recibeInspecciones,
-    refetchInterval: INTERVALO_INSPECCIONES_MS,
-  })
+  const { avisos: inspecciones } = useAvisosDeInspecciones({ enabled: recibeInspecciones })
   const notificaciones = useMemo(
     () =>
       sinOcultas([...delServidor, ...inspecciones], ocultas).sort((a, b) =>
@@ -179,6 +185,11 @@ export function useCampanaNotificaciones() {
     [llaveDeOcultas],
   )
 
+  const refrescar = useCallback(
+    () => queryClient.invalidateQueries({ queryKey: llaveNotificaciones(usuario?.id) }),
+    [queryClient, usuario?.id],
+  )
+
   const estaLeida = useCallback((notificacion) => vistas.has(notificacion.id), [vistas])
 
   const viajeDe = useCallback(
@@ -198,6 +209,7 @@ export function useCampanaNotificaciones() {
     viajeDe,
     marcarTodasLeidas,
     ocultar,
+    refrescar,
     puedeAdministrar: esTotal,
   }
 }

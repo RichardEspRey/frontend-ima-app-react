@@ -107,7 +107,7 @@ function Renglon({ notificacion, viaje, leida, onAbrir }) {
 export function CampanaNotificaciones() {
   const navigate = useNavigate()
   const [ancla, setAncla] = useState(null)
-  const { grupos, sinLeer, filtro, setFiltro, estaLeida, viajeDe, marcarTodasLeidas, ocultar, puedeAdministrar } =
+  const { grupos, sinLeer, filtro, setFiltro, estaLeida, viajeDe, marcarTodasLeidas, ocultar, puedeAdministrar, refrescar } =
     useCampanaNotificaciones()
 
   const cerrar = () => {
@@ -122,7 +122,13 @@ export function CampanaNotificaciones() {
 
   return (
     <>
-      <IconButton onClick={(evento) => setAncla(evento.currentTarget)} sx={{ color: COLOR.TINTA }}>
+      <IconButton
+        onClick={(evento) => {
+          setAncla(evento.currentTarget)
+          refrescar()
+        }}
+        sx={{ color: COLOR.TINTA }}
+      >
         <Badge badgeContent={sinLeer} color="primary">
           <NotificationsNoneIcon />
         </Badge>

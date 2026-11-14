@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { ENDPOINTS, post, postLista } from "../../../shared/api"
+import { intervaloSegunVentana } from "../../../shared/lib/sondeo"
 import { combinarFlota, normalizarUnidadesGps } from "../model/flota"
 import { estadoDeParadas } from "../model/paradas"
 
@@ -12,6 +13,16 @@ import { estadoDeParadas } from "../model/paradas"
  * @type {number}
  */
 export const REFRESCO_FLOTA_MS = 50_000
+
+/**
+ * Cada cuánto se refresca la flota con la ventana minimizada o tapada.
+ *
+ * Es la consulta más cara de la app —pasa de siete segundos, porque espera al
+ * proveedor del GPS—, así que sin nadie mirando el mapa se pide mucho menos.
+ *
+ * @type {number}
+ */
+export const REFRESCO_FLOTA_OCULTA_MS = 5 * 60_000
 
 /**
  * Cuánto se le espera al GPS antes de darlo por perdido.
@@ -171,8 +182,9 @@ export function guardarConfiguracionTanque({ truckId, galones, capacidad }) {
 /**
  * La flota, refrescándose sola cada {@link REFRESCO_FLOTA_MS}.
  *
- * Sigue refrescando con la pestaña en segundo plano: el mapa es una pantalla de
- * vigilancia y quien la deja abierta en otro monitor espera verla al día.
+ * En otro monitor sigue a su ritmo, porque ahí la ventana se ve. Minimizada o
+ * tapada baja a {@link REFRESCO_FLOTA_OCULTA_MS}, y al volver a verse se pide de
+ * inmediato para que el mapa no muestre posiciones de hace minutos.
  *
  * @returns {object} El resultado de `useQuery`.
  */
@@ -180,8 +192,9 @@ export function useFlota() {
   return useQuery({
     queryKey: LLAVE_FLOTA,
     queryFn: ({ signal }) => obtenerFlota({ signal }),
-    refetchInterval: REFRESCO_FLOTA_MS,
+    refetchInterval: intervaloSegunVentana(REFRESCO_FLOTA_MS, REFRESCO_FLOTA_OCULTA_MS),
     refetchIntervalInBackground: true,
+    refetchOnWindowFocus: "always",
   })
 }
 
