@@ -26,6 +26,12 @@ import { toast } from "react-toastify";
 import { useAuthStore } from "../store/useAuthStore";
 import { UNIDAD, obtenerAvisosDeInspecciones, obtenerSuscriptoresInspeccion } from "../services/mantenimiento";
 import notiSound from "../assets/sounds/update.mp3";
+import { sondear, EVENTO_NOTIFICACIONES_NUEVAS } from "../utils/sondeo";
+
+const LISTA_MS = 5 * 60 * 1000;
+const SUSCRIPTORES_MS = 5 * 60 * 1000;
+const INSPECCIONES_MS = 60 * 1000;
+const INSPECCIONES_OCULTA_MS = 2 * 60 * 1000;
 
 const dateGroupLabel = (createdAt) => {
   const date = new Date(createdAt.replace(" ", "T"));
@@ -114,9 +120,12 @@ const NotificationBell = () => {
   };
 
   useEffect(() => {
-    fetchNotifications();
-    const intervalId = setInterval(fetchNotifications, 15000);
-    return () => clearInterval(intervalId);
+    const detener = sondear(fetchNotifications, { visibleMs: LISTA_MS, ocultoMs: null });
+    window.addEventListener(EVENTO_NOTIFICACIONES_NUEVAS, fetchNotifications);
+    return () => {
+      detener();
+      window.removeEventListener(EVENTO_NOTIFICACIONES_NUEVAS, fetchNotifications);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
@@ -135,9 +144,7 @@ const NotificationBell = () => {
       }
     };
 
-    consultar();
-    const intervalId = setInterval(consultar, 300000);
-    return () => clearInterval(intervalId);
+    return sondear(consultar, { visibleMs: SUSCRIPTORES_MS, ocultoMs: null });
   }, [user?.id]);
 
   useEffect(() => {
@@ -161,9 +168,7 @@ const NotificationBell = () => {
       }
     };
 
-    consultar();
-    const intervalId = setInterval(consultar, 60000);
-    return () => clearInterval(intervalId);
+    return sondear(consultar, { visibleMs: INSPECCIONES_MS, ocultoMs: INSPECCIONES_OCULTA_MS });
   }, [user?.id, recibeInspecciones]);
 
   const todas = useMemo(
@@ -204,7 +209,10 @@ const NotificationBell = () => {
 
   const unreadCount = todas.filter((n) => !seenIds.has(n.id)).length;
 
-  const handleOpen = (e) => setAnchorEl(e.currentTarget);
+  const handleOpen = (e) => {
+    setAnchorEl(e.currentTarget);
+    fetchNotifications();
+  };
 
   const handleClose = () => {
     setAnchorEl(null);
