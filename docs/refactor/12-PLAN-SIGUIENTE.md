@@ -171,7 +171,14 @@ por menos riesgo al que menos. Del A1 al A6 son solo front y no necesitan nada d
 - **Riesgo:** bajo, pero es global. Si el hosting no tiene `mod_deflate`, la regla dentro
   de `<IfModule>` simplemente no hace nada.
 
-### A8 · Caché en el mapa — ENTREGADO, falta subir (2026-11-17)
+### A8 · Caché en el mapa — HECHO (2026-11-17)
+
+> Subido y medido. El archivo viejo había llegado a 21–22 s por consulta. Con el nuevo:
+> 0.25 s cuando la respuesta está guardada y 2.8–3.9 s cuando toca refrescar (eso es lo
+> que tarda Wialon solo). **Las direcciones siguen sin llegar:** las 12 unidades vienen con
+> `address` vacío y el mapa enseña coordenadas. Nominatim tiene bloqueado al servidor;
+> el archivo reintenta cada 30 min. Si en unos días no vuelven, toca cambiar de proveedor
+> de direcciones, y eso lo decide Emiliano.
 
 > `docs/backend/Tracking.php`, sintaxis revisada con `php-parser`. Al escribirlo se vio que
 > **las 12 unidades ya salían «Unknown address»**: Nominatim está rechazando al servidor, y
