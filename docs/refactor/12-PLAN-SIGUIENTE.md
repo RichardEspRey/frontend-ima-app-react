@@ -73,7 +73,15 @@ por menos riesgo al que menos. Del A1 al A6 son solo front y no necesitan nada d
   `alIniciar: true` o dejar en Sidebar solo la petición inicial, sin el `focus`.
 - **Esperado:** desaparece una petición por cada cambio de ventana.
 
-### A3 · Que Sidebar no repita las inspecciones
+### A3 · Que Sidebar no repita las inspecciones — HECHO (2026-11-17)
+
+> `Emiliano` `9a717ed`. `getInspecciones` se comparte un minuto por lado
+> (`pedirInspecciones` en `services/mantenimiento.js`) y cualquier `op` de `mtto.php` que
+> no empiece con `get` lo invalida. **El refactor no se tocó:** campana y Sidebar ya leen
+> la misma llave de TanStack (`llaveInspecciones`), pero Sidebar conserva su propio
+> `refetchInterval` de 5 min, así que ahí siguen saliendo 2 peticiones cada 5 min aunque la
+> campana esté pidiendo. Quitarlo dejaría sin contador a quien no está suscrito a
+> inspecciones; queda como mejora menor.
 
 - **Problema:** § 3.4. `Sidebar.jsx:164-180` pide `getInspecciones` de los dos lados cada
   5 min solo para contar, y la campana ya los tiene.
