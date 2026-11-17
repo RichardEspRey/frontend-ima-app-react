@@ -10,7 +10,6 @@ export const ENDPOINTS = {
   afinaciones: "afinaciones.php",
   auth: "Auth.php",
   autonomia: "autonomia.php",
-  avisos: "avisos.php",
   cajas: "cajas.php",
   cajasDocs: "cajas_docs.php",
   cajasEstatus: "cajas_estatus.php",

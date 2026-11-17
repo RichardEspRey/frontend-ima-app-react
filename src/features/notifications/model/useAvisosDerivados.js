@@ -173,7 +173,7 @@ function useCorteDeDiesel() {
  * Los avisos que se calculan en el front con datos que la API ya devuelve.
  *
  * Son cuatro fuentes y siete avisos; cada aviso tiene su lista de personas en
- * Notificaciones manager (`avisos.php`), y una fuente solo se consulta si la
+ * Notificaciones manager (`Notifications.php`), y una fuente solo se consulta si la
  * persona recibe alguno de los suyos:
  *
  * - **Diesel**: State pending y Fleet One pending acumulados, una vez al día a
@@ -183,7 +183,7 @@ function useCorteDeDiesel() {
  * - **Programación**: cada viaje programado.
  * - **Despacho**: cada viaje que entra y cada tanda de documentos que se le agrega.
  *
- * Si `avisos.php` no responde se reparte como antes de que existieran las
+ * Si `Notifications.php` no responde se reparte como antes de que existieran las
  * listas: por permiso de pantalla y por la suscripción a Inspecciones.
  *
  * Lo usan el aviso emergente y la campana; comparten caché, así que montarlo dos

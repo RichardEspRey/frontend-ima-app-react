@@ -14,7 +14,7 @@
 --
 -- Son DOS envíos. Mandar cada uno por separado en phpMyAdmin y revisar el
 -- resultado antes del siguiente. Ninguno borra ni modifica datos existentes.
--- Correrlos ANTES de subir `avisos.php`.
+-- Correrlos ANTES de subir `Notifications.php`.
 
 -- ── Envío 1 · la tabla ───────────────────────────────────────────────────────
 

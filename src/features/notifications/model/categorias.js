@@ -23,8 +23,8 @@ const deAviso = (categoria) => ({ id: categoria, ...hooksDeAviso(categoria), var
  *
  * Cada aviso tiene su propia lista de personas: de una misma pantalla salen
  * varios y se asignan por separado. Las consultas viven en endpoints distintos
- * —los BL en `Notifications.php`, las inspecciones con falla en `mtto.php` y el
- * resto en `avisos.php`—, y `variables` traduce a la persona al formato que
+ * —los BL y los avisos nuevos en `Notifications.php`, las inspecciones con falla
+ * en `mtto.php`—, y `variables` traduce a la persona al formato que
  * espera la mutación de cada uno. El ícono y los colores viven en la UI, con la
  * misma `id`.
  *

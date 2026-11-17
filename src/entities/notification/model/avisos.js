@@ -39,7 +39,7 @@ export const TIPO_AVISO = {
 /**
  * Los avisos calculados en el front, uno por cada lista de Notificaciones manager.
  *
- * Son las categorías de `avisos.php` y de la tabla `notif_suscriptores`.
+ * Son las categorías de `Notifications.php` y de la tabla `notif_suscriptores`.
  *
  * @readonly
  * @enum {string}
@@ -57,7 +57,7 @@ export const CATEGORIA_AVISO = {
 /**
  * A qué avisos tiene derecho una persona cuando el servidor no da sus listas.
  *
- * Es el reparto de antes de que existiera `avisos.php`: por permiso de pantalla
+ * Es el reparto de antes de que existiera `Notifications.php`: por permiso de pantalla
  * y por la suscripción a Inspecciones. Sirve de respaldo si ese archivo no está
  * o falla, para que nadie se quede sin avisos.
  *

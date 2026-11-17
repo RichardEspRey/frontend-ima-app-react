@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { ENDPOINTS, post, postLista } from "../../../shared/api"
 
 /**
- * Raíz de las llaves de caché de las listas de avisos de `avisos.php`.
+ * Raíz de las llaves de caché de las listas de avisos de avisos de `Notifications.php`.
  *
  * @type {Array.<string>}
  */
@@ -18,7 +18,7 @@ export const INTERVALO_MIS_CATEGORIAS_MS = 5 * 60_000
 /**
  * Los avisos a los que está suscrita una persona.
  *
- * @endpoint POST avisos.php · op=getMisCategorias
+ * @endpoint POST Notifications.php · op=getMisCategorias
  * @param {object} parametros Datos de la consulta.
  * @param {(string|number)} parametros.idUsuario Identificador de la persona.
  * @param {AbortSignal} [parametros.signal] Señal de cancelación.
@@ -26,14 +26,14 @@ export const INTERVALO_MIS_CATEGORIAS_MS = 5 * 60_000
  * @throws {ApiError} Si la petición falla.
  */
 export async function obtenerMisCategorias({ idUsuario, signal }) {
-  const cuerpo = await post(ENDPOINTS.avisos, "getMisCategorias", { user_id: idUsuario }, { signal })
+  const cuerpo = await post(ENDPOINTS.notificaciones, "getMisCategorias", { user_id: idUsuario }, { signal })
   return Array.isArray(cuerpo?.categorias) ? cuerpo.categorias.map(String) : []
 }
 
 /**
  * A qué avisos está suscrita la persona, al día.
  *
- * No reintenta ni anuncia sus fallos: si `avisos.php` no responde, quien lo usa
+ * No reintenta ni anuncia sus fallos: si esas operaciones no responden, quien lo usa
  * reparte los avisos por permiso de pantalla, como antes de que existieran las
  * listas.
  *
@@ -54,7 +54,7 @@ export function useMisCategorias(idUsuario) {
 /**
  * Quiénes reciben un aviso.
  *
- * @endpoint POST avisos.php · op=getSuscriptores
+ * @endpoint POST Notifications.php · op=getSuscriptores
  * @param {string} categoria Un valor de `CATEGORIA_AVISO`.
  * @param {object} [opciones] Ajustes de la petición.
  * @param {AbortSignal} [opciones.signal] Señal de cancelación.
@@ -62,7 +62,7 @@ export function useMisCategorias(idUsuario) {
  * @throws {ApiError} Si la petición falla.
  */
 export function obtenerSuscriptoresDeAviso(categoria, opciones = {}) {
-  return postLista(ENDPOINTS.avisos, "getSuscriptores", {
+  return postLista(ENDPOINTS.notificaciones, "getSuscriptores", {
     payload: { categoria },
     campo: "users",
     signal: opciones.signal,
@@ -72,7 +72,7 @@ export function obtenerSuscriptoresDeAviso(categoria, opciones = {}) {
 /**
  * Quiénes todavía no reciben un aviso.
  *
- * @endpoint POST avisos.php · op=getDisponibles
+ * @endpoint POST Notifications.php · op=getDisponibles
  * @param {string} categoria Un valor de `CATEGORIA_AVISO`.
  * @param {object} [opciones] Ajustes de la petición.
  * @param {AbortSignal} [opciones.signal] Señal de cancelación.
@@ -80,7 +80,7 @@ export function obtenerSuscriptoresDeAviso(categoria, opciones = {}) {
  * @throws {ApiError} Si la petición falla.
  */
 export function obtenerDisponiblesDeAviso(categoria, opciones = {}) {
-  return postLista(ENDPOINTS.avisos, "getDisponibles", {
+  return postLista(ENDPOINTS.notificaciones, "getDisponibles", {
     payload: { categoria },
     campo: "users",
     signal: opciones.signal,
@@ -90,7 +90,7 @@ export function obtenerDisponiblesDeAviso(categoria, opciones = {}) {
 /**
  * Da de alta a una persona en un aviso.
  *
- * @endpoint POST avisos.php · op=suscribir
+ * @endpoint POST Notifications.php · op=suscribir
  * @param {object} parametros Datos del alta.
  * @param {string} parametros.categoria Un valor de `CATEGORIA_AVISO`.
  * @param {(string|number)} parametros.userId A quién se suscribe.
@@ -99,13 +99,13 @@ export function obtenerDisponiblesDeAviso(categoria, opciones = {}) {
  * @throws {ApiError} Si la petición falla.
  */
 export function suscribirAAviso({ categoria, userId, usuarioId }) {
-  return post(ENDPOINTS.avisos, "suscribir", { categoria, user_id: userId, id_usuario: usuarioId })
+  return post(ENDPOINTS.notificaciones, "suscribir", { categoria, user_id: userId, id_usuario: usuarioId })
 }
 
 /**
  * Da de baja a una persona de un aviso.
  *
- * @endpoint POST avisos.php · op=desuscribir
+ * @endpoint POST Notifications.php · op=desuscribir
  * @param {object} parametros Datos de la baja.
  * @param {string} parametros.categoria Un valor de `CATEGORIA_AVISO`.
  * @param {(string|number)} parametros.userId A quién se da de baja.
@@ -113,7 +113,7 @@ export function suscribirAAviso({ categoria, userId, usuarioId }) {
  * @throws {ApiError} Si la petición falla.
  */
 export function desuscribirDeAviso({ categoria, userId }) {
-  return post(ENDPOINTS.avisos, "desuscribir", { categoria, user_id: userId })
+  return post(ENDPOINTS.notificaciones, "desuscribir", { categoria, user_id: userId })
 }
 
 /**
