@@ -10,6 +10,7 @@ import {
   INTERVALO_INSPECCIONES_OCULTA_MS,
   INTERVALO_SUSCRIPCION_MS,
 } from "./useCampanaNotificaciones"
+import { useAvisosDerivados } from "./useAvisosDerivados"
 
 /**
  * Reproduce el sonido de notificación sin arriesgar la aplicación.
@@ -48,7 +49,8 @@ function sonar() {
  *
  * Las inspecciones que llegan a Reparaciones también se anuncian, pero no las que
  * ya estaban la primera vez que se consultan: eso sería anunciar el historial
- * entero al entrar.
+ * entero al entrar. Lo mismo vale para los avisos calculados en el front —diesel,
+ * sin fallas, sin inspección, programación y despacho—, fuente por fuente.
  *
  * @param {string} [idUsuario] Identificador de la persona conectada.
  * @returns {Array.<object>} Las recién llegadas, por si la pantalla las quiere.
@@ -73,6 +75,9 @@ export function useAvisoDeNotificaciones(idUsuario) {
   })
   const inspeccionesConocidas = useRef(null)
   const inspeccionesDe = useRef(idUsuario)
+  const { fuentes } = useAvisosDerivados()
+  const derivadosConocidos = useRef(new Map())
+  const derivadosDe = useRef(idUsuario)
 
   useEffect(() => {
     if (!notificaciones?.length) return
@@ -107,6 +112,32 @@ export function useAvisoDeNotificaciones(idUsuario) {
 
     inspeccionesConocidas.current = new Set(inspecciones.map((una) => una.id))
   }, [inspecciones, cargados, idUsuario])
+
+  useEffect(() => {
+    if (derivadosDe.current !== idUsuario) {
+      derivadosDe.current = idUsuario
+      derivadosConocidos.current = new Map()
+    }
+
+    let hayNuevos = false
+
+    for (const fuente of fuentes) {
+      if (!fuente.cargados) continue
+
+      const conocidos = derivadosConocidos.current.get(fuente.id)
+      if (conocidos) {
+        const nuevos = sinAnunciar(fuente.avisos, conocidos)
+        for (const uno of nuevos) {
+          notify.discreto([uno.titulo, uno.subtitulo].filter(Boolean).join(" · "), "info")
+        }
+        hayNuevos = hayNuevos || nuevos.length > 0
+      }
+
+      derivadosConocidos.current.set(fuente.id, new Set(fuente.avisos.map((uno) => uno.id)))
+    }
+
+    if (hayNuevos) sonar()
+  }, [fuentes, idUsuario])
 
   return notificaciones ?? []
 }

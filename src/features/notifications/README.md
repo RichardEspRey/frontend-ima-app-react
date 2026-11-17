@@ -5,6 +5,7 @@ La campana de notificaciones y la administración de quién recibe cada aviso (B
 ## Contenido
 
 - `model/useAvisoDeNotificaciones.js` — `useAvisoDeNotificaciones`
+- `model/useAvisosDerivados.js` — `PESTANA_DESPACHO`, `INTERVALO_MANTENIMIENTO_MS`, `INTERVALO_VIAJES_MS`, `consultarAvisosDeProgramacion`, `consultarAvisosDeDespacho`, `useAvisosDerivados`… (9)
 - `model/categorias.js` — `CATEGORIAS_DE_AVISO`, `nombreDe`, `buscarPersonas`
 - `model/useCampanaNotificaciones.js` — `FILTRO_CAMPANA`, `INTERVALO_INSPECCIONES_MS`, `INTERVALO_SUSCRIPCION_MS`, `llaveOcultas`, `sinOcultas`, `useCampanaNotificaciones`
 - `ui/CampanaNotificaciones.jsx` — `CampanaNotificaciones`

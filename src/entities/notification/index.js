@@ -10,6 +10,25 @@ export {
 } from "./model/notificaciones"
 
 export {
+  ZONA_AVISOS,
+  HORA_CORTE_DIESEL,
+  DIAS_DE_AVISO_DERIVADO,
+  TIPO_AVISO,
+  fechaLocal,
+  relojEnZona,
+  corteDiario,
+  avisosDeDiesel,
+  avisosSinFallas,
+  avisosSinInspeccion,
+  avisosDeProgramacion,
+  avisosDeDespacho,
+  avisosDeDocumentos,
+  documentosDeViaje,
+  nombreDeDocumento,
+  recortarAvisos,
+} from "./model/avisos"
+
+export {
   INTERVALO_NOTIFICACIONES_MS,
   INTERVALO_NOTIFICACIONES_OCULTA_MS,
   INTERVALO_CAMPANA_MS,

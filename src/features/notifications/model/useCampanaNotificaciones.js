@@ -5,6 +5,7 @@ import { agruparPorDia, llaveNotificaciones, sinAnunciar, useNotificaciones } fr
 import { useAvisosDeInspecciones, useRecibeAvisoInspeccion } from "../../../entities/maintenance-point"
 import { useNomenclaturasDeViajes } from "../../../entities/trip"
 import { useSesion } from "../../../shared/auth"
+import { useAvisosDerivados } from "./useAvisosDerivados"
 
 /**
  * Las tres vistas de la campana.
@@ -128,7 +129,9 @@ export const INTERVALO_SUSCRIPCION_MS = 300000
  * campana para que no se acumule.
  *
  * A los BL firmados se suman las inspecciones que llegan a Reparaciones, solo
- * para quien está en la lista de Inspecciones de Notificaciones manager.
+ * para quien está en la lista de Inspecciones de Notificaciones manager, y los
+ * avisos calculados en el front: diesel, sin fallas, sin inspección,
+ * programación y despacho.
  *
  * @returns {object} Lo que el componente necesita para pintarse.
  */
@@ -142,12 +145,13 @@ export function useCampanaNotificaciones() {
   const [ocultas, setOcultas] = useState(() => leerVistas(llaveDeOcultas))
   const { data: delServidor = [] } = useNotificaciones(usuario?.id)
   const { avisos: inspecciones } = useAvisosDeInspecciones({ enabled: recibeInspecciones })
+  const { avisos: derivados } = useAvisosDerivados()
   const notificaciones = useMemo(
     () =>
-      sinOcultas([...delServidor, ...inspecciones], ocultas).sort((a, b) =>
+      sinOcultas([...delServidor, ...inspecciones, ...derivados], ocultas).sort((a, b) =>
         String(b.created_at ?? "").localeCompare(String(a.created_at ?? "")),
       ),
-    [delServidor, inspecciones, ocultas],
+    [delServidor, inspecciones, derivados, ocultas],
   )
   const [vistas, setVistas] = useState(() => leerVistas(llave))
   const [filtro, setFiltro] = useState(FILTRO_CAMPANA.TODAS)

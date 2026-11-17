@@ -38,7 +38,7 @@ export const CATEGORIAS_DE_AVISO = [
     id: "inspecciones",
     nombre: "Inspecciones",
     descripcion:
-      "Cuando un operador manda una inspección con algo que reparar. Camión y caja avisan por separado.",
+      "Cuando un operador manda una inspección: con algo que reparar (camión y caja avisan por separado) o sin fallas. También cuando un operador junta más de un viaje sin inspección.",
     ejemplo: { titulo: "Nueva inspección 238-US-26", subtitulo: "Camión 11 · Alberto Cruz Galindo" },
     useSuscriptores: useSuscriptoresInspeccion,
     useDisponibles: useDisponiblesInspeccion,

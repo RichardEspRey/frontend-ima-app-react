@@ -9,6 +9,11 @@ vi.mock("../../../shared/ui", () => ({
 }))
 vi.mock("../../../assets/sounds/update.mp3", () => ({ default: "update.mp3" }))
 
+const derivados = { fuentes: [] }
+vi.mock("../model/useAvisosDerivados", () => ({
+  useAvisosDerivados: () => derivados,
+}))
+
 vi.stubGlobal(
   "Audio",
   class {
@@ -64,6 +69,7 @@ function llegan(avisos) {
 
 beforeEach(() => {
   vi.clearAllMocks()
+  derivados.fuentes = []
   vi.spyOn(mantenimiento, "useAvisosDeInspecciones").mockReturnValue({ avisos: [], cargados: false })
   vi.spyOn(mantenimiento, "useRecibeAvisoInspeccion").mockReturnValue(true)
 })
@@ -162,5 +168,38 @@ describe("useAvisoDeNotificaciones", () => {
     await waitFor(() => expect(notify.discreto).toHaveBeenCalledTimes(1))
     expect(notify.discreto).toHaveBeenCalledWith("Nueva inspección 238-US-26 · Alberto Cruz Galindo", "info")
     expect(reproducir).toHaveBeenCalledTimes(1)
+  })
+
+  it("no anuncia los avisos calculados que ya estaban al entrar, sí los que llegan después", async () => {
+    servidorDevuelve([])
+    const estado = { id: "diesel-state-2026-11-15", titulo: "State pending", subtitulo: "3 estados pendientes en 2 viajes" }
+    derivados.fuentes = [{ id: "diesel", avisos: [estado], cargados: true }]
+
+    const { rerender } = renderHook(() => useAvisoDeNotificaciones("7"), { wrapper: Envoltura })
+    expect(notify.discreto).not.toHaveBeenCalled()
+
+    const nuevo = { id: "diesel-state-2026-11-16", titulo: "State pending", subtitulo: "5 estados pendientes en 3 viajes" }
+    derivados.fuentes = [{ id: "diesel", avisos: [nuevo], cargados: true }]
+    rerender()
+
+    await waitFor(() =>
+      expect(notify.discreto).toHaveBeenCalledWith("State pending · 5 estados pendientes en 3 viajes", "info"),
+    )
+    expect(notify.discreto).toHaveBeenCalledTimes(1)
+    expect(reproducir).toHaveBeenCalledTimes(1)
+  })
+
+  it("una fuente que todavía no carga no cuenta como vacía", async () => {
+    servidorDevuelve([])
+    derivados.fuentes = [{ id: "despacho", avisos: [], cargados: false }]
+
+    const { rerender } = renderHook(() => useAvisoDeNotificaciones("7"), { wrapper: Envoltura })
+
+    derivados.fuentes = [
+      { id: "despacho", avisos: [{ id: "despacho-611", titulo: "Viaje en despacho 266-US-26", subtitulo: "" }], cargados: true },
+    ]
+    rerender()
+
+    expect(notify.discreto).not.toHaveBeenCalled()
   })
 })

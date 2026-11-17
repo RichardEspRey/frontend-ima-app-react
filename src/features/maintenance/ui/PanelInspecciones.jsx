@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   Box,
   Paper,
@@ -51,12 +52,24 @@ const OTRAS_VISTAS = ["sin-fallas", "sin-inspeccion"];
  * pendientes y completadas están las inspecciones sin fallas y los viajes que
  * terminaron sin inspección, que no dependen del lado.
  *
+ * Si la URL trae `?sub=sin-fallas` o `?sub=sin-inspeccion`, como al llegar desde
+ * la campana, abre en esa vista.
+ *
  * @returns {object} El panel renderizado.
  */
 export function PanelInspecciones() {
   const panel = usePanelInspecciones();
   const esCaja = panel.lado === UNIDAD.CAJA;
-  const [otraVista, setOtraVista] = useState(null);
+  const [parametros] = useSearchParams();
+  const pedida = parametros.get("sub");
+  const vistaPedida = OTRAS_VISTAS.includes(pedida) ? pedida : null;
+  const ladoPedido = parametros.get("lado");
+  const [otraVista, setOtraVista] = useState(vistaPedida);
+
+  useEffect(() => {
+    if (vistaPedida) setOtraVista(vistaPedida);
+    else if (ladoPedido) setOtraVista(null);
+  }, [vistaPedida, ladoPedido, parametros]);
 
   const cambiarVista = (valor) => {
     if (OTRAS_VISTAS.includes(valor)) {

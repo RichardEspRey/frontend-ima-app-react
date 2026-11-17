@@ -15,13 +15,17 @@ import {
   Typography,
 } from "@mui/material"
 import BuildIcon from "@mui/icons-material/Build"
+import DescriptionIcon from "@mui/icons-material/Description"
+import EventAvailableIcon from "@mui/icons-material/EventAvailable"
+import LocalGasStationIcon from "@mui/icons-material/LocalGasStation"
 import CloseIcon from "@mui/icons-material/Close"
 import LocalShippingIcon from "@mui/icons-material/LocalShipping"
 import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone"
 import SettingsIcon from "@mui/icons-material/Settings"
 
 import { UNIDAD } from "../../../entities/maintenance-point"
-import { tiempoRelativo } from "../../../entities/notification"
+import { TIPO_AVISO, tiempoRelativo } from "../../../entities/notification"
+import { useViajesFiltrosStore } from "../../../store/useViajesFiltrosStore"
 import { COLOR, Pestanas, TINTE } from "../../../shared/ui"
 import { FILTRO_CAMPANA, useCampanaNotificaciones } from "../model/useCampanaNotificaciones"
 
@@ -31,27 +35,73 @@ const PESTANAS = [
   { id: FILTRO_CAMPANA.LEIDAS, etiqueta: "Leídas" },
 ]
 
+const ASPECTO_BL = { icono: LocalShippingIcon, fondo: COLOR.INFO_FONDO, texto: COLOR.INFO }
+const ASPECTO_TALLER = { icono: BuildIcon, fondo: TINTE.NARANJA.fondo, texto: TINTE.NARANJA.texto }
+
+const ASPECTO_POR_TIPO = {
+  inspeccion: ASPECTO_TALLER,
+  [TIPO_AVISO.MANTENIMIENTO]: ASPECTO_TALLER,
+  [TIPO_AVISO.DIESEL]: { icono: LocalGasStationIcon, fondo: TINTE.AMBAR.fondo, texto: TINTE.AMBAR.texto },
+  [TIPO_AVISO.PROGRAMACION]: { icono: EventAvailableIcon, fondo: TINTE.TEAL.fondo, texto: TINTE.TEAL.texto },
+  [TIPO_AVISO.DESPACHO]: ASPECTO_BL,
+  [TIPO_AVISO.DOCUMENTOS]: { icono: DescriptionIcon, fondo: TINTE.VIOLETA.fondo, texto: TINTE.VIOLETA.texto },
+}
+
+/**
+ * Lo que un renglón de la campana enseña y a dónde lleva, según el tipo de aviso.
+ *
+ * Los BL firmados vienen del servidor sin tipo; las inspecciones traen sus
+ * propios campos; el resto de avisos ya llega con título, subtítulo y destino.
+ *
+ * @param {object} notificacion La notificación o el aviso.
+ * @param {string} viaje La nomenclatura del viaje, para los BL.
+ * @returns {{aspecto: object, titulo: string, subtitulo: string, detalle: (string|undefined), destino: (object|null)}} La presentación.
+ */
+function presentarAviso(notificacion, viaje) {
+  if (notificacion.tipo === "inspeccion") {
+    return {
+      aspecto: ASPECTO_TALLER,
+      titulo: `Nueva inspección ${notificacion.nomenclatura}`,
+      subtitulo: `${notificacion.lado === UNIDAD.CAJA ? "Caja" : "Camión"}${notificacion.unidad ? ` ${notificacion.unidad}` : ""} · ${notificacion.operador}`,
+      destino: { ruta: `/mantenimiento?pestana=inspecciones&lado=${notificacion.lado}` },
+    }
+  }
+
+  if (notificacion.tipo) {
+    return {
+      aspecto: ASPECTO_POR_TIPO[notificacion.tipo] ?? ASPECTO_BL,
+      titulo: notificacion.titulo,
+      subtitulo: notificacion.subtitulo,
+      detalle: notificacion.detalle,
+      destino: notificacion.destino ?? null,
+    }
+  }
+
+  return {
+    aspecto: ASPECTO_BL,
+    titulo: "BL Firmado",
+    subtitulo: viaje,
+    destino: notificacion.trip_id ? { ruta: `/edit-trip/${notificacion.trip_id}` } : null,
+  }
+}
+
 /**
  * Una notificación dentro del panel.
  *
  * @param {object} props Propiedades del componente.
  * @param {object} props.notificacion La notificación a mostrar.
  * @param {string} props.viaje La nomenclatura del viaje, o el mensaje si no es de un viaje.
- *   En una inspección no se usa: el renglón enseña el lado, la unidad y el operador.
  * @param {boolean} props.leida Si la persona ya la vio.
- * @param {Function} props.onAbrir Qué hacer al tocarla.
+ * @param {Function} props.onAbrir Qué hacer al tocarla; recibe el destino del aviso.
  * @returns {object} El renglón renderizado.
  */
 function Renglon({ notificacion, viaje, leida, onAbrir }) {
-  const esInspeccion = notificacion.tipo === "inspeccion"
-  const titulo = esInspeccion ? `Nueva inspección ${notificacion.nomenclatura}` : "BL Firmado"
-  const subtitulo = esInspeccion
-    ? `${notificacion.lado === UNIDAD.CAJA ? "Caja" : "Camión"}${notificacion.unidad ? ` ${notificacion.unidad}` : ""} · ${notificacion.operador}`
-    : viaje
+  const { aspecto, titulo, subtitulo, detalle, destino } = presentarAviso(notificacion, viaje)
+  const Icono = aspecto.icono
 
   return (
     <ListItemButton
-      onClick={onAbrir}
+      onClick={() => onAbrir(destino)}
       sx={{
         px: 2.5,
         py: 1.25,
@@ -61,27 +111,29 @@ function Renglon({ notificacion, viaje, leida, onAbrir }) {
       }}
     >
       <ListItemAvatar sx={{ minWidth: 44 }}>
-        {esInspeccion ? (
-          <Avatar sx={{ bgcolor: TINTE.NARANJA.fondo, color: TINTE.NARANJA.texto, width: 36, height: 36 }}>
-            <BuildIcon fontSize="small" />
-          </Avatar>
-        ) : (
-          <Avatar sx={{ bgcolor: COLOR.INFO_FONDO, color: COLOR.INFO, width: 36, height: 36 }}>
-            <LocalShippingIcon fontSize="small" />
-          </Avatar>
-        )}
+        <Avatar sx={{ bgcolor: aspecto.fondo, color: aspecto.texto, width: 36, height: 36 }}>
+          <Icono fontSize="small" />
+        </Avatar>
       </ListItemAvatar>
 
       <ListItemText
+        sx={{ minWidth: 0 }}
         primary={
           <Typography variant="body2" fontWeight={800} color={COLOR.TINTA}>
             {titulo}
           </Typography>
         }
         secondary={
-          <Typography variant="caption" color={COLOR.APAGADO} noWrap sx={{ display: "block" }}>
-            {subtitulo}
-          </Typography>
+          <>
+            <Typography component="span" variant="caption" color={COLOR.APAGADO} noWrap sx={{ display: "block" }}>
+              {subtitulo}
+            </Typography>
+            {detalle ? (
+              <Typography component="span" variant="caption" color={COLOR.APAGADO} sx={{ display: "block", opacity: 0.8 }}>
+                {detalle}
+              </Typography>
+            ) : null}
+          </>
         }
       />
 
@@ -201,15 +253,16 @@ export function CampanaNotificaciones() {
                     notificacion={notificacion}
                     viaje={viajeDe(notificacion)}
                     leida={estaLeida(notificacion)}
-                    onAbrir={() => {
+                    onAbrir={(destino) => {
                       ocultar(notificacion)
-                      if (notificacion.tipo === "inspeccion") {
-                        irA(`/mantenimiento?pestana=inspecciones&lado=${notificacion.lado}`)
-                      } else if (notificacion.trip_id) {
-                        irA(`/edit-trip/${notificacion.trip_id}`)
-                      } else {
+                      if (!destino) {
                         cerrar()
+                        return
                       }
+                      if (destino.pestanaViajes !== undefined) {
+                        useViajesFiltrosStore.getState().set({ tabValue: destino.pestanaViajes, page: 0 })
+                      }
+                      irA(destino.ruta)
                     }}
                   />
                 ))}
