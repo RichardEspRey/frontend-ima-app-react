@@ -2,8 +2,7 @@ import { useEffect, useState, useMemo, useCallback } from "react";
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
   TablePagination, TextField, Box, Typography, CircularProgress, Chip, Button,
-  Stack, Tooltip, IconButton, InputAdornment, Tabs, Tab, Alert, MenuItem,
-  ToggleButton, ToggleButtonGroup
+  Stack, Tooltip, IconButton, InputAdornment, Tabs, Tab, Alert, MenuItem
 } from "@mui/material";
 
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -11,15 +10,20 @@ import PaidIcon from '@mui/icons-material/Paid';
 import AssignmentIndIcon from '@mui/icons-material/AssignmentInd';
 import SearchIcon from '@mui/icons-material/Search';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
-import PendingActionsIcon from '@mui/icons-material/PendingActions';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import RouteIcon from '@mui/icons-material/Route';
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
 
 import Swal from "sweetalert2";
 import { useNavigate } from 'react-router-dom';
 import CatalogoTrayectos from '../../components/PagosMx/CatalogoTrayectos';
+import BotonActualizar from '../../components/BotonActualizar';
 import { useAuthStore } from '../../store/useAuthStore';
+import { paisesPermitidos } from '../../utils/pagos';
+import {
+  PAGE_SHELL_SX, PAGE_OVERLINE_SX, PAGE_TITLE_SX, TABS_WRAPPER_SX, TAB_SX, CARD_SX, SECTION_LABEL_SX,
+  HEADER_ROW_SX, HEADER_CELL_SX, TABLE_CONTAINER_SX, PAGINATION_BOX_SX, PAGINATION_SX,
+  CHIP_SX, CHIP_OK_SX, GHOST_BTN_SX, ICON_BTN_SX, CELL_STRONG_SX, CELL_SX, CELL_MUTED_SX,
+} from '../../styles/estilosTabla';
 import {
   PAIS, autorizarPagoPorTrayecto, obtenerDatosPagos, obtenerTrayectos, pesos, sugerirTrayecto
 } from '../../services/pagosMx';
@@ -33,58 +37,32 @@ const money = (v) =>
     minimumFractionDigits: 2,
   }).format(Number(v || 0));
 
+const CHIP_AVISO_SX = { ...CHIP_SX, bgcolor: '#fffbeb', color: '#b45309', border: '1px solid #fde68a' };
+const CHIP_INFO_SX = { ...CHIP_SX, bgcolor: '#eff6ff', color: '#1d4ed8', border: '1px solid #bfdbfe' };
+const CHIP_NEUTRO_SX = { ...CHIP_SX, bgcolor: '#f8fafc', color: '#475569', border: '1px solid #e2e8f0' };
+
+const ESTATUS_PAGO = {
+  0: { label: 'Pendiente de autorización', sx: CHIP_AVISO_SX },
+  1: { label: 'Pagado', sx: CHIP_OK_SX },
+  2: { label: 'Autorizado · por pagar', sx: CHIP_INFO_SX },
+};
+
 const PaymentStatusChip = ({ value }) => {
-  let label = "";
-  let color = "default"; 
-
-  switch (String(value)) {
-    case "0":
-      label = "Pendiente Autorización";
-      color = "warning";
-      break;
-    case "1":
-      label = "Pagado";
-      color = "success";
-      break;
-    case "2":
-      label = "Autorizado (Por Pagar)";
-      color = "info";
-      break;
-    default:
-      label = "Desconocido";
-      color = "default";
-  }
-
-  return (
-    <Chip
-      label={label}
-      size="small"
-      color={color}
-      variant={String(value) === "1" ? "filled" : "outlined"}
-      sx={{ fontWeight: 600 }}
-    />
-  );
+  const estatus = ESTATUS_PAGO[String(value)] || { label: 'Desconocido', sx: CHIP_NEUTRO_SX };
+  return <Chip label={estatus.label} size="small" sx={estatus.sx} />;
 };
 
-const StatusTrip = ({ value }) => {
-  let label = value || "Desconocido";
-  let color = "#bdbdbd";
-
-  switch (String(value)) {
-    case "Completed": color = "#2e7d32"; break;
-    case "Almost Over": color = "#1976d2"; break;
-    case "In Transit": color = "#ed6c02"; break;
-    default: color = "#757575";
-  }
-
-  return (
-    <Chip
-      label={label}
-      size="small"
-      sx={{ bgcolor: color, color: "#fff", fontWeight: 600, fontSize: '0.75rem' }}
-    />
-  );
+const ESTATUS_VIAJE = {
+  Completed: CHIP_OK_SX,
+  'Almost Over': CHIP_INFO_SX,
+  'In Transit': CHIP_AVISO_SX,
 };
+
+const StatusTrip = ({ value }) => (
+  <Chip label={value || 'Desconocido'} size="small" sx={ESTATUS_VIAJE[String(value)] || CHIP_NEUTRO_SX} />
+);
+
+const ACCION_BTN_SX = { textTransform: 'none', borderRadius: 2, px: 2, py: 0.5, minWidth: 96, fontSize: '0.75rem', fontWeight: 700, boxShadow: 'none' };
 
 const PaymentDrivers = () => {
   const navigate = useNavigate();
@@ -97,7 +75,11 @@ const PaymentDrivers = () => {
   const [tabValue, setTabValue] = useState(0);
 
   const usuario = useAuthStore(estado => estado.user);
-  const [pais, setPais] = useState(PAIS.US);
+  const permisos = useAuthStore(estado => estado.userPermissions);
+  const esAdmin = usuario?.tipo_usuario?.toLowerCase() === 'admin';
+  const paises = useMemo(() => paisesPermitidos(permisos, esAdmin), [permisos, esAdmin]);
+  const [paisElegido, setPais] = useState(PAIS.US);
+  const pais = paises.includes(paisElegido) ? paisElegido : paises[0] || null;
   const [datosPagos, setDatosPagos] = useState({ viajes: new Map(), asignaciones: new Map() });
   const [trayectos, setTrayectos] = useState([]);
   const [errorTrayectos, setErrorTrayectos] = useState(null);
@@ -129,8 +111,6 @@ const PaymentDrivers = () => {
       const res = await fetch(`${apiHost}/formularios.php`, { method: "POST", body: fd });
       
       const json = await res.json();
-
-      console.log(json)
 
       if (json.status === "success" && Array.isArray(json.data)) {
         const rawData = json.data.map((t) => ({
@@ -214,7 +194,7 @@ const PaymentDrivers = () => {
                 } else {
                   Swal.fire("Error", "No se pudo actualizar el pago", "error");
                 }
-              } catch (err) {
+              } catch {
                 Swal.fire("Error", "Error de conexión", "error");
               }
         }
@@ -233,12 +213,20 @@ const PaymentDrivers = () => {
   }), [trips, datosPagos]);
 
   const conteoPais = useMemo(() => {
-    const pendientes = conPais.filter((t) => (tabValue === 0 ? String(t.status_payment) !== "1" : String(t.status_payment) === "1"));
+    const pendientes = conPais.filter((t) => String(t.status_payment) !== "1");
     return {
       [PAIS.US]: pendientes.filter((t) => t.pais === PAIS.US).length,
       [PAIS.MX]: pendientes.filter((t) => t.pais === PAIS.MX).length,
     };
-  }, [conPais, tabValue]);
+  }, [conPais]);
+
+  const conteoEstado = useMemo(() => {
+    const delPais = conPais.filter((t) => t.pais === pais);
+    const pagados = delPais.filter((t) => String(t.status_payment) === "1").length;
+    return { pendientes: delPais.length - pagados, pagados };
+  }, [conPais, pais]);
+
+  const actualizar = () => Promise.all([fetchPayments(), cargarTrayectos()]);
 
   const trayectoDe = (t) => {
     const clave = `${t.trip_id}-${t.driver_id}`;
@@ -298,84 +286,87 @@ const PaymentDrivers = () => {
 
   const pageTrips = filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
-  return (
-    <Paper sx={{ m: 2, p: 3, minHeight: '85vh' }}>
-      
-      {/* Header */}
-      <Box sx={{ mb: 2 }}>
-        <Typography variant="h4" fontWeight={800} color="text.primary">Pago a Operadores</Typography>
-        <Typography variant="body2" color="text.secondary">Gestión de nómina y pagos de viajes</Typography>
+  if (!pais) {
+    return (
+      <Box sx={PAGE_SHELL_SX}>
+        <Alert severity="info">
+          No tienes permiso para ver los pagos de US ni de MX. Pídele a un administrador que te active la pestaña que te corresponde en el Gestor de accesos.
+        </Alert>
       </Box>
+    );
+  }
 
-      {/* Pestañas */}
-      <Paper elevation={0} variant="outlined" sx={{ mb: 3, bgcolor: '#f8f9fa', borderRadius: 2, overflow: 'hidden' }}>
-        <Tabs 
-            value={tabValue} 
-            onChange={handleTabChange} 
-            variant="fullWidth" 
-            indicatorColor="primary" 
-            textColor="primary"
-        >
-            <Tab icon={<PendingActionsIcon />} label="Pendientes de Pago" iconPosition="start" sx={{ fontWeight: 600, py: 3 }} />
-            <Tab icon={<CheckCircleIcon />} label="Historial Pagados" iconPosition="start" sx={{ fontWeight: 600, py: 3 }} />
-        </Tabs>
-      </Paper>
-
-      {/* Barra de Herramientas */}
-      <Paper elevation={0} sx={{ p: 2, mb: 3, bgcolor: '#f5f5f5', borderRadius: 2, border: '1px solid #e0e0e0' }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
-            <TextField 
-                size="small" 
-                placeholder="Buscar Trip o Conductor..." 
-                value={search} 
-                onChange={(e) => { setSearch(e.target.value); setPage(0); }} 
-                InputProps={{
-                    startAdornment: (
-                    <InputAdornment position="start">
-                        <SearchIcon fontSize="small" sx={{ color: 'text.secondary' }} />
-                    </InputAdornment>
-                    ),
-                    sx: { bgcolor: 'white' }
-                }}
-                sx={{ minWidth: 300, flexGrow: 1 }}
-            />
-            
-            <ToggleButtonGroup
-                exclusive
-                size="small"
-                value={pais}
-                onChange={(_e, valor) => { if (valor) { setPais(valor); setPage(0); } }}
-                sx={{ bgcolor: 'white' }}
-            >
-                <ToggleButton value={PAIS.US} sx={{ px: 2.5, fontWeight: 700, textTransform: 'none' }}>
-                    US · {conteoPais[PAIS.US]}
-                </ToggleButton>
-                <ToggleButton value={PAIS.MX} sx={{ px: 2.5, fontWeight: 700, textTransform: 'none' }}>
-                    MX · {conteoPais[PAIS.MX]}
-                </ToggleButton>
-            </ToggleButtonGroup>
-
-            {esMx && (
-                <Button
-                    variant="outlined"
-                    color="primary"
-                    startIcon={<RouteIcon />}
-                    onClick={() => setCatalogoAbierto(true)}
-                    sx={{ textTransform: 'none', fontWeight: 600, bgcolor: 'white' }}
-                >
-                    Trayectos MX
-                </Button>
-            )}
-
-            <Button 
-                variant="outlined" 
-                color="primary"
-                startIcon={<AssignmentIndIcon />}
-                onClick={() => navigate(`/millasDriversTable`)}
-                sx={{ textTransform: 'none', fontWeight: 600, bgcolor: 'white' }}
-            >
-                Administrar Drivers
+  return (
+    <Box sx={PAGE_SHELL_SX}>
+      <Stack direction="row" justifyContent="space-between" alignItems="flex-end" mb={4} flexWrap="wrap" gap={2}>
+        <Box>
+          <Typography variant="overline" sx={PAGE_OVERLINE_SX}>Finanzas · Pagos</Typography>
+          <Typography variant="h4" fontWeight={800} color="#0f172a" letterSpacing="-0.02em" sx={PAGE_TITLE_SX}>
+            Pago a Operadores
+          </Typography>
+          <Typography variant="body2" color="#64748b" sx={{ mt: 0.5 }}>
+            Autorización y pago de viajes por operador, separados por país.
+          </Typography>
+        </Box>
+        <Stack direction="row" spacing={1.5} flexWrap="wrap" useFlexGap>
+          {esMx && (
+            <Button variant="outlined" startIcon={<RouteIcon />} onClick={() => setCatalogoAbierto(true)} sx={GHOST_BTN_SX}>
+              Trayectos MX
             </Button>
+          )}
+          <Button variant="outlined" startIcon={<AssignmentIndIcon />} onClick={() => navigate(`/millasDriversTable`)} sx={GHOST_BTN_SX}>
+            Administrar Drivers
+          </Button>
+          <BotonActualizar onActualizar={actualizar} />
+        </Stack>
+      </Stack>
+
+      <Stack direction="row" flexWrap="wrap" columnGap={2}>
+        <Box sx={TABS_WRAPPER_SX}>
+          <Tabs
+            value={pais}
+            onChange={(_e, valor) => { setPais(valor); setPage(0); }}
+            TabIndicatorProps={{ sx: { display: 'none' } }}
+            sx={{ minHeight: 0, '& .MuiTabs-flexContainer': { gap: 0.5 } }}
+          >
+            {paises.map((codigo) => (
+              <Tab key={codigo} value={codigo} disableRipple sx={TAB_SX} label={`Viajes ${codigo} · ${conteoPais[codigo]}`} />
+            ))}
+          </Tabs>
+        </Box>
+
+        <Box sx={TABS_WRAPPER_SX}>
+          <Tabs
+            value={tabValue}
+            onChange={handleTabChange}
+            TabIndicatorProps={{ sx: { display: 'none' } }}
+            sx={{ minHeight: 0, '& .MuiTabs-flexContainer': { gap: 0.5 } }}
+          >
+            <Tab disableRipple sx={TAB_SX} label={`Pendientes de pago · ${conteoEstado.pendientes}`} />
+            <Tab disableRipple sx={TAB_SX} label={`Historial pagados · ${conteoEstado.pagados}`} />
+          </Tabs>
+        </Box>
+      </Stack>
+
+      <Paper elevation={0} sx={{ ...CARD_SX, mb: 3 }}>
+        <Typography variant="overline" sx={SECTION_LABEL_SX}>Filtros de Búsqueda</Typography>
+        <Box sx={{ mt: 1.5 }}>
+          <TextField
+            size="small"
+            placeholder="Buscar por viaje u operador..."
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setPage(0); }}
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon sx={{ fontSize: 18, color: '#94a3b8' }} />
+                  </InputAdornment>
+                ),
+                sx: { bgcolor: 'white', minWidth: 320 },
+              },
+            }}
+          />
         </Box>
       </Paper>
 
@@ -392,40 +383,39 @@ const PaymentDrivers = () => {
       )}
 
       {/* Tabla de Resultados */}
-      <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 2 }}>
-        <Table stickyHeader size="small">
+      <TableContainer component={Paper} elevation={0} sx={{ ...TABLE_CONTAINER_SX, borderBottomLeftRadius: 0, borderBottomRightRadius: 0 }}>
+        <Table size="small">
           <TableHead>
-            <TableRow>
-              <TableCell sx={{ fontWeight: 700, bgcolor: '#fff' }}>Trip #</TableCell>
-              <TableCell sx={{ fontWeight: 700, bgcolor: '#fff' }}>Conductor</TableCell>
-              <TableCell sx={{ fontWeight: 700, bgcolor: '#fff', textAlign:'center' }}>Etapas</TableCell>
+            <TableRow sx={HEADER_ROW_SX}>
+              <TableCell sx={HEADER_CELL_SX}>Trip #</TableCell>
+              <TableCell sx={HEADER_CELL_SX}>Operador</TableCell>
+              <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'center' }}>Etapas</TableCell>
               {esMx ? (
                 <>
-                  <TableCell sx={{ fontWeight: 700, bgcolor: '#fff' }}>Recorrido</TableCell>
-                  <TableCell sx={{ fontWeight: 700, bgcolor: '#fff', minWidth: 190 }}>Trayecto</TableCell>
+                  <TableCell sx={HEADER_CELL_SX}>Recorrido</TableCell>
+                  <TableCell sx={{ ...HEADER_CELL_SX, minWidth: 190 }}>Trayecto</TableCell>
                 </>
               ) : (
-                <TableCell sx={{ fontWeight: 700, bgcolor: '#fff', textAlign:'right' }}>Millas</TableCell>
+                <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'right' }}>Millas</TableCell>
               )}
-              <TableCell sx={{ fontWeight: 700, bgcolor: '#fff', textAlign:'right' }}>Monto Pago</TableCell>
-              <TableCell sx={{ fontWeight: 700, bgcolor: '#fff' }}>Estatus Pago</TableCell>
-              <TableCell sx={{ fontWeight: 700, bgcolor: '#fff' }}>Estatus Viaje</TableCell>
-              <TableCell sx={{ fontWeight: 700, bgcolor: '#fff', textAlign:'center' }}>Acciones</TableCell>
+              <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'right' }}>Monto Pago</TableCell>
+              <TableCell sx={HEADER_CELL_SX}>Estatus Pago</TableCell>
+              <TableCell sx={HEADER_CELL_SX}>Estatus Viaje</TableCell>
+              <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'center' }}>Acciones</TableCell>
             </TableRow>
           </TableHead>
 
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={columnas} align="center" sx={{ py: 10 }}>
-                  <CircularProgress size={30} sx={{ mr: 2 }} />
-                  <Typography component="span" variant="body2" color="text.secondary">Cargando datos...</Typography>
+                <TableCell colSpan={columnas} align="center" sx={{ py: 6 }}>
+                  <CircularProgress size={28} />
                 </TableCell>
               </TableRow>
             ) : pageTrips.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={columnas} align="center" sx={{ py: 6 }}>
-                  <Typography color="text.secondary" variant="body1">
+                  <Typography color="#94a3b8" variant="body2">
                       {tabValue === 0 
                         ? "No hay pagos pendientes por procesar." 
                         : "No se encontraron pagos en el historial."}
@@ -445,21 +435,21 @@ const PaymentDrivers = () => {
                 return (
                   <TableRow key={uniqueKey} hover>
                     <TableCell>
-                        <Typography fontWeight={700} color="primary" variant="body2" sx={{ whiteSpace: "nowrap" }}>{t.nomenclatura}</Typography>
+                        <Typography variant="body2" sx={{ ...CELL_STRONG_SX, whiteSpace: "nowrap" }}>{t.nomenclatura}</Typography>
                     </TableCell>
                     <TableCell>
                         <Stack direction="row" alignItems="center" spacing={1}>
-                            <LocalShippingIcon fontSize="small" color="action" />
-                            <Typography variant="body2" fontWeight={500}>{t.nombre}</Typography>
+                            <LocalShippingIcon sx={{ fontSize: 16, color: '#94a3b8' }} />
+                            <Typography variant="body2" sx={CELL_SX}>{t.nombre}</Typography>
                         </Stack>
                     </TableCell>
                     <TableCell align="center">
-                        <Chip label={t.stages_count} size="small" />
+                        <Chip label={t.stages_count} size="small" sx={CHIP_NEUTRO_SX} />
                     </TableCell>
                     {esMx ? (
                       <>
                         <TableCell>
-                          <Typography variant="caption" color="text.secondary">
+                          <Typography variant="caption" sx={CELL_MUTED_SX}>
                             {t.recorrido.length ? t.recorrido.join(' → ') : '—'}
                           </Typography>
                         </TableCell>
@@ -490,7 +480,7 @@ const PaymentDrivers = () => {
                         </TableCell>
                       </>
                     ) : (
-                      <TableCell align="right">{t.total_millas_cortas}</TableCell>
+                      <TableCell align="right" sx={{ ...CELL_SX, fontVariantNumeric: 'tabular-nums' }}>{t.total_millas_cortas}</TableCell>
                     )}
 
                     <TableCell align="right">
@@ -535,7 +525,7 @@ const PaymentDrivers = () => {
                                 disabled={!trayecto || trayecto.monto <= 0 || autorizando === uniqueKey}
                                 onClick={() => handleAutorizarTrayecto(t, trayecto)}
                                 startIcon={autorizando === uniqueKey ? <CircularProgress size={14} /> : <TaskAltIcon />}
-                                sx={{ textTransform: 'none', px: 2, py: 0.5, minWidth: '100px', fontSize: '0.75rem', fontWeight: 600 }}
+                                sx={ACCION_BTN_SX}
                               >
                                 Autorizar
                               </Button>
@@ -548,9 +538,8 @@ const PaymentDrivers = () => {
                           <span>
                               <IconButton
                                   size="small"
-                                  color="primary"
                                   onClick={() => navigate(`/ticketPayment/${t.trip_id}`, { state: { driver_id: t.driver_id } })}
-                                  sx={{ border: '1px solid #e0e0e0' }}
+                                  sx={ICON_BTN_SX}
                               >
                                   <VisibilityIcon fontSize="small" />
                               </IconButton>
@@ -568,14 +557,7 @@ const PaymentDrivers = () => {
                                     disabled={!isAutorizado}
                                     onClick={() => handleFinalizarPago(t.trip_id, t.driver_id)}
                                     startIcon={<PaidIcon />}
-                                    sx={{ 
-                                        textTransform: 'none', 
-                                        px: 2, 
-                                        py: 0.5, 
-                                        minWidth: '90px',
-                                        fontSize: '0.75rem',
-                                        fontWeight: 600
-                                    }}
+                                    sx={ACCION_BTN_SX}
                                 >
                                     Pagar
                                 </Button>
@@ -592,19 +574,22 @@ const PaymentDrivers = () => {
         </Table>
       </TableContainer>
 
-      <TablePagination
-        rowsPerPageOptions={[25, 50, 100]}
-        component="div"
-        count={filtered.length}
-        rowsPerPage={rowsPerPage}
-        page={page}
-        onPageChange={(e, newPage) => setPage(newPage)}
-        onRowsPerPageChange={(e) => {
-          setRowsPerPage(parseInt(e.target.value, 10));
-          setPage(0);
-        }}
-        labelRowsPerPage="Filas:"
-      />
+      <Box sx={PAGINATION_BOX_SX}>
+        <TablePagination
+          rowsPerPageOptions={[25, 50, 100]}
+          component="div"
+          count={filtered.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={(e, newPage) => setPage(newPage)}
+          onRowsPerPageChange={(e) => {
+            setRowsPerPage(parseInt(e.target.value, 10));
+            setPage(0);
+          }}
+          labelRowsPerPage="Filas por página:"
+          sx={PAGINATION_SX}
+        />
+      </Box>
 
       <CatalogoTrayectos
         open={catalogoAbierto}
@@ -612,7 +597,7 @@ const PaymentDrivers = () => {
         trayectos={trayectos}
         onCambio={cargarTrayectos}
       />
-    </Paper>
+    </Box>
   );
 };
 
