@@ -13,6 +13,8 @@ import {
   fechaLocal,
   CATEGORIA,
   categoriasPorDefecto,
+  personasDeListas,
+  buscarPersonas,
 } from '../avisos';
 
 describe('corteDiario', () => {
@@ -266,5 +268,29 @@ describe('categorías', () => {
     expect([...categorias].sort()).toEqual(
       [CATEGORIA.SIN_FALLAS, CATEGORIA.SIN_INSPECCION, CATEGORIA.VIAJE_DESPACHO, CATEGORIA.VIAJE_DOCUMENTOS].sort()
     );
+  });
+});
+
+describe('personasDeListas', () => {
+  const listas = {
+    bl: [{ id: '16', name: 'Angelica', user: 'Angelica_22' }, { id: 14, name: 'Richard', user: 'Richard' }],
+    diesel_state: [{ id: '18', name: 'Angelica', user: 'Angelica_20001' }, { id: '14', name: 'Richard', user: 'Richard' }],
+    sin_fallas: null,
+  };
+  const disponibles = [{ id: '23', name: '', user: 'Max_21028' }, { id: '16', name: 'Angelica', user: 'Angelica_22' }];
+
+  it('junta a todos sin repetir, por nombre y luego por usuario', () => {
+    expect(personasDeListas(listas, disponibles).map((p) => p.id)).toEqual(['18', '16', '23', '14']);
+  });
+
+  it('aguanta una lista que no cargó', () => {
+    expect(personasDeListas({ sin_fallas: null }, [])).toEqual([]);
+  });
+
+  it('busca por nombre o por usuario', () => {
+    const personas = personasDeListas(listas, disponibles);
+    expect(buscarPersonas(personas, '20001').map((p) => p.id)).toEqual(['18']);
+    expect(buscarPersonas(personas, 'rich').map((p) => p.id)).toEqual(['14']);
+    expect(buscarPersonas(personas, ' ')).toHaveLength(4);
   });
 });

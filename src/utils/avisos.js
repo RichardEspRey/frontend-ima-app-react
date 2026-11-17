@@ -280,3 +280,26 @@ export const recortarAvisos = (avisos, ahora, maximo = 60) => {
   const limite = fechaLocal(new Date(ahora.getTime() - DIAS_DE_AVISO * 86400000));
   return avisos.filter((a) => String(a.created_at) >= limite).slice(0, maximo);
 };
+
+export const nombreDePersona = (persona) => persona?.name || persona?.user || 'Sin nombre';
+
+export const personasDeListas = (listas, disponibles = []) => {
+  const porId = new Map();
+  [...Object.values(listas).flatMap((lista) => lista || []), ...disponibles].forEach((persona) => {
+    const id = String(persona.id);
+    if (!porId.has(id)) porId.set(id, { id, name: persona.name || '', user: persona.user || '' });
+  });
+  return [...porId.values()].sort(
+    (a, b) =>
+      nombreDePersona(a).localeCompare(nombreDePersona(b), 'es', { sensitivity: 'base' }) ||
+      a.user.localeCompare(b.user)
+  );
+};
+
+export const buscarPersonas = (personas, texto) => {
+  const buscado = String(texto || '').trim().toLowerCase();
+  if (!buscado) return personas;
+  return personas.filter(
+    (p) => nombreDePersona(p).toLowerCase().includes(buscado) || p.user.toLowerCase().includes(buscado)
+  );
+};
