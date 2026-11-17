@@ -24,7 +24,6 @@ const TripScreen = () => {
 
   // 2. Crea la función que el hijo llamará al tener éxito
   const handleFormSuccess = () => {
-    console.log("El formulario hijo guardó con éxito. Reiniciando desde el padre.");
     
     // Limpia el campo de tripNumber en este componente (el padre)
     setTripNumber('');

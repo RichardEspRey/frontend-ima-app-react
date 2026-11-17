@@ -194,7 +194,7 @@ const ImaAdmin = () => {
       <ModalArchivo
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onSave={(data) => console.log('Saved:', data)}
+        onSave={() => {}}
         nombreCampo={valorActual?.tipo || "Documento"} 
         valorActual={valorActual}
         endpoint="IMA_Docs.php" 

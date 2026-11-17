@@ -104,7 +104,6 @@ const DriverScreen = () => {
 
         const result = await response.json();
         if (result.status !== 'success') success = false;
-        console.log(`Documento ${tipo_documento} enviado:`, result);
 
       } catch (error) {
         console.error(`Error al enviar ${tipo_documento}:`, error);

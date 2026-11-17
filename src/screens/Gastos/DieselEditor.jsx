@@ -197,7 +197,6 @@ const DieselEditor = () => {
 
         const respTick = await fetch(`${apiHost}/formularios.php`, { method: 'POST', body: fdTick });
         const jsonTick = await respTick.json();
-        console.log('Tickets:', jsonTick);
 
         if (jsonTick.status === 'success' && Array.isArray(jsonTick.data)) {
             const list = jsonTick.data

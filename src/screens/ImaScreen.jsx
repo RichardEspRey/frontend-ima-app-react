@@ -60,8 +60,7 @@ const ImaScreen = () => {
           body: formDataFile,
         });
 
-        const result = await response.json();
-        console.log(`Documento ${tipo_documento} actualizado:`, result);
+        await response.json();
 
         const { isConfirmed } = await Swal.fire({
           icon: 'success',

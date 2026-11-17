@@ -142,7 +142,6 @@ const TripForm = ({ tripNumber, onSuccess }) => {
 
 
             const result = await response.json();
-            console.log("Respuesta del backend (result):", result);
 
             if (result.status === "success" && result.company && result.company.company_id) {
                 const newOption = { value: result.company.company_id, label: result.company.nombre_compania };
@@ -406,12 +405,6 @@ const TripForm = ({ tripNumber, onSuccess }) => {
             });
         });
 
-        // Log para depuración
-        console.log("--- FormData a enviar (Alta) ---");
-        for (let [key, value] of dataToSend.entries()) {
-            console.log(`${key}:`, value instanceof File ? value.name : value);
-        }
-        console.log("--- Fin FormData ---");
 
         // Enviar a la API
         try {
@@ -423,7 +416,6 @@ const TripForm = ({ tripNumber, onSuccess }) => {
             });
 
             const result = await response.json();
-            console.log("Respuesta del servidor (Alta):", result);
 
             if (response.ok && result.status === "success") {
                 Swal.close();

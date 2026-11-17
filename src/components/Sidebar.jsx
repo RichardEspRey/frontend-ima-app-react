@@ -80,7 +80,9 @@ const Sidebar = () => {
   const tipoUsuario = String(user?.tipo_usuario || user?.type || '').trim().toLowerCase();
 
   useEffect(() => {
-    if (window?.electron?.onUpdateProgress) window.electron.onUpdateProgress(setProgress);
+    if (!window?.electron?.onUpdateProgress) return undefined;
+    const baja = window.electron.onUpdateProgress(setProgress);
+    return typeof baja === 'function' ? baja : undefined;
   }, []);
 
   useEffect(() => {

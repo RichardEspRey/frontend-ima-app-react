@@ -65,7 +65,6 @@ const Finanzas = () => {
       fd.append('op', 'All_finanzas');
       const res = await fetch(`${apiHost}/formularios.php`, { method: 'POST', body: fd });
       const json = await res.json();
-      console.log(json)
 
       if (json.status === 'success' && Array.isArray(json.data)) {
         const norm = json.data.map(t => {
