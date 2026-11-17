@@ -160,7 +160,7 @@ const PaymentDrivers = () => {
     setPage(0);
   };
 
-  const handleFinalizarPago = async (tripId, driverId) => {
+  const handleFinalizarPago = async (tripId, driverId, nomenclatura) => {
     Swal.fire({
         title: '¿Finalizar Pago?',
         text: "Se marcará este viaje como PAGADO.",
@@ -184,10 +184,10 @@ const PaymentDrivers = () => {
                   const fdPush = new FormData();
                   fdPush.append("op", "send_push");
                   fdPush.append("driver_id", driverId);
-                  fdPush.append("title", "Ticket de pago");
-                  fdPush.append("body", "Viaje.");
+                  fdPush.append("title", "Pago realizado");
+                  fdPush.append("body", `Se registró el pago de tu viaje ${nomenclatura}.`);
 
-                  fetch(`http://localhost/API/Mobile.php`, { method: "POST", body: fdPush }).catch(() => {});
+                  fetch(`${apiHost}/Mobile.php`, { method: "POST", body: fdPush }).catch(() => {});
 
                   Swal.fire("Éxito", "Pago actualizado correctamente", "success");
                   fetchPayments();
@@ -555,7 +555,7 @@ const PaymentDrivers = () => {
                                     color="success"
                                     size="small"
                                     disabled={!isAutorizado}
-                                    onClick={() => handleFinalizarPago(t.trip_id, t.driver_id)}
+                                    onClick={() => handleFinalizarPago(t.trip_id, t.driver_id, t.nomenclatura)}
                                     startIcon={<PaidIcon />}
                                     sx={ACCION_BTN_SX}
                                 >
