@@ -32,6 +32,7 @@ import { UNIDAD, obtenerAvisosDeInspecciones, obtenerSuscriptoresInspeccion } fr
 import notiSound from "../assets/sounds/update.mp3";
 import { sondear, EVENTO_NOTIFICACIONES_NUEVAS } from "../utils/sondeo";
 import { useAvisosDerivados } from "../hooks/useAvisosDerivados";
+import { guardarNomenclaturas, leerNomenclaturas } from "../utils/nomenclaturasGuardadas";
 import { useViajesFiltrosStore } from "../store/useViajesFiltrosStore";
 
 const LISTA_MS = 5 * 60 * 1000;
@@ -111,8 +112,8 @@ const NotificationBell = () => {
   const [notifications, setNotifications] = useState([]);
   const [inspecciones, setInspecciones] = useState([]);
   const conocidas = useRef(null);
-  const [nomenclaturas, setNomenclaturas] = useState({});
-  const pedidas = useRef(new Set());
+  const [nomenclaturas, setNomenclaturas] = useState(() => leerNomenclaturas());
+  const pedidas = useRef(new Set(Object.keys(nomenclaturas)));
   const [seenIds, setSeenIds] = useState(() => leerIds(seenKey(user?.id)));
   const [ocultas, setOcultas] = useState(() => leerIds(hiddenKey(user?.id)));
 
@@ -251,7 +252,9 @@ const NotificationBell = () => {
       })
     ).then((pares) => {
       const nuevas = Object.fromEntries(pares.filter(Boolean));
-      if (Object.keys(nuevas).length > 0) setNomenclaturas((prev) => ({ ...prev, ...nuevas }));
+      if (Object.keys(nuevas).length === 0) return;
+      guardarNomenclaturas(nuevas);
+      setNomenclaturas((prev) => ({ ...prev, ...nuevas }));
     });
   }, [notifications, apiHost]);
 
