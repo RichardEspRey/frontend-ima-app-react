@@ -116,7 +116,15 @@ por menos riesgo al que menos. Del A1 al A6 son solo front y no necesitan nada d
   iniciativa propia.**
 - **Esperado:** hasta 20 peticiones menos al abrir sesión.
 
-### A5 · Caché en los catálogos de los formularios
+### A5 · Caché en los catálogos de los formularios — HECHO (2026-11-17)
+
+> `Emiliano` `3fd29ca`. `src/utils/catalogos.js` (`pedirCatalogo`, `invalidarCatalogo`)
+> sobre `conCache`; los seis hooks pasan por ahí sin cambiar lo que devuelven. Vigencias:
+> compañías, bodegas y cajas externas 5 min; conductores, camiones y cajas 1 min, porque
+> «activos» depende de la disponibilidad. Los `refetch` fuerzan la petición. **El refactor
+> no se tocó:** esos catálogos ya son entidades con TanStack Query (`staleTime` global de
+> 5 min). **Falta la prueba a mano de Emiliano:** crear un viaje dando de alta una compañía
+> y una bodega nuevas, y ver que aparezcan en la lista sin recargar.
 
 - **Problema:** § 3.6. Los seis hooks de `src/hooks/useFetch*.jsx`.
 - **Qué hacer:** un ayudante `src/utils/cacheDeCatalogo.js` (promesa compartida + vigencia
