@@ -46,7 +46,8 @@ const PanelInspecciones = () => {
     const [parametros] = useSearchParams();
     const ladoPedido = parametros.get('lado') === UNIDAD.CAJA ? UNIDAD.CAJA : parametros.get('lado') === UNIDAD.CAMION ? UNIDAD.CAMION : null;
     const [lado, setLado] = useState(ladoPedido || UNIDAD.CAMION);
-    const [pestana, setPestana] = useState('pendientes');
+    const subPedida = ['sin-fallas', 'sin-inspeccion'].includes(parametros.get('sub')) ? parametros.get('sub') : null;
+    const [pestana, setPestana] = useState(subPedida || 'pendientes');
     const [filas, setFilas] = useState([]);
     const [cargando, setCargando] = useState(true);
     const [error, setError] = useState(null);
@@ -83,6 +84,13 @@ const PanelInspecciones = () => {
         setPagina(0);
         setAbierta(null);
     }, [ladoPedido, parametros]);
+
+    useEffect(() => {
+        if (!subPedida) return;
+        setPestana(subPedida);
+        setPagina(0);
+        setAbierta(null);
+    }, [subPedida, parametros]);
 
     const filtradas = useMemo(() => filas.filter(fila => {
         const completada = fila.estatus_lado === 'completada';

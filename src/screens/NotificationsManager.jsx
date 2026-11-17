@@ -72,7 +72,7 @@ const CATEGORIAS = [
   {
     id: "inspecciones",
     nombre: "Inspecciones",
-    descripcion: "Cuando un operador manda una inspección con algo que reparar. Camión y caja avisan por separado.",
+    descripcion: "Cuando un operador manda una inspección: con algo que reparar (camión y caja avisan por separado) o sin fallas. También cuando un operador junta más de un viaje sin inspección.",
     icono: BuildIcon,
     color: "#ea580c",
     fondo: "#ffedd5",
