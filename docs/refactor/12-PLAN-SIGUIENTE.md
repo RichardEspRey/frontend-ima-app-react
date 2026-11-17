@@ -171,7 +171,18 @@ por menos riesgo al que menos. Del A1 al A6 son solo front y no necesitan nada d
 - **Riesgo:** bajo, pero es global. Si el hosting no tiene `mod_deflate`, la regla dentro
   de `<IfModule>` simplemente no hace nada.
 
-### A8 · Caché en el mapa — toca producción
+### A8 · Caché en el mapa — ENTREGADO, falta subir (2026-11-17)
+
+> `docs/backend/Tracking.php`, sintaxis revisada con `php-parser`. Al escribirlo se vio que
+> **las 12 unidades ya salían «Unknown address»**: Nominatim está rechazando al servidor, y
+> cada petición perdía ~6 s esperando esos fallos. El archivo nuevo guarda la respuesta
+> 45 s, las direcciones 7 días por coordenada a 3 decimales, consulta como mucho 4 nuevas
+> por actualización con 1.1 s entre ellas, y si fallan dos seguidas deja de intentar 30 min.
+> Sin dirección manda `address` vacío y el mapa enseña coordenadas. `Emiliano` ya pide
+> `${apiHost}/Tracking.php` en vez de la URL fija. **Al subirlo, medir:** la primera
+> petición puede tardar lo de Wialon más los intentos de dirección; la segunda dentro de
+> 45 s debe bajar de medio segundo. Si las direcciones siguen sin llegar, el servidor está
+> bloqueado en Nominatim y habría que cambiar de proveedor (decisión de Emiliano).
 
 - **Problema:** `Tracking.php` tarda entre 7 y 21 s. Con el archivo en la mano (llegó el
   2026-11-17) la causa no es Wialon sino **Nominatim**: después de pedirle las unidades a
