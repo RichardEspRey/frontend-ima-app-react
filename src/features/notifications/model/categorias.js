@@ -5,48 +5,128 @@ import {
   useSuscriptoresInspeccion,
 } from "../../../entities/maintenance-point"
 import {
+  CATEGORIA_AVISO,
+  hooksDeAviso,
   useDesuscribir,
   useSuscribir,
   useSuscriptores,
   useUsuariosDisponibles,
 } from "../../../entities/notification"
 
+const variablesDeAviso = (persona, usuarioId) => ({ userId: persona.id, usuarioId })
+
+const deAviso = (categoria) => ({ id: categoria, ...hooksDeAviso(categoria), variables: variablesDeAviso })
+
 /**
- * Los avisos que llegan a la campana y cómo se administra quién los recibe.
+ * Los avisos de la campana agrupados por pantalla, y cómo se administra quién
+ * recibe cada uno.
  *
- * Cada categoría trae sus propias consultas porque viven en endpoints distintos:
- * los BL en `Notifications.php` y las inspecciones en `mtto.php`. `variables`
- * traduce a la persona al formato que espera la mutación de cada uno. El ícono
- * y los colores viven en la UI, con la misma `id`.
+ * Cada aviso tiene su propia lista de personas: de una misma pantalla salen
+ * varios y se asignan por separado. Las consultas viven en endpoints distintos
+ * —los BL en `Notifications.php`, las inspecciones con falla en `mtto.php` y el
+ * resto en `avisos.php`—, y `variables` traduce a la persona al formato que
+ * espera la mutación de cada uno. El ícono y los colores viven en la UI, con la
+ * misma `id`.
+ *
+ * @readonly
+ * @type {Array.<{id: string, nombre: string, categorias: Array.<object>}>}
+ */
+export const SECCIONES_DE_AVISO = [
+  {
+    id: "viajes",
+    nombre: "Viajes",
+    categorias: [
+      {
+        id: "bl",
+        nombre: "BL Firmado",
+        descripcion: "Cuando se sube el BL firmado de un viaje.",
+        ejemplo: { titulo: "BL Firmado", subtitulo: "243-US-88T2-26" },
+        useSuscriptores,
+        useDisponibles: useUsuariosDisponibles,
+        useSuscribir,
+        useDesuscribir,
+        variables: (persona) => persona.id,
+      },
+      {
+        ...deAviso(CATEGORIA_AVISO.VIAJE_PROGRAMADO),
+        nombre: "Viaje programado",
+        descripcion: "Cuando se agrega un viaje a la pestaña Programación de Viajes.",
+        ejemplo: { titulo: "Viaje programado", subtitulo: "PALOS GARZA HUB · Camión 10 · Luis Mellado" },
+      },
+      {
+        ...deAviso(CATEGORIA_AVISO.VIAJE_DESPACHO),
+        nombre: "Viaje en despacho",
+        descripcion: "Cuando un viaje entra a Despacho. Dice qué documentos le faltan.",
+        ejemplo: { titulo: "Viaje en despacho 266-US-26", subtitulo: "Faltan 1: ORDEN RETIRO" },
+      },
+      {
+        ...deAviso(CATEGORIA_AVISO.VIAJE_DOCUMENTOS),
+        nombre: "Documentos en despacho",
+        descripcion:
+          "Cuando se agregan documentos a un viaje en Despacho. Los que entran juntos van en un solo aviso, con los que siguen faltando.",
+        ejemplo: { titulo: "2 documentos agregados 264-US-26", subtitulo: "MANIFIESTO, QR MANIFESTO" },
+      },
+    ],
+  },
+  {
+    id: "reparaciones",
+    nombre: "Reparaciones",
+    categorias: [
+      {
+        id: "inspecciones",
+        nombre: "Inspecciones",
+        descripcion:
+          "Cuando un operador manda una inspección con algo que reparar. Camión y caja avisan por separado.",
+        ejemplo: { titulo: "Nueva inspección 238-US-26", subtitulo: "Camión 11 · Alberto Cruz Galindo" },
+        useSuscriptores: useSuscriptoresInspeccion,
+        useDisponibles: useDisponiblesInspeccion,
+        useSuscribir: useSuscribirInspeccion,
+        useDesuscribir: useDesuscribirInspeccion,
+        variables: variablesDeAviso,
+      },
+      {
+        ...deAviso(CATEGORIA_AVISO.SIN_FALLAS),
+        nombre: "Inspecciones sin fallas",
+        descripcion: "Cuando un operador manda una inspección sin nada que reparar, con o sin caja.",
+        ejemplo: { titulo: "Inspección sin fallas 257-US-26", subtitulo: "Camión 12 · Jose Luis Valdes" },
+      },
+      {
+        ...deAviso(CATEGORIA_AVISO.SIN_INSPECCION),
+        nombre: "Viajes sin inspección",
+        descripcion:
+          "Cuando un operador junta más de un viaje sin inspección. Vuelve a avisar cada vez que suma otro.",
+        ejemplo: { titulo: "Viajes sin inspección", subtitulo: "Alejandro Zablah Ruiz · 5 viajes" },
+      },
+    ],
+  },
+  {
+    id: "diesel",
+    nombre: "Diesel",
+    categorias: [
+      {
+        ...deAviso(CATEGORIA_AVISO.DIESEL_STATE),
+        nombre: "State pending",
+        descripcion:
+          "Una vez al día, a las 10:00, con los estados pendientes acumulados en el administrador de diesel.",
+        ejemplo: { titulo: "State pending", subtitulo: "15 estados pendientes en 8 viajes" },
+      },
+      {
+        ...deAviso(CATEGORIA_AVISO.DIESEL_FLEETONE),
+        nombre: "Fleet One pending",
+        descripcion: "Una vez al día, a las 10:00, con los tickets de Fleet One pendientes acumulados.",
+        ejemplo: { titulo: "Fleet One pending", subtitulo: "89 tickets pendientes en 32 viajes" },
+      },
+    ],
+  },
+]
+
+/**
+ * Todos los avisos en una sola lista, en el orden en que se muestran.
  *
  * @readonly
  * @type {Array.<object>}
  */
-export const CATEGORIAS_DE_AVISO = [
-  {
-    id: "bl",
-    nombre: "BL Firmado",
-    descripcion: "Cuando se sube el BL firmado de un viaje.",
-    ejemplo: { titulo: "BL Firmado", subtitulo: "243-US-88T2-26" },
-    useSuscriptores,
-    useDisponibles: useUsuariosDisponibles,
-    useSuscribir,
-    useDesuscribir,
-    variables: (persona) => persona.id,
-  },
-  {
-    id: "inspecciones",
-    nombre: "Inspecciones",
-    descripcion:
-      "Cuando un operador manda una inspección: con algo que reparar (camión y caja avisan por separado) o sin fallas. También cuando un operador junta más de un viaje sin inspección.",
-    ejemplo: { titulo: "Nueva inspección 238-US-26", subtitulo: "Camión 11 · Alberto Cruz Galindo" },
-    useSuscriptores: useSuscriptoresInspeccion,
-    useDisponibles: useDisponiblesInspeccion,
-    useSuscribir: useSuscribirInspeccion,
-    useDesuscribir: useDesuscribirInspeccion,
-    variables: (persona, usuarioId) => ({ userId: persona.id, usuarioId }),
-  },
-]
+export const CATEGORIAS_DE_AVISO = SECCIONES_DE_AVISO.flatMap((seccion) => seccion.categorias)
 
 /**
  * El nombre con el que se conoce a una persona en las listas de avisos.

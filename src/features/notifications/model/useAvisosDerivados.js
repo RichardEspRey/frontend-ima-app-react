@@ -18,8 +18,11 @@ import {
   avisosDeProgramacion,
   avisosSinFallas,
   avisosSinInspeccion,
+  CATEGORIA_AVISO,
+  categoriasPorDefecto,
   corteDiario,
   recortarAvisos,
+  useMisCategorias,
 } from "../../../entities/notification"
 import { LLAVE_PROGRAMACIONES, obtenerProgramaciones } from "../../../entities/schedule"
 import { PESTANA_PROGRAMACION, obtenerViajes } from "../../../entities/trip"
@@ -169,15 +172,19 @@ function useCorteDeDiesel() {
 /**
  * Los avisos que se calculan en el front con datos que la API ya devuelve.
  *
- * Son cuatro fuentes, cada una para quien le toca:
+ * Son cuatro fuentes y siete avisos; cada aviso tiene su lista de personas en
+ * Notificaciones manager (`avisos.php`), y una fuente solo se consulta si la
+ * persona recibe alguno de los suyos:
  *
- * - **Diesel**, para quien ve Gastos diesel: State pending y Fleet One pending
- *   acumulados, una vez al día a las 10:00 de Monterrey.
- * - **Mantenimiento**, para los suscritos a Inspecciones: las inspecciones sin
- *   fallas y los operadores con más de un viaje sin inspección.
- * - **Programación**, para quien ve esa pestaña: cada viaje programado.
- * - **Despacho**, para quien ve esa pestaña: cada viaje que entra y cada tanda
- *   de documentos que se le agrega.
+ * - **Diesel**: State pending y Fleet One pending acumulados, una vez al día a
+ *   las 10:00 de Monterrey.
+ * - **Mantenimiento**: las inspecciones sin fallas y los operadores con más de
+ *   un viaje sin inspección.
+ * - **Programación**: cada viaje programado.
+ * - **Despacho**: cada viaje que entra y cada tanda de documentos que se le agrega.
+ *
+ * Si `avisos.php` no responde se reparte como antes de que existieran las
+ * listas: por permiso de pantalla y por la suscripción a Inspecciones.
  *
  * Lo usan el aviso emergente y la campana; comparten caché, así que montarlo dos
  * veces no duplica peticiones.
@@ -190,10 +197,26 @@ export function useAvisosDerivados() {
   const idUsuario = usuario?.id
   const conSesion = Boolean(idUsuario)
 
-  const veDiesel = conSesion && can(PERMISOS.GASTOS_DIESEL)
-  const veProgramacion = conSesion && can(PERMISOS.VIAJES_TAB_PROGRAMACION)
-  const veDespacho = conSesion && can(PERMISOS.VIAJES_TAB_DESPACHO)
-  const recibeInspecciones = useRecibeAvisoInspeccion(idUsuario)
+  const suscritoAInspecciones = useRecibeAvisoInspeccion(idUsuario)
+  const { data: delServidor } = useMisCategorias(idUsuario)
+  const categorias = useMemo(
+    () =>
+      delServidor
+        ? new Set(delServidor)
+        : categoriasPorDefecto({
+            veDiesel: conSesion && can(PERMISOS.GASTOS_DIESEL),
+            recibeInspecciones: suscritoAInspecciones,
+            veProgramacion: conSesion && can(PERMISOS.VIAJES_TAB_PROGRAMACION),
+            veDespacho: conSesion && can(PERMISOS.VIAJES_TAB_DESPACHO),
+          }),
+    [delServidor, conSesion, can, suscritoAInspecciones],
+  )
+  const recibe = (...lista) => conSesion && lista.some((categoria) => categorias.has(categoria))
+
+  const veDiesel = recibe(CATEGORIA_AVISO.DIESEL_STATE, CATEGORIA_AVISO.DIESEL_FLEETONE)
+  const recibeInspecciones = recibe(CATEGORIA_AVISO.SIN_FALLAS, CATEGORIA_AVISO.SIN_INSPECCION)
+  const veProgramacion = recibe(CATEGORIA_AVISO.VIAJE_PROGRAMADO)
+  const veDespacho = recibe(CATEGORIA_AVISO.VIAJE_DESPACHO, CATEGORIA_AVISO.VIAJE_DOCUMENTOS)
 
   const corte = useCorteDeDiesel()
   const diesel = useQuery({
@@ -268,9 +291,13 @@ export function useAvisosDerivados() {
         cargados: veProgramacion && programacion.isSuccess,
       },
       { id: "despacho", avisos: veDespacho ? (despacho.data ?? []) : [], cargados: veDespacho && despacho.isSuccess },
-    ]
+    ].map((fuente) => ({
+      ...fuente,
+      avisos: fuente.avisos.filter((aviso) => categorias.has(aviso.categoria)),
+    }))
     return { fuentes, avisos: fuentes.flatMap((fuente) => fuente.avisos) }
   }, [
+    categorias,
     veDiesel,
     diesel.data,
     diesel.isSuccess,

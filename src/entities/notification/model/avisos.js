@@ -36,6 +36,47 @@ export const TIPO_AVISO = {
   DOCUMENTOS: "documentos",
 }
 
+/**
+ * Los avisos calculados en el front, uno por cada lista de Notificaciones manager.
+ *
+ * Son las categorías de `avisos.php` y de la tabla `notif_suscriptores`.
+ *
+ * @readonly
+ * @enum {string}
+ */
+export const CATEGORIA_AVISO = {
+  DIESEL_STATE: "diesel_state",
+  DIESEL_FLEETONE: "diesel_fleetone",
+  SIN_FALLAS: "sin_fallas",
+  SIN_INSPECCION: "sin_inspeccion",
+  VIAJE_PROGRAMADO: "viaje_programado",
+  VIAJE_DESPACHO: "viaje_despacho",
+  VIAJE_DOCUMENTOS: "viaje_documentos",
+}
+
+/**
+ * A qué avisos tiene derecho una persona cuando el servidor no da sus listas.
+ *
+ * Es el reparto de antes de que existiera `avisos.php`: por permiso de pantalla
+ * y por la suscripción a Inspecciones. Sirve de respaldo si ese archivo no está
+ * o falla, para que nadie se quede sin avisos.
+ *
+ * @param {object} acceso Lo que la persona puede ver.
+ * @param {boolean} acceso.veDiesel Si entra a Gastos diesel.
+ * @param {boolean} acceso.recibeInspecciones Si está en la lista de Inspecciones.
+ * @param {boolean} acceso.veProgramacion Si ve la pestaña Programación.
+ * @param {boolean} acceso.veDespacho Si ve la pestaña Despacho.
+ * @returns {Set.<string>} Las categorías que le tocan.
+ */
+export function categoriasPorDefecto({ veDiesel, recibeInspecciones, veProgramacion, veDespacho }) {
+  return new Set([
+    ...(veDiesel ? [CATEGORIA_AVISO.DIESEL_STATE, CATEGORIA_AVISO.DIESEL_FLEETONE] : []),
+    ...(recibeInspecciones ? [CATEGORIA_AVISO.SIN_FALLAS, CATEGORIA_AVISO.SIN_INSPECCION] : []),
+    ...(veProgramacion ? [CATEGORIA_AVISO.VIAJE_PROGRAMADO] : []),
+    ...(veDespacho ? [CATEGORIA_AVISO.VIAJE_DESPACHO, CATEGORIA_AVISO.VIAJE_DOCUMENTOS] : []),
+  ])
+}
+
 const MILISEGUNDOS_POR_DIA = 86400000
 const MAXIMO_EN_DETALLE = 3
 
@@ -154,6 +195,7 @@ export function avisosDeDiesel(viajes, corte) {
   if (state.total > 0) {
     avisos.push({
       id: `diesel-state-${corte.fecha}`,
+      categoria: CATEGORIA_AVISO.DIESEL_STATE,
       tipo: TIPO_AVISO.DIESEL,
       titulo: "State pending",
       subtitulo: `${contar(state.total, "estado pendiente", "estados pendientes")} en ${contar(state.viajes, "viaje", "viajes")}`,
@@ -165,6 +207,7 @@ export function avisosDeDiesel(viajes, corte) {
   if (fleet.total > 0) {
     avisos.push({
       id: `diesel-fleetone-${corte.fecha}`,
+      categoria: CATEGORIA_AVISO.DIESEL_FLEETONE,
       tipo: TIPO_AVISO.DIESEL,
       titulo: "Fleet One pending",
       subtitulo: `${contar(fleet.total, "ticket pendiente", "tickets pendientes")} en ${contar(fleet.viajes, "viaje", "viajes")}`,
@@ -192,6 +235,7 @@ export function avisosSinFallas(inspecciones, ahora) {
     .filter((fila) => String(fila.fecha_creacion || "").slice(0, 10) >= limite)
     .map((fila) => ({
       id: `sin-fallas-${fila.cl_final_id}`,
+      categoria: CATEGORIA_AVISO.SIN_FALLAS,
       tipo: TIPO_AVISO.MANTENIMIENTO,
       titulo: `Inspección sin fallas ${fila.nomenclatura || fila.trip_number || ""}`.trim(),
       subtitulo: juntar([
@@ -239,6 +283,7 @@ export function avisosSinInspeccion(viajes) {
       const fechas = grupo.viajes.map((viaje) => String(viaje.creation_date || "")).sort()
       return {
         id: `sin-inspeccion-${llave}-${grupo.viajes.length}`,
+        categoria: CATEGORIA_AVISO.SIN_INSPECCION,
         tipo: TIPO_AVISO.MANTENIMIENTO,
         titulo: "Viajes sin inspección",
         subtitulo: `${grupo.operador} · ${grupo.viajes.length} viajes`,
@@ -276,6 +321,7 @@ export function avisosDeProgramacion(programaciones, vistas, ahora, pestana) {
     nuevasVistas[una.id] = creado
     return {
       id: `programacion-${una.id}`,
+      categoria: CATEGORIA_AVISO.VIAJE_PROGRAMADO,
       tipo: TIPO_AVISO.PROGRAMACION,
       titulo: "Viaje programado",
       subtitulo: juntar([
@@ -347,6 +393,7 @@ const textoDeFaltantes = (viaje) => {
 export function avisosDeDespacho(viajes, pestana) {
   return viajes.map((viaje) => ({
     id: `despacho-${viaje.trip_id}`,
+    categoria: CATEGORIA_AVISO.VIAJE_DESPACHO,
     tipo: TIPO_AVISO.DESPACHO,
     titulo: `Viaje en despacho ${viaje.trip_number || ""}`.trim(),
     subtitulo: juntar([viaje.truck_unidad ? `Camión ${viaje.truck_unidad}` : "", viaje.driver_nombre]),
@@ -387,6 +434,7 @@ export function avisosDeDocumentos(viajes, base, ahora, pestana) {
 
     avisos.push({
       id: `documentos-${llave}-${agregados.map((doc) => doc.id).sort().join("-")}`,
+      categoria: CATEGORIA_AVISO.VIAJE_DOCUMENTOS,
       tipo: TIPO_AVISO.DOCUMENTOS,
       titulo:
         agregados.length === 1

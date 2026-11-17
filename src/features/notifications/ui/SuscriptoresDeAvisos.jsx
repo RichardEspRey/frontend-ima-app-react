@@ -23,12 +23,15 @@ import {
 } from "@mui/material"
 import BuildIcon from "@mui/icons-material/Build"
 import CheckIcon from "@mui/icons-material/Check"
+import DescriptionIcon from "@mui/icons-material/Description"
+import EventAvailableIcon from "@mui/icons-material/EventAvailable"
+import LocalGasStationIcon from "@mui/icons-material/LocalGasStation"
 import LocalShippingIcon from "@mui/icons-material/LocalShipping"
 import PersonAddIcon from "@mui/icons-material/PersonAddAlt1"
 import PersonRemoveIcon from "@mui/icons-material/PersonRemoveOutlined"
 import SearchIcon from "@mui/icons-material/Search"
 
-import { fechaDeNotificacion } from "../../../entities/notification"
+import { CATEGORIA_AVISO, fechaDeNotificacion } from "../../../entities/notification"
 import { useSesion } from "../../../shared/auth"
 import {
   BloqueEsqueleto,
@@ -41,11 +44,18 @@ import {
   TINTE,
   notify,
 } from "../../../shared/ui"
-import { CATEGORIAS_DE_AVISO, buscarPersonas, nombreDe } from "../model/categorias"
+import { SECCIONES_DE_AVISO, buscarPersonas, nombreDe } from "../model/categorias"
 
 const APARIENCIA = {
   bl: { Icono: LocalShippingIcon, color: COLOR.INFO, fondo: COLOR.INFO_FONDO },
   inspecciones: { Icono: BuildIcon, color: TINTE.NARANJA.texto, fondo: TINTE.NARANJA.fondo },
+  [CATEGORIA_AVISO.SIN_FALLAS]: { Icono: BuildIcon, color: TINTE.NARANJA.texto, fondo: TINTE.NARANJA.fondo },
+  [CATEGORIA_AVISO.SIN_INSPECCION]: { Icono: BuildIcon, color: TINTE.NARANJA.texto, fondo: TINTE.NARANJA.fondo },
+  [CATEGORIA_AVISO.VIAJE_PROGRAMADO]: { Icono: EventAvailableIcon, color: TINTE.TEAL.texto, fondo: TINTE.TEAL.fondo },
+  [CATEGORIA_AVISO.VIAJE_DESPACHO]: { Icono: LocalShippingIcon, color: COLOR.INFO, fondo: COLOR.INFO_FONDO },
+  [CATEGORIA_AVISO.VIAJE_DOCUMENTOS]: { Icono: DescriptionIcon, color: TINTE.VIOLETA.texto, fondo: TINTE.VIOLETA.fondo },
+  [CATEGORIA_AVISO.DIESEL_STATE]: { Icono: LocalGasStationIcon, color: TINTE.AMBAR.texto, fondo: TINTE.AMBAR.fondo },
+  [CATEGORIA_AVISO.DIESEL_FLEETONE]: { Icono: LocalGasStationIcon, color: TINTE.AMBAR.texto, fondo: TINTE.AMBAR.fondo },
 }
 
 const ETIQUETA_SX = { ...SECTION_LABEL_SX, display: "block", lineHeight: 1, textTransform: "uppercase" }
@@ -413,23 +423,33 @@ function TarjetaAviso({ categoria }) {
 }
 
 /**
- * Los avisos de la campana, una tarjeta por cada uno, con quién los recibe.
+ * Los avisos de la campana agrupados por pantalla, una tarjeta por cada uno,
+ * con quién los recibe.
  *
- * @returns {object} La rejilla de tarjetas.
+ * @returns {object} Las secciones con sus tarjetas.
  */
 export function SuscriptoresDeAvisos() {
   return (
-    <Box
-      sx={{
-        display: "grid",
-        gridTemplateColumns: { xs: "1fr", lg: "1fr 1fr" },
-        gap: 3,
-        alignItems: "start",
-      }}
-    >
-      {CATEGORIAS_DE_AVISO.map((categoria) => (
-        <TarjetaAviso key={categoria.id} categoria={categoria} />
+    <Stack spacing={5}>
+      {SECCIONES_DE_AVISO.map((seccion) => (
+        <Box key={seccion.id}>
+          <Typography variant="subtitle1" fontWeight={800} color={COLOR.TINTA} sx={{ mb: 2 }}>
+            {seccion.nombre}
+          </Typography>
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", lg: "1fr 1fr" },
+              gap: 3,
+              alignItems: "start",
+            }}
+          >
+            {seccion.categorias.map((categoria) => (
+              <TarjetaAviso key={categoria.id} categoria={categoria} />
+            ))}
+          </Box>
+        </Box>
       ))}
-    </Box>
+    </Stack>
   )
 }

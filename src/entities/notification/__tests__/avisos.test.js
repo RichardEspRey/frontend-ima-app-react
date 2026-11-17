@@ -11,6 +11,8 @@ import {
   documentosDeViaje,
   recortarAvisos,
   fechaLocal,
+  CATEGORIA_AVISO,
+  categoriasPorDefecto,
 } from '../model/avisos';
 
 describe('corteDiario', () => {
@@ -237,5 +239,27 @@ describe('recortarAvisos', () => {
     ];
     expect(recortarAvisos(avisos, ahora).map((a) => a.id)).toEqual(['a', 'b']);
     expect(recortarAvisos(avisos, ahora, 1).map((a) => a.id)).toEqual(['a']);
+  });
+});
+
+describe('categorías', () => {
+  it('cada aviso dice a qué lista pertenece', () => {
+    const corte = { fecha: '2026-11-16', momento: new Date(2026, 10, 16, 10, 0, 0) };
+    const [state, fleet] = avisosDeDiesel([{ state_pending_count: '1', fleetone_pending_count: '1' }], corte);
+    expect(state.categoria).toBe(CATEGORIA_AVISO.DIESEL_STATE);
+    expect(fleet.categoria).toBe(CATEGORIA_AVISO.DIESEL_FLEETONE);
+    expect(avisosDeDespacho([viajeDeEjemplo([])], 1)[0].categoria).toBe(CATEGORIA_AVISO.VIAJE_DESPACHO);
+  });
+
+  it('sin listas del servidor, reparte por permiso de pantalla', () => {
+    const categorias = categoriasPorDefecto({ veDiesel: false, recibeInspecciones: true, veProgramacion: false, veDespacho: true });
+    expect([...categorias].sort()).toEqual(
+      [
+        CATEGORIA_AVISO.SIN_FALLAS,
+        CATEGORIA_AVISO.SIN_INSPECCION,
+        CATEGORIA_AVISO.VIAJE_DESPACHO,
+        CATEGORIA_AVISO.VIAJE_DOCUMENTOS,
+      ].sort(),
+    );
   });
 });

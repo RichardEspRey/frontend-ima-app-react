@@ -5,6 +5,7 @@ Las notificaciones de la campana y quiénes reciben las de viajes.
 ## Contenido
 
 - `api/notificaciones.js` — `INTERVALO_NOTIFICACIONES_MS`, `obtenerNotificaciones`, `useNotificaciones`, `obtenerNotificacionesNuevas`, `useNotificacionesNuevas`, `obtenerSuscriptores`, `obtenerUsuariosDisponibles`, `suscribir`… (14)
+- `api/suscripciones.js` — `LLAVE_AVISOS`, `obtenerMisCategorias`, `useMisCategorias`, `obtenerSuscriptoresDeAviso`, `suscribirAAviso`, `desuscribirDeAviso`, `hooksDeAviso`… (9)
 - `model/avisos.js` — `ZONA_AVISOS`, `HORA_CORTE_DIESEL`, `TIPO_AVISO`, `corteDiario`, `avisosDeDiesel`, `avisosSinFallas`, `avisosSinInspeccion`, `avisosDeProgramacion`… (16)
 - `model/notificaciones.js` — `esquemaNotificacion`, `normalizarNotificaciones`, `sinAnunciar`, `fechaDeNotificacion`, `diasDeDiferencia`, `etiquetaDeDia`… (8)
 

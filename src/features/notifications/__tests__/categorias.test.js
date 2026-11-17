@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { CATEGORIAS_DE_AVISO, buscarPersonas, nombreDe } from "../model/categorias"
+import { CATEGORIAS_DE_AVISO, SECCIONES_DE_AVISO, buscarPersonas, nombreDe } from "../model/categorias"
 
 const personas = [
   { id: "20", name: "Angeles", user: "Angeles_87" },
@@ -27,8 +27,19 @@ describe("buscarPersonas", () => {
 })
 
 describe("CATEGORIAS_DE_AVISO", () => {
-  it("trae BL e inspecciones, cada una con sus cuatro consultas", () => {
-    expect(CATEGORIAS_DE_AVISO.map((c) => c.id)).toEqual(["bl", "inspecciones"])
+  it("trae un aviso por lista, cada uno con sus cuatro consultas", () => {
+    expect(CATEGORIAS_DE_AVISO.map((c) => c.id)).toEqual([
+      "bl",
+      "viaje_programado",
+      "viaje_despacho",
+      "viaje_documentos",
+      "inspecciones",
+      "sin_fallas",
+      "sin_inspeccion",
+      "diesel_state",
+      "diesel_fleetone",
+    ])
+    expect(SECCIONES_DE_AVISO.map((s) => s.id)).toEqual(["viajes", "reparaciones", "diesel"])
     for (const categoria of CATEGORIAS_DE_AVISO) {
       for (const hook of ["useSuscriptores", "useDisponibles", "useSuscribir", "useDesuscribir"]) {
         expect(typeof categoria[hook]).toBe("function")
@@ -37,7 +48,10 @@ describe("CATEGORIAS_DE_AVISO", () => {
   })
 
   it("cada endpoint recibe a la persona como la espera", () => {
-    const [bl, inspecciones] = CATEGORIAS_DE_AVISO
+    const bl = CATEGORIAS_DE_AVISO.find((c) => c.id === "bl")
+    const inspecciones = CATEGORIAS_DE_AVISO.find((c) => c.id === "inspecciones")
+    const diesel = CATEGORIAS_DE_AVISO.find((c) => c.id === "diesel_state")
+    expect(diesel.variables({ id: "20" }, "7")).toEqual({ userId: "20", usuarioId: "7" })
     expect(bl.variables({ id: "20" }, "7")).toBe("20")
     expect(inspecciones.variables({ id: "20" }, "7")).toEqual({ userId: "20", usuarioId: "7" })
   })

@@ -14,6 +14,8 @@ export {
   HORA_CORTE_DIESEL,
   DIAS_DE_AVISO_DERIVADO,
   TIPO_AVISO,
+  CATEGORIA_AVISO,
+  categoriasPorDefecto,
   fechaLocal,
   relojEnZona,
   corteDiario,
@@ -27,6 +29,18 @@ export {
   nombreDeDocumento,
   recortarAvisos,
 } from "./model/avisos"
+
+export {
+  LLAVE_AVISOS,
+  INTERVALO_MIS_CATEGORIAS_MS,
+  obtenerMisCategorias,
+  useMisCategorias,
+  obtenerSuscriptoresDeAviso,
+  obtenerDisponiblesDeAviso,
+  suscribirAAviso,
+  desuscribirDeAviso,
+  hooksDeAviso,
+} from "./api/suscripciones"
 
 export {
   INTERVALO_NOTIFICACIONES_MS,
