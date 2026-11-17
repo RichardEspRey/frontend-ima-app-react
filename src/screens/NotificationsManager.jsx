@@ -4,6 +4,7 @@ import {
   Avatar,
   Box,
   Button,
+  Chip,
   CircularProgress,
   InputAdornment,
   Paper,
@@ -169,6 +170,7 @@ const CON_CANDIDATOS = CATEGORIAS.filter((c) => ["bl", "inspecciones", CATEGORIA
 
 const BORDE = "1px solid #e2e8f0";
 const ANCHO_PERSONA = 240;
+const TODOS = "todos";
 
 const Encabezado = ({ categoria, total, primera }) => {
   const Icono = categoria.icono;
@@ -217,6 +219,9 @@ const NotificationsManager = () => {
   const [cargando, setCargando] = useState(true);
   const [guardando, setGuardando] = useState(() => new Set());
   const [busqueda, setBusqueda] = useState("");
+  const [modulo, setModulo] = useState(TODOS);
+  const secciones = modulo === TODOS ? SECCIONES : SECCIONES.filter((seccion) => seccion.id === modulo);
+  const columnas = secciones.reduce((suma, seccion) => suma + seccion.categorias.length, 0);
 
   const cargar = useCallback(async () => {
     setCargando(true);
@@ -319,6 +324,27 @@ const NotificationsManager = () => {
         />
       </Box>
 
+      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 2 }}>
+        {[{ id: TODOS, nombre: "Todos", categorias: CATEGORIAS }, ...SECCIONES].map((seccion) => {
+          const activo = modulo === seccion.id;
+          return (
+            <Chip
+              key={seccion.id}
+              label={`${seccion.nombre} · ${seccion.categorias.length}`}
+              onClick={() => setModulo(seccion.id)}
+              sx={{
+                fontWeight: 700,
+                bgcolor: activo ? "#0f172a" : "#fff",
+                color: activo ? "#fff" : "#475569",
+                border: "1px solid",
+                borderColor: activo ? "#0f172a" : "#e2e8f0",
+                "&:hover": { bgcolor: activo ? "#0f172a" : "#f1f5f9" },
+              }}
+            />
+          );
+        })}
+      </Box>
+
       {fallidas.length > 0 && (
         <Alert severity="warning" sx={{ mb: 2 }} action={<Button color="inherit" size="small" onClick={cargar}>Reintentar</Button>}>
           No se pudo cargar: {fallidas.join(", ")}. Esas columnas quedan bloqueadas.
@@ -342,7 +368,7 @@ const NotificationsManager = () => {
                     Persona
                   </Typography>
                 </TableCell>
-                {SECCIONES.map((seccion) => (
+                {secciones.map((seccion) => (
                   <TableCell
                     key={seccion.id}
                     align="center"
@@ -356,7 +382,7 @@ const NotificationsManager = () => {
                 ))}
               </TableRow>
               <TableRow>
-                {SECCIONES.map((seccion) =>
+                {secciones.map((seccion) =>
                   seccion.categorias.map((categoria, i) => (
                     <Encabezado
                       key={categoria.id}
@@ -371,7 +397,7 @@ const NotificationsManager = () => {
             <TableBody>
               {visibles.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={CATEGORIAS.length + 1} align="center" sx={{ py: 5, color: "#94a3b8" }}>
+                  <TableCell colSpan={columnas + 1} align="center" sx={{ py: 5, color: "#94a3b8" }}>
                     Nadie coincide con la búsqueda.
                   </TableCell>
                 </TableRow>
@@ -388,7 +414,7 @@ const NotificationsManager = () => {
                       </Typography>
                     )}
                   </TableCell>
-                  {SECCIONES.map((seccion) =>
+                  {secciones.map((seccion) =>
                     seccion.categorias.map((categoria, i) => (
                       <TableCell key={categoria.id} align="center" sx={{ borderLeft: i === 0 ? BORDE : "none", py: 0.25 }}>
                         <Switch
