@@ -38,7 +38,7 @@ const guardar = (llave, valor) => {
   }
 };
 
-const pedirAvisos = (op, campos = {}) => pedir('avisos.php', { op, ...campos });
+const pedirAvisos = (op, campos = {}) => pedir('Notifications.php', { op, ...campos });
 
 export const obtenerMisCategorias = async (usuarioId) => {
   const data = await pedirAvisos('getMisCategorias', { user_id: usuarioId });
