@@ -7,15 +7,18 @@ import {
   consultarAvisosDeMantenimiento,
   consultarAvisosDeProgramacion,
   crearConsultaDeDiesel,
+  obtenerMisCategorias,
 } from '../services/avisos';
+import { CATEGORIA, categoriasPorDefecto } from '../utils/avisos';
 import notiSound from '../assets/sounds/update.mp3';
 
 const DIESEL_MS = 60 * 1000;
 const MANTENIMIENTO_MS = 5 * 60 * 1000;
 const VIAJES_MS = 2 * 60 * 1000;
 const VIAJES_OCULTA_MS = 5 * 60 * 1000;
+const CATEGORIAS_MS = 5 * 60 * 1000;
 
-const useFuente = ({ activa, consultar, visibleMs, ocultoMs }) => {
+const useFuente = ({ activa, consultar, permitidas, visibleMs, ocultoMs }) => {
   const [avisos, setAvisos] = useState([]);
   const conocidas = useRef(null);
 
@@ -28,7 +31,7 @@ const useFuente = ({ activa, consultar, visibleMs, ocultoMs }) => {
 
     return sondear(
       async () => {
-        const lista = await consultar();
+        const lista = (await consultar()).filter((a) => permitidas.has(a.categoria));
         if (conocidas.current) {
           const nuevas = lista.filter((a) => !conocidas.current.has(a.id));
           nuevas.forEach((a) =>
@@ -41,9 +44,31 @@ const useFuente = ({ activa, consultar, visibleMs, ocultoMs }) => {
       },
       { visibleMs, ocultoMs }
     );
-  }, [activa, consultar, visibleMs, ocultoMs]);
+  }, [activa, consultar, permitidas, visibleMs, ocultoMs]);
 
   return avisos;
+};
+
+const useCategorias = (usuarioId, porDefecto) => {
+  const [guardadas, setGuardadas] = useState(null);
+  const delServidor = useMemo(() => (guardadas === null ? null : new Set(guardadas.split(',').filter(Boolean))), [guardadas]);
+
+  useEffect(() => {
+    setGuardadas(null);
+    if (!usuarioId) return undefined;
+    return sondear(
+      async () => {
+        try {
+          setGuardadas((await obtenerMisCategorias(usuarioId)).slice().sort().join(','));
+        } catch {
+          setGuardadas(null);
+        }
+      },
+      { visibleMs: CATEGORIAS_MS, ocultoMs: null }
+    );
+  }, [usuarioId]);
+
+  return delServidor || porDefecto;
 };
 
 export function useAvisosDerivados({ recibeInspecciones }) {
@@ -52,7 +77,17 @@ export function useAvisosDerivados({ recibeInspecciones }) {
   const usuarioId = user?.id;
   const tipoUsuario = user?.tipo_usuario;
   const esAdmin = tipoUsuario?.toLowerCase() === 'admin';
-  const puede = (permiso) => Boolean(usuarioId) && (esAdmin || permisos?.[permiso] === true);
+
+  const porDefecto = useMemo(
+    () =>
+      categoriasPorDefecto({
+        puede: (permiso) => Boolean(usuarioId) && (esAdmin || permisos?.[permiso] === true),
+        recibeInspecciones: Boolean(usuarioId) && recibeInspecciones,
+      }),
+    [usuarioId, esAdmin, permisos, recibeInspecciones]
+  );
+  const categorias = useCategorias(usuarioId, porDefecto);
+  const recibe = (...lista) => lista.some((categoria) => categorias.has(categoria));
 
   const consultarDiesel = useMemo(() => (usuarioId ? crearConsultaDeDiesel() : null), [usuarioId]);
   const consultarProgramacion = useCallback(() => consultarAvisosDeProgramacion(usuarioId), [usuarioId]);
@@ -62,26 +97,30 @@ export function useAvisosDerivados({ recibeInspecciones }) {
   );
 
   const diesel = useFuente({
-    activa: puede('gastos_diesel'),
+    activa: recibe(CATEGORIA.DIESEL_STATE, CATEGORIA.DIESEL_FLEETONE),
     consultar: consultarDiesel,
+    permitidas: categorias,
     visibleMs: DIESEL_MS,
     ocultoMs: DIESEL_MS,
   });
   const mantenimiento = useFuente({
-    activa: Boolean(usuarioId) && recibeInspecciones,
+    activa: recibe(CATEGORIA.SIN_FALLAS, CATEGORIA.SIN_INSPECCION),
     consultar: consultarAvisosDeMantenimiento,
+    permitidas: categorias,
     visibleMs: MANTENIMIENTO_MS,
     ocultoMs: MANTENIMIENTO_MS,
   });
   const programacion = useFuente({
-    activa: puede('viajes_tab_programacion'),
+    activa: recibe(CATEGORIA.VIAJE_PROGRAMADO),
     consultar: consultarProgramacion,
+    permitidas: categorias,
     visibleMs: VIAJES_MS,
     ocultoMs: VIAJES_OCULTA_MS,
   });
   const despacho = useFuente({
-    activa: puede('viajes_tab_despacho'),
+    activa: recibe(CATEGORIA.VIAJE_DESPACHO, CATEGORIA.VIAJE_DOCUMENTOS),
     consultar: consultarDespacho,
+    permitidas: categorias,
     visibleMs: VIAJES_MS,
     ocultoMs: VIAJES_OCULTA_MS,
   });

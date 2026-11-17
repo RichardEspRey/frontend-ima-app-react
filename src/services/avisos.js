@@ -38,6 +38,21 @@ const guardar = (llave, valor) => {
   }
 };
 
+const pedirAvisos = (op, campos = {}) => pedir('avisos.php', { op, ...campos });
+
+export const obtenerMisCategorias = async (usuarioId) => {
+  const data = await pedirAvisos('getMisCategorias', { user_id: usuarioId });
+  return Array.isArray(data.categorias) ? data.categorias : [];
+};
+
+export const suscriptoresDe = (categoria) => ({
+  obtenerSuscriptores: async () => (await pedirAvisos('getSuscriptores', { categoria })).users || [],
+  obtenerDisponibles: async () => (await pedirAvisos('getDisponibles', { categoria })).users || [],
+  suscribir: ({ userId, usuarioId }) =>
+    pedirAvisos('suscribir', { categoria, user_id: userId, id_usuario: usuarioId ?? '' }),
+  desuscribir: ({ userId }) => pedirAvisos('desuscribir', { categoria, user_id: userId }),
+});
+
 export const crearConsultaDeDiesel = () => {
   let ultimo = { fecha: null, avisos: [] };
   return async () => {

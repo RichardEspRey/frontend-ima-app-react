@@ -11,6 +11,8 @@ import {
   documentosDeViaje,
   recortarAvisos,
   fechaLocal,
+  CATEGORIA,
+  categoriasPorDefecto,
 } from '../avisos';
 
 describe('corteDiario', () => {
@@ -243,5 +245,26 @@ describe('recortarAvisos', () => {
     ];
     expect(recortarAvisos(avisos, ahora).map((a) => a.id)).toEqual(['a', 'b']);
     expect(recortarAvisos(avisos, ahora, 1).map((a) => a.id)).toEqual(['a']);
+  });
+});
+
+describe('categorías', () => {
+  it('cada aviso dice a qué lista pertenece', () => {
+    const corte = { fecha: '2026-11-16', momento: new Date(2026, 10, 16, 10, 0, 0) };
+    const [state, fleet] = avisosDeDiesel([{ state_pending_count: '1', fleetone_pending_count: '1' }], corte);
+    expect(state.categoria).toBe(CATEGORIA.DIESEL_STATE);
+    expect(fleet.categoria).toBe(CATEGORIA.DIESEL_FLEETONE);
+    expect(avisosDeDespacho([viajeDeEjemplo([])])[0].categoria).toBe(CATEGORIA.VIAJE_DESPACHO);
+    expect(avisosSinInspeccion([{ operador: 'Ana' }, { operador: 'Ana' }])[0].categoria).toBe(CATEGORIA.SIN_INSPECCION);
+  });
+
+  it('sin lista en el servidor, reparte por permiso de pantalla', () => {
+    const categorias = categoriasPorDefecto({
+      puede: (permiso) => permiso === 'viajes_tab_despacho',
+      recibeInspecciones: true,
+    });
+    expect([...categorias].sort()).toEqual(
+      [CATEGORIA.SIN_FALLAS, CATEGORIA.SIN_INSPECCION, CATEGORIA.VIAJE_DESPACHO, CATEGORIA.VIAJE_DOCUMENTOS].sort()
+    );
   });
 });

@@ -24,6 +24,9 @@ import {
 } from "@mui/material";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import BuildIcon from "@mui/icons-material/Build";
+import LocalGasStationIcon from "@mui/icons-material/LocalGasStation";
+import EventAvailableIcon from "@mui/icons-material/EventAvailable";
+import DescriptionIcon from "@mui/icons-material/Description";
 import PersonAddIcon from "@mui/icons-material/PersonAddAlt1";
 import PersonRemoveIcon from "@mui/icons-material/PersonRemoveOutlined";
 import SearchIcon from "@mui/icons-material/Search";
@@ -37,6 +40,8 @@ import {
   obtenerSuscriptoresInspeccion,
   suscribirInspeccion,
 } from "../services/mantenimiento";
+import { suscriptoresDe } from "../services/avisos";
+import { CATEGORIA } from "../utils/avisos";
 import {
   PAGE_SHELL_SX, PAGE_OVERLINE_SX, PAGE_TITLE_SX, DIALOG_PAPER_SX, DARK_BTN_SX, INPUT_SX,
 } from "../styles/estilosTabla";
@@ -55,32 +60,108 @@ const pedirNotificaciones = async (op, campos = {}) => {
   return Array.isArray(data.users) ? data.users : [];
 };
 
-const CATEGORIAS = [
+const VIAJES = { icono: LocalShippingIcon, color: "#1d4ed8", fondo: "#e0e9fd" };
+const PROGRAMACION = { icono: EventAvailableIcon, color: "#15803d", fondo: "#dcfce7" };
+const DOCUMENTOS = { icono: DescriptionIcon, color: "#6d28d9", fondo: "#ede9fe" };
+const TALLER = { icono: BuildIcon, color: "#ea580c", fondo: "#ffedd5" };
+const DIESEL = { icono: LocalGasStationIcon, color: "#b45309", fondo: "#fef3c7" };
+
+const SECCIONES = [
   {
-    id: "bl",
-    nombre: "BL Firmado",
-    descripcion: "Cuando se sube el BL firmado de un viaje.",
-    icono: LocalShippingIcon,
-    color: "#1d4ed8",
-    fondo: "#e0e9fd",
-    ejemplo: { titulo: "BL Firmado", subtitulo: "243-US-88T2-26" },
-    obtenerSuscriptores: () => pedirNotificaciones("getSubscribers"),
-    obtenerDisponibles: () => pedirNotificaciones("getAvailableUsers"),
-    suscribir: ({ userId }) => pedirNotificaciones("subscribe", { user_id: userId }),
-    desuscribir: ({ userId }) => pedirNotificaciones("unsubscribe", { user_id: userId }),
+    id: "viajes",
+    nombre: "Viajes",
+    categorias: [
+      {
+        id: "bl",
+        nombre: "BL Firmado",
+        descripcion: "Cuando se sube el BL firmado de un viaje.",
+        ...VIAJES,
+        ejemplo: { titulo: "BL Firmado", subtitulo: "243-US-88T2-26" },
+        obtenerSuscriptores: () => pedirNotificaciones("getSubscribers"),
+        obtenerDisponibles: () => pedirNotificaciones("getAvailableUsers"),
+        suscribir: ({ userId }) => pedirNotificaciones("subscribe", { user_id: userId }),
+        desuscribir: ({ userId }) => pedirNotificaciones("unsubscribe", { user_id: userId }),
+      },
+      {
+        id: CATEGORIA.VIAJE_PROGRAMADO,
+        nombre: "Viaje programado",
+        descripcion: "Cuando se agrega un viaje a la pestaña Programación de Viajes.",
+        ...PROGRAMACION,
+        ejemplo: { titulo: "Viaje programado", subtitulo: "PALOS GARZA HUB · Camión 10 · Luis Mellado" },
+        ...suscriptoresDe(CATEGORIA.VIAJE_PROGRAMADO),
+      },
+      {
+        id: CATEGORIA.VIAJE_DESPACHO,
+        nombre: "Viaje en despacho",
+        descripcion: "Cuando un viaje entra a Despacho. Dice qué documentos le faltan.",
+        ...VIAJES,
+        ejemplo: { titulo: "Viaje en despacho 266-US-26", subtitulo: "Faltan 1: ORDEN RETIRO" },
+        ...suscriptoresDe(CATEGORIA.VIAJE_DESPACHO),
+      },
+      {
+        id: CATEGORIA.VIAJE_DOCUMENTOS,
+        nombre: "Documentos en despacho",
+        descripcion: "Cuando se agregan documentos a un viaje en Despacho. Los que entran juntos van en un solo aviso, con los que siguen faltando.",
+        ...DOCUMENTOS,
+        ejemplo: { titulo: "2 documentos agregados 264-US-26", subtitulo: "MANIFIESTO, QR MANIFESTO" },
+        ...suscriptoresDe(CATEGORIA.VIAJE_DOCUMENTOS),
+      },
+    ],
   },
   {
-    id: "inspecciones",
-    nombre: "Inspecciones",
-    descripcion: "Cuando un operador manda una inspección: con algo que reparar (camión y caja avisan por separado) o sin fallas. También cuando un operador junta más de un viaje sin inspección.",
-    icono: BuildIcon,
-    color: "#ea580c",
-    fondo: "#ffedd5",
-    ejemplo: { titulo: "Nueva inspección 238-US-26", subtitulo: "Camión 11 · Alberto Cruz Galindo" },
-    obtenerSuscriptores: obtenerSuscriptoresInspeccion,
-    obtenerDisponibles: obtenerDisponiblesInspeccion,
-    suscribir: suscribirInspeccion,
-    desuscribir: desuscribirInspeccion,
+    id: "reparaciones",
+    nombre: "Reparaciones",
+    categorias: [
+      {
+        id: "inspecciones",
+        nombre: "Inspecciones",
+        descripcion: "Cuando un operador manda una inspección con algo que reparar. Camión y caja avisan por separado.",
+        ...TALLER,
+        ejemplo: { titulo: "Nueva inspección 238-US-26", subtitulo: "Camión 11 · Alberto Cruz Galindo" },
+        obtenerSuscriptores: obtenerSuscriptoresInspeccion,
+        obtenerDisponibles: obtenerDisponiblesInspeccion,
+        suscribir: suscribirInspeccion,
+        desuscribir: desuscribirInspeccion,
+      },
+      {
+        id: CATEGORIA.SIN_FALLAS,
+        nombre: "Inspecciones sin fallas",
+        descripcion: "Cuando un operador manda una inspección sin nada que reparar, con o sin caja.",
+        ...TALLER,
+        ejemplo: { titulo: "Inspección sin fallas 257-US-26", subtitulo: "Camión 12 · Jose Luis Valdes" },
+        ...suscriptoresDe(CATEGORIA.SIN_FALLAS),
+      },
+      {
+        id: CATEGORIA.SIN_INSPECCION,
+        nombre: "Viajes sin inspección",
+        descripcion: "Cuando un operador junta más de un viaje sin inspección. Vuelve a avisar cada vez que suma otro.",
+        ...TALLER,
+        ejemplo: { titulo: "Viajes sin inspección", subtitulo: "Alejandro Zablah Ruiz · 5 viajes" },
+        ...suscriptoresDe(CATEGORIA.SIN_INSPECCION),
+      },
+    ],
+  },
+  {
+    id: "diesel",
+    nombre: "Diesel",
+    categorias: [
+      {
+        id: CATEGORIA.DIESEL_STATE,
+        nombre: "State pending",
+        descripcion: "Una vez al día, a las 10:00, con los estados pendientes acumulados en el administrador de diesel.",
+        ...DIESEL,
+        ejemplo: { titulo: "State pending", subtitulo: "15 estados pendientes en 8 viajes" },
+        ...suscriptoresDe(CATEGORIA.DIESEL_STATE),
+      },
+      {
+        id: CATEGORIA.DIESEL_FLEETONE,
+        nombre: "Fleet One pending",
+        descripcion: "Una vez al día, a las 10:00, con los tickets de Fleet One pendientes acumulados.",
+        ...DIESEL,
+        ejemplo: { titulo: "Fleet One pending", subtitulo: "89 tickets pendientes en 32 viajes" },
+        ...suscriptoresDe(CATEGORIA.DIESEL_FLEETONE),
+      },
+    ],
   },
 ];
 
@@ -434,18 +515,25 @@ const NotificationsManager = () => {
         </Typography>
       </Box>
 
-      <Box
-        sx={{
-          display: "grid",
-          gridTemplateColumns: { xs: "1fr", lg: "1fr 1fr" },
-          gap: 3,
-          alignItems: "start",
-        }}
-      >
-        {CATEGORIAS.map((categoria) => (
-          <TarjetaCategoria key={categoria.id} categoria={categoria} usuarioId={user.id} />
-        ))}
-      </Box>
+      {SECCIONES.map((seccion) => (
+        <Box key={seccion.id} sx={{ mb: 5 }}>
+          <Typography variant="subtitle1" fontWeight={800} color="#0f172a" sx={{ mb: 2 }}>
+            {seccion.nombre}
+          </Typography>
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", lg: "1fr 1fr" },
+              gap: 3,
+              alignItems: "start",
+            }}
+          >
+          {seccion.categorias.map((categoria) => (
+            <TarjetaCategoria key={categoria.id} categoria={categoria} usuarioId={user.id} />
+          ))}
+          </Box>
+        </Box>
+      ))}
     </Box>
   );
 };

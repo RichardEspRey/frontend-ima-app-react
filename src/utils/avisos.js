@@ -2,6 +2,24 @@ export const ZONA_AVISOS = 'America/Monterrey';
 export const HORA_CORTE_DIESEL = 10;
 export const DIAS_DE_AVISO = 14;
 
+export const CATEGORIA = {
+  DIESEL_STATE: 'diesel_state',
+  DIESEL_FLEETONE: 'diesel_fleetone',
+  SIN_FALLAS: 'sin_fallas',
+  SIN_INSPECCION: 'sin_inspeccion',
+  VIAJE_PROGRAMADO: 'viaje_programado',
+  VIAJE_DESPACHO: 'viaje_despacho',
+  VIAJE_DOCUMENTOS: 'viaje_documentos',
+};
+
+export const categoriasPorDefecto = ({ puede, recibeInspecciones }) =>
+  new Set([
+    ...(puede('gastos_diesel') ? [CATEGORIA.DIESEL_STATE, CATEGORIA.DIESEL_FLEETONE] : []),
+    ...(recibeInspecciones ? [CATEGORIA.SIN_FALLAS, CATEGORIA.SIN_INSPECCION] : []),
+    ...(puede('viajes_tab_programacion') ? [CATEGORIA.VIAJE_PROGRAMADO] : []),
+    ...(puede('viajes_tab_despacho') ? [CATEGORIA.VIAJE_DESPACHO, CATEGORIA.VIAJE_DOCUMENTOS] : []),
+  ]);
+
 const dosDigitos = (n) => String(n).padStart(2, '0');
 
 export const fechaLocal = (fecha) =>
@@ -65,6 +83,7 @@ export const avisosDeDiesel = (viajes, corte) => {
   if (state.total > 0) {
     avisos.push({
       id: `diesel-state-${corte.fecha}`,
+      categoria: CATEGORIA.DIESEL_STATE,
       tipo: 'diesel',
       titulo: 'State pending',
       subtitulo: `${plural(state.total, 'estado pendiente', 'estados pendientes')} en ${plural(state.viajes, 'viaje', 'viajes')}`,
@@ -75,6 +94,7 @@ export const avisosDeDiesel = (viajes, corte) => {
   if (fleet.total > 0) {
     avisos.push({
       id: `diesel-fleetone-${corte.fecha}`,
+      categoria: CATEGORIA.DIESEL_FLEETONE,
       tipo: 'diesel',
       titulo: 'Fleet One pending',
       subtitulo: `${plural(fleet.total, 'ticket pendiente', 'tickets pendientes')} en ${plural(fleet.viajes, 'viaje', 'viajes')}`,
@@ -106,6 +126,7 @@ export const avisosSinFallas = (inspecciones, ahora) => {
     .filter((fila) => String(fila.fecha_creacion || '').slice(0, 10) >= limite)
     .map((fila) => ({
       id: `sin-fallas-${fila.cl_final_id}`,
+      categoria: CATEGORIA.SIN_FALLAS,
       tipo: 'mantenimiento',
       titulo: `Inspección sin fallas ${fila.nomenclatura || nomenclaturaSimple(fila)}`.trim(),
       subtitulo: [unidadesDe(fila), fila.operador].filter(Boolean).join(' · '),
@@ -140,6 +161,7 @@ export const avisosSinInspeccion = (viajes) => {
       const nomenclaturas = grupo.viajes.map((v) => v.nomenclatura).filter(Boolean);
       return {
         id: `sin-inspeccion-${llave}-${grupo.viajes.length}`,
+        categoria: CATEGORIA.SIN_INSPECCION,
         tipo: 'mantenimiento',
         titulo: 'Viajes sin inspección',
         subtitulo: `${grupo.operador} · ${grupo.viajes.length} viajes`,
@@ -164,6 +186,7 @@ export const avisosDeProgramacion = (programaciones, vistas, ahora) => {
     nuevasVistas[p.id] = creado;
     return {
       id: `programacion-${p.id}`,
+      categoria: CATEGORIA.VIAJE_PROGRAMADO,
       tipo: 'programacion',
       titulo: 'Viaje programado',
       subtitulo: [
@@ -208,6 +231,7 @@ const textoDeFaltantes = (viaje) => {
 export const avisosDeDespacho = (viajes) =>
   viajes.map((viaje) => ({
     id: `despacho-${viaje.trip_id}`,
+    categoria: CATEGORIA.VIAJE_DESPACHO,
     tipo: 'despacho',
     titulo: `Viaje en despacho ${viaje.trip_number || ''}`.trim(),
     subtitulo: [viaje.truck_unidad ? `Camión ${viaje.truck_unidad}` : '', viaje.driver_nombre]
@@ -236,6 +260,7 @@ export const avisosDeDocumentos = (viajes, base, ahora) => {
     const nombres = agregados.map((d) => nombreDeDocumento(d.tipo)).join(', ');
     avisos.push({
       id: `documentos-${llave}-${agregados.map((d) => d.id).sort().join('-')}`,
+      categoria: CATEGORIA.VIAJE_DOCUMENTOS,
       tipo: 'documentos',
       titulo:
         agregados.length === 1
