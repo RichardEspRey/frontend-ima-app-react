@@ -1,5 +1,6 @@
+import { useState } from "react"
 import { useQueries } from "@tanstack/react-query"
-import { FRESCURA_CATALOGO_MS } from "../../../shared/api"
+import { guardarNomenclaturas, leerNomenclaturas } from "../model/nomenclaturasGuardadas"
 import { nomenclaturaViaje } from "../model/viaje"
 import { obtenerViajePorId } from "./edicion"
 
@@ -12,7 +13,11 @@ import { obtenerViajePorId } from "./edicion"
 export const llaveNomenclaturaViaje = (tripId) => ["viajes", "nomenclatura", String(tripId)]
 
 /**
- * Las nomenclaturas de varios viajes, pedidas una vez por viaje y cacheadas largo.
+ * Las nomenclaturas de varios viajes, pedidas una vez por viaje y recordadas.
+ *
+ * Cada una cuesta pedir el viaje completo, así que lo que ya se conoce sale del
+ * navegador (`leerNomenclaturas`) y no se vuelve a pedir en la sesión; solo se
+ * consulta la de los viajes que esta máquina no ha visto, y se guarda al llegar.
  *
  * @endpoint POST new_trips.php · op=getById
  * @param {Array.<(string|number)>} tripIds Los viajes a nombrar; se ignoran repetidos y vacíos.
@@ -20,12 +25,18 @@ export const llaveNomenclaturaViaje = (tripId) => ["viajes", "nomenclatura", Str
  */
 export function useNomenclaturasDeViajes(tripIds) {
   const unicos = [...new Set(tripIds.filter(Boolean).map(String))]
+  const [guardadas] = useState(() => leerNomenclaturas())
 
   return useQueries({
     queries: unicos.map((tripId) => ({
       queryKey: llaveNomenclaturaViaje(tripId),
-      queryFn: async ({ signal }) => nomenclaturaViaje((await obtenerViajePorId({ tripId, signal })).trip),
-      staleTime: FRESCURA_CATALOGO_MS,
+      queryFn: async ({ signal }) => {
+        const nomenclatura = nomenclaturaViaje((await obtenerViajePorId({ tripId, signal })).trip)
+        guardarNomenclaturas({ [tripId]: nomenclatura })
+        return nomenclatura
+      },
+      initialData: guardadas[tripId],
+      staleTime: Infinity,
     })),
     combine: (resultados) =>
       new Map(

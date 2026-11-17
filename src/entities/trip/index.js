@@ -78,3 +78,5 @@ export { obtenerOrigenes, useOrigenes } from "./api/origenes"
 export { llaveNomenclaturaViaje, useNomenclaturasDeViajes } from "./api/nomenclatura"
 
 export { DIGITOS_DE_VIAJE, numeroDeViaje, coincideViaje } from "./model/busqueda"
+
+export { leerNomenclaturas, guardarNomenclaturas } from "./model/nomenclaturasGuardadas"

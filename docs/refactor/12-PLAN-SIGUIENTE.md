@@ -94,7 +94,15 @@ por menos riesgo al que menos. Del A1 al A6 son solo front y no necesitan nada d
   no esté suscrito se queda sin contador. Por eso el caché compartido es más seguro.
 - **Esperado:** 2 peticiones y 88 KB menos cada 5 min por máquina suscrita.
 
-### A4 · Nomenclatura de los BL sin un `getById` por notificación
+### A4 · Nomenclatura de los BL sin un `getById` por notificación — HECHO (2026-11-17)
+
+> `Emiliano` `3798e48`, portado al refactor. **No se usó el catálogo:** medido contra
+> producción, `All_CL_Final` solo trae la mitad de los viajes con BL (10 de 21 para el
+> usuario 14), porque el BL llega antes que la inspección final. En su lugar la
+> nomenclatura se recuerda en `localStorage` 30 días (`nomenclaturasGuardadas`), tope de
+> 300 viajes: el `getById` se hace una vez por viaje y por máquina, no en cada sesión.
+> La alternativa de backend (que `getAll`/`getNew` manden `nomenclatura`) sigue en pausa y
+> ya no hace falta.
 
 - **Problema:** § 3.5. `NotificationBell.jsx`, efecto que llena `nomenclaturas`.
 - **Qué hacer:** con A1 hecho, sacar la nomenclatura del catálogo en caché (viene por
