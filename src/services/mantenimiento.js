@@ -4,6 +4,7 @@ import { conCache, crearCompletador } from '../utils/conCache';
 const apiHost = import.meta.env.VITE_API_HOST;
 
 const VIGENCIA_CATALOGO_MS = 10 * 60 * 1000;
+const VIGENCIA_INSPECCIONES_MS = 60 * 1000;
 
 export const hoy = () => dayjs().format('YYYY-MM-DD');
 
@@ -67,7 +68,22 @@ const pedirMtto = async (op, campos = {}) => {
         throw new Error(result.message || 'No se pudo completar la operación');
     }
 
+    if (!op.startsWith('get')) invalidarInspecciones();
+
     return result;
+};
+
+const inspeccionesPorLado = {};
+
+const invalidarInspecciones = () =>
+    Object.values(inspeccionesPorLado).forEach(obtener => obtener.invalidar());
+
+const pedirInspecciones = (lado) => {
+    inspeccionesPorLado[lado] ??= conCache(
+        () => pedirMtto('getInspecciones', { lado }),
+        { vigenciaMs: VIGENCIA_INSPECCIONES_MS }
+    );
+    return inspeccionesPorLado[lado]();
 };
 
 // El conteo de «por atender» sale del servidor ya filtrado: `All_CL_Final` cuenta
@@ -77,7 +93,7 @@ export const obtenerInspeccionesDeLado = async (lado) => {
     // La nomenclatura la arma `All_CL_Final` en el servidor y no es reproducible desde
     // las columnas de `trips`. Se cruza desde ahí para que sea la misma que ve el resto
     // del sistema aunque cambie la regla.
-    const result = await pedirMtto('getInspecciones', { lado });
+    const result = await pedirInspecciones(lado);
     const filas = Array.isArray(result.inspecciones) ? result.inspecciones : [];
     const nomenclaturas = await nomenclaturasPara(filas);
 
@@ -88,7 +104,7 @@ export const obtenerInspeccionesDeLado = async (lado) => {
 };
 
 export const obtenerInspeccionesPorAtender = async (lado) => {
-    const result = await pedirMtto('getInspecciones', { lado });
+    const result = await pedirInspecciones(lado);
     return (Array.isArray(result.inspecciones) ? result.inspecciones : [])
         .filter(fila => fila.estatus_lado !== 'completada').length;
 };
@@ -97,7 +113,7 @@ const DIAS_DE_AVISO = 14;
 
 export const obtenerAvisosDeInspecciones = async () => {
     const lados = [UNIDAD.CAMION, UNIDAD.CAJA];
-    const respuestas = await Promise.all(lados.map(lado => pedirMtto('getInspecciones', { lado })));
+    const respuestas = await Promise.all(lados.map(lado => pedirInspecciones(lado)));
     const nomenclaturas = await nomenclaturasPara(
         respuestas.flatMap(result => (Array.isArray(result.inspecciones) ? result.inspecciones : []))
     );
