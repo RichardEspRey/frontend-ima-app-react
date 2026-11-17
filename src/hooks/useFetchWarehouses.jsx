@@ -1,24 +1,19 @@
 // hooks/useFetchWarehouses.js
 import { useState, useEffect } from 'react';
+import { pedirCatalogo, VIGENCIA_CATALOGO_MS } from '../utils/catalogos';
 
 function useFetchWarehouses() {
-  const apiHost = import.meta.env.VITE_API_HOST;
   const [activeWarehouses, setActiveWarehouses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const fetchWarehouses = async () => { // <-- Esta función ahora puede ser llamada externamente
+  const fetchWarehouses = async (forzar = false) => { // <-- Esta función ahora puede ser llamada externamente
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${apiHost}/warehouses.php`, { // Ajusta la URL si es diferente
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: 'op=getWarehouses', // Asumiendo que esta es tu operación para obtener todas las bodegas
-      });
-      const data = await response.json();
+      const data = await pedirCatalogo('warehouses.php', 'getWarehouses', { vigenciaMs: VIGENCIA_CATALOGO_MS, forzar });
       if (data.status === 'success' && data.warehouses) { // Asegúrate que la respuesta tenga 'warehouses'
-        setActiveWarehouses(data.warehouses);
+        setActiveWarehouses([...data.warehouses]);
       } else {
         setError(data.message || 'Error al obtener bodegas.');
       }
@@ -33,7 +28,7 @@ function useFetchWarehouses() {
     fetchWarehouses(); // Se ejecuta al montar el componente
   }, []);
 
-  return { activeWarehouses, loading, error, refetchWarehouses: fetchWarehouses }; // ###Agregar: Devuelve la función de refetch
+  return { activeWarehouses, loading, error, refetchWarehouses: () => fetchWarehouses(true) }; // ###Agregar: Devuelve la función de refetch
 }
 
 export default useFetchWarehouses;

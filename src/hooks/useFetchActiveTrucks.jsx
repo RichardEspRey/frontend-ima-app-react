@@ -1,8 +1,8 @@
 
 import { useState, useEffect } from 'react';
+import { pedirCatalogo, VIGENCIA_UNIDADES_MS } from '../utils/catalogos';
 
 function useFetchActiveTrucks() {
-  const apiHost = import.meta.env.VITE_API_HOST;
   const [activeTrucks, setActiveTrucks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -10,12 +10,7 @@ function useFetchActiveTrucks() {
   useEffect(() => {
     const fetchActiveTrucks = async () => {
       try {
-        const response = await fetch(`${apiHost}/trucks.php`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: 'op=getTrucksActivos',
-        });
-        const data = await response.json();
+        const data = await pedirCatalogo('trucks.php', 'getTrucksActivos', { vigenciaMs: VIGENCIA_UNIDADES_MS });
 
         if (data.status === 'success' && data.trucks) {
             const formattedActiveTrucks = data.trucks.map(truck => ({
@@ -28,7 +23,7 @@ function useFetchActiveTrucks() {
           setError(data.message || 'Error al obtener los trucks activos');
           setLoading(false);
         }
-      } catch (err) {
+      } catch {
         setError('Error de red al obtener los trucks activos');
         setLoading(false);
       }

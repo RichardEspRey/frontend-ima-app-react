@@ -1,23 +1,18 @@
 // hooks/useFetchActiveCajas.js
 import { useState, useEffect, useCallback } from 'react'; 
+import { pedirCatalogo, VIGENCIA_CATALOGO_MS } from '../utils/catalogos';
 
 function useFetchActiveExternalTrailers() {
-  const apiHost = import.meta.env.VITE_API_HOST;
   const [activeExternalTrailers, setActiveExternalTrailers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
 
-  const fetchActiveCajas = useCallback(async () => {
+  const fetchActiveCajas = useCallback(async (forzar = false) => {
     setLoading(true); 
     setError(null);   
     try {
-      const response = await fetch(`${apiHost}/caja_externa.php`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: 'op=getCajasExternasActivas',
-      });
-      const data = await response.json();
+      const data = await pedirCatalogo('caja_externa.php', 'getCajasExternasActivas', { vigenciaMs: VIGENCIA_CATALOGO_MS, forzar });
 
       if (data.status === 'success' && data.cajas) {
         const formattedActiveExternalTrailers = data.cajas.map(caja_externa => ({
@@ -28,20 +23,22 @@ function useFetchActiveExternalTrailers() {
       } else {
         setError(data.message || 'Error al obtener las cajas activas');
       }
-    } catch (err) {
+    } catch {
       setError('Error de red al obtener las cajas activas');
     } finally {
    
         setLoading(false);
     }
-  }, [apiHost]); 
+  }, []); 
 
   useEffect(() => {
     fetchActiveCajas();
   }, [fetchActiveCajas]);
 
 
-  return { activeExternalTrailers, loading, error, refetch: fetchActiveCajas };
+  const refetch = useCallback(() => fetchActiveCajas(true), [fetchActiveCajas]);
+
+  return { activeExternalTrailers, loading, error, refetch };
 }
 
 export default useFetchActiveExternalTrailers;

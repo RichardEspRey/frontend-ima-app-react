@@ -1,8 +1,8 @@
 // hooks/useFetchActiveCajas.js
 import { useState, useEffect } from 'react';
+import { pedirCatalogo, VIGENCIA_UNIDADES_MS } from '../utils/catalogos';
 
 function useFetchActiveTrailers() {
-  const apiHost = import.meta.env.VITE_API_HOST;
   const [activeTrailers, setActiveTrailers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -10,12 +10,7 @@ function useFetchActiveTrailers() {
   useEffect(() => {
     const fetchActiveCajas = async () => {
       try {
-        const response = await fetch(`${apiHost}/cajas.php`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: 'op=getCajasActivas',
-        });
-        const data = await response.json();
+        const data = await pedirCatalogo('cajas.php', 'getCajasActivas', { vigenciaMs: VIGENCIA_UNIDADES_MS });
 
         if (data.status === 'success' && data.cajas) {
             const formattedActiveTrailers = data.cajas.map(caja =>({
@@ -28,7 +23,7 @@ function useFetchActiveTrailers() {
           setError(data.message || 'Error al obtener las cajas activas');
           setLoading(false);
         }
-      } catch (err) {
+      } catch {
         setError('Error de red al obtener las cajas activas');
         setLoading(false);
       }
