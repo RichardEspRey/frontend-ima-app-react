@@ -18,6 +18,7 @@ import { TripFinanceRow } from '../components/TripFinanceRow';
 import { AlertSummaryCards } from '../components/AlertSummaryCards';
 import { getTripStatusSummary, validateStage, buildPayloadItem, collectDirtyStages } from '../utils/financeHelpers';
 import { STATUS_OPTIONS } from '../constants/finances'; 
+import { coincideViaje } from '../utils/buscarViaje';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -130,8 +131,7 @@ const Finanzas = () => {
     }
 
     if (search.trim()) {
-      const q = search.trim().toLowerCase();
-      result = result.filter(t => String(t.trip_number || '').toLowerCase() === q);
+      result = result.filter(t => coincideViaje(t.trip_number, search));
     }
 
     if (invoiceSearch.trim()) {
@@ -278,8 +278,8 @@ const Finanzas = () => {
                 <TextField 
                     fullWidth
                     size="small" 
-                    label="Buscar Trip # (Exacto)"
-                    placeholder="Ej. 101" 
+                    label="Buscar Trip #"
+                    placeholder="Ej. 1 encuentra el 001"
                     value={search} 
                     onChange={(e) => { setSearch(e.target.value); setPage(0); }} 
                     InputProps={{
