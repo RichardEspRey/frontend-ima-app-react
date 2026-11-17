@@ -10,7 +10,7 @@
 > cambiado— y empezar por la etapa 0.
 >
 > **Dos cosas cambiaron desde que se escribió:** los SQL `010`, `011` y `012` ya se usaron
-> (avisos y permisos de pagos), así que el de la bitácora es el **`013-bitacora.sql`**; y
+> (avisos y permisos de pagos), así que el de la bitácora es el **`014-bitacora.sql`**; y
 > hay una tabla nueva que auditar, `notif_suscriptores`.
 
 ## 0 · El requisito
@@ -220,7 +220,7 @@ aprueban antes, como siempre.
 
 ### Etapa 1 — Tablas y registro por petición · BD + 1 PHP
 
-- SQL `013-bitacora.sql`: las dos tablas. No las lee nadie; riesgo nulo.
+- SQL `014-bitacora.sql`: las dos tablas. No las lee nadie; riesgo nulo.
 - `bitacora_lib.php` (nuevo) + 3 líneas en `conexion.php`, con copia `.ANTERIOR`.
 - Resultado: desde ese día queda registrada cada escritura con fecha, `op`, datos e IP.
   El usuario saldrá vacío en casi todas hasta la etapa 2.

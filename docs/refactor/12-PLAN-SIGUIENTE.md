@@ -206,7 +206,15 @@ por menos riesgo al que menos. Del A1 al A6 son solo front y no necesitan nada d
 - **Verificar:** medir con `curl` antes y después; la segunda petición dentro de 45 s debe
   responder en menos de medio segundo.
 
-### A9 · Índices — riesgo casi nulo, toca producción
+### A9 · Índices — ENTREGADO, falta correr (2026-11-17)
+
+> `docs/sql/013-indices.sql`, tres envíos. `SHOW INDEX` confirmó que las tres tablas solo
+> tienen su llave primaria. Se entregan `trip_id` en `diesel_tickets` e `IFTA_STATE`, y
+> `id_register` en `diesel_tickets`. **Los dos de `documents` se dejaron fuera:** esa tabla
+> se consulta por llave primaria vía `trip_document_relationship` y no hay evidencia de que
+> filtrar por tipo o vencimiento sea un cuello. Tiempos antes de correrlo, para comparar:
+> `getAll_diesel` ~0.39 s, `get_ifta_trips` y `get_registers_diesel` medidos en el chat.
+> El SQL de la bitácora pasa a ser el `014`.
 
 - `08-DIAGNOSTICO-BD.md` § 5.1 trae los cuatro `CREATE INDEX`. Entregarlos de uno en uno;
   phpMyAdmin de GoDaddy no tiene transacciones entre envíos.
@@ -287,7 +295,7 @@ tres consultas. Lo que dicen:
 **Sigue faltando de B0:** sus cinco decisiones de `10-BITACORA.md` § 6 y qué hacer con la
 hora (MySQL va una hora atrás).
 
-### B1 · Tablas — `013-bitacora.sql`
+### B1 · Tablas — `014-bitacora.sql`
 
 - Las dos tablas de `10-BITACORA.md` § 3. No las lee nadie todavía: riesgo nulo.
 - Un envío por tabla. Verificar con `SHOW CREATE TABLE`.
