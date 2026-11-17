@@ -90,7 +90,9 @@ const Sidebar = () => {
   const railWidth = isPinnedExpanded ? SIDEBAR_WIDTH_EXPANDED : SIDEBAR_WIDTH_COLLAPSED;
 
   useEffect(() => {
-    if (window?.electron?.onUpdateProgress) window.electron.onUpdateProgress(setProgress);
+    if (!window?.electron?.onUpdateProgress) return undefined;
+    const baja = window.electron.onUpdateProgress(setProgress);
+    return typeof baja === 'function' ? baja : undefined;
   }, []);
 
   useEffect(() => {

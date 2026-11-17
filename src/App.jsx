@@ -18,8 +18,9 @@ const App = () => {
   useEffect(() => instalarErroresGlobales(), []);
 
   useEffect(() => {
-    if (window?.electron?.onUpdateAvailable) {
-      window.electron.onUpdateAvailable((datos) => {
+    if (!window?.electron?.onUpdateAvailable) return undefined;
+
+    const baja = window.electron.onUpdateAvailable((datos) => {
         const version = datos?.version || 'nueva';
         setUpdateDisponible(true);
         if (versionAvisada.current === version) return;
@@ -33,8 +34,9 @@ const App = () => {
 
         const sonido = new Audio(notiSound);
         sonido.play().catch(() => {});
-      });
-    }
+    });
+
+    return typeof baja === 'function' ? baja : undefined;
   }, []);
 
   return (

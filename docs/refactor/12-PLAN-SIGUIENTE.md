@@ -138,7 +138,12 @@ por menos riesgo al que menos. Del A1 al A6 son solo front y no necesitan nada d
 - **Refactor:** ya usa TanStack Query en lo migrado; revisar `staleTime` de catálogos.
 - **Esperado:** abrir un formulario por segunda vez no pide nada.
 
-### A6 · Limpieza barata
+### A6 · Limpieza barata — HECHO (2026-11-17)
+
+> `Emiliano` `c56fe9f`, portado al refactor. Se borró `AuthContext.jsx`, se quitaron los 17
+> `console.log` (en el refactor solo quedaba uno, el de Ventas) y `preload.js` devuelve la
+> función de baja de las escuchas de actualización. Con esto se cierra la parte de front
+> (A1–A6). Lo de Electron solo se puede comprobar en la app instalada.
 
 - Borrar `src/auth/AuthContext.jsx` si de verdad nadie lo importa (confirmar con `grep`):
   trae un sondeo de permisos cada 15 s listo para revivir.

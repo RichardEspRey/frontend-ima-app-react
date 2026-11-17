@@ -1,10 +1,18 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
+// Registra una escucha y devuelve la función que la da de baja, para que quien
+// la monte desde React pueda limpiarla al desmontar.
+const escuchar = (canal, callback) => {
+  const manejador = (_e, dato) => callback(dato);
+  ipcRenderer.on(canal, manejador);
+  return () => ipcRenderer.removeListener(canal, manejador);
+};
+
 contextBridge.exposeInMainWorld('electron', {
   checkForUpdates: () => ipcRenderer.send('check-for-updates'),
   descargarUpdate: () => ipcRenderer.send('download-update'),
-  onUpdateAvailable: (callback) => ipcRenderer.on('update_available', (_e, data) => callback(data)),
-  onUpdateProgress: (callback) => ipcRenderer.on('update_progress', (_e, percent) => callback(percent)),
+  onUpdateAvailable: (callback) => escuchar('update_available', callback),
+  onUpdateProgress: (callback) => escuchar('update_progress', callback),
 });
 
 // Bloquea el zoom con Ctrl/Cmd + rueda del mouse (Chromium lo maneja a nivel de
