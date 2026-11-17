@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { recortarViaje, totalesDeVentas } from '../model/ventas';
+import { recortarViaje, totalesDeVentas, finalizacionDeViaje, fechaCorta } from '../model/ventas';
 
 const viaje = {
   trip_id: 612,
@@ -50,5 +50,44 @@ describe('totalesDeVentas', () => {
     const visibles = [recortarViaje(viaje, { compania: 'palos' }), recortarViaje(otro, { compania: 'triangle' })].filter(Boolean);
     expect(totalesDeVentas([visibles[0]])).toEqual({ viajes: 1, etapas: 2, tarifa: 4100, pagada: 1500 });
     expect(totalesDeVentas([])).toEqual({ viajes: 0, etapas: 0, tarifa: 0, pagada: 0 });
+  });
+});
+
+describe('fecha de finalización', () => {
+  const conFechas = {
+    ...viaje,
+    stages: [
+      { ...viaje.stages[0], fecha_inicio_cobro: '2026-10-30 09:35:29' },
+      { ...viaje.stages[1], fecha_inicio_cobro: '2026-11-05 16:00:00' },
+      { ...viaje.stages[2], fecha_inicio_cobro: null },
+    ],
+  };
+
+  it('la del viaje es la más reciente de sus etapas', () => {
+    expect(finalizacionDeViaje(conFechas)).toBe('2026-11-05');
+    expect(finalizacionDeViaje(viaje)).toBe('');
+    expect(fechaCorta('2026-11-05')).toBe('05/11/2026');
+    expect(fechaCorta('')).toBe('');
+  });
+
+  it('el rango deja solo las etapas finalizadas entre esas fechas, con los dos extremos', () => {
+    const recortado = recortarViaje(conFechas, { desde: '2026-10-30', hasta: '2026-10-31' });
+    expect(recortado.stages.map((e) => e.trip_stage_id)).toEqual([1]);
+    expect(recortado).toMatchObject({ stages_count: 1, etapas_totales: 3, total_tarifa: 3600 });
+    expect(finalizacionDeViaje(recortado)).toBe('2026-10-30');
+  });
+
+  it('sirve con un solo extremo', () => {
+    expect(recortarViaje(conFechas, { desde: '2026-11-01' }).stages.map((e) => e.trip_stage_id)).toEqual([2]);
+    expect(recortarViaje(conFechas, { hasta: '2026-11-01' }).stages.map((e) => e.trip_stage_id)).toEqual([1]);
+  });
+
+  it('una etapa sin fecha no entra en ningún rango', () => {
+    expect(recortarViaje(viaje, { desde: '2020-01-01' })).toBeNull();
+  });
+
+  it('se combina con la compañía', () => {
+    expect(recortarViaje(conFechas, { compania: 'palos', desde: '2026-11-01' })).toBeNull();
+    expect(recortarViaje(conFechas, { compania: 'triangle', desde: '2026-11-01' }).stages).toHaveLength(1);
   });
 });

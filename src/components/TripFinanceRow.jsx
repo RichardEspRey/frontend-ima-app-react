@@ -11,6 +11,7 @@ import { money, countCriticalStages } from '../utils/financeHelpers';
 
 import { useAuthStore } from '../store/useAuthStore';
 import { COLOR } from '../shared/ui/tokens';
+import { fechaCorta, finalizacionDeViaje } from '../entities/finance';
 
 const StatusChip = ({ value }) => {
   const meta = STATUS_OPTIONS.find(o => o.value === Number(value));
@@ -44,6 +45,7 @@ export const TripFinanceRow = ({ trip, isOpen, onToggle, onStageChange }) => {
   const { user } = useAuthStore(); 
   
   const criticalCounts = countCriticalStages(trip.stages);
+  const finalizacion = finalizacionDeViaje(trip);
 
   const ROLES_PERMITIDOS = ['admin', 'dev'];
   const userRole = (user?.tipo_usuario || '').toLowerCase();
@@ -67,6 +69,7 @@ export const TripFinanceRow = ({ trip, isOpen, onToggle, onStageChange }) => {
         </TableCell>
         <TableCell align="right">{money(trip.total_tarifa)}</TableCell>
         <TableCell align="right">{money(trip.total_pagada ?? 0)}</TableCell>
+        <TableCell sx={{ whiteSpace: 'nowrap', color: finalizacion ? 'inherit' : 'text.disabled' }}>{fechaCorta(finalizacion) || '—'}</TableCell>
         <TableCell><StatusChip value={trip.status_trip} /></TableCell>
         <TableCell align="center" sx={{ whiteSpace: 'nowrap' }}>
           <Stack direction="row" spacing={1} justifyContent="center">
@@ -78,7 +81,7 @@ export const TripFinanceRow = ({ trip, isOpen, onToggle, onStageChange }) => {
       </TableRow>
 
       <TableRow>
-        <TableCell colSpan={7} sx={{ p: 0, borderBottom: isOpen ? '1px solid rgba(224,224,224,1)' : 0 }}>
+        <TableCell colSpan={8} sx={{ p: 0, borderBottom: isOpen ? '1px solid rgba(224,224,224,1)' : 0 }}>
           <Collapse in={isOpen} timeout="auto" unmountOnExit>
             <Box sx={{ p: 2 }}>
               <Typography variant="h6" fontWeight={700} gutterBottom>Etapas</Typography>
