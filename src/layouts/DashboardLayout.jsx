@@ -24,7 +24,6 @@ const DashboardLayout = () => {
     return sondear(() => fetchPermissions(user.id), {
       visibleMs: PERMISOS_MS,
       ocultoMs: null,
-      alIniciar: false,
     });
   }, [user?.id, fetchPermissions]);
 

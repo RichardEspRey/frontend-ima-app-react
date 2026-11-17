@@ -59,7 +59,11 @@ por menos riesgo al que menos. Del A1 al A6 son solo front y no necesitan nada d
 - **Pruebas:** con `vi.useFakeTimers`, que dos llamadas seguidas hagan un solo `fetch`, que
   pasada la vigencia vuelva a pedir, y que invalidar fuerce la petición.
 
-### A2 · Quitar la petición de permisos en cada foco
+### A2 · Quitar la petición de permisos en cada foco — HECHO (2026-11-17)
+
+> `Emiliano` `6976508`, portado al refactor. Se quitó el efecto de `Sidebar` y
+> `DashboardLayout` pasó a pedir al montar. Al iniciar sesión siguen saliendo dos
+> peticiones (la del `login` del store y la del layout); es una sola vez y no se tocó.
 
 - **Problema:** § 3.3. `src/components/Sidebar.jsx:82-91`.
 - **Qué hacer:** borrar ese `useEffect` entero. `DashboardLayout.jsx` ya pide los permisos
