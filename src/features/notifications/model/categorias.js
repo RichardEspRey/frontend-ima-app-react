@@ -182,6 +182,43 @@ export function usePersonasDeAvisos() {
 }
 
 /**
+ * El valor del filtro de módulo que enseña todos los avisos.
+ *
+ * @type {string}
+ */
+export const MODULO_TODOS = "todos"
+
+/**
+ * Las secciones que se ven con un filtro de módulo.
+ *
+ * @param {string} modulo El `id` de una sección, o {@link MODULO_TODOS}.
+ * @param {Array.<object>} [secciones] De dónde filtrar.
+ * @returns {Array.<object>} La sección pedida, o todas.
+ *
+ * @example
+ * seccionesDeModulo("diesel").map((s) => s.id) // ["diesel"]
+ */
+export function seccionesDeModulo(modulo, secciones = SECCIONES_DE_AVISO) {
+  if (modulo === MODULO_TODOS) return secciones
+  const elegidas = secciones.filter((seccion) => seccion.id === modulo)
+  return elegidas.length > 0 ? elegidas : secciones
+}
+
+/**
+ * Las opciones del filtro de módulo, con cuántos avisos tiene cada uno.
+ *
+ * @param {Array.<object>} [secciones] Las secciones a ofrecer.
+ * @returns {Array.<{valor: string, etiqueta: string}>} «Todos» y una opción por módulo.
+ */
+export function opcionesDeModulo(secciones = SECCIONES_DE_AVISO) {
+  const total = secciones.reduce((suma, seccion) => suma + seccion.categorias.length, 0)
+  return [
+    { valor: MODULO_TODOS, etiqueta: `Todos · ${total}` },
+    ...secciones.map((seccion) => ({ valor: seccion.id, etiqueta: `${seccion.nombre} · ${seccion.categorias.length}` })),
+  ]
+}
+
+/**
  * Todos los avisos en una sola lista, en el orden en que se muestran.
  *
  * @readonly

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { CATEGORIAS_DE_AVISO, SECCIONES_DE_AVISO, buscarPersonas, nombreDe, unirPersonas } from "../model/categorias"
+import { CATEGORIAS_DE_AVISO, SECCIONES_DE_AVISO, buscarPersonas, nombreDe, unirPersonas, seccionesDeModulo, opcionesDeModulo, MODULO_TODOS } from "../model/categorias"
 
 const personas = [
   { id: "20", name: "Angeles", user: "Angeles_87" },
@@ -78,5 +78,25 @@ describe("nombres cortos", () => {
     for (const categoria of CATEGORIAS_DE_AVISO) {
       expect(categoria.corto.length).toBeGreaterThan(0)
     }
+  })
+})
+
+describe("filtro de módulo", () => {
+  it("enseña todas las secciones o solo la pedida", () => {
+    expect(seccionesDeModulo(MODULO_TODOS)).toHaveLength(3)
+    expect(seccionesDeModulo("diesel").map((s) => s.id)).toEqual(["diesel"])
+  })
+
+  it("con un módulo que no existe no deja la tabla vacía", () => {
+    expect(seccionesDeModulo("inventado")).toHaveLength(3)
+  })
+
+  it("ofrece Todos y una opción por módulo, con su cuenta", () => {
+    expect(opcionesDeModulo().map((o) => o.etiqueta)).toEqual([
+      "Todos · 9",
+      "Viajes · 4",
+      "Reparaciones · 3",
+      "Diesel · 2",
+    ])
   })
 })

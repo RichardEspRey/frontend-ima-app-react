@@ -23,5 +23,8 @@ export {
   buscarPersonas,
   nombreDe,
   unirPersonas,
+  MODULO_TODOS,
+  seccionesDeModulo,
+  opcionesDeModulo,
   usePersonasDeAvisos,
 } from "./model/categorias"

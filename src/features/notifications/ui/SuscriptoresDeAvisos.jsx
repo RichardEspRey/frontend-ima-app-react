@@ -25,12 +25,13 @@ import SearchIcon from "@mui/icons-material/Search"
 
 import { CATEGORIA_AVISO } from "../../../entities/notification"
 import { useSesion } from "../../../shared/auth"
-import { BloqueEsqueleto, COLOR, INPUT_SX, SECTION_LABEL_SX, TINTE, notify } from "../../../shared/ui"
+import { BloqueEsqueleto, COLOR, INPUT_SX, SECTION_LABEL_SX, Selector, TINTE, notify } from "../../../shared/ui"
 import {
-  CATEGORIAS_DE_AVISO,
-  SECCIONES_DE_AVISO,
+  MODULO_TODOS,
   buscarPersonas,
   nombreDe,
+  opcionesDeModulo,
+  seccionesDeModulo,
   usePersonasDeAvisos,
 } from "../model/categorias"
 
@@ -154,17 +155,25 @@ function Celda({ categoria, persona, primera }) {
  * interruptor en cada cruce, que guarda al momento. Sustituye a las tarjetas:
  * con nueve avisos había que abrir nueve listas para saber qué recibía alguien.
  *
+ * El filtro de módulo deja ver solo las columnas de una pantalla, para que la
+ * tabla siga siendo legible cuando se sumen más avisos.
+ *
  * @returns {object} El buscador y la tabla.
  */
 export function SuscriptoresDeAvisos() {
   const { personas, cargando } = usePersonasDeAvisos()
   const [busqueda, setBusqueda] = useState("")
   const visibles = buscarPersonas(personas, busqueda)
+  const [modulo, setModulo] = useState(MODULO_TODOS)
+  const secciones = seccionesDeModulo(modulo)
+  const columnas = secciones.reduce((suma, seccion) => suma + seccion.categorias.length, 0)
 
   if (cargando && personas.length === 0) return <BloqueEsqueleto alto={320} />
 
   return (
     <Stack spacing={2}>
+      <Stack direction="row" justifyContent="space-between" alignItems="center" flexWrap="wrap" gap={2}>
+        <Selector valor={modulo} onChange={setModulo} opciones={opcionesDeModulo()} />
       <TextField
         size="small"
         placeholder="Buscar persona"
@@ -182,6 +191,7 @@ export function SuscriptoresDeAvisos() {
           },
         }}
       />
+      </Stack>
 
       <TableContainer
         component={Paper}
@@ -207,7 +217,7 @@ export function SuscriptoresDeAvisos() {
                   Persona
                 </Typography>
               </TableCell>
-              {SECCIONES_DE_AVISO.map((seccion) => (
+              {secciones.map((seccion) => (
                 <TableCell
                   key={seccion.id}
                   align="center"
@@ -221,7 +231,7 @@ export function SuscriptoresDeAvisos() {
               ))}
             </TableRow>
             <TableRow>
-              {SECCIONES_DE_AVISO.map((seccion) =>
+              {secciones.map((seccion) =>
                 seccion.categorias.map((categoria, indice) => (
                   <Encabezado key={categoria.id} categoria={categoria} primera={indice === 0} />
                 )),
@@ -233,7 +243,7 @@ export function SuscriptoresDeAvisos() {
             {visibles.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={CATEGORIAS_DE_AVISO.length + 1}
+                  colSpan={columnas + 1}
                   align="center"
                   sx={{ py: 5, color: COLOR.APAGADO }}
                 >
@@ -256,7 +266,7 @@ export function SuscriptoresDeAvisos() {
                     </Typography>
                   ) : null}
                 </TableCell>
-                {SECCIONES_DE_AVISO.map((seccion) =>
+                {secciones.map((seccion) =>
                   seccion.categorias.map((categoria, indice) => (
                     <Celda key={categoria.id} categoria={categoria} persona={persona} primera={indice === 0} />
                   )),
