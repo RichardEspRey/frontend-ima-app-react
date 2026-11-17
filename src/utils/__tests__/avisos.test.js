@@ -15,6 +15,7 @@ import {
   categoriasPorDefecto,
   personasDeListas,
   buscarPersonas,
+  avisosDeSafety,
 } from '../avisos';
 
 describe('corteDiario', () => {
@@ -292,5 +293,31 @@ describe('personasDeListas', () => {
     expect(buscarPersonas(personas, '20001').map((p) => p.id)).toEqual(['18']);
     expect(buscarPersonas(personas, 'rich').map((p) => p.id)).toEqual(['14']);
     expect(buscarPersonas(personas, ' ')).toHaveLength(4);
+  });
+});
+
+describe('avisosDeSafety', () => {
+  const corte = { fecha: '2026-11-17', momento: new Date(2026, 10, 17, 10, 0, 0) };
+
+  it('un aviso por columna, con los viajes a los que les falta ese documento', () => {
+    const avisos = avisosDeSafety(
+      [
+        { libro_electronico: 'a.pdf', reporte_diesel: null, reporte_pcmiller: null },
+        { libro_electronico: null, reporte_diesel: null, reporte_pcmiller: 'c.pdf' },
+        { libro_electronico: 'a.pdf', reporte_diesel: 'b.pdf', reporte_pcmiller: 'c.pdf' },
+      ],
+      corte
+    );
+    expect(avisos.map((a) => [a.id, a.subtitulo])).toEqual([
+      ['safety_libro-2026-11-17', '1 viaje sin Libro Electrónico'],
+      ['safety_diesel-2026-11-17', '2 viajes sin Reporte Diesel'],
+      ['safety_pcmiller-2026-11-17', '1 viaje sin Reporte PC Miller'],
+    ]);
+    expect(avisos[0]).toMatchObject({ categoria: CATEGORIA.SAFETY_LIBRO, created_at: '2026-11-17 10:00:00' });
+  });
+
+  it('una columna al corriente no avisa', () => {
+    const avisos = avisosDeSafety([{ libro_electronico: 'a.pdf', reporte_diesel: 'b.pdf', reporte_pcmiller: null }], corte);
+    expect(avisos.map((a) => a.categoria)).toEqual([CATEGORIA.SAFETY_PCMILLER]);
   });
 });

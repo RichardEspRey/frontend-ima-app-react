@@ -24,6 +24,7 @@ import BuildIcon from "@mui/icons-material/Build";
 import LocalGasStationIcon from "@mui/icons-material/LocalGasStation";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import DescriptionIcon from "@mui/icons-material/Description";
+import FactCheckIcon from "@mui/icons-material/FactCheck";
 import SearchIcon from "@mui/icons-material/Search";
 import Flashy from "@pablotheblink/flashyjs";
 import { useAuthStore } from "../store/useAuthStore";
@@ -56,6 +57,17 @@ const PROGRAMACION = { icono: EventAvailableIcon, color: "#15803d", fondo: "#dcf
 const DOCUMENTOS = { icono: DescriptionIcon, color: "#6d28d9", fondo: "#ede9fe" };
 const TALLER = { icono: BuildIcon, color: "#ea580c", fondo: "#ffedd5" };
 const DIESEL = { icono: LocalGasStationIcon, color: "#b45309", fondo: "#fef3c7" };
+const SAFETY = { icono: FactCheckIcon, color: "#0f766e", fondo: "#ccfbf1" };
+
+const deSafety = (categoria, nombre, corto, ejemplo) => ({
+  id: categoria,
+  nombre: `${nombre} pendiente`,
+  corto,
+  descripcion: `Una vez al día, a las 10:00, con los viajes que siguen sin ${nombre} en Safety General.`,
+  ...SAFETY,
+  ejemplo: { titulo: `${nombre} pendiente`, subtitulo: `${ejemplo} viajes sin ${nombre}` },
+  ...suscriptoresDe(categoria),
+});
 
 const SECCIONES = [
   {
@@ -161,6 +173,15 @@ const SECCIONES = [
         ejemplo: { titulo: "Fleet One pending", subtitulo: "89 tickets pendientes en 32 viajes" },
         ...suscriptoresDe(CATEGORIA.DIESEL_FLEETONE),
       },
+    ],
+  },
+  {
+    id: "safety",
+    nombre: "Safety",
+    categorias: [
+      deSafety(CATEGORIA.SAFETY_LIBRO, "Libro Electrónico", "Libro electrónico", 12),
+      deSafety(CATEGORIA.SAFETY_DIESEL, "Reporte Diesel", "Reporte diesel", 30),
+      deSafety(CATEGORIA.SAFETY_PCMILLER, "Reporte PC Miller", "PC Miller", 41),
     ],
   },
 ];

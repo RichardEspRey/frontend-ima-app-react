@@ -7,12 +7,13 @@ import {
   consultarAvisosDeMantenimiento,
   consultarAvisosDeProgramacion,
   crearConsultaDeDiesel,
+  crearConsultaDeSafety,
   obtenerMisCategorias,
 } from '../services/avisos';
 import { CATEGORIA, categoriasPorDefecto } from '../utils/avisos';
 import notiSound from '../assets/sounds/update.mp3';
 
-const DIESEL_MS = 60 * 1000;
+const DIARIO_MS = 60 * 1000;
 const MANTENIMIENTO_MS = 5 * 60 * 1000;
 const VIAJES_MS = 2 * 60 * 1000;
 const VIAJES_OCULTA_MS = 5 * 60 * 1000;
@@ -90,6 +91,7 @@ export function useAvisosDerivados({ recibeInspecciones }) {
   const recibe = (...lista) => lista.some((categoria) => categorias.has(categoria));
 
   const consultarDiesel = useMemo(() => (usuarioId ? crearConsultaDeDiesel() : null), [usuarioId]);
+  const consultarSafety = useMemo(() => (usuarioId ? crearConsultaDeSafety() : null), [usuarioId]);
   const consultarProgramacion = useCallback(() => consultarAvisosDeProgramacion(usuarioId), [usuarioId]);
   const consultarDespacho = useCallback(
     () => consultarAvisosDeDespacho({ id: usuarioId, tipo_usuario: tipoUsuario }),
@@ -100,8 +102,15 @@ export function useAvisosDerivados({ recibeInspecciones }) {
     activa: recibe(CATEGORIA.DIESEL_STATE, CATEGORIA.DIESEL_FLEETONE),
     consultar: consultarDiesel,
     permitidas: categorias,
-    visibleMs: DIESEL_MS,
-    ocultoMs: DIESEL_MS,
+    visibleMs: DIARIO_MS,
+    ocultoMs: DIARIO_MS,
+  });
+  const safety = useFuente({
+    activa: recibe(CATEGORIA.SAFETY_LIBRO, CATEGORIA.SAFETY_DIESEL, CATEGORIA.SAFETY_PCMILLER),
+    consultar: consultarSafety,
+    permitidas: categorias,
+    visibleMs: DIARIO_MS,
+    ocultoMs: DIARIO_MS,
   });
   const mantenimiento = useFuente({
     activa: recibe(CATEGORIA.SIN_FALLAS, CATEGORIA.SIN_INSPECCION),
@@ -126,7 +135,7 @@ export function useAvisosDerivados({ recibeInspecciones }) {
   });
 
   return useMemo(
-    () => [...diesel, ...mantenimiento, ...programacion, ...despacho],
-    [diesel, mantenimiento, programacion, despacho]
+    () => [...diesel, ...safety, ...mantenimiento, ...programacion, ...despacho],
+    [diesel, safety, mantenimiento, programacion, despacho]
   );
 }

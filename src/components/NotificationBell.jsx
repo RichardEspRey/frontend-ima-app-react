@@ -25,6 +25,7 @@ import BuildIcon from "@mui/icons-material/Build";
 import LocalGasStationIcon from "@mui/icons-material/LocalGasStation";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import DescriptionIcon from "@mui/icons-material/Description";
+import FactCheckIcon from "@mui/icons-material/FactCheck";
 import { toast } from "react-toastify";
 import { useAuthStore } from "../store/useAuthStore";
 import { UNIDAD, obtenerAvisosDeInspecciones, obtenerSuscriptoresInspeccion } from "../services/mantenimiento";
@@ -89,6 +90,7 @@ const ASPECTO = {
   programacion: { icono: EventAvailableIcon, fondo: "#dcfce7", color: "#15803d" },
   despacho: { icono: LocalShippingIcon, fondo: "#e0e9fd", color: "#1d4ed8" },
   documentos: { icono: DescriptionIcon, fondo: "#ede9fe", color: "#6d28d9" },
+  safety: { icono: FactCheckIcon, fondo: "#ccfbf1", color: "#0f766e" },
 };
 
 const nomenclaturaDe = (trip) => {

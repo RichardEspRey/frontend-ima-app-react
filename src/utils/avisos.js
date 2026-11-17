@@ -10,6 +10,9 @@ export const CATEGORIA = {
   VIAJE_PROGRAMADO: 'viaje_programado',
   VIAJE_DESPACHO: 'viaje_despacho',
   VIAJE_DOCUMENTOS: 'viaje_documentos',
+  SAFETY_LIBRO: 'safety_libro',
+  SAFETY_DIESEL: 'safety_diesel',
+  SAFETY_PCMILLER: 'safety_pcmiller',
 };
 
 export const categoriasPorDefecto = ({ puede, recibeInspecciones }) =>
@@ -18,6 +21,9 @@ export const categoriasPorDefecto = ({ puede, recibeInspecciones }) =>
     ...(recibeInspecciones ? [CATEGORIA.SIN_FALLAS, CATEGORIA.SIN_INSPECCION] : []),
     ...(puede('viajes_tab_programacion') ? [CATEGORIA.VIAJE_PROGRAMADO] : []),
     ...(puede('viajes_tab_despacho') ? [CATEGORIA.VIAJE_DESPACHO, CATEGORIA.VIAJE_DOCUMENTOS] : []),
+    ...(puede('safety_general')
+      ? [CATEGORIA.SAFETY_LIBRO, CATEGORIA.SAFETY_DIESEL, CATEGORIA.SAFETY_PCMILLER]
+      : []),
   ]);
 
 const dosDigitos = (n) => String(n).padStart(2, '0');
@@ -103,6 +109,30 @@ export const avisosDeDiesel = (viajes, corte) => {
     });
   }
   return avisos;
+};
+
+export const DOCUMENTOS_DE_SAFETY = [
+  { campo: 'libro_electronico', categoria: CATEGORIA.SAFETY_LIBRO, nombre: 'Libro Electrónico' },
+  { campo: 'reporte_diesel', categoria: CATEGORIA.SAFETY_DIESEL, nombre: 'Reporte Diesel' },
+  { campo: 'reporte_pcmiller', categoria: CATEGORIA.SAFETY_PCMILLER, nombre: 'Reporte PC Miller' },
+];
+
+export const avisosDeSafety = (viajes, corte) => {
+  const creado = fechaLocal(corte.momento);
+  return DOCUMENTOS_DE_SAFETY.map((documento) => ({
+    documento,
+    faltan: viajes.filter((viaje) => !viaje[documento.campo]).length,
+  }))
+    .filter(({ faltan }) => faltan > 0)
+    .map(({ documento, faltan }) => ({
+      id: `${documento.categoria}-${corte.fecha}`,
+      categoria: documento.categoria,
+      tipo: 'safety',
+      titulo: `${documento.nombre} pendiente`,
+      subtitulo: `${plural(faltan, 'viaje', 'viajes')} sin ${documento.nombre}`,
+      created_at: creado,
+      destino: { ruta: '/safety' },
+    }));
 };
 
 const unidadesDe = (fila) =>

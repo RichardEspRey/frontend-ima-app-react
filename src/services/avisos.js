@@ -3,6 +3,7 @@ import {
   avisosDeDiesel,
   avisosDeDocumentos,
   avisosDeProgramacion,
+  avisosDeSafety,
   avisosSinFallas,
   avisosSinInspeccion,
   corteDiario,
@@ -53,16 +54,25 @@ export const suscriptoresDe = (categoria) => ({
   desuscribir: ({ userId }) => pedirAvisos('desuscribir', { categoria, user_id: userId }),
 });
 
-export const crearConsultaDeDiesel = () => {
+const crearConsultaDiaria = (calcular) => () => {
   let ultimo = { fecha: null, avisos: [] };
   return async () => {
     const corte = corteDiario(new Date());
     if (ultimo.fecha === corte.fecha) return ultimo.avisos;
-    const data = await pedir('formularios.php', { op: 'getAll_diesel' });
-    ultimo = { fecha: corte.fecha, avisos: avisosDeDiesel(Array.isArray(data.id) ? data.id : [], corte) };
+    ultimo = { fecha: corte.fecha, avisos: await calcular(corte) };
     return ultimo.avisos;
   };
 };
+
+export const crearConsultaDeDiesel = crearConsultaDiaria(async (corte) => {
+  const data = await pedir('formularios.php', { op: 'getAll_diesel' });
+  return avisosDeDiesel(Array.isArray(data.id) ? data.id : [], corte);
+});
+
+export const crearConsultaDeSafety = crearConsultaDiaria(async (corte) => {
+  const data = await pedir('safety.php', { op: 'get_safety_trips' });
+  return avisosDeSafety(Array.isArray(data.data) ? data.data : [], corte);
+});
 
 export const consultarAvisosDeMantenimiento = async () => {
   const [sinFallas, sinInspeccion] = await Promise.all([
