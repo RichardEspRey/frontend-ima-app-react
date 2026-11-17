@@ -7,6 +7,7 @@ import {
   identificadorViaje,
   PERIODO_FISCAL,
   periodosDe,
+  textoDePeriodos,
   filtrarResumen,
   totalDe,
   pendientesDe,
@@ -216,9 +217,15 @@ describe("filtrarResumen por periodo fiscal", () => {
   const ids = (filas) => filas.map((fila) => fila.trip_id)
 
   it("separa los periodos de un viaje que cargó en dos trimestres", () => {
-    expect(periodosDe(VIAJES[1])).toEqual(["Q3", "Q2"])
-    expect(periodosDe(VIAJES[2])).toEqual(["Q2", ""])
-    expect(periodosDe(VIAJES[4])).toEqual([""])
+    expect(periodosDe(VIAJES[1])).toEqual(["Q2", "Q3"])
+    expect(periodosDe(VIAJES[2])).toEqual(["Q2", "V"])
+    expect(periodosDe(VIAJES[4])).toEqual(["V"])
+  })
+
+  it("una carga sin periodo se lee como V, sin repetir", () => {
+    expect(textoDePeriodos({ periodo: "" })).toBe("V")
+    expect(textoDePeriodos({ periodo: "Q2," })).toBe("Q2, V")
+    expect(textoDePeriodos({ periodo: "Q4, Q3,Q4,," })).toBe("Q3, Q4, V")
   })
 
   it("un viaje aparece en cada trimestre en el que cargó", () => {

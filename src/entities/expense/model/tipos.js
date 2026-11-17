@@ -112,7 +112,7 @@ const DIESEL = {
     { clave: "state_pending_count", etiqueta: "State Pending", alineacion: "center", tipo: "pendiente", color: COLOR.PELIGRO, aviso: "estados" },
     { clave: "fleetone_pending_count", etiqueta: "Fleet One Pending", alineacion: "center", tipo: "pendiente", color: COLOR.AVISO, aviso: "Fleet One" },
     { clave: "manual_count", etiqueta: "Manuales", alineacion: "center", tipo: "pendiente", color: COLOR.AVISO, aviso: "Registros ingresados a mano" },
-    { clave: "periodo", etiqueta: "Periodo", alineacion: "center" },
+    { clave: "periodo", etiqueta: "Periodo", alineacion: "center", tipo: "periodos" },
   ],
   columnasDetalle: [
     { clave: "is_manual", etiqueta: "Origen", tipo: "origen" },

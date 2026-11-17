@@ -4,6 +4,7 @@ export {
   PAIS_REGISTRO,
   PERIODO_FISCAL,
   periodosDe,
+  textoDePeriodos,
   esquemaResumenViaje,
   identificadorViaje,
   filtrarResumen,

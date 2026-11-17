@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom"
 import {
   PAIS_REGISTRO,
   PERIODO_FISCAL,
+  textoDePeriodos,
   filtrarResumen,
   identificadorViaje,
   useResumen,
@@ -26,7 +27,7 @@ const PERIODOS = [
   { valor: PERIODO_FISCAL.Q2, etiqueta: "Q2" },
   { valor: PERIODO_FISCAL.Q3, etiqueta: "Q3" },
   { valor: PERIODO_FISCAL.Q4, etiqueta: "Q4" },
-  { valor: PERIODO_FISCAL.SIN_PERIODO, etiqueta: "Vacíos" },
+  { valor: PERIODO_FISCAL.SIN_PERIODO, etiqueta: "V (vacío)" },
 ]
 
 /**
@@ -49,6 +50,8 @@ function Celda({ columna, fila }) {
   }
 
   if (columna.tipo === "galones") return <>{decimales(valor)} gal</>
+
+  if (columna.tipo === "periodos") return <>{textoDePeriodos(fila)}</>
 
   if (columna.tipo === "pendiente") {
     const cuantos = Number(valor ?? 0)

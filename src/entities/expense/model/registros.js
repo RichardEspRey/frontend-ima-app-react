@@ -17,7 +17,8 @@ export const PAIS_REGISTRO = {
  * Periodos fiscales por los que se filtra el resumen de diesel.
  *
  * `SIN_PERIODO` pide los viajes con alguna carga a la que nadie le asignó
- * trimestre, que son las que faltan por clasificar.
+ * trimestre, que son las que faltan por clasificar. En pantalla esas cargas se
+ * leen como `V`, de vacío.
  *
  * @readonly
  * @enum {string}
@@ -28,7 +29,7 @@ export const PERIODO_FISCAL = {
   Q2: "Q2",
   Q3: "Q3",
   Q4: "Q4",
-  SIN_PERIODO: "EMPTY",
+  SIN_PERIODO: "V",
 }
 
 /**
@@ -38,11 +39,32 @@ export const PERIODO_FISCAL = {
  * además hay cargas sin periodo— porque un viaje puede cargar en dos trimestres.
  * Compararlos como un solo texto dejaría fuera a esos viajes de cualquier filtro.
  *
+ * Una carga sin periodo se devuelve como `V`, que es como la oficina la nombra.
+ * Salen sin repetir y en orden —los trimestres primero y la `V` al final—, sin
+ * importar cómo los haya juntado el servidor.
+ *
  * @param {object} fila Un renglón del resumen de diesel.
- * @returns {Array.<string>} Los periodos; `""` es una carga sin periodo.
+ * @returns {Array.<string>} Los periodos; `V` es una carga sin periodo.
+ *
+ * @example
+ * periodosDe({ periodo: "Q3,Q2," }) // ["Q2", "Q3", "V"]
  */
-export const periodosDe = (fila) =>
-  String(fila?.periodo ?? "").split(",").map((periodo) => periodo.trim())
+export function periodosDe(fila) {
+  const vacio = PERIODO_FISCAL.SIN_PERIODO
+  const periodos = String(fila?.periodo ?? "")
+    .split(",")
+    .map((periodo) => periodo.trim().toUpperCase() || vacio)
+
+  return [...new Set(periodos)].sort((a, b) => (a === vacio) - (b === vacio) || a.localeCompare(b))
+}
+
+/**
+ * Los periodos de un viaje como se leen en la tabla.
+ *
+ * @param {object} fila Un renglón del resumen de diesel.
+ * @returns {string} Por ejemplo `Q2, V`.
+ */
+export const textoDePeriodos = (fila) => periodosDe(fila).join(", ")
 
 /**
  * Un renglón del resumen: lo que un viaje lleva gastado o cargado.
@@ -87,11 +109,10 @@ export function filtrarResumen(
   { pais = PAIS_REGISTRO.TODOS, busqueda = "", periodo = PERIODO_FISCAL.TODOS } = {},
 ) {
   const texto = String(busqueda ?? "").toLowerCase().trim()
-  const periodoBuscado = periodo === PERIODO_FISCAL.SIN_PERIODO ? "" : periodo
 
   return filas.filter((fila) => {
     if (pais !== PAIS_REGISTRO.TODOS && fila?.country_code !== pais) return false
-    if (periodo !== PERIODO_FISCAL.TODOS && !periodosDe(fila).includes(periodoBuscado)) return false
+    if (periodo !== PERIODO_FISCAL.TODOS && !periodosDe(fila).includes(periodo)) return false
     if (!texto) return true
 
     return (
