@@ -21,13 +21,13 @@ RewriteEngine Off
 AddOutputFilterByType DEFLATE application/json text/html text/plain
 </IfModule>
 
-# ── OPCIONAL · quitar el signo # de las tres líneas de abajo para activarlo ──
+# No servir por web los registros de la carpeta.
 #
-# Hoy cualquiera puede bajar los registros de los procesos automáticos desde el
-# navegador: diesel_job.log (28 MB) y dist_nv_laredo.log (5 MB). Este bloque los
-# deja de servir por web; los procesos los siguen escribiendo igual, porque eso
-# no pasa por Apache. Es un cambio de seguridad: activarlo es decisión de Emiliano.
-#
-#<FilesMatch "\.log$">
-#Require all denied
-#</FilesMatch>
+# Se podían bajar desde el navegador sin iniciar sesión. Revisados el 2026-11-17:
+#   debug_request.log   · un inicio de sesión con usuario y contraseña en claro
+#   dist_nv_laredo.log  · la posición GPS de cada camión, minuto a minuto
+#   diesel_job.log      · consumo y combustible de cada camión (28 MB)
+# Los procesos automáticos los siguen escribiendo igual: eso no pasa por Apache.
+<FilesMatch "\.log$">
+Require all denied
+</FilesMatch>

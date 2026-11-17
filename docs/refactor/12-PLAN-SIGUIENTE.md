@@ -35,7 +35,12 @@
 Diagnóstico completo y mediciones en `11-RENDIMIENTO.md`. Los pasos van del que más ahorra
 por menos riesgo al que menos. Del A1 al A6 son solo front y no necesitan nada de Emiliano.
 
-### A1 · Cachear el catálogo de nomenclaturas — el que más ahorra
+### A1 · Cachear el catálogo de nomenclaturas — HECHO (2026-11-17)
+
+> `Emiliano` `29cd841`. `src/utils/conCache.js` trae `conCache` (vigencia + promesa
+> compartida) y `crearCompletador` (vuelve a pedir una vez si aparece un id nuevo); se
+> reutilizan en A3 y A5. El refactor no necesitó cambio: `useNomenclaturas` ya lo cacheaba.
+> No se enganchó a ningún botón Actualizar porque Reparaciones no tiene uno.
 
 - **Problema:** `11-RENDIMIENTO.md` § 3.1 y § 3.2. `All_CL_Final` (80 KB) se pide cada
   minuto desde la campana, y otra vez desde Sidebar, avisos y Reparaciones.
@@ -115,7 +120,12 @@ por menos riesgo al que menos. Del A1 al A6 son solo front y no necesitan nada d
   `ipcRenderer.removeListener`, y usarla en la limpieza de los `useEffect` de `App.jsx` y
   `Sidebar.jsx`.
 
-### A7 · Compresión en el servidor — el mayor ahorro de datos, toca producción
+### A7 · Compresión en el servidor — HECHO (2026-11-17)
+
+> Emiliano subió `docs/backend/API.htaccess`. Medido después: `getAllGastos` 1 493 KB →
+> 144 KB, `All_finanzas` 766 → 60 KB, `All_CL_Final` 80 → 4.8 KB, `get_safety_trips` 110 →
+> 13 KB. **Falta que vuelva a subir el archivo:** la versión del repo ya trae activo el
+> bloque que deja de servir los `.log`, y la que subió lo traía apagado.
 
 - **Problema:** § 4. Ninguna respuesta va comprimida.
 - **Listo para subir:** `docs/backend/API.htaccess` (2026-11-17). Es el `.htaccess` que
