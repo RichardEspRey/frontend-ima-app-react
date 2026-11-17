@@ -17,6 +17,8 @@ export {
   normalizarLista,
 } from "./model/finanzas"
 
+export { etapasQueCoinciden, recortarViaje, totalesDeVentas } from "./model/ventas"
+
 export { MESES_CORTOS, mesesMoviles, margenPorMes } from "./model/margen"
 
 export {

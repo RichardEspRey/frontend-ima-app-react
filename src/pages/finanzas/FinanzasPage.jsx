@@ -3,7 +3,7 @@ import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
   TextField, Box, Typography, CircularProgress, Button, Badge, 
   Tooltip, Stack, MenuItem, Grid, Divider,
-  Autocomplete
+  Autocomplete, TableFooter
 } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 import FilterListIcon from '@mui/icons-material/FilterList';
@@ -15,7 +15,8 @@ import BusinessIcon from '@mui/icons-material/Business';
 
 import { TripFinanceRow } from '../../components/TripFinanceRow';
 import { AlertSummaryCards } from '../../components/AlertSummaryCards';
-import { getTripStatusSummary, validateStage, buildPayloadItem, collectDirtyStages } from '../../utils/financeHelpers';
+import { getTripStatusSummary, validateStage, buildPayloadItem, collectDirtyStages, money } from '../../utils/financeHelpers';
+import { recortarViaje, totalesDeVentas } from '../../entities/finance';
 import { STATUS_OPTIONS } from '../../constants/finances'; 
 import { COLOR } from '../../shared/ui/tokens';
 import { Pestanas, PageHeader, PAGE_SHELL_SX, TABLE_CONTAINER_SX, HEADER_ROW_SX, HEADER_CELL_SX, Paginacion, notify } from '../../shared/ui';
@@ -139,23 +140,9 @@ const FinanzasPage = () => {
       result = result.filter(t => coincideViaje(t.trip_number, search));
     }
 
-    if (invoiceSearch.trim()) {
-        const qInv = invoiceSearch.trim().toLowerCase();
-        result = result.filter(t => 
-            Array.isArray(t.stages) && t.stages.some(s => 
-                String(s.invoice_number || '').toLowerCase().includes(qInv)
-            )
-        );
-    }
-
-    if (companySearch && companySearch.trim()) {
-        const qComp = companySearch.trim().toLowerCase();
-        result = result.filter(t => 
-            Array.isArray(t.stages) && t.stages.some(s => 
-                String(s.company_name || '').toLowerCase().includes(qComp)
-            )
-        );
-    }
+    result = result
+      .map(t => recortarViaje(t, { compania: companySearch, invoice: invoiceSearch }))
+      .filter(Boolean);
 
     if (statusFilter !== 'All') {
       result = result.filter(t => t.status_trip === Number(statusFilter));
@@ -171,6 +158,8 @@ const FinanzasPage = () => {
   }, [trips, search, invoiceSearch, companySearch,statusFilter, tabValue]);
 
   const pageTrips = filteredAndSorted.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+  const hayFiltros = Boolean(search.trim() || invoiceSearch.trim() || (companySearch || '').trim() || statusFilter !== 'All');
+  const totales = useMemo(() => totalesDeVentas(filteredAndSorted), [filteredAndSorted]);
   const dirtyCount = useMemo(() => collectDirtyStages(trips).length, [trips]);
 
   const globalAlertCounts = useMemo(() => {
@@ -418,6 +407,28 @@ const FinanzasPage = () => {
               ))
             )}
           </TableBody>
+
+          {hayFiltros && !loading && filteredAndSorted.length > 0 ? (
+            <TableFooter>
+              <TableRow sx={{ bgcolor: COLOR.LIENZO, '& td': { borderTop: `2px solid ${COLOR.BORDE}`, borderBottom: 'none' } }}>
+                <TableCell colSpan={3} sx={{ py: 1.75 }}>
+                  <Typography variant="caption" sx={{ display: 'block', fontWeight: 700, color: COLOR.APAGADO, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                    Total filtrado
+                  </Typography>
+                  <Typography variant="body2" color={COLOR.APAGADO}>
+                    {totales.viajes} viaje{totales.viajes === 1 ? '' : 's'} · {totales.etapas} etapa{totales.etapas === 1 ? '' : 's'}
+                  </Typography>
+                </TableCell>
+                <TableCell align="right" sx={{ py: 1.75 }}>
+                  <Typography variant="body2" fontWeight={800} color={COLOR.TINTA}>{money(totales.tarifa)}</Typography>
+                </TableCell>
+                <TableCell align="right" sx={{ py: 1.75 }}>
+                  <Typography variant="body2" fontWeight={800} color={COLOR.TINTA}>{money(totales.pagada)}</Typography>
+                </TableCell>
+                <TableCell colSpan={2} />
+              </TableRow>
+            </TableFooter>
+          ) : null}
         </Table>
       </TableContainer>
 
