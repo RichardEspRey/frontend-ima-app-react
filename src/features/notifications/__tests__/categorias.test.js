@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { CATEGORIAS_DE_AVISO, SECCIONES_DE_AVISO, buscarPersonas, nombreDe } from "../model/categorias"
+import { CATEGORIAS_DE_AVISO, SECCIONES_DE_AVISO, buscarPersonas, nombreDe, unirPersonas } from "../model/categorias"
 
 const personas = [
   { id: "20", name: "Angeles", user: "Angeles_87" },
@@ -54,5 +54,29 @@ describe("CATEGORIAS_DE_AVISO", () => {
     expect(diesel.variables({ id: "20" }, "7")).toEqual({ userId: "20", usuarioId: "7" })
     expect(bl.variables({ id: "20" }, "7")).toBe("20")
     expect(inspecciones.variables({ id: "20" }, "7")).toEqual({ userId: "20", usuarioId: "7" })
+  })
+})
+
+describe("unirPersonas", () => {
+  it("junta a todos sin repetir, por nombre y luego por usuario", () => {
+    const unidas = unirPersonas([
+      [{ id: "16", name: "Angelica", user: "Angelica_22" }, { id: 14, name: "Richard", user: "Richard" }],
+      [{ id: "18", name: "Angelica", user: "Angelica_20001" }, { id: "14", name: "Richard", user: "Richard" }],
+      undefined,
+      [{ id: "23", name: "", user: "Max_21028" }],
+    ])
+    expect(unidas.map((p) => p.id)).toEqual(["18", "16", "23", "14"])
+  })
+
+  it("aguanta que no haya llegado ninguna lista", () => {
+    expect(unirPersonas([undefined, undefined])).toEqual([])
+  })
+})
+
+describe("nombres cortos", () => {
+  it("cada aviso tiene el suyo para el encabezado de la tabla", () => {
+    for (const categoria of CATEGORIAS_DE_AVISO) {
+      expect(categoria.corto.length).toBeGreaterThan(0)
+    }
   })
 })

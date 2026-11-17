@@ -2,49 +2,37 @@ import { useState } from "react"
 import {
   Avatar,
   Box,
-  Button,
-  Chip,
-  CircularProgress,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  IconButton,
   InputAdornment,
-  List,
-  ListItemAvatar,
-  ListItemButton,
-  ListItemText,
   Paper,
   Stack,
+  Switch,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
   TextField,
   Tooltip,
   Typography,
 } from "@mui/material"
 import BuildIcon from "@mui/icons-material/Build"
-import CheckIcon from "@mui/icons-material/Check"
 import DescriptionIcon from "@mui/icons-material/Description"
 import EventAvailableIcon from "@mui/icons-material/EventAvailable"
 import LocalGasStationIcon from "@mui/icons-material/LocalGasStation"
 import LocalShippingIcon from "@mui/icons-material/LocalShipping"
-import PersonAddIcon from "@mui/icons-material/PersonAddAlt1"
-import PersonRemoveIcon from "@mui/icons-material/PersonRemoveOutlined"
 import SearchIcon from "@mui/icons-material/Search"
 
-import { CATEGORIA_AVISO, fechaDeNotificacion } from "../../../entities/notification"
+import { CATEGORIA_AVISO } from "../../../entities/notification"
 import { useSesion } from "../../../shared/auth"
+import { BloqueEsqueleto, COLOR, INPUT_SX, SECTION_LABEL_SX, TINTE, notify } from "../../../shared/ui"
 import {
-  BloqueEsqueleto,
-  COLOR,
-  DARK_BTN_SX,
-  DIALOG_PAPER_SX,
-  EstadoError,
-  INPUT_SX,
-  SECTION_LABEL_SX,
-  TINTE,
-  notify,
-} from "../../../shared/ui"
-import { SECCIONES_DE_AVISO, buscarPersonas, nombreDe } from "../model/categorias"
+  CATEGORIAS_DE_AVISO,
+  SECCIONES_DE_AVISO,
+  buscarPersonas,
+  nombreDe,
+  usePersonasDeAvisos,
+} from "../model/categorias"
 
 const APARIENCIA = {
   bl: { Icono: LocalShippingIcon, color: COLOR.INFO, fondo: COLOR.INFO_FONDO },
@@ -58,398 +46,226 @@ const APARIENCIA = {
   [CATEGORIA_AVISO.DIESEL_FLEETONE]: { Icono: LocalGasStationIcon, color: TINTE.AMBAR.texto, fondo: TINTE.AMBAR.fondo },
 }
 
+const BORDE = `1px solid ${COLOR.BORDE}`
+const ANCHO_PERSONA = 240
 const ETIQUETA_SX = { ...SECTION_LABEL_SX, display: "block", lineHeight: 1, textTransform: "uppercase" }
 
 /**
- * La inicial que va en el avatar de una persona.
+ * El encabezado de la columna de un aviso.
  *
- * @param {object} persona La persona.
- * @returns {string} Una letra mayúscula, o `?`.
- */
-const inicialDe = (persona) => nombreDe(persona).trim().charAt(0).toUpperCase() || "?"
-
-/**
- * Desde cuándo recibe la persona el aviso, como `17/09/26`.
- *
- * @param {string} [texto] La fecha de PHP.
- * @returns {string} La fecha corta, o vacío si no vino.
- */
-function desdeCuando(texto) {
-  const fecha = fechaDeNotificacion(texto)
-  if (!fecha || Number.isNaN(fecha.getTime())) return ""
-  return fecha.toLocaleDateString("es-MX", { day: "2-digit", month: "2-digit", year: "2-digit" })
-}
-
-/**
- * La muestra de cómo se ve el aviso en la campana.
+ * Enseña el ícono, el nombre corto y cuántas personas lo reciben. La
+ * descripción y el ejemplo salen al pasar el cursor, que es lo que antes
+ * ocupaba media tarjeta.
  *
  * @param {object} props Propiedades del componente.
- * @param {object} props.categoria La categoría del aviso.
- * @returns {object} El renglón de muestra.
+ * @param {object} props.categoria Una de `CATEGORIAS_DE_AVISO`.
+ * @param {boolean} props.primera Si abre su sección, para pintar la división.
+ * @returns {object} La celda de encabezado.
  */
-function Muestra({ categoria }) {
+function Encabezado({ categoria, primera }) {
   const { Icono, color, fondo } = APARIENCIA[categoria.id]
+  const { data: suscriptores = [], isError } = categoria.useSuscriptores()
+  const total = suscriptores.length
+
   return (
-    <Box
-      sx={{
-        display: "flex",
-        alignItems: "center",
-        gap: 1.5,
-        px: 1.5,
-        py: 1.25,
-        borderRadius: 2,
-        bgcolor: COLOR.LIENZO,
-        border: `1px dashed ${COLOR.BORDE}`,
-      }}
+    <TableCell
+      align="center"
+      sx={{ borderLeft: primera ? BORDE : "none", borderBottom: BORDE, px: 1, py: 1.25, minWidth: 96 }}
     >
-      <Avatar sx={{ bgcolor: fondo, color, width: 32, height: 32 }}>
-        <Icono sx={{ fontSize: 18 }} />
-      </Avatar>
-      <Box sx={{ minWidth: 0 }}>
-        <Typography variant="body2" fontWeight={800} color={COLOR.TINTA} noWrap>
-          {categoria.ejemplo.titulo}
-        </Typography>
-        <Typography variant="caption" color={COLOR.APAGADO} noWrap sx={{ display: "block" }}>
-          {categoria.ejemplo.subtitulo}
-        </Typography>
-      </Box>
-    </Box>
+      <Tooltip
+        arrow
+        title={
+          <Box sx={{ p: 0.5 }}>
+            <Typography variant="caption" fontWeight={800} sx={{ display: "block" }}>
+              {categoria.nombre}
+            </Typography>
+            <Typography variant="caption" sx={{ display: "block", mb: 0.75 }}>
+              {categoria.descripcion}
+            </Typography>
+            <Typography variant="caption" sx={{ display: "block", opacity: 0.8 }}>
+              Ejemplo: {categoria.ejemplo.titulo} · {categoria.ejemplo.subtitulo}
+            </Typography>
+          </Box>
+        }
+      >
+        <Stack alignItems="center" spacing={0.5} sx={{ display: "inline-flex", cursor: "help" }}>
+          <Avatar sx={{ bgcolor: fondo, color, width: 30, height: 30 }}>
+            <Icono sx={{ fontSize: 17 }} />
+          </Avatar>
+          <Typography variant="caption" fontWeight={700} color={COLOR.TINTA} sx={{ lineHeight: 1.15 }}>
+            {categoria.corto}
+          </Typography>
+          <Typography variant="caption" color={isError ? COLOR.PELIGRO : COLOR.APAGADO} sx={{ lineHeight: 1 }}>
+            {isError ? "No cargó" : `${total} ${total === 1 ? "persona" : "personas"}`}
+          </Typography>
+        </Stack>
+      </Tooltip>
+    </TableCell>
   )
 }
 
 /**
- * El diálogo para agregar personas a un aviso.
+ * El cruce de una persona con un aviso: un interruptor.
  *
- * Se queda abierto para agregar a varias seguidas; cada una se marca al entrar.
+ * Lee la misma lista en caché que el encabezado, así que no agrega peticiones.
+ * Mientras guarda queda bloqueado; si falla, avisa y la lista sigue como estaba.
  *
  * @param {object} props Propiedades del componente.
- * @param {object} props.categoria La categoría del aviso.
- * @param {boolean} props.abierto Si se ve.
- * @param {Function} props.onCerrar Qué hacer al cerrarlo.
- * @returns {object} El diálogo renderizado.
+ * @param {object} props.categoria Una de `CATEGORIAS_DE_AVISO`.
+ * @param {object} props.persona La persona de la fila.
+ * @param {boolean} props.primera Si abre su sección, para pintar la división.
+ * @returns {object} La celda con el interruptor.
  */
-function DialogoAgregar({ categoria, abierto, onCerrar }) {
+function Celda({ categoria, persona, primera }) {
   const { usuario } = useSesion()
-  const [busqueda, setBusqueda] = useState("")
-  const [agregadas, setAgregadas] = useState([])
-  const [agregando, setAgregando] = useState(null)
-
-  const disponibles = categoria.useDisponibles(abierto)
+  const { data: suscriptores, isError } = categoria.useSuscriptores()
   const suscribir = categoria.useSuscribir()
+  const desuscribir = categoria.useDesuscribir()
 
+  const recibe = (suscriptores ?? []).some((una) => String(una.id) === String(persona.id))
+  const guardando = suscribir.isPending || desuscribir.isPending
 
-  const agregar = async (persona) => {
-    setAgregando(persona.id)
+  const alternar = async () => {
     try {
-      await suscribir.mutateAsync(categoria.variables(persona, usuario?.id))
-      setAgregadas((previas) => [...previas, persona])
+      const mutacion = recibe ? desuscribir : suscribir
+      await mutacion.mutateAsync(categoria.variables(persona, usuario?.id))
     } catch (fallo) {
       notify.error(fallo)
-    } finally {
-      setAgregando(null)
     }
   }
 
-  const cerrar = () => {
-    setBusqueda("")
-    setAgregadas([])
-    onCerrar()
-  }
+  return (
+    <TableCell align="center" sx={{ borderLeft: primera ? BORDE : "none", py: 0.25 }}>
+      <Switch
+        size="small"
+        checked={recibe}
+        disabled={guardando || isError || suscriptores === undefined}
+        onChange={alternar}
+        slotProps={{ input: { "aria-label": `${categoria.nombre} para ${nombreDe(persona)}` } }}
+      />
+    </TableCell>
+  )
+}
 
-  const visibles = [
-    ...buscarPersonas(agregadas, busqueda),
-    ...buscarPersonas(disponibles.data ?? [], busqueda),
-  ].filter((persona, indice, lista) => lista.findIndex((otra) => otra.id === persona.id) === indice)
+/**
+ * Quién recibe cada aviso de la campana, en una sola tabla.
+ *
+ * Una fila por persona, una columna por aviso —agrupadas por pantalla— y un
+ * interruptor en cada cruce, que guarda al momento. Sustituye a las tarjetas:
+ * con nueve avisos había que abrir nueve listas para saber qué recibía alguien.
+ *
+ * @returns {object} El buscador y la tabla.
+ */
+export function SuscriptoresDeAvisos() {
+  const { personas, cargando } = usePersonasDeAvisos()
+  const [busqueda, setBusqueda] = useState("")
+  const visibles = buscarPersonas(personas, busqueda)
+
+  if (cargando && personas.length === 0) return <BloqueEsqueleto alto={320} />
 
   return (
-    <Dialog open={abierto} onClose={cerrar} maxWidth="xs" fullWidth PaperProps={{ sx: DIALOG_PAPER_SX }}>
-      <DialogTitle component="div" sx={{ pb: 1 }}>
-        <Typography variant="h6" fontWeight={800} color={COLOR.TINTA}>
-          Agregar a {categoria.nombre}
-        </Typography>
-        <Typography variant="body2" color={COLOR.APAGADO}>
-          Toca a cada persona que deba recibir estos avisos.
-        </Typography>
-      </DialogTitle>
-
-      <DialogContent>
-        <TextField
-          fullWidth
-          size="small"
-          autoFocus
-          placeholder="Buscar por nombre o usuario"
-          value={busqueda}
-          onChange={(evento) => setBusqueda(evento.target.value)}
-          sx={{ mt: 1, mb: 1.5, "& .MuiOutlinedInput-root": INPUT_SX }}
-          InputProps={{
+    <Stack spacing={2}>
+      <TextField
+        size="small"
+        placeholder="Buscar persona"
+        value={busqueda}
+        onChange={(evento) => setBusqueda(evento.target.value)}
+        sx={{ width: 260, bgcolor: COLOR.BLANCO }}
+        slotProps={{
+          input: {
+            sx: INPUT_SX,
             startAdornment: (
               <InputAdornment position="start">
                 <SearchIcon fontSize="small" />
               </InputAdornment>
             ),
-          }}
-        />
-
-        {disponibles.isLoading ? (
-          <BloqueEsqueleto alto={200} conTitulo={false} />
-        ) : (
-          <List dense disablePadding sx={{ maxHeight: 320, overflowY: "auto" }}>
-            {visibles.length === 0 && (
-              <Typography variant="body2" color={COLOR.TENUE} sx={{ py: 3, textAlign: "center" }}>
-                {busqueda.trim() ? "Nadie coincide con la búsqueda." : "Todas las personas ya reciben estos avisos."}
-              </Typography>
-            )}
-
-            {visibles.map((persona) => {
-              const yaAgregada = agregadas.some((una) => una.id === persona.id)
-              return (
-                <ListItemButton
-                  key={persona.id}
-                  onClick={() => (yaAgregada ? null : agregar(persona))}
-                  disabled={agregando === persona.id}
-                  sx={{ borderRadius: 2, mb: 0.5, bgcolor: yaAgregada ? COLOR.EXITO_FONDO : "transparent" }}
-                >
-                  <ListItemAvatar sx={{ minWidth: 44 }}>
-                    <Avatar
-                      sx={{
-                        width: 32,
-                        height: 32,
-                        fontSize: "0.85rem",
-                        fontWeight: 700,
-                        bgcolor: TINTE.INDIGO.fondo,
-                        color: TINTE.INDIGO.texto,
-                      }}
-                    >
-                      {inicialDe(persona)}
-                    </Avatar>
-                  </ListItemAvatar>
-                  <ListItemText
-                    primary={
-                      <Typography variant="body2" fontWeight={700} color={COLOR.TINTA}>
-                        {nombreDe(persona)}
-                      </Typography>
-                    }
-                    secondary={persona.user || null}
-                  />
-                  {agregando === persona.id ? <CircularProgress size={16} /> : null}
-                  {yaAgregada ? <CheckIcon fontSize="small" sx={{ color: COLOR.EXITO }} /> : null}
-                </ListItemButton>
-              )
-            })}
-          </List>
-        )}
-      </DialogContent>
-
-      <DialogActions sx={{ px: 3, pb: 2 }}>
-        <Button onClick={cerrar} variant="contained" sx={DARK_BTN_SX}>
-          Listo
-        </Button>
-      </DialogActions>
-    </Dialog>
-  )
-}
-
-/**
- * La tarjeta de un aviso: qué es, cómo se ve y quién lo recibe.
- *
- * @param {object} props Propiedades del componente.
- * @param {object} props.categoria Una de `CATEGORIAS_DE_AVISO`.
- * @returns {object} La tarjeta renderizada.
- */
-function TarjetaAviso({ categoria }) {
-  const { usuario } = useSesion()
-  const { Icono, color, fondo } = APARIENCIA[categoria.id]
-  const [agregarAbierto, setAgregarAbierto] = useState(false)
-  const [quitando, setQuitando] = useState(null)
-
-  const suscriptores = categoria.useSuscriptores()
-  const desuscribir = categoria.useDesuscribir()
-  const personas = suscriptores.data ?? []
-
-  const quitar = async (persona) => {
-    setQuitando(persona.id)
-    try {
-      await desuscribir.mutateAsync(categoria.variables(persona, usuario?.id))
-      notify.exito(`${nombreDe(persona)} ya no recibirá los avisos de ${categoria.nombre}.`)
-    } catch (fallo) {
-      notify.error(fallo)
-    } finally {
-      setQuitando(null)
-    }
-  }
-
-  return (
-    <Paper
-      elevation={0}
-      sx={{
-        borderRadius: 3,
-        border: `1px solid ${COLOR.BORDE}`,
-        display: "flex",
-        flexDirection: "column",
-        overflow: "hidden",
-      }}
-    >
-      <Box sx={{ p: 3, pb: 2 }}>
-        <Stack direction="row" spacing={2} alignItems="flex-start">
-          <Avatar sx={{ bgcolor: fondo, color, width: 44, height: 44, borderRadius: 2.5 }}>
-            <Icono />
-          </Avatar>
-          <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-            <Stack direction="row" alignItems="center" spacing={1}>
-              <Typography variant="h6" fontWeight={800} color={COLOR.TINTA} sx={{ lineHeight: 1.3 }}>
-                {categoria.nombre}
-              </Typography>
-              {suscriptores.isSuccess ? (
-                <Chip
-                  size="small"
-                  label={`${personas.length} ${personas.length === 1 ? "persona" : "personas"}`}
-                  sx={{ height: 22, fontWeight: 700, bgcolor: COLOR.RELLENO, color: COLOR.TEXTO_SUAVE }}
-                />
-              ) : null}
-            </Stack>
-            <Typography variant="body2" color={COLOR.APAGADO} sx={{ mt: 0.5 }}>
-              {categoria.descripcion}
-            </Typography>
-          </Box>
-        </Stack>
-
-        <Typography variant="overline" sx={{ ...ETIQUETA_SX, mt: 2.5, mb: 1 }}>
-          Así se ve en la campana
-        </Typography>
-        <Muestra categoria={categoria} />
-      </Box>
-
-      <Box sx={{ px: 3, pt: 1, pb: 1, flexGrow: 1 }}>
-        <Typography variant="overline" sx={{ ...ETIQUETA_SX, mb: 0.5 }}>
-          Quién lo recibe
-        </Typography>
-
-        {suscriptores.isLoading ? <BloqueEsqueleto alto={120} conTitulo={false} /> : null}
-
-        {suscriptores.isError ? (
-          <EstadoError error={suscriptores.error} onReintentar={suscriptores.refetch} />
-        ) : null}
-
-        {suscriptores.isSuccess && personas.length === 0 ? (
-          <Typography variant="body2" color={COLOR.TENUE} sx={{ py: 3, textAlign: "center" }}>
-            Nadie recibe estos avisos todavía.
-          </Typography>
-        ) : null}
-
-        {suscriptores.isSuccess && personas.length > 0 ? (
-          <List disablePadding sx={{ maxHeight: 320, overflowY: "auto" }}>
-            {personas.map((persona) => {
-              const desde = desdeCuando(persona.subscribed_at)
-              return (
-                <Box
-                  key={persona.id}
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 1.5,
-                    py: 1,
-                    borderBottom: `1px solid ${COLOR.RELLENO}`,
-                    "&:last-of-type": { borderBottom: "none" },
-                  }}
-                >
-                  <Avatar
-                    sx={{
-                      width: 34,
-                      height: 34,
-                      fontSize: "0.9rem",
-                      fontWeight: 700,
-                      bgcolor: TINTE.INDIGO.fondo,
-                      color: TINTE.INDIGO.texto,
-                    }}
-                  >
-                    {inicialDe(persona)}
-                  </Avatar>
-                  <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-                    <Typography variant="body2" fontWeight={700} color={COLOR.TINTA} noWrap>
-                      {nombreDe(persona)}
-                    </Typography>
-                    <Typography variant="caption" color={COLOR.TENUE} noWrap sx={{ display: "block" }}>
-                      {persona.user || "—"}
-                      {desde ? ` · desde ${desde}` : ""}
-                    </Typography>
-                  </Box>
-                  <Tooltip title="Quitar">
-                    <span>
-                      <IconButton
-                        size="small"
-                        aria-label={`Quitar a ${nombreDe(persona)}`}
-                        onClick={() => quitar(persona)}
-                        disabled={quitando === persona.id}
-                        sx={{
-                          color: COLOR.TENUE,
-                          "&:hover": { color: COLOR.PELIGRO, bgcolor: COLOR.PELIGRO_FONDO },
-                        }}
-                      >
-                        {quitando === persona.id ? (
-                          <CircularProgress size={16} />
-                        ) : (
-                          <PersonRemoveIcon fontSize="small" />
-                        )}
-                      </IconButton>
-                    </span>
-                  </Tooltip>
-                </Box>
-              )
-            })}
-          </List>
-        ) : null}
-      </Box>
-
-      <Box sx={{ px: 3, py: 2, borderTop: `1px solid ${COLOR.BORDE}`, bgcolor: COLOR.CABECERA }}>
-        <Button
-          fullWidth
-          variant="contained"
-          startIcon={<PersonAddIcon />}
-          onClick={() => setAgregarAbierto(true)}
-          disabled={!suscriptores.isSuccess}
-          sx={DARK_BTN_SX}
-        >
-          Agregar persona
-        </Button>
-      </Box>
-
-      <DialogoAgregar
-        categoria={categoria}
-        abierto={agregarAbierto}
-        onCerrar={() => setAgregarAbierto(false)}
+          },
+        }}
       />
-    </Paper>
-  )
-}
 
-/**
- * Los avisos de la campana agrupados por pantalla, una tarjeta por cada uno,
- * con quién los recibe.
- *
- * @returns {object} Las secciones con sus tarjetas.
- */
-export function SuscriptoresDeAvisos() {
-  return (
-    <Stack spacing={5}>
-      {SECCIONES_DE_AVISO.map((seccion) => (
-        <Box key={seccion.id}>
-          <Typography variant="subtitle1" fontWeight={800} color={COLOR.TINTA} sx={{ mb: 2 }}>
-            {seccion.nombre}
-          </Typography>
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: { xs: "1fr", lg: "1fr 1fr" },
-              gap: 3,
-              alignItems: "start",
-            }}
-          >
-            {seccion.categorias.map((categoria) => (
-              <TarjetaAviso key={categoria.id} categoria={categoria} />
+      <TableContainer
+        component={Paper}
+        elevation={0}
+        sx={{ border: BORDE, borderRadius: 2, maxHeight: "calc(100vh - 260px)" }}
+      >
+        <Table stickyHeader size="small">
+          <TableHead>
+            <TableRow>
+              <TableCell
+                rowSpan={2}
+                sx={{
+                  position: "sticky",
+                  left: 0,
+                  zIndex: 4,
+                  bgcolor: COLOR.BLANCO,
+                  minWidth: ANCHO_PERSONA,
+                  borderBottom: BORDE,
+                  verticalAlign: "bottom",
+                }}
+              >
+                <Typography variant="caption" sx={ETIQUETA_SX}>
+                  Persona
+                </Typography>
+              </TableCell>
+              {SECCIONES_DE_AVISO.map((seccion) => (
+                <TableCell
+                  key={seccion.id}
+                  align="center"
+                  colSpan={seccion.categorias.length}
+                  sx={{ borderLeft: BORDE, borderBottom: "none", bgcolor: COLOR.LIENZO, py: 0.75 }}
+                >
+                  <Typography variant="caption" sx={ETIQUETA_SX}>
+                    {seccion.nombre}
+                  </Typography>
+                </TableCell>
+              ))}
+            </TableRow>
+            <TableRow>
+              {SECCIONES_DE_AVISO.map((seccion) =>
+                seccion.categorias.map((categoria, indice) => (
+                  <Encabezado key={categoria.id} categoria={categoria} primera={indice === 0} />
+                )),
+              )}
+            </TableRow>
+          </TableHead>
+
+          <TableBody>
+            {visibles.length === 0 ? (
+              <TableRow>
+                <TableCell
+                  colSpan={CATEGORIAS_DE_AVISO.length + 1}
+                  align="center"
+                  sx={{ py: 5, color: COLOR.APAGADO }}
+                >
+                  Nadie coincide con la búsqueda.
+                </TableCell>
+              </TableRow>
+            ) : null}
+
+            {visibles.map((persona) => (
+              <TableRow key={persona.id} hover>
+                <TableCell
+                  sx={{ position: "sticky", left: 0, zIndex: 1, bgcolor: COLOR.BLANCO, minWidth: ANCHO_PERSONA }}
+                >
+                  <Typography variant="body2" fontWeight={700} color={COLOR.TINTA} noWrap>
+                    {nombreDe(persona)}
+                  </Typography>
+                  {persona.user && persona.user !== nombreDe(persona) ? (
+                    <Typography variant="caption" color={COLOR.APAGADO} noWrap sx={{ display: "block" }}>
+                      {persona.user}
+                    </Typography>
+                  ) : null}
+                </TableCell>
+                {SECCIONES_DE_AVISO.map((seccion) =>
+                  seccion.categorias.map((categoria, indice) => (
+                    <Celda key={categoria.id} categoria={categoria} persona={persona} primera={indice === 0} />
+                  )),
+                )}
+              </TableRow>
             ))}
-          </Box>
-        </Box>
-      ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
     </Stack>
   )
 }

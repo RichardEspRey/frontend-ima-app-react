@@ -17,4 +17,11 @@ export {
 } from "./model/useAvisosDerivados"
 export { CampanaNotificaciones } from "./ui/CampanaNotificaciones"
 export { SuscriptoresDeAvisos } from "./ui/SuscriptoresDeAvisos"
-export { CATEGORIAS_DE_AVISO, SECCIONES_DE_AVISO, buscarPersonas, nombreDe } from "./model/categorias"
+export {
+  CATEGORIAS_DE_AVISO,
+  SECCIONES_DE_AVISO,
+  buscarPersonas,
+  nombreDe,
+  unirPersonas,
+  usePersonasDeAvisos,
+} from "./model/categorias"
