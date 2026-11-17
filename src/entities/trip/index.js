@@ -76,3 +76,5 @@ export { esquemaRutaViaje, TIPO_PARADA, contarParadas, duracionLegible } from ".
 export { obtenerRutaViaje, useRutaViaje } from "./api/ruta"
 export { obtenerOrigenes, useOrigenes } from "./api/origenes"
 export { llaveNomenclaturaViaje, useNomenclaturasDeViajes } from "./api/nomenclatura"
+
+export { DIGITOS_DE_VIAJE, numeroDeViaje, coincideViaje } from "./model/busqueda"
