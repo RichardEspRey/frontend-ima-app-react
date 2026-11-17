@@ -3,7 +3,7 @@ import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
   TablePagination, TextField, Box, Typography, CircularProgress, Button, Badge, 
   Tooltip, Stack, MenuItem, Tabs, Tab, Grid, Divider,
-  Autocomplete
+  Autocomplete, TableFooter
 } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 import FilterListIcon from '@mui/icons-material/FilterList';
@@ -16,9 +16,10 @@ import Swal from 'sweetalert2';
 
 import { TripFinanceRow } from '../components/TripFinanceRow';
 import { AlertSummaryCards } from '../components/AlertSummaryCards';
-import { getTripStatusSummary, validateStage, buildPayloadItem, collectDirtyStages } from '../utils/financeHelpers';
+import { getTripStatusSummary, validateStage, buildPayloadItem, collectDirtyStages, money } from '../utils/financeHelpers';
 import { STATUS_OPTIONS } from '../constants/finances'; 
 import { coincideViaje } from '../utils/buscarViaje';
+import { recortarViaje, totalesDeVentas } from '../utils/ventas';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -134,23 +135,9 @@ const Finanzas = () => {
       result = result.filter(t => coincideViaje(t.trip_number, search));
     }
 
-    if (invoiceSearch.trim()) {
-        const qInv = invoiceSearch.trim().toLowerCase();
-        result = result.filter(t => 
-            Array.isArray(t.stages) && t.stages.some(s => 
-                String(s.invoice_number || '').toLowerCase().includes(qInv)
-            )
-        );
-    }
-
-    if (companySearch && companySearch.trim()) {
-        const qComp = companySearch.trim().toLowerCase();
-        result = result.filter(t => 
-            Array.isArray(t.stages) && t.stages.some(s => 
-                String(s.company_name || '').toLowerCase().includes(qComp)
-            )
-        );
-    }
+    result = result
+      .map(t => recortarViaje(t, { compania: companySearch, invoice: invoiceSearch }))
+      .filter(Boolean);
 
     if (statusFilter !== 'All') {
       result = result.filter(t => t.status_trip === Number(statusFilter));
@@ -167,6 +154,8 @@ const Finanzas = () => {
   }, [trips, search, invoiceSearch, companySearch,statusFilter, tabValue]);
 
   const pageTrips = filteredAndSorted.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+  const hayFiltros = Boolean(search.trim() || invoiceSearch.trim() || (companySearch || '').trim() || statusFilter !== 'All');
+  const totales = useMemo(() => totalesDeVentas(filteredAndSorted), [filteredAndSorted]);
   const dirtyCount = useMemo(() => collectDirtyStages(trips).length, [trips]);
 
   const globalAlertCounts = useMemo(() => {
@@ -420,6 +409,28 @@ const Finanzas = () => {
               ))
             )}
           </TableBody>
+
+          {hayFiltros && !loading && filteredAndSorted.length > 0 && (
+            <TableFooter>
+              <TableRow sx={{ bgcolor: '#f8fafc', '& td': { borderTop: '2px solid #e2e8f0', borderBottom: 'none' } }}>
+                <TableCell colSpan={3} sx={{ py: 1.75 }}>
+                  <Typography variant="caption" sx={{ display: 'block', fontWeight: 700, color: '#94a3b8', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                    Total filtrado
+                  </Typography>
+                  <Typography variant="body2" color="#64748b">
+                    {totales.viajes} viaje{totales.viajes === 1 ? '' : 's'} · {totales.etapas} etapa{totales.etapas === 1 ? '' : 's'}
+                  </Typography>
+                </TableCell>
+                <TableCell align="right" sx={{ py: 1.75 }}>
+                  <Typography variant="body2" fontWeight={800} color="#0f172a">{money(totales.tarifa)}</Typography>
+                </TableCell>
+                <TableCell align="right" sx={{ py: 1.75 }}>
+                  <Typography variant="body2" fontWeight={800} color="#0f172a">{money(totales.pagada)}</Typography>
+                </TableCell>
+                <TableCell colSpan={2} />
+              </TableRow>
+            </TableFooter>
+          )}
         </Table>
       </TableContainer>
 

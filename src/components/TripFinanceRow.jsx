@@ -59,7 +59,7 @@ export const TripFinanceRow = ({ trip, isOpen, onToggle, onStageChange }) => {
         <TableCell sx={{ fontWeight: 500 }}>{trip.trip_number}</TableCell>
         <TableCell>
           <Stack direction="row" spacing={1} alignItems="center">
-            <Chip size="small" label={`${trip.stages_count}`} sx={{ fontWeight: 600 }} />
+            <Chip size="small" label={trip.etapas_totales ? `${trip.stages_count} de ${trip.etapas_totales}` : `${trip.stages_count}`} sx={{ fontWeight: 600 }} />
             <Typography variant="body2" color="text.secondary">etapas</Typography>
           </Stack>
         </TableCell>
