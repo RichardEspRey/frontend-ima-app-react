@@ -33,6 +33,8 @@ const Finanzas = () => {
   const [invoiceSearch, setInvoiceSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('All'); 
   const [companySearch, setCompanySearch] = useState('');
+  const [fechaDesde, setFechaDesde] = useState('');
+  const [fechaHasta, setFechaHasta] = useState('');
   const [companiesList, setCompaniesList] = useState([]);
   
   const [page, setPage] = useState(0);
@@ -136,7 +138,7 @@ const Finanzas = () => {
     }
 
     result = result
-      .map(t => recortarViaje(t, { compania: companySearch, invoice: invoiceSearch }))
+      .map(t => recortarViaje(t, { compania: companySearch, invoice: invoiceSearch, desde: fechaDesde, hasta: fechaHasta }))
       .filter(Boolean);
 
     if (statusFilter !== 'All') {
@@ -151,10 +153,10 @@ const Finanzas = () => {
     });
 
     return result;
-  }, [trips, search, invoiceSearch, companySearch,statusFilter, tabValue]);
+  }, [trips, search, invoiceSearch, companySearch, fechaDesde, fechaHasta, statusFilter, tabValue]);
 
   const pageTrips = filteredAndSorted.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
-  const hayFiltros = Boolean(search.trim() || invoiceSearch.trim() || (companySearch || '').trim() || statusFilter !== 'All');
+  const hayFiltros = Boolean(search.trim() || invoiceSearch.trim() || (companySearch || '').trim() || fechaDesde || fechaHasta || statusFilter !== 'All');
   const totales = useMemo(() => totalesDeVentas(filteredAndSorted), [filteredAndSorted]);
   const dirtyCount = useMemo(() => collectDirtyStages(trips).length, [trips]);
 
@@ -368,6 +370,44 @@ const Finanzas = () => {
                     </span>
                 </Tooltip>
             </Grid>
+
+            <Grid size={{ xs: 12, sm: 6, md: 2 }}>
+                <TextField
+                    fullWidth
+                    size="small"
+                    type="date"
+                    label="Finalizado desde"
+                    value={fechaDesde}
+                    onChange={(e) => { setFechaDesde(e.target.value); setPage(0); }}
+                    slotProps={{ inputLabel: { shrink: true }, htmlInput: { max: fechaHasta || undefined } }}
+                    sx={{ bgcolor: 'white' }}
+                />
+            </Grid>
+
+            <Grid size={{ xs: 12, sm: 6, md: 2 }}>
+                <TextField
+                    fullWidth
+                    size="small"
+                    type="date"
+                    label="Finalizado hasta"
+                    value={fechaHasta}
+                    onChange={(e) => { setFechaHasta(e.target.value); setPage(0); }}
+                    slotProps={{ inputLabel: { shrink: true }, htmlInput: { min: fechaDesde || undefined } }}
+                    sx={{ bgcolor: 'white' }}
+                />
+            </Grid>
+
+            {(fechaDesde || fechaHasta) && (
+                <Grid size={{ xs: 12, sm: 6, md: 2 }}>
+                    <Button
+                        size="small"
+                        onClick={() => { setFechaDesde(''); setFechaHasta(''); setPage(0); }}
+                        sx={{ textTransform: 'none', fontWeight: 600 }}
+                    >
+                        Quitar fechas
+                    </Button>
+                </Grid>
+            )}
         </Grid>
       </Paper>
 
@@ -380,16 +420,17 @@ const Finanzas = () => {
               <TableCell sx={{ fontWeight: 700, fontSize: '0.9rem', bgcolor: '#fff' }}>Stages</TableCell>
               <TableCell sx={{ fontWeight: 700, fontSize: '0.9rem', bgcolor: '#fff', textAlign: 'right' }}>Total Rate</TableCell>
               <TableCell sx={{ fontWeight: 700, fontSize: '0.9rem', bgcolor: '#fff', textAlign: 'right' }}>Total Pagado</TableCell>
+              <TableCell sx={{ fontWeight: 700, fontSize: '0.9rem', bgcolor: '#fff', whiteSpace: 'nowrap' }}>Finalización</TableCell>
               <TableCell sx={{ fontWeight: 700, fontSize: '0.9rem', bgcolor: '#fff' }}>Estatus General</TableCell>
               <TableCell sx={{ fontWeight: 700, fontSize: '0.9rem', bgcolor: '#fff', textAlign: 'center' }}>Alertas</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {loading ? (
-              <TableRow><TableCell colSpan={7} align="center" sx={{ py: 10 }}><CircularProgress /></TableCell></TableRow>
+              <TableRow><TableCell colSpan={8} align="center" sx={{ py: 10 }}><CircularProgress /></TableCell></TableRow>
             ) : pageTrips.length === 0 ? (
               <TableRow>
-                  <TableCell colSpan={7} align="center" sx={{ py: 5 }}>
+                  <TableCell colSpan={8} align="center" sx={{ py: 5 }}>
                     <Typography color="text.secondary" variant="body1">
                         {tabValue === 0 
                             ? "¡Todo al día! No hay viajes pendientes de cobrar." 
@@ -427,7 +468,7 @@ const Finanzas = () => {
                 <TableCell align="right" sx={{ py: 1.75 }}>
                   <Typography variant="body2" fontWeight={800} color="#0f172a">{money(totales.pagada)}</Typography>
                 </TableCell>
-                <TableCell colSpan={2} />
+                <TableCell colSpan={3} />
               </TableRow>
             </TableFooter>
           )}
