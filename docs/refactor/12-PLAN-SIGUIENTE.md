@@ -206,7 +206,11 @@ por menos riesgo al que menos. Del A1 al A6 son solo front y no necesitan nada d
 - **Verificar:** medir con `curl` antes y después; la segunda petición dentro de 45 s debe
   responder en menos de medio segundo.
 
-### A9 · Índices — ENTREGADO, falta correr (2026-11-17)
+### A9 · Índices — DESCARTADO por Emiliano (2026-11-17)
+
+> Emiliano decidió no ponerlos. La ganancia medida era de una décima de segundo. El SQL
+> queda en `docs/sql/013-indices.sql` por si las tablas crecen; **no volver a proponerlo**
+> salvo que él lo retome o diesel/IFTA se vuelvan lentos.
 
 > `docs/sql/013-indices.sql`, tres envíos. `SHOW INDEX` confirmó que las tres tablas solo
 > tienen su llave primaria. Se entregan `trip_id` en `diesel_tickets` e `IFTA_STATE`, y
