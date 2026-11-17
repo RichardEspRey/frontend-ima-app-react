@@ -303,10 +303,13 @@ tres consultas. Lo que dicen:
   bajar desde el navegador. No se abrió su contenido. El bloque para cerrarlos va, apagado,
   en `docs/backend/API.htaccess`; activarlo es decisión de Emiliano.
 
-**Sigue faltando de B0:** sus cinco decisiones de `10-BITACORA.md` § 6 y qué hacer con la
-hora (MySQL va una hora atrás).
+**B0 completo (2026-11-17).** Emiliano tomó las decisiones: solo escrituras, Admin más
+permiso `bitacora_ver`, 24 meses, hora en UTC mostrada en Monterrey. Ver `10-BITACORA.md` § 6.
 
-### B1 · Tablas — `014-bitacora.sql`
+### B1 · Tablas — `014-bitacora.sql` — ENTREGADO, falta correr (2026-11-17)
+
+> Dos envíos. La columna de fecha es `fecha_utc` sin valor por omisión: la llena quien
+> inserta, con `UTC_TIMESTAMP()`.
 
 - Las dos tablas de `10-BITACORA.md` § 3. No las lee nadie todavía: riesgo nulo.
 - Un envío por tabla. Verificar con `SHOW CREATE TABLE`.

@@ -128,11 +128,13 @@ Condiciones para que no estorben:
 
 ### Las tablas
 
+> El SQL definitivo es `docs/sql/014-bitacora.sql`; esto es un resumen.
+
 ```sql
 CREATE TABLE bitacora (
   id            BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   peticion      CHAR(32)     NOT NULL,
-  fecha         DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  fecha_utc     DATETIME     NOT NULL,
   usuario_id    INT          NULL,
   verificado    TINYINT(1)   NOT NULL DEFAULT 0,
   app           VARCHAR(20)  NULL,
@@ -145,24 +147,24 @@ CREATE TABLE bitacora (
   datos         LONGTEXT     NULL,
   ip            VARCHAR(45)  NULL,
   UNIQUE KEY uq_bitacora_peticion (peticion),
-  KEY idx_bitacora_fecha (fecha),
-  KEY idx_bitacora_usuario (usuario_id, fecha),
-  KEY idx_bitacora_op (archivo, op, fecha)
+  KEY idx_bitacora_fecha (fecha_utc),
+  KEY idx_bitacora_usuario (usuario_id, fecha_utc),
+  KEY idx_bitacora_op (archivo, op, fecha_utc)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE bitacora_cambios (
   id           BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   peticion     CHAR(32)    NULL,
-  fecha        DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  fecha_utc    DATETIME    NOT NULL,
   usuario_id   INT         NULL,
   tabla        VARCHAR(64) NOT NULL,
   registro_id  VARCHAR(40) NOT NULL,
   operacion    CHAR(1)     NOT NULL,
   antes        LONGTEXT    NULL,
   despues      LONGTEXT    NULL,
-  KEY idx_cambios_registro (tabla, registro_id, fecha),
+  KEY idx_cambios_registro (tabla, registro_id, fecha_utc),
   KEY idx_cambios_peticion (peticion),
-  KEY idx_cambios_fecha (fecha)
+  KEY idx_cambios_fecha (fecha_utc)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 ```
 
@@ -264,15 +266,16 @@ Se sube tabla por tabla, probando una escritura real después de cada una.
 - Retención: evento o cron que borre lo más viejo que el plazo acordado.
 - Cuando llegue la sesión real: `verificado = 1`.
 
-## 6 · Decisiones tuyas
+## 6 · Decisiones de Emiliano — tomadas el 2026-11-17
 
-| # | Pregunta | Recomendación |
+| # | Pregunta | Decisión |
 |---|---|---|
-| 1 | ¿Registrar también las consultas (quién vio qué)? | No. Solo escrituras e inicios de sesión; las consultas multiplican el volumen y no responden «quién lo cambió» |
-| 2 | ¿Quién puede ver la bitácora? | Solo `Admin`, con el permiso `bitacora.ver` para poder abrirlo a alguien más |
-| 3 | ¿Cuánto tiempo se conserva? | 24 meses; se confirma con el volumen real que mida la etapa 1 |
-| 4 | ¿La primera tanda de tablas de la etapa 3 es la correcta? | La de la tabla de arriba |
-| 5 | ¿Se registra lo que hacen los operadores desde el móvil? | Sí: sus gastos, diesel e inspecciones entran a las mismas tablas |
+| 1 | ¿Registrar también las consultas (quién vio qué)? | **No.** Solo escrituras e inicios de sesión |
+| 2 | ¿Quién puede ver la bitácora? | **Admin siempre, y a quien se le dé el permiso `bitacora_ver`** en el Gestor de accesos |
+| 3 | ¿Cuánto tiempo se conserva? | **24 meses**; se confirma con el volumen real de la etapa 1 |
+| 4 | ¿La primera tanda de tablas de la etapa 3 es la correcta? | Se decide al llegar a la etapa 3 |
+| 5 | ¿Se registra lo que hacen los operadores desde el móvil? | **Sí**, por omisión (sus gastos, diesel e inspecciones entran a las mismas tablas) |
+| 6 | ¿En qué hora se guarda? | **UTC** (`fecha_utc`, llenada con `UTC_TIMESTAMP()`); la pantalla la muestra en hora de Monterrey. No se toca la zona de `conexion.php` |
 
 ## 7 · Riesgos
 
