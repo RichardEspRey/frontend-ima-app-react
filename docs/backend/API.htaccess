@@ -1,0 +1,33 @@
+# /public_html/API/.htaccess
+#
+# Es el archivo que ya estaba (las tres primeras líneas útiles) más la compresión.
+# Para volver atrás: dejar solo el bloque de mod_rewrite.
+
+# Desactivar el rewrite heredado de WordPress en esta carpeta
+<IfModule mod_rewrite.c>
+RewriteEngine Off
+</IfModule>
+
+# Comprimir las respuestas de la API.
+#
+# Ninguna respuesta iba comprimida: Admin gastos bajaba 1.48 MB y Ventas 758 KB en
+# cada carga. El JSON comprime unas ocho veces. Solo se comprime a quien avisa que
+# lo acepta (cabecera Accept-Encoding), así que un cliente viejo recibe lo mismo
+# que hoy. Si el servidor no tiene mod_deflate, este bloque no hace nada.
+#
+# text/html va incluido porque varios PHP —Tracking.php entre ellos— devuelven JSON
+# sin declarar su tipo. Imágenes y PDF de Uploads no se tocan.
+<IfModule mod_deflate.c>
+AddOutputFilterByType DEFLATE application/json text/html text/plain
+</IfModule>
+
+# ── OPCIONAL · quitar el signo # de las tres líneas de abajo para activarlo ──
+#
+# Hoy cualquiera puede bajar los registros de los procesos automáticos desde el
+# navegador: diesel_job.log (28 MB) y dist_nv_laredo.log (5 MB). Este bloque los
+# deja de servir por web; los procesos los siguen escribiendo igual, porque eso
+# no pasa por Apache. Es un cambio de seguridad: activarlo es decisión de Emiliano.
+#
+#<FilesMatch "\.log$">
+#Require all denied
+#</FilesMatch>

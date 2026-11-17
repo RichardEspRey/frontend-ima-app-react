@@ -118,9 +118,9 @@ por menos riesgo al que menos. Del A1 al A6 son solo front y no necesitan nada d
 ### A7 · Compresión en el servidor — el mayor ahorro de datos, toca producción
 
 - **Problema:** § 4. Ninguna respuesta va comprimida.
-- **Necesita de Emiliano:** el `.htaccess` actual de `/API` (o confirmar que no existe).
-- **Qué entregar:** un bloque `mod_deflate` para `application/json`, con la copia del
-  archivo anterior y la instrucción de cómo revertir.
+- **Listo para subir:** `docs/backend/API.htaccess` (2026-11-17). Es el `.htaccess` que
+  ya había —solo apagaba el rewrite de WordPress— más el bloque `mod_deflate`. Se sube a
+  `/public_html/API/.htaccess`. Para revertir, dejar solo el bloque de `mod_rewrite`.
 - **Verificar:** `curl -s -H "Accept-Encoding: gzip" -D - -o /dev/null …` debe traer
   `Content-Encoding: gzip`; comparar tamaños de `getAllGastos` y `All_finanzas`. Probar
   también una petición **sin** ese encabezado y la app móvil (pedirle a Emiliano que abra
@@ -128,13 +128,29 @@ por menos riesgo al que menos. Del A1 al A6 son solo front y no necesitan nada d
 - **Riesgo:** bajo, pero es global. Si el hosting no tiene `mod_deflate`, la regla dentro
   de `<IfModule>` simplemente no hace nada.
 
-### A8 · Caché de Wialon en el mapa — toca producción
+### A8 · Caché en el mapa — toca producción
 
-- **Problema:** § 4. `Tracking.php get_dashboard` tarda 7.7 s y consulta a Wialon siempre.
-- **Necesita de Emiliano:** `Tracking.php` completo.
-- **Qué entregar:** guardar la respuesta 30 a 60 s (archivo temporal o tabla de una fila) y
-  servirla a quien pregunte dentro de ese margen.
-- **Cuidado:** que dos peticiones simultáneas con el caché vencido no consulten las dos.
+- **Problema:** `Tracking.php` tarda entre 7 y 21 s. Con el archivo en la mano (llegó el
+  2026-11-17) la causa no es Wialon sino **Nominatim**: después de pedirle las unidades a
+  Wialon, hace una consulta de dirección a `nominatim.openstreetmap.org` **por cada
+  camión, una tras otra**. El caché que trae es una variable `static`, que muere al
+  terminar la petición: nunca ha guardado nada. Además Nominatim pide no pasar de una
+  consulta por segundo; a este ritmo pueden bloquear al servidor.
+- **Qué entregar:** `Tracking.php` completo, igual por fuera (misma respuesta
+  `{status, units}` con `address` en cada unidad), con dos cachés en archivo dentro de una
+  carpeta que no se sirva por web:
+  1. La respuesta entera, 45 s. Dos mapas abiertos = una sola consulta a Wialon.
+  2. La dirección por coordenada redondeada a 4 decimales (unos 11 m), 24 h. Un camión
+     estacionado no vuelve a consultar; uno en movimiento, una vez por posición nueva.
+  Con tope de consultas a Nominatim por petición (por ejemplo 5): a las que no alcancen se
+  les deja la dirección anterior o vacía, y el front ya cae a `u.pos` y a coordenadas.
+- **Cuidado:** que dos peticiones simultáneas con el caché vencido no consulten las dos
+  (bloqueo con `flock`). `WialonService.php` no se conoce: no tocarlo, solo llamarlo igual.
+  El archivo no despacha por `op`: cualquier petición lo ejecuta, y `Emiliano` lo llama con
+  `GET` y por `http://` fijo (`src/screens/Mapas/Tracking.jsx:123`); de paso cambiarlo a
+  `${apiHost}`.
+- **Verificar:** medir con `curl` antes y después; la segunda petición dentro de 45 s debe
+  responder en menos de medio segundo.
 
 ### A9 · Índices — riesgo casi nulo, toca producción
 
@@ -177,6 +193,45 @@ Con `conexion.php` en la mano, revisar si usa `PDO::ATTR_PERSISTENT` y **de paso
 zona horaria: MySQL corre en MST, una hora atrás de la oficina. La bitácora guarda fechas,
 así que hay que decidir con Emiliano si se guarda en UTC, en hora del servidor o se fija
 `-06:00`. No cambiar la zona de la conexión sin preguntar: afecta a toda la API y al móvil.
+
+#### Lo que ya llegó de B0 (2026-11-17)
+
+Emiliano mandó `conexion.php`, el `.htaccess`, `Tracking.php`, el listado de `/API` y las
+tres consultas. Lo que dicen:
+
+- **`conexion.php` es mínimo:** una clase `Conexion` con `getConnection()` que abre un PDO
+  nuevo cada vez que se llama. **No es persistente** (bien: las variables `@ima_*` no se
+  heredan entre peticiones). No fija juego de caracteres ni zona horaria. Las credenciales
+  vienen de `config.php` (`DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`) — **no pedir ese
+  archivo**, trae la contraseña.
+- **Un PHP puede abrir varias conexiones en la misma petición** (`Notifications.php` hace
+  `new Conexion()` dentro de cada `case`; otros lo hacen por función). Consecuencia para el
+  diseño: el `SET @ima_peticion, @ima_usuario` va dentro de `getConnection()`, en **cada**
+  conexión, con el mismo identificador de petición guardado en una variable estática; y la
+  fila de `bitacora` se inserta una sola vez al terminar el script.
+- **Si la conexión falla, `conexion.php` hace `echo` del error** y devuelve `null`. La
+  bitácora no debe empeorar eso: nada de la librería puede escribir a la salida.
+- **`SHOW GRANTS` no sirvió:** respondió por el usuario temporal de phpMyAdmin
+  (`cpses_…`), no por el de la app. Sigue sin saberse si el usuario de la app tiene el
+  privilegio `TRIGGER`. Solo importa para B5; se averigua entonces con un PHP de un solo
+  uso que haga `SHOW GRANTS` con la conexión de la app.
+- **Procedimientos:** 43. Todos a nombre de `root@localhost` salvo `crud_diesel` (ya en
+  `INVOKER`) y dos a nombre de `root@<ip>`: `crud_inspecciones` (`root@189.203.182.94`) y
+  `get_trips_details_user` (`root@187.190.172.94`). Si esos usuarios no existen, fallarían
+  con el 1449 al llamarlos; hoy nadie se ha quejado, así que o existen o no se usan.
+  `sp_prueba` es un resto de pruebas.
+- **Triggers:** uno solo, `after_diesel_insert` sobre `diesel`. La etapa de triggers
+  empieza en limpio; en `diesel` habrá dos `AFTER INSERT`, que MariaDB 10.11 permite.
+- **Archivos de `/API` que no pasan por la app:** `job_consumo_diesel.php` y
+  `job_distancia_nv_laredo.php` (procesos automáticos; si incluyen `conexion.php` saldrán
+  en la bitácora sin usuario, y está bien), `test.php`, `Ping.php`, `formularios2.php`,
+  y las variantes `_v2`. Hay 46 PHP de entrada, no 39.
+- **Registros públicos:** `diesel_job.log` (28 MB) y `dist_nv_laredo.log` (5 MB) se pueden
+  bajar desde el navegador. No se abrió su contenido. El bloque para cerrarlos va, apagado,
+  en `docs/backend/API.htaccess`; activarlo es decisión de Emiliano.
+
+**Sigue faltando de B0:** sus cinco decisiones de `10-BITACORA.md` § 6 y qué hacer con la
+hora (MySQL va una hora atrás).
 
 ### B1 · Tablas — `013-bitacora.sql`
 
