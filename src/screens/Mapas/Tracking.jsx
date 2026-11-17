@@ -120,7 +120,7 @@ export default function Tracking() {
     }
 
     try {
-      const resGps = await fetch("http://imaexpressllc.com/API/Tracking.php");
+      const resGps = await fetch(`${apiHost}/Tracking.php`);
       const dataGps = await resGps.json();
 
       const fd = new FormData();
