@@ -37,6 +37,8 @@ export {
 
 export {
   PAIS,
+  PERMISO_PAGOS,
+  paisesPermitidos,
   esquemaTrayecto,
   esquemaViajePago,
   esquemaAsignacionTrayecto,

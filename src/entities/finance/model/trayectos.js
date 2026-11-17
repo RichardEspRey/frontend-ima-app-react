@@ -9,6 +9,36 @@ import { booleanoPhp, idPhp, numeroPhp } from "../../../shared/api/zodPhp"
  */
 export const PAIS = { US: "US", MX: "MX" }
 
+/**
+ * El permiso que deja ver los pagos de cada país.
+ *
+ * @readonly
+ * @enum {string}
+ */
+export const PERMISO_PAGOS = { [PAIS.US]: "finanzas_pagos_us", [PAIS.MX]: "finanzas_pagos_mx" }
+
+/**
+ * Qué países puede ver una persona en Pago a Operadores.
+ *
+ * El administrador ve los dos. Los demás, el que tengan encendido en el Gestor
+ * de accesos. Mientras esos dos permisos no existan en el servidor —`features.php`
+ * no los devuelve— se enseñan los dos, que es lo que la pantalla hacía antes:
+ * así subir el front no le quita la pantalla a nadie.
+ *
+ * @param {object} [permisos] Los ajustes por usuario, `{ feature_key: boolean }`.
+ * @param {boolean} [esTotal=false] Si la persona ve todo sin comprobar.
+ * @returns {Array.<string>} Valores de `PAIS`, en el orden en que se muestran.
+ *
+ * @example
+ * paisesPermitidos({ finanzas_pagos_us: true, finanzas_pagos_mx: false }) // ["US"]
+ */
+export function paisesPermitidos(permisos, esTotal = false) {
+  const paises = [PAIS.US, PAIS.MX]
+  const existen = paises.some((pais) => permisos?.[PERMISO_PAGOS[pais]] !== undefined)
+  if (esTotal || !existen) return paises
+  return paises.filter((pais) => permisos[PERMISO_PAGOS[pais]] === true)
+}
+
 const textoPhp = () => z.preprocess((valor) => valor ?? "", z.coerce.string()).catch("")
 
 /**

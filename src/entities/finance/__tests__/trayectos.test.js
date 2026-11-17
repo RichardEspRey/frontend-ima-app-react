@@ -4,6 +4,7 @@ import {
   destinosDe,
   esquemaAsignacionTrayecto,
   esquemaTrayecto,
+  paisesPermitidos,
   pesos,
   sugerirTrayecto,
 } from "../model/trayectos"
@@ -60,5 +61,22 @@ describe("esquemas", () => {
 describe("pesos", () => {
   it("formatea en pesos mexicanos", () => {
     expect(pesos(3500)).toMatch(/3,500\.00/)
+  })
+})
+
+describe("paisesPermitidos", () => {
+  it("el administrador ve los dos", () => {
+    expect(paisesPermitidos({ finanzas_pagos_us: false, finanzas_pagos_mx: false }, true)).toEqual(["US", "MX"])
+  })
+
+  it("cada quien ve solo el país que tiene encendido", () => {
+    expect(paisesPermitidos({ finanzas_pagos_us: true, finanzas_pagos_mx: false })).toEqual(["US"])
+    expect(paisesPermitidos({ finanzas_pagos_us: false, finanzas_pagos_mx: true })).toEqual(["MX"])
+    expect(paisesPermitidos({ finanzas_pagos_us: false, finanzas_pagos_mx: false })).toEqual([])
+  })
+
+  it("mientras los permisos no existan en el servidor, nadie pierde la pantalla", () => {
+    expect(paisesPermitidos({ finanzas_pagos: true })).toEqual(["US", "MX"])
+    expect(paisesPermitidos(undefined)).toEqual(["US", "MX"])
   })
 })

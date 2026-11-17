@@ -236,6 +236,20 @@ export const menuItemsConfig = [
         route: "/paymentDrivers",
       },
       {
+        name: "Ver Pestaña Viajes US",
+        featureKey: "finanzas_pagos_us",
+        route: null,
+        hideInSidebar: true,
+        group: "Pestañas de Pagos",
+      },
+      {
+        name: "Ver Pestaña Viajes MX",
+        featureKey: "finanzas_pagos_mx",
+        route: null,
+        hideInSidebar: true,
+        group: "Pestañas de Pagos",
+      },
+      {
         name: "Ventas",
         featureKey: "finanzas_ventas",
         route: "/finanzas",

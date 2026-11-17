@@ -10,19 +10,18 @@ import PaidIcon from '@mui/icons-material/Paid';
 import AssignmentIndIcon from '@mui/icons-material/AssignmentInd';
 import SearchIcon from '@mui/icons-material/Search';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
-import PendingActionsIcon from '@mui/icons-material/PendingActions';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import RouteIcon from '@mui/icons-material/Route';
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
 
 import { useNavigate } from 'react-router-dom';
 import { COLOR } from '../../shared/ui/tokens';
-import { FilasEsqueleto, Pestanas, PageHeader, PAGE_SHELL_SX, TABLE_CONTAINER_SX, HEADER_ROW_SX, HEADER_CELL_SX, GHOST_BTN_SX, Paginacion, notify, describirError } from '../../shared/ui';
+import { BotonActualizar, FilasEsqueleto, Pestanas, PageHeader, PAGE_SHELL_SX, TABLE_CONTAINER_SX, HEADER_ROW_SX, HEADER_CELL_SX, GHOST_BTN_SX, Paginacion, notify, describirError } from '../../shared/ui';
 import {
-  PAIS, clavePago, pesos, sugerirTrayecto, useAutorizarPagoPorTrayecto, useDatosPagos, useTrayectos,
+  PAIS, clavePago, paisesPermitidos, pesos, sugerirTrayecto, useAutorizarPagoPorTrayecto, useDatosPagos, useTrayectos,
 } from '../../entities/finance';
 import { CatalogoTrayectos } from '../../features/pagos-mx';
 import { useSesion } from '../../shared/auth';
+import { useAuthStore } from '../../store/useAuthStore';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -33,61 +32,41 @@ const money = (v) =>
     minimumFractionDigits: 2,
   }).format(Number(v || 0));
 
+const CHIP_SX = { height: 22, fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.04em' };
+const CHIP_OK_SX = { ...CHIP_SX, bgcolor: COLOR.EXITO_FONDO, color: COLOR.EXITO, border: `1px solid ${COLOR.EXITO_BORDE}` };
+const CHIP_AVISO_SX = { ...CHIP_SX, bgcolor: COLOR.AVISO_FONDO, color: COLOR.AVISO, border: `1px solid ${COLOR.AVISO_BORDE}` };
+const CHIP_INFO_SX = { ...CHIP_SX, bgcolor: COLOR.INFO_FONDO, color: COLOR.INFO, border: `1px solid ${COLOR.INFO_BORDE}` };
+const CHIP_NEUTRO_SX = { ...CHIP_SX, bgcolor: COLOR.LIENZO, color: COLOR.TEXTO_SUAVE, border: `1px solid ${COLOR.BORDE}` };
+
+const ESTATUS_PAGO = {
+  0: { label: 'Pendiente de autorización', sx: CHIP_AVISO_SX },
+  1: { label: 'Pagado', sx: CHIP_OK_SX },
+  2: { label: 'Autorizado · por pagar', sx: CHIP_INFO_SX },
+};
+
 const PaymentStatusChip = ({ value }) => {
-  let label = "";
-  let color = "default"; 
-
-  switch (String(value)) {
-    case "0":
-      label = "Pendiente Autorización";
-      color = "warning";
-      break;
-    case "1":
-      label = "Pagado";
-      color = "success";
-      break;
-    case "2":
-      label = "Autorizado (Por Pagar)";
-      color = "info";
-      break;
-    default:
-      label = "Desconocido";
-      color = "default";
-  }
-
-  return (
-    <Chip
-      label={label}
-      size="small"
-      color={color}
-      variant={String(value) === "1" ? "filled" : "outlined"}
-      sx={{ fontWeight: 600 }}
-    />
-  );
+  const estatus = ESTATUS_PAGO[String(value)] || { label: 'Desconocido', sx: CHIP_NEUTRO_SX };
+  return <Chip label={estatus.label} size="small" sx={estatus.sx} />;
 };
 
-const StatusTrip = ({ value }) => {
-  let label = value || "Desconocido";
-  let color = COLOR.BORDE_FUERTE;
-
-  switch (String(value)) {
-    case "Completed": color = COLOR.EXITO; break;
-    case "Almost Over": color = COLOR.INFO; break;
-    case "In Transit": color = COLOR.AVISO; break;
-    default: color = COLOR.APAGADO;
-  }
-
-  return (
-    <Chip
-      label={label}
-      size="small"
-      sx={{ bgcolor: color, color: COLOR.BLANCO, fontWeight: 600, fontSize: '0.75rem' }}
-    />
-  );
+const ESTATUS_VIAJE = {
+  Completed: CHIP_OK_SX,
+  'Almost Over': CHIP_INFO_SX,
+  'In Transit': CHIP_AVISO_SX,
 };
+
+const StatusTrip = ({ value }) => (
+  <Chip label={value || 'Desconocido'} size="small" sx={ESTATUS_VIAJE[String(value)] || CHIP_NEUTRO_SX} />
+);
+
+const ACCION_BTN_SX = { textTransform: 'none', borderRadius: 2, px: 2, py: 0.5, minWidth: 96, fontSize: '0.75rem', fontWeight: 700, boxShadow: 'none' };
 
 /**
  * Pagos pendientes a conductores por sus viajes.
+ *
+ * Los viajes de US y los de MX van en pestañas separadas y cada una tiene su
+ * permiso: quien no tiene encendida una no la ve, y quien no tiene ninguna ve
+ * un aviso en lugar de la tabla.
  *
  * @returns {object} La pantalla.
  */
@@ -101,8 +80,11 @@ const PagosConductoresPage = () => {
   
   const [tabValue, setTabValue] = useState(0);
 
-  const { usuario } = useSesion();
-  const [pais, setPais] = useState(PAIS.US);
+  const { usuario, esTotal } = useSesion();
+  const permisos = useAuthStore((estado) => estado.userPermissions);
+  const paises = useMemo(() => paisesPermitidos(permisos, esTotal), [permisos, esTotal]);
+  const [paisElegido, setPais] = useState(PAIS.US);
+  const pais = paises.includes(paisElegido) ? paisElegido : paises[0] ?? null;
   const [elegidos, setElegidos] = useState({});
   const [catalogoAbierto, setCatalogoAbierto] = useState(false);
   const datosConsulta = useDatosPagos();
@@ -119,8 +101,6 @@ const PagosConductoresPage = () => {
       const res = await fetch(`${apiHost}/formularios.php`, { method: "POST", body: fd });
       
       const json = await res.json();
-
-      console.log(json)
 
       if (json.status === "success" && Array.isArray(json.data)) {
         const rawData = json.data.map((t) => ({
@@ -218,15 +198,17 @@ const PagosConductoresPage = () => {
     };
   }), [trips, datosConsulta.data]);
 
-  const deLaPestana = useMemo(
-    () => conPais.filter((t) => (tabValue === 0 ? String(t.status_payment) !== "1" : String(t.status_payment) === "1")),
-    [conPais, tabValue],
-  );
+  const porPagar = useMemo(() => conPais.filter((t) => String(t.status_payment) !== "1"), [conPais]);
 
   const conteoPais = {
-    [PAIS.US]: deLaPestana.filter((t) => t.pais === PAIS.US).length,
-    [PAIS.MX]: deLaPestana.filter((t) => t.pais === PAIS.MX).length,
+    [PAIS.US]: porPagar.filter((t) => t.pais === PAIS.US).length,
+    [PAIS.MX]: porPagar.filter((t) => t.pais === PAIS.MX).length,
   };
+
+  const delPais = conPais.filter((t) => t.pais === pais);
+  const pagados = delPais.filter((t) => String(t.status_payment) === "1").length;
+
+  const actualizar = () => Promise.all([fetchPayments(), datosConsulta.refetch(), trayectosConsulta.refetch()]);
 
   const trayectoDe = (t) => {
     const clave = clavePago(t.trip_id, t.driver_id);
@@ -280,12 +262,22 @@ const PagosConductoresPage = () => {
 
   const pageTrips = filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
+  if (!pais) {
+    return (
+      <Box sx={PAGE_SHELL_SX}>
+        <Alert severity="info">
+          No tienes permiso para ver los pagos de US ni de MX. Pídele a un administrador que te active la pestaña que te corresponde en el Gestor de accesos.
+        </Alert>
+      </Box>
+    );
+  }
+
   return (
     <Box sx={PAGE_SHELL_SX}>
       <PageHeader
-        seccion="Finanzas · Nómina"
+        seccion="Finanzas · Pagos"
         titulo="Pago a Operadores"
-        descripcion="Gestión de nómina y pagos de viajes."
+        descripcion="Autorización y pago de viajes por operador, separados por país."
         acciones={
           <Stack direction="row" spacing={1}>
           {esMx ? (
@@ -306,31 +298,28 @@ const PagosConductoresPage = () => {
           >
             Administrar Drivers
           </Button>
+          <BotonActualizar onActualizar={actualizar} actualizando={loading} />
           </Stack>
         }
-      />
-
-      <Pestanas
-        valor={tabValue}
-        onChange={(valor) => handleTabChange(null, valor)}
-        pestanas={[
-          { etiqueta: 'Pendientes de Pago', icono: <PendingActionsIcon fontSize="small" /> },
-          { etiqueta: 'Historial Pagados', icono: <CheckCircleIcon fontSize="small" /> },
-        ]}
       />
 
       <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap" useFlexGap sx={{ mb: 3 }}>
       <Pestanas
         valor={pais}
         onChange={(valor) => { setPais(valor); setPage(0); }}
+        pestanas={paises.map((codigo) => ({ id: codigo, etiqueta: `Viajes ${codigo} · ${conteoPais[codigo]}` }))}
+      />
+      <Pestanas
+        valor={tabValue}
+        onChange={(valor) => handleTabChange(null, valor)}
         pestanas={[
-          { id: PAIS.US, etiqueta: `US · ${conteoPais[PAIS.US]}` },
-          { id: PAIS.MX, etiqueta: `MX · ${conteoPais[PAIS.MX]}` },
+          { etiqueta: `Pendientes de pago · ${delPais.length - pagados}` },
+          { etiqueta: `Historial pagados · ${pagados}` },
         ]}
       />
       <TextField
         size="small"
-        placeholder="Buscar Trip o Conductor..."
+        placeholder="Buscar por viaje u operador..."
         value={search}
         onChange={(e) => { setSearch(e.target.value); setPage(0); }}
         InputProps={{
@@ -366,7 +355,7 @@ const PagosConductoresPage = () => {
           <TableHead>
             <TableRow sx={HEADER_ROW_SX}>
               <TableCell sx={HEADER_CELL_SX}>Trip #</TableCell>
-              <TableCell sx={HEADER_CELL_SX}>Driver</TableCell>
+              <TableCell sx={HEADER_CELL_SX}>Operador</TableCell>
               <TableCell align="center" sx={HEADER_CELL_SX}>Etapas</TableCell>
               {esMx ? (
                 <>
@@ -409,7 +398,7 @@ const PagosConductoresPage = () => {
                 return (
                   <TableRow key={uniqueKey} hover>
                     <TableCell>
-                        <Typography fontWeight={700} color="primary" variant="body2" sx={{ whiteSpace: "nowrap" }}>{t.nomenclatura}</Typography>
+                        <Typography fontWeight={700} color={COLOR.TINTA} variant="body2" sx={{ whiteSpace: "nowrap" }}>{t.nomenclatura}</Typography>
                     </TableCell>
                     <TableCell>
                         <Stack direction="row" alignItems="center" spacing={1}>
@@ -418,7 +407,7 @@ const PagosConductoresPage = () => {
                         </Stack>
                     </TableCell>
                     <TableCell align="center">
-                        <Chip label={t.stages_count} size="small" />
+                        <Chip label={t.stages_count} size="small" sx={CHIP_NEUTRO_SX} />
                     </TableCell>
                     {esMx ? (
                       <>
@@ -494,7 +483,7 @@ const PagosConductoresPage = () => {
                                 disabled={!trayecto || trayecto.monto <= 0 || autorizandoEste}
                                 onClick={() => handleAutorizarTrayecto(t, trayecto)}
                                 startIcon={autorizandoEste ? <CircularProgress size={14} /> : <TaskAltIcon />}
-                                sx={{ textTransform: 'none', px: 2, py: 0.5, minWidth: '100px', fontSize: '0.75rem', fontWeight: 600 }}
+                                sx={ACCION_BTN_SX}
                               >
                                 Autorizar
                               </Button>
@@ -527,14 +516,7 @@ const PagosConductoresPage = () => {
                                     disabled={!isAutorizado}
                                     onClick={() => handleFinalizarPago(t.trip_id, t.driver_id)}
                                     startIcon={<PaidIcon />}
-                                    sx={{ 
-                                        textTransform: 'none', 
-                                        px: 2, 
-                                        py: 0.5, 
-                                        minWidth: '90px',
-                                        fontSize: '0.75rem',
-                                        fontWeight: 600
-                                    }}
+                                    sx={ACCION_BTN_SX}
                                 >
                                     Pagar
                                 </Button>
