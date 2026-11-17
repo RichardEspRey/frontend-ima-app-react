@@ -4,6 +4,39 @@ const { autoUpdater } = require("electron-updater");
 
 let win; // ventana global
 
+// Cada cuanto se busca una version nueva con la app abierta. Antes solo se
+// buscaba al arrancar y al iniciar sesion, asi que quien dejaba la app abierta
+// todo el dia no se enteraba de que habia actualizacion.
+const INTERVALO_BUSQUEDA_MS = 15 * 60 * 1000;
+let versionDisponible = null;
+let descargando = false;
+let descargada = false;
+
+/**
+ * Le avisa a la ventana que hay una version nueva, si ya se encontro una.
+ *
+ * Se llama al encontrarla y otra vez al terminar de cargar la ventana: el aviso
+ * es un mensaje de un solo disparo y se perdia si llegaba antes de que React
+ * registrara su escucha.
+ *
+ * @returns {void}
+ */
+function avisarActualizacion() {
+  if (win && !win.isDestroyed() && versionDisponible) {
+    win.webContents.send("update_available", { version: versionDisponible });
+  }
+}
+
+/**
+ * Busca una version nueva, salvo en desarrollo o si ya se esta bajando una.
+ *
+ * @returns {void}
+ */
+function buscarActualizacion() {
+  if (process.env.IS_DEV || descargando || descargada) return;
+  autoUpdater.checkForUpdates().catch(() => {});
+}
+
 // Protocolos que se pueden abrir en el navegador del sistema. Lista blanca a
 // proposito: shell.openExternal se lo entrega al sistema operativo, asi que un
 // esquema inesperado puede lanzar cualquier programa instalado. La API viaja por
@@ -77,6 +110,7 @@ function createWindow() {
   win.webContents.on("did-finish-load", () => {
     win.webContents.setZoomFactor(1);
     win.webContents.setVisualZoomLevelLimits(1, 1); // bloquea pinch-zoom del trackpad
+    avisarActualizacion();
   });
 
   win.webContents.on("before-input-event", (event, input) => {
@@ -94,19 +128,22 @@ autoUpdater.autoDownload = false; // No descarga automáticamente
 autoUpdater.autoInstallOnAppQuit = true; // Instala al cerrar
 
 //  1) Enviar evento a React cuando hay nueva versión
-autoUpdater.on("update-available", () => {
-  if (win) {
-    win.webContents.send("update_available"); // 🔥 Notifica al frontend
-  }
+autoUpdater.on("update-available", (info) => {
+  versionDisponible = info?.version || versionDisponible || "nueva";
+  avisarActualizacion();
 });
 
 //  2) Descargar cuando React lo solicite
 ipcMain.on("download-update", () => {
-  autoUpdater.downloadUpdate();
+  if (descargando || descargada) return;
+  descargando = true;
+  autoUpdater.downloadUpdate().catch(() => {});
 });
 
 //  3) Instalar al finalizar la descarga
 autoUpdater.on("update-downloaded", () => {
+  descargando = false;
+  descargada = true;
   dialog
     .showMessageBox(win, {
       title: "Actualización lista para instalar",
@@ -122,11 +159,19 @@ autoUpdater.on("update-downloaded", () => {
 });
 //Estado de descarga
 autoUpdater.on("download-progress", (progress) => {
-  win.webContents.send("update_progress", progress.percent);
+  if (win && !win.isDestroyed()) win.webContents.send("update_progress", progress.percent);
 });
 
 //  4) Mostrar errores si algo falla
 autoUpdater.on("error", (error) => {
+  // Buscar falla cada vez que no hay red; con la busqueda periodica eso abriria
+  // un cuadro de error cada 15 minutos. El cuadro queda para cuando falla una
+  // descarga que la persona pidio.
+  if (!descargando) {
+    console.error("[actualizacion]", error);
+    return;
+  }
+  descargando = false;
   dialog.showErrorBox(
     "Error al actualizar",
     error == null ? "Error desconocido" : (error.stack || error).toString(),
@@ -135,7 +180,7 @@ autoUpdater.on("error", (error) => {
 
 //  5) React puede pedir verificar actualizaciones
 ipcMain.on("check-for-updates", () => {
-  autoUpdater.checkForUpdates();
+  buscarActualizacion();
 });
 
 // -------------------------------
@@ -145,9 +190,8 @@ app.whenReady().then(() => {
   createWindow();
 
   // En producción, busca actualizaciones automáticamente
-  if (!process.env.IS_DEV) {
-    autoUpdater.checkForUpdates();
-  }
+  buscarActualizacion();
+  setInterval(buscarActualizacion, INTERVALO_BUSQUEDA_MS);
 
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();

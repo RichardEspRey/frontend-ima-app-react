@@ -112,11 +112,12 @@ export const notify = {
    *
    * @param {(string|Error)} problema Mensaje, o el error capturado.
    * @param {string} [icono='error'] Severidad del aviso: `error`, `warning`, `info`, `success`.
+   * @param {number} [duracion] Milisegundos en pantalla, para lo que conviene dejar a la vista más tiempo.
    * @returns {Promise} Se resuelve cuando el aviso desaparece.
    */
-  discreto(problema, icono = "error") {
+  discreto(problema, icono = "error", duracion) {
     const mensaje = problema instanceof Error ? problema.message : problema
-    return anunciar({ icono, mensaje })
+    return anunciar({ icono, mensaje }, duracion)
   },
 
   /**
