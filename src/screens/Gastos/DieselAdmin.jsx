@@ -6,6 +6,7 @@ import {
 import { useNavigate, useLocation } from 'react-router-dom';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import BotonActualizar from '../../components/BotonActualizar';
+import { PERIODO_VACIO, textoDePeriodos, tienePeriodo } from '../../utils/periodos';
 
 // Helper para formato de moneda
 const money = (v) => {
@@ -32,7 +33,7 @@ const DieselAdmin = () => {
 
   const [tabValue, setTabValue] = useState(location.state?.tabValue || 0);
   const [countryFilter, setCountryFilter] = useState('All');
-  const [periodoFilter, setPeriodoFilter] = useState(location.state?.periodoFilter || '');
+  const [periodoFilter, setPeriodoFilter] = useState(location.state?.periodoFilter === 'EMPTY' ? PERIODO_VACIO : location.state?.periodoFilter || '');
 
   // ** LÓGICA DE FETCH **
   const fetchDiesel = useCallback(async () => {
@@ -94,10 +95,7 @@ const DieselAdmin = () => {
     }
 
     if (periodoFilter) {
-        const buscado = periodoFilter === 'EMPTY' ? '' : periodoFilter;
-        result = result.filter(r =>
-            String(r.periodo ?? '').split(',').map(p => p.trim()).includes(buscado)
-        );
+        result = result.filter(r => tienePeriodo(r.periodo, periodoFilter));
     }
 
     const searchLower = search.toLowerCase();
@@ -192,7 +190,7 @@ const DieselAdmin = () => {
           <MenuItem value="Q2">Q2</MenuItem>
           <MenuItem value="Q3">Q3</MenuItem>
           <MenuItem value="Q4">Q4</MenuItem>
-          <MenuItem value="EMPTY">Vacíos</MenuItem>
+          <MenuItem value={PERIODO_VACIO}>V (vacío)</MenuItem>
         </TextField>
         <BotonActualizar onActualizar={fetchDiesel} sx={{ py: 0.75 }} />
       </Stack>
@@ -269,7 +267,7 @@ const DieselAdmin = () => {
                         )}
                     </TableCell>
 
-                    <TableCell align="center">{row.periodo}</TableCell>
+                    <TableCell align="center">{textoDePeriodos(row.periodo)}</TableCell>
                     <TableCell align="center">
                       <Button variant="contained" size="small" startIcon={<VisibilityIcon />} onClick={() => handleVer(row.trip_id)} sx={{ textTransform: 'none' }}>
                         View
