@@ -263,7 +263,7 @@ const Finanzas = () => {
       <Paper elevation={0} sx={{ p: 2, mb: 3, bgcolor: '#f5f5f5', borderRadius: 2, border: '1px solid #e0e0e0' }}>
         <Grid container spacing={2} alignItems="center">
             
-            <Grid item xs={12} md={2}>
+            <Grid size={{ xs: 12, sm: 6, md: 2 }}>
                 <TextField 
                     fullWidth
                     size="small" 
@@ -278,7 +278,7 @@ const Finanzas = () => {
                 />
             </Grid>
 
-            <Grid item xs={12} md={3}>
+            <Grid size={{ xs: 12, sm: 6, md: 2 }}>
                 <TextField 
                     fullWidth
                     size="small" 
@@ -293,7 +293,7 @@ const Finanzas = () => {
                 />
             </Grid>
 
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                 <Autocomplete
                     fullWidth
                     options={companiesList}
@@ -324,7 +324,7 @@ const Finanzas = () => {
                 />
             </Grid>
 
-            <Grid item xs={12} md={3}>
+            <Grid size={{ xs: 12, sm: 6, md: 2 }}>
                 <TextField
                     select
                     fullWidth
@@ -350,7 +350,7 @@ const Finanzas = () => {
             </Grid>
 
             {/* Botón Guardar */}
-            <Grid item xs={12} md={3} display="flex" justifyContent="flex-end">
+            <Grid size={{ xs: 12, md: 2 }} display="flex" justifyContent="flex-end">
                 <Tooltip title={dirtyCount ? `Guardar ${dirtyCount} cambios` : 'No hay cambios pendientes'}>
                     <span>
                         <Badge badgeContent={dirtyCount} color="error" overlap="circular">
