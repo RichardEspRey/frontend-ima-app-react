@@ -16,6 +16,7 @@ import {
   avisosDeDiesel,
   avisosDeDocumentos,
   avisosDeProgramacion,
+  avisosDeSafety,
   avisosSinFallas,
   avisosSinInspeccion,
   CATEGORIA_AVISO,
@@ -24,6 +25,7 @@ import {
   recortarAvisos,
   useMisCategorias,
 } from "../../../entities/notification"
+import { LLAVE_SAFETY, obtenerViajesSafety } from "../../../entities/safety"
 import { LLAVE_PROGRAMACIONES, obtenerProgramaciones } from "../../../entities/schedule"
 import { PESTANA_PROGRAMACION, obtenerViajes } from "../../../entities/trip"
 import { PERMISOS, useSesion } from "../../../shared/auth"
@@ -37,7 +39,7 @@ import { intervaloSegunVentana, sondear } from "../../../shared/lib/sondeo"
 export const PESTANA_DESPACHO = 1
 
 /**
- * Cada cuánto se revisa si ya dieron las 10:00 del corte de diesel.
+ * Cada cuánto se revisa si ya dieron las 10:00 del corte diario (diesel y Safety).
  *
  * Revisar no cuesta una petición: solo se mira el reloj. Al servidor se le
  * pregunta una vez por corte.
@@ -147,11 +149,11 @@ export async function consultarAvisosDeDespacho({ usuario, signal }) {
 }
 
 /**
- * El día del corte de diesel vigente, que cambia solo al dar las 10:00.
+ * El día del corte diario vigente, que cambia solo al dar las 10:00.
  *
  * @returns {{fecha: string, momento: Date}} El corte de `corteDiario`.
  */
-function useCorteDeDiesel() {
+function useCorteDiario() {
   const [corte, setCorte] = useState(() => corteDiario(new Date()))
 
   useEffect(
@@ -172,12 +174,14 @@ function useCorteDeDiesel() {
 /**
  * Los avisos que se calculan en el front con datos que la API ya devuelve.
  *
- * Son cuatro fuentes y siete avisos; cada aviso tiene su lista de personas en
+ * Son cinco fuentes y diez avisos; cada aviso tiene su lista de personas en
  * Notificaciones manager (`Notifications.php`), y una fuente solo se consulta si la
  * persona recibe alguno de los suyos:
  *
  * - **Diesel**: State pending y Fleet One pending acumulados, una vez al día a
  *   las 10:00 de Monterrey.
+ * - **Safety**: los viajes sin Libro Electrónico, sin Reporte Diesel y sin
+ *   Reporte PC Miller, uno por columna, también a las 10:00.
  * - **Mantenimiento**: las inspecciones sin fallas y los operadores con más de
  *   un viaje sin inspección.
  * - **Programación**: cada viaje programado.
@@ -208,6 +212,7 @@ export function useAvisosDerivados() {
             recibeInspecciones: suscritoAInspecciones,
             veProgramacion: conSesion && can(PERMISOS.VIAJES_TAB_PROGRAMACION),
             veDespacho: conSesion && can(PERMISOS.VIAJES_TAB_DESPACHO),
+            veSafety: conSesion && can(PERMISOS.SAFETY_GENERAL),
           }),
     [delServidor, conSesion, can, suscritoAInspecciones],
   )
@@ -217,13 +222,27 @@ export function useAvisosDerivados() {
   const recibeInspecciones = recibe(CATEGORIA_AVISO.SIN_FALLAS, CATEGORIA_AVISO.SIN_INSPECCION)
   const veProgramacion = recibe(CATEGORIA_AVISO.VIAJE_PROGRAMADO)
   const veDespacho = recibe(CATEGORIA_AVISO.VIAJE_DESPACHO, CATEGORIA_AVISO.VIAJE_DOCUMENTOS)
+  const veSafety = recibe(
+    CATEGORIA_AVISO.SAFETY_LIBRO,
+    CATEGORIA_AVISO.SAFETY_DIESEL,
+    CATEGORIA_AVISO.SAFETY_PCMILLER,
+  )
 
-  const corte = useCorteDeDiesel()
+  const corte = useCorteDiario()
   const diesel = useQuery({
     queryKey: [...llaveResumen(TIPO_REGISTRO.DIESEL), "avisos", corte.fecha],
     queryFn: ({ signal }) => obtenerResumen({ tipo: TIPO_REGISTRO.DIESEL, signal }),
     select: (viajes) => avisosDeDiesel(viajes, corte),
     enabled: veDiesel,
+    staleTime: Infinity,
+    meta: { silencioso: true },
+  })
+
+  const safety = useQuery({
+    queryKey: [...LLAVE_SAFETY, "avisos", corte.fecha],
+    queryFn: ({ signal }) => obtenerViajesSafety({ signal }),
+    select: (viajes) => avisosDeSafety(viajes, corte),
+    enabled: veSafety,
     staleTime: Infinity,
     meta: { silencioso: true },
   })
@@ -280,6 +299,7 @@ export function useAvisosDerivados() {
   return useMemo(() => {
     const fuentes = [
       { id: "diesel", avisos: veDiesel ? (diesel.data ?? []) : [], cargados: veDiesel && diesel.isSuccess },
+      { id: "safety", avisos: veSafety ? (safety.data ?? []) : [], cargados: veSafety && safety.isSuccess },
       {
         id: "mantenimiento",
         avisos: deMantenimiento,
@@ -301,6 +321,9 @@ export function useAvisosDerivados() {
     veDiesel,
     diesel.data,
     diesel.isSuccess,
+    veSafety,
+    safety.data,
+    safety.isSuccess,
     deMantenimiento,
     recibeInspecciones,
     sinFallas.isSuccess,

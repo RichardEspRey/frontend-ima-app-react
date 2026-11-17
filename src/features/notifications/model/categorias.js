@@ -17,6 +17,14 @@ const variablesDeAviso = (persona, usuarioId) => ({ userId: persona.id, usuarioI
 
 const deAviso = (categoria) => ({ id: categoria, ...hooksDeAviso(categoria), variables: variablesDeAviso })
 
+const deSafety = (categoria, nombre, corto, ejemplo) => ({
+  ...deAviso(categoria),
+  nombre: `${nombre} pendiente`,
+  corto,
+  descripcion: `Una vez al día, a las 10:00, con los viajes que siguen sin ${nombre} en Safety General.`,
+  ejemplo: { titulo: `${nombre} pendiente`, subtitulo: `${ejemplo} viajes sin ${nombre}` },
+})
+
 /**
  * Los avisos de la campana agrupados por pantalla, y cómo se administra quién
  * recibe cada uno.
@@ -125,6 +133,15 @@ export const SECCIONES_DE_AVISO = [
         descripcion: "Una vez al día, a las 10:00, con los tickets de Fleet One pendientes acumulados.",
         ejemplo: { titulo: "Fleet One pending", subtitulo: "89 tickets pendientes en 32 viajes" },
       },
+    ],
+  },
+  {
+    id: "safety",
+    nombre: "Safety",
+    categorias: [
+      deSafety(CATEGORIA_AVISO.SAFETY_LIBRO, "Libro Electrónico", "Libro electrónico", 12),
+      deSafety(CATEGORIA_AVISO.SAFETY_DIESEL, "Reporte Diesel", "Reporte diesel", 21),
+      deSafety(CATEGORIA_AVISO.SAFETY_PCMILLER, "Reporte PC Miller", "PC Miller", 13),
     ],
   },
 ]

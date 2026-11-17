@@ -34,6 +34,7 @@ export const TIPO_AVISO = {
   PROGRAMACION: "programacion",
   DESPACHO: "despacho",
   DOCUMENTOS: "documentos",
+  SAFETY: "safety",
 }
 
 /**
@@ -52,6 +53,9 @@ export const CATEGORIA_AVISO = {
   VIAJE_PROGRAMADO: "viaje_programado",
   VIAJE_DESPACHO: "viaje_despacho",
   VIAJE_DOCUMENTOS: "viaje_documentos",
+  SAFETY_LIBRO: "safety_libro",
+  SAFETY_DIESEL: "safety_diesel",
+  SAFETY_PCMILLER: "safety_pcmiller",
 }
 
 /**
@@ -66,14 +70,18 @@ export const CATEGORIA_AVISO = {
  * @param {boolean} acceso.recibeInspecciones Si está en la lista de Inspecciones.
  * @param {boolean} acceso.veProgramacion Si ve la pestaña Programación.
  * @param {boolean} acceso.veDespacho Si ve la pestaña Despacho.
+ * @param {boolean} acceso.veSafety Si entra a Safety General.
  * @returns {Set.<string>} Las categorías que le tocan.
  */
-export function categoriasPorDefecto({ veDiesel, recibeInspecciones, veProgramacion, veDespacho }) {
+export function categoriasPorDefecto({ veDiesel, recibeInspecciones, veProgramacion, veDespacho, veSafety }) {
   return new Set([
     ...(veDiesel ? [CATEGORIA_AVISO.DIESEL_STATE, CATEGORIA_AVISO.DIESEL_FLEETONE] : []),
     ...(recibeInspecciones ? [CATEGORIA_AVISO.SIN_FALLAS, CATEGORIA_AVISO.SIN_INSPECCION] : []),
     ...(veProgramacion ? [CATEGORIA_AVISO.VIAJE_PROGRAMADO] : []),
     ...(veDespacho ? [CATEGORIA_AVISO.VIAJE_DESPACHO, CATEGORIA_AVISO.VIAJE_DOCUMENTOS] : []),
+    ...(veSafety
+      ? [CATEGORIA_AVISO.SAFETY_LIBRO, CATEGORIA_AVISO.SAFETY_DIESEL, CATEGORIA_AVISO.SAFETY_PCMILLER]
+      : []),
   ])
 }
 
@@ -217,6 +225,47 @@ export function avisosDeDiesel(viajes, corte) {
   }
 
   return avisos
+}
+
+/**
+ * Las columnas de Safety General que avisan, cada una con su lista de personas.
+ *
+ * @readonly
+ * @type {Array.<{campo: string, categoria: string, nombre: string}>}
+ */
+export const DOCUMENTOS_DE_SAFETY = [
+  { campo: "libro_electronico", categoria: CATEGORIA_AVISO.SAFETY_LIBRO, nombre: "Libro Electrónico" },
+  { campo: "reporte_diesel", categoria: CATEGORIA_AVISO.SAFETY_DIESEL, nombre: "Reporte Diesel" },
+  { campo: "reporte_pcmiller", categoria: CATEGORIA_AVISO.SAFETY_PCMILLER, nombre: "Reporte PC Miller" },
+]
+
+/**
+ * Los avisos diarios de Safety: uno por columna con viajes pendientes.
+ *
+ * Cuenta lo mismo que la pestaña Pendientes de Documentación: los viajes a los
+ * que les falta ese documento. Una columna al corriente no avisa.
+ *
+ * @param {Array.<object>} viajes Los viajes de `get_safety_trips`.
+ * @param {{fecha: string, momento: Date}} corte El corte de {@link corteDiario}.
+ * @returns {Array.<object>} De cero a tres avisos.
+ */
+export function avisosDeSafety(viajes, corte) {
+  const creado = fechaLocal(corte.momento)
+
+  return DOCUMENTOS_DE_SAFETY.map((documento) => ({
+    documento,
+    faltan: viajes.filter((viaje) => !viaje[documento.campo]).length,
+  }))
+    .filter(({ faltan }) => faltan > 0)
+    .map(({ documento, faltan }) => ({
+      id: `${documento.categoria}-${corte.fecha}`,
+      categoria: documento.categoria,
+      tipo: TIPO_AVISO.SAFETY,
+      titulo: `${documento.nombre} pendiente`,
+      subtitulo: `${contar(faltan, "viaje", "viajes")} sin ${documento.nombre}`,
+      created_at: creado,
+      destino: { ruta: "/safety" },
+    }))
 }
 
 /**

@@ -38,8 +38,11 @@ describe("CATEGORIAS_DE_AVISO", () => {
       "sin_inspeccion",
       "diesel_state",
       "diesel_fleetone",
+      "safety_libro",
+      "safety_diesel",
+      "safety_pcmiller",
     ])
-    expect(SECCIONES_DE_AVISO.map((s) => s.id)).toEqual(["viajes", "reparaciones", "diesel"])
+    expect(SECCIONES_DE_AVISO.map((s) => s.id)).toEqual(["viajes", "reparaciones", "diesel", "safety"])
     for (const categoria of CATEGORIAS_DE_AVISO) {
       for (const hook of ["useSuscriptores", "useDisponibles", "useSuscribir", "useDesuscribir"]) {
         expect(typeof categoria[hook]).toBe("function")
@@ -83,20 +86,21 @@ describe("nombres cortos", () => {
 
 describe("filtro de módulo", () => {
   it("enseña todas las secciones o solo la pedida", () => {
-    expect(seccionesDeModulo(MODULO_TODOS)).toHaveLength(3)
+    expect(seccionesDeModulo(MODULO_TODOS)).toHaveLength(4)
     expect(seccionesDeModulo("diesel").map((s) => s.id)).toEqual(["diesel"])
   })
 
   it("con un módulo que no existe no deja la tabla vacía", () => {
-    expect(seccionesDeModulo("inventado")).toHaveLength(3)
+    expect(seccionesDeModulo("inventado")).toHaveLength(4)
   })
 
   it("ofrece Todos y una opción por módulo, con su cuenta", () => {
     expect(opcionesDeModulo().map((o) => o.etiqueta)).toEqual([
-      "Todos · 9",
+      "Todos · 12",
       "Viajes · 4",
       "Reparaciones · 3",
       "Diesel · 2",
+      "Safety · 3",
     ])
   })
 })

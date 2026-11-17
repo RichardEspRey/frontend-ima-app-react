@@ -20,6 +20,8 @@ export {
   relojEnZona,
   corteDiario,
   avisosDeDiesel,
+  avisosDeSafety,
+  DOCUMENTOS_DE_SAFETY,
   avisosSinFallas,
   avisosSinInspeccion,
   avisosDeProgramacion,

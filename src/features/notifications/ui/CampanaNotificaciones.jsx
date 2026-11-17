@@ -17,6 +17,7 @@ import {
 import BuildIcon from "@mui/icons-material/Build"
 import DescriptionIcon from "@mui/icons-material/Description"
 import EventAvailableIcon from "@mui/icons-material/EventAvailable"
+import FactCheckIcon from "@mui/icons-material/FactCheck"
 import LocalGasStationIcon from "@mui/icons-material/LocalGasStation"
 import CloseIcon from "@mui/icons-material/Close"
 import LocalShippingIcon from "@mui/icons-material/LocalShipping"
@@ -44,6 +45,7 @@ const ASPECTO_POR_TIPO = {
   [TIPO_AVISO.DIESEL]: { icono: LocalGasStationIcon, fondo: TINTE.AMBAR.fondo, texto: TINTE.AMBAR.texto },
   [TIPO_AVISO.PROGRAMACION]: { icono: EventAvailableIcon, fondo: TINTE.TEAL.fondo, texto: TINTE.TEAL.texto },
   [TIPO_AVISO.DESPACHO]: ASPECTO_BL,
+  [TIPO_AVISO.SAFETY]: { icono: FactCheckIcon, fondo: TINTE.INDIGO.fondo, texto: TINTE.INDIGO.texto },
   [TIPO_AVISO.DOCUMENTOS]: { icono: DescriptionIcon, fondo: TINTE.VIOLETA.fondo, texto: TINTE.VIOLETA.texto },
 }
 

@@ -30,6 +30,9 @@ $CATEGORIAS_DE_AVISO = [
     'viaje_programado',
     'viaje_despacho',
     'viaje_documentos',
+    'safety_libro',
+    'safety_diesel',
+    'safety_pcmiller',
 ];
 
 // Las personas que pueden recibir avisos: las cuentas de la oficina. Los operadores

@@ -19,6 +19,7 @@ import {
 import BuildIcon from "@mui/icons-material/Build"
 import DescriptionIcon from "@mui/icons-material/Description"
 import EventAvailableIcon from "@mui/icons-material/EventAvailable"
+import FactCheckIcon from "@mui/icons-material/FactCheck"
 import LocalGasStationIcon from "@mui/icons-material/LocalGasStation"
 import LocalShippingIcon from "@mui/icons-material/LocalShipping"
 import SearchIcon from "@mui/icons-material/Search"
@@ -45,6 +46,9 @@ const APARIENCIA = {
   [CATEGORIA_AVISO.VIAJE_DOCUMENTOS]: { Icono: DescriptionIcon, color: TINTE.VIOLETA.texto, fondo: TINTE.VIOLETA.fondo },
   [CATEGORIA_AVISO.DIESEL_STATE]: { Icono: LocalGasStationIcon, color: TINTE.AMBAR.texto, fondo: TINTE.AMBAR.fondo },
   [CATEGORIA_AVISO.DIESEL_FLEETONE]: { Icono: LocalGasStationIcon, color: TINTE.AMBAR.texto, fondo: TINTE.AMBAR.fondo },
+  [CATEGORIA_AVISO.SAFETY_LIBRO]: { Icono: FactCheckIcon, color: TINTE.INDIGO.texto, fondo: TINTE.INDIGO.fondo },
+  [CATEGORIA_AVISO.SAFETY_DIESEL]: { Icono: FactCheckIcon, color: TINTE.INDIGO.texto, fondo: TINTE.INDIGO.fondo },
+  [CATEGORIA_AVISO.SAFETY_PCMILLER]: { Icono: FactCheckIcon, color: TINTE.INDIGO.texto, fondo: TINTE.INDIGO.fondo },
 }
 
 const BORDE = `1px solid ${COLOR.BORDE}`
