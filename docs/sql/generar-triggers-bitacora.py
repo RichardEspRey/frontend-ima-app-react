@@ -24,6 +24,17 @@ TANDAS = {
          'diesel_fuente_margen', 'cajas_externas',
          'mtto_puntos', 'mtto_inspeccion_lado', 'mtto_concepto_detalle', 'mtto_notif_suscriptores',
          'caja_estatus', 'roadside_repairs', 'inspections', 'servicios_orden', 'afinaciones_historial']),
+    5: ('021-bitacora-triggers-tanda-5.sql',
+        ['truck_documents', 'drivers_documents', 'cajas_documents', 'IMA_documents', 'safety_docs',
+         'documents', 'gastos_documentos', 'trip_document_relationship', 'roadside_repair_docs',
+         'inspection_docs',
+         'status_documents_Drivers', 'status_documents_Trucks', 'status_documents_Trailers',
+         'status_documents_IMA',
+         'articulos_inventario', 'movimientos_inventario', 'activos',
+         'teams', 'user_teams', 'tipos_gasto', 'tipos_reparacion', 'categorias_mantenimiento',
+         'subcategorias_mantenimiento', 'inspection_descriptions', 'origenes', 'cat_origenes',
+         'cat_trucks_requisitos', 'cat_drivers_requisitos', 'cat_cajas_requisitos',
+         'cat_ima_requisitos', 'features']),
 }
 EXCLUIR = {
     'Users_credentials': {'pass', 'push_token'},
