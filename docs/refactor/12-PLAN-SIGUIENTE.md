@@ -314,7 +314,26 @@ permiso `bitacora_ver`, 24 meses, hora en UTC mostrada en Monterrey. Ver `10-BIT
 - Las dos tablas de `10-BITACORA.md` § 3. No las lee nadie todavía: riesgo nulo.
 - Un envío por tabla. Verificar con `SHOW CREATE TABLE`.
 
-### B2 · Registro por petición — `bitacora_lib.php` + 3 líneas en `conexion.php`
+### B2 · Registro por petición — ENTREGADO, falta subir (2026-11-17)
+
+> `docs/backend/bitacora_lib.php` (nuevo) y `docs/backend/conexion.php` (el de producción
+> más un `include_once` dentro de `try/catch`, que también atrapa un error de sintaxis de
+> la librería). Sintaxis revisada con `php-parser`. Cómo quedó, distinto de lo que decía
+> el diseño:
+> - **No hace `SET @ima_*` en cada conexión todavía.** Solo hace falta para los triggers
+>   (B5); se agrega entonces. Así B2 no toca ninguna conexión de la API.
+> - **La fila se escribe con una conexión propia al final** (`register_shutdown_function`),
+>   no con la del PHP: no se mezcla con una transacción a medias.
+> - **Lecturas por patrón de nombre** (`get*`, `All_*`, …) más `trip_summary` y
+>   `residuo_trip`. De las 119 operaciones del inventario, 51 se registran.
+> - **Usuario:** `_usuario` (lo pondrá B3) o `id_usuario`. No `user_id`, que en varios PHP
+>   es la persona afectada.
+> - **Resultado:** lee `status` y `message` de los primeros 4 KB de la respuesta, copiados
+>   con un `ob_start` que se vacía cada 8 KB (la respuesta sale igual). Antes de escribir
+>   suelta la respuesta y llama `fastcgi_finish_request`.
+>
+> Orden: correr `014-bitacora.sql`, subir `bitacora_lib.php`, guardar copia de
+> `conexion.php` y subir el nuevo. Verificación en `12-PLAN` § B2 del chat del 2026-11-17.
 
 - Es el paso delicado: `conexion.php` lo cargan todos los PHP. Todo dentro de `try/catch`,
   copia `.ANTERIOR` y prueba inmediata de inicio de sesión, una lectura y una escritura.
