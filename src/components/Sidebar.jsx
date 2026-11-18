@@ -47,6 +47,7 @@ const iconMap = {
 
 const ADMIN_TYPES = new Set(["admin"]);
 const MANAGEMENT_ITEM = { name: 'Gestor de Acceso', route: '/access-manager' };
+const BITACORA_FEATURE = 'bitacora_ver';
 const menuItems = [ ...menuItemsConfig, MANAGEMENT_ITEM ];
 
 const labelSx = (visible) => ({
@@ -98,6 +99,7 @@ const Sidebar = () => {
 
   const isSectionAllowed = useCallback((item, visibleSubs = true) => {
       if (item.name === MANAGEMENT_ITEM.name) return isAdmin || userPermissions[GESTOR_ACCESOS_DRIVERS.featureKey] === true;
+      if (item.featureKey === BITACORA_FEATURE) return userPermissions[BITACORA_FEATURE] === true;
       if (isAdmin) return true;
       const dynamicPermission = userPermissions[item.featureKey ?? item.name];
       if (dynamicPermission !== undefined) return dynamicPermission;

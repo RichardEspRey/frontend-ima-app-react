@@ -140,9 +140,8 @@ const Detalle = ({ id, onCerrar }) => {
 };
 
 const Bitacora = () => {
-  const usuario = useAuthStore((estado) => estado.user);
   const permisos = useAuthStore((estado) => estado.userPermissions);
-  const puedeVer = usuario?.tipo_usuario?.toLowerCase() === 'admin' || permisos?.bitacora_ver === true;
+  const puedeVer = permisos?.bitacora_ver === true;
 
   const hoy = hoyLocal();
   const [filtros, setFiltros] = useState({ desde: restarDias(hoy, 6), hasta: hoy, usuario: '', archivo: '', resultado: '', texto: '' });

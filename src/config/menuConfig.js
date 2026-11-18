@@ -287,7 +287,7 @@ export const menuItemsConfig = [
     name: "Bitácora",
     featureKey: "bitacora_ver",
     route: "/bitacora",
-    rolesPermitidos: ["admin"],
+    rolesPermitidos: [],
   },
 ];
 
