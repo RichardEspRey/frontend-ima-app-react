@@ -6,7 +6,7 @@
 -- Este archivo es la copia para revisar; el PHP lleva exactamente las mismas sentencias.
 --
 -- Tablas: trips, ordenes_servicio, orden_servicio_detalles, pago_trayectos_mx, notif_suscriptores
--- Generado desde docs/sql/bitacora-esquema-2026-11-17.json con
+-- Generado desde docs/sql/bitacora-esquema-2026-11-18.json con
 -- docs/sql/generar-triggers-bitacora.py.
 --
 -- Qué hace cada uno: al dar de alta guarda el registro completo; al editar guarda solo

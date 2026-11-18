@@ -1,0 +1,732 @@
+{
+  "tomado": "2026-11-18",
+  "nota": "Estructura de las tablas candidatas a triggers, leída de producción con bitacora_diagnostico.php. Sin permisos ni contraseñas. Las tablas de las tandas 1 y 2 no cambiaron desde la copia del 2026-11-17.",
+  "tablas": {
+    "trip_stage_invoices": {
+      "filas": 120,
+      "kb": 96,
+      "columnas": [
+        "id int(11)",
+        "stage_id int(11)",
+        "invoice_number varchar(50)",
+        "json_data text",
+        "file_path varchar(255)",
+        "version int(11)",
+        "is_active tinyint(4)",
+        "created_at timestamp"
+      ],
+      "llave": [
+        "id"
+      ]
+    },
+    "gastos_viaje": {
+      "filas": 142,
+      "kb": 16,
+      "columnas": [
+        "id int(11)",
+        "trip_id int(11)",
+        "driver_id int(11)",
+        "tipo_gasto varchar(50)",
+        "monto float(10,2)",
+        "fecha datetime",
+        "created_by int(11)",
+        "created_at timestamp",
+        "updated_by int(11)",
+        "updated_at timestamp"
+      ],
+      "llave": [
+        "id"
+      ]
+    },
+    "trucks": {
+      "filas": 12,
+      "kb": 48,
+      "columnas": [
+        "truck_id int(11)",
+        "unidad smallint(6)",
+        "Placa_MEX varchar(25)",
+        "Placa_EUA varchar(25)",
+        "Modelo smallint(6)",
+        "Marca_camion varchar(25)",
+        "Numero_VIN varchar(25)",
+        "status tinyint(1)",
+        "Tag varchar(25)",
+        "activo bit(1)",
+        "current_fuel float(10,2)",
+        "tank_capacity float(10,2)",
+        "ultima_afinacion_fecha datetime",
+        "manual_offset decimal(10,2)",
+        "odometro_base int(10) unsigned",
+        "wialon_unit_id int(11)",
+        "last_fuel_calc_at datetime",
+        "last_odometer_calc decimal(10,2)",
+        "wialon_account int(11)",
+        "limite_afinacion int(11)",
+        "dist_nv_l decimal(10,2)",
+        "last_latitude decimal(10,7)",
+        "last_longitude decimal(11,7)"
+      ],
+      "llave": [
+        "truck_id"
+      ]
+    },
+    "diesel": {
+      "filas": 1084,
+      "kb": 144,
+      "columnas": [
+        "id int(11)",
+        "trip_id int(11)",
+        "driver_id int(11)",
+        "odometro int(10) unsigned",
+        "galones float(10,2)",
+        "monto float",
+        "fecha datetime",
+        "estado varchar(30)",
+        "fleetone float(10,2)",
+        "periodo varchar(2)",
+        "is_manual tinyint(1)",
+        "created_by varchar(150)",
+        "odometro_revisado tinyint(1)"
+      ],
+      "llave": [
+        "id"
+      ]
+    },
+    "trips": {
+      "filas": 533,
+      "kb": 1696,
+      "columnas": [
+        "trip_id int(11)",
+        "trip_number int(11)",
+        "origen_id int(11)",
+        "driver_id int(11)",
+        "driver_id_second int(11)",
+        "truck_id int(11)",
+        "caja_id int(11)",
+        "creation_date timestamp",
+        "status varchar(50)",
+        "team_id int(11)",
+        "caja_externa_id int(11)",
+        "return_date date",
+        "status_payment varchar(20)",
+        "country_code char(2)",
+        "trip_year smallint(6)",
+        "is_transnational tinyint(1)",
+        "transnational_number int(11)",
+        "movement_number int(11)",
+        "odometer_start int(11)",
+        "odometer_end int(11)",
+        "fecha_finalizacion datetime",
+        "fecha_inicio_viaje datetime",
+        "ruta_wialon longtext"
+      ],
+      "llave": [
+        "trip_id"
+      ]
+    },
+    "detalles_gasto": {
+      "filas": 1878,
+      "kb": 464,
+      "columnas": [
+        "id_detalle_gasto int(11)",
+        "id_gasto int(11)",
+        "id_tipo_gasto int(11)",
+        "id_articulo int(11)",
+        "descripcion_articulo varchar(255)",
+        "cantidad_articulo int(11)",
+        "precio_unitario decimal(15,2)",
+        "id_categoria_mantenimiento int(11)",
+        "id_subcategoria_mantenimiento int(11)"
+      ],
+      "llave": [
+        "id_detalle_gasto"
+      ]
+    },
+    "caja": {
+      "filas": 7,
+      "kb": 16,
+      "columnas": [
+        "caja_id int(11)",
+        "no_caja smallint(6)",
+        "no_placa varchar(25)",
+        "estado_placa varchar(25)",
+        "no_vin varchar(25)",
+        "status tinyint(1)",
+        "activo bit(1)"
+      ],
+      "llave": [
+        "caja_id"
+      ]
+    },
+    "orden_servicio_detalles": {
+      "filas": 355,
+      "kb": 64,
+      "columnas": [
+        "id_detalle int(11)",
+        "id_servicio int(11)",
+        "id_articulo int(11)",
+        "tipo_detalle varchar(50)",
+        "descripcion varchar(255)",
+        "cantidad decimal(10,2)",
+        "costo decimal(10,2)"
+      ],
+      "llave": [
+        "id_detalle"
+      ]
+    },
+    "pagos_semanales": {
+      "filas": 0,
+      "kb": 16,
+      "columnas": [
+        "period_id varchar(10)",
+        "anio int(11)",
+        "semana int(11)",
+        "fecha_corte datetime",
+        "estado enum('Pendiente','Autorizado')",
+        "autorizado_en datetime"
+      ],
+      "llave": [
+        "period_id"
+      ]
+    },
+    "drivers": {
+      "filas": 35,
+      "kb": 16,
+      "columnas": [
+        "driver_id int(11)",
+        "nombre varchar(50)",
+        "fecha_nacimiento date",
+        "fecha_ingreso date",
+        "curp varchar(25)",
+        "rfc varchar(20)",
+        "phone_mex varchar(15)",
+        "phone_usa varchar(15)",
+        "status tinyint(1)",
+        "licencia varchar(50)",
+        "visa varchar(50)",
+        "activo tinyint(1)",
+        "valor_milla float(10,2)",
+        "motivo_baja varchar(255)",
+        "fecha_baja date",
+        "observaciones_baja text"
+      ],
+      "llave": [
+        "driver_id"
+      ]
+    },
+    "notif_suscriptores": {
+      "filas": 74,
+      "kb": 32,
+      "columnas": [
+        "categoria varchar(40)",
+        "user_id int(11)",
+        "creado_en datetime",
+        "creado_por int(11)"
+      ],
+      "llave": [
+        "categoria",
+        "user_id"
+      ]
+    },
+    "programacion_trips": {
+      "filas": 0,
+      "kb": 16,
+      "columnas": [
+        "id int(11)",
+        "driver_id int(11)",
+        "truck_id int(11)",
+        "caja_id int(11)",
+        "caja_externa_id int(11)",
+        "company_id int(11)",
+        "destino varchar(50)",
+        "salida datetime"
+      ],
+      "llave": [
+        "id"
+      ]
+    },
+    "user_feature_flags": {
+      "filas": 446,
+      "kb": 32,
+      "columnas": [
+        "id int(11)",
+        "user_id int(11)",
+        "feature_id int(11)",
+        "enabled tinyint(1)"
+      ],
+      "llave": [
+        "id"
+      ]
+    },
+    "warehouses": {
+      "filas": 840,
+      "kb": 112,
+      "columnas": [
+        "warehouse_id int(11)",
+        "nombre_almacen varchar(100)",
+        "direccion varchar(255)"
+      ],
+      "llave": [
+        "warehouse_id"
+      ]
+    },
+    "trip_stages": {
+      "filas": 1997,
+      "kb": 880,
+      "columnas": [
+        "trip_stage_id int(11)",
+        "trip_id int(11)",
+        "stage_number int(11)",
+        "origin varchar(255)",
+        "destination varchar(255)",
+        "zip_code_origin varchar(10)",
+        "zip_code_destination varchar(10)",
+        "loading_date date",
+        "delivery_date date",
+        "estatus varchar(50)",
+        "rate_tarifa decimal(10,2)",
+        "millas_pcmiller decimal(10,2)",
+        "travel_direction enum('Going Up','Going Down')",
+        "company_id int(11)",
+        "creation_date timestamp",
+        "warehouse_origin_id int(11)",
+        "warehouse_destination_id int(11)",
+        "ci_number varchar(50)",
+        "stageType varchar(50)",
+        "millas_pcmiller_practicas decimal(10,2)",
+        "comments text",
+        "time_of_delivery time",
+        "date_of_departure date",
+        "metodo_pago varchar(20)",
+        "tarifa_pagada float(10,2)",
+        "status varchar(20)",
+        "invoice_number varchar(50)",
+        "ajuste_millas decimal(10,2)",
+        "fecha_inicio_cobro datetime",
+        "fecha_pago_final datetime"
+      ],
+      "llave": [
+        "trip_stage_id"
+      ]
+    },
+    "pago_trayectos_mx": {
+      "filas": 8,
+      "kb": 32,
+      "columnas": [
+        "id int(11)",
+        "nombre varchar(100)",
+        "monto decimal(10,2)",
+        "activo tinyint(1)",
+        "creado_en datetime",
+        "actualizado_en datetime"
+      ],
+      "llave": [
+        "id"
+      ]
+    },
+    "ordenes_servicio": {
+      "filas": 345,
+      "kb": 48,
+      "columnas": [
+        "id_orden int(11)",
+        "fecha_orden date",
+        "truck_id int(11)",
+        "caja_id int(11)",
+        "estatus varchar(50)",
+        "fecha_creacion timestamp",
+        "tipo_cambio decimal(10,2)"
+      ],
+      "llave": [
+        "id_orden"
+      ]
+    },
+    "gastos": {
+      "filas": 1614,
+      "kb": 224,
+      "columnas": [
+        "id_gasto int(11)",
+        "fecha_gasto date",
+        "pais varchar(3)",
+        "moneda varchar(3)",
+        "tipo_cambio decimal(10,4)",
+        "monto_total decimal(15,2)",
+        "descripcion text",
+        "proveedor varchar(255)",
+        "metodo_pago varchar(50)",
+        "url_factura varchar(255)",
+        "id_activo int(11)",
+        "cantidad_original decimal(15,2)",
+        "created_by int(11)",
+        "created_at timestamp",
+        "updated_by int(11)",
+        "updated_at timestamp",
+        "deleted_at datetime",
+        "deleted_by int(11)"
+      ],
+      "llave": [
+        "id_gasto"
+      ]
+    },
+    "trip_payments": {
+      "filas": 467,
+      "kb": 96,
+      "columnas": [
+        "payment_id int(11)",
+        "trip_id int(11)",
+        "driver_id int(11)",
+        "amount decimal(10,2)",
+        "payment_date datetime",
+        "payment_method varchar(50)",
+        "notes text",
+        "status tinyint(1)",
+        "anticipo decimal(10,2)",
+        "gastos_aplicados decimal(10,2)",
+        "rate_per_mile decimal(10,2)",
+        "anticipo_2 decimal(10,2)",
+        "anticipo_3 decimal(10,2)",
+        "comentarios text",
+        "comentarios_operador text"
+      ],
+      "llave": [
+        "payment_id"
+      ]
+    },
+    "stage_stops": {
+      "filas": 121,
+      "kb": 48,
+      "columnas": [
+        "stop_id int(11)",
+        "trip_stage_id int(11)",
+        "location varchar(255)",
+        "bl_firmado_document_id int(11)",
+        "stop_order int(11)",
+        "created_at datetime",
+        "updated_at datetime",
+        "time_of_delivery time"
+      ],
+      "llave": [
+        "stop_id"
+      ]
+    },
+    "diesel_tickets": {
+      "filas": 3915,
+      "kb": 352,
+      "columnas": [
+        "id int(11)",
+        "id_register int(11)",
+        "trip_id int(11)",
+        "url_pdf varchar(100)",
+        "fecha datetime"
+      ],
+      "llave": [
+        "id"
+      ]
+    },
+    "Users_credentials": {
+      "filas": 29,
+      "kb": 32,
+      "columnas": [
+        "id int(11)",
+        "driver_id int(11)",
+        "user varchar(100)",
+        "pass varchar(255)",
+        "type varchar(20)",
+        "push_token varchar(255)",
+        "active tinyint(4)",
+        "name varchar(100)"
+      ],
+      "llave": [
+        "id"
+      ]
+    },
+    "companies": {
+      "filas": 119,
+      "kb": 32,
+      "columnas": [
+        "company_id int(11)",
+        "nombre_compania varchar(100)"
+      ],
+      "llave": [
+        "company_id"
+      ]
+    },
+    "pagos_detalle": {
+      "filas": 16,
+      "kb": 48,
+      "columnas": [
+        "id int(11)",
+        "period_id varchar(10)",
+        "personal_id int(11)",
+        "nombre varchar(255)",
+        "puesto varchar(255)",
+        "sueldo decimal(10,2)",
+        "frecuencia_pago enum('Semanal','Quincenal','Mensual')",
+        "tipo_nomina enum('MX','US')"
+      ],
+      "llave": [
+        "id"
+      ]
+    }
+  },
+  "triggers_actuales": [
+    {
+      "trigger_name": "after_diesel_insert",
+      "event_object_table": "diesel",
+      "action_timing": "AFTER",
+      "event_manipulation": "INSERT",
+      "definer": "root@localhost"
+    },
+    {
+      "trigger_name": "bit_diesel_ins",
+      "event_object_table": "diesel",
+      "action_timing": "AFTER",
+      "event_manipulation": "INSERT",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_diesel_upd",
+      "event_object_table": "diesel",
+      "action_timing": "AFTER",
+      "event_manipulation": "UPDATE",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_diesel_del",
+      "event_object_table": "diesel",
+      "action_timing": "AFTER",
+      "event_manipulation": "DELETE",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_trips_ins",
+      "event_object_table": "trips",
+      "action_timing": "AFTER",
+      "event_manipulation": "INSERT",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_trips_upd",
+      "event_object_table": "trips",
+      "action_timing": "AFTER",
+      "event_manipulation": "UPDATE",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_trips_del",
+      "event_object_table": "trips",
+      "action_timing": "AFTER",
+      "event_manipulation": "DELETE",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_detalles_gasto_ins",
+      "event_object_table": "detalles_gasto",
+      "action_timing": "AFTER",
+      "event_manipulation": "INSERT",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_detalles_gasto_upd",
+      "event_object_table": "detalles_gasto",
+      "action_timing": "AFTER",
+      "event_manipulation": "UPDATE",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_detalles_gasto_del",
+      "event_object_table": "detalles_gasto",
+      "action_timing": "AFTER",
+      "event_manipulation": "DELETE",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_orden_servicio_detalles_ins",
+      "event_object_table": "orden_servicio_detalles",
+      "action_timing": "AFTER",
+      "event_manipulation": "INSERT",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_orden_servicio_detalles_upd",
+      "event_object_table": "orden_servicio_detalles",
+      "action_timing": "AFTER",
+      "event_manipulation": "UPDATE",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_orden_servicio_detalles_del",
+      "event_object_table": "orden_servicio_detalles",
+      "action_timing": "AFTER",
+      "event_manipulation": "DELETE",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_notif_suscriptores_ins",
+      "event_object_table": "notif_suscriptores",
+      "action_timing": "AFTER",
+      "event_manipulation": "INSERT",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_notif_suscriptores_upd",
+      "event_object_table": "notif_suscriptores",
+      "action_timing": "AFTER",
+      "event_manipulation": "UPDATE",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_notif_suscriptores_del",
+      "event_object_table": "notif_suscriptores",
+      "action_timing": "AFTER",
+      "event_manipulation": "DELETE",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_user_feature_flags_ins",
+      "event_object_table": "user_feature_flags",
+      "action_timing": "AFTER",
+      "event_manipulation": "INSERT",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_user_feature_flags_upd",
+      "event_object_table": "user_feature_flags",
+      "action_timing": "AFTER",
+      "event_manipulation": "UPDATE",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_user_feature_flags_del",
+      "event_object_table": "user_feature_flags",
+      "action_timing": "AFTER",
+      "event_manipulation": "DELETE",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_trip_stages_ins",
+      "event_object_table": "trip_stages",
+      "action_timing": "AFTER",
+      "event_manipulation": "INSERT",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_trip_stages_upd",
+      "event_object_table": "trip_stages",
+      "action_timing": "AFTER",
+      "event_manipulation": "UPDATE",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_trip_stages_del",
+      "event_object_table": "trip_stages",
+      "action_timing": "AFTER",
+      "event_manipulation": "DELETE",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_pago_trayectos_mx_ins",
+      "event_object_table": "pago_trayectos_mx",
+      "action_timing": "AFTER",
+      "event_manipulation": "INSERT",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_pago_trayectos_mx_upd",
+      "event_object_table": "pago_trayectos_mx",
+      "action_timing": "AFTER",
+      "event_manipulation": "UPDATE",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_pago_trayectos_mx_del",
+      "event_object_table": "pago_trayectos_mx",
+      "action_timing": "AFTER",
+      "event_manipulation": "DELETE",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_ordenes_servicio_ins",
+      "event_object_table": "ordenes_servicio",
+      "action_timing": "AFTER",
+      "event_manipulation": "INSERT",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_ordenes_servicio_upd",
+      "event_object_table": "ordenes_servicio",
+      "action_timing": "AFTER",
+      "event_manipulation": "UPDATE",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_ordenes_servicio_del",
+      "event_object_table": "ordenes_servicio",
+      "action_timing": "AFTER",
+      "event_manipulation": "DELETE",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_gastos_ins",
+      "event_object_table": "gastos",
+      "action_timing": "AFTER",
+      "event_manipulation": "INSERT",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_gastos_upd",
+      "event_object_table": "gastos",
+      "action_timing": "AFTER",
+      "event_manipulation": "UPDATE",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_gastos_del",
+      "event_object_table": "gastos",
+      "action_timing": "AFTER",
+      "event_manipulation": "DELETE",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_trip_payments_ins",
+      "event_object_table": "trip_payments",
+      "action_timing": "AFTER",
+      "event_manipulation": "INSERT",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_trip_payments_upd",
+      "event_object_table": "trip_payments",
+      "action_timing": "AFTER",
+      "event_manipulation": "UPDATE",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_trip_payments_del",
+      "event_object_table": "trip_payments",
+      "action_timing": "AFTER",
+      "event_manipulation": "DELETE",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_users_credentials_ins",
+      "event_object_table": "Users_credentials",
+      "action_timing": "AFTER",
+      "event_manipulation": "INSERT",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_users_credentials_upd",
+      "event_object_table": "Users_credentials",
+      "action_timing": "AFTER",
+      "event_manipulation": "UPDATE",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_users_credentials_del",
+      "event_object_table": "Users_credentials",
+      "action_timing": "AFTER",
+      "event_manipulation": "DELETE",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    }
+  ]
+}

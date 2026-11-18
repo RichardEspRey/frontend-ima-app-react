@@ -9,16 +9,25 @@
 # el arreglo PHP que va dentro de docs/backend/bitacora_triggers.php. Para una tanda
 # nueva: volver a leer la estructura de producción, agregar las tablas a TABLAS y correrlo.
 import json, sys
-ESQUEMA = 'docs/sql/bitacora-esquema-2026-11-17.json'
+ESQUEMA = 'docs/sql/bitacora-esquema-2026-11-18.json'
 TANDAS = {
     1: ('016-bitacora-triggers.sql',
         ['gastos', 'detalles_gasto', 'diesel', 'trip_stages', 'trip_payments', 'user_feature_flags', 'Users_credentials']),
     2: ('017-bitacora-triggers-tanda-2.sql',
         ['trips', 'ordenes_servicio', 'orden_servicio_detalles', 'pago_trayectos_mx', 'notif_suscriptores']),
+    3: ('019-bitacora-triggers-tanda-3.sql',
+        ['pagos_semanales', 'pagos_detalle',
+         'stage_stops', 'trip_stage_invoices', 'gastos_viaje', 'programacion_trips',
+         'trucks', 'caja', 'drivers', 'companies', 'warehouses']),
 }
 EXCLUIR = {
     'Users_credentials': {'pass', 'push_token'},
     'trips': {'ruta_wialon'},
+    # Las reescribe el rastreo de Wialon a cada consulta; registrarlas sería puro ruido.
+    'trucks': {'current_fuel', 'last_fuel_calc_at', 'last_odometer_calc', 'dist_nv_l',
+               'last_latitude', 'last_longitude'},
+    # El XML/JSON completo de la factura; pesa mucho y ya queda el archivo y la versión.
+    'trip_stage_invoices': {'json_data'},
 }
 
 d = json.load(open(ESQUEMA))
@@ -26,8 +35,18 @@ d = json.load(open(ESQUEMA))
 def columnas(t):
     return [c.split(' ')[0] for c in d['tablas'][t]['columnas'] if c.split(' ')[0] not in EXCLUIR.get(t, set())]
 
-def objeto(fila, cols):
-    return 'JSON_OBJECT(' + ', '.join(f"'{c}', {fila}.`{c}`" for c in cols) + ')'
+def tipo(t, c):
+    for col in d['tablas'][t]['columnas']:
+        nombre, _, resto = col.partition(' ')
+        if nombre == c: return resto
+    return ''
+
+def valor(t, fila, c):
+    # BIT(1) dentro de JSON sale como un byte ilegible; + 0 lo vuelve 0 o 1.
+    return f"({fila}.`{c}` + 0)" if tipo(t, c).startswith('bit(') else f"{fila}.`{c}`"
+
+def objeto(t, fila, cols):
+    return 'JSON_OBJECT(' + ', '.join(f"'{c}', {valor(t, fila, c)}" for c in cols) + ')'
 
 def registro(fila, llave):
     return "CONCAT_WS('-', " + ', '.join(f"{fila}.`{c}`" for c in llave) + ')'
@@ -43,12 +62,12 @@ def triggers(t):
     salida.append((f'bit_{corto}_ins', f"""CREATE TRIGGER `bit_{corto}_ins` AFTER INSERT ON `{t}` FOR EACH ROW
 BEGIN
   DECLARE CONTINUE HANDLER FOR SQLEXCEPTION BEGIN END;
-  {INSERTAR.format(t=t, reg=registro('NEW', llave), op='I', antes='NULL', despues=objeto('NEW', cols))}
+  {INSERTAR.format(t=t, reg=registro('NEW', llave), op='I', antes='NULL', despues=objeto(t, 'NEW', cols))}
 END"""))
     cambios = '\n'.join(
         f"  IF NOT (OLD.`{c}` <=> NEW.`{c}`) THEN\n"
-        f"    SET v_antes = JSON_INSERT(v_antes, '$.\"{c}\"', OLD.`{c}`);\n"
-        f"    SET v_despues = JSON_INSERT(v_despues, '$.\"{c}\"', NEW.`{c}`);\n"
+        f"    SET v_antes = JSON_INSERT(v_antes, '$.\"{c}\"', {valor(t, 'OLD', c)});\n"
+        f"    SET v_despues = JSON_INSERT(v_despues, '$.\"{c}\"', {valor(t, 'NEW', c)});\n"
         f"  END IF;" for c in cols)
     salida.append((f'bit_{corto}_upd', f"""CREATE TRIGGER `bit_{corto}_upd` AFTER UPDATE ON `{t}` FOR EACH ROW
 BEGIN
@@ -63,7 +82,7 @@ END"""))
     salida.append((f'bit_{corto}_del', f"""CREATE TRIGGER `bit_{corto}_del` AFTER DELETE ON `{t}` FOR EACH ROW
 BEGIN
   DECLARE CONTINUE HANDLER FOR SQLEXCEPTION BEGIN END;
-  {INSERTAR.format(t=t, reg=registro('OLD', llave), op='D', antes=objeto('OLD', cols), despues='NULL')}
+  {INSERTAR.format(t=t, reg=registro('OLD', llave), op='D', antes=objeto(t, 'OLD', cols), despues='NULL')}
 END"""))
     return salida
 
@@ -75,7 +94,7 @@ ENCABEZADO = """-- Bitácora · triggers de «antes y después», tanda {n}
 -- Este archivo es la copia para revisar; el PHP lleva exactamente las mismas sentencias.
 --
 -- Tablas: {tablas}
--- Generado desde docs/sql/bitacora-esquema-2026-11-17.json con
+-- Generado desde docs/sql/bitacora-esquema-2026-11-18.json con
 -- docs/sql/generar-triggers-bitacora.py.
 --
 -- Qué hace cada uno: al dar de alta guarda el registro completo; al editar guarda solo
@@ -104,6 +123,8 @@ for n, (archivo, tablas) in TANDAS.items():
 partes = []
 for nombre, sql in todos:
     partes.append(f"    '{nombre}' => <<<'SQL'\n{sql}\nSQL,")
+tandas_php = '\n'.join(
+    f"    {n} => [" + ', '.join(f"'{t.lower()}'" for t in tablas) + "]," for n, (_, tablas) in TANDAS.items())
 if len(sys.argv) > 1:
-    open(sys.argv[1], 'w').write('\n'.join(partes))
+    open(sys.argv[1], 'w').write('\n'.join(partes) + '\n];\n\n$TANDAS = [\n' + tandas_php)
 print(len(todos), 'triggers')
