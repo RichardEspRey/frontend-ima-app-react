@@ -1,5 +1,7 @@
 import { useMemo, useState } from "react"
-import { Box, Button, Chip, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Tooltip, Typography } from "@mui/material"
+import { Box, Button, Chip, Grid, InputAdornment, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Tooltip, Typography } from "@mui/material"
+import SearchIcon from "@mui/icons-material/Search"
+import VisibilityIcon from "@mui/icons-material/Visibility"
 import { useNavigate } from "react-router-dom"
 
 import {
@@ -11,9 +13,46 @@ import {
   useResumen,
 } from "../../../entities/expense"
 import { decimales, moneda } from "../../../shared/lib/formato"
-import { BotonActualizar, PageHeader, PantallaEsqueleto, Pestanas, Selector, Paginacion } from "../../../shared/ui"
+import {
+  BotonActualizar,
+  CARD_SX,
+  CELL_MUTED_SX,
+  CELL_STRONG_SX,
+  CELL_SX,
+  CHIP_DANGER_SX,
+  CHIP_SX,
+  CHIP_WARN_SX,
+  GHOST_BTN_SX,
+  HEADER_CELL_SX,
+  HEADER_ROW_SX,
+  INPUT_SX,
+  PAGE_SHELL_SX,
+  PageHeader,
+  Paginacion,
+  PantallaEsqueleto,
+  Pestanas,
+  SECTION_LABEL_SX,
+  Selector,
+  TABLE_CONTAINER_SX,
+} from "../../../shared/ui"
 import { useActualizarPantalla } from "../../../shared/api"
 import { COLOR } from "../../../shared/ui/tokens"
+
+const CHIP_NEUTRO_SX = { ...CHIP_SX, bgcolor: COLOR.LIENZO, color: COLOR.TEXTO_SUAVE, border: `1px solid ${COLOR.BORDE}` }
+const VER_BTN_SX = { ...GHOST_BTN_SX, px: 1.5, py: 0.4, fontSize: "0.78rem" }
+const NUMERO_SX = { fontVariantNumeric: "tabular-nums" }
+
+/**
+ * El estilo de la etiqueta de un contador de pendientes: rojo para lo que falta
+ * conciliar con estados, ámbar para Fleet One y neutro para los manuales.
+ *
+ * @param {object} columna La columna del descriptor.
+ * @returns {object} Los estilos del chip.
+ */
+const estiloDeContador = (columna) => {
+  if (columna.clave === "manual_count") return CHIP_NEUTRO_SX
+  return columna.color === COLOR.PELIGRO ? CHIP_DANGER_SX : CHIP_WARN_SX
+}
 
 const PAISES = [
   { valor: PAIS_REGISTRO.TODOS, etiqueta: "Todos" },
@@ -43,7 +82,7 @@ function Celda({ columna, fila }) {
 
   if (columna.tipo === "dinero") {
     return (
-      <Typography fontWeight={700} component="span">
+      <Typography fontWeight={700} component="span" color={COLOR.TINTA} sx={NUMERO_SX}>
         {moneda(valor)}
       </Typography>
     )
@@ -57,24 +96,14 @@ function Celda({ columna, fila }) {
     const cuantos = Number(valor ?? 0)
     if (cuantos === 0) {
       return (
-        <Typography variant="body2" color="text.disabled" component="span">
+        <Typography variant="caption" color={COLOR.BORDE_FUERTE} component="span">
           —
         </Typography>
       )
     }
     return (
       <Tooltip title={`${cuantos} ${columna.aviso}`}>
-        <Chip
-          label={cuantos}
-          size="small"
-          sx={{
-            fontWeight: "bold",
-            minWidth: 30,
-            bgcolor: columna.color,
-            color: COLOR.BLANCO,
-            border: `1px solid ${columna.color}`,
-          }}
-        />
+        <Chip label={cuantos} size="small" sx={{ ...estiloDeContador(columna), minWidth: 32 }} />
       </Tooltip>
     )
   }
@@ -126,126 +155,143 @@ export function ResumenPorViaje({ descriptor }) {
   }
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Box sx={PAGE_SHELL_SX}>
       <PageHeader
-        seccion="Gastos"
+        seccion={descriptor.seccionEditor}
         titulo={descriptor.etiquetas.titulo}
         descripcion={descriptor.etiquetas.descripcion}
-        acciones={
-          <Selector
-            valor={pais}
-            onChange={setPais}
-            opciones={PAISES.map((o) => ({ valor: o.valor, etiqueta: o.etiqueta }))}
-          />
-        }
+        acciones={<BotonActualizar onActualizar={actualizar} actualizando={actualizando || isFetching} />}
       />
 
-      {descriptor.pestanas && (
-        <Pestanas
-          valor={pestana}
-          onChange={(valor) => {
-            setPestana(valor)
-            setPagina(0)
-          }}
-          pestanas={descriptor.pestanas.map((tab) => ({ etiqueta: tab.etiqueta }))}
-        />
-      )}
-
-      <Stack direction="row" spacing={2} sx={{ mb: 3 }} alignItems="center">
-        <TextField
-          label="Buscar por Trip# o Driver"
-          variant="outlined"
-          size="small"
-          value={busqueda}
-          onChange={(e) => {
-            setBusqueda(e.target.value)
-            setPagina(0)
-          }}
-          sx={{ width: 300 }}
-        />
-        {descriptor.conFiltroPeriodo && (
-          <Selector
-            valor={periodo}
+      <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap" useFlexGap sx={{ mb: 3 }}>
+        {descriptor.pestanas && (
+          <Pestanas
+            valor={pestana}
             onChange={(valor) => {
-              setPeriodo(valor)
+              setPestana(valor)
               setPagina(0)
             }}
-            opciones={PERIODOS}
+            pestanas={descriptor.pestanas.map((tab) => ({ etiqueta: tab.etiqueta }))}
+            sx={{ mb: 0 }}
           />
         )}
-        <BotonActualizar
-          onActualizar={actualizar}
-          actualizando={actualizando || isFetching}
-          sx={{ py: 0.75 }}
+        <Selector
+          valor={pais}
+          onChange={(valor) => {
+            setPais(valor)
+            setPagina(0)
+          }}
+          opciones={PAISES.map((o) => ({ valor: o.valor, etiqueta: o.etiqueta }))}
         />
       </Stack>
 
-      <Paper sx={{ width: "100%", mb: 2 }}>
-        <TableContainer sx={{ overflowX: "auto" }}>
-          <Table size="small" stickyHeader>
-            <TableHead>
+      <Paper elevation={0} sx={{ ...CARD_SX, mb: 3 }}>
+        <Typography variant="overline" sx={SECTION_LABEL_SX}>Filtros de Búsqueda</Typography>
+        <Grid container spacing={2} alignItems="center" sx={{ mt: 0.5 }}>
+          <Grid size={{ xs: 12, sm: 8, md: 4 }}>
+            <TextField
+              fullWidth
+              size="small"
+              placeholder="Buscar por Trip# o Driver"
+              value={busqueda}
+              onChange={(e) => {
+                setBusqueda(e.target.value)
+                setPagina(0)
+              }}
+              sx={{ bgcolor: COLOR.BLANCO }}
+              slotProps={{
+                input: {
+                  sx: INPUT_SX,
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon sx={{ fontSize: 18, color: COLOR.APAGADO }} />
+                    </InputAdornment>
+                  ),
+                },
+              }}
+            />
+          </Grid>
+          {descriptor.conFiltroPeriodo && (
+            <Grid size={{ xs: 12, sm: "auto" }}>
+              <Selector
+                valor={periodo}
+                onChange={(valor) => {
+                  setPeriodo(valor)
+                  setPagina(0)
+                }}
+                opciones={PERIODOS}
+              />
+            </Grid>
+          )}
+        </Grid>
+      </Paper>
+
+      <TableContainer component={Paper} elevation={0} sx={TABLE_CONTAINER_SX}>
+        <Table size="small">
+          <TableHead>
+            <TableRow sx={HEADER_ROW_SX}>
+              <TableCell sx={{ ...HEADER_CELL_SX, whiteSpace: "nowrap" }}>Trip #</TableCell>
+              <TableCell sx={{ ...HEADER_CELL_SX, whiteSpace: "nowrap" }}>Last Update</TableCell>
+              {descriptor.columnasResumen.map((columna) => (
+                <TableCell
+                  key={columna.clave}
+                  sx={{ ...HEADER_CELL_SX, whiteSpace: "nowrap", textAlign: columna.alineacion }}
+                >
+                  {columna.etiqueta}
+                </TableCell>
+              ))}
+              <TableCell sx={{ ...HEADER_CELL_SX, whiteSpace: "nowrap", textAlign: "center", width: 120 }}>
+                Actions
+              </TableCell>
+            </TableRow>
+          </TableHead>
+
+          <TableBody>
+            {enPantalla.length === 0 ? (
               <TableRow>
-                <TableCell sx={{ fontWeight: 600, whiteSpace: "nowrap" }}>Trip #</TableCell>
-                <TableCell sx={{ fontWeight: 600, whiteSpace: "nowrap" }}>Last Update</TableCell>
-                {descriptor.columnasResumen.map((columna) => (
-                  <TableCell
-                    key={columna.clave}
-                    sx={{ fontWeight: 600, whiteSpace: "nowrap", textAlign: columna.alineacion }}
-                  >
-                    {columna.etiqueta}
-                  </TableCell>
-                ))}
-                <TableCell sx={{ fontWeight: 600, whiteSpace: "nowrap", textAlign: "center", width: 120 }}>
-                  Actions
+                <TableCell colSpan={columnas} align="center" sx={{ py: 6 }}>
+                  <Typography color={COLOR.APAGADO} variant="body2">
+                    {descriptor.etiquetas.vacioResumen}
+                  </Typography>
                 </TableCell>
               </TableRow>
-            </TableHead>
-
-            <TableBody>
-              {enPantalla.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={columnas} align="center">
-                    <Typography color="text.secondary" sx={{ py: 2 }}>
-                      {descriptor.etiquetas.vacioResumen}
-                    </Typography>
+            ) : (
+              enPantalla.map((fila) => (
+                <TableRow key={fila.trip_id} hover>
+                  <TableCell sx={{ ...CELL_STRONG_SX, whiteSpace: "nowrap" }}>{identificadorViaje(fila)}</TableCell>
+                  <TableCell sx={{ ...CELL_MUTED_SX, ...NUMERO_SX, whiteSpace: "nowrap" }}>{fila.fecha}</TableCell>
+                  {descriptor.columnasResumen.map((columna) => (
+                    <TableCell key={columna.clave} align={columna.alineacion} sx={{ ...CELL_SX, ...NUMERO_SX }}>
+                      <Celda columna={columna} fila={fila} />
+                    </TableCell>
+                  ))}
+                  <TableCell align="center">
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      startIcon={<VisibilityIcon sx={{ fontSize: 16 }} />}
+                      onClick={() => navigate(descriptor.rutas.detalle(fila.trip_id))}
+                      sx={VER_BTN_SX}
+                    >
+                      View
+                    </Button>
                   </TableCell>
                 </TableRow>
-              ) : (
-                enPantalla.map((fila) => (
-                  <TableRow key={fila.trip_id} hover>
-                    <TableCell sx={{ fontWeight: 500 }}>{identificadorViaje(fila)}</TableCell>
-                    <TableCell>{fila.fecha}</TableCell>
-                    {descriptor.columnasResumen.map((columna) => (
-                      <TableCell key={columna.clave} align={columna.alineacion}>
-                        <Celda columna={columna} fila={fila} />
-                      </TableCell>
-                    ))}
-                    <TableCell align="center">
-                      <Button
-                        variant="contained"
-                        size="small"
-                        onClick={() => navigate(descriptor.rutas.detalle(fila.trip_id))}
-                      >
-                        View
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
 
-        {descriptor.conPaginacion && (
-          <Paginacion
-            pagina={paginaActual}
-            porPagina={porPagina}
-            total={visibles.length}
-            onPagina={setPagina}
-            onPorPagina={(cuantas) => { setPorPagina(cuantas); setPagina(0) }}
-          />
-        )}
-      </Paper>
+      {descriptor.conPaginacion && (
+        <Paginacion
+          pagina={paginaActual}
+          porPagina={porPagina}
+          total={visibles.length}
+          onPagina={setPagina}
+          onPorPagina={(cuantas) => { setPorPagina(cuantas); setPagina(0) }}
+        />
+      )}
     </Box>
   )
 }

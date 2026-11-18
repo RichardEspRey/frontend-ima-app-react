@@ -15,12 +15,63 @@ import {
 } from "@mui/material"
 import AddIcon from "@mui/icons-material/Add"
 import ArrowBackIcon from "@mui/icons-material/ArrowBack"
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined"
 import { useNavigate, useParams } from "react-router-dom"
 
 import { esManual, usaFleetone, useRegistros } from "../../../entities/expense"
 import { decimales, moneda } from "../../../shared/lib/formato"
-import { PageHeader, PantallaEsqueleto } from "../../../shared/ui"
+import {
+  CARD_SX,
+  CELL_MUTED_SX,
+  CELL_STRONG_SX,
+  CELL_SX,
+  CHIP_INFO_SX,
+  CHIP_WARN_SX,
+  DARK_BTN_SX,
+  GHOST_BTN_SX,
+  HEADER_CELL_SX,
+  HEADER_ROW_SX,
+  PAGE_SHELL_SX,
+  PageHeader,
+  PantallaEsqueleto,
+  SECTION_LABEL_SX,
+  TABLE_CONTAINER_SX,
+} from "../../../shared/ui"
 import { COLOR } from "../../../shared/ui/tokens"
+
+const EDITAR_BTN_SX = { ...GHOST_BTN_SX, px: 1.5, py: 0.4, fontSize: "0.78rem" }
+const NUMERO_SX = { fontVariantNumeric: "tabular-nums" }
+
+/**
+ * La franja de arriba del detalle: el viaje, cuántos registros tiene y sus totales.
+ *
+ * @param {object} props Propiedades del componente.
+ * @param {Array.<{etiqueta: string, valor: string, destacado: boolean}>} props.datos Lo que se enseña.
+ * @returns {object} La franja.
+ */
+function Resumen({ datos }) {
+  return (
+    <Paper elevation={0} sx={{ ...CARD_SX, mb: 3 }}>
+      <Stack direction="row" flexWrap="wrap" useFlexGap columnGap={6} rowGap={2}>
+        {datos.map(({ etiqueta, valor, destacado }) => (
+          <Box key={etiqueta}>
+            <Typography variant="caption" sx={{ ...SECTION_LABEL_SX, display: "block", textTransform: "uppercase" }}>
+              {etiqueta}
+            </Typography>
+            <Typography
+              variant={destacado ? "h6" : "body1"}
+              fontWeight={destacado ? 800 : 600}
+              color={destacado ? COLOR.TINTA : COLOR.TEXTO}
+              sx={{ mt: 0.25, ...NUMERO_SX }}
+            >
+              {valor}
+            </Typography>
+          </Box>
+        ))}
+      </Stack>
+    </Paper>
+  )
+}
 
 /**
  * El contenido de una celda del detalle, según lo que declare la columna.
@@ -36,7 +87,7 @@ function Celda({ columna, registro, onFuenteMargen }) {
 
   if (columna.tipo === "dinero") {
     return (
-      <Typography component="span" fontWeight={600} color={columna.color}>
+      <Typography component="span" fontWeight={700} color={columna.color ?? COLOR.TINTA} sx={NUMERO_SX}>
         {moneda(valor)}
       </Typography>
     )
@@ -47,16 +98,7 @@ function Celda({ columna, registro, onFuenteMargen }) {
   if (columna.tipo === "origen") {
     const manual = esManual(registro)
     return (
-      <Chip
-        label={manual ? "Manual" : "Automático"}
-        size="small"
-        variant="outlined"
-        sx={{
-          fontWeight: 600,
-          borderColor: manual ? COLOR.AVISO : COLOR.BORDE_FUERTE,
-          color: manual ? COLOR.AVISO : COLOR.APAGADO,
-        }}
-      />
+      <Chip label={manual ? "Manual" : "Automático"} size="small" sx={manual ? CHIP_WARN_SX : CHIP_INFO_SX} />
     )
   }
 
@@ -114,85 +156,96 @@ export function RegistrosDeViaje({ descriptor, onAlta, onFuenteMargen, children 
     return <PantallaEsqueleto columnas={columnas} />
   }
 
+  const sumar = (clave) => registros.reduce((suma, registro) => suma + Number(registro?.[clave] ?? 0), 0)
+  const conGalones = descriptor.columnasDetalle.some((columna) => columna.clave === "galones")
+
   return (
-    <Box sx={{ p: 3 }}>
+    <Box sx={PAGE_SHELL_SX}>
       <PageHeader
-        seccion={descriptor.etiquetas.plural}
+        seccion={descriptor.seccionEditor}
         titulo={`Viaje ${viaje}`}
         descripcion={`${registros.length} registro${registros.length === 1 ? "" : "s"} en este viaje.`}
         acciones={
-          <Stack direction="row" spacing={1.5}>
-            {onAlta && (
-              <Button variant="contained" startIcon={<AddIcon />} onClick={onAlta}>
-                Agregar manual
-              </Button>
-            )}
+          <Stack direction="row" spacing={1.5} flexWrap="wrap" useFlexGap>
             <Button
               variant="outlined"
               startIcon={<ArrowBackIcon />}
               onClick={() => navigate(descriptor.rutas.volver)}
+              sx={GHOST_BTN_SX}
             >
               Return
             </Button>
+            {onAlta && (
+              <Button variant="contained" startIcon={<AddIcon />} onClick={onAlta} sx={DARK_BTN_SX}>
+                Agregar manual
+              </Button>
+            )}
           </Stack>
         }
       />
 
-      <Paper elevation={1} sx={{ width: "100%", mb: 2, overflow: "hidden" }}>
-        <TableContainer sx={{ overflowX: "auto" }}>
-          <Table sx={{ minWidth: 800 }} size="small" stickyHeader>
-            <TableHead>
-              <TableRow>
-                <TableCell sx={{ fontWeight: 600 }}>No.</TableCell>
-                {descriptor.columnasDetalle.map((columna) => (
-                  <TableCell
-                    key={columna.clave}
-                    sx={{ fontWeight: 600, textAlign: columna.alineacion }}
-                  >
-                    {columna.etiqueta}
-                  </TableCell>
-                ))}
-                <TableCell sx={{ fontWeight: 600, textAlign: "center" }}>Acciones</TableCell>
-              </TableRow>
-            </TableHead>
+      <Resumen
+        datos={[
+          { etiqueta: "Viaje", valor: viaje },
+          { etiqueta: "Registros", valor: String(registros.length) },
+          ...(conGalones ? [{ etiqueta: "Galones", valor: `${decimales(sumar("galones"))} gal` }] : []),
+          { etiqueta: "Total", valor: moneda(sumar("monto")), destacado: true },
+        ]}
+      />
 
-            <TableBody>
-              {registros.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={columnas} align="center">
-                    <Typography color="text.secondary" sx={{ py: 3 }}>
-                      {descriptor.etiquetas.vacioDetalle}
-                    </Typography>
+      <TableContainer component={Paper} elevation={0} sx={TABLE_CONTAINER_SX}>
+        <Table sx={{ minWidth: 800 }} size="small">
+          <TableHead>
+            <TableRow sx={HEADER_ROW_SX}>
+              <TableCell sx={HEADER_CELL_SX}>No.</TableCell>
+              {descriptor.columnasDetalle.map((columna) => (
+                <TableCell key={columna.clave} sx={{ ...HEADER_CELL_SX, textAlign: columna.alineacion }}>
+                  {columna.etiqueta}
+                </TableCell>
+              ))}
+              <TableCell sx={{ ...HEADER_CELL_SX, textAlign: "center" }}>Acciones</TableCell>
+            </TableRow>
+          </TableHead>
+
+          <TableBody>
+            {registros.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={columnas} align="center" sx={{ py: 6 }}>
+                  <Typography color={COLOR.APAGADO} variant="body2">
+                    {descriptor.etiquetas.vacioDetalle}
+                  </Typography>
+                </TableCell>
+              </TableRow>
+            ) : (
+              registros.map((registro, indice) => (
+                <TableRow key={registro.id} hover sx={{ bgcolor: esManual(registro) ? COLOR.AVISO_FONDO : "inherit" }}>
+                  <TableCell sx={CELL_MUTED_SX}>{indice + 1}</TableCell>
+                  {descriptor.columnasDetalle.map((columna) => (
+                    <TableCell
+                      key={columna.clave}
+                      align={columna.alineacion}
+                      sx={{ ...(columna.peso ? CELL_STRONG_SX : CELL_SX), ...NUMERO_SX }}
+                    >
+                      <Celda columna={columna} registro={registro} onFuenteMargen={onFuenteMargen} />
+                    </TableCell>
+                  ))}
+                  <TableCell align="center">
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      startIcon={<EditOutlinedIcon sx={{ fontSize: 16 }} />}
+                      onClick={() => navigate(descriptor.rutas.editor(registro.id, registro.trip_id))}
+                      sx={EDITAR_BTN_SX}
+                    >
+                      Edit
+                    </Button>
                   </TableCell>
                 </TableRow>
-              ) : (
-                registros.map((registro, indice) => (
-                  <TableRow key={registro.id} hover>
-                    <TableCell>{indice + 1}</TableCell>
-                    {descriptor.columnasDetalle.map((columna) => (
-                      <TableCell key={columna.clave} align={columna.alineacion}>
-                        <Celda columna={columna} registro={registro} onFuenteMargen={onFuenteMargen} />
-                      </TableCell>
-                    ))}
-                    <TableCell align="center">
-                      <Button
-                        variant="contained"
-                        size="small"
-                        sx={{ textTransform: "none" }}
-                        onClick={() =>
-                          navigate(descriptor.rutas.editor(registro.id, registro.trip_id))
-                        }
-                      >
-                        Edit
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Paper>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
 
       {children}
     </Box>

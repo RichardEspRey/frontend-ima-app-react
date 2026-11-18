@@ -9,6 +9,7 @@ import {
   DialogTitle,
   Grid,
   InputAdornment,
+  Paper,
   Stack,
   TextField,
   Typography,
@@ -16,6 +17,18 @@ import {
 import CloudUploadIcon from "@mui/icons-material/CloudUpload"
 import dayjs from "dayjs"
 import { archivosDelEvento, GRUPOS_ARCHIVO } from "../../../shared/security"
+import {
+  CARD_SX,
+  CHIP_INFO_SX,
+  DARK_BTN_SX,
+  DIALOG_ACTIONS_SX,
+  DIALOG_CONTENT_SX,
+  DIALOG_PAPER_SX,
+  DIALOG_TITLE_SX,
+  GHOST_BTN_SX,
+  INPUT_SX,
+  SECTION_LABEL_SX,
+} from "../../../shared/ui"
 import { COLOR } from "../../../shared/ui/tokens"
 
 const CAMPOS = [
@@ -86,20 +99,18 @@ export function ModalDieselManual({
   }
 
   return (
-    <Dialog open={abierto} onClose={onCerrar} maxWidth="md" fullWidth scroll="paper">
-      <DialogTitle
-        sx={{
-          bgcolor: COLOR.LIENZO,
-          borderBottom: `1px solid ${COLOR.BORDE}`,
-          fontWeight: 800,
-          color: "primary.main",
-          py: 2,
-        }}
-      >
-        Registrar carga de diesel a mano
+    <Dialog open={abierto} onClose={onCerrar} maxWidth="md" fullWidth scroll="paper" slotProps={{ paper: { sx: DIALOG_PAPER_SX } }}>
+      <DialogTitle sx={DIALOG_TITLE_SX}>
+        <Typography variant="overline" component="span" sx={{ ...SECTION_LABEL_SX, display: "block" }}>
+          Gastos · Diesel
+        </Typography>
+        <Typography variant="h6" component="span" fontWeight={800} color={COLOR.TINTA}>
+          Registrar carga de diesel a mano
+        </Typography>
       </DialogTitle>
 
-      <DialogContent sx={{ p: { xs: 2, md: 4 }, bgcolor: COLOR.LIENZO }}>
+      <DialogContent sx={DIALOG_CONTENT_SX}>
+        <Paper elevation={0} sx={CARD_SX}>
         <Grid container spacing={2} sx={{ mt: 0 }}>
           {CAMPOS.map((campo) => (
             <Grid size={{ xs: 12, sm: campo.ancho }} key={campo.clave}>
@@ -113,6 +124,7 @@ export function ModalDieselManual({
                 placeholder={campo.ayuda}
                 InputLabelProps={{ shrink: true }}
                 InputProps={{
+                  sx: INPUT_SX,
                   startAdornment: campo.prefijo ? (
                     <InputAdornment position="start">{campo.prefijo}</InputAdornment>
                   ) : undefined,
@@ -126,7 +138,7 @@ export function ModalDieselManual({
 
           <Grid size={{ xs: 12 }}>
             <Box sx={{ mt: 1 }}>
-              <Button variant="outlined" component="label" startIcon={<CloudUploadIcon />}>
+              <Button variant="outlined" component="label" startIcon={<CloudUploadIcon />} sx={GHOST_BTN_SX}>
                 Adjuntar tickets
                 <input
                   key={entrada}
@@ -147,6 +159,7 @@ export function ModalDieselManual({
                         onArchivosChange(archivos.filter((_, i) => i !== indice))
                       }
                       size="small"
+                      sx={CHIP_INFO_SX}
                     />
                   ))}
                 </Stack>
@@ -155,18 +168,19 @@ export function ModalDieselManual({
           </Grid>
 
           <Grid size={{ xs: 12 }}>
-            <Typography variant="caption" color="text.secondary">
+            <Typography variant="caption" color={COLOR.APAGADO}>
               Odómetro, galones y monto son obligatorios.
             </Typography>
           </Grid>
         </Grid>
+        </Paper>
       </DialogContent>
 
-      <DialogActions sx={{ p: 3, bgcolor: COLOR.LIENZO, borderTop: `1px solid ${COLOR.BORDE}` }}>
-        <Button onClick={onCerrar} color="inherit">
+      <DialogActions sx={DIALOG_ACTIONS_SX}>
+        <Button onClick={onCerrar} variant="outlined" sx={GHOST_BTN_SX}>
           Cancelar
         </Button>
-        <Button variant="contained" onClick={onGuardar} disabled={guardando}>
+        <Button variant="contained" onClick={onGuardar} disabled={guardando} sx={DARK_BTN_SX}>
           Guardar
         </Button>
       </DialogActions>
