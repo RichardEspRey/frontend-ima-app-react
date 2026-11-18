@@ -343,7 +343,13 @@ permiso `bitacora_ver`, 24 meses, hora en UTC mostrada en Monterrey. Ver `10-BIT
   `SELECT datos FROM bitacora WHERE archivo = 'Auth.php'`.
 - Dejar correr una semana y medir filas y MB por día antes de seguir.
 
-### B3 · Que cada petición diga quién es — front
+### B3 · Que cada petición diga quién es — HECHO en el front (2026-11-17)
+
+> `Emiliano` `9944e45`, portado al refactor (`shared/api/identidad.js`). Antes de esto,
+> Emiliano probó B2 en Notificaciones manager: las altas salían con usuario (mandan
+> `id_usuario`) y las bajas sin él. Con `_usuario` en toda petición eso se cierra, pero
+> **solo a partir de la versión publicada que lo incluya**: las máquinas con 1.6.0 seguirán
+> registrando sin usuario. Falta la app móvil (otro repo).
 
 - Envoltorio de `fetch` en `Emiliano` (`src/main.jsx` + un archivo nuevo en `src/utils/`):
   si la URL es de `VITE_API_HOST`, agrega `_usuario` y `_app` al `FormData` o al cuerpo.
