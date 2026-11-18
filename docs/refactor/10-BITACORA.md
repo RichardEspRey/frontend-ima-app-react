@@ -272,7 +272,7 @@ Se sube tabla por tabla, probando una escritura real después de cada una.
 |---|---|---|
 | 1 | ¿Registrar también las consultas (quién vio qué)? | **No.** Solo escrituras e inicios de sesión |
 | 2 | ¿Quién puede ver la bitácora? | **Admin siempre, y a quien se le dé el permiso `bitacora_ver`** en el Gestor de accesos |
-| 3 | ¿Cuánto tiempo se conserva? | **24 meses**; se confirma con el volumen real de la etapa 1 |
+| 3 | ¿Cuánto tiempo se conserva? | **24 meses, las dos tablas.** El 2026-11-17 cPanel marcaba la base en 47.9 MB de 22.66 GB disponibles; el espacio no limita |
 | 4 | ¿La primera tanda de tablas de la etapa 3 es la correcta? | Se decide al llegar a la etapa 3 |
 | 5 | ¿Se registra lo que hacen los operadores desde el móvil? | **Sí**, por omisión (sus gastos, diesel e inspecciones entran a las mismas tablas) |
 | 6 | ¿En qué hora se guarda? | **UTC** (`fecha_utc`, llenada con `UTC_TIMESTAMP()`); la pantalla la muestra en hora de Monterrey. No se toca la zona de `conexion.php` |

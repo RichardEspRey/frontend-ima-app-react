@@ -1,0 +1,367 @@
+{
+  "tomado": "2026-11-17",
+  "nota": "Estructura de las tablas candidatas a triggers, leída de producción con bitacora_diagnostico.php. Sin permisos ni contraseñas.",
+  "tablas": {
+    "trip_stage_invoices": {
+      "filas": 118,
+      "kb": 96,
+      "columnas": [
+        "id int(11)",
+        "stage_id int(11)",
+        "invoice_number varchar(50)",
+        "json_data text",
+        "file_path varchar(255)",
+        "version int(11)",
+        "is_active tinyint(4)",
+        "created_at timestamp"
+      ],
+      "llave": [
+        "id"
+      ]
+    },
+    "gastos_viaje": {
+      "filas": 142,
+      "kb": 16,
+      "columnas": [
+        "id int(11)",
+        "trip_id int(11)",
+        "driver_id int(11)",
+        "tipo_gasto varchar(50)",
+        "monto float(10,2)",
+        "fecha datetime",
+        "created_by int(11)",
+        "created_at timestamp",
+        "updated_by int(11)",
+        "updated_at timestamp"
+      ],
+      "llave": [
+        "id"
+      ]
+    },
+    "diesel": {
+      "filas": 1083,
+      "kb": 144,
+      "columnas": [
+        "id int(11)",
+        "trip_id int(11)",
+        "driver_id int(11)",
+        "odometro int(10) unsigned",
+        "galones float(10,2)",
+        "monto float",
+        "fecha datetime",
+        "estado varchar(30)",
+        "fleetone float(10,2)",
+        "periodo varchar(2)",
+        "is_manual tinyint(1)",
+        "created_by varchar(150)",
+        "odometro_revisado tinyint(1)"
+      ],
+      "llave": [
+        "id"
+      ]
+    },
+    "trips": {
+      "filas": 527,
+      "kb": 1696,
+      "columnas": [
+        "trip_id int(11)",
+        "trip_number int(11)",
+        "origen_id int(11)",
+        "driver_id int(11)",
+        "driver_id_second int(11)",
+        "truck_id int(11)",
+        "caja_id int(11)",
+        "creation_date timestamp",
+        "status varchar(50)",
+        "team_id int(11)",
+        "caja_externa_id int(11)",
+        "return_date date",
+        "status_payment varchar(20)",
+        "country_code char(2)",
+        "trip_year smallint(6)",
+        "is_transnational tinyint(1)",
+        "transnational_number int(11)",
+        "movement_number int(11)",
+        "odometer_start int(11)",
+        "odometer_end int(11)",
+        "fecha_finalizacion datetime",
+        "fecha_inicio_viaje datetime",
+        "ruta_wialon longtext"
+      ],
+      "llave": [
+        "trip_id"
+      ]
+    },
+    "detalles_gasto": {
+      "filas": 1877,
+      "kb": 464,
+      "columnas": [
+        "id_detalle_gasto int(11)",
+        "id_gasto int(11)",
+        "id_tipo_gasto int(11)",
+        "id_articulo int(11)",
+        "descripcion_articulo varchar(255)",
+        "cantidad_articulo int(11)",
+        "precio_unitario decimal(15,2)",
+        "id_categoria_mantenimiento int(11)",
+        "id_subcategoria_mantenimiento int(11)"
+      ],
+      "llave": [
+        "id_detalle_gasto"
+      ]
+    },
+    "orden_servicio_detalles": {
+      "filas": 355,
+      "kb": 64,
+      "columnas": [
+        "id_detalle int(11)",
+        "id_servicio int(11)",
+        "id_articulo int(11)",
+        "tipo_detalle varchar(50)",
+        "descripcion varchar(255)",
+        "cantidad decimal(10,2)",
+        "costo decimal(10,2)"
+      ],
+      "llave": [
+        "id_detalle"
+      ]
+    },
+    "pagos_semanales": {
+      "filas": 0,
+      "kb": 16,
+      "columnas": [
+        "period_id varchar(10)",
+        "anio int(11)",
+        "semana int(11)",
+        "fecha_corte datetime",
+        "estado enum('Pendiente','Autorizado')",
+        "autorizado_en datetime"
+      ],
+      "llave": [
+        "period_id"
+      ]
+    },
+    "notif_suscriptores": {
+      "filas": 80,
+      "kb": 32,
+      "columnas": [
+        "categoria varchar(40)",
+        "user_id int(11)",
+        "creado_en datetime",
+        "creado_por int(11)"
+      ],
+      "llave": [
+        "categoria",
+        "user_id"
+      ]
+    },
+    "user_feature_flags": {
+      "filas": 445,
+      "kb": 32,
+      "columnas": [
+        "id int(11)",
+        "user_id int(11)",
+        "feature_id int(11)",
+        "enabled tinyint(1)"
+      ],
+      "llave": [
+        "id"
+      ]
+    },
+    "trip_stages": {
+      "filas": 1995,
+      "kb": 880,
+      "columnas": [
+        "trip_stage_id int(11)",
+        "trip_id int(11)",
+        "stage_number int(11)",
+        "origin varchar(255)",
+        "destination varchar(255)",
+        "zip_code_origin varchar(10)",
+        "zip_code_destination varchar(10)",
+        "loading_date date",
+        "delivery_date date",
+        "estatus varchar(50)",
+        "rate_tarifa decimal(10,2)",
+        "millas_pcmiller decimal(10,2)",
+        "travel_direction enum('Going Up','Going Down')",
+        "company_id int(11)",
+        "creation_date timestamp",
+        "warehouse_origin_id int(11)",
+        "warehouse_destination_id int(11)",
+        "ci_number varchar(50)",
+        "stageType varchar(50)",
+        "millas_pcmiller_practicas decimal(10,2)",
+        "comments text",
+        "time_of_delivery time",
+        "date_of_departure date",
+        "metodo_pago varchar(20)",
+        "tarifa_pagada float(10,2)",
+        "status varchar(20)",
+        "invoice_number varchar(50)",
+        "ajuste_millas decimal(10,2)",
+        "fecha_inicio_cobro datetime",
+        "fecha_pago_final datetime"
+      ],
+      "llave": [
+        "trip_stage_id"
+      ]
+    },
+    "pago_trayectos_mx": {
+      "filas": 2,
+      "kb": 32,
+      "columnas": [
+        "id int(11)",
+        "nombre varchar(100)",
+        "monto decimal(10,2)",
+        "activo tinyint(1)",
+        "creado_en datetime",
+        "actualizado_en datetime"
+      ],
+      "llave": [
+        "id"
+      ]
+    },
+    "ordenes_servicio": {
+      "filas": 345,
+      "kb": 48,
+      "columnas": [
+        "id_orden int(11)",
+        "fecha_orden date",
+        "truck_id int(11)",
+        "caja_id int(11)",
+        "estatus varchar(50)",
+        "fecha_creacion timestamp",
+        "tipo_cambio decimal(10,2)"
+      ],
+      "llave": [
+        "id_orden"
+      ]
+    },
+    "gastos": {
+      "filas": 1613,
+      "kb": 224,
+      "columnas": [
+        "id_gasto int(11)",
+        "fecha_gasto date",
+        "pais varchar(3)",
+        "moneda varchar(3)",
+        "tipo_cambio decimal(10,4)",
+        "monto_total decimal(15,2)",
+        "descripcion text",
+        "proveedor varchar(255)",
+        "metodo_pago varchar(50)",
+        "url_factura varchar(255)",
+        "id_activo int(11)",
+        "cantidad_original decimal(15,2)",
+        "created_by int(11)",
+        "created_at timestamp",
+        "updated_by int(11)",
+        "updated_at timestamp",
+        "deleted_at datetime",
+        "deleted_by int(11)"
+      ],
+      "llave": [
+        "id_gasto"
+      ]
+    },
+    "trip_payments": {
+      "filas": 467,
+      "kb": 96,
+      "columnas": [
+        "payment_id int(11)",
+        "trip_id int(11)",
+        "driver_id int(11)",
+        "amount decimal(10,2)",
+        "payment_date datetime",
+        "payment_method varchar(50)",
+        "notes text",
+        "status tinyint(1)",
+        "anticipo decimal(10,2)",
+        "gastos_aplicados decimal(10,2)",
+        "rate_per_mile decimal(10,2)",
+        "anticipo_2 decimal(10,2)",
+        "anticipo_3 decimal(10,2)",
+        "comentarios text",
+        "comentarios_operador text"
+      ],
+      "llave": [
+        "payment_id"
+      ]
+    },
+    "stage_stops": {
+      "filas": 118,
+      "kb": 48,
+      "columnas": [
+        "stop_id int(11)",
+        "trip_stage_id int(11)",
+        "location varchar(255)",
+        "bl_firmado_document_id int(11)",
+        "stop_order int(11)",
+        "created_at datetime",
+        "updated_at datetime",
+        "time_of_delivery time"
+      ],
+      "llave": [
+        "stop_id"
+      ]
+    },
+    "diesel_tickets": {
+      "filas": 3915,
+      "kb": 352,
+      "columnas": [
+        "id int(11)",
+        "id_register int(11)",
+        "trip_id int(11)",
+        "url_pdf varchar(100)",
+        "fecha datetime"
+      ],
+      "llave": [
+        "id"
+      ]
+    },
+    "Users_credentials": {
+      "filas": 29,
+      "kb": 32,
+      "columnas": [
+        "id int(11)",
+        "driver_id int(11)",
+        "user varchar(100)",
+        "pass varchar(255)",
+        "type varchar(20)",
+        "push_token varchar(255)",
+        "active tinyint(4)",
+        "name varchar(100)"
+      ],
+      "llave": [
+        "id"
+      ]
+    },
+    "pagos_detalle": {
+      "filas": 16,
+      "kb": 48,
+      "columnas": [
+        "id int(11)",
+        "period_id varchar(10)",
+        "personal_id int(11)",
+        "nombre varchar(255)",
+        "puesto varchar(255)",
+        "sueldo decimal(10,2)",
+        "frecuencia_pago enum('Semanal','Quincenal','Mensual')",
+        "tipo_nomina enum('MX','US')"
+      ],
+      "llave": [
+        "id"
+      ]
+    }
+  },
+  "triggers_actuales": [
+    {
+      "trigger_name": "after_diesel_insert",
+      "event_object_table": "diesel",
+      "action_timing": "AFTER",
+      "event_manipulation": "INSERT",
+      "definer": "root@localhost"
+    }
+  ]
+}
