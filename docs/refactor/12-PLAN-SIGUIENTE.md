@@ -396,7 +396,7 @@ permiso `bitacora_ver`, 24 meses, hora en UTC mostrada en Monterrey. Ver `10-BIT
 > Ojo: el archivo se subió como `bitácora_diagnostico.php` (con acento, lo puso el sistema
 > de Emiliano). Al pedir que suba algo, avisar que revise el nombre exacto.
 
-**Primera tanda — ENTREGADA, falta instalar (2026-11-17).** Emiliano eligió: `gastos`,
+**Primera tanda — INSTALADA (2026-11-17).** Los 21 creados con DEFINER `fg5n48ine0xu@…` (permanente). Falta la prueba de Emiliano editando un gasto. Emiliano eligió: `gastos`,
 `detalles_gasto`, `diesel`, `trip_stages`, `trip_payments`, `user_feature_flags`,
 `Users_credentials` (sin `pass` ni `push_token`). 21 triggers (alta, cambio, borrado),
 generados con `docs/sql/generar-triggers-bitacora.py`; copia para revisar en
