@@ -170,19 +170,18 @@ function Renglon({ notificacion, viaje, leida, onAbrir, onQuitar }) {
  *
  * Enseña lo que ya trae la consulta de notificaciones —la misma que usa el
  * aviso emergente— agrupado por día, con el contador de lo que falta por leer.
- * Al cerrarse, da por leído lo que estaba a la vista.
+ * Solo da por leída la notificación que se abre con un clic.
  *
  * @returns {object} La campana renderizada.
  */
 export function CampanaNotificaciones() {
   const navigate = useNavigate()
   const [ancla, setAncla] = useState(null)
-  const { grupos, sinLeer, filtro, setFiltro, estaLeida, viajeDe, marcarTodasLeidas, ocultar, puedeAdministrar, refrescar } =
+  const { grupos, sinLeer, filtro, setFiltro, estaLeida, viajeDe, marcarLeida, ocultar, puedeAdministrar, refrescar } =
     useCampanaNotificaciones()
 
   const cerrar = () => {
     setAncla(null)
-    marcarTodasLeidas()
   }
 
   const irA = (ruta) => {
@@ -273,6 +272,7 @@ export function CampanaNotificaciones() {
                     leida={estaLeida(notificacion)}
                     onQuitar={() => ocultar(notificacion)}
                     onAbrir={(destino) => {
+                      marcarLeida(notificacion)
                       if (!destino) {
                         cerrar()
                         return

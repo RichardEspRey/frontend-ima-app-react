@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 
-import { agruparPorDia, llaveNotificaciones, sinAnunciar, useNotificaciones } from "../../../entities/notification"
+import { agruparPorDia, llaveNotificaciones, useNotificaciones } from "../../../entities/notification"
 import { useAvisosDeInspecciones, useRecibeAvisoInspeccion } from "../../../entities/maintenance-point"
 import { useNomenclaturasDeViajes } from "../../../entities/trip"
 import { useSesion } from "../../../shared/auth"
@@ -125,8 +125,9 @@ export const INTERVALO_SUSCRIPCION_MS = 300000
  * quien pregunta al servidor y quien refresca la lista cuando llega algo. Al
  * abrir la campana se vuelve a pedir, para que lo que se ve esté al día.
  * Lo único propio de la campana es qué se ha leído y qué se quitó, que viven
- * en el navegador porque el backend no lo guarda. Lo que se abre pasa a leídas;
- * la ✕ de cada renglón la quita para que no se acumule.
+ * en el navegador porque el backend no lo guarda. Solo cuenta como leída la que
+ * se abre con un clic; abrir o cerrar la campana no marca nada. La ✕ de cada
+ * renglón la quita para que no se acumule.
  *
  * A los BL firmados se suman las inspecciones que llegan a Reparaciones, solo
  * para quien está en la lista de Inspecciones de Notificaciones manager, y los
@@ -157,25 +158,31 @@ export function useCampanaNotificaciones() {
   const [filtro, setFiltro] = useState(FILTRO_CAMPANA.TODAS)
   const nomenclaturas = useNomenclaturasDeViajes(delServidor.map((una) => una.trip_id))
 
-  const sinLeer = useMemo(() => sinAnunciar(notificaciones, vistas).length, [notificaciones, vistas])
+  const sinLeer = useMemo(
+    () => notificaciones.filter((una) => !vistas.has(String(una.id))).length,
+    [notificaciones, vistas],
+  )
 
   const grupos = useMemo(() => {
     const visibles = notificaciones.filter((una) => {
-      if (filtro === FILTRO_CAMPANA.NO_LEIDAS) return !vistas.has(una.id)
-      if (filtro === FILTRO_CAMPANA.LEIDAS) return vistas.has(una.id)
+      if (filtro === FILTRO_CAMPANA.NO_LEIDAS) return !vistas.has(String(una.id))
+      if (filtro === FILTRO_CAMPANA.LEIDAS) return vistas.has(String(una.id))
       return true
     })
     return agruparPorDia(visibles)
   }, [notificaciones, vistas, filtro])
 
-  const marcarTodasLeidas = useCallback(() => {
-    setVistas((previas) => {
-      const actualizadas = new Set(previas)
-      notificaciones.forEach((una) => actualizadas.add(una.id))
-      guardarVistas(llave, actualizadas)
-      return actualizadas
-    })
-  }, [notificaciones, llave])
+  const marcarLeida = useCallback(
+    (notificacion) => {
+      setVistas((previas) => {
+        const actualizadas = new Set(previas)
+        actualizadas.add(String(notificacion.id))
+        guardarVistas(llave, actualizadas)
+        return actualizadas
+      })
+    },
+    [llave],
+  )
 
   const ocultar = useCallback(
     (notificacion) => {
@@ -194,7 +201,7 @@ export function useCampanaNotificaciones() {
     [queryClient, usuario?.id],
   )
 
-  const estaLeida = useCallback((notificacion) => vistas.has(notificacion.id), [vistas])
+  const estaLeida = useCallback((notificacion) => vistas.has(String(notificacion.id)), [vistas])
 
   const viajeDe = useCallback(
     (notificacion) => {
@@ -211,7 +218,7 @@ export function useCampanaNotificaciones() {
     setFiltro,
     estaLeida,
     viajeDe,
-    marcarTodasLeidas,
+    marcarLeida,
     ocultar,
     refrescar,
     puedeAdministrar: esTotal,
