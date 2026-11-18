@@ -31,3 +31,10 @@ AddOutputFilterByType DEFLATE application/json text/html text/plain
 <FilesMatch "\.log$">
 Require all denied
 </FilesMatch>
+
+# La librería de la bitácora solo la carga conexion.php por dentro, que no pasa por
+# Apache. Desde el navegador no tiene nada que hacer: se cierra para que nadie pueda
+# llamarla directo y llenar la bitácora de filas falsas.
+<Files "bitacora_lib.php">
+Require all denied
+</Files>
