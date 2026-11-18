@@ -1,12 +1,32 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
     Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-    TextField, Button, Stack, CircularProgress, Tooltip, Chip, TablePagination, Tabs, Tab, ToggleButtonGroup, ToggleButton, MenuItem
+    TextField, Button, Stack, CircularProgress, Tooltip, Chip, TablePagination, Tabs, Tab, MenuItem, InputAdornment, Grid
 } from '@mui/material'; 
 import { useNavigate, useLocation } from 'react-router-dom';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import SearchIcon from '@mui/icons-material/Search';
 import BotonActualizar from '../../components/BotonActualizar';
 import { PERIODO_VACIO, textoDePeriodos, tienePeriodo } from '../../utils/periodos';
+import {
+    PAGE_SHELL_SX, PAGE_OVERLINE_SX, PAGE_TITLE_SX, TABS_WRAPPER_SX, TAB_SX, CARD_SX, SECTION_LABEL_SX,
+    HEADER_ROW_SX, HEADER_CELL_SX, TABLE_CONTAINER_SX, PAGINATION_BOX_SX, PAGINATION_SX, CHIP_DANGER_SX,
+    CHIP_WARN_SX, CHIP_NEUTRO_SX, CELL_STRONG_SX, CELL_SX, CELL_MUTED_SX, GHOST_BTN_SX, INPUT_SX,
+} from '../../styles/estilosTabla';
+
+const PILDORAS_SX = { minHeight: 0, '& .MuiTabs-flexContainer': { gap: 0.5 } };
+const SIN_INDICADOR = { sx: { display: 'none' } };
+const VER_BTN_SX = { ...GHOST_BTN_SX, px: 1.5, py: 0.4, fontSize: '0.78rem' };
+
+const Contador = ({ valor, titulo, sx }) => (
+    valor > 0 ? (
+        <Tooltip title={titulo}>
+            <Chip label={valor} size="small" sx={{ ...sx, minWidth: 32 }} />
+        </Tooltip>
+    ) : (
+        <Typography variant="caption" color="#cbd5e1">—</Typography>
+    )
+);
 
 // Helper para formato de moneda
 const money = (v) => {
@@ -128,169 +148,158 @@ const DieselAdmin = () => {
 
   if (loading) {
       return (
-          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh', p: 3 }}>
-              <CircularProgress /> 
-              <Typography ml={2}>Cargando registros de diesel...</Typography> 
+          <Box sx={{ ...PAGE_SHELL_SX, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <CircularProgress size={28} />
           </Box>
       );
   }
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Typography variant="h4" component="h1" fontWeight={700} gutterBottom sx={{ mb: 3 }}>
-        Diesel Management System
-      </Typography>
-
-      <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
-        <Tabs 
-            value={tabValue} 
-            onChange={(e, newValue) => { setTabValue(newValue); setPage(0); }}
-            textColor="primary"
-            indicatorColor="primary"
-        >
-            <Tab label="Pendientes" sx={{ fontWeight: 600, textTransform: 'none', fontSize: '1rem' }} />
-            <Tab label="Completados" sx={{ fontWeight: 600, textTransform: 'none', fontSize: '1rem' }} />
-        </Tabs>
-
-        <ToggleButtonGroup
-            value={countryFilter}
-            exclusive
-            onChange={(e, val) => { if(val) { setCountryFilter(val); setPage(0); } }}
-            size="small"
-            color="primary"
-            sx={{ mb: { xs: 1, sm: 0 } }}
-        >
-            <ToggleButton value="All" sx={{ fontWeight: 'bold', px: 3 }}>Todos</ToggleButton>
-            <ToggleButton value="US" sx={{ fontWeight: 'bold', px: 3 }}>USA</ToggleButton>
-            <ToggleButton value="MX" sx={{ fontWeight: 'bold', px: 3 }}>México</ToggleButton>
-        </ToggleButtonGroup>
-      </Box>
-
-      <Stack direction="row" spacing={2} sx={{ mb: 3 }} alignItems="center">
-        <TextField
-          label="Buscar por Trip# o Driver"
-          variant="outlined"
-          size="small"
-          value={search}
-          onChange={(e) => { setSearch(e.target.value); setPage(0); }}
-          sx={{ width: 300 }}
-        />
-        <TextField
-          select
-          label="Periodos"
-          size="small"
-          value={periodoFilter}
-          onChange={(e) => { setPeriodoFilter(e.target.value); setPage(0); }}
-          sx={{ width: 150 }}
-          SelectProps={{ displayEmpty: true }}
-          InputLabelProps={{ shrink: true }}
-        >
-          <MenuItem value=""><em>Todos</em></MenuItem>
-          <MenuItem value="Q1">Q1</MenuItem>
-          <MenuItem value="Q2">Q2</MenuItem>
-          <MenuItem value="Q3">Q3</MenuItem>
-          <MenuItem value="Q4">Q4</MenuItem>
-          <MenuItem value={PERIODO_VACIO}>V (vacío)</MenuItem>
-        </TextField>
-        <BotonActualizar onActualizar={fetchDiesel} sx={{ py: 0.75 }} />
+    <Box sx={PAGE_SHELL_SX}>
+      <Stack direction="row" justifyContent="space-between" alignItems="flex-end" mb={4} flexWrap="wrap" gap={2}>
+        <Box>
+          <Typography variant="overline" sx={PAGE_OVERLINE_SX}>Gastos · Diesel</Typography>
+          <Typography variant="h4" fontWeight={800} color="#0f172a" letterSpacing="-0.02em" sx={PAGE_TITLE_SX}>
+            Diesel Management System
+          </Typography>
+          <Typography variant="body2" color="#64748b" sx={{ mt: 0.5 }}>
+            Cargas de combustible por viaje, con lo que falta conciliar con estados y Fleet One.
+          </Typography>
+        </Box>
+        <BotonActualizar onActualizar={fetchDiesel} />
       </Stack>
 
-      <Paper sx={{ width: '100%', mb: 2 }}>
-        <TableContainer sx={{ overflowX: 'auto' }}> 
-          <Table size="small" stickyHeader aria-label="Diesel records table">
-            <TableHead>
-              <TableRow>
-                <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>Trip #</TableCell>
-                <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>Last Update</TableCell>
-                <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap', textAlign: 'right' }}>Total Gal.</TableCell>
-                <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap', textAlign: 'right' }}>Total Cost</TableCell>
-                <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>Driver</TableCell>
-                
-                <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap', textAlign: 'center', width: 130 }}>State Pending</TableCell>
-                <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap', textAlign: 'center', width: 150 }}>Fleet One Pending</TableCell>
-                <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap', textAlign: 'center', width: 100 }}>Manuales</TableCell>
-                <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap', textAlign: 'center', width: 150 }}>Periodo</TableCell>
-                <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap', textAlign: 'center' }}>Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {slice.length === 0 ? (
-                <TableRow>
-                    <TableCell colSpan={10} align="center">
-                        <Typography color="text.secondary" sx={{ py: 3 }}>
-                            {tabValue === 0 
-                                ? "No hay registros con Fleet One pendientes." 
-                                : "No hay registros completados para mostrar."}
-                        </Typography>
-                    </TableCell>
-                </TableRow>
-              ) : (
-                slice.map((row) => ( 
-                  <TableRow key={row.trip_id} hover>
-                    <TableCell sx={{ fontWeight: 500 }}>{row.nomenclatura || row.trip_number}</TableCell>
-                    <TableCell>{row.fecha}</TableCell>
-                    <TableCell align="right">{row.total_galones.toFixed(2)} gal</TableCell>
-                    <TableCell align="right">
-                      <Typography fontWeight={600} color="primary.main">{money(row.total_monto)}</Typography>
-                    </TableCell>
-                    <TableCell>{row.nombre}</TableCell>
-                    
-                    {/* Contadores de alertas */}
-                    <TableCell align="center">
-                        {row.state_pending_count > 0 ? (
-                            <Tooltip title={`Faltan ${row.state_pending_count} estados`}>
-                                <Chip label={row.state_pending_count} size="small" sx={{ fontWeight: 'bold', minWidth: 30, bgcolor: '#d32f2f', color: '#ffffff', border: '1px solid #d32f2f' }} />
-                            </Tooltip>
-                        ) : (
-                            <Typography variant="caption" color="text.disabled">—</Typography>
-                        )}
-                    </TableCell>
+      <Stack direction="row" flexWrap="wrap" columnGap={2}>
+        <Box sx={TABS_WRAPPER_SX}>
+          <Tabs value={tabValue} onChange={(e, newValue) => { setTabValue(newValue); setPage(0); }} TabIndicatorProps={SIN_INDICADOR} sx={PILDORAS_SX}>
+            <Tab label="Pendientes" disableRipple sx={TAB_SX} />
+            <Tab label="Completados" disableRipple sx={TAB_SX} />
+          </Tabs>
+        </Box>
+        <Box sx={TABS_WRAPPER_SX}>
+          <Tabs value={countryFilter} onChange={(e, val) => { if (val) { setCountryFilter(val); setPage(0); } }} TabIndicatorProps={SIN_INDICADOR} sx={PILDORAS_SX}>
+            <Tab value="All" label="Todos" disableRipple sx={TAB_SX} />
+            <Tab value="US" label="USA" disableRipple sx={TAB_SX} />
+            <Tab value="MX" label="México" disableRipple sx={TAB_SX} />
+          </Tabs>
+        </Box>
+      </Stack>
 
-                    <TableCell align="center">
-                        {row.fleetone_pending_count > 0 ? (
-                            <Tooltip title={`Faltan ${row.fleetone_pending_count} Fleet One`}>
-                                <Chip label={row.fleetone_pending_count} size="small" sx={{ fontWeight: 'bold', minWidth: 30, bgcolor: '#ed6c02', color: '#ffffff', border: '1px solid #ed6c02' }} />
-                            </Tooltip>
-                        ) : (
-                            <Typography variant="caption" color="text.disabled">—</Typography>
-                        )}
-                    </TableCell>
-
-                    {/* 🚨 Nuevo contador de manuales */}
-                    <TableCell align="center">
-                        {row.manual_count > 0 ? (
-                            <Tooltip title={`${row.manual_count} Registros ingresados a mano`}>
-                                <Chip label={row.manual_count} size="small" sx={{ fontWeight: 'bold', minWidth: 30, bgcolor: '#f59e0b', color: '#ffffff', border: '1px solid #f59e0b' }} />
-                            </Tooltip>
-                        ) : (
-                            <Typography variant="caption" color="text.disabled">—</Typography>
-                        )}
-                    </TableCell>
-
-                    <TableCell align="center">{textoDePeriodos(row.periodo)}</TableCell>
-                    <TableCell align="center">
-                      <Button variant="contained" size="small" startIcon={<VisibilityIcon />} onClick={() => handleVer(row.trip_id)} sx={{ textTransform: 'none' }}>
-                        View
-                      </Button> 
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-        
-        <TablePagination
-            rowsPerPageOptions={[50, 100, 150]}
-            component="div"
-            count={filteredTrips.length}
-            rowsPerPage={rowsPerPage}
-            page={page}
-            onPageChange={handleChangePage}
-            onRowsPerPageChange={handleChangeRowsPerPage}
-            labelRowsPerPage="Filas por página:"
-        />
+      <Paper elevation={0} sx={{ ...CARD_SX, mb: 3 }}>
+        <Typography variant="overline" sx={SECTION_LABEL_SX}>Filtros de Búsqueda</Typography>
+        <Grid container spacing={2} sx={{ mt: 0.5 }}>
+          <Grid size={{ xs: 12, sm: 8, md: 4 }}>
+            <TextField
+              fullWidth
+              size="small"
+              placeholder="Buscar por Trip# o Driver"
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); setPage(0); }}
+              sx={{ bgcolor: 'white' }}
+              slotProps={{
+                input: {
+                  sx: INPUT_SX,
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon sx={{ fontSize: 18, color: '#94a3b8' }} />
+                    </InputAdornment>
+                  ),
+                },
+              }}
+            />
+          </Grid>
+          <Grid size={{ xs: 12, sm: 4, md: 2 }}>
+            <TextField
+              select
+              fullWidth
+              label="Periodos"
+              size="small"
+              value={periodoFilter}
+              onChange={(e) => { setPeriodoFilter(e.target.value); setPage(0); }}
+              sx={{ bgcolor: 'white' }}
+              slotProps={{ select: { displayEmpty: true }, inputLabel: { shrink: true }, input: { sx: INPUT_SX } }}
+            >
+              <MenuItem value=""><em>Todos</em></MenuItem>
+              <MenuItem value="Q1">Q1</MenuItem>
+              <MenuItem value="Q2">Q2</MenuItem>
+              <MenuItem value="Q3">Q3</MenuItem>
+              <MenuItem value="Q4">Q4</MenuItem>
+              <MenuItem value={PERIODO_VACIO}>V (vacío)</MenuItem>
+            </TextField>
+          </Grid>
+        </Grid>
       </Paper>
+
+      <TableContainer component={Paper} elevation={0} sx={{ ...TABLE_CONTAINER_SX, borderBottomLeftRadius: 0, borderBottomRightRadius: 0 }}>
+        <Table size="small" aria-label="Diesel records table">
+          <TableHead>
+            <TableRow sx={HEADER_ROW_SX}>
+              <TableCell sx={{ ...HEADER_CELL_SX, whiteSpace: 'nowrap' }}>Trip #</TableCell>
+              <TableCell sx={{ ...HEADER_CELL_SX, whiteSpace: 'nowrap' }}>Last Update</TableCell>
+              <TableCell sx={{ ...HEADER_CELL_SX, whiteSpace: 'nowrap', textAlign: 'right' }}>Total Gal.</TableCell>
+              <TableCell sx={{ ...HEADER_CELL_SX, whiteSpace: 'nowrap', textAlign: 'right' }}>Total Cost</TableCell>
+              <TableCell sx={{ ...HEADER_CELL_SX, whiteSpace: 'nowrap' }}>Driver</TableCell>
+              <TableCell sx={{ ...HEADER_CELL_SX, whiteSpace: 'nowrap', textAlign: 'center', width: 130 }}>State Pending</TableCell>
+              <TableCell sx={{ ...HEADER_CELL_SX, whiteSpace: 'nowrap', textAlign: 'center', width: 150 }}>Fleet One Pending</TableCell>
+              <TableCell sx={{ ...HEADER_CELL_SX, whiteSpace: 'nowrap', textAlign: 'center', width: 100 }}>Manuales</TableCell>
+              <TableCell sx={{ ...HEADER_CELL_SX, whiteSpace: 'nowrap', textAlign: 'center', width: 150 }}>Periodo</TableCell>
+              <TableCell sx={{ ...HEADER_CELL_SX, whiteSpace: 'nowrap', textAlign: 'center' }}>Actions</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {slice.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={10} align="center" sx={{ py: 6 }}>
+                  <Typography color="#94a3b8" variant="body2">
+                    {tabValue === 0
+                      ? "No hay registros con Fleet One pendientes."
+                      : "No hay registros completados para mostrar."}
+                  </Typography>
+                </TableCell>
+              </TableRow>
+            ) : (
+              slice.map((row) => (
+                <TableRow key={row.trip_id} hover>
+                  <TableCell sx={{ ...CELL_STRONG_SX, whiteSpace: 'nowrap' }}>{row.nomenclatura || row.trip_number}</TableCell>
+                  <TableCell sx={{ ...CELL_MUTED_SX, whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}>{row.fecha}</TableCell>
+                  <TableCell align="right" sx={{ ...CELL_SX, fontVariantNumeric: 'tabular-nums' }}>{row.total_galones.toFixed(2)} gal</TableCell>
+                  <TableCell align="right" sx={{ ...CELL_STRONG_SX, fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>{money(row.total_monto)}</TableCell>
+                  <TableCell sx={CELL_SX}>{row.nombre}</TableCell>
+                  <TableCell align="center">
+                    <Contador valor={row.state_pending_count} titulo={`Faltan ${row.state_pending_count} estados`} sx={CHIP_DANGER_SX} />
+                  </TableCell>
+                  <TableCell align="center">
+                    <Contador valor={row.fleetone_pending_count} titulo={`Faltan ${row.fleetone_pending_count} Fleet One`} sx={CHIP_WARN_SX} />
+                  </TableCell>
+                  <TableCell align="center">
+                    <Contador valor={row.manual_count} titulo={`${row.manual_count} Registros ingresados a mano`} sx={CHIP_NEUTRO_SX} />
+                  </TableCell>
+                  <TableCell align="center" sx={{ ...CELL_SX, whiteSpace: 'nowrap' }}>{textoDePeriodos(row.periodo)}</TableCell>
+                  <TableCell align="center">
+                    <Button variant="outlined" size="small" startIcon={<VisibilityIcon sx={{ fontSize: 16 }} />} onClick={() => handleVer(row.trip_id)} sx={VER_BTN_SX}>
+                      View
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      <Box sx={PAGINATION_BOX_SX}>
+        <TablePagination
+          rowsPerPageOptions={[50, 100, 150]}
+          component="div"
+          count={filteredTrips.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+          labelRowsPerPage="Filas por página:"
+          sx={PAGINATION_SX}
+        />
+      </Box>
     </Box>
   );
 };

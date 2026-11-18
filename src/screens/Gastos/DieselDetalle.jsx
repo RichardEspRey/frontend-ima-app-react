@@ -14,6 +14,16 @@ import PersonIcon from '@mui/icons-material/Person';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import { ResumenRegistro } from '../../components/EditorRegistro';
+import {
+    PAGE_SHELL_SX, PAGE_OVERLINE_SX, PAGE_TITLE_SX, CARD_SX, SECTION_LABEL_SX, HEADER_ROW_SX, HEADER_CELL_SX,
+    TABLE_CONTAINER_SX, CHIP_WARN_SX, CHIP_INFO_SX, CELL_STRONG_SX, CELL_SX, CELL_MUTED_SX, GHOST_BTN_SX, DARK_BTN_SX,
+    DIALOG_PAPER_SX, DIALOG_TITLE_SX, DIALOG_CONTENT_SX, DIALOG_ACTIONS_SX, INPUT_SX,
+} from '../../styles/estilosTabla';
+
+const EDITAR_BTN_SX = { ...GHOST_BTN_SX, px: 1.5, py: 0.4, fontSize: '0.78rem' };
+const CAMPO = { InputProps: { sx: INPUT_SX }, InputLabelProps: { shrink: true } };
 
 import Swal from 'sweetalert2';
 import dayjs from 'dayjs';
@@ -184,213 +194,179 @@ const DieselDetalle = () => {
 
   if (loading) {
       return (
-          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh', p: 3 }}>
-              <CircularProgress /> 
-              <Typography ml={2}>Cargando detalles del viaje...</Typography> 
+          <Box sx={{ ...PAGE_SHELL_SX, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <CircularProgress size={28} />
           </Box>
       );
   }
 
+  const totalMonto = registros.reduce((suma, row) => suma + Number(row.monto || 0), 0);
+  const totalGalones = registros.reduce((suma, row) => suma + Number(row.galones || 0), 0);
+
   return (
-      <Box sx={{ p: 3 }}>
-          <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
+      <Box sx={PAGE_SHELL_SX}>
+          <Stack direction="row" justifyContent="space-between" alignItems="flex-end" mb={4} flexWrap="wrap" gap={2}>
               <Box>
-                 <Typography variant="h4" component="h1" fontWeight={700} gutterBottom>
+                <Typography variant="overline" sx={PAGE_OVERLINE_SX}>Gastos · Diesel</Typography>
+                <Typography variant="h4" fontWeight={800} color="#0f172a" letterSpacing="-0.02em" sx={PAGE_TITLE_SX}>
                     Diesel Detail
                 </Typography>
-                <Typography variant="subtitle1" color="text.secondary">
-                    Trip: <strong>#{registros[0]?.trip_number || tripId}</strong>
+                <Typography variant="body2" color="#64748b" sx={{ mt: 0.5 }}>
+                    Cargas de combustible del viaje #{registros[0]?.trip_number || tripId}.
                 </Typography>
               </Box>
-              
-              <Stack direction="row" spacing={2}>
-                  <Button 
-                    variant="contained" 
-                    color="secondary"
-                    startIcon={<AddCircleIcon />} 
-                    onClick={() => setOpenAddModal(true)}
-                    sx={{ fontWeight: 600, bgcolor: '#0f172a' }}
-                  >
-                    Añadir Registro Manual
-                  </Button>
-                  <Button 
-                    variant="outlined" 
-                    startIcon={<ArrowBackIcon />} 
-                    onClick={cancelar}
-                    sx={{ fontWeight: 600 }}
-                  >
+              <Stack direction="row" spacing={1.5} flexWrap="wrap" useFlexGap>
+                  <Button variant="outlined" startIcon={<ArrowBackIcon />} onClick={cancelar} sx={GHOST_BTN_SX}>
                     Return
+                  </Button>
+                  <Button variant="contained" startIcon={<AddCircleIcon />} onClick={() => setOpenAddModal(true)} sx={DARK_BTN_SX}>
+                    Añadir Registro Manual
                   </Button>
               </Stack>
           </Stack>
 
-          <Paper elevation={1} sx={{ width: '100%', mb: 2, overflow: 'hidden' }}>
-            <TableContainer sx={{ overflowX: 'auto' }}>
-              <Table sx={{ minWidth: 900 }} aria-label="diesel detail table" size="small" stickyHeader>
-                <TableHead>
-                  <TableRow>
-                    <TableCell sx={{ fontWeight: 600 }}>No.</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Origen</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Trip</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Last update</TableCell>
-                    <TableCell sx={{ fontWeight: 600, textAlign: 'right' }}>Odometer</TableCell>
-                    <TableCell sx={{ fontWeight: 600, textAlign: 'right' }}>Gal.</TableCell>
-                    <TableCell sx={{ fontWeight: 600, textAlign: 'right' }}>Total ($)</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Registrado por</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>State</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Fleet One</TableCell>
-                    <TableCell sx={{ fontWeight: 600, textAlign: 'center' }}>Margen usa</TableCell>
-                    <TableCell sx={{ fontWeight: 600, textAlign: 'center' }}>Actions</TableCell>
-                  </TableRow>
-                </TableHead>
-                
-                <TableBody>
-                  {registros.length === 0 ? (
-                      <TableRow>
-                          <TableCell colSpan={12} align="center">
-                              <Typography color="text.secondary" sx={{ py: 3 }}>No hay registros para este viaje.</Typography>
-                          </TableCell>
-                      </TableRow>
-                  ) : (
-                      registros.map((row, idx) => ( 
-                      <TableRow key={row.id} hover sx={{ bgcolor: row.is_manual ? '#fff8e1' : 'inherit' }}>
-                          <TableCell>{idx + 1}</TableCell>
-                          
-                          <TableCell>
-                              {row.is_manual ? (
-                                  <Chip size="small" icon={<AdminPanelSettingsIcon />} label={`Manual: ${row.created_by || 'Admin'}`} color="warning" variant="outlined" sx={{ fontWeight: 'bold', bgcolor: '#fff' }} />
-                              ) : (
-                                  <Chip size="small" icon={<PersonIcon />} label="App Móvil" color="primary" variant="outlined" sx={{ fontWeight: 'bold' }} />
-                              )}
-                          </TableCell>
+          <ResumenRegistro
+            datos={[
+              { etiqueta: 'Viaje', valor: registros[0]?.trip_number || tripId },
+              { etiqueta: 'Registros', valor: String(registros.length) },
+              { etiqueta: 'Galones', valor: `${totalGalones.toFixed(2)} gal` },
+              { etiqueta: 'Total', valor: money(totalMonto), destacado: true },
+            ]}
+          />
 
-                          <TableCell sx={{ fontWeight: 500 }}>{row.trip_number}</TableCell>
-                          <TableCell>{row.fecha}</TableCell>
-                          
-                          <TableCell align="right">{row.odometro} mi</TableCell>
-                          <TableCell align="right">{row.galones} gal</TableCell>
-                          <TableCell align="right" sx={{ fontWeight: 600, color: '#3C48E1' }}> 
-                              {money(row.monto)}
-                          </TableCell>
-                          
-                          <TableCell>
-                              <Typography variant="body2" fontWeight={row.is_manual ? 400 : 600} color={row.is_manual ? 'text.secondary' : 'inherit'}>
-                                  {row.nombre || '—'}
-                              </Typography>
-                          </TableCell>
-                          
-                          <TableCell>{formatCellData(row.estado)}</TableCell>
-                          <TableCell>{formatCellData(row.fleetone)}</TableCell>
-                          <TableCell align="center">
-                              <Tooltip title={row.usar_fleetone ? 'Margen toma el Fleet One de este registro' : 'Margen toma el Total de este registro'}>
-                                  <Stack direction="row" alignItems="center" justifyContent="center" spacing={0.5}>
-                                      <Switch
-                                          size="small"
-                                          checked={row.usar_fleetone}
-                                          disabled={!!guardandoFuente[row.id]}
-                                          onChange={() => handleToggleFuente(row)}
-                                      />
-                                      <Typography variant="body2" sx={{ minWidth: 60, textAlign: 'left' }}>
-                                          {row.usar_fleetone ? 'Fleet One' : 'Total'}
-                                      </Typography>
-                                  </Stack>
-                              </Tooltip>
-                          </TableCell>
-                          <TableCell align="center">
-                              <Button variant="contained" size="small" onClick={() => handleVer(row.id, row.trip_id)} sx={{ textTransform: 'none' }}>
-                                  Edit
-                              </Button>
-                          </TableCell>
-                      </TableRow>
-                      ))
-                  )}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </Paper>
+          <TableContainer component={Paper} elevation={0} sx={TABLE_CONTAINER_SX}>
+            <Table sx={{ minWidth: 900 }} aria-label="diesel detail table" size="small">
+              <TableHead>
+                <TableRow sx={HEADER_ROW_SX}>
+                  <TableCell sx={HEADER_CELL_SX}>No.</TableCell>
+                  <TableCell sx={HEADER_CELL_SX}>Origen</TableCell>
+                  <TableCell sx={HEADER_CELL_SX}>Trip</TableCell>
+                  <TableCell sx={HEADER_CELL_SX}>Last update</TableCell>
+                  <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'right' }}>Odometer</TableCell>
+                  <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'right' }}>Gal.</TableCell>
+                  <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'right' }}>Total ($)</TableCell>
+                  <TableCell sx={HEADER_CELL_SX}>Registrado por</TableCell>
+                  <TableCell sx={HEADER_CELL_SX}>State</TableCell>
+                  <TableCell sx={HEADER_CELL_SX}>Fleet One</TableCell>
+                  <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'center' }}>Margen usa</TableCell>
+                  <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'center' }}>Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {registros.length === 0 ? (
+                    <TableRow>
+                        <TableCell colSpan={12} align="center" sx={{ py: 6 }}>
+                            <Typography color="#94a3b8" variant="body2">No hay registros para este viaje.</Typography>
+                        </TableCell>
+                    </TableRow>
+                ) : (
+                    registros.map((row, idx) => (
+                    <TableRow key={row.id} hover sx={{ bgcolor: row.is_manual ? '#fffdf5' : 'inherit' }}>
+                        <TableCell sx={CELL_MUTED_SX}>{idx + 1}</TableCell>
+                        <TableCell>
+                            {row.is_manual ? (
+                                <Chip size="small" icon={<AdminPanelSettingsIcon sx={{ fontSize: 14 }} />} label={`Manual: ${row.created_by || 'Admin'}`} sx={{ ...CHIP_WARN_SX, '& .MuiChip-icon': { color: 'inherit' } }} />
+                            ) : (
+                                <Chip size="small" icon={<PersonIcon sx={{ fontSize: 14 }} />} label="App Móvil" sx={{ ...CHIP_INFO_SX, '& .MuiChip-icon': { color: 'inherit' } }} />
+                            )}
+                        </TableCell>
+                        <TableCell sx={CELL_STRONG_SX}>{row.trip_number}</TableCell>
+                        <TableCell sx={{ ...CELL_MUTED_SX, whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}>{row.fecha}</TableCell>
+                        <TableCell align="right" sx={{ ...CELL_SX, fontVariantNumeric: 'tabular-nums' }}>{row.odometro} mi</TableCell>
+                        <TableCell align="right" sx={{ ...CELL_SX, fontVariantNumeric: 'tabular-nums' }}>{row.galones} gal</TableCell>
+                        <TableCell align="right" sx={{ ...CELL_STRONG_SX, fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>
+                            {money(row.monto)}
+                        </TableCell>
+                        <TableCell>
+                            <Typography variant="body2" fontWeight={row.is_manual ? 400 : 600} color={row.is_manual ? '#64748b' : '#334155'}>
+                                {row.nombre || '—'}
+                            </Typography>
+                        </TableCell>
+                        <TableCell sx={CELL_SX}>{formatCellData(row.estado)}</TableCell>
+                        <TableCell sx={CELL_SX}>{formatCellData(row.fleetone)}</TableCell>
+                        <TableCell align="center">
+                            <Tooltip title={row.usar_fleetone ? 'Margen toma el Fleet One de este registro' : 'Margen toma el Total de este registro'}>
+                                <Stack direction="row" alignItems="center" justifyContent="center" spacing={0.5}>
+                                    <Switch
+                                        size="small"
+                                        checked={row.usar_fleetone}
+                                        disabled={!!guardandoFuente[row.id]}
+                                        onChange={() => handleToggleFuente(row)}
+                                    />
+                                    <Typography variant="body2" sx={{ ...CELL_SX, minWidth: 60, textAlign: 'left' }}>
+                                        {row.usar_fleetone ? 'Fleet One' : 'Total'}
+                                    </Typography>
+                                </Stack>
+                            </Tooltip>
+                        </TableCell>
+                        <TableCell align="center">
+                            <Button variant="outlined" size="small" startIcon={<EditOutlinedIcon sx={{ fontSize: 16 }} />} onClick={() => handleVer(row.id, row.trip_id)} sx={EDITAR_BTN_SX}>
+                                Edit
+                            </Button>
+                        </TableCell>
+                    </TableRow>
+                    ))
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
 
-          {/* Modal de Captura Manual */}
-          <Dialog open={openAddModal} onClose={handleCloseModal} maxWidth="md" fullWidth scroll="paper">
-              <DialogTitle sx={{ bgcolor: '#f8f9fa', borderBottom: '1px solid #e0e0e0', fontWeight: 800, color: 'primary.main', py: 2 }}>
-                  Nuevo Registro Manual (A destiempo)
+          <Dialog open={openAddModal} onClose={handleCloseModal} maxWidth="md" fullWidth scroll="paper" PaperProps={{ sx: DIALOG_PAPER_SX }}>
+              <DialogTitle sx={DIALOG_TITLE_SX}>
+                  <Typography variant="overline" sx={{ ...SECTION_LABEL_SX, display: 'block' }}>Gastos · Diesel</Typography>
+                  <Typography variant="h6" component="span" fontWeight={800} color="#0f172a">
+                      Nuevo Registro Manual (A destiempo)
+                  </Typography>
               </DialogTitle>
-              <DialogContent sx={{ p: { xs: 2, md: 4 }, bgcolor: '#f4f6f8' }}>
-                  <Grid container spacing={4}>
-                      
-                      {/* Columna Izquierda: Formulario */}
-                      <Grid
-                          size={{
-                              xs: 12,
-                              md: 6
-                          }}>
-                          <Paper elevation={0} sx={{ p: 3, borderRadius: 2, border: '1px solid #e0e0e0', height: '100%' }}>
-                              <Typography variant="subtitle1" fontWeight={700} mb={2} color="primary">Datos del Ticket</Typography>
-                              <Typography variant="body2" color="text.secondary" mb={3}>
+              <DialogContent sx={DIALOG_CONTENT_SX}>
+                  <Grid container spacing={3}>
+                      <Grid size={{ xs: 12, md: 6 }}>
+                          <Paper elevation={0} sx={{ ...CARD_SX, height: '100%' }}>
+                              <Typography variant="overline" sx={SECTION_LABEL_SX}>Datos del Ticket</Typography>
+                              <Typography variant="body2" color="#64748b" sx={{ mt: 0.5, mb: 2.5 }}>
                                   Este registro se marcará como insertado manualmente por tu usuario.
                               </Typography>
-                              
                               <Grid container spacing={2}>
                                   <Grid size={12}>
-                                      <TextField fullWidth size="small" label="Fecha y hora" type="datetime-local" name="fecha" value={manualForm.fecha} onChange={handleManualFormChange} InputLabelProps={{ shrink: true }} />
+                                      <TextField {...CAMPO} fullWidth size="small" label="Fecha y hora" type="datetime-local" name="fecha" value={manualForm.fecha} onChange={handleManualFormChange} />
                                   </Grid>
-                                  <Grid
-                                      size={{
-                                          xs: 12,
-                                          sm: 6
-                                      }}>
-                                      <TextField fullWidth size="small" label="Odómetro *" name="odometro" type="number" value={manualForm.odometro} onChange={handleManualFormChange} InputLabelProps={{ shrink: true }} InputProps={{ endAdornment: <InputAdornment position="end">mi</InputAdornment> }}/>
+                                  <Grid size={{ xs: 12, sm: 6 }}>
+                                      <TextField {...CAMPO} fullWidth size="small" label="Odómetro *" name="odometro" type="number" value={manualForm.odometro} onChange={handleManualFormChange} InputProps={{ sx: INPUT_SX, endAdornment: <InputAdornment position="end">mi</InputAdornment> }} />
                                   </Grid>
-                                  <Grid
-                                      size={{
-                                          xs: 12,
-                                          sm: 6
-                                      }}>
-                                      <TextField fullWidth size="small" label="Galones *" name="galones" type="number" value={manualForm.galones} onChange={handleManualFormChange} InputLabelProps={{ shrink: true }} InputProps={{ endAdornment: <InputAdornment position="end">gal</InputAdornment> }}/>
+                                  <Grid size={{ xs: 12, sm: 6 }}>
+                                      <TextField {...CAMPO} fullWidth size="small" label="Galones *" name="galones" type="number" value={manualForm.galones} onChange={handleManualFormChange} InputProps={{ sx: INPUT_SX, endAdornment: <InputAdornment position="end">gal</InputAdornment> }} />
                                   </Grid>
                                   <Grid size={12}>
-                                      <TextField fullWidth size="small" label="Monto Total *" name="monto" type="number" value={manualForm.monto} onChange={handleManualFormChange} InputLabelProps={{ shrink: true }} InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }}/>
+                                      <TextField {...CAMPO} fullWidth size="small" label="Monto Total *" name="monto" type="number" value={manualForm.monto} onChange={handleManualFormChange} InputProps={{ sx: INPUT_SX, startAdornment: <InputAdornment position="start">$</InputAdornment> }} />
                                   </Grid>
-                                  <Grid
-                                      size={{
-                                          xs: 12,
-                                          sm: 6
-                                      }}>
-                                      <TextField fullWidth size="small" label="Estado (State)" name="estado" value={manualForm.estado} onChange={handleManualFormChange} placeholder="Ej. TX" InputLabelProps={{ shrink: true }}/>
+                                  <Grid size={{ xs: 12, sm: 6 }}>
+                                      <TextField {...CAMPO} fullWidth size="small" label="Estado (State)" name="estado" value={manualForm.estado} onChange={handleManualFormChange} placeholder="Ej. TX" />
                                   </Grid>
-                                  <Grid
-                                      size={{
-                                          xs: 12,
-                                          sm: 6
-                                      }}>
-                                      <TextField fullWidth size="small" label="Fleet One" name="fleetone" type="number" value={manualForm.fleetone} onChange={handleManualFormChange} InputLabelProps={{ shrink: true }} InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }}/>
+                                  <Grid size={{ xs: 12, sm: 6 }}>
+                                      <TextField {...CAMPO} fullWidth size="small" label="Fleet One" name="fleetone" type="number" value={manualForm.fleetone} onChange={handleManualFormChange} InputProps={{ sx: INPUT_SX, startAdornment: <InputAdornment position="start">$</InputAdornment> }} />
                                   </Grid>
                                   <Grid size={12}>
-                                      <TextField fullWidth size="small" label="Periodo" name="periodo" value={manualForm.periodo} onChange={handleManualFormChange} placeholder="Ej. Q2" InputLabelProps={{ shrink: true }}/>
+                                      <TextField {...CAMPO} fullWidth size="small" label="Periodo" name="periodo" value={manualForm.periodo} onChange={handleManualFormChange} placeholder="Ej. Q2" />
                                   </Grid>
                               </Grid>
                           </Paper>
                       </Grid>
 
-                      {/* Columna Derecha: Carga de Archivos */}
-                      <Grid
-                          size={{
-                              xs: 12,
-                              md: 6
-                          }}>
-                          <Paper elevation={0} sx={{ p: 3, borderRadius: 2, border: '1px solid #e0e0e0', height: '100%' }}>
-                              <Typography variant="subtitle1" fontWeight={700} mb={2} color="primary">Evidencia (Tickets)</Typography>
-                              
-                              <Box sx={{ 
+                      <Grid size={{ xs: 12, md: 6 }}>
+                          <Paper elevation={0} sx={{ ...CARD_SX, height: '100%' }}>
+                              <Typography variant="overline" sx={SECTION_LABEL_SX}>Evidencia (Tickets)</Typography>
+                              <Box sx={{
+                                  mt: 1.5,
                                   display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                                  width: '100%', border: '2px dashed #90caf9', bgcolor: '#e3f2fd', 
+                                  width: '100%', border: '2px dashed #cbd5e1', bgcolor: '#f8fafc',
                                   py: 4, px: 2, textAlign: 'center', borderRadius: 2,
-                                  cursor: 'pointer', transition: '0.2s', '&:hover': { bgcolor: '#e1f5fe', borderColor: '#42a5f5' }
+                                  cursor: 'pointer', transition: '0.2s', '&:hover': { bgcolor: '#f1f5f9', borderColor: '#94a3b8' }
                               }} component="label">
-                                  <CloudUploadIcon sx={{ fontSize: 40, color: '#1976d2', mb: 1 }} />
-                                  <Typography variant="button" fontWeight={700} color="primary" sx={{ display: 'block' }}>
+                                  <CloudUploadIcon sx={{ fontSize: 36, color: '#64748b', mb: 1 }} />
+                                  <Typography variant="body2" fontWeight={700} color="#0f172a">
                                       Seleccionar Tickets (PDF/IMG)
                                   </Typography>
-                                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                                  <Typography variant="caption" color="#94a3b8" sx={{ display: 'block', mt: 0.5 }}>
                                       Puedes subir múltiples archivos
                                   </Typography>
                                   <input type="file" hidden multiple accept=".pdf,.jpg,.jpeg,.png" onChange={handleManualFileChange} />
@@ -398,20 +374,18 @@ const DieselDetalle = () => {
 
                               {manualFiles.length > 0 && (
                                   <Box sx={{ mt: 3 }}>
-                                      <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+                                      <Typography variant="caption" fontWeight={600} color="#64748b" sx={{ display: 'block', mb: 1 }}>
                                           Archivos adjuntos ({manualFiles.length}):
                                       </Typography>
                                       <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 1 }}>
                                           {manualFiles.map((file, index) => (
-                                              <Chip 
-                                                  key={index} 
-                                                  icon={<InsertDriveFileIcon />} 
-                                                  label={file.name} 
-                                                  onDelete={() => removeManualFile(index)} 
-                                                  color="primary" 
-                                                  variant="outlined" 
+                                              <Chip
+                                                  key={index}
+                                                  icon={<InsertDriveFileIcon sx={{ fontSize: 14 }} />}
+                                                  label={file.name}
+                                                  onDelete={() => removeManualFile(index)}
                                                   size="small"
-                                                  sx={{ fontWeight: 600 }}
+                                                  sx={{ ...CHIP_INFO_SX, '& .MuiChip-icon': { color: 'inherit' } }}
                                               />
                                           ))}
                                       </Stack>
@@ -419,12 +393,11 @@ const DieselDetalle = () => {
                               )}
                           </Paper>
                       </Grid>
-
                   </Grid>
               </DialogContent>
-              <DialogActions sx={{ p: 3, bgcolor: '#f8f9fa', borderTop: '1px solid #e0e0e0' }}>
-                  <Button onClick={handleCloseModal} color="inherit" sx={{ fontWeight: 600 }}>Cancelar</Button>
-                  <Button onClick={handleSaveManual} variant="contained" disableElevation sx={{ bgcolor: '#0f172a', fontWeight: 700, px: 4, borderRadius: 2 }}>
+              <DialogActions sx={DIALOG_ACTIONS_SX}>
+                  <Button onClick={handleCloseModal} variant="outlined" sx={GHOST_BTN_SX}>Cancelar</Button>
+                  <Button onClick={handleSaveManual} variant="contained" disableElevation sx={DARK_BTN_SX}>
                       Guardar Registro
                   </Button>
               </DialogActions>

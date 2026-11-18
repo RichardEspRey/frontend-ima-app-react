@@ -5,6 +5,14 @@ import {
     Button, Box, Typography, Stack, CircularProgress
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import { ResumenRegistro } from '../../components/EditorRegistro';
+import {
+    PAGE_SHELL_SX, PAGE_OVERLINE_SX, PAGE_TITLE_SX, HEADER_ROW_SX, HEADER_CELL_SX, TABLE_CONTAINER_SX,
+    CELL_STRONG_SX, CELL_SX, CELL_MUTED_SX, GHOST_BTN_SX,
+} from '../../styles/estilosTabla';
+
+const EDITAR_BTN_SX = { ...GHOST_BTN_SX, px: 1.5, py: 0.4, fontSize: '0.78rem' };
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -68,88 +76,81 @@ const GastosDetalle = () => {
 
   if (loading) {
       return (
-          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh', p: 3 }}>
-              <CircularProgress /> 
-              <Typography ml={2}>Cargando detalles de gastos...</Typography> 
+          <Box sx={{ ...PAGE_SHELL_SX, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <CircularProgress size={28} />
           </Box>
       );
   }
 
+  const total = registros.reduce((suma, row) => suma + Number(row.monto || 0), 0);
+
   return (
-   <Box sx={{ p: 3 }}>
-      <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
+   <Box sx={PAGE_SHELL_SX}>
+      <Stack direction="row" justifyContent="space-between" alignItems="flex-end" mb={4} flexWrap="wrap" gap={2}>
           <Box>
-             <Typography variant="h4" component="h1" fontWeight={700} gutterBottom>
+            <Typography variant="overline" sx={PAGE_OVERLINE_SX}>Gastos · Viajes</Typography>
+            <Typography variant="h4" fontWeight={800} color="#0f172a" letterSpacing="-0.02em" sx={PAGE_TITLE_SX}>
                 Expense Details
             </Typography>
-            <Typography variant="subtitle1" color="text.secondary">
-                Trip: <strong>#{registros[0]?.trip_number || tripId}</strong>
+            <Typography variant="body2" color="#64748b" sx={{ mt: 0.5 }}>
+                Gastos registrados en el viaje #{registros[0]?.trip_number || tripId}.
             </Typography>
           </Box>
-          
-          <Button 
-            variant="outlined" 
-            startIcon={<ArrowBackIcon />} 
-            onClick={cancelar}
-            sx={{ fontWeight: 600 }}
-          >
+          <Button variant="outlined" startIcon={<ArrowBackIcon />} onClick={cancelar} sx={GHOST_BTN_SX}>
             Return
           </Button>
       </Stack>
 
-      <Paper elevation={1} sx={{ width: '100%', mb: 2, overflow: 'hidden' }}>
-        <TableContainer sx={{ overflowX: 'auto' }}>
-          <Table sx={{ minWidth: 800 }} aria-label="expenses detail table" size="small" stickyHeader>
-            <TableHead>
-              <TableRow>
-                <TableCell sx={{ fontWeight: 600 }}>No.</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>Trip</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>Last update</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>Expense Type</TableCell>
-                <TableCell sx={{ fontWeight: 600, textAlign: 'right' }}>Total ($)</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>Driver</TableCell>
-                <TableCell sx={{ fontWeight: 600, textAlign: 'center' }}>Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            
-            <TableBody>
-              {registros.length === 0 ? (
-                  <TableRow>
-                      <TableCell colSpan={7} align="center">
-                          <Typography color="text.secondary" sx={{ py: 3 }}>No hay registros de gastos para este viaje.</Typography>
-                      </TableCell>
-                  </TableRow>
-              ) : (
-                  registros.map((row, idx) => ( 
-                  <TableRow key={row.id} hover>
-                      <TableCell>{idx + 1}</TableCell>
-                      <TableCell sx={{ fontWeight: 500 }}>{row.trip_number}</TableCell>
-                      <TableCell>{row.fecha}</TableCell>
-                      <TableCell>{row.tipo}</TableCell>
-                      
-                      <TableCell align="right" sx={{ fontWeight: 600, color: '#d32f2f' }}> 
-                          {money(row.monto)}
-                      </TableCell>
-                      
-                      <TableCell>{row.nombre}</TableCell>
-                      
-                      <TableCell align="center">
-                          <Button 
-                              variant="contained" 
-                              size="small" 
-                              onClick={() => handleVer(row.id, row.trip_id)}
-                              sx={{ textTransform: 'none' }}
-                          >
-                              Edit
-                          </Button>
-                      </TableCell>
-                  </TableRow>
-                  ))
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Paper>
+      <ResumenRegistro
+        datos={[
+          { etiqueta: 'Viaje', valor: registros[0]?.trip_number || tripId },
+          { etiqueta: 'Registros', valor: String(registros.length) },
+          { etiqueta: 'Total', valor: money(total), destacado: true },
+        ]}
+      />
+
+      <TableContainer component={Paper} elevation={0} sx={TABLE_CONTAINER_SX}>
+        <Table sx={{ minWidth: 800 }} aria-label="expenses detail table" size="small">
+          <TableHead>
+            <TableRow sx={HEADER_ROW_SX}>
+              <TableCell sx={HEADER_CELL_SX}>No.</TableCell>
+              <TableCell sx={HEADER_CELL_SX}>Trip</TableCell>
+              <TableCell sx={HEADER_CELL_SX}>Last update</TableCell>
+              <TableCell sx={HEADER_CELL_SX}>Expense Type</TableCell>
+              <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'right' }}>Total ($)</TableCell>
+              <TableCell sx={HEADER_CELL_SX}>Driver</TableCell>
+              <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'center' }}>Actions</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {registros.length === 0 ? (
+                <TableRow>
+                    <TableCell colSpan={7} align="center" sx={{ py: 6 }}>
+                        <Typography color="#94a3b8" variant="body2">No hay registros de gastos para este viaje.</Typography>
+                    </TableCell>
+                </TableRow>
+            ) : (
+                registros.map((row, idx) => (
+                <TableRow key={row.id} hover>
+                    <TableCell sx={CELL_MUTED_SX}>{idx + 1}</TableCell>
+                    <TableCell sx={CELL_STRONG_SX}>{row.trip_number}</TableCell>
+                    <TableCell sx={{ ...CELL_MUTED_SX, whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}>{row.fecha}</TableCell>
+                    <TableCell sx={CELL_SX}>{row.tipo}</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 700, color: '#b91c1c', fontVariantNumeric: 'tabular-nums' }}>
+                        {money(row.monto)}
+                    </TableCell>
+                    <TableCell sx={CELL_SX}>{row.nombre}</TableCell>
+                    <TableCell align="center">
+                        <Button variant="outlined" size="small" startIcon={<EditOutlinedIcon sx={{ fontSize: 16 }} />} onClick={() => handleVer(row.id, row.trip_id)} sx={EDITAR_BTN_SX}>
+                            Edit
+                        </Button>
+                    </TableCell>
+                </TableRow>
+                ))
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
     </Box>
   );
 };
