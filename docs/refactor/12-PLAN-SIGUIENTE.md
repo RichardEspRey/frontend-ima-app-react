@@ -343,7 +343,10 @@ permiso `bitacora_ver`, 24 meses, hora en UTC mostrada en Monterrey. Ver `10-BIT
   `SELECT datos FROM bitacora WHERE archivo = 'Auth.php'`.
 - Dejar correr una semana y medir filas y MB por día antes de seguir.
 
-### B3 · Que cada petición diga quién es — HECHO en el front (2026-11-17)
+### B3 · Que cada petición diga quién es — HECHO y verificado (2026-11-17)
+
+> Emiliano confirmó desde `localhost:5173`: las filas nuevas salen con `Desktop 1.6.0` y su
+> usuario. B1, B2 y B4 también están en producción.
 
 > `Emiliano` `9944e45`, portado al refactor (`shared/api/identidad.js`). Antes de esto,
 > Emiliano probó B2 en Notificaciones manager: las altas salían con usuario (mandan
