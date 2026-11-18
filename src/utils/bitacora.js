@@ -206,3 +206,9 @@ export const leerDatos = (texto) => {
     return [['datos', String(texto)]];
   }
 };
+
+export const textoDeApp = (fila, vacio = '—') => {
+  if (!fila?.app) return vacio;
+  if (fila.app_version) return `${fila.app} ${fila.app_version}`;
+  return ['Desktop', 'Movil'].includes(fila.app) ? `${fila.app} · sin actualizar` : fila.app;
+};

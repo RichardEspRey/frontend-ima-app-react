@@ -9,7 +9,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import BotonActualizar from '../components/BotonActualizar';
 import { useAuthStore } from '../store/useAuthStore';
 import { detalleBitacora, filtrosBitacora, listarBitacora } from '../services/bitacora';
-import { accionDe, hoyLocal, horaLocal, leerDatos, moduloDe, rangoEnUtc, restarDias } from '../utils/bitacora';
+import { accionDe, hoyLocal, horaLocal, leerDatos, moduloDe, rangoEnUtc, restarDias, textoDeApp } from '../utils/bitacora';
 import {
   PAGE_SHELL_SX, PAGE_OVERLINE_SX, PAGE_TITLE_SX, CARD_SX, SECTION_LABEL_SX, HEADER_ROW_SX, HEADER_CELL_SX,
   TABLE_CONTAINER_SX, PAGINATION_BOX_SX, PAGINATION_SX, CHIP_SX, CHIP_OK_SX, CHIP_DANGER_SX, CELL_STRONG_SX,
@@ -71,7 +71,7 @@ const Detalle = ({ id, onCerrar }) => {
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <Dato etiqueta="Cuándo (hora de Monterrey)">{horaLocal(fila.fecha_utc)}</Dato>
                   <Dato etiqueta="Quién">{nombreDeUsuario(fila) || 'Sin usuario: la app no lo mandó'}</Dato>
-                  <Dato etiqueta="Desde">{[fila.app, fila.app_version].filter(Boolean).join(' ') || 'App sin identificar'}{fila.ip ? ` · ${fila.ip}` : ''}</Dato>
+                  <Dato etiqueta="Desde">{textoDeApp(fila, 'App sin identificar')}{fila.ip ? ` · ${fila.ip}` : ''}</Dato>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <Dato etiqueta="Módulo">{moduloDe(fila.archivo)}</Dato>
@@ -307,7 +307,7 @@ const Bitacora = () => {
                     <Typography variant="body2" sx={CELL_SX}>{accionDe(fila.archivo, fila.op)}</Typography>
                     <Typography variant="caption" color="#94a3b8">{moduloDe(fila.archivo)}</Typography>
                   </TableCell>
-                  <TableCell sx={{ ...CELL_MUTED_SX, whiteSpace: 'nowrap' }}>{[fila.app, fila.app_version].filter(Boolean).join(' ') || '—'}</TableCell>
+                  <TableCell sx={{ ...CELL_MUTED_SX, whiteSpace: 'nowrap' }}>{textoDeApp(fila)}</TableCell>
                   <TableCell><Resultado valor={fila.resultado} /></TableCell>
                 </TableRow>
               ))
