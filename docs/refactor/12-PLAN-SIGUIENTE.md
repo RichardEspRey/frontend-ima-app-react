@@ -405,7 +405,7 @@ Se instalan con `docs/backend/bitacora_triggers.php` (clave de un solo uso; `acc
 `accion=quitar`). Requieren el `conexion.php` y la `bitacora_lib.php` nuevos, que marcan
 cada conexión con `@ima_usuario` y `@ima_peticion` (`Bitacora::alConectar`). 
 
-**Segunda tanda — ENTREGADA, falta instalar (2026-11-17):** `trips` (sin `ruta_wialon`, que es
+**Segunda tanda — INSTALADA (2026-11-17):** 36 triggers en total, todos con DEFINER permanente. `trips` (sin `ruta_wialon`, que es
 enorme y la escribe un proceso), `ordenes_servicio`, `orden_servicio_detalles`,
 `pago_trayectos_mx`, `notif_suscriptores`. 15 triggers en `docs/sql/017-…tanda-2.sql`. El
 instalador lleva las dos tandas (36); `accion=crear` recrea todos, sin efecto sobre los ya
