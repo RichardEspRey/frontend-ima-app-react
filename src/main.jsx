@@ -4,10 +4,11 @@ import App from './App';
 import './index.css';
 import { version } from '../package.json';
 import { instalarIdentidad } from './shared/api';
+import { API_BASE } from './shared/config/env';
 import { useAuthStore } from './store/useAuthStore';
 
 instalarIdentidad({
-  apiHost: import.meta.env.VITE_API_HOST,
+  apiHost: API_BASE,
   app: `Desktop ${version}`,
   obtenerUsuario: () => useAuthStore.getState().user?.id,
 });
