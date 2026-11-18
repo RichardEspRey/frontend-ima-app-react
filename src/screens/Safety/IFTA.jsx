@@ -223,15 +223,12 @@ export default function IFTA() {
     const [loadingPeriodos, setLoadingPeriodos] = useState(false);
     const [filterPeriodo, setFilterPeriodo]     = useState('');
     const [filterPeriodoEstado, setFilterPeriodoEstado] = useState('');
-    const [filterYear, setFilterYear] = useState(String(new Date().getFullYear()));
 
     const fetchPeriodos = async () => {
         setLoadingPeriodos(true);
         try {
             const fd = new FormData();
-            fd.append('op', 'periodos');
-            // El año se filtra en la API (2 dígitos, ej. "26"); vacío = todos los años
-            if (filterYear.trim()) fd.append('year', filterYear.trim().slice(-2));
+            fd.append('op', 'galones_ifta');
             const res  = await fetch(`${apiHost}/IFTA.php`, { method: 'POST', body: fd });
             const json = await res.json();
             if (json.status === 'success') setPeriodos(json.data);
@@ -242,16 +239,12 @@ export default function IFTA() {
         }
     };
 
-    // Recargar al entrar al tab y al cambiar el año (con espera para no pedir en cada tecla)
+    // Cargar galones al entrar al tab
     useEffect(() => {
-        if (tabValue !== 2) return;
-        const year = filterYear.trim();
-        if (year && year.length !== 2 && year.length !== 4) return;
-        const t = setTimeout(fetchPeriodos, 500);
-        return () => clearTimeout(t);
-    }, [tabValue, filterYear]); // eslint-disable-line react-hooks/exhaustive-deps
+        if (tabValue === 2) fetchPeriodos();
+    }, [tabValue]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    // Registros de diesel sin periodo llegan con periodo '' desde la API
+    // Registros de diesel sin periodo llegan con periodo null o '' desde la API
     const periodosUnicos = useMemo(() =>
         [...new Set(periodos.map(r => r.periodo).filter(Boolean))].sort(),
     [periodos]);
@@ -261,22 +254,19 @@ export default function IFTA() {
             const matchPeriodo = !filterPeriodo ||
                 (filterPeriodo === PERIODO_VACIO ? !r.periodo : r.periodo === filterPeriodo);
             const matchEstado  = !filterPeriodoEstado.trim() ||
-                r.estado.toLowerCase().includes(filterPeriodoEstado.trim().toLowerCase());
-            // trip_year viene a 2 dígitos ("26"); se acepta "26" o "2026"
-            const matchYear = !filterYear.trim() ||
-                String(r.trip_year ?? '').slice(-2) === filterYear.trim().slice(-2);
-            return matchPeriodo && matchEstado && matchYear;
+                (r.estado ?? '').toLowerCase().includes(filterPeriodoEstado.trim().toLowerCase());
+            return matchPeriodo && matchEstado;
         });
-    }, [periodos, filterPeriodo, filterPeriodoEstado, filterYear]);
+    }, [periodos, filterPeriodo, filterPeriodoEstado]);
 
     const grandTotalPeriodos = useMemo(() =>
-        filteredPeriodos.reduce((sum, r) => sum + (Number(r.galones) || 0), 0),
+        filteredPeriodos.reduce((sum, r) => sum + (Number(r.total_galones) || 0), 0),
     [filteredPeriodos]);
 
-    // Despliegue de viajes por estado + periodo + año
-    const periodoKey = (r) => `${r.estado}|${r.periodo}|${r.trip_year}`;
+    // Detalle de galones por estado + periodo
+    const periodoKey = (r) => `${r.estado}|${r.periodo ?? ''}`;
     const [expandedPeriodo, setExpandedPeriodo] = useState(null);
-    const [periodoTrips, setPeriodoTrips]       = useState({});   // { 'TX|Q1|26': [...] }
+    const [periodoTrips, setPeriodoTrips]       = useState({});   // { 'TX|Q1': [...] }
     const [loadingPeriodoTrips, setLoadingPeriodoTrips] = useState(null);
 
     useEffect(() => {
@@ -292,13 +282,13 @@ export default function IFTA() {
         setLoadingPeriodoTrips(key);
         try {
             const fd = new FormData();
-            fd.append('op', 'periodo_trips');
-            fd.append('state', row.estado);
+            fd.append('op', 'galones_ifta_detalle');
+            fd.append('estado', row.estado ?? '');
             fd.append('periodo', row.periodo ?? '');
-            if (row.trip_year) fd.append('year', row.trip_year);
             const res  = await fetch(`${apiHost}/IFTA.php`, { method: 'POST', body: fd });
             const json = await res.json();
             if (json.status === 'success') setPeriodoTrips(prev => ({ ...prev, [key]: json.data }));
+            else console.error('IFTA galones_ifta_detalle:', json.message);
         } catch (err) {
             console.error('IFTA fetchPeriodoTrips:', err);
         } finally {
@@ -318,7 +308,6 @@ export default function IFTA() {
         const filtros = [
             `Periodo: ${!filterPeriodo ? 'todos' : filterPeriodo === PERIODO_VACIO ? 'Vacío' : filterPeriodo}`,
             `Estado: ${filterPeriodoEstado.trim() ? filterPeriodoEstado.trim().toUpperCase() : 'todos'}`,
-            `Año: ${filterYear.trim() || 'todos'}`,
         ].join('   ·   ');
         doc.setFontSize(10);
         doc.setFont('helvetica', 'normal');
@@ -328,21 +317,19 @@ export default function IFTA() {
         const rows = filteredPeriodos.map(r => [
             r.estado,
             fmtPeriodo(r.periodo),
-            r.trip_year ?? '—',
-            fmtInt(r.total_millas),
+            fmtInt(r.total_galones),
         ]);
-        rows.push(['TOTAL', '', '', fmtInt(grandTotalPeriodos)]);
+        rows.push(['TOTAL', '', fmtInt(grandTotalPeriodos)]);
 
         autoTable(doc, {
             startY: margin + 32,
             margin: { left: margin, right: margin, top: margin, bottom: margin },
-            head: [['Estado', 'Periodo', 'Año', 'Total Galones']],
-            head: [['Estado', 'Periodo', 'Año', 'Total Galones']],
+            head: [['Estado', 'Periodo', 'Total Galones']],
             body: rows,
             styles: { fontSize: 9, cellPadding: 5 },
             headStyles: { fillColor: [245, 245, 245], textColor: 0, fontStyle: 'bold' },
             didParseCell: (data) => {
-                if (data.column.index === 3) {
+                if (data.column.index === 2) {
                     data.cell.styles.halign = 'right';
                 }
                 if (data.row.index === rows.length - 1 && data.section === 'body') {
@@ -357,6 +344,123 @@ export default function IFTA() {
         doc.save('IFTA_Galones.pdf');
     };
 
+    // ── Tab 3: Millas Unidades ────────────────────────────────────────────────
+    const [unidades, setUnidades]               = useState([]);
+    const [loadingUnidades, setLoadingUnidades] = useState(false);
+    const [unidTripFrom, setUnidTripFrom]       = useState('');
+    const [unidTripTo, setUnidTripTo]           = useState('');
+    const [unidYear, setUnidYear]               = useState(String(new Date().getFullYear()));
+    // Ajuste manual (+/-) de millas por estado + unidad. Clave: `${state}-${unidad}`
+    const [ajustesUnidades, setAjustesUnidades] = useState({});
+
+    const ajusteKey = (state, unidad) => `${state}-${unidad ?? 'sin'}`;
+    const getAjuste = (state, unidad) => {
+        const n = parseFloat(ajustesUnidades[ajusteKey(state, unidad)]);
+        return Number.isFinite(n) ? n : 0;
+    };
+
+    const fetchUnidades = async () => {
+        setLoadingUnidades(true);
+        try {
+            const fd = new FormData();
+            fd.append('op', 'millas_unidades');
+            // El trip_number se reinicia cada año; el año va a 2 dígitos (ej. "26")
+            if (unidYear.trim())     fd.append('year', unidYear.trim().slice(-2));
+            if (unidTripFrom.trim()) fd.append('trip_from', unidTripFrom.trim());
+            if (unidTripTo.trim())   fd.append('trip_to', unidTripTo.trim());
+            const res  = await fetch(`${apiHost}/IFTA.php`, { method: 'POST', body: fd });
+            const json = await res.json();
+            if (json.status === 'success') {
+                setUnidades(json.data);
+                setAjustesUnidades({}); // los ajustes son sobre los datos cargados; se reinician al recargar
+            }
+        } catch (err) {
+            console.error('IFTA fetchUnidades:', err);
+        } finally {
+            setLoadingUnidades(false);
+        }
+    };
+
+    useEffect(() => {
+        if (tabValue === 3) fetchUnidades();
+    }, [tabValue]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    // La API regresa una fila por estado + unidad; se agrupan por estado para la tabla
+    const unidadesPorEstado = useMemo(() => {
+        const map = new Map();
+        unidades.forEach(r => {
+            if (!map.has(r.state)) map.set(r.state, { state: r.state, total: r.total_state_miles, trucks: [] });
+            map.get(r.state).trucks.push({ unidad: r.unidad, total: r.total_truck_miles });
+        });
+        return [...map.values()];
+    }, [unidades]);
+
+    const grandTotalUnidades = useMemo(() =>
+        unidadesPorEstado.reduce((sum, s) => sum + s.total, 0),
+    [unidadesPorEstado]);
+
+    // Totales con ajustes: total final por estado = total del estado + suma de ajustes de sus unidades
+    const ajusteEstado = (s) => s.trucks.reduce((sum, t) => sum + getAjuste(s.state, t.unidad), 0);
+    const grandAjusteUnidades = unidadesPorEstado.reduce((sum, s) => sum + ajusteEstado(s), 0);
+    const fmtAjuste = (n) => (n > 0 ? `+${fmt(n)}` : fmt(n));
+
+    // PDF del tab: solo Estado / Unidad y Total final (ya con los ajustes aplicados)
+    const printUnidadesPDF = () => {
+        const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'letter' });
+        const margin = 40;
+        const pageW = doc.internal.pageSize.getWidth();
+
+        doc.setFontSize(16);
+        doc.setFont('helvetica', 'bold');
+        doc.text('IFTA — Millas por Unidad', pageW / 2, margin, { align: 'center' });
+
+        const filtros = [
+            `Año: ${unidYear.trim() || 'todos'}`,
+            `Viajes: ${unidTripFrom.trim() || 'inicio'} – ${unidTripTo.trim() || 'fin'}`,
+        ].join('   ·   ');
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.text(filtros, pageW / 2, margin + 18, { align: 'center' });
+
+        const rows = [];
+        const estadoRows = new Set(); // índices de filas de estado (van en negritas)
+        unidadesPorEstado.forEach(s => {
+            estadoRows.add(rows.length);
+            rows.push([s.state, fmtInt(s.total + ajusteEstado(s))]);
+            s.trucks.forEach(t => {
+                rows.push([
+                    `      ${t.unidad != null ? `Unidad ${t.unidad}` : 'Sin unidad'}`,
+                    fmtInt(t.total + getAjuste(s.state, t.unidad)),
+                ]);
+            });
+        });
+        rows.push(['TOTAL', fmtInt(grandTotalUnidades + grandAjusteUnidades)]);
+
+        autoTable(doc, {
+            startY: margin + 32,
+            margin: { left: margin, right: margin, top: margin, bottom: margin },
+            head: [['Estado / Unidad', 'Total final']],
+            body: rows,
+            styles: { fontSize: 9, cellPadding: 5 },
+            headStyles: { fillColor: [245, 245, 245], textColor: 0, fontStyle: 'bold' },
+            didParseCell: (data) => {
+                if (data.column.index === 1) data.cell.styles.halign = 'right';
+                if (data.section !== 'body') return;
+                if (data.row.index === rows.length - 1) {
+                    data.cell.styles.fontStyle = 'bold';
+                    data.cell.styles.fillColor = [245, 245, 245];
+                } else if (estadoRows.has(data.row.index)) {
+                    data.cell.styles.fontStyle = 'bold';
+                    data.cell.styles.fillColor = [250, 250, 250];
+                }
+            },
+            pageBreak: 'auto',
+            rowPageBreak: 'avoid',
+        });
+
+        doc.save('IFTA_Millas_Unidades.pdf');
+    };
+
     // ── Render ────────────────────────────────────────────────────────────────
     return (
         <Box sx={{ p: 3 }}>
@@ -368,6 +472,7 @@ export default function IFTA() {
                 <Tab label="Por Viaje" />
                 <Tab label="Millas IFTA" />
                 <Tab label="Galones IFTA" />
+                <Tab label="Millas Unidades" />
             </Tabs>
 
             {/* ── TAB 0: Por Viaje ─────────────────────────────────────────── */}
@@ -693,21 +798,12 @@ export default function IFTA() {
                                 sx={{ width: 140 }}
                                 slotProps={{ htmlInput: { maxLength: 2, style: { textTransform: 'uppercase' } } }}
                             />
-                            <TextField
-                                size="small"
-                                label="Año"
-                                value={filterYear}
-                                onChange={e => setFilterYear(e.target.value)}
-                                sx={{ width: 100 }}
-                                slotProps={{ htmlInput: { maxLength: 4 } }}
-                            />
                             <Button
                                 size="small"
                                 color="inherit"
                                 onClick={() => {
                                     setFilterPeriodo('');
                                     setFilterPeriodoEstado('');
-                                    setFilterYear(String(new Date().getFullYear()));
                                 }}
                             >
                                 Limpiar
@@ -744,15 +840,13 @@ export default function IFTA() {
                                     <TableRow sx={{ bgcolor: '#f5f5f5' }}>
                                         <TableCell sx={{ fontWeight: 700 }}>Estado</TableCell>
                                         <TableCell sx={{ fontWeight: 700 }}>Periodo</TableCell>
-                                        <TableCell sx={{ fontWeight: 700 }}>Año</TableCell>
                                         <TableCell sx={{ fontWeight: 700,  textAlign: 'right'}}>Total Galones</TableCell>
-
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
                                     {filteredPeriodos.length === 0 ? (
                                         <TableRow>
-                                            <TableCell colSpan={4} align="center" sx={{ py: 4, color: 'text.secondary' }}>
+                                            <TableCell colSpan={3} align="center" sx={{ py: 4, color: 'text.secondary' }}>
                                                 Sin datos para los filtros aplicados.
                                             </TableCell>
                                         </TableRow>
@@ -765,7 +859,7 @@ export default function IFTA() {
                                                 <TableRow hover>
                                                     <TableCell>
                                                         <Stack direction="row" alignItems="center" gap={0.5}>
-                                                            <IconButton size="small" title="Ver viajes" onClick={() => openPeriodoTrips(row)}>
+                                                            <IconButton size="small" title="Ver detalle" onClick={() => openPeriodoTrips(row)}>
                                                                 <ListAltIcon fontSize="small" />
                                                             </IconButton>
                                                             <Chip label={row.estado} size="small" sx={{ fontWeight: 700, minWidth: 42 }} />
@@ -774,17 +868,13 @@ export default function IFTA() {
                                                     <TableCell>
                                                         <Chip label={fmtPeriodo(row.periodo)} size="small" variant="outlined" color={row.periodo ? 'primary' : 'default'} sx={{ fontWeight: 600 }} />
                                                     </TableCell>
-                                                    <TableCell>
-                                                        <Chip label={row.trip_year} size="small" variant="outlined" color="primary" sx={{ fontWeight: 600 }} />
-                                                    </TableCell>
-
-                                                    <TableCell align="right">{fmtInt(row.galones)}</TableCell>
+                                                    <TableCell align="right">{fmtInt(row.total_galones)}</TableCell>
                                                 </TableRow>
                                                 </Fragment>
                                                 );
                                             })}
                                             <TableRow sx={{ bgcolor: '#f5f5f5' }}>
-                                                <TableCell sx={{ fontWeight: 700,  textAlign: 'right' }} colSpan={3}>TOTAL</TableCell>
+                                                <TableCell sx={{ fontWeight: 700,  textAlign: 'right' }} colSpan={2}>TOTAL</TableCell>
                                                 <TableCell align="right" sx={{ fontWeight: 700 }}>{fmtInt(grandTotalPeriodos)}</TableCell>
                                             </TableRow>
                                         </>
@@ -794,12 +884,12 @@ export default function IFTA() {
                         </TableContainer>
                     )}
 
-                    {/* Pop up: viajes del estado + periodo + año */}
-                    <Dialog open={!!expandedPeriodo} onClose={() => setExpandedPeriodo(null)} maxWidth="md" fullWidth>
+                    {/* Pop up: detalle de galones del estado + periodo */}
+                    <Dialog open={!!expandedPeriodo} onClose={() => setExpandedPeriodo(null)} maxWidth="sm" fullWidth>
                         <DialogTitle sx={{ fontWeight: 700 }}>
                             {expandedPeriodo && (() => {
-                                const [estado, periodo, year] = expandedPeriodo.split('|');
-                                return `Viajes en ${estado} — ${fmtPeriodo(periodo)} ${year}`;
+                                const [estado, periodo] = expandedPeriodo.split('|');
+                                return `Galones en ${estado} — ${fmtPeriodo(periodo)}`;
                             })()}
                         </DialogTitle>
                         <DialogContent dividers>
@@ -815,18 +905,15 @@ export default function IFTA() {
                                     <TableHead>
                                         <TableRow>
                                             <TableCell sx={{ fontWeight: 700 }}>Viaje #</TableCell>
-                                            <TableCell sx={{ fontWeight: 700 }}>Fecha Carga</TableCell>
-                                            <TableCell sx={{ fontWeight: 700 }}>Fecha Entrega</TableCell>
-                                            <TableCell sx={{ fontWeight: 700 }} align="right">Total Galones</TableCell>
+                                            <TableCell sx={{ fontWeight: 700 }} align="right">Galones</TableCell>
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
-                                        {periodoTrips[expandedPeriodo].map(trip => (
-                                            <TableRow key={trip.trip_id}>
-                                                <TableCell sx={{ fontWeight: 600 }}>{trip.trip_number}</TableCell>
-                                                <TableCell>{fmtDate(trip.creation_date)}</TableCell>
-                                                <TableCell>{fmtDate(trip.return_date)}</TableCell>
-                                                <TableCell align="right">{fmtInt(trip.galones)}</TableCell>
+                                        {/* Un viaje puede tener varias cargas de diesel, por eso la key usa el índice */}
+                                        {periodoTrips[expandedPeriodo].map((d, i) => (
+                                            <TableRow key={`${d.trip_number}-${i}`}>
+                                                <TableCell sx={{ fontWeight: 600 }}>{d.trip_number}</TableCell>
+                                                <TableCell align="right">{fmtInt(d.galones)}</TableCell>
                                             </TableRow>
                                         ))}
                                     </TableBody>
@@ -837,6 +924,153 @@ export default function IFTA() {
                             <Button onClick={() => setExpandedPeriodo(null)}>Cerrar</Button>
                         </DialogActions>
                     </Dialog>
+                </Box>
+            )}
+
+            {/* ── TAB 3: Millas Unidades ───────────────────────────────────── */}
+            {tabValue === 3 && (
+                <Box>
+                    {/* Filtros */}
+                    <Paper variant="outlined" sx={{ p: 2, mb: 2.5 }}>
+                        <Stack direction="row" alignItems="center" gap={1} mb={1.5}>
+                            <FilterListIcon fontSize="small" color="action" />
+                            <Typography variant="subtitle2" fontWeight={700}>Filtros</Typography>
+                        </Stack>
+                        <Stack direction="row" gap={2} flexWrap="wrap" alignItems="flex-end">
+                            <TextField
+                                size="small"
+                                label="Del viaje"
+                                type="number"
+                                value={unidTripFrom}
+                                onChange={e => setUnidTripFrom(e.target.value)}
+                                sx={{ width: 130 }}
+                            />
+                            <TextField
+                                size="small"
+                                label="Al viaje"
+                                type="number"
+                                value={unidTripTo}
+                                onChange={e => setUnidTripTo(e.target.value)}
+                                sx={{ width: 130 }}
+                            />
+                            <TextField
+                                size="small"
+                                label="Año"
+                                value={unidYear}
+                                onChange={e => setUnidYear(e.target.value)}
+                                sx={{ width: 100 }}
+                                slotProps={{ htmlInput: { maxLength: 4 } }}
+                            />
+                            <Button
+                                variant="contained"
+                                size="small"
+                                onClick={fetchUnidades}
+                                disabled={loadingUnidades}
+                                startIcon={<FilterListIcon />}
+                            >
+                                Aplicar
+                            </Button>
+                            <Button
+                                size="small"
+                                color="inherit"
+                                onClick={() => {
+                                    setUnidTripFrom('');
+                                    setUnidTripTo('');
+                                    setUnidYear(String(new Date().getFullYear()));
+                                }}
+                            >
+                                Limpiar
+                            </Button>
+                            <Button
+                                size="small"
+                                variant="outlined"
+                                startIcon={<PictureAsPdfIcon />}
+                                onClick={printUnidadesPDF}
+                                disabled={loadingUnidades || unidadesPorEstado.length === 0}
+                            >
+                                Imprimir
+                            </Button>
+                        </Stack>
+                    </Paper>
+
+                    {loadingUnidades ? (
+                        <Box display="flex" alignItems="center" gap={1.5} py={4}>
+                            <CircularProgress size={22} />
+                            <Typography color="text.secondary">Cargando millas por unidad...</Typography>
+                        </Box>
+                    ) : (
+                        <TableContainer component={Paper} variant="outlined">
+                            <Table size="small">
+                                <TableHead>
+                                    <TableRow sx={{ bgcolor: '#f5f5f5' }}>
+                                        <TableCell sx={{ fontWeight: 700 }}>Estado / Unidad</TableCell>
+                                        <TableCell sx={{ fontWeight: 700 }} align="right">Millas</TableCell>
+                                        <TableCell sx={{ fontWeight: 700 }} align="center">Modificar millas</TableCell>
+                                        <TableCell sx={{ fontWeight: 700 }} align="right">Total final</TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {unidadesPorEstado.length === 0 ? (
+                                        <TableRow>
+                                            <TableCell colSpan={4} align="center" sx={{ py: 4, color: 'text.secondary' }}>
+                                                Sin datos para los filtros aplicados.
+                                            </TableCell>
+                                        </TableRow>
+                                    ) : (
+                                        <>
+                                            {unidadesPorEstado.map(s => (
+                                                <Fragment key={s.state}>
+                                                    {/* Estado con su total */}
+                                                    <TableRow sx={{ bgcolor: '#fafafa' }}>
+                                                        <TableCell>
+                                                            <Chip label={s.state} size="small" sx={{ fontWeight: 700, minWidth: 42 }} />
+                                                        </TableCell>
+                                                        <TableCell align="right" sx={{ fontWeight: 700 }}>{fmt(s.total)}</TableCell>
+                                                        <TableCell align="center" sx={{ fontWeight: 700, color: 'text.secondary' }}>
+                                                            {ajusteEstado(s) !== 0 ? fmtAjuste(ajusteEstado(s)) : '—'}
+                                                        </TableCell>
+                                                        <TableCell align="right" sx={{ fontWeight: 700 }}>{fmtInt(s.total + ajusteEstado(s))}</TableCell>
+                                                    </TableRow>
+                                                    {/* Unidades que recorrieron ese estado */}
+                                                    {s.trucks.map(t => {
+                                                        const key = ajusteKey(s.state, t.unidad);
+                                                        return (
+                                                            <TableRow key={key} hover>
+                                                                <TableCell sx={{ pl: 6, color: 'text.secondary' }}>
+                                                                    {t.unidad != null ? `Unidad ${t.unidad}` : 'Sin unidad'}
+                                                                </TableCell>
+                                                                <TableCell align="right">{fmt(t.total)}</TableCell>
+                                                                <TableCell align="center">
+                                                                    <TextField
+                                                                        size="small"
+                                                                        type="number"
+                                                                        placeholder="0"
+                                                                        value={ajustesUnidades[key] ?? ''}
+                                                                        onChange={e => setAjustesUnidades(prev => ({ ...prev, [key]: e.target.value }))}
+                                                                        sx={{ width: 120 }}
+                                                                        slotProps={{ htmlInput: { step: 'any', style: { textAlign: 'right' } } }}
+                                                                    />
+                                                                </TableCell>
+                                                                <TableCell align="right">{fmtInt(t.total + getAjuste(s.state, t.unidad))}</TableCell>
+                                                            </TableRow>
+                                                        );
+                                                    })}
+                                                </Fragment>
+                                            ))}
+                                            <TableRow sx={{ bgcolor: '#f5f5f5' }}>
+                                                <TableCell sx={{ fontWeight: 700 }}>TOTAL</TableCell>
+                                                <TableCell align="right" sx={{ fontWeight: 700 }}>{fmt(grandTotalUnidades)}</TableCell>
+                                                <TableCell align="center" sx={{ fontWeight: 700, color: 'text.secondary' }}>
+                                                    {grandAjusteUnidades !== 0 ? fmtAjuste(grandAjusteUnidades) : '—'}
+                                                </TableCell>
+                                                <TableCell align="right" sx={{ fontWeight: 700 }}>{fmtInt(grandTotalUnidades + grandAjusteUnidades)}</TableCell>
+                                            </TableRow>
+                                        </>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                    )}
                 </Box>
             )}
         </Box>
