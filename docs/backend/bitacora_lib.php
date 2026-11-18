@@ -30,7 +30,7 @@ final class Bitacora
     const PATRON_LECTURA = '/^(get|all_|chart|dashboard|periodo|list|buscar|search|consulta|obtener|fetch|count|collapse_|ver_|show|load|read|resumen|detalle|historial|report|export|print|ping|status|check|validar|validate|existe|exists|next_|pdf)/i';
 
     // Lecturas cuyo nombre no sigue el patrón.
-    const LECTURAS = ['trip_summary', 'residuo_trip'];
+    const LECTURAS = ['trip_summary', 'residuo_trip', 'galones_ifta', 'galones_ifta_detalle', 'millas_unidades'];
 
     const CAMPOS_OCULTOS = ['pass', 'password', 'contrasena', 'contraseña', 'push_token', 'token', 'clave'];
 
