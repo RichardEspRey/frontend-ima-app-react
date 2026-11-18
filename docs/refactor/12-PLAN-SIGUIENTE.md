@@ -403,9 +403,13 @@ generados con `docs/sql/generar-triggers-bitacora.py`; copia para revisar en
 `docs/sql/016-bitacora-triggers.sql`. Al editar guardan solo las columnas que cambiaron.
 Se instalan con `docs/backend/bitacora_triggers.php` (clave de un solo uso; `accion=crear`,
 `accion=quitar`). Requieren el `conexion.php` y la `bitacora_lib.php` nuevos, que marcan
-cada conexión con `@ima_usuario` y `@ima_peticion` (`Bitacora::alConectar`). Segunda
-tanda propuesta: `trips`, `ordenes_servicio`, `orden_servicio_detalles`,
-`pago_trayectos_mx`, `notif_suscriptores`.
+cada conexión con `@ima_usuario` y `@ima_peticion` (`Bitacora::alConectar`). 
+
+**Segunda tanda — ENTREGADA, falta instalar (2026-11-17):** `trips` (sin `ruta_wialon`, que es
+enorme y la escribe un proceso), `ordenes_servicio`, `orden_servicio_detalles`,
+`pago_trayectos_mx`, `notif_suscriptores`. 15 triggers en `docs/sql/017-…tanda-2.sql`. El
+instalador lleva las dos tandas (36); `accion=crear` recrea todos, sin efecto sobre los ya
+creados. El generador ahora escribe un `.sql` por tanda.
 
 Etapas 3 y 5 de `10-BITACORA.md`. **No crearlos desde phpMyAdmin de cPanel** (error 1449,
 el mismo que tumbó `crud_diesel` el 2026-11-17). Se crean desde un PHP de un solo uso con

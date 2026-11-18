@@ -1,4 +1,4 @@
--- Bitácora · triggers de «antes y después», primera tanda
+-- Bitácora · triggers de «antes y después», tanda 1
 --
 -- NO CORRER EN phpMyAdmin. Creados ahí quedarían con el usuario temporal de cPanel y
 -- fallarían con el error 1449, como crud_diesel. Se instalan con
@@ -6,15 +6,18 @@
 -- Este archivo es la copia para revisar; el PHP lleva exactamente las mismas sentencias.
 --
 -- Tablas: gastos, detalles_gasto, diesel, trip_stages, trip_payments, user_feature_flags, Users_credentials
--- Generado desde docs/sql/bitacora-esquema-2026-11-17.json.
+-- Generado desde docs/sql/bitacora-esquema-2026-11-17.json con
+-- docs/sql/generar-triggers-bitacora.py.
 --
 -- Qué hace cada uno: al dar de alta guarda el registro completo; al editar guarda solo
 -- las columnas que cambiaron (y nada si no cambió ninguna); al borrar guarda el registro
--- completo. De Users_credentials nunca se guardan pass ni push_token. Quién y en qué
--- petición salen de @ima_usuario y @ima_peticion, que pone conexion.php en cada conexión.
--- Si algo falla dentro del trigger, el manejador lo traga y el guardado sigue.
+-- completo. Columnas que nunca se guardan: Users_credentials.pass, Users_credentials.push_token.
+-- Quién y en qué petición salen de @ima_usuario y @ima_peticion, que pone conexion.php
+-- en cada conexión. Si algo falla dentro del trigger, el manejador lo traga y el guardado
+-- sigue.
 --
--- No modifican ninguna tabla ni agregan columnas.
+-- No modifican ninguna tabla ni agregan columnas. Antes de RENOMBRAR o BORRAR una
+-- columna de estas tablas hay que quitar sus triggers (accion=quitar&tabla=…).
 
 -- bit_gastos_ins
 CREATE TRIGGER `bit_gastos_ins` AFTER INSERT ON `gastos` FOR EACH ROW

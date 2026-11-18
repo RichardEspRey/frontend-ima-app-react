@@ -2,13 +2,24 @@
 #
 #   python3 docs/sql/generar-triggers-bitacora.py [archivo-de-salida-para-el-php]
 #
+# Escribe un .sql por tanda y un solo arreglo PHP con todas, para que el instalador
+# pueda crear o quitar cualquiera.
+#
 # Escribe docs/sql/016-bitacora-triggers.sql (para revisar) y, si se pasa un archivo,
 # el arreglo PHP que va dentro de docs/backend/bitacora_triggers.php. Para una tanda
 # nueva: volver a leer la estructura de producción, agregar las tablas a TABLAS y correrlo.
 import json, sys
 ESQUEMA = 'docs/sql/bitacora-esquema-2026-11-17.json'
-TABLAS = ['gastos', 'detalles_gasto', 'diesel', 'trip_stages', 'trip_payments', 'user_feature_flags', 'Users_credentials']
-EXCLUIR = {'Users_credentials': {'pass', 'push_token'}}
+TANDAS = {
+    1: ('016-bitacora-triggers.sql',
+        ['gastos', 'detalles_gasto', 'diesel', 'trip_stages', 'trip_payments', 'user_feature_flags', 'Users_credentials']),
+    2: ('017-bitacora-triggers-tanda-2.sql',
+        ['trips', 'ordenes_servicio', 'orden_servicio_detalles', 'pago_trayectos_mx', 'notif_suscriptores']),
+}
+EXCLUIR = {
+    'Users_credentials': {'pass', 'push_token'},
+    'trips': {'ruta_wialon'},
+}
 
 d = json.load(open(ESQUEMA))
 
@@ -56,31 +67,38 @@ BEGIN
 END"""))
     return salida
 
-todos = [x for t in TABLAS for x in triggers(t)]
-
-# SQL legible para revisar (NO se corre en phpMyAdmin)
-with open('docs/sql/016-bitacora-triggers.sql', 'w') as f:
-    f.write("""-- Bitácora · triggers de «antes y después», primera tanda
+ENCABEZADO = """-- Bitácora · triggers de «antes y después», tanda {n}
 --
 -- NO CORRER EN phpMyAdmin. Creados ahí quedarían con el usuario temporal de cPanel y
 -- fallarían con el error 1449, como crud_diesel. Se instalan con
 -- docs/backend/bitacora_triggers.php, que usa la conexión de la app.
 -- Este archivo es la copia para revisar; el PHP lleva exactamente las mismas sentencias.
 --
--- Tablas: """ + ', '.join(TABLAS) + """
--- Generado desde docs/sql/bitacora-esquema-2026-11-17.json.
+-- Tablas: {tablas}
+-- Generado desde docs/sql/bitacora-esquema-2026-11-17.json con
+-- docs/sql/generar-triggers-bitacora.py.
 --
 -- Qué hace cada uno: al dar de alta guarda el registro completo; al editar guarda solo
 -- las columnas que cambiaron (y nada si no cambió ninguna); al borrar guarda el registro
--- completo. De Users_credentials nunca se guardan pass ni push_token. Quién y en qué
--- petición salen de @ima_usuario y @ima_peticion, que pone conexion.php en cada conexión.
--- Si algo falla dentro del trigger, el manejador lo traga y el guardado sigue.
+-- completo. Columnas que nunca se guardan: {excluidas}.
+-- Quién y en qué petición salen de @ima_usuario y @ima_peticion, que pone conexion.php
+-- en cada conexión. Si algo falla dentro del trigger, el manejador lo traga y el guardado
+-- sigue.
 --
--- No modifican ninguna tabla ni agregan columnas.
+-- No modifican ninguna tabla ni agregan columnas. Antes de RENOMBRAR o BORRAR una
+-- columna de estas tablas hay que quitar sus triggers (accion=quitar&tabla=…).
 
-""")
-    for nombre, sql in todos:
-        f.write(f"-- {nombre}\n{sql};\n\n")
+"""
+
+todos = []
+for n, (archivo, tablas) in TANDAS.items():
+    de_la_tanda = [x for t in tablas for x in triggers(t)]
+    todos.extend(de_la_tanda)
+    excluidas = ', '.join(f"{t}.{c}" for t in tablas for c in sorted(EXCLUIR.get(t, ()))) or 'ninguna'
+    with open(f'docs/sql/{archivo}', 'w') as f:
+        f.write(ENCABEZADO.format(n=n, tablas=', '.join(tablas), excluidas=excluidas))
+        for nombre, sql in de_la_tanda:
+            f.write(f"-- {nombre}\n{sql};\n\n")
 
 # arreglo para el PHP
 partes = []
