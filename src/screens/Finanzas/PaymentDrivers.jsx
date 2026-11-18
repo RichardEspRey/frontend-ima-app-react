@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
   TablePagination, TextField, Box, Typography, CircularProgress, Chip, Button,
@@ -25,7 +25,8 @@ import {
   CHIP_SX, CHIP_OK_SX, GHOST_BTN_SX, ICON_BTN_SX, CELL_STRONG_SX, CELL_SX, CELL_MUTED_SX,
 } from '../../styles/estilosTabla';
 import {
-  PAIS, autorizarPagoPorTrayecto, obtenerDatosPagos, obtenerTrayectos, pesos, sugerirTrayecto
+  PAIS, autorizarPagoPorTrayecto, crearTrayectosSinMonto, obtenerDatosPagos, obtenerTrayectos, pesos, sugerirTrayecto,
+  trayectosPorCrear
 } from '../../services/pagosMx';
 
 const apiHost = import.meta.env.VITE_API_HOST;
@@ -83,6 +84,8 @@ const PaymentDrivers = () => {
   const [datosPagos, setDatosPagos] = useState({ viajes: new Map(), asignaciones: new Map() });
   const [trayectos, setTrayectos] = useState([]);
   const [errorTrayectos, setErrorTrayectos] = useState(null);
+  const [trayectosListos, setTrayectosListos] = useState(false);
+  const intentados = useRef(new Set());
   const [elegidos, setElegidos] = useState({});
   const [catalogoAbierto, setCatalogoAbierto] = useState(false);
   const [autorizando, setAutorizando] = useState(null);
@@ -92,6 +95,7 @@ const PaymentDrivers = () => {
       const [datos, catalogo] = await Promise.all([obtenerDatosPagos(), obtenerTrayectos()]);
       setDatosPagos(datos);
       setTrayectos(catalogo);
+      setTrayectosListos(true);
       setErrorTrayectos(null);
     } catch (err) {
       setErrorTrayectos(err.message);
@@ -265,6 +269,17 @@ const PaymentDrivers = () => {
   };
 
   const esMx = pais === PAIS.MX;
+
+  useEffect(() => {
+    if (!esMx || loading || !trayectosListos) return;
+    const sinTrayecto = conPais.filter((t) => t.pais === PAIS.MX && String(t.status_payment) === "0" && !t.asignacion);
+    const nombres = trayectosPorCrear(sinTrayecto, trayectos).filter((nombre) => !intentados.current.has(nombre.toLowerCase()));
+    if (nombres.length === 0) return;
+    nombres.forEach((nombre) => intentados.current.add(nombre.toLowerCase()));
+    crearTrayectosSinMonto(nombres).then((creados) => {
+      if (creados.length > 0) cargarTrayectos();
+    });
+  }, [esMx, loading, trayectosListos, conPais, trayectos, cargarTrayectos]);
   const columnas = esMx ? 9 : 8;
 
   const filtered = useMemo(() => {
@@ -378,7 +393,7 @@ const PaymentDrivers = () => {
 
       {esMx && tabValue === 0 && trayectos.some((x) => x.activo && x.monto <= 0) && (
         <Alert severity="info" sx={{ mb: 2 }}>
-          Hay trayectos sin monto: {trayectos.filter((x) => x.activo && x.monto <= 0).map((x) => x.nombre).join(', ')}. Asígnales uno en «Trayectos MX» para poder autorizar esos viajes.
+          Hay trayectos sin monto: {trayectos.filter((x) => x.activo && x.monto <= 0).map((x) => x.nombre).join(', ')}. Ponles su monto en «Trayectos MX» para poder autorizar esos viajes.
         </Alert>
       )}
 
