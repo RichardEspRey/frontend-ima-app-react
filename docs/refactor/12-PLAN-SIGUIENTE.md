@@ -411,6 +411,15 @@ enorme y la escribe un proceso), `ordenes_servicio`, `orden_servicio_detalles`,
 instalador lleva las dos tandas (36); `accion=crear` recrea todos, sin efecto sobre los ya
 creados. El generador ahora escribe un `.sql` por tanda.
 
+**Tercera tanda — INSTALADA (2026-11-18):** 69 triggers en total, todos con DEFINER permanente.
+`pagos_semanales`, `pagos_detalle`, `stage_stops`, `trip_stage_invoices` (sin `json_data`),
+`gastos_viaje`, `programacion_trips`, `trucks` (sin las columnas que reescribe Wialon:
+`current_fuel`, `last_fuel_calc_at`, `last_odometer_calc`, `dist_nv_l`, `last_latitude`,
+`last_longitude`), `caja`, `drivers`, `companies`, `warehouses`. 33 triggers en
+`docs/sql/019-…tanda-3.sql`; estructura en `bitacora-esquema-2026-11-18.json`. Las BIT se
+guardan como 0/1. El instalador acepta `&tanda=N`. Pendiente para una cuarta: mantenimiento
+(inspecciones, roadside, check lists), documentos de Safety e inventario.
+
 Etapas 3 y 5 de `10-BITACORA.md`. **No crearlos desde phpMyAdmin de cPanel** (error 1449,
 el mismo que tumbó `crud_diesel` el 2026-11-17). Se crean desde un PHP de un solo uso con
 el usuario de la app. Requiere el privilegio `TRIGGER` (sale de B0).
