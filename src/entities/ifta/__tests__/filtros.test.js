@@ -11,6 +11,11 @@ import {
   anioConsultable,
   describirFiltrosTotales,
   describirFiltrosPeriodos,
+  normalizarGalonesIfta,
+  agruparUnidadesPorEstado,
+  llaveAjusteUnidad,
+  ajusteDeUnidad,
+  ajusteDeEstado,
 } from "../model/ifta"
 
 const REGISTROS = [
@@ -67,7 +72,8 @@ describe("periodos", () => {
   it("nombra el periodo vacío y arma la llave del registro", () => {
     expect(etiquetaPeriodo("")).toBe("Vacío")
     expect(etiquetaPeriodo("Q3")).toBe("Q3")
-    expect(llavePeriodo(REGISTROS[1])).toBe("TX||26")
+    expect(llavePeriodo(REGISTROS[1])).toBe("TX|")
+    expect(llavePeriodo({ estado: null, periodo: null })).toBe("|")
   })
 })
 
@@ -111,9 +117,65 @@ describe("encabezados del PDF", () => {
   })
 
   it("describe los filtros de los registros por periodo", () => {
-    expect(describirFiltrosPeriodos({})).toBe("Periodo: todos   ·   Estado: todos   ·   Año: todos")
+    expect(describirFiltrosPeriodos({})).toBe("Periodo: todos   ·   Estado: todos")
+    expect(describirFiltrosPeriodos({ anio: "" })).toBe("Periodo: todos   ·   Estado: todos   ·   Año: todos")
     expect(describirFiltrosPeriodos({ periodo: PERIODO_VACIO, estado: " tx ", anio: "2026" })).toBe(
       "Periodo: Vacío   ·   Estado: TX   ·   Año: 2026",
     )
   })
 })
+
+describe("galones IFTA (main 1.6.2)", () => {
+  it("normaliza lo que manda galones_ifta, con estado y periodo nulos como vacío", () => {
+    expect(
+      normalizarGalonesIfta([
+        { estado: null, total_galones: 1944.92, periodo: "Q4" },
+        { estado: "TX", total_galones: "120.5", periodo: null },
+      ]),
+    ).toEqual([
+      { estado: "", periodo: "Q4", galones: 1944.92 },
+      { estado: "TX", periodo: "", galones: 120.5 },
+    ])
+    expect(normalizarGalonesIfta(null)).toEqual([])
+  })
+
+  it("los registros normalizados se filtran por periodo vacío y por estado", () => {
+    const registros = normalizarGalonesIfta([
+      { estado: "TX", total_galones: 10, periodo: null },
+      { estado: null, total_galones: 5, periodo: "Q4" },
+    ])
+    expect(filtrarPeriodos(registros, { periodo: PERIODO_VACIO })).toHaveLength(1)
+    expect(filtrarPeriodos(registros, { estado: "tx" })).toHaveLength(1)
+  })
+})
+
+describe("millas por unidad", () => {
+  const FILAS = [
+    { state: "NM", total_state_miles: 17713.8, unidad: "5", total_truck_miles: 4036.2 },
+    { state: "NM", total_state_miles: 17713.8, unidad: null, total_truck_miles: 100 },
+    { state: "TX", total_state_miles: 900, unidad: "12", total_truck_miles: 900 },
+  ]
+
+  it("agrupa por estado conservando el total del estado y sus unidades", () => {
+    const grupos = agruparUnidadesPorEstado(FILAS)
+    expect(grupos.map((g) => g.estado)).toEqual(["NM", "TX"])
+    expect(grupos[0]).toEqual({
+      estado: "NM",
+      total: 17713.8,
+      unidades: [
+        { unidad: "5", total: 4036.2 },
+        { unidad: null, total: 100 },
+      ],
+    })
+  })
+
+  it("los ajustes suman o restan por unidad y se acumulan por estado", () => {
+    const [nm] = agruparUnidadesPorEstado(FILAS)
+    const ajustes = { [llaveAjusteUnidad("NM", "5")]: "-36.2", [llaveAjusteUnidad("NM", null)]: "10", "NM-9": "abc" }
+    expect(llaveAjusteUnidad("NM", null)).toBe("NM-sin")
+    expect(ajusteDeUnidad(ajustes, "NM", "5")).toBeCloseTo(-36.2)
+    expect(ajusteDeUnidad(ajustes, "NM", "9")).toBe(0)
+    expect(ajusteDeEstado(nm, ajustes)).toBeCloseTo(-26.2)
+  })
+})
+

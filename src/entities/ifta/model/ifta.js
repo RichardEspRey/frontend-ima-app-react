@@ -163,17 +163,18 @@ export function describirFiltrosTotales({ porViajes, desde, hasta, viajeDesde, v
  * @param {object} filtros Los mismos que recibe `filtrarPeriodos`.
  * @param {string} [filtros.periodo] El periodo, o `PERIODO_VACIO`.
  * @param {string} [filtros.estado] Texto buscado en el estado.
- * @param {string} [filtros.anio] El año capturado.
- * @returns {string} Una línea como `Periodo: Q2   ·   Estado: TX   ·   Año: 2026`.
+ * @param {string} [filtros.anio] El año capturado. Si no se pasa, la línea no habla de año:
+ *   la pestaña de galones dejó de filtrar por año (main 1.6.2).
+ * @returns {string} Una línea como `Periodo: Q2   ·   Estado: TX`.
  */
 export function describirFiltrosPeriodos({ periodo, estado, anio } = {}) {
   const estadoBuscado = String(estado ?? "").trim().toUpperCase()
-  const anioBuscado = String(anio ?? "").trim()
-  return [
+  const partes = [
     `Periodo: ${!periodo ? "todos" : periodo === PERIODO_VACIO ? "Vacío" : periodo}`,
     `Estado: ${estadoBuscado || "todos"}`,
-    `Año: ${anioBuscado || "todos"}`,
-  ].join("   ·   ")
+  ]
+  if (anio !== undefined) partes.push(`Año: ${String(anio ?? "").trim() || "todos"}`)
+  return partes.join("   ·   ")
 }
 
 /**
@@ -250,9 +251,83 @@ export function filtrarPeriodos(registros = [], { periodo, estado, anio } = {}) 
 }
 
 /**
- * Identifica un registro de periodos para guardar los viajes que lo componen.
+ * Identifica un registro de galones para guardar las cargas que lo componen.
  *
- * @param {{estado: string, periodo: string, trip_year: string}} registro El registro.
- * @returns {string} `estado|periodo|año`.
+ * Desde main 1.6.2 los galones se agrupan solo por estado y periodo, sin año.
+ *
+ * @param {{estado: string, periodo: string}} registro El registro.
+ * @returns {string} `estado|periodo`.
  */
-export const llavePeriodo = (registro) => `${registro.estado}|${registro.periodo}|${registro.trip_year}`
+export const llavePeriodo = (registro) => `${registro.estado ?? ""}|${registro.periodo ?? ""}`
+
+/**
+ * Normaliza lo que devuelve `IFTA.php · galones_ifta` a la forma que usa la pantalla.
+ *
+ * El servidor manda `total_galones`, y `estado` y `periodo` pueden venir en `null`
+ * (cargas de diesel sin estado o sin trimestre); aquí quedan como texto vacío para
+ * poder filtrarlas y agruparlas.
+ *
+ * @param {Array} [filas] Las filas del servidor.
+ * @returns {Array.<{estado: string, periodo: string, galones: number}>} Los registros.
+ */
+export function normalizarGalonesIfta(filas = []) {
+  return (Array.isArray(filas) ? filas : []).map((fila) => ({
+    estado: fila?.estado ?? "",
+    periodo: fila?.periodo ?? "",
+    galones: Number(fila?.total_galones ?? fila?.galones ?? 0) || 0,
+  }))
+}
+
+/**
+ * Agrupa por estado las millas por unidad que manda `IFTA.php · millas_unidades`.
+ *
+ * El servidor devuelve una fila por estado y unidad, con el total del estado repetido
+ * en cada una; aquí queda un grupo por estado con sus unidades, en el orden en que
+ * llegaron.
+ *
+ * @param {Array} [filas] Las filas del servidor.
+ * @returns {Array.<{estado: string, total: number, unidades: Array.<{unidad: (string|null), total: number}>}>} Los grupos.
+ */
+export function agruparUnidadesPorEstado(filas = []) {
+  const grupos = new Map()
+  for (const fila of Array.isArray(filas) ? filas : []) {
+    if (!grupos.has(fila.state)) {
+      grupos.set(fila.state, { estado: fila.state, total: Number(fila.total_state_miles) || 0, unidades: [] })
+    }
+    grupos.get(fila.state).unidades.push({ unidad: fila.unidad ?? null, total: Number(fila.total_truck_miles) || 0 })
+  }
+  return [...grupos.values()]
+}
+
+/**
+ * La llave del ajuste manual de millas de una unidad en un estado.
+ *
+ * @param {string} estado El estado.
+ * @param {(string|null)} unidad La unidad, o `null` para «sin unidad».
+ * @returns {string} Por ejemplo `TX-12`.
+ */
+export const llaveAjusteUnidad = (estado, unidad) => `${estado}-${unidad ?? "sin"}`
+
+/**
+ * El ajuste manual capturado para una unidad en un estado; lo que no es número cuenta como 0.
+ *
+ * @param {Object.<string, string>} ajustes Lo capturado, por `llaveAjusteUnidad`.
+ * @param {string} estado El estado.
+ * @param {(string|null)} unidad La unidad.
+ * @returns {number} El ajuste, positivo o negativo.
+ */
+export function ajusteDeUnidad(ajustes, estado, unidad) {
+  const valor = parseFloat(ajustes?.[llaveAjusteUnidad(estado, unidad)])
+  return Number.isFinite(valor) ? valor : 0
+}
+
+/**
+ * La suma de los ajustes de todas las unidades de un estado.
+ *
+ * @param {{estado: string, unidades: Array}} grupo Un grupo de `agruparUnidadesPorEstado`.
+ * @param {Object.<string, string>} ajustes Lo capturado.
+ * @returns {number} El ajuste total del estado.
+ */
+export function ajusteDeEstado(grupo, ajustes) {
+  return grupo.unidades.reduce((suma, u) => suma + ajusteDeUnidad(ajustes, grupo.estado, u.unidad), 0)
+}

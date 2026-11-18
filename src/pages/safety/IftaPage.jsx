@@ -18,7 +18,9 @@ import { Pestanas } from '../../shared/ui';
 import {
     PERIODO_VACIO, etiquetaPeriodo, filtrosTotalesIfta, totalConAjuste,
     periodosDisponibles, filtrarPeriodos, llavePeriodo, totalesIfta,
-    anioCorto, anioConsultable, describirFiltrosTotales, describirFiltrosPeriodos,
+    describirFiltrosTotales, describirFiltrosPeriodos,
+    obtenerGalonesIfta, obtenerDetalleGalonesIfta, obtenerMillasUnidades,
+    agruparUnidadesPorEstado, llaveAjusteUnidad, ajusteDeUnidad, ajusteDeEstado,
 } from '../../entities/ifta';
 
 const apiHost = import.meta.env.VITE_API_HOST;
@@ -214,35 +216,27 @@ export default function IftaPage() {
     const [loadingPeriodos, setLoadingPeriodos] = useState(false);
     const [filterPeriodo, setFilterPeriodo]     = useState('');
     const [filterPeriodoEstado, setFilterPeriodoEstado] = useState('');
-    const [filterYear, setFilterYear] = useState(anioActual);
 
     const fetchPeriodos = async () => {
         setLoadingPeriodos(true);
         try {
-            const fd = new FormData();
-            fd.append('op', 'periodos');
-            if (anioCorto(filterYear)) fd.append('year', anioCorto(filterYear));
-            const res  = await fetch(`${apiHost}/IFTA.php`, { method: 'POST', body: fd });
-            const json = await res.json();
-            if (json.status === 'success') setPeriodos(json.data);
+            setPeriodos(await obtenerGalonesIfta());
         } catch (err) {
-            console.error('IFTA fetchPeriodos:', err);
+            console.error('IFTA galones_ifta:', err);
         } finally {
             setLoadingPeriodos(false);
         }
     };
 
     useEffect(() => {
-        if (tabValue !== 2 || !anioConsultable(filterYear)) return undefined;
-        const espera = setTimeout(fetchPeriodos, 500);
-        return () => clearTimeout(espera);
-    }, [tabValue, filterYear]); // eslint-disable-line react-hooks/exhaustive-deps
+        if (tabValue === 2) fetchPeriodos();
+    }, [tabValue]);
 
     const periodosUnicos = useMemo(() => periodosDisponibles(periodos), [periodos]);
 
     const filteredPeriodos = useMemo(
-        () => filtrarPeriodos(periodos, { periodo: filterPeriodo, estado: filterPeriodoEstado, anio: filterYear }),
-        [periodos, filterPeriodo, filterPeriodoEstado, filterYear],
+        () => filtrarPeriodos(periodos, { periodo: filterPeriodo, estado: filterPeriodoEstado }),
+        [periodos, filterPeriodo, filterPeriodoEstado],
     );
 
     const grandTotalPeriodos = useMemo(() => totalesIfta(filteredPeriodos).galones, [filteredPeriodos]);
@@ -263,16 +257,10 @@ export default function IftaPage() {
 
         setLoadingPeriodoTrips(key);
         try {
-            const fd = new FormData();
-            fd.append('op', 'periodo_trips');
-            fd.append('state', row.estado);
-            fd.append('periodo', row.periodo ?? '');
-            if (row.trip_year) fd.append('year', row.trip_year);
-            const res  = await fetch(`${apiHost}/IFTA.php`, { method: 'POST', body: fd });
-            const json = await res.json();
-            if (json.status === 'success') setPeriodoTrips(prev => ({ ...prev, [key]: json.data }));
+            const detalle = await obtenerDetalleGalonesIfta({ estado: row.estado, periodo: row.periodo });
+            setPeriodoTrips(prev => ({ ...prev, [key]: detalle }));
         } catch (err) {
-            console.error('IFTA fetchPeriodoTrips:', err);
+            console.error('IFTA galones_ifta_detalle:', err);
         } finally {
             setLoadingPeriodoTrips(null);
         }
@@ -290,27 +278,26 @@ export default function IftaPage() {
         doc.setFontSize(10);
         doc.setFont('helvetica', 'normal');
         doc.text(
-            describirFiltrosPeriodos({ periodo: filterPeriodo, estado: filterPeriodoEstado, anio: filterYear }),
+            describirFiltrosPeriodos({ periodo: filterPeriodo, estado: filterPeriodoEstado }),
             pageW / 2, margin + 18, { align: 'center' },
         );
 
         const rows = filteredPeriodos.map(r => [
-            r.estado,
+            r.estado || '—',
             etiquetaPeriodo(r.periodo),
-            r.trip_year ?? '—',
             fmtInt(r.galones),
         ]);
-        rows.push(['TOTAL', '', '', fmtInt(grandTotalPeriodos)]);
+        rows.push(['TOTAL', '', fmtInt(grandTotalPeriodos)]);
 
         autoTable(doc, {
             startY: margin + 32,
             margin: { left: margin, right: margin, top: margin, bottom: margin },
-            head: [['Estado', 'Periodo', 'Año', 'Total Galones']],
+            head: [['Estado', 'Periodo', 'Total Galones']],
             body: rows,
             styles: { fontSize: 9, cellPadding: 5 },
             headStyles: { fillColor: [245, 245, 245], textColor: 0, fontStyle: 'bold' },
             didParseCell: (data) => {
-                if (data.column.index === 3) {
+                if (data.column.index === 2) {
                     data.cell.styles.halign = 'right';
                 }
                 if (data.row.index === rows.length - 1 && data.section === 'body') {
@@ -323,6 +310,89 @@ export default function IftaPage() {
         });
 
         doc.save('IFTA_Galones.pdf');
+    };
+
+    const [unidades, setUnidades]               = useState([]);
+    const [loadingUnidades, setLoadingUnidades] = useState(false);
+    const [unidTripFrom, setUnidTripFrom]       = useState('');
+    const [unidTripTo, setUnidTripTo]           = useState('');
+    const [unidYear, setUnidYear]               = useState(anioActual);
+    const [ajustesUnidades, setAjustesUnidades] = useState({});
+
+    const fetchUnidades = async () => {
+        setLoadingUnidades(true);
+        try {
+            setUnidades(await obtenerMillasUnidades({ anio: unidYear, viajeDesde: unidTripFrom, viajeHasta: unidTripTo }));
+            setAjustesUnidades({});
+        } catch (err) {
+            console.error('IFTA millas_unidades:', err);
+        } finally {
+            setLoadingUnidades(false);
+        }
+    };
+
+    useEffect(() => {
+        if (tabValue === 3) fetchUnidades();
+    }, [tabValue]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    const unidadesPorEstado = useMemo(() => agruparUnidadesPorEstado(unidades), [unidades]);
+    const grandTotalUnidades = useMemo(() => unidadesPorEstado.reduce((sum, g) => sum + g.total, 0), [unidadesPorEstado]);
+    const grandAjusteUnidades = unidadesPorEstado.reduce((sum, g) => sum + ajusteDeEstado(g, ajustesUnidades), 0);
+    const fmtAjuste = (n) => (n > 0 ? `+${fmt(n)}` : fmt(n));
+
+    const printUnidadesPDF = () => {
+        const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'letter' });
+        const margin = 40;
+        const pageW = doc.internal.pageSize.getWidth();
+
+        doc.setFontSize(16);
+        doc.setFont('helvetica', 'bold');
+        doc.text('IFTA — Millas por Unidad', pageW / 2, margin, { align: 'center' });
+
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.text(
+            [`Año: ${unidYear.trim() || 'todos'}`, `Viajes: ${unidTripFrom.trim() || 'inicio'} – ${unidTripTo.trim() || 'fin'}`].join('   ·   '),
+            pageW / 2, margin + 18, { align: 'center' },
+        );
+
+        const rows = [];
+        const filasDeEstado = new Set();
+        unidadesPorEstado.forEach(g => {
+            filasDeEstado.add(rows.length);
+            rows.push([g.estado, fmtInt(g.total + ajusteDeEstado(g, ajustesUnidades))]);
+            g.unidades.forEach(u => {
+                rows.push([
+                    `      ${u.unidad != null ? `Unidad ${u.unidad}` : 'Sin unidad'}`,
+                    fmtInt(u.total + ajusteDeUnidad(ajustesUnidades, g.estado, u.unidad)),
+                ]);
+            });
+        });
+        rows.push(['TOTAL', fmtInt(grandTotalUnidades + grandAjusteUnidades)]);
+
+        autoTable(doc, {
+            startY: margin + 32,
+            margin: { left: margin, right: margin, top: margin, bottom: margin },
+            head: [['Estado / Unidad', 'Total final']],
+            body: rows,
+            styles: { fontSize: 9, cellPadding: 5 },
+            headStyles: { fillColor: [245, 245, 245], textColor: 0, fontStyle: 'bold' },
+            didParseCell: (data) => {
+                if (data.column.index === 1) data.cell.styles.halign = 'right';
+                if (data.section !== 'body') return;
+                if (data.row.index === rows.length - 1) {
+                    data.cell.styles.fontStyle = 'bold';
+                    data.cell.styles.fillColor = [245, 245, 245];
+                } else if (filasDeEstado.has(data.row.index)) {
+                    data.cell.styles.fontStyle = 'bold';
+                    data.cell.styles.fillColor = [250, 250, 250];
+                }
+            },
+            pageBreak: 'auto',
+            rowPageBreak: 'avoid',
+        });
+
+        doc.save('IFTA_Millas_Unidades.pdf');
     };
 
     return (
@@ -338,6 +408,7 @@ export default function IftaPage() {
                     { etiqueta: 'Por Viaje' },
                     { etiqueta: 'Millas IFTA' },
                     { etiqueta: 'Galones IFTA' },
+                    { etiqueta: 'Millas Unidades' },
                 ]}
                 sx={{ mb: 2.5 }}
             />
@@ -658,21 +729,12 @@ export default function IftaPage() {
                                 sx={{ width: 140 }}
                                 slotProps={{ htmlInput: { maxLength: 2, style: { textTransform: 'uppercase' } } }}
                             />
-                            <TextField
-                                size="small"
-                                label="Año"
-                                value={filterYear}
-                                onChange={e => setFilterYear(e.target.value)}
-                                sx={{ width: 100 }}
-                                slotProps={{ htmlInput: { maxLength: 4 } }}
-                            />
                             <Button
                                 size="small"
                                 color="inherit"
                                 onClick={() => {
                                     setFilterPeriodo('');
                                     setFilterPeriodoEstado('');
-                                    setFilterYear(anioActual());
                                 }}
                             >
                                 Limpiar
@@ -709,7 +771,6 @@ export default function IftaPage() {
                                     <TableRow sx={{ bgcolor: COLOR.LIENZO }}>
                                         <TableCell sx={{ fontWeight: 700 }}>Estado</TableCell>
                                         <TableCell sx={{ fontWeight: 700 }}>Periodo</TableCell>
-                                        <TableCell sx={{ fontWeight: 700 }}>Año</TableCell>
                                         <TableCell sx={{ fontWeight: 700,  textAlign: 'right'}}>Total Galones</TableCell>
 
                                     </TableRow>
@@ -717,7 +778,7 @@ export default function IftaPage() {
                                 <TableBody>
                                     {filteredPeriodos.length === 0 ? (
                                         <TableRow>
-                                            <TableCell colSpan={4} align="center" sx={{ py: 4, color: 'text.secondary' }}>
+                                            <TableCell colSpan={3} align="center" sx={{ py: 4, color: 'text.secondary' }}>
                                                 Sin datos para los filtros aplicados.
                                             </TableCell>
                                         </TableRow>
@@ -730,26 +791,22 @@ export default function IftaPage() {
                                                 <TableRow hover>
                                                     <TableCell>
                                                         <Stack direction="row" alignItems="center" gap={0.5}>
-                                                            <IconButton size="small" title="Ver viajes" onClick={() => openPeriodoTrips(row)}>
+                                                            <IconButton size="small" title="Ver detalle" onClick={() => openPeriodoTrips(row)}>
                                                                 <ListAltIcon fontSize="small" />
                                                             </IconButton>
-                                                            <Chip label={row.estado} size="small" sx={{ fontWeight: 700, minWidth: 42 }} />
+                                                            <Chip label={row.estado || '—'} size="small" sx={{ fontWeight: 700, minWidth: 42 }} />
                                                         </Stack>
                                                     </TableCell>
                                                     <TableCell>
                                                         <Chip label={etiquetaPeriodo(row.periodo)} size="small" variant="outlined" color={row.periodo ? 'primary' : 'default'} sx={{ fontWeight: 600 }} />
                                                     </TableCell>
-                                                    <TableCell>
-                                                        <Chip label={row.trip_year} size="small" variant="outlined" color="primary" sx={{ fontWeight: 600 }} />
-                                                    </TableCell>
-
                                                     <TableCell align="right">{fmtInt(row.galones)}</TableCell>
                                                 </TableRow>
                                                 </Fragment>
                                                 );
                                             })}
                                             <TableRow sx={{ bgcolor: COLOR.LIENZO }}>
-                                                <TableCell sx={{ fontWeight: 700,  textAlign: 'right' }} colSpan={3}>TOTAL</TableCell>
+                                                <TableCell sx={{ fontWeight: 700,  textAlign: 'right' }} colSpan={2}>TOTAL</TableCell>
                                                 <TableCell align="right" sx={{ fontWeight: 700 }}>{fmtInt(grandTotalPeriodos)}</TableCell>
                                             </TableRow>
                                         </>
@@ -759,11 +816,11 @@ export default function IftaPage() {
                         </TableContainer>
                     )}
 
-                    <Dialog open={!!expandedPeriodo} onClose={() => setExpandedPeriodo(null)} maxWidth="md" fullWidth>
+                    <Dialog open={!!expandedPeriodo} onClose={() => setExpandedPeriodo(null)} maxWidth="sm" fullWidth>
                         <DialogTitle sx={{ fontWeight: 700 }}>
                             {expandedPeriodo && (() => {
-                                const [estado, periodo, year] = expandedPeriodo.split('|');
-                                return `Viajes en ${estado} — ${etiquetaPeriodo(periodo)} ${year}`;
+                                const [estado, periodo] = expandedPeriodo.split('|');
+                                return `Galones en ${estado || 'sin estado'} — ${etiquetaPeriodo(periodo)}`;
                             })()}
                         </DialogTitle>
                         <DialogContent dividers>
@@ -779,18 +836,14 @@ export default function IftaPage() {
                                     <TableHead>
                                         <TableRow>
                                             <TableCell sx={{ fontWeight: 700 }}>Viaje #</TableCell>
-                                            <TableCell sx={{ fontWeight: 700 }}>Fecha Carga</TableCell>
-                                            <TableCell sx={{ fontWeight: 700 }}>Fecha Entrega</TableCell>
-                                            <TableCell sx={{ fontWeight: 700 }} align="right">Total Galones</TableCell>
+                                            <TableCell sx={{ fontWeight: 700 }} align="right">Galones</TableCell>
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
-                                        {periodoTrips[expandedPeriodo].map(trip => (
-                                            <TableRow key={trip.trip_id}>
-                                                <TableCell sx={{ fontWeight: 600 }}>{trip.trip_number}</TableCell>
-                                                <TableCell>{fmtDate(trip.creation_date)}</TableCell>
-                                                <TableCell>{fmtDate(trip.return_date)}</TableCell>
-                                                <TableCell align="right">{fmtInt(trip.galones)}</TableCell>
+                                        {periodoTrips[expandedPeriodo].map((carga, i) => (
+                                            <TableRow key={`${carga.trip_number}-${i}`}>
+                                                <TableCell sx={{ fontWeight: 600 }}>{carga.trip_number}</TableCell>
+                                                <TableCell align="right">{fmtInt(carga.galones)}</TableCell>
                                             </TableRow>
                                         ))}
                                     </TableBody>
@@ -801,6 +854,121 @@ export default function IftaPage() {
                             <Button onClick={() => setExpandedPeriodo(null)}>Cerrar</Button>
                         </DialogActions>
                     </Dialog>
+                </Box>
+            )}
+
+            {tabValue === 3 && (
+                <Box>
+                    <Paper variant="outlined" sx={{ p: 2, mb: 2.5 }}>
+                        <Stack direction="row" alignItems="center" gap={1} mb={1.5}>
+                            <FilterListIcon fontSize="small" color="action" />
+                            <Typography variant="subtitle2" fontWeight={700}>Filtros</Typography>
+                        </Stack>
+                        <Stack direction="row" gap={2} flexWrap="wrap" alignItems="flex-end">
+                            <TextField size="small" label="Del viaje" type="number" value={unidTripFrom}
+                                onChange={e => setUnidTripFrom(e.target.value)} sx={{ width: 130 }} />
+                            <TextField size="small" label="Al viaje" type="number" value={unidTripTo}
+                                onChange={e => setUnidTripTo(e.target.value)} sx={{ width: 130 }} />
+                            <TextField size="small" label="Año" value={unidYear}
+                                onChange={e => setUnidYear(e.target.value)} sx={{ width: 100 }}
+                                slotProps={{ htmlInput: { maxLength: 4 } }} />
+                            <Button variant="contained" size="small" onClick={fetchUnidades}
+                                disabled={loadingUnidades} startIcon={<FilterListIcon />}>
+                                Aplicar
+                            </Button>
+                            <Button size="small" color="inherit" onClick={() => {
+                                setUnidTripFrom('');
+                                setUnidTripTo('');
+                                setUnidYear(anioActual());
+                            }}>
+                                Limpiar
+                            </Button>
+                            <Button size="small" variant="outlined" startIcon={<PictureAsPdfIcon />}
+                                onClick={printUnidadesPDF} disabled={loadingUnidades || unidadesPorEstado.length === 0}>
+                                Imprimir
+                            </Button>
+                        </Stack>
+                    </Paper>
+
+                    {loadingUnidades ? (
+                        <Box display="flex" alignItems="center" gap={1.5} py={4}>
+                            <CircularProgress size={22} />
+                            <Typography color="text.secondary">Cargando millas por unidad...</Typography>
+                        </Box>
+                    ) : (
+                        <TableContainer component={Paper} variant="outlined">
+                            <Table size="small">
+                                <TableHead>
+                                    <TableRow sx={{ bgcolor: COLOR.LIENZO }}>
+                                        <TableCell sx={{ fontWeight: 700 }}>Estado / Unidad</TableCell>
+                                        <TableCell sx={{ fontWeight: 700 }} align="right">Millas</TableCell>
+                                        <TableCell sx={{ fontWeight: 700 }} align="center">Modificar millas</TableCell>
+                                        <TableCell sx={{ fontWeight: 700 }} align="right">Total final</TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {unidadesPorEstado.length === 0 ? (
+                                        <TableRow>
+                                            <TableCell colSpan={4} align="center" sx={{ py: 4, color: 'text.secondary' }}>
+                                                Sin datos para los filtros aplicados.
+                                            </TableCell>
+                                        </TableRow>
+                                    ) : (
+                                        <>
+                                            {unidadesPorEstado.map(g => {
+                                                const ajusteDelEstado = ajusteDeEstado(g, ajustesUnidades);
+                                                return (
+                                                <Fragment key={g.estado}>
+                                                    <TableRow sx={{ bgcolor: COLOR.LIENZO }}>
+                                                        <TableCell>
+                                                            <Chip label={g.estado} size="small" sx={{ fontWeight: 700, minWidth: 42 }} />
+                                                        </TableCell>
+                                                        <TableCell align="right" sx={{ fontWeight: 700 }}>{fmt(g.total)}</TableCell>
+                                                        <TableCell align="center" sx={{ fontWeight: 700, color: 'text.secondary' }}>
+                                                            {ajusteDelEstado !== 0 ? fmtAjuste(ajusteDelEstado) : '—'}
+                                                        </TableCell>
+                                                        <TableCell align="right" sx={{ fontWeight: 700 }}>{fmtInt(g.total + ajusteDelEstado)}</TableCell>
+                                                    </TableRow>
+                                                    {g.unidades.map(u => {
+                                                        const llave = llaveAjusteUnidad(g.estado, u.unidad);
+                                                        return (
+                                                            <TableRow key={llave} hover>
+                                                                <TableCell sx={{ pl: 6, color: 'text.secondary' }}>
+                                                                    {u.unidad != null ? `Unidad ${u.unidad}` : 'Sin unidad'}
+                                                                </TableCell>
+                                                                <TableCell align="right">{fmt(u.total)}</TableCell>
+                                                                <TableCell align="center">
+                                                                    <TextField
+                                                                        size="small"
+                                                                        type="number"
+                                                                        placeholder="0"
+                                                                        value={ajustesUnidades[llave] ?? ''}
+                                                                        onChange={e => setAjustesUnidades(prev => ({ ...prev, [llave]: e.target.value }))}
+                                                                        sx={{ width: 120 }}
+                                                                        slotProps={{ htmlInput: { step: 'any', style: { textAlign: 'right' } } }}
+                                                                    />
+                                                                </TableCell>
+                                                                <TableCell align="right">{fmtInt(u.total + ajusteDeUnidad(ajustesUnidades, g.estado, u.unidad))}</TableCell>
+                                                            </TableRow>
+                                                        );
+                                                    })}
+                                                </Fragment>
+                                                );
+                                            })}
+                                            <TableRow sx={{ bgcolor: COLOR.LIENZO }}>
+                                                <TableCell sx={{ fontWeight: 700 }}>TOTAL</TableCell>
+                                                <TableCell align="right" sx={{ fontWeight: 700 }}>{fmt(grandTotalUnidades)}</TableCell>
+                                                <TableCell align="center" sx={{ fontWeight: 700, color: 'text.secondary' }}>
+                                                    {grandAjusteUnidades !== 0 ? fmtAjuste(grandAjusteUnidades) : '—'}
+                                                </TableCell>
+                                                <TableCell align="right" sx={{ fontWeight: 700 }}>{fmtInt(grandTotalUnidades + grandAjusteUnidades)}</TableCell>
+                                            </TableRow>
+                                        </>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                    )}
                 </Box>
             )}
         </Box>

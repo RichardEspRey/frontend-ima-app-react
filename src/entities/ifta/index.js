@@ -16,15 +16,19 @@ export {
   periodosDisponibles,
   filtrarPeriodos,
   llavePeriodo,
+  normalizarGalonesIfta,
+  agruparUnidadesPorEstado,
+  llaveAjusteUnidad,
+  ajusteDeUnidad,
+  ajusteDeEstado,
 } from "./model/ifta"
 
 export {
-  LLAVE_PERIODOS_IFTA,
-  llavePeriodosIfta,
   llaveTotalesIfta,
-  obtenerPeriodosIfta,
+  obtenerGalonesIfta,
+  obtenerDetalleGalonesIfta,
+  obtenerMillasUnidades,
   obtenerTotalesPorEstado,
   obtenerViajesIfta,
-  usePeriodosIfta,
   useTotalesPorEstado,
 } from "./api/ifta"
