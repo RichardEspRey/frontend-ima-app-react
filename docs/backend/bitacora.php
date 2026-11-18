@@ -8,8 +8,9 @@
 // Solo lee. Las tres operaciones tienen nombre de lectura, así que la propia bitácora
 // no las registra.
 //
-// Quién puede consultarla: los Admin y quien tenga encendido el permiso `bitacora_ver`
-// (SQL 015). Se comprueba con el `_usuario` que manda la app. La API no tiene sesión
+// Quién puede consultarla: solo quien tenga encendido el permiso `bitacora_ver` (SQL 015),
+// aunque sea administrador. Decidido por Emiliano el 2026-11-17: ser Admin no basta, para
+// que la vea únicamente a quien él se la dé. Se comprueba con el `_usuario` que manda la app. La API no tiene sesión
 // real, así que esto evita que la pantalla se abra por error, no que alguien con
 // mala intención la lea con curl.
 //
@@ -51,13 +52,12 @@ function puedeVer($db, $usuarioId) {
           FROM Users_credentials uc
          WHERE uc.id = ?
            AND COALESCE(uc.active, 1) = 1
-           AND (LOWER(uc.type) = 'admin'
-                OR EXISTS (SELECT 1
-                             FROM user_feature_flags uff
-                             JOIN features f ON f.feature_id = uff.feature_id
-                            WHERE uff.user_id = uc.id
-                              AND uff.enabled = 1
-                              AND f.feature_key = 'bitacora_ver'))
+           AND EXISTS (SELECT 1
+                         FROM user_feature_flags uff
+                         JOIN features f ON f.feature_id = uff.feature_id
+                        WHERE uff.user_id = uc.id
+                          AND uff.enabled = 1
+                          AND f.feature_key = 'bitacora_ver')
     ");
     $stmt->execute([$usuarioId]);
     return (bool)$stmt->fetchColumn();

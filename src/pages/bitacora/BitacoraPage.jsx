@@ -11,7 +11,6 @@ import {
   accionDe, hoyLocal, horaLocal, leerDatos, moduloDe, nombreDeUsuario, rangoEnUtc, restarDias,
   useBitacora, useDetalleBitacora, useFiltrosBitacora,
 } from "../../entities/audit"
-import { useSesion } from "../../shared/auth"
 import {
   BloqueEsqueleto, BotonActualizar, CARD_SX, CELL_MUTED_SX, CELL_STRONG_SX, CELL_SX, CHIP_DANGER_SX, CHIP_OK_SX,
   CHIP_SX, COLOR, DIALOG_PAPER_SX, FilasEsqueleto, HEADER_CELL_SX, HEADER_ROW_SX, PAGE_SHELL_SX, PageHeader,
@@ -165,16 +164,15 @@ function Detalle({ id, onCerrar }) {
 /**
  * La bitácora de auditoría: quién hizo cada cambio y cuándo.
  *
- * La ven los administradores y quien tenga encendido «Ver bitácora» en el Gestor de
- * accesos. Las horas se guardan en UTC y se muestran en hora de Monterrey; los filtros
+ * Solo la ve quien tenga encendido «Ver bitácora» en el Gestor de accesos, aunque sea
+ * administrador: ser Admin no basta (decisión de Emiliano, 2026-11-17). Las horas se guardan en UTC y se muestran en hora de Monterrey; los filtros
  * de fecha se convierten antes de pedirlos. La paginación es en el servidor.
  *
  * @returns {object} La pantalla.
  */
 export default function BitacoraPage() {
-  const { esTotal } = useSesion()
   const permisos = useAuthStore((estado) => estado.userPermissions)
-  const puedeVer = esTotal || permisos?.bitacora_ver === true
+  const puedeVer = permisos?.bitacora_ver === true
 
   const hoy = hoyLocal()
   const [filtros, setFiltros] = useState({ desde: restarDias(hoy, 6), hasta: hoy, usuario: "", archivo: "", resultado: "", texto: "" })

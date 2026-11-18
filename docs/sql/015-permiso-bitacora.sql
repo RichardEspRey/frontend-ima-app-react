@@ -1,8 +1,8 @@
 -- Bitácora · permiso para consultarla
 --
--- Un permiso nuevo de escritorio, «Ver bitácora». Los Admin la ven siempre; a
--- cualquier otra persona se le enciende desde el Gestor de accesos, en el grupo
--- «Gestor de Acceso». Decidido por Emiliano el 2026-11-17.
+-- Un permiso nuevo de escritorio, «Ver bitácora». Solo la ve quien lo tenga encendido,
+-- aunque sea Admin; se enciende desde el Gestor de accesos. Decidido por Emiliano el
+-- 2026-11-17 (primero se había decidido que los Admin la vieran siempre).
 --
 -- Un solo envío. No borra ni modifica nada. Nace apagado para todos:
 -- features.php lista cada permiso aunque la persona no tenga fila en
