@@ -283,6 +283,12 @@ export const menuItemsConfig = [
       },
     ],
   },
+  {
+    name: "Bitácora",
+    featureKey: "bitacora_ver",
+    route: "/bitacora",
+    rolesPermitidos: ["admin"],
+  },
 ];
 
 export const GESTOR_ACCESOS_DRIVERS = {

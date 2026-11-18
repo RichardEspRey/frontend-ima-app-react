@@ -9,7 +9,7 @@ import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { 
     MdDashboard, MdCarRental, MdLocalShipping, MdDirectionsBus, MdLocalGasStation, 
     MdAttachMoney, MdExitToApp, MdList, MdAssignment, MdTrendingUp, MdBarChart, 
-    MdSecurity, MdChevronLeft, MdViewSidebar, MdViewCompact
+    MdSecurity, MdChevronLeft, MdViewSidebar, MdViewCompact, MdHistory
 } from 'react-icons/md'; 
 import { GrMapLocation } from "react-icons/gr";
 
@@ -41,6 +41,7 @@ const iconMap = {
     'Safety': MdSecurity,
     'Mapa': GrMapLocation,
     'Gestor de Acceso': MdList,
+    'Bitácora': MdHistory,
     'Estatus de Unidades': MdTrendingUp,
 };
 
