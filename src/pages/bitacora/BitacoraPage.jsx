@@ -8,7 +8,7 @@ import CloseIcon from "@mui/icons-material/Close"
 import SearchIcon from "@mui/icons-material/Search"
 
 import {
-  accionDe, hoyLocal, horaLocal, leerDatos, moduloDe, nombreDeUsuario, rangoEnUtc, restarDias,
+  accionDe, hoyLocal, horaLocal, leerDatos, moduloDe, nombreDeUsuario, rangoEnUtc, restarDias, textoDeApp,
   useBitacora, useDetalleBitacora, useFiltrosBitacora,
 } from "../../entities/audit"
 import {
@@ -91,7 +91,7 @@ function Detalle({ id, onCerrar }) {
                   <Dato etiqueta="Cuándo (hora de Monterrey)">{horaLocal(fila.fecha_utc)}</Dato>
                   <Dato etiqueta="Quién">{nombreDeUsuario(fila) || "Sin usuario: la app no lo mandó"}</Dato>
                   <Dato etiqueta="Desde">
-                    {[fila.app, fila.app_version].filter(Boolean).join(" ") || "App sin identificar"}
+                    {textoDeApp(fila, "App sin identificar")}
                     {fila.ip ? ` · ${fila.ip}` : ""}
                   </Dato>
                 </Grid>
@@ -339,7 +339,7 @@ export default function BitacoraPage() {
                     <Typography variant="caption" color={COLOR.APAGADO}>{moduloDe(fila.archivo)}</Typography>
                   </TableCell>
                   <TableCell sx={{ ...CELL_MUTED_SX, whiteSpace: "nowrap" }}>
-                    {[fila.app, fila.app_version].filter(Boolean).join(" ") || "—"}
+                    {textoDeApp(fila)}
                   </TableCell>
                   <TableCell><Resultado valor={fila.resultado} /></TableCell>
                 </TableRow>

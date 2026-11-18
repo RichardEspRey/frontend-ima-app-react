@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { accionDe, moduloDe, horaLocal, inicioDelDiaEnUtc, rangoEnUtc, hoyLocal, restarDias, leerDatos } from '../model/bitacora';
+import { accionDe, moduloDe, horaLocal, inicioDelDiaEnUtc, rangoEnUtc, hoyLocal, restarDias, leerDatos, textoDeApp } from '../model/bitacora';
 
 describe('textos de la bitácora', () => {
   it('traduce las operaciones conocidas', () => {
@@ -55,5 +55,19 @@ describe('leerDatos', () => {
   it('aguanta datos recortados o vacíos', () => {
     expect(leerDatos('{"a":"12…')).toEqual([['datos', '{"a":"12…']]);
     expect(leerDatos(null)).toEqual([]);
+  });
+});
+
+describe('textoDeApp', () => {
+  it('con versión la muestra; sin versión dice que la app no está actualizada', () => {
+    expect(textoDeApp({ app: 'Desktop', app_version: '1.6.2' })).toBe('Desktop 1.6.2');
+    expect(textoDeApp({ app: 'Movil', app_version: null })).toBe('Movil · sin actualizar');
+    expect(textoDeApp({ app: 'Desktop' })).toBe('Desktop · sin actualizar');
+  });
+
+  it('lo que no es una de las apps se muestra tal cual, y sin dato queda el respaldo', () => {
+    expect(textoDeApp({ app: 'Navegador' })).toBe('Navegador');
+    expect(textoDeApp({ app: null })).toBe('—');
+    expect(textoDeApp({}, 'App sin identificar')).toBe('App sin identificar');
   });
 });

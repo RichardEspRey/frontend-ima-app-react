@@ -12,6 +12,7 @@ export {
   rangoEnUtc,
   leerDatos,
   nombreDeUsuario,
+  textoDeApp,
 } from "./model/bitacora"
 
 export {

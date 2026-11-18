@@ -306,3 +306,20 @@ export function leerDatos(texto) {
 export function nombreDeUsuario(fila) {
   return fila?.usuario_nombre || fila?.usuario_cuenta || (fila?.usuario_id ? `Usuario ${fila.usuario_id}` : "")
 }
+
+/**
+ * Desde qué app se hizo una acción, como se lee en pantalla.
+ *
+ * Las apps actualizadas mandan su versión («Desktop 1.6.2»). Las de antes no; para
+ * esas el servidor deduce cuál es por cómo se identifica el cliente y deja la versión
+ * vacía, que aquí se lee como «sin actualizar».
+ *
+ * @param {object} [fila] Un renglón de la bitácora.
+ * @param {string} [vacio="—"] Lo que se muestra si no se sabe.
+ * @returns {string} Por ejemplo `Movil · sin actualizar`.
+ */
+export function textoDeApp(fila, vacio = "—") {
+  if (!fila?.app) return vacio
+  if (fila.app_version) return `${fila.app} ${fila.app_version}`
+  return ["Desktop", "Movil"].includes(fila.app) ? `${fila.app} · sin actualizar` : fila.app
+}

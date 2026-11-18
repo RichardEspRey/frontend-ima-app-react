@@ -160,13 +160,30 @@ final class Bitacora
         return null;
     }
 
-    // `_app` llega como «Desktop 1.6.0» o «Movil 2.3».
+    // `_app` llega como «Desktop 1.6.2» o «Movil 1.0.5». Las versiones de antes no lo
+    // mandan; para esas se deduce la app por cómo se identifica el cliente (User-Agent)
+    // y la versión queda vacía, que es lo que la pantalla lee como «sin actualizar».
     private static function app()
     {
         $texto = trim((string)($_POST['_app'] ?? ''));
-        if ($texto === '') return [null, null];
+        if ($texto === '') return [self::appPorAgente(), null];
         $partes = preg_split('/\s+/', $texto, 2);
         return [substr($partes[0], 0, 20), isset($partes[1]) ? substr($partes[1], 0, 20) : null];
+    }
+
+    // Electron dice «Electron/…»; React Native en Android usa okhttp y en iPhone
+    // CFNetwork/Darwin; Expo Go se anuncia como Expo. Un navegador común queda como
+    // «Navegador» y cualquier otra cosa (curl, scripts) como «Otro».
+    private static function appPorAgente()
+    {
+        $agente = (string)($_SERVER['HTTP_USER_AGENT'] ?? '');
+        if ($agente === '') return null;
+        if (stripos($agente, 'Electron') !== false) return 'Desktop';
+        foreach (['okhttp', 'CFNetwork', 'Darwin', 'Expo', 'Dalvik'] as $marca) {
+            if (stripos($agente, $marca) !== false) return 'Movil';
+        }
+        if (stripos($agente, 'Mozilla') !== false) return 'Navegador';
+        return 'Otro';
     }
 
     private static function resultado()
