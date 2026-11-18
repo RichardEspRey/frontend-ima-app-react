@@ -219,7 +219,8 @@ const NotificationBell = () => {
     };
   };
 
-  const abrir = (destino) => {
+  const abrir = (n, destino) => {
+    marcarLeida(n);
     handleClose();
     if (destino.pestanaViajes !== undefined) {
       useViajesFiltrosStore.getState().set({ tabValue: destino.pestanaViajes, page: 0 });
@@ -266,8 +267,11 @@ const NotificationBell = () => {
 
   const handleClose = () => {
     setAnchorEl(null);
+  };
+
+  const marcarLeida = (n) => {
     const updated = new Set(seenIds);
-    todas.forEach((n) => updated.add(n.id));
+    updated.add(n.id);
     setSeenIds(updated);
     guardarIds(seenKey(user?.id), updated);
   };
@@ -389,7 +393,7 @@ const NotificationBell = () => {
                   return (
                     <ListItemButton
                       key={n.id}
-                      onClick={() => abrir(destino)}
+                      onClick={() => abrir(n, destino)}
                       sx={{
                         px: 2.5,
                         py: 1.25,
