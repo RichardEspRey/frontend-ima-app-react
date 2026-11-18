@@ -29,6 +29,7 @@ $candidatas = [
     'pagos_semanales', 'pagos_detalle', 'trip_payments', 'pago_trayectos_mx',
     'Users_credentials', 'user_feature_flags', 'notif_suscriptores',
     'ordenes_servicio', 'orden_servicio_detalles',
+    'programacion_trips', 'trucks', 'caja', 'drivers', 'companies', 'warehouses',
 ];
 
 $salida = ['status' => 'success'];
@@ -106,6 +107,21 @@ try {
       ORDER BY veces DESC
          LIMIT 25
     ")->fetchAll(PDO::FETCH_ASSOC);
+
+    // Quién manda las filas sin usuario o sin app reconocida (columna `agente`, SQL 018).
+    try {
+        $salida['bitacora_sin_identificar'] = $db->query("
+            SELECT app, agente, archivo, ip, COUNT(*) AS filas, MAX(id) AS ultima
+              FROM bitacora
+             WHERE agente IS NOT NULL
+               AND (usuario_id IS NULL OR app IN ('Otro', 'Sin agente'))
+          GROUP BY app, agente, archivo, ip
+          ORDER BY filas DESC
+             LIMIT 50
+        ")->fetchAll(PDO::FETCH_ASSOC);
+    } catch (Throwable $e) {
+        $salida['bitacora_sin_identificar'] = 'Sin la columna agente: ' . $e->getMessage();
+    }
 
     $salida['tamano_tablas_bitacora_kb'] = $db->query("
         SELECT table_name, ROUND((data_length + index_length) / 1024, 1) AS kb
