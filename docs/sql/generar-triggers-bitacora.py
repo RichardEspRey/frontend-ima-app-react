@@ -19,6 +19,11 @@ TANDAS = {
         ['pagos_semanales', 'pagos_detalle',
          'stage_stops', 'trip_stage_invoices', 'gastos_viaje', 'programacion_trips',
          'trucks', 'caja', 'drivers', 'companies', 'warehouses']),
+    4: ('020-bitacora-triggers-tanda-4.sql',
+        ['personal_admin', 'milla_driver', 'company_invoice_info', 'pago_trayecto_viaje',
+         'diesel_fuente_margen', 'cajas_externas',
+         'mtto_puntos', 'mtto_inspeccion_lado', 'mtto_concepto_detalle', 'mtto_notif_suscriptores',
+         'caja_estatus', 'roadside_repairs', 'inspections', 'servicios_orden', 'afinaciones_historial']),
 }
 EXCLUIR = {
     'Users_credentials': {'pass', 'push_token'},
@@ -28,6 +33,8 @@ EXCLUIR = {
                'last_latitude', 'last_longitude'},
     # El XML/JSON completo de la factura; pesa mucho y ya queda el archivo y la versión.
     'trip_stage_invoices': {'json_data'},
+    # El reporte completo de la inspección en JSON; quedan el resto de los campos.
+    'inspections': {'reportes_json'},
 }
 
 d = json.load(open(ESQUEMA))

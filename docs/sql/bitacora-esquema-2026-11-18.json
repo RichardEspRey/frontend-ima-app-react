@@ -1,10 +1,44 @@
 {
   "tomado": "2026-11-18",
-  "nota": "Estructura de las tablas candidatas a triggers, leída de producción con bitacora_diagnostico.php. Sin permisos ni contraseñas. Las tablas de las tandas 1 y 2 no cambiaron desde la copia del 2026-11-17.",
+  "nota": "Estructura de todas las tablas de producción (salvo wp_* y la bitácora), leída con bitacora_diagnostico.php. Sin permisos ni contraseñas.",
   "tablas": {
+    "cl_remolque": {
+      "filas": 21,
+      "kb": 16,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": null,
+      "columnas": [
+        "id int(11)",
+        "viaje_id varchar(15)",
+        "contenido varchar(250)",
+        "fecha_creacion datetime"
+      ],
+      "llave": [
+        "id"
+      ]
+    },
+    "cotizacion_paradas": {
+      "filas": 0,
+      "kb": 32,
+      "creada": "2026-06-17 12:55:49",
+      "ultimo_cambio": null,
+      "columnas": [
+        "id int(11)",
+        "cotizacion_id int(11)",
+        "orden tinyint(4)",
+        "nombre varchar(255)",
+        "lat decimal(10,7)",
+        "lon decimal(10,7)"
+      ],
+      "llave": [
+        "id"
+      ]
+    },
     "trip_stage_invoices": {
-      "filas": 120,
+      "filas": 118,
       "kb": 96,
+      "creada": "2026-06-29 12:08:51",
+      "ultimo_cambio": null,
       "columnas": [
         "id int(11)",
         "stage_id int(11)",
@@ -19,9 +53,226 @@
         "id"
       ]
     },
+    "detalles_gasto_bkp_20260829": {
+      "filas": 52,
+      "kb": 16,
+      "creada": "2026-08-29 14:59:48",
+      "ultimo_cambio": null,
+      "columnas": [
+        "id_detalle_gasto int(11)",
+        "id_gasto int(11)",
+        "id_categoria_mantenimiento int(11)",
+        "id_subcategoria_mantenimiento int(11)"
+      ],
+      "llave": []
+    },
+    "cat_trucks_requisitos": {
+      "filas": 13,
+      "kb": 32,
+      "creada": "2026-07-06 14:45:05",
+      "ultimo_cambio": null,
+      "columnas": [
+        "id_requisito int(11)",
+        "key_name varchar(50)",
+        "label varchar(100)",
+        "categoria enum('USA','MEX','Otros')",
+        "tipo enum('file','text')",
+        "tiene_vencimiento tinyint(1)",
+        "activo tinyint(1)",
+        "oculto_en_tabla tinyint(1)"
+      ],
+      "llave": [
+        "id_requisito"
+      ]
+    },
+    "status_documents_Trucks": {
+      "filas": 4,
+      "kb": 16,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": null,
+      "columnas": [
+        "id int(11)",
+        "truck_id int(11)",
+        "registracion bit(1)",
+        "cab bit(1)",
+        "coi bit(1)",
+        "inspeccion_mecanica bit(1)",
+        "tx_dmv bit(1)",
+        "permiso_ny bit(1)",
+        "permiso_nm bit(1)",
+        "dtops bit(1)",
+        "tarjeta_circulacion bit(1)",
+        "inspeccion_fisio_mecanica bit(1)",
+        "inspeccion_humos bit(1)",
+        "puente_fideicomiso bit(1)",
+        "seguro bit(1)"
+      ],
+      "llave": [
+        "id"
+      ]
+    },
+    "permissions": {
+      "filas": 234,
+      "kb": 32,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": null,
+      "columnas": [
+        "id int(11)",
+        "user_id int(11)",
+        "section_name varchar(100)",
+        "can_view tinyint(1)"
+      ],
+      "llave": [
+        "id"
+      ]
+    },
+    "diesel_fuente_margen": {
+      "filas": 0,
+      "kb": 16,
+      "creada": "2026-11-05 16:41:28",
+      "ultimo_cambio": null,
+      "columnas": [
+        "diesel_id int(11)",
+        "usar_fleetone tinyint(1)",
+        "actualizado_por varchar(150)",
+        "actualizado_en datetime"
+      ],
+      "llave": [
+        "diesel_id"
+      ]
+    },
+    "gastos_documentos": {
+      "filas": 1285,
+      "kb": 240,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": "2026-11-18 08:02:28",
+      "columnas": [
+        "id_documento int(11)",
+        "id_gasto int(11)",
+        "tipo_documento varchar(50)",
+        "nombre_original varchar(255)",
+        "ruta_archivo varchar(255)",
+        "fecha_carga timestamp"
+      ],
+      "llave": [
+        "id_documento"
+      ]
+    },
+    "conteo_inspecciones": {
+      "filas": 173,
+      "kb": 16,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": "2026-11-18 12:26:12",
+      "columnas": [
+        "viaje_id int(11)",
+        "inspeccion_camion int(11)",
+        "revision_caja int(11)",
+        "cl_final int(11)"
+      ],
+      "llave": [
+        "viaje_id"
+      ]
+    },
+    "mtto_concepto_detalle": {
+      "filas": 0,
+      "kb": 16,
+      "creada": "2026-09-30 21:55:56",
+      "ultimo_cambio": null,
+      "columnas": [
+        "id_detalle int(11)",
+        "categoria varchar(100)",
+        "id_gasto int(11)"
+      ],
+      "llave": [
+        "id_detalle"
+      ]
+    },
+    "personal_admin": {
+      "filas": 7,
+      "kb": 16,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": null,
+      "columnas": [
+        "id int(11)",
+        "nombre varchar(255)",
+        "puesto varchar(255)",
+        "sueldo decimal(10,2)",
+        "frecuencia_pago enum('Semanal','Quincenal','Mensual')",
+        "tipo_nomina enum('MX','US')",
+        "created_at datetime",
+        "status enum('Activo','Inactivo')"
+      ],
+      "llave": [
+        "id"
+      ]
+    },
+    "Notifications_trips_subscribers": {
+      "filas": 7,
+      "kb": 32,
+      "creada": "2026-09-15 17:33:31",
+      "ultimo_cambio": null,
+      "columnas": [
+        "id bigint(20) unsigned",
+        "user_id int(11)",
+        "activo tinyint(1)",
+        "created_at datetime",
+        "subscribed_at datetime"
+      ],
+      "llave": [
+        "id"
+      ]
+    },
+    "status_documents_Trailers": {
+      "filas": 3,
+      "kb": 16,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": null,
+      "columnas": [
+        "id int(11)",
+        "caja_id int(11)",
+        "Registracion bit(1)",
+        "Seguro bit(1)",
+        "CAB_CARD bit(1)",
+        "Fianza bit(1)",
+        "Certificado bit(1)"
+      ],
+      "llave": [
+        "id"
+      ]
+    },
+    "cotizaciones": {
+      "filas": 0,
+      "kb": 16,
+      "creada": "2026-06-17 12:55:46",
+      "ultimo_cambio": null,
+      "columnas": [
+        "id int(11)",
+        "nombre varchar(255)",
+        "guardado_en datetime",
+        "origen_nombre varchar(255)",
+        "origen_lat decimal(10,7)",
+        "origen_lon decimal(10,7)",
+        "destino_nombre varchar(255)",
+        "destino_lat decimal(10,7)",
+        "destino_lon decimal(10,7)",
+        "origen_camion_nombre varchar(255)",
+        "origen_camion_lat decimal(10,7)",
+        "origen_camion_lon decimal(10,7)",
+        "millas_viaje decimal(10,2)",
+        "millas_vacias decimal(10,2)",
+        "millas_total decimal(10,2)",
+        "tarifa decimal(10,2)",
+        "rate decimal(10,4)"
+      ],
+      "llave": [
+        "id"
+      ]
+    },
     "gastos_viaje": {
       "filas": 142,
       "kb": 16,
+      "creada": "2026-07-04 11:04:39",
+      "ultimo_cambio": null,
       "columnas": [
         "id int(11)",
         "trip_id int(11)",
@@ -38,9 +289,133 @@
         "id"
       ]
     },
+    "revision_caja": {
+      "filas": 26,
+      "kb": 16,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": null,
+      "columnas": [
+        "id int(11)",
+        "viaje_id int(11)",
+        "puertas_traseras bit(1)",
+        "bisagras_seguros_sin_danos bit(1)",
+        "paredes_laterales bit(1)",
+        "reflectores_cinta_reflectiva bit(1)",
+        "salpicaderas_buen_estado bit(1)",
+        "luces_traseras_frenos bit(1)",
+        "luces_traseras_direccionales bit(1)",
+        "luces_traseras_reversa bit(1)",
+        "luces_traseras_intermitentes bit(1)",
+        "luces_laterales_buenas_condiciones bit(1)",
+        "piso_firme bit(1)",
+        "sin_humedad_fugas bit(1)",
+        "sin_residuos bit(1)",
+        "paredes_internas_sin_danos bit(1)",
+        "llantas_presion_adecuada bit(1)",
+        "llantas_sin_desgaste bit(1)",
+        "rines_buen_estado bit(1)",
+        "suspension_optima bit(1)",
+        "ejes_sin_fugas bit(1)",
+        "mangueras_aire_sin_fugas bit(1)",
+        "freno_emergencia_funcional bit(1)",
+        "inspeccion_visual_tambores bit(1)",
+        "fecha_creacion datetime"
+      ],
+      "llave": [
+        "id"
+      ]
+    },
+    "tipos_gasto": {
+      "filas": 14,
+      "kb": 32,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": null,
+      "columnas": [
+        "id_tipo_gasto int(11)",
+        "nombre_tipo_gasto varchar(100)",
+        "activo tinyint(1)"
+      ],
+      "llave": [
+        "id_tipo_gasto"
+      ]
+    },
+    "subcategorias_mantenimiento": {
+      "filas": 38,
+      "kb": 32,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": null,
+      "columnas": [
+        "id_subcategoria int(11)",
+        "id_categoria int(11)",
+        "nombre_subcategoria varchar(100)"
+      ],
+      "llave": [
+        "id_subcategoria"
+      ]
+    },
+    "roadside_repairs": {
+      "filas": 5,
+      "kb": 64,
+      "creada": "2026-08-29 20:34:57",
+      "ultimo_cambio": null,
+      "columnas": [
+        "id_reparacion int(11)",
+        "fecha_registro datetime",
+        "fecha_suceso date",
+        "truck_id int(11)",
+        "operador varchar(150)",
+        "ciudad varchar(100)",
+        "estado varchar(100)",
+        "fallo varchar(255)",
+        "tipo_reparacion enum('Operador','Interno','Road Services')",
+        "comentarios varchar(300)",
+        "costo_reparacion decimal(10,2)",
+        "costo_refacciones decimal(10,2)",
+        "total decimal(10,2)",
+        "trip_id int(11)"
+      ],
+      "llave": [
+        "id_reparacion"
+      ]
+    },
+    "cajas_documents": {
+      "filas": 188,
+      "kb": 32,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": "2026-11-17 08:33:46",
+      "columnas": [
+        "doc_id int(11)",
+        "caja_id int(11)",
+        "tipo_documento varchar(50)",
+        "fecha_vencimiento date",
+        "url_pdf varchar(100)",
+        "status bit(1)",
+        "valor_texto varchar(255)"
+      ],
+      "llave": [
+        "doc_id"
+      ]
+    },
+    "roadside_repair_docs": {
+      "filas": 5,
+      "kb": 32,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": null,
+      "columnas": [
+        "id_doc int(11)",
+        "id_reparacion int(11)",
+        "file_name varchar(255)",
+        "file_path varchar(255)"
+      ],
+      "llave": [
+        "id_doc"
+      ]
+    },
     "trucks": {
       "filas": 12,
       "kb": 48,
+      "creada": "2026-07-16 01:27:46",
+      "ultimo_cambio": "2026-11-18 14:15:07",
       "columnas": [
         "truck_id int(11)",
         "unidad smallint(6)",
@@ -70,9 +445,55 @@
         "truck_id"
       ]
     },
+    "documents": {
+      "filas": 4471,
+      "kb": 1552,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": "2026-11-18 11:46:48",
+      "columnas": [
+        "document_id int(11)",
+        "tipo_documento varchar(255)",
+        "nombre_archivo varchar(255)",
+        "path_servidor_real varchar(512)",
+        "fecha_vencimiento date",
+        "uploaded_at timestamp"
+      ],
+      "llave": [
+        "document_id"
+      ]
+    },
+    "pre_trip": {
+      "filas": 2,
+      "kb": 16,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": null,
+      "columnas": [
+        "id int(11)",
+        "trip_id int(11)",
+        "estado_tractor bit(1)",
+        "neumaticos bit(1)",
+        "luces bit(1)",
+        "fugas bit(1)",
+        "tablero_alertas bit(1)",
+        "freno bit(1)",
+        "puerta bit(1)",
+        "interior_limpio bit(1)",
+        "conexion_aire bit(1)",
+        "extintor bit(1)",
+        "triangulos bit(1)",
+        "herramientas bit(1)",
+        "observaciones varchar(100)",
+        "fecha datetime"
+      ],
+      "llave": [
+        "id"
+      ]
+    },
     "diesel": {
       "filas": 1084,
       "kb": 144,
+      "creada": "2026-07-13 16:15:25",
+      "ultimo_cambio": "2026-11-17 23:17:16",
       "columnas": [
         "id int(11)",
         "trip_id int(11)",
@@ -92,9 +513,30 @@
         "id"
       ]
     },
+    "cat_drivers_requisitos": {
+      "filas": 15,
+      "kb": 32,
+      "creada": "2026-07-06 14:45:05",
+      "ultimo_cambio": null,
+      "columnas": [
+        "id_requisito int(11)",
+        "key_name varchar(50)",
+        "label varchar(100)",
+        "categoria enum('Personales','Viaje','Otros')",
+        "tipo enum('file','text')",
+        "tiene_vencimiento tinyint(1)",
+        "activo tinyint(1)",
+        "oculto_en_tabla tinyint(1)"
+      ],
+      "llave": [
+        "id_requisito"
+      ]
+    },
     "trips": {
       "filas": 533,
       "kb": 1696,
+      "creada": "2026-10-17 10:55:35",
+      "ultimo_cambio": "2026-11-18 13:26:33",
       "columnas": [
         "trip_id int(11)",
         "trip_number int(11)",
@@ -127,6 +569,8 @@
     "detalles_gasto": {
       "filas": 1878,
       "kb": 464,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": "2026-11-18 08:02:28",
       "columnas": [
         "id_detalle_gasto int(11)",
         "id_gasto int(11)",
@@ -145,6 +589,8 @@
     "caja": {
       "filas": 7,
       "kb": 16,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": "2026-11-18 11:46:48",
       "columnas": [
         "caja_id int(11)",
         "no_caja smallint(6)",
@@ -158,9 +604,27 @@
         "caja_id"
       ]
     },
+    "afinaciones_historial": {
+      "filas": 0,
+      "kb": 32,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": null,
+      "columnas": [
+        "id_afinacion int(11)",
+        "truck_id int(11)",
+        "fecha_registro datetime",
+        "millas_acumuladas float(10,2)",
+        "porcentaje_aceite int(11)"
+      ],
+      "llave": [
+        "id_afinacion"
+      ]
+    },
     "orden_servicio_detalles": {
       "filas": 355,
       "kb": 64,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": null,
       "columnas": [
         "id_detalle int(11)",
         "id_servicio int(11)",
@@ -174,9 +638,62 @@
         "id_detalle"
       ]
     },
+    "Inspeccion_caja_fotos": {
+      "filas": 37,
+      "kb": 16,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": null,
+      "columnas": [
+        "id int(11)",
+        "trip_id int(11)",
+        "url_pdf varchar(100)",
+        "fecha datetime"
+      ],
+      "llave": [
+        "id"
+      ]
+    },
+    "activos": {
+      "filas": 0,
+      "kb": 32,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": null,
+      "columnas": [
+        "id_activo int(11)",
+        "nombre_activo varchar(255)",
+        "numero_serie varchar(100)",
+        "tipo_activo varchar(100)",
+        "fecha_adquisicion date"
+      ],
+      "llave": [
+        "id_activo"
+      ]
+    },
+    "status_documents_IMA": {
+      "filas": 0,
+      "kb": 16,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": null,
+      "columnas": [
+        "id int(11)",
+        "MC bit(1)",
+        "W9 bit(1)",
+        "IFTA bit(1)",
+        "d2290 bit(1)",
+        "Permiso_KYU bit(1)",
+        "UCR bit(1)",
+        "SCAC bit(1)",
+        "CAAT bit(1)"
+      ],
+      "llave": [
+        "id"
+      ]
+    },
     "pagos_semanales": {
       "filas": 0,
       "kb": 16,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": null,
       "columnas": [
         "period_id varchar(10)",
         "anio int(11)",
@@ -189,9 +706,150 @@
         "period_id"
       ]
     },
+    "status_documents_Drivers": {
+      "filas": 12,
+      "kb": 16,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": null,
+      "columnas": [
+        "id int(11)",
+        "driver_id int(11)",
+        "INE bit(1)",
+        "Acta_Nacimiento bit(1)",
+        "CURP bit(1)",
+        "Comprobante_domicilio bit(1)",
+        "Constancia bit(1)",
+        "Visa bit(1)",
+        "I94 bit(1)",
+        "Solicitud_empleo bit(1)",
+        "Licencia bit(1)",
+        "APTO bit(1)",
+        "Antidoping bit(1)"
+      ],
+      "llave": [
+        "id"
+      ]
+    },
+    "inspeccion_camion": {
+      "filas": 25,
+      "kb": 16,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": null,
+      "columnas": [
+        "id int(11)",
+        "trip_id int(11)",
+        "solicitud_retiro bit(1)",
+        "doda bit(1)",
+        "manifiesto bit(1)",
+        "entry bit(1)",
+        "bol bit(1)",
+        "carta_porte bit(1)",
+        "licencia_vigente bit(1)",
+        "visa bit(1)",
+        "apto bit(1)",
+        "examen_medico bit(1)",
+        "i94 bit(1)",
+        "neumaticos_presion bit(1)",
+        "neumaticos_buenas_condiciones bit(1)",
+        "rines_buenas_condiciones bit(1)",
+        "luces_altas bit(1)",
+        "luces_bajas bit(1)",
+        "luces_direccionales bit(1)",
+        "luces_frenos bit(1)",
+        "luces_intermitentes bit(1)",
+        "espejos_buenas_condiciones bit(1)",
+        "parabrisas_limpio bit(1)",
+        "parabrisas_sin_danios bit(1)",
+        "parabrisas_funcionales bit(1)",
+        "liquido_limpia_parabrisas bit(1)",
+        "carroceria_buenas_condiciones bit(1)",
+        "nivel_aceite_motor bit(1)",
+        "nivel_anticongelante bit(1)",
+        "nivel_liquido_frenos bit(1)",
+        "nivel_direccion_hidraulica bit(1)",
+        "fugas_visibles bit(1)",
+        "cinturon_seguridad bit(1)",
+        "claxon_luces_tablero bit(1)",
+        "indicadores_tablero varchar(100)",
+        "extintor bit(1)",
+        "triangulos_seguridad bit(1)",
+        "chaleco_seguridad bit(1)",
+        "herramientas_basicas bit(1)",
+        "llanta_refaccion bit(1)",
+        "focos_fusibles bit(1)",
+        "cables_corriente bit(1)",
+        "manguera_aire bit(1)",
+        "bandas_min4 bit(1)",
+        "cinchos_min8 bit(1)",
+        "arrancador_emergencia bit(1)",
+        "fecha_creacion datetime"
+      ],
+      "llave": [
+        "id"
+      ]
+    },
+    "inspections": {
+      "filas": 3,
+      "kb": 80,
+      "creada": "2026-06-16 16:12:22",
+      "ultimo_cambio": null,
+      "columnas": [
+        "id_inspeccion int(11)",
+        "truck_id int(11)",
+        "trip_id int(11)",
+        "operador varchar(150)",
+        "ciudad varchar(100)",
+        "estado varchar(100)",
+        "fecha_inspeccion date",
+        "tipo_violacion enum('Warning','Out of services')",
+        "id_descripcion int(11)",
+        "comentarios text",
+        "reportes_json text",
+        "multa_ima decimal(10,2)",
+        "multa_driver decimal(10,2)",
+        "fecha_registro datetime"
+      ],
+      "llave": [
+        "id_inspeccion"
+      ]
+    },
+    "truck_documents": {
+      "filas": 1072,
+      "kb": 144,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": "2026-11-18 14:07:32",
+      "columnas": [
+        "doc_id int(11)",
+        "truck_id int(11)",
+        "tipo_documento varchar(50)",
+        "fecha_vencimiento date",
+        "url_pdf varchar(100)",
+        "status bit(1)",
+        "valor_texto varchar(255)"
+      ],
+      "llave": [
+        "doc_id"
+      ]
+    },
+    "mtto_notif_suscriptores": {
+      "filas": 5,
+      "kb": 16,
+      "creada": "2026-10-28 15:29:27",
+      "ultimo_cambio": "2026-11-18 12:49:09",
+      "columnas": [
+        "user_id int(11)",
+        "creado_en datetime",
+        "creado_por int(11)"
+      ],
+      "llave": [
+        "user_id"
+      ]
+    },
     "drivers": {
       "filas": 35,
       "kb": 16,
+      "creada": "2026-07-13 13:06:19",
+      "ultimo_cambio": "2026-11-18 11:15:08",
       "columnas": [
         "driver_id int(11)",
         "nombre varchar(50)",
@@ -214,9 +872,29 @@
         "driver_id"
       ]
     },
+    "mtto_inspeccion_lado": {
+      "filas": 21,
+      "kb": 32,
+      "creada": "2026-09-30 21:55:55",
+      "ultimo_cambio": null,
+      "columnas": [
+        "id int(11)",
+        "cl_final_id int(11)",
+        "viaje_id varchar(15)",
+        "lado varchar(10)",
+        "estatus varchar(12)",
+        "completada_en timestamp",
+        "completada_por int(11)"
+      ],
+      "llave": [
+        "id"
+      ]
+    },
     "notif_suscriptores": {
       "filas": 74,
       "kb": 32,
+      "creada": "2026-11-16 17:57:43",
+      "ultimo_cambio": "2026-11-18 12:50:58",
       "columnas": [
         "categoria varchar(40)",
         "user_id int(11)",
@@ -228,9 +906,43 @@
         "user_id"
       ]
     },
+    "cl_neumaticos": {
+      "filas": 11,
+      "kb": 16,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": null,
+      "columnas": [
+        "id int(11)",
+        "viaje_id varchar(15)",
+        "contenido varchar(250)",
+        "fecha_creacion datetime"
+      ],
+      "llave": [
+        "id"
+      ]
+    },
+    "IMA_documents": {
+      "filas": 24,
+      "kb": 16,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": null,
+      "columnas": [
+        "doc_id int(11)",
+        "tipo_documento varchar(50)",
+        "fecha_vencimiento date",
+        "url_pdf varchar(100)",
+        "status bit(1)",
+        "valor_texto varchar(255)"
+      ],
+      "llave": [
+        "doc_id"
+      ]
+    },
     "programacion_trips": {
       "filas": 0,
       "kb": 16,
+      "creada": "2026-08-08 08:52:26",
+      "ultimo_cambio": null,
       "columnas": [
         "id int(11)",
         "driver_id int(11)",
@@ -245,9 +957,56 @@
         "id"
       ]
     },
+    "cl_motor": {
+      "filas": 194,
+      "kb": 16,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": "2026-11-18 12:26:12",
+      "columnas": [
+        "id int(11)",
+        "viaje_id varchar(15)",
+        "contenido varchar(250)",
+        "fecha_creacion datetime"
+      ],
+      "llave": [
+        "id"
+      ]
+    },
+    "gastos_viaje_tickets": {
+      "filas": 274,
+      "kb": 64,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": null,
+      "columnas": [
+        "id int(11)",
+        "id_register int(11)",
+        "trip_id int(11)",
+        "url_pdf varchar(100)",
+        "fecha datetime"
+      ],
+      "llave": [
+        "id"
+      ]
+    },
+    "caja_trips_status": {
+      "filas": 32,
+      "kb": 16,
+      "creada": "2026-09-13 12:09:06",
+      "ultimo_cambio": null,
+      "columnas": [
+        "id int(11)",
+        "trip_id int(11)",
+        "status enum('Impo','Expo','Vacio')"
+      ],
+      "llave": [
+        "id"
+      ]
+    },
     "user_feature_flags": {
       "filas": 446,
       "kb": 32,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": "2026-11-18 12:52:33",
       "columnas": [
         "id int(11)",
         "user_id int(11)",
@@ -261,6 +1020,8 @@
     "warehouses": {
       "filas": 840,
       "kb": 112,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": "2026-11-18 11:43:16",
       "columnas": [
         "warehouse_id int(11)",
         "nombre_almacen varchar(100)",
@@ -270,9 +1031,28 @@
         "warehouse_id"
       ]
     },
+    "users_drivers": {
+      "filas": 9,
+      "kb": 16,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": null,
+      "columnas": [
+        "id int(11)",
+        "driver_id int(11)",
+        "email varchar(100)",
+        "pass varchar(50)",
+        "push_token varchar(255)",
+        "type varchar(15)"
+      ],
+      "llave": [
+        "id"
+      ]
+    },
     "trip_stages": {
       "filas": 1997,
       "kb": 880,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": "2026-11-18 11:46:48",
       "columnas": [
         "trip_stage_id int(11)",
         "trip_id int(11)",
@@ -309,9 +1089,125 @@
         "trip_stage_id"
       ]
     },
+    "cat_cajas_requisitos": {
+      "filas": 5,
+      "kb": 32,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": null,
+      "columnas": [
+        "id_requisito int(11)",
+        "key_name varchar(50)",
+        "label varchar(100)",
+        "categoria enum('USA','MEX','Otros')",
+        "tipo enum('file','text')",
+        "tiene_vencimiento tinyint(1)",
+        "activo tinyint(1)"
+      ],
+      "llave": [
+        "id_requisito"
+      ]
+    },
+    "categorias_mantenimiento": {
+      "filas": 35,
+      "kb": 16,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": null,
+      "columnas": [
+        "id_categoria int(11)",
+        "nombre_categoria varchar(100)",
+        "id_tipo_gasto int(11)"
+      ],
+      "llave": [
+        "id_categoria"
+      ]
+    },
+    "features": {
+      "filas": 54,
+      "kb": 32,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": null,
+      "columnas": [
+        "feature_id int(11)",
+        "feature_key varchar(100)",
+        "name varchar(150)",
+        "description text",
+        "module varchar(80)",
+        "plataform enum('Desktop','Mobile')",
+        "active tinyint(4)"
+      ],
+      "llave": [
+        "feature_id"
+      ]
+    },
+    "mtto_puntos": {
+      "filas": 71,
+      "kb": 128,
+      "creada": "2026-10-23 11:51:27",
+      "ultimo_cambio": "2026-11-18 08:59:33",
+      "columnas": [
+        "id int(11)",
+        "origen varchar(12)",
+        "cl_final_id int(11)",
+        "viaje_id varchar(15)",
+        "categoria varchar(20)",
+        "origen_tabla varchar(20)",
+        "origen_id int(11)",
+        "unidad_tipo varchar(10)",
+        "truck_id int(11)",
+        "caja_id int(11)",
+        "driver_id int(11)",
+        "fecha_reporte date",
+        "descripcion varchar(250)",
+        "estatus varchar(14)",
+        "descartado_en_pendientes tinyint(1)",
+        "id_orden int(11)",
+        "id_servicio int(11)",
+        "creado_en timestamp",
+        "creado_por int(11)",
+        "actualizado_en timestamp",
+        "actualizado_por int(11)"
+      ],
+      "llave": [
+        "id"
+      ]
+    },
+    "inspection_docs": {
+      "filas": 6,
+      "kb": 32,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": null,
+      "columnas": [
+        "id_doc int(11)",
+        "id_inspeccion int(11)",
+        "file_name varchar(255)",
+        "file_path varchar(255)",
+        "uploaded_at datetime"
+      ],
+      "llave": [
+        "id_doc"
+      ]
+    },
+    "teams": {
+      "filas": 2,
+      "kb": 16,
+      "creada": "2026-06-18 22:18:29",
+      "ultimo_cambio": null,
+      "columnas": [
+        "team_id int(11)",
+        "name varchar(100)",
+        "description varchar(255)",
+        "active tinyint(4)",
+        "created_at datetime"
+      ],
+      "llave": [
+        "team_id"
+      ]
+    },
     "pago_trayectos_mx": {
       "filas": 8,
       "kb": 32,
+      "creada": "2026-11-09 17:26:07",
+      "ultimo_cambio": "2026-11-18 12:52:45",
       "columnas": [
         "id int(11)",
         "nombre varchar(100)",
@@ -324,9 +1220,75 @@
         "id"
       ]
     },
+    "pre_trip_documents": {
+      "filas": 0,
+      "kb": 16,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": null,
+      "columnas": [
+        "id int(11)",
+        "trip_id int(11)",
+        "url_pdf varchar(100)",
+        "fecha datetime"
+      ],
+      "llave": [
+        "id"
+      ]
+    },
+    "cl_final_fotos": {
+      "filas": 0,
+      "kb": 16,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": null,
+      "columnas": [
+        "id int(11)",
+        "trip_id int(11)",
+        "url_pdf varchar(100)",
+        "fecha datetime"
+      ],
+      "llave": [
+        "id"
+      ]
+    },
+    "movimientos_inventario": {
+      "filas": 1307,
+      "kb": 192,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": null,
+      "columnas": [
+        "id_movimiento int(11)",
+        "id_articulo int(11)",
+        "tipo_movimiento varchar(50)",
+        "cantidad int(11)",
+        "fecha_movimiento datetime",
+        "id_detalle_gasto int(11)",
+        "referencia varchar(255)"
+      ],
+      "llave": [
+        "id_movimiento"
+      ]
+    },
+    "IFTA_STATE": {
+      "filas": 1311,
+      "kb": 80,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": null,
+      "columnas": [
+        "id int(11)",
+        "trip_id int(11)",
+        "state varchar(15)",
+        "total decimal(10,2)",
+        "fecha date"
+      ],
+      "llave": [
+        "id"
+      ]
+    },
     "ordenes_servicio": {
       "filas": 345,
       "kb": 48,
+      "creada": "2026-09-30 22:01:28",
+      "ultimo_cambio": null,
       "columnas": [
         "id_orden int(11)",
         "fecha_orden date",
@@ -340,9 +1302,32 @@
         "id_orden"
       ]
     },
+    "articulos_inventario": {
+      "filas": 729,
+      "kb": 112,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": null,
+      "columnas": [
+        "id_articulo int(11)",
+        "id_subcategoria int(11)",
+        "nombre_articulo varchar(255)",
+        "descripcion text",
+        "sku varchar(50)",
+        "cantidad_stock int(11)",
+        "unidad_medida varchar(50)",
+        "costo_unidad decimal(10,2)",
+        "ubicacion_almacen varchar(100)",
+        "punto_reorden int(11)"
+      ],
+      "llave": [
+        "id_articulo"
+      ]
+    },
     "gastos": {
       "filas": 1614,
       "kb": 224,
+      "creada": "2026-08-25 14:22:49",
+      "ultimo_cambio": "2026-11-18 08:02:28",
       "columnas": [
         "id_gasto int(11)",
         "fecha_gasto date",
@@ -367,9 +1352,123 @@
         "id_gasto"
       ]
     },
+    "cl_exterior": {
+      "filas": 67,
+      "kb": 16,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": null,
+      "columnas": [
+        "id int(11)",
+        "viaje_id varchar(15)",
+        "contenido varchar(250)",
+        "fecha_creacion datetime"
+      ],
+      "llave": [
+        "id"
+      ]
+    },
+    "drivers_documents": {
+      "filas": 1666,
+      "kb": 208,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": null,
+      "columnas": [
+        "doc_id int(11)",
+        "driver_id int(11)",
+        "tipo_documento varchar(50)",
+        "fecha_vencimiento date",
+        "url_pdf varchar(100)",
+        "status bit(1)",
+        "valor_texto varchar(255)"
+      ],
+      "llave": [
+        "doc_id"
+      ]
+    },
+    "cl_final": {
+      "filas": 133,
+      "kb": 16,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": "2026-11-18 12:26:12",
+      "columnas": [
+        "id int(11)",
+        "viaje_id varchar(15)",
+        "truck_id int(11)",
+        "driver_id int(11)",
+        "status tinyint(1)",
+        "fecha_creacion datetime"
+      ],
+      "llave": [
+        "id"
+      ]
+    },
+    "users": {
+      "filas": 9,
+      "kb": 16,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": null,
+      "columnas": [
+        "id int(11)",
+        "name varchar(50)",
+        "email varchar(100)",
+        "pass varchar(50)",
+        "type varchar(20)"
+      ],
+      "llave": [
+        "id"
+      ]
+    },
+    "Notifications_trips": {
+      "filas": 39,
+      "kb": 32,
+      "creada": "2026-09-15 17:33:28",
+      "ultimo_cambio": null,
+      "columnas": [
+        "id bigint(20) unsigned",
+        "user_id int(11)",
+        "Mensaje varchar(200)",
+        "trip_id int(11)",
+        "created_at datetime"
+      ],
+      "llave": [
+        "id"
+      ]
+    },
+    "cl_cabina": {
+      "filas": 24,
+      "kb": 16,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": null,
+      "columnas": [
+        "id int(11)",
+        "viaje_id varchar(15)",
+        "contenido varchar(250)",
+        "fecha_creacion datetime"
+      ],
+      "llave": [
+        "id"
+      ]
+    },
+    "trip_document_relationship": {
+      "filas": 5482,
+      "kb": 336,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": "2026-11-18 11:46:48",
+      "columnas": [
+        "trip_stage_id int(11)",
+        "document_id int(11)",
+        "is_active tinyint(1)"
+      ],
+      "llave": [
+        "trip_stage_id",
+        "document_id"
+      ]
+    },
     "trip_payments": {
       "filas": 467,
       "kb": 96,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": "2026-11-17 13:54:57",
       "columnas": [
         "payment_id int(11)",
         "trip_id int(11)",
@@ -394,6 +1493,8 @@
     "stage_stops": {
       "filas": 121,
       "kb": 48,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": "2026-11-18 11:46:48",
       "columnas": [
         "stop_id int(11)",
         "trip_stage_id int(11)",
@@ -408,9 +1509,26 @@
         "stop_id"
       ]
     },
+    "cl_otro": {
+      "filas": 40,
+      "kb": 16,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": null,
+      "columnas": [
+        "id int(11)",
+        "viaje_id varchar(15)",
+        "contenido varchar(250)",
+        "fecha_creacion datetime"
+      ],
+      "llave": [
+        "id"
+      ]
+    },
     "diesel_tickets": {
       "filas": 3915,
       "kb": 352,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": null,
       "columnas": [
         "id int(11)",
         "id_register int(11)",
@@ -425,6 +1543,8 @@
     "Users_credentials": {
       "filas": 29,
       "kb": 32,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": null,
       "columnas": [
         "id int(11)",
         "driver_id int(11)",
@@ -439,9 +1559,100 @@
         "id"
       ]
     },
+    "cat_ima_requisitos": {
+      "filas": 10,
+      "kb": 32,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": null,
+      "columnas": [
+        "id_requisito int(11)",
+        "key_name varchar(50)",
+        "label varchar(100)",
+        "region enum('USA','MEX')",
+        "tipo enum('file','text')",
+        "tiene_vencimiento tinyint(1)",
+        "activo tinyint(1)"
+      ],
+      "llave": [
+        "id_requisito"
+      ]
+    },
+    "cat_origenes": {
+      "filas": 0,
+      "kb": 16,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": null,
+      "columnas": [
+        "id int(11)",
+        "nombre varchar(150)",
+        "zip_code varchar(20)",
+        "estatus tinyint(1)",
+        "fecha_creacion datetime"
+      ],
+      "llave": [
+        "id"
+      ]
+    },
+    "inspection_descriptions": {
+      "filas": 15,
+      "kb": 32,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": null,
+      "columnas": [
+        "id_descripcion int(11)",
+        "descripcion varchar(255)"
+      ],
+      "llave": [
+        "id_descripcion"
+      ]
+    },
+    "IFTA": {
+      "filas": 7,
+      "kb": 16,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": null,
+      "columnas": [
+        "id int(11)",
+        "trip_id int(11)"
+      ],
+      "llave": [
+        "id"
+      ]
+    },
+    "milla_driver": {
+      "filas": 0,
+      "kb": 32,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": null,
+      "columnas": [
+        "milla_id int(11)",
+        "driver_id int(11)",
+        "valor_milla float(10,2)"
+      ],
+      "llave": [
+        "milla_id"
+      ]
+    },
+    "Notifications_trips_received": {
+      "filas": 251,
+      "kb": 64,
+      "creada": "2026-09-15 17:33:35",
+      "ultimo_cambio": "2026-11-17 08:05:44",
+      "columnas": [
+        "id bigint(20) unsigned",
+        "user_id int(11)",
+        "notification_id bigint(20) unsigned",
+        "received_at datetime"
+      ],
+      "llave": [
+        "id"
+      ]
+    },
     "companies": {
       "filas": 119,
       "kb": 32,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": null,
       "columnas": [
         "company_id int(11)",
         "nombre_compania varchar(100)"
@@ -450,9 +1661,138 @@
         "company_id"
       ]
     },
+    "cajas_externas": {
+      "filas": 130,
+      "kb": 16,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": "2026-11-18 08:21:04",
+      "columnas": [
+        "caja_externa_id int(11)",
+        "no_caja varchar(100)",
+        "no_vin varchar(100)",
+        "modelo varchar(100)",
+        "anio varchar(100)",
+        "placas varchar(100)",
+        "estado varchar(100)",
+        "fecha_creacion timestamp",
+        "status tinyint(1)"
+      ],
+      "llave": [
+        "caja_externa_id"
+      ]
+    },
+    "pago_trayecto_viaje": {
+      "filas": 0,
+      "kb": 32,
+      "creada": "2026-11-09 17:26:07",
+      "ultimo_cambio": null,
+      "columnas": [
+        "trip_id int(11)",
+        "driver_id int(11)",
+        "trayecto_id int(11)",
+        "monto decimal(10,2)",
+        "id_usuario int(11)",
+        "asignado_en datetime"
+      ],
+      "llave": [
+        "trip_id",
+        "driver_id"
+      ]
+    },
+    "origenes": {
+      "filas": 2,
+      "kb": 16,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": null,
+      "columnas": [
+        "id int(11)",
+        "nombre varchar(255)"
+      ],
+      "llave": [
+        "id"
+      ]
+    },
+    "company_invoice_info": {
+      "filas": 20,
+      "kb": 16,
+      "creada": "2026-08-08 14:06:11",
+      "ultimo_cambio": "2026-11-18 10:37:42",
+      "columnas": [
+        "company_id int(11)",
+        "nombre_factura varchar(150)",
+        "direccion varchar(255)",
+        "updated_at timestamp"
+      ],
+      "llave": [
+        "company_id"
+      ]
+    },
+    "safety_docs": {
+      "filas": 331,
+      "kb": 80,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": "2026-11-17 15:48:39",
+      "columnas": [
+        "trip_id int(11)",
+        "libro_electronico varchar(255)",
+        "reporte_diesel varchar(255)",
+        "reporte_pcmiller varchar(255)",
+        "updated_at timestamp"
+      ],
+      "llave": [
+        "trip_id"
+      ]
+    },
+    "tipos_reparacion": {
+      "filas": 106,
+      "kb": 32,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": null,
+      "columnas": [
+        "id_tipo_reparacion int(11)",
+        "nombre_reparacion varchar(255)"
+      ],
+      "llave": [
+        "id_tipo_reparacion"
+      ]
+    },
+    "servicios_orden": {
+      "filas": 309,
+      "kb": 80,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": null,
+      "columnas": [
+        "id_servicio int(11)",
+        "id_orden int(11)",
+        "tipo_mantenimiento varchar(50)",
+        "origen_servicio varchar(50)",
+        "tipo_reparacion varchar(100)",
+        "estatus varchar(50)",
+        "fecha_termino timestamp"
+      ],
+      "llave": [
+        "id_servicio"
+      ]
+    },
+    "user_teams": {
+      "filas": 0,
+      "kb": 32,
+      "creada": "2026-06-18 22:18:29",
+      "ultimo_cambio": null,
+      "columnas": [
+        "user_id int(11)",
+        "team_id int(11)"
+      ],
+      "llave": [
+        "user_id",
+        "team_id"
+      ]
+    },
     "pagos_detalle": {
       "filas": 16,
       "kb": 48,
+      "creada": "2026-06-05 10:36:36",
+      "ultimo_cambio": null,
       "columnas": [
         "id int(11)",
         "period_id varchar(10)",
@@ -466,9 +1806,91 @@
       "llave": [
         "id"
       ]
+    },
+    "caja_estatus": {
+      "filas": 7,
+      "kb": 48,
+      "creada": "2026-09-28 15:40:34",
+      "ultimo_cambio": "2026-11-17 16:35:37",
+      "columnas": [
+        "caja_id int(11)",
+        "ubicacion varchar(50)",
+        "observacion varchar(20)",
+        "comentarios varchar(300)",
+        "trip_id_referencia int(11)",
+        "stage_id_referencia int(11)",
+        "actualizado_en timestamp",
+        "actualizado_por int(11)"
+      ],
+      "llave": [
+        "caja_id"
+      ]
     }
   },
   "triggers_actuales": [
+    {
+      "trigger_name": "bit_trip_stage_invoices_ins",
+      "event_object_table": "trip_stage_invoices",
+      "action_timing": "AFTER",
+      "event_manipulation": "INSERT",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_trip_stage_invoices_upd",
+      "event_object_table": "trip_stage_invoices",
+      "action_timing": "AFTER",
+      "event_manipulation": "UPDATE",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_trip_stage_invoices_del",
+      "event_object_table": "trip_stage_invoices",
+      "action_timing": "AFTER",
+      "event_manipulation": "DELETE",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_gastos_viaje_ins",
+      "event_object_table": "gastos_viaje",
+      "action_timing": "AFTER",
+      "event_manipulation": "INSERT",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_gastos_viaje_upd",
+      "event_object_table": "gastos_viaje",
+      "action_timing": "AFTER",
+      "event_manipulation": "UPDATE",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_gastos_viaje_del",
+      "event_object_table": "gastos_viaje",
+      "action_timing": "AFTER",
+      "event_manipulation": "DELETE",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_trucks_ins",
+      "event_object_table": "trucks",
+      "action_timing": "AFTER",
+      "event_manipulation": "INSERT",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_trucks_upd",
+      "event_object_table": "trucks",
+      "action_timing": "AFTER",
+      "event_manipulation": "UPDATE",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_trucks_del",
+      "event_object_table": "trucks",
+      "action_timing": "AFTER",
+      "event_manipulation": "DELETE",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
     {
       "trigger_name": "after_diesel_insert",
       "event_object_table": "diesel",
@@ -540,6 +1962,27 @@
       "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
     },
     {
+      "trigger_name": "bit_caja_ins",
+      "event_object_table": "caja",
+      "action_timing": "AFTER",
+      "event_manipulation": "INSERT",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_caja_upd",
+      "event_object_table": "caja",
+      "action_timing": "AFTER",
+      "event_manipulation": "UPDATE",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_caja_del",
+      "event_object_table": "caja",
+      "action_timing": "AFTER",
+      "event_manipulation": "DELETE",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
       "trigger_name": "bit_orden_servicio_detalles_ins",
       "event_object_table": "orden_servicio_detalles",
       "action_timing": "AFTER",
@@ -556,6 +1999,48 @@
     {
       "trigger_name": "bit_orden_servicio_detalles_del",
       "event_object_table": "orden_servicio_detalles",
+      "action_timing": "AFTER",
+      "event_manipulation": "DELETE",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_pagos_semanales_ins",
+      "event_object_table": "pagos_semanales",
+      "action_timing": "AFTER",
+      "event_manipulation": "INSERT",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_pagos_semanales_upd",
+      "event_object_table": "pagos_semanales",
+      "action_timing": "AFTER",
+      "event_manipulation": "UPDATE",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_pagos_semanales_del",
+      "event_object_table": "pagos_semanales",
+      "action_timing": "AFTER",
+      "event_manipulation": "DELETE",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_drivers_ins",
+      "event_object_table": "drivers",
+      "action_timing": "AFTER",
+      "event_manipulation": "INSERT",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_drivers_upd",
+      "event_object_table": "drivers",
+      "action_timing": "AFTER",
+      "event_manipulation": "UPDATE",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_drivers_del",
+      "event_object_table": "drivers",
       "action_timing": "AFTER",
       "event_manipulation": "DELETE",
       "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
@@ -582,6 +2067,27 @@
       "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
     },
     {
+      "trigger_name": "bit_programacion_trips_ins",
+      "event_object_table": "programacion_trips",
+      "action_timing": "AFTER",
+      "event_manipulation": "INSERT",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_programacion_trips_upd",
+      "event_object_table": "programacion_trips",
+      "action_timing": "AFTER",
+      "event_manipulation": "UPDATE",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_programacion_trips_del",
+      "event_object_table": "programacion_trips",
+      "action_timing": "AFTER",
+      "event_manipulation": "DELETE",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
       "trigger_name": "bit_user_feature_flags_ins",
       "event_object_table": "user_feature_flags",
       "action_timing": "AFTER",
@@ -598,6 +2104,27 @@
     {
       "trigger_name": "bit_user_feature_flags_del",
       "event_object_table": "user_feature_flags",
+      "action_timing": "AFTER",
+      "event_manipulation": "DELETE",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_warehouses_ins",
+      "event_object_table": "warehouses",
+      "action_timing": "AFTER",
+      "event_manipulation": "INSERT",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_warehouses_upd",
+      "event_object_table": "warehouses",
+      "action_timing": "AFTER",
+      "event_manipulation": "UPDATE",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_warehouses_del",
+      "event_object_table": "warehouses",
       "action_timing": "AFTER",
       "event_manipulation": "DELETE",
       "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
@@ -708,6 +2235,27 @@
       "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
     },
     {
+      "trigger_name": "bit_stage_stops_ins",
+      "event_object_table": "stage_stops",
+      "action_timing": "AFTER",
+      "event_manipulation": "INSERT",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_stage_stops_upd",
+      "event_object_table": "stage_stops",
+      "action_timing": "AFTER",
+      "event_manipulation": "UPDATE",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_stage_stops_del",
+      "event_object_table": "stage_stops",
+      "action_timing": "AFTER",
+      "event_manipulation": "DELETE",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
       "trigger_name": "bit_users_credentials_ins",
       "event_object_table": "Users_credentials",
       "action_timing": "AFTER",
@@ -724,6 +2272,48 @@
     {
       "trigger_name": "bit_users_credentials_del",
       "event_object_table": "Users_credentials",
+      "action_timing": "AFTER",
+      "event_manipulation": "DELETE",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_companies_ins",
+      "event_object_table": "companies",
+      "action_timing": "AFTER",
+      "event_manipulation": "INSERT",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_companies_upd",
+      "event_object_table": "companies",
+      "action_timing": "AFTER",
+      "event_manipulation": "UPDATE",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_companies_del",
+      "event_object_table": "companies",
+      "action_timing": "AFTER",
+      "event_manipulation": "DELETE",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_pagos_detalle_ins",
+      "event_object_table": "pagos_detalle",
+      "action_timing": "AFTER",
+      "event_manipulation": "INSERT",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_pagos_detalle_upd",
+      "event_object_table": "pagos_detalle",
+      "action_timing": "AFTER",
+      "event_manipulation": "UPDATE",
+      "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
+    },
+    {
+      "trigger_name": "bit_pagos_detalle_del",
+      "event_object_table": "pagos_detalle",
       "action_timing": "AFTER",
       "event_manipulation": "DELETE",
       "definer": "fg5n48ine0xu@p3plzcpnl489438.prod.phx3.secureserver.net"
