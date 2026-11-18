@@ -77,6 +77,8 @@ const GASTO = {
     { clave: "monto", etiqueta: "Total Cost", tipo: "number", prefijo: "$" },
   ],
   tituloEditor: "Expense Log Editor",
+  seccionEditor: "Gastos · Viajes",
+  descripcionEditor: "Corrige el tipo y el monto de este gasto. Los tickets que subió el operador están a la derecha.",
 }
 
 const DIESEL = {
@@ -129,14 +131,16 @@ const DIESEL = {
   campos: [
     { clave: "trip_number", etiqueta: "Trip Number", soloLectura: true },
     { clave: "nombre", etiqueta: "Driver", soloLectura: true },
-    { clave: "estado", etiqueta: "State" },
-    { clave: "fleetone", etiqueta: "Fleet One ($)", tipo: "number", prefijo: "$" },
+    { clave: "estado", etiqueta: "State", ancho: 6 },
+    { clave: "fleetone", etiqueta: "Fleet One ($)", tipo: "number", prefijo: "$", ancho: 6 },
     { clave: "odometro", etiqueta: "Odometer", tipo: "number", sufijo: "mi", ancho: 6 },
     { clave: "galones", etiqueta: "Gallons", tipo: "number", sufijo: "gal", ancho: 6 },
-    { clave: "monto", etiqueta: "Total Cost", tipo: "number", prefijo: "$" },
-    { clave: "periodo", etiqueta: "Periodo", ayuda: "Ej. Q1, Q2..." },
+    { clave: "monto", etiqueta: "Total Cost", tipo: "number", prefijo: "$", ancho: 6 },
+    { clave: "periodo", etiqueta: "Periodo", ayuda: "Ej. Q1, Q2...", ancho: 6 },
   ],
   tituloEditor: "Diesel Log Editor",
+  seccionEditor: "Gastos · Diesel",
+  descripcionEditor: "Corrige los datos de esta carga. Los tickets que subió el operador están a la derecha.",
   conPendientes: true,
   conPaginacion: true,
   conFiltroPeriodo: true,
