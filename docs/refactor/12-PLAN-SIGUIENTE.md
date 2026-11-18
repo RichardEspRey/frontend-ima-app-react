@@ -417,8 +417,18 @@ creados. El generador ahora escribe un `.sql` por tanda.
 `current_fuel`, `last_fuel_calc_at`, `last_odometer_calc`, `dist_nv_l`, `last_latitude`,
 `last_longitude`), `caja`, `drivers`, `companies`, `warehouses`. 33 triggers en
 `docs/sql/019-…tanda-3.sql`; estructura en `bitacora-esquema-2026-11-18.json`. Las BIT se
-guardan como 0/1. El instalador acepta `&tanda=N`. Pendiente para una cuarta: mantenimiento
-(inspecciones, roadside, check lists), documentos de Safety e inventario.
+guardan como 0/1. El instalador acepta `&tanda=N`.
+
+**Cuarta tanda — INSTALADA (2026-11-18):** 114 triggers en total. `personal_admin`,
+`milla_driver`, `company_invoice_info`, `pago_trayecto_viaje`, `diesel_fuente_margen`,
+`cajas_externas`, `mtto_puntos`, `mtto_inspeccion_lado`, `mtto_concepto_detalle`,
+`mtto_notif_suscriptores`, `caja_estatus`, `roadside_repairs`, `inspections` (sin
+`reportes_json`), `servicios_orden`, `afinaciones_historial`. 45 triggers en
+`docs/sql/020-…tanda-4.sql`; el esquema guardado trae ya las 97 tablas de producción.
+Pendiente para una quinta: documentos de Safety (`truck_documents`, `drivers_documents`,
+`cajas_documents`, `safety_docs`, `documents`, `gastos_documentos`), inventario y
+catálogos menores. Fuera a propósito: check lists del móvil (`cl_*`, `revision_caja`,
+`inspeccion_camion`), fotos/tickets, `Notifications_trips*`, `IFTA*`.
 
 Etapas 3 y 5 de `10-BITACORA.md`. **No crearlos desde phpMyAdmin de cPanel** (error 1449,
 el mismo que tumbó `crud_diesel` el 2026-11-17). Se crean desde un PHP de un solo uso con
