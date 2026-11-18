@@ -261,4 +261,9 @@ export const menuItemsConfig = [
       },
     ],
   },
+  {
+    name: "Bitácora",
+    featureKey: "bitacora_ver",
+    route: "/bitacora",
+  },
 ];

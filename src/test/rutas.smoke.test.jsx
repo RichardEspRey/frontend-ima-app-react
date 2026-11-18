@@ -20,6 +20,7 @@ const RUTAS = [
   "/admin-trucks",
   "/afinaciones",
   "/autonomia",
+  "/bitacora",
   "/cotizador",
   "/detalle-diesel/1",
   "/detalle-gastos/1",

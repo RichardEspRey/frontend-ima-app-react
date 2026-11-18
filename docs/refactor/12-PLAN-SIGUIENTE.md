@@ -361,7 +361,15 @@ permiso `bitacora_ver`, 24 meses, hora en UTC mostrada en Monterrey. Ver `10-BIT
 - La app móvil es otro repo (`App-operadores-react-native-expo`): mismo envoltorio en
   `app/_layout.tsx`, sale con su próxima publicación.
 
-### B4 · Pantalla de Bitácora — `bitacora.php` + front
+### B4 · Pantalla de Bitácora — HECHO en el front, falta subir PHP y SQL (2026-11-17)
+
+> `Emiliano` `3af8cf9`; refactor `entities/audit` + `pages/bitacora/BitacoraPage.jsx`.
+> Servidor: `docs/backend/bitacora.php` (`listar`, `detalle`, `getFiltros`; las tres con
+> nombre de lectura para que la bitácora no se registre a sí misma; comprueba con
+> `_usuario` que sea Admin o tenga `bitacora_ver`; `SET NAMES utf8mb4`) y
+> `docs/sql/015-permiso-bitacora.sql`. Sintaxis revisada con `php-parser`. Ruta `/bitacora`,
+> entrada propia en el menú. `bitacora_ver` no entró a `shared/auth/permisos.js` (catálogo
+> amarrado por pruebas); se lee de los ajustes por usuario, como Pagos US/MX.
 
 - PHP nuevo con `listar` (paginado en el servidor desde el primer día), `detalle` e
   `historial`.

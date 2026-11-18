@@ -46,6 +46,7 @@ import SafetyPage from '../pages/safety/SafetyPage.jsx';
 import IftaPage from '../pages/safety/IftaPage.jsx';
 import NominaPage from '../pages/nomina/NominaPage.jsx';
 import NotificacionesManagerPage from '../pages/notificaciones/NotificacionesManagerPage.jsx';
+import BitacoraPage from '../pages/bitacora/BitacoraPage.jsx';
 import PersonalPage from '../pages/nomina/PersonalPage.jsx';
 import DetallePagoPage from '../pages/nomina/DetallePagoPage.jsx';
 import ReparacionesRutaPage from '../pages/mantenimientos/ReparacionesRutaPage.jsx';
@@ -76,6 +77,7 @@ const AppRouter = () => {
             <Route path="/admin-trips" element={<AdminViajesPage />} />
             <Route path="/estatus-cajas" element={<EstatusCajasPage />} />
             <Route path="/notifications-manager" element={<NotificacionesManagerPage />} />
+            <Route path="/bitacora" element={<BitacoraPage />} />
             <Route path="/admin-diesel" element={<DieselPage />} />
             <Route path="/detalle-diesel/:tripId" element={<DieselDeViajePage />} />
             <Route path="/editor-diesel/:id/:trip_id" element={<EditarDieselPage />} />

@@ -23,6 +23,7 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ViewSidebarIcon from '@mui/icons-material/ViewSidebar';
 import ViewCompactIcon from '@mui/icons-material/ViewCompact';
 import MapIcon from '@mui/icons-material/Map';
+import HistoryIcon from '@mui/icons-material/History';
 
 import logo from '../assets/images/logo_white.png';
 import iconUpdate from '../assets/images/icons/update.png';
@@ -54,6 +55,7 @@ const iconMap = {
     'Safety': SecurityIcon,
     'Mapa': MapIcon,
     'Gestor de Acceso': FormatListBulletedIcon,
+    'Bitácora': HistoryIcon,
     'Estatus de Unidades': TrendingUpIcon,
 };
 
