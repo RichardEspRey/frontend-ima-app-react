@@ -130,8 +130,8 @@ export function CatalogoTrayectos({ open, onClose, trayectos }) {
       <DialogTitle sx={{ fontWeight: 800 }}>
         Trayectos de México
         <Typography variant="body2" color={COLOR.APAGADO}>
-          Cada viaje mexicano se paga con el monto de su trayecto. Cuando salga un destino nuevo, dalo de
-          alta aquí con su monto.
+          Cada viaje mexicano se paga con el monto de su trayecto. Cuando llega un viaje a un destino
+          nuevo, su trayecto se crea solo y sin monto: pónselo aquí.
         </Typography>
       </DialogTitle>
 

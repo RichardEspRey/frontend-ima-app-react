@@ -55,6 +55,8 @@ export {
   clavePago,
   destinosDe,
   sugerirTrayecto,
+  nombreDeTrayecto,
+  trayectosPorCrear,
 } from "./model/trayectos"
 
 export {
@@ -67,4 +69,6 @@ export {
   useDatosPagos,
   useGuardarTrayecto,
   useAutorizarPagoPorTrayecto,
+  crearTrayectosSinMonto,
+  useCrearTrayectosFaltantes,
 } from "./api/trayectos"

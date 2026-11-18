@@ -113,25 +113,79 @@ const normalizar = (texto) =>
     .replace(/[^a-z0-9]+/g, " ")
     .trim()
 
+const esBase = (destino) => normalizar(destino).includes("nuevo laredo")
+
+const enOrden = (recorrido = []) => [
+  ...recorrido.filter((destino) => !esBase(destino)),
+  ...recorrido.filter(esBase),
+]
+
+const coincide = (destino, trayecto) => {
+  const nombre = normalizar(trayecto.nombre)
+  return nombre !== "" && normalizar(destino).includes(nombre)
+}
+
 /**
  * Propone el trayecto de un viaje a partir de sus destinos.
  *
  * Las ciudades se capturan a mano («Apodaca, NL.», «Gomez Palacios, DGO.»), así que se
- * comparan sin acentos ni puntuación. Gana el primer destino del recorrido que contenga
- * el nombre de un trayecto activo.
+ * comparan sin acentos ni puntuación. Gana el primer destino que contenga el nombre de
+ * un trayecto activo, mirando antes los destinos reales que Nuevo Laredo: así un
+ * trayecto «Nuevo Laredo» no le gana a la ciudad a la que de verdad fue el viaje.
  *
  * @param {Array.<string>} recorrido Los destinos del viaje, en orden.
  * @param {Array.<object>} trayectos El catálogo.
  * @returns {object|null} El trayecto sugerido, o `null` si ninguno coincide.
  */
 export function sugerirTrayecto(recorrido = [], trayectos = []) {
-  const activos = trayectos.filter((trayecto) => trayecto.activo && normalizar(trayecto.nombre))
+  const activos = trayectos.filter((trayecto) => trayecto.activo)
 
-  for (const destino of recorrido) {
-    const lugar = normalizar(destino)
-    const encontrado = activos.find((trayecto) => lugar.includes(normalizar(trayecto.nombre)))
+  for (const destino of enOrden(recorrido)) {
+    const encontrado = activos.find((trayecto) => coincide(destino, trayecto))
     if (encontrado) return encontrado
   }
 
   return null
+}
+
+/**
+ * El nombre que llevaría el trayecto de un viaje: la ciudad de su destino.
+ *
+ * Se toma el primer destino que no sea Nuevo Laredo y se queda la parte antes de la
+ * coma. Si el viaje solo va a Nuevo Laredo, el trayecto es Nuevo Laredo.
+ *
+ * @param {Array.<string>} recorrido Los destinos del viaje, en orden.
+ * @returns {string} El nombre, o vacío si el viaje no tiene destinos.
+ *
+ * @example
+ * nombreDeTrayecto(["Santa Catarina, NL", "Nuevo Laredo, Tamps."]) // "Santa Catarina"
+ */
+export function nombreDeTrayecto(recorrido = []) {
+  const [destino] = enOrden(recorrido)
+  return (destino || "").split(",")[0].replace(/[.\s]+$/, "").trim()
+}
+
+/**
+ * Los trayectos que hay que dar de alta para los viajes que no tienen uno.
+ *
+ * Un viaje que coincide con algún trayecto —activo o dado de baja— no propone nada:
+ * uno dado de baja se dio de baja a propósito y no se recrea. Los nombres escritos de
+ * varias formas («Monterrey, NL», «Monterrey, Nuevo León») cuentan como uno.
+ *
+ * @param {Array.<{recorrido: Array.<string>}>} viajes Los viajes sin trayecto.
+ * @param {Array.<object>} trayectos El catálogo completo.
+ * @returns {Array.<string>} Los nombres a crear, sin repetir.
+ */
+export function trayectosPorCrear(viajes = [], trayectos = []) {
+  const nombres = new Map()
+
+  for (const { recorrido } of viajes) {
+    if (!recorrido?.length) continue
+    if (recorrido.some((destino) => trayectos.some((trayecto) => coincide(destino, trayecto)))) continue
+    const nombre = nombreDeTrayecto(recorrido)
+    const clave = normalizar(nombre)
+    if (clave && !nombres.has(clave)) nombres.set(clave, nombre)
+  }
+
+  return [...nombres.values()]
 }

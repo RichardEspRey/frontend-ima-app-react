@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { ENDPOINTS, post } from "../../../shared/api"
 import { normalizarLista } from "../model/finanzas"
@@ -8,6 +9,7 @@ import {
   esquemaAsignacionTrayecto,
   esquemaTrayecto,
   esquemaViajePago,
+  trayectosPorCrear,
 } from "../model/trayectos"
 
 /**
@@ -80,6 +82,29 @@ export async function obtenerDatosPagos(opciones = {}) {
  */
 export function guardarTrayecto({ id, nombre, monto, activo }) {
   return post(ENDPOINTS.pagosMx, "guardarTrayecto", { id: id || undefined, nombre, monto, activo })
+}
+
+/**
+ * Da de alta trayectos sin monto, uno por uno.
+ *
+ * Si alguno falla —por ejemplo, porque otra persona lo creó un instante antes— se
+ * sigue con los demás.
+ *
+ * @endpoint POST pagos_mx.php · op=guardarTrayecto
+ * @param {Array.<string>} nombres Los trayectos a crear.
+ * @returns {Promise.<Array.<string>>} Los que sí se crearon.
+ */
+export async function crearTrayectosSinMonto(nombres) {
+  const creados = []
+  for (const nombre of nombres) {
+    try {
+      await guardarTrayecto({ id: "", nombre, monto: 0, activo: true })
+      creados.push(nombre)
+    } catch {
+      continue
+    }
+  }
+  return creados
 }
 
 /**
@@ -158,6 +183,37 @@ export function useGuardarTrayecto() {
     mutationFn: guardarTrayecto,
     onSuccess: () => cliente.invalidateQueries({ queryKey: LLAVE_TRAYECTOS }),
   })
+}
+
+/**
+ * Crea solos los trayectos de los viajes mexicanos pendientes que no coinciden con
+ * ninguno.
+ *
+ * Los crea sin monto: el viaje queda con su trayecto elegido y no se puede autorizar
+ * hasta que alguien le ponga el monto en «Trayectos MX». Cada nombre se intenta una
+ * sola vez por sesión, para que un fallo no se repita en cada repintado.
+ *
+ * @param {object} parametros Lo que necesita.
+ * @param {boolean} parametros.habilitado Si ya cargó todo y la persona está en la pestaña MX.
+ * @param {Array.<{recorrido: Array.<string>}>} parametros.viajes Los viajes pendientes sin trayecto.
+ * @param {Array.<object>} parametros.trayectos El catálogo completo.
+ * @returns {void}
+ */
+export function useCrearTrayectosFaltantes({ habilitado, viajes, trayectos }) {
+  const cliente = useQueryClient()
+  const intentados = useRef(new Set())
+
+  useEffect(() => {
+    if (!habilitado) return
+    const nombres = trayectosPorCrear(viajes, trayectos).filter(
+      (nombre) => !intentados.current.has(nombre.toLowerCase()),
+    )
+    if (nombres.length === 0) return
+    nombres.forEach((nombre) => intentados.current.add(nombre.toLowerCase()))
+    crearTrayectosSinMonto(nombres).then((creados) => {
+      if (creados.length > 0) cliente.invalidateQueries({ queryKey: [...LLAVE_TRAYECTOS, "catalogo"] })
+    })
+  }, [habilitado, viajes, trayectos, cliente])
 }
 
 /**

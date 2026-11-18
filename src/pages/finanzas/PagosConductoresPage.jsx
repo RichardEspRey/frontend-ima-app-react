@@ -17,7 +17,7 @@ import { useNavigate } from 'react-router-dom';
 import { COLOR } from '../../shared/ui/tokens';
 import { BotonActualizar, FilasEsqueleto, Pestanas, PageHeader, PAGE_SHELL_SX, TABLE_CONTAINER_SX, HEADER_ROW_SX, HEADER_CELL_SX, GHOST_BTN_SX, Paginacion, notify, describirError } from '../../shared/ui';
 import {
-  PAIS, clavePago, paisesPermitidos, pesos, sugerirTrayecto, useAutorizarPagoPorTrayecto, useDatosPagos, useTrayectos,
+  PAIS, clavePago, paisesPermitidos, pesos, sugerirTrayecto, useAutorizarPagoPorTrayecto, useCrearTrayectosFaltantes, useDatosPagos, useTrayectos,
 } from '../../entities/finance';
 import { CatalogoTrayectos } from '../../features/pagos-mx';
 import { useSesion } from '../../shared/auth';
@@ -240,6 +240,16 @@ const PagosConductoresPage = () => {
   };
 
   const esMx = pais === PAIS.MX;
+
+  const sinTrayecto = useMemo(
+    () => conPais.filter((t) => t.pais === PAIS.MX && String(t.status_payment) === "0" && !t.asignacion),
+    [conPais],
+  );
+  useCrearTrayectosFaltantes({
+    habilitado: esMx && !loading && trayectosConsulta.isSuccess && datosConsulta.isSuccess,
+    viajes: sinTrayecto,
+    trayectos,
+  });
   const columnas = esMx ? 9 : 8;
   const sinMonto = trayectos.filter((x) => x.activo && x.monto <= 0);
 
@@ -346,7 +356,7 @@ const PagosConductoresPage = () => {
 
       {esMx && tabValue === 0 && sinMonto.length > 0 ? (
         <Alert severity="info" sx={{ mb: 2 }}>
-          Hay trayectos sin monto: {sinMonto.map((x) => x.nombre).join(', ')}. Asígnales uno en «Trayectos MX» para poder autorizar esos viajes.
+          Hay trayectos sin monto: {sinMonto.map((x) => x.nombre).join(', ')}. Ponles su monto en «Trayectos MX» para poder autorizar esos viajes.
         </Alert>
       ) : null}
 
