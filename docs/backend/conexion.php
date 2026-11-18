@@ -23,6 +23,13 @@
             try {
                 $this->conn = new PDO("mysql:host=" . $this->host . ";dbname=" . $this->db_name, $this->username, $this->password);
                 $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+                // Marca la conexión con quién hace la petición, para los triggers de la bitácora.
+                if (class_exists('Bitacora', false)) {
+                    try {
+                        Bitacora::alConectar($this->conn);
+                    } catch (Throwable $e) {
+                    }
+                }
                 // Si se desea utilizar acentos en la base de datos, se puede agregar la siguiente línea:
                 // $this->conn->exec("set names utf8");
             } catch(PDOException $exception) {

@@ -13,6 +13,10 @@
 //     archivo no lleva la etiqueta de cierre de PHP.
 //   - Nunca guarda contraseñas: los campos de CAMPOS_OCULTOS se guardan como ***.
 //
+// Además, conexion.php llama a Bitacora::alConectar() en cada conexión que abre: marca la
+// conexión con @ima_usuario y @ima_peticion, que es lo que leen los triggers para saber
+// quién hizo cada cambio y a qué fila de `bitacora` pertenece.
+//
 // La fila se escribe con una conexión propia, abierta al final: así no se mezcla con
 // una transacción que el PHP haya dejado a medias. La hora va en UTC (decisión del
 // 2026-11-17); la pantalla de la bitácora la muestra en hora de Monterrey.
@@ -38,6 +42,7 @@ final class Bitacora
     private static $nivelBuffer = 0;
     private static $copia = '';
     private static $op = '';
+    private static $peticion = null;
 
     public static function iniciar()
     {
@@ -48,6 +53,7 @@ final class Bitacora
             if ($op === '' || self::esLectura($op)) return;
 
             self::$op = $op;
+            self::$peticion = bin2hex(random_bytes(16));
             self::$activa = true;
 
             // Copia los primeros KB de la respuesta para saber si salió bien. El buffer
@@ -58,6 +64,23 @@ final class Bitacora
             register_shutdown_function([self::class, 'alTerminar']);
         } catch (Throwable $e) {
             self::$activa = false;
+        }
+    }
+
+    // En las consultas no hay fila de bitácora, así que @ima_peticion va vacía; el usuario
+    // sí se marca, por si una consulta llegara a cambiar algo. En los procesos automáticos
+    // (cli) no se marca nada y sus cambios salen sin usuario.
+    public static function alConectar($pdo)
+    {
+        try {
+            if (PHP_SAPI === 'cli' || !($pdo instanceof PDO)) return;
+            $usuario = self::usuario();
+            $pdo->exec(
+                "SET @ima_peticion = " . (self::$peticion === null ? "NULL" : $pdo->quote(self::$peticion)) .
+                ", @ima_usuario = " . ($usuario === null ? "NULL" : (int)$usuario)
+            );
+        } catch (Throwable $e) {
+            return;
         }
     }
 
@@ -111,7 +134,7 @@ final class Bitacora
             VALUES (?, UTC_TIMESTAMP(), ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ");
         $stmt->execute([
-            bin2hex(random_bytes(16)),
+            self::$peticion ?? bin2hex(random_bytes(16)),
             self::usuario(),
             $app,
             $version,

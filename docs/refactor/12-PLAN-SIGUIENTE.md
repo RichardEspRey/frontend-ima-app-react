@@ -396,6 +396,17 @@ permiso `bitacora_ver`, 24 meses, hora en UTC mostrada en Monterrey. Ver `10-BIT
 > Ojo: el archivo se subió como `bitácora_diagnostico.php` (con acento, lo puso el sistema
 > de Emiliano). Al pedir que suba algo, avisar que revise el nombre exacto.
 
+**Primera tanda — ENTREGADA, falta instalar (2026-11-17).** Emiliano eligió: `gastos`,
+`detalles_gasto`, `diesel`, `trip_stages`, `trip_payments`, `user_feature_flags`,
+`Users_credentials` (sin `pass` ni `push_token`). 21 triggers (alta, cambio, borrado),
+generados con `docs/sql/generar-triggers-bitacora.py`; copia para revisar en
+`docs/sql/016-bitacora-triggers.sql`. Al editar guardan solo las columnas que cambiaron.
+Se instalan con `docs/backend/bitacora_triggers.php` (clave de un solo uso; `accion=crear`,
+`accion=quitar`). Requieren el `conexion.php` y la `bitacora_lib.php` nuevos, que marcan
+cada conexión con `@ima_usuario` y `@ima_peticion` (`Bitacora::alConectar`). Segunda
+tanda propuesta: `trips`, `ordenes_servicio`, `orden_servicio_detalles`,
+`pago_trayectos_mx`, `notif_suscriptores`.
+
 Etapas 3 y 5 de `10-BITACORA.md`. **No crearlos desde phpMyAdmin de cPanel** (error 1449,
 el mismo que tumbó `crud_diesel` el 2026-11-17). Se crean desde un PHP de un solo uso con
 el usuario de la app. Requiere el privilegio `TRIGGER` (sale de B0).
