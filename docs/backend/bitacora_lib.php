@@ -128,12 +128,7 @@ final class Bitacora
             [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_TIMEOUT => 3]
         );
 
-        $stmt = $db->prepare("
-            INSERT INTO bitacora
-                (peticion, fecha_utc, usuario_id, app, app_version, archivo, op, resultado, mensaje, datos, ip)
-            VALUES (?, UTC_TIMESTAMP(), ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ");
-        $stmt->execute([
+        $valores = [
             self::$peticion ?? bin2hex(random_bytes(16)),
             self::usuario(),
             $app,
@@ -144,7 +139,25 @@ final class Bitacora
             $mensaje,
             self::datos(),
             substr((string)($_SERVER['REMOTE_ADDR'] ?? ''), 0, 45),
-        ]);
+        ];
+        $agente = substr((string)($_SERVER['HTTP_USER_AGENT'] ?? ''), 0, 255);
+
+        // La columna `agente` llega con el SQL 018. Si todavía no existe (error 1054),
+        // la fila se guarda igual, sin ella.
+        try {
+            $db->prepare("
+                INSERT INTO bitacora
+                    (peticion, fecha_utc, usuario_id, app, app_version, archivo, op, resultado, mensaje, datos, ip, agente)
+                VALUES (?, UTC_TIMESTAMP(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ")->execute(array_merge($valores, [$agente === '' ? null : $agente]));
+        } catch (PDOException $e) {
+            if (($e->errorInfo[1] ?? null) !== 1054) throw $e;
+            $db->prepare("
+                INSERT INTO bitacora
+                    (peticion, fecha_utc, usuario_id, app, app_version, archivo, op, resultado, mensaje, datos, ip)
+                VALUES (?, UTC_TIMESTAMP(), ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ")->execute($valores);
+        }
     }
 
     // Quién lo hizo, según lo que mande el cliente. `_usuario` lo pondrá la app en
@@ -177,7 +190,7 @@ final class Bitacora
     private static function appPorAgente()
     {
         $agente = (string)($_SERVER['HTTP_USER_AGENT'] ?? '');
-        if ($agente === '') return null;
+        if ($agente === '') return 'Sin agente';
         if (stripos($agente, 'Electron') !== false) return 'Desktop';
         foreach (['okhttp', 'CFNetwork', 'Darwin', 'Expo', 'Dalvik'] as $marca) {
             if (stripos($agente, $marca) !== false) return 'Movil';
