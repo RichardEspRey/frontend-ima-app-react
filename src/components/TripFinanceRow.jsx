@@ -8,6 +8,7 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { STATUS_OPTIONS } from '../constants/finances';
 import { StageDetailRow } from './StageDetailRow'; 
 import { money, countCriticalStages } from '../utils/financeHelpers';
+import { fechaCorta, finalizacionDeViaje } from '../utils/ventas';
 
 import { useAuthStore } from '../store/useAuthStore';
 
@@ -43,6 +44,7 @@ export const TripFinanceRow = ({ trip, isOpen, onToggle, onStageChange }) => {
   const { user } = useAuthStore(); 
   
   const criticalCounts = countCriticalStages(trip.stages);
+  const finalizacion = finalizacionDeViaje(trip);
 
   const ROLES_PERMITIDOS = ['admin', 'dev'];
   const userRole = (user?.tipo_usuario || '').toLowerCase();
@@ -59,12 +61,13 @@ export const TripFinanceRow = ({ trip, isOpen, onToggle, onStageChange }) => {
         <TableCell sx={{ fontWeight: 500 }}>{trip.trip_number}</TableCell>
         <TableCell>
           <Stack direction="row" spacing={1} alignItems="center">
-            <Chip size="small" label={`${trip.stages_count}`} sx={{ fontWeight: 600 }} />
+            <Chip size="small" label={trip.etapas_totales ? `${trip.stages_count} de ${trip.etapas_totales}` : `${trip.stages_count}`} sx={{ fontWeight: 600 }} />
             <Typography variant="body2" color="text.secondary">etapas</Typography>
           </Stack>
         </TableCell>
         <TableCell align="right">{money(trip.total_tarifa)}</TableCell>
         <TableCell align="right">{money(trip.total_pagada ?? 0)}</TableCell>
+        <TableCell sx={{ whiteSpace: 'nowrap', color: finalizacion ? 'inherit' : 'text.disabled' }}>{fechaCorta(finalizacion) || '—'}</TableCell>
         <TableCell><StatusChip value={trip.status_trip} /></TableCell>
         <TableCell align="center" sx={{ whiteSpace: 'nowrap' }}>
           <Stack direction="row" spacing={1} justifyContent="center">
@@ -76,7 +79,7 @@ export const TripFinanceRow = ({ trip, isOpen, onToggle, onStageChange }) => {
       </TableRow>
 
       <TableRow>
-        <TableCell colSpan={7} sx={{ p: 0, borderBottom: isOpen ? '1px solid rgba(224,224,224,1)' : 0 }}>
+        <TableCell colSpan={8} sx={{ p: 0, borderBottom: isOpen ? '1px solid rgba(224,224,224,1)' : 0 }}>
           <Collapse in={isOpen} timeout="auto" unmountOnExit>
             <Box sx={{ p: 2 }}>
               <Typography variant="h6" fontWeight={700} gutterBottom>Stages</Typography>

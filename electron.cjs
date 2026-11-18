@@ -4,6 +4,22 @@ const { autoUpdater } = require("electron-updater");
 
 let win; // ventana global
 
+const INTERVALO_BUSQUEDA_MS = 15 * 60 * 1000;
+let versionDisponible = null;
+let descargando = false;
+let descargada = false;
+
+function avisarActualizacion() {
+  if (win && !win.isDestroyed() && versionDisponible) {
+    win.webContents.send("update_available", { version: versionDisponible });
+  }
+}
+
+function buscarActualizacion() {
+  if (process.env.IS_DEV || descargando || descargada) return;
+  autoUpdater.checkForUpdates().catch(() => {});
+}
+
 function createWindow() {
   win = new BrowserWindow({
     width: 1200,
@@ -27,6 +43,7 @@ function createWindow() {
   win.webContents.on("did-finish-load", () => {
     win.webContents.setZoomFactor(1);
     win.webContents.setVisualZoomLevelLimits(1, 1); // bloquea pinch-zoom del trackpad
+    avisarActualizacion();
   });
 
   win.webContents.on("before-input-event", (event, input) => {
@@ -44,19 +61,22 @@ autoUpdater.autoDownload = false; // No descarga automáticamente
 autoUpdater.autoInstallOnAppQuit = true; // Instala al cerrar
 
 //  1) Enviar evento a React cuando hay nueva versión
-autoUpdater.on("update-available", () => {
-  if (win) {
-    win.webContents.send("update_available"); // 🔥 Notifica al frontend
-  }
+autoUpdater.on("update-available", (info) => {
+  versionDisponible = info?.version || versionDisponible || "nueva";
+  avisarActualizacion();
 });
 
 //  2) Descargar cuando React lo solicite
 ipcMain.on("download-update", () => {
-  autoUpdater.downloadUpdate();
+  if (descargando || descargada) return;
+  descargando = true;
+  autoUpdater.downloadUpdate().catch(() => {});
 });
 
 //  3) Instalar al finalizar la descarga
 autoUpdater.on("update-downloaded", () => {
+  descargando = false;
+  descargada = true;
   dialog
     .showMessageBox(win, {
       title: "Actualización lista para instalar",
@@ -72,11 +92,16 @@ autoUpdater.on("update-downloaded", () => {
 });
 //Estado de descarga
 autoUpdater.on("download-progress", (progress) => {
-  win.webContents.send("update_progress", progress.percent);
+  if (win && !win.isDestroyed()) win.webContents.send("update_progress", progress.percent);
 });
 
 //  4) Mostrar errores si algo falla
 autoUpdater.on("error", (error) => {
+  if (!descargando) {
+    console.error("[actualización]", error);
+    return;
+  }
+  descargando = false;
   dialog.showErrorBox(
     "Error al actualizar",
     error == null ? "Error desconocido" : (error.stack || error).toString(),
@@ -85,7 +110,7 @@ autoUpdater.on("error", (error) => {
 
 //  5) React puede pedir verificar actualizaciones
 ipcMain.on("check-for-updates", () => {
-  autoUpdater.checkForUpdates();
+  buscarActualizacion();
 });
 
 // -------------------------------
@@ -95,9 +120,8 @@ app.whenReady().then(() => {
   createWindow();
 
   // En producción, busca actualizaciones automáticamente
-  if (!process.env.IS_DEV) {
-    autoUpdater.checkForUpdates();
-  }
+  buscarActualizacion();
+  setInterval(buscarActualizacion, INTERVALO_BUSQUEDA_MS);
 
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();

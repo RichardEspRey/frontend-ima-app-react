@@ -1,11 +1,21 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
     Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-    TextField, Button, Stack, CircularProgress, ToggleButton, ToggleButtonGroup
+    TextField, Button, Stack, CircularProgress, Tabs, Tab, InputAdornment, Grid, Chip
 } from '@mui/material'; 
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import SearchIcon from '@mui/icons-material/Search';
 import BotonActualizar from '../../components/BotonActualizar';
+import {
+    PAGE_SHELL_SX, PAGE_OVERLINE_SX, PAGE_TITLE_SX, TABS_WRAPPER_SX, TAB_SX, CARD_SX, SECTION_LABEL_SX,
+    HEADER_ROW_SX, HEADER_CELL_SX, TABLE_CONTAINER_SX, CHIP_NEUTRO_SX, CELL_STRONG_SX, CELL_SX, CELL_MUTED_SX,
+    GHOST_BTN_SX, INPUT_SX,
+} from '../../styles/estilosTabla';
+
+const PILDORAS_SX = { minHeight: 0, '& .MuiTabs-flexContainer': { gap: 0.5 } };
+const VER_BTN_SX = { ...GHOST_BTN_SX, px: 1.5, py: 0.4, fontSize: '0.78rem' };
 
 const money = (v) => {
     return new Intl.NumberFormat('en-US', { 
@@ -84,91 +94,105 @@ const GastosAdmin = () => {
 
   if (loading) {
       return (
-          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh', p: 3 }}>
-              <CircularProgress /> 
-              <Typography ml={2}>Cargando registros de gastos...</Typography> 
+          <Box sx={{ ...PAGE_SHELL_SX, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <CircularProgress size={28} />
           </Box>
       );
   }
 
   return (
-    <Box sx={{ p: 3 }}>
-      {/* Título Principal */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3, flexWrap: 'wrap', gap: 2 }}>
-        <Typography variant="h4" component="h1" fontWeight={700} gutterBottom>
+    <Box sx={PAGE_SHELL_SX}>
+      <Stack direction="row" justifyContent="space-between" alignItems="flex-end" mb={4} flexWrap="wrap" gap={2}>
+        <Box>
+          <Typography variant="overline" sx={PAGE_OVERLINE_SX}>Gastos · Viajes</Typography>
+          <Typography variant="h4" fontWeight={800} color="#0f172a" letterSpacing="-0.02em" sx={PAGE_TITLE_SX}>
             Travel Expense Manager
-        </Typography>
+          </Typography>
+          <Typography variant="body2" color="#64748b" sx={{ mt: 0.5 }}>
+            Gastos que registran los operadores en cada viaje.
+          </Typography>
+        </Box>
+        <BotonActualizar onActualizar={fetchGastos} />
+      </Stack>
 
-        <ToggleButtonGroup
-            value={countryFilter}
-            exclusive
-            onChange={(e, val) => val && setCountryFilter(val)}
-            size="small"
-            color="primary"
-        >
-            <ToggleButton value="All" sx={{ fontWeight: 'bold', px: 3 }}>Todos</ToggleButton>
-            <ToggleButton value="US" sx={{ fontWeight: 'bold', px: 3 }}>USA</ToggleButton>
-            <ToggleButton value="MX" sx={{ fontWeight: 'bold', px: 3 }}>México</ToggleButton>
-        </ToggleButtonGroup>
+      <Box sx={TABS_WRAPPER_SX}>
+        <Tabs value={countryFilter} onChange={(e, val) => val && setCountryFilter(val)} TabIndicatorProps={{ sx: { display: 'none' } }} sx={PILDORAS_SX}>
+          <Tab value="All" label="Todos" disableRipple sx={TAB_SX} />
+          <Tab value="US" label="USA" disableRipple sx={TAB_SX} />
+          <Tab value="MX" label="México" disableRipple sx={TAB_SX} />
+        </Tabs>
       </Box>
 
-      {/* Toolbar con Búsqueda */}
-      <Stack direction="row" spacing={2} sx={{ mb: 3 }} alignItems="center">
-        <TextField
-          label="Buscar por Trip# o Driver"
-          variant="outlined"
-          size="small"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          sx={{ width: 300 }}
-        />
-        <BotonActualizar onActualizar={fetchGastos} sx={{ py: 0.75 }} />
-      </Stack>
-      
-      <Paper sx={{ width: '100%', mb: 2 }}>
-        <TableContainer sx={{ overflowX: 'auto' }}>
-          <Table size="small" stickyHeader aria-label="Travel expenses table">
-            <TableHead>
-              <TableRow>
-                <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>Trip #</TableCell>
-                <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>Last Update</TableCell>
-                <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap', textAlign: 'right' }}>No of records</TableCell>
-                <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap', textAlign: 'right' }}>Total Cost</TableCell>
-                <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>Last Driver</TableCell>
-                <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap', textAlign: 'center', width: 120 }}>Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {filteredRegistros.length === 0 ? (
-                <TableRow>
-                    <TableCell colSpan={6} align="center">
-                        <Typography color="text.secondary" sx={{ py: 2 }}>No se encontraron registros de gastos de viaje.</Typography>
-                    </TableCell>
-                </TableRow>
-              ) : (
-                filteredRegistros.map((row) => ( 
-                  <TableRow key={row.trip_id} hover>
-                    <TableCell component="th" scope="row" sx={{ fontWeight: 500 }}>
-                        {row.nomenclatura || row.trip_number}
-                    </TableCell>
-                    <TableCell>{row.fecha}</TableCell>
-                    <TableCell align="right">{row.registros}</TableCell>
-                    
-                    <TableCell align="right">
-                      <Typography fontWeight={700}>{money(row.monto)}</Typography>
-                    </TableCell>
-                    
-                    <TableCell>{row.nombre}</TableCell>
-                    <TableCell align="center">
-                      <Button variant="contained" size="small" onClick={() => handleVer(row.trip_id)}>View</Button> 
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
+      <Paper elevation={0} sx={{ ...CARD_SX, mb: 3 }}>
+        <Typography variant="overline" sx={SECTION_LABEL_SX}>Filtros de Búsqueda</Typography>
+        <Grid container spacing={2} sx={{ mt: 0.5 }}>
+          <Grid size={{ xs: 12, sm: 8, md: 4 }}>
+            <TextField
+              fullWidth
+              size="small"
+              placeholder="Buscar por Trip# o Driver"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              sx={{ bgcolor: 'white' }}
+              slotProps={{
+                input: {
+                  sx: INPUT_SX,
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon sx={{ fontSize: 18, color: '#94a3b8' }} />
+                    </InputAdornment>
+                  ),
+                },
+              }}
+            />
+          </Grid>
+        </Grid>
       </Paper>
+
+      <TableContainer component={Paper} elevation={0} sx={TABLE_CONTAINER_SX}>
+        <Table size="small" aria-label="Travel expenses table">
+          <TableHead>
+            <TableRow sx={HEADER_ROW_SX}>
+              <TableCell sx={{ ...HEADER_CELL_SX, whiteSpace: 'nowrap' }}>Trip #</TableCell>
+              <TableCell sx={{ ...HEADER_CELL_SX, whiteSpace: 'nowrap' }}>Last Update</TableCell>
+              <TableCell sx={{ ...HEADER_CELL_SX, whiteSpace: 'nowrap', textAlign: 'right' }}>No of records</TableCell>
+              <TableCell sx={{ ...HEADER_CELL_SX, whiteSpace: 'nowrap', textAlign: 'right' }}>Total Cost</TableCell>
+              <TableCell sx={{ ...HEADER_CELL_SX, whiteSpace: 'nowrap' }}>Last Driver</TableCell>
+              <TableCell sx={{ ...HEADER_CELL_SX, whiteSpace: 'nowrap', textAlign: 'center', width: 120 }}>Actions</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {filteredRegistros.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={6} align="center" sx={{ py: 6 }}>
+                  <Typography color="#94a3b8" variant="body2">No se encontraron registros de gastos de viaje.</Typography>
+                </TableCell>
+              </TableRow>
+            ) : (
+              filteredRegistros.map((row) => (
+                <TableRow key={row.trip_id} hover>
+                  <TableCell component="th" scope="row" sx={{ ...CELL_STRONG_SX, whiteSpace: 'nowrap' }}>
+                    {row.nomenclatura || row.trip_number}
+                  </TableCell>
+                  <TableCell sx={{ ...CELL_MUTED_SX, whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}>{row.fecha}</TableCell>
+                  <TableCell align="right">
+                    <Chip size="small" label={row.registros} sx={{ ...CHIP_NEUTRO_SX, minWidth: 32 }} />
+                  </TableCell>
+                  <TableCell align="right" sx={{ ...CELL_STRONG_SX, fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>
+                    {money(row.monto)}
+                  </TableCell>
+                  <TableCell sx={CELL_SX}>{row.nombre}</TableCell>
+                  <TableCell align="center">
+                    <Button variant="outlined" size="small" startIcon={<VisibilityIcon sx={{ fontSize: 16 }} />} onClick={() => handleVer(row.trip_id)} sx={VER_BTN_SX}>
+                      View
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
     </Box>
   );
 };

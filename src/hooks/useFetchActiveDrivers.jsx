@@ -1,8 +1,8 @@
 // hooks/useFetchActiveDrivers.js
 import { useState, useEffect } from 'react';
+import { pedirCatalogo, VIGENCIA_UNIDADES_MS } from '../utils/catalogos';
 
 function useFetchActiveDrivers() {
-  const apiHost = import.meta.env.VITE_API_HOST;
   const [activeDrivers, setActiveDrivers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -10,12 +10,7 @@ function useFetchActiveDrivers() {
   useEffect(() => {
     const fetchActiveDrivers = async () => {
       try {
-        const response = await fetch(`${apiHost}/drivers.php`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: 'op=getDriversActivosComplete',
-        });
-        const data = await response.json();
+        const data = await pedirCatalogo('drivers.php', 'getDriversActivosComplete', { vigenciaMs: VIGENCIA_UNIDADES_MS });
 
         if (data.status === 'success' && data.drivers) {
           const formattedActiveDrivers = data.drivers.map(driver => ({
@@ -28,14 +23,14 @@ function useFetchActiveDrivers() {
           setError(data.message || 'Error al obtener los conductores activos');
           setLoading(false);
         }
-      } catch (err) {
+      } catch {
         setError('Error de red al obtener los conductores activos');
         setLoading(false);
       }
     };
 
     fetchActiveDrivers();
-  }, [apiHost]);
+  }, []);
 
   return { activeDrivers, loading, error };
 }

@@ -1,6 +1,10 @@
 import dayjs from 'dayjs';
+import { conCache, crearCompletador } from '../utils/conCache';
 
 const apiHost = import.meta.env.VITE_API_HOST;
+
+const VIGENCIA_CATALOGO_MS = 10 * 60 * 1000;
+const VIGENCIA_INSPECCIONES_MS = 60 * 1000;
 
 export const hoy = () => dayjs().format('YYYY-MM-DD');
 
@@ -64,7 +68,22 @@ const pedirMtto = async (op, campos = {}) => {
         throw new Error(result.message || 'No se pudo completar la operación');
     }
 
+    if (!op.startsWith('get')) invalidarInspecciones();
+
     return result;
+};
+
+const inspeccionesPorLado = {};
+
+const invalidarInspecciones = () =>
+    Object.values(inspeccionesPorLado).forEach(obtener => obtener.invalidar());
+
+const pedirInspecciones = (lado) => {
+    inspeccionesPorLado[lado] ??= conCache(
+        () => pedirMtto('getInspecciones', { lado }),
+        { vigenciaMs: VIGENCIA_INSPECCIONES_MS }
+    );
+    return inspeccionesPorLado[lado]();
 };
 
 // El conteo de «por atender» sale del servidor ya filtrado: `All_CL_Final` cuenta
@@ -74,21 +93,18 @@ export const obtenerInspeccionesDeLado = async (lado) => {
     // La nomenclatura la arma `All_CL_Final` en el servidor y no es reproducible desde
     // las columnas de `trips`. Se cruza desde ahí para que sea la misma que ve el resto
     // del sistema aunque cambie la regla.
-    const [result, catalogo] = await Promise.all([
-        pedirMtto('getInspecciones', { lado }),
-        obtenerInspecciones().catch(() => []),
-    ]);
+    const result = await pedirInspecciones(lado);
+    const filas = Array.isArray(result.inspecciones) ? result.inspecciones : [];
+    const nomenclaturas = await nomenclaturasPara(filas);
 
-    const nomenclaturas = new Map(catalogo.map(fila => [String(fila.viaje_id), fila.nomenclatura]));
-
-    return (Array.isArray(result.inspecciones) ? result.inspecciones : []).map(fila => ({
+    return filas.map(fila => ({
         ...fila,
         nomenclatura: nomenclaturas.get(String(fila.viaje_id)) || '',
     }));
 };
 
 export const obtenerInspeccionesPorAtender = async (lado) => {
-    const result = await pedirMtto('getInspecciones', { lado });
+    const result = await pedirInspecciones(lado);
     return (Array.isArray(result.inspecciones) ? result.inspecciones : [])
         .filter(fila => fila.estatus_lado !== 'completada').length;
 };
@@ -97,11 +113,10 @@ const DIAS_DE_AVISO = 14;
 
 export const obtenerAvisosDeInspecciones = async () => {
     const lados = [UNIDAD.CAMION, UNIDAD.CAJA];
-    const [catalogo, ...respuestas] = await Promise.all([
-        obtenerInspecciones().catch(() => []),
-        ...lados.map(lado => pedirMtto('getInspecciones', { lado })),
-    ]);
-    const nomenclaturas = new Map(catalogo.map(fila => [String(fila.viaje_id), fila.nomenclatura]));
+    const respuestas = await Promise.all(lados.map(lado => pedirInspecciones(lado)));
+    const nomenclaturas = await nomenclaturasPara(
+        respuestas.flatMap(result => (Array.isArray(result.inspecciones) ? result.inspecciones : []))
+    );
     const limite = dayjs().subtract(DIAS_DE_AVISO, 'day').format('YYYY-MM-DD');
 
     return respuestas.flatMap((result, indice) => {
@@ -138,14 +153,11 @@ export const desuscribirInspeccion = ({ userId }) =>
     pedirMtto('desuscribirInspeccion', { user_id: userId });
 
 export const obtenerInspeccionesSinFallas = async () => {
-    const [result, catalogo] = await Promise.all([
-        pedirMtto('getSinFallas'),
-        obtenerInspecciones().catch(() => []),
-    ]);
+    const result = await pedirMtto('getSinFallas');
+    const filas = Array.isArray(result.inspecciones) ? result.inspecciones : [];
+    const nomenclaturas = await nomenclaturasPara(filas);
 
-    const nomenclaturas = new Map(catalogo.map(fila => [String(fila.viaje_id), fila.nomenclatura]));
-
-    return (Array.isArray(result.inspecciones) ? result.inspecciones : []).map(fila => ({
+    return filas.map(fila => ({
         ...fila,
         nomenclatura: nomenclaturas.get(String(fila.viaje_id)) || '',
         reporte: Array.isArray(fila.reporte) ? fila.reporte : [],
@@ -176,13 +188,11 @@ export const resolverPuntos = ({ items, estatus, usuarioId }) =>
     pedirMtto('resolverPuntos', { items: JSON.stringify(items), estatus, id_usuario: usuarioId });
 
 export const obtenerPendientes = async (unidadTipo) => {
-    const [result, catalogo] = await Promise.all([
-        pedirMtto('getPendientes', { unidad_tipo: unidadTipo }),
-        obtenerInspecciones().catch(() => []),
-    ]);
-    const nomenclaturas = new Map(catalogo.map(fila => [String(fila.viaje_id), fila.nomenclatura]));
+    const result = await pedirMtto('getPendientes', { unidad_tipo: unidadTipo });
+    const filas = Array.isArray(result.pendientes) ? result.pendientes : [];
+    const nomenclaturas = await nomenclaturasPara(filas);
 
-    return (Array.isArray(result.pendientes) ? result.pendientes : []).map(fila => ({
+    return filas.map(fila => ({
         ...fila,
         nomenclatura: (fila.viaje_id && nomenclaturas.get(String(fila.viaje_id))) || '',
     }));
@@ -307,10 +317,28 @@ const pedirFormularios = async (op, campos = {}) => {
     return result;
 };
 
-export const obtenerInspecciones = async () => {
+export const obtenerInspecciones = conCache(async () => {
     const result = await pedirFormularios('All_CL_Final');
     return Array.isArray(result.row) ? result.row : [];
+}, { vigenciaMs: VIGENCIA_CATALOGO_MS });
+
+const mapaDeNomenclaturas = conCache(async () => {
+    const catalogo = await obtenerInspecciones().catch(() => []);
+    return new Map(catalogo.map(fila => [String(fila.viaje_id), fila.nomenclatura]));
+}, { vigenciaMs: VIGENCIA_CATALOGO_MS });
+
+const invalidarMapa = mapaDeNomenclaturas.invalidar;
+mapaDeNomenclaturas.invalidar = () => {
+    obtenerInspecciones.invalidar();
+    invalidarMapa();
 };
+
+const completarNomenclaturas = crearCompletador(mapaDeNomenclaturas);
+
+const nomenclaturasPara = (filas) =>
+    completarNomenclaturas(filas.map(fila => fila.viaje_id).filter(Boolean));
+
+export const invalidarNomenclaturas = () => mapaDeNomenclaturas.invalidar();
 
 export const obtenerDetalle = (viajeId) => pedirFormularios('collapse_CL_Final', { trip_id: viajeId });
 

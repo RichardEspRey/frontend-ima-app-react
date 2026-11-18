@@ -8,6 +8,7 @@ import SaveIcon from '@mui/icons-material/Save';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import Swal from 'sweetalert2';
 import InvoicePreview from './InvoicePreview';
+import { invalidarCatalogo } from '../utils/catalogos';
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -155,6 +156,7 @@ const InvoiceModal = ({ isOpen, onClose, stageData, tripData, onSaveInvoice }) =
                     fdCompany.append('nombre_factura', invoiceForm.client_name);
                     fdCompany.append('direccion', invoiceForm.client_address);
                     await fetch(`${apiHost}/companies.php`, { method: 'POST', body: fdCompany });
+                    invalidarCatalogo('companies.php');
                 } catch (companyErr) {
                     console.error('No se pudo guardar la información de facturación de la empresa:', companyErr);
                 }

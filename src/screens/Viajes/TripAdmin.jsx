@@ -201,7 +201,6 @@ const TripAdmin = () => {
         setLoading(true);
         setError(null);
 
-            console.log('userPermissions:', user); // Debugging line
 
         try {
             const formData = new FormData();

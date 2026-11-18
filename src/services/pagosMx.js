@@ -63,14 +63,55 @@ const normalizar = (texto) => (texto || '')
     .replace(/[^a-z0-9]+/g, ' ')
     .trim();
 
+const esBase = (destino) => normalizar(destino).includes('nuevo laredo');
+
+const enOrden = (recorrido = []) => [
+    ...recorrido.filter(destino => !esBase(destino)),
+    ...recorrido.filter(esBase),
+];
+
+const coincide = (destino, trayecto) => {
+    const nombre = normalizar(trayecto.nombre);
+    return nombre !== '' && normalizar(destino).includes(nombre);
+};
+
 export const sugerirTrayecto = (recorrido = [], trayectos = []) => {
-    const activos = trayectos.filter(trayecto => trayecto.activo && normalizar(trayecto.nombre));
-    for (const destino of recorrido) {
-        const lugar = normalizar(destino);
-        const encontrado = activos.find(trayecto => lugar.includes(normalizar(trayecto.nombre)));
+    const activos = trayectos.filter(trayecto => trayecto.activo);
+    for (const destino of enOrden(recorrido)) {
+        const encontrado = activos.find(trayecto => coincide(destino, trayecto));
         if (encontrado) return encontrado;
     }
     return null;
+};
+
+export const nombreDeTrayecto = (recorrido = []) => {
+    const [destino] = enOrden(recorrido);
+    return (destino || '').split(',')[0].replace(/[.\s]+$/, '').trim();
+};
+
+export const trayectosPorCrear = (viajes = [], trayectos = []) => {
+    const nombres = new Map();
+    viajes.forEach(({ recorrido }) => {
+        if (!recorrido?.length) return;
+        if (recorrido.some(destino => trayectos.some(trayecto => coincide(destino, trayecto)))) return;
+        const nombre = nombreDeTrayecto(recorrido);
+        const clave = normalizar(nombre);
+        if (clave && !nombres.has(clave)) nombres.set(clave, nombre);
+    });
+    return [...nombres.values()];
+};
+
+export const crearTrayectosSinMonto = async (nombres) => {
+    const creados = [];
+    for (const nombre of nombres) {
+        try {
+            await guardarTrayecto({ id: '', nombre, monto: 0, activo: true });
+            creados.push(nombre);
+        } catch {
+            continue;
+        }
+    }
+    return creados;
 };
 
 export const autorizarPagoPorTrayecto = async ({ tripId, driverId, trayecto, usuarioId }) => {

@@ -7,6 +7,11 @@ import { Outlet } from 'react-router-dom';
 
 import { useAuthStore } from '../store/useAuthStore';
 import notiSound from '../assets/sounds/update.mp3';
+import { sondear, EVENTO_NOTIFICACIONES_NUEVAS } from '../utils/sondeo';
+
+const PERMISOS_MS = 5 * 60 * 1000;
+const NOTIFICACIONES_MS = 30 * 1000;
+const NOTIFICACIONES_OCULTA_MS = 60 * 1000;
 
 const DashboardLayout = () => {
   const { user, fetchPermissions } = useAuthStore();
@@ -14,11 +19,10 @@ const DashboardLayout = () => {
   useEffect(() => {
     if (!user?.id) return;
 
-    const intervalId = setInterval(() => {
-        fetchPermissions(user.id);
-    }, 15000);
-
-    return () => clearInterval(intervalId);
+    return sondear(() => fetchPermissions(user.id), {
+      visibleMs: PERMISOS_MS,
+      ocultoMs: null,
+    });
   }, [user?.id, fetchPermissions]);
 
   useEffect(() => {
@@ -45,15 +49,16 @@ const DashboardLayout = () => {
         });
 
         new Audio(notiSound).play();
+        window.dispatchEvent(new Event(EVENTO_NOTIFICACIONES_NUEVAS));
       } catch (error) {
         console.error('[Notifications] Error al consultar notificaciones:', error);
       }
     };
 
-    pollNotifications();
-    const intervalId = setInterval(pollNotifications, 15000);
-
-    return () => clearInterval(intervalId);
+    return sondear(pollNotifications, {
+      visibleMs: NOTIFICACIONES_MS,
+      ocultoMs: NOTIFICACIONES_OCULTA_MS,
+    });
   }, [user?.id]);
 
   return (

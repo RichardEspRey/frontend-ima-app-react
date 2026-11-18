@@ -9,7 +9,7 @@ import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { 
     MdDashboard, MdCarRental, MdLocalShipping, MdDirectionsBus, MdLocalGasStation, 
     MdAttachMoney, MdExitToApp, MdList, MdAssignment, MdTrendingUp, MdBarChart, 
-    MdSecurity, MdChevronLeft, MdViewSidebar, MdViewCompact
+    MdSecurity, MdChevronLeft, MdViewSidebar, MdViewCompact, MdHistory
 } from 'react-icons/md'; 
 import { GrMapLocation } from "react-icons/gr";
 
@@ -41,11 +41,13 @@ const iconMap = {
     'Safety': MdSecurity,
     'Mapa': GrMapLocation,
     'Gestor de Acceso': MdList,
+    'Bitácora': MdHistory,
     'Estatus de Unidades': MdTrendingUp,
 };
 
 const ADMIN_TYPES = new Set(["admin"]);
 const MANAGEMENT_ITEM = { name: 'Gestor de Acceso', route: '/access-manager' };
+const BITACORA_FEATURE = 'bitacora_ver';
 const menuItems = [ ...menuItemsConfig, MANAGEMENT_ITEM ];
 
 const labelSx = (visible) => ({
@@ -63,7 +65,7 @@ const Sidebar = () => {
   const location = useLocation();
   const currentPath = location.pathname;
 
-  const { user, logout, userPermissions, fetchPermissions } = useAuthStore();
+  const { user, logout, userPermissions } = useAuthStore();
   const { mode, setMode } = useSidebarStore();
   const { updateDisponible } = useContext(UpdateContext);
   const [progress, setProgress] = useState(0);
@@ -80,20 +82,9 @@ const Sidebar = () => {
   const tipoUsuario = String(user?.tipo_usuario || user?.type || '').trim().toLowerCase();
 
   useEffect(() => {
-    if (user?.id) {
-        fetchPermissions(user.id);
-
-        const handleFocus = () => {
-            fetchPermissions(user.id);
-        };
-        
-        window.addEventListener('focus', handleFocus);
-        return () => window.removeEventListener('focus', handleFocus);
-    }
-  }, [user?.id, fetchPermissions]);
-
-  useEffect(() => {
-    if (window?.electron?.onUpdateProgress) window.electron.onUpdateProgress(setProgress);
+    if (!window?.electron?.onUpdateProgress) return undefined;
+    const baja = window.electron.onUpdateProgress(setProgress);
+    return typeof baja === 'function' ? baja : undefined;
   }, []);
 
   useEffect(() => {
@@ -108,6 +99,7 @@ const Sidebar = () => {
 
   const isSectionAllowed = useCallback((item, visibleSubs = true) => {
       if (item.name === MANAGEMENT_ITEM.name) return isAdmin || userPermissions[GESTOR_ACCESOS_DRIVERS.featureKey] === true;
+      if (item.featureKey === BITACORA_FEATURE) return userPermissions[BITACORA_FEATURE] === true;
       if (isAdmin) return true;
       const dynamicPermission = userPermissions[item.featureKey ?? item.name];
       if (dynamicPermission !== undefined) return dynamicPermission;

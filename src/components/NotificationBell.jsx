@@ -22,10 +22,23 @@ import CloseIcon from "@mui/icons-material/Close";
 import SettingsIcon from "@mui/icons-material/Settings";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import BuildIcon from "@mui/icons-material/Build";
+import LocalGasStationIcon from "@mui/icons-material/LocalGasStation";
+import EventAvailableIcon from "@mui/icons-material/EventAvailable";
+import DescriptionIcon from "@mui/icons-material/Description";
+import FactCheckIcon from "@mui/icons-material/FactCheck";
 import { toast } from "react-toastify";
 import { useAuthStore } from "../store/useAuthStore";
 import { UNIDAD, obtenerAvisosDeInspecciones, obtenerSuscriptoresInspeccion } from "../services/mantenimiento";
 import notiSound from "../assets/sounds/update.mp3";
+import { sondear, EVENTO_NOTIFICACIONES_NUEVAS } from "../utils/sondeo";
+import { useAvisosDerivados } from "../hooks/useAvisosDerivados";
+import { guardarNomenclaturas, leerNomenclaturas } from "../utils/nomenclaturasGuardadas";
+import { useViajesFiltrosStore } from "../store/useViajesFiltrosStore";
+
+const LISTA_MS = 5 * 60 * 1000;
+const SUSCRIPTORES_MS = 5 * 60 * 1000;
+const INSPECCIONES_MS = 60 * 1000;
+const INSPECCIONES_OCULTA_MS = 2 * 60 * 1000;
 
 const dateGroupLabel = (createdAt) => {
   const date = new Date(createdAt.replace(" ", "T"));
@@ -70,6 +83,17 @@ const guardarIds = (key, ids) => {
   }
 };
 
+const ASPECTO = {
+  bl: { icono: LocalShippingIcon, fondo: "#e0e9fd", color: "#1d4ed8" },
+  inspeccion: { icono: BuildIcon, fondo: "#ffedd5", color: "#ea580c" },
+  mantenimiento: { icono: BuildIcon, fondo: "#ffedd5", color: "#ea580c" },
+  diesel: { icono: LocalGasStationIcon, fondo: "#fef3c7", color: "#b45309" },
+  programacion: { icono: EventAvailableIcon, fondo: "#dcfce7", color: "#15803d" },
+  despacho: { icono: LocalShippingIcon, fondo: "#e0e9fd", color: "#1d4ed8" },
+  documentos: { icono: DescriptionIcon, fondo: "#ede9fe", color: "#6d28d9" },
+  safety: { icono: FactCheckIcon, fondo: "#ccfbf1", color: "#0f766e" },
+};
+
 const nomenclaturaDe = (trip) => {
   const transnacional = trip.is_transnational === "1" && trip.transnational_number;
   const medio = transnacional ? `-${trip.transnational_number}T${trip.movement_number}` : "";
@@ -88,8 +112,8 @@ const NotificationBell = () => {
   const [notifications, setNotifications] = useState([]);
   const [inspecciones, setInspecciones] = useState([]);
   const conocidas = useRef(null);
-  const [nomenclaturas, setNomenclaturas] = useState({});
-  const pedidas = useRef(new Set());
+  const [nomenclaturas, setNomenclaturas] = useState(() => leerNomenclaturas());
+  const pedidas = useRef(new Set(Object.keys(nomenclaturas)));
   const [seenIds, setSeenIds] = useState(() => leerIds(seenKey(user?.id)));
   const [ocultas, setOcultas] = useState(() => leerIds(hiddenKey(user?.id)));
 
@@ -114,9 +138,12 @@ const NotificationBell = () => {
   };
 
   useEffect(() => {
-    fetchNotifications();
-    const intervalId = setInterval(fetchNotifications, 15000);
-    return () => clearInterval(intervalId);
+    const detener = sondear(fetchNotifications, { visibleMs: LISTA_MS, ocultoMs: null });
+    window.addEventListener(EVENTO_NOTIFICACIONES_NUEVAS, fetchNotifications);
+    return () => {
+      detener();
+      window.removeEventListener(EVENTO_NOTIFICACIONES_NUEVAS, fetchNotifications);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
@@ -135,9 +162,7 @@ const NotificationBell = () => {
       }
     };
 
-    consultar();
-    const intervalId = setInterval(consultar, 300000);
-    return () => clearInterval(intervalId);
+    return sondear(consultar, { visibleMs: SUSCRIPTORES_MS, ocultoMs: null });
   }, [user?.id]);
 
   useEffect(() => {
@@ -161,18 +186,47 @@ const NotificationBell = () => {
       }
     };
 
-    consultar();
-    const intervalId = setInterval(consultar, 60000);
-    return () => clearInterval(intervalId);
+    return sondear(consultar, { visibleMs: INSPECCIONES_MS, ocultoMs: INSPECCIONES_OCULTA_MS });
   }, [user?.id, recibeInspecciones]);
+
+  const derivados = useAvisosDerivados({ recibeInspecciones });
 
   const todas = useMemo(
     () =>
-      [...notifications, ...inspecciones]
+      [...notifications, ...inspecciones, ...derivados]
         .filter((n) => !ocultas.has(n.id))
         .sort((a, b) => String(b.created_at).localeCompare(String(a.created_at))),
-    [notifications, inspecciones, ocultas]
+    [notifications, inspecciones, derivados, ocultas]
   );
+
+  const presentar = (n) => {
+    if (n.tipo === "inspeccion") {
+      return {
+        aspecto: ASPECTO.inspeccion,
+        titulo: `Nueva inspección ${n.nomenclatura}`,
+        subtitulo: `${n.lado === UNIDAD.CAJA ? "Caja" : "Camión"}${n.unidad ? ` ${n.unidad}` : ""} · ${n.operador}`,
+        destino: { ruta: `/mantenimiento?pestana=inspecciones&lado=${n.lado}` },
+      };
+    }
+    if (n.tipo) {
+      return { aspecto: ASPECTO[n.tipo] || ASPECTO.bl, titulo: n.titulo, subtitulo: n.subtitulo, detalle: n.detalle, destino: n.destino };
+    }
+    return {
+      aspecto: ASPECTO.bl,
+      titulo: "BL Firmado",
+      subtitulo: nomenclaturas[String(n.trip_id)] || "Viaje",
+      destino: { ruta: `/edit-trip/${n.trip_id}` },
+    };
+  };
+
+  const abrir = (n, destino) => {
+    ocultar(n);
+    handleClose();
+    if (destino.pestanaViajes !== undefined) {
+      useViajesFiltrosStore.getState().set({ tabValue: destino.pestanaViajes, page: 0 });
+    }
+    navigate(destino.ruta, destino.estado ? { state: destino.estado } : undefined);
+  };
 
   useEffect(() => {
     const faltantes = [...new Set(notifications.map((n) => String(n.trip_id)))].filter(
@@ -198,13 +252,18 @@ const NotificationBell = () => {
       })
     ).then((pares) => {
       const nuevas = Object.fromEntries(pares.filter(Boolean));
-      if (Object.keys(nuevas).length > 0) setNomenclaturas((prev) => ({ ...prev, ...nuevas }));
+      if (Object.keys(nuevas).length === 0) return;
+      guardarNomenclaturas(nuevas);
+      setNomenclaturas((prev) => ({ ...prev, ...nuevas }));
     });
   }, [notifications, apiHost]);
 
   const unreadCount = todas.filter((n) => !seenIds.has(n.id)).length;
 
-  const handleOpen = (e) => setAnchorEl(e.currentTarget);
+  const handleOpen = (e) => {
+    setAnchorEl(e.currentTarget);
+    fetchNotifications();
+  };
 
   const handleClose = () => {
     setAnchorEl(null);
@@ -326,19 +385,12 @@ const NotificationBell = () => {
               <List disablePadding>
                 {items.map((n) => {
                   const isUnread = !seenIds.has(n.id);
-                  const esInspeccion = n.tipo === "inspeccion";
+                  const { aspecto, titulo, subtitulo, detalle, destino } = presentar(n);
+                  const Icono = aspecto.icono;
                   return (
                     <ListItemButton
                       key={n.id}
-                      onClick={() => {
-                        ocultar(n);
-                        handleClose();
-                        navigate(
-                          esInspeccion
-                            ? `/mantenimiento?pestana=inspecciones&lado=${n.lado}`
-                            : `/edit-trip/${n.trip_id}`
-                        );
-                      }}
+                      onClick={() => abrir(n, destino)}
                       sx={{
                         px: 2.5,
                         py: 1.25,
@@ -348,28 +400,28 @@ const NotificationBell = () => {
                       }}
                     >
                       <ListItemAvatar sx={{ minWidth: 44 }}>
-                        {esInspeccion ? (
-                          <Avatar sx={{ bgcolor: "#ffedd5", color: "#ea580c", width: 36, height: 36 }}>
-                            <BuildIcon fontSize="small" />
-                          </Avatar>
-                        ) : (
-                          <Avatar sx={{ bgcolor: "#e0e9fd", color: "#1d4ed8", width: 36, height: 36 }}>
-                            <LocalShippingIcon fontSize="small" />
-                          </Avatar>
-                        )}
+                        <Avatar sx={{ bgcolor: aspecto.fondo, color: aspecto.color, width: 36, height: 36 }}>
+                          <Icono fontSize="small" />
+                        </Avatar>
                       </ListItemAvatar>
                       <ListItemText
+                        sx={{ minWidth: 0 }}
                         primary={
                           <Typography variant="body2" fontWeight={800} color="#0f172a">
-                            {esInspeccion ? `Nueva inspección ${n.nomenclatura}` : "BL Firmado"}
+                            {titulo}
                           </Typography>
                         }
                         secondary={
-                          <Typography variant="caption" color="#64748b" noWrap sx={{ display: "block" }}>
-                            {esInspeccion
-                              ? `${n.lado === UNIDAD.CAJA ? "Caja" : "Camión"}${n.unidad ? ` ${n.unidad}` : ""} · ${n.operador}`
-                              : nomenclaturas[String(n.trip_id)] || "Viaje"}
-                          </Typography>
+                          <>
+                            <Typography component="span" variant="caption" color="#64748b" noWrap sx={{ display: "block" }}>
+                              {subtitulo}
+                            </Typography>
+                            {detalle && (
+                              <Typography component="span" variant="caption" color="#94a3b8" sx={{ display: "block" }}>
+                                {detalle}
+                              </Typography>
+                            )}
+                          </>
                         }
                       />
                       <Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 0.5, ml: 1 }}>

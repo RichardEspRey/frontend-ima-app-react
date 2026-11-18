@@ -1,20 +1,18 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { 
-  Box, Paper, Typography, Grid, TextField, Button, Stack, 
-  CircularProgress, InputAdornment, Card, CardMedia
-} from '@mui/material';
-import { PhotoProvider, PhotoView } from 'react-photo-view';
-import 'react-photo-view/dist/react-photo-view.css';
+import { Grid, TextField, InputAdornment } from '@mui/material';
 import Swal from 'sweetalert2';
-
-// Iconos
-import SaveIcon from '@mui/icons-material/Save';
-import DeleteIcon from '@mui/icons-material/Delete';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import { CargandoEditor, EditorShell, ResumenRegistro, TarjetaEditor, TicketsGaleria } from '../../components/EditorRegistro';
+import { INPUT_SX } from '../../styles/estilosTabla';
 
 const apiHost = import.meta.env.VITE_API_HOST;
+
+const dinero = (valor) =>
+  valor === '' || valor === null || valor === undefined
+    ? ''
+    : new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(Number(valor) || 0);
+
+const campo = { fullWidth: true, size: 'small', InputProps: { sx: INPUT_SX } };
 
 const cleanValue = (val) => {
     if (!val) return '';
@@ -197,7 +195,6 @@ const DieselEditor = () => {
 
         const respTick = await fetch(`${apiHost}/formularios.php`, { method: 'POST', body: fdTick });
         const jsonTick = await respTick.json();
-        console.log('Tickets:', jsonTick);
 
         if (jsonTick.status === 'success' && Array.isArray(jsonTick.data)) {
             const list = jsonTick.data
@@ -226,123 +223,97 @@ const DieselEditor = () => {
 
   const cancelar = () => { navigate(`/detalle-diesel/${trip_id}`); }
 
-  if (loading) {
-      return (<Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh', p: 3 }}><CircularProgress /><Typography ml={2}>Cargando editor...</Typography></Box>);
-  }
+  if (loading) return <CargandoEditor />;
 
   return (
-      <Box sx={{ p: 3 }}>
-          {/* Header */}
-          <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
-              <Typography variant="h4" component="h1" fontWeight={700}>Diesel Log Editor</Typography>
-              <Stack direction="row" spacing={2}>
-                 <Button variant="outlined" color="inherit" startIcon={<ArrowBackIcon />} onClick={cancelar}>Cancel</Button>
-                 <Button variant="contained" color="error" startIcon={<DeleteIcon />} onClick={eliminar}>Delete</Button>
-                 <Button variant="contained" color="primary" startIcon={<SaveIcon />} onClick={actualizar}>Save Changes</Button>
-              </Stack>
-          </Stack>
+    <EditorShell
+      seccion="Gastos · Diesel"
+      titulo="Diesel Log Editor"
+      descripcion="Corrige los datos de esta carga. Los tickets que subió el operador están a la derecha."
+      onCancelar={cancelar}
+      onEliminar={eliminar}
+      onGuardar={actualizar}
+    >
+      <ResumenRegistro
+        datos={[
+          { etiqueta: 'Viaje', valor: formData.trip_number },
+          { etiqueta: 'Operador', valor: formData.nombre },
+          { etiqueta: 'Fecha', valor: formData.fecha },
+          { etiqueta: 'Total', valor: dinero(formData.monto), destacado: true },
+        ]}
+      />
 
-          <Grid container spacing={3}>
-            <Grid
-                size={{
-                    xs: 12,
-                    md: 6
-                }}>
-                <Paper elevation={1} sx={{ p: 3, border: '1px solid #ccc' }}>
-                    <Typography variant="h6" fontWeight={600} gutterBottom sx={{ borderBottom: '1px solid #eee', pb: 1, mb: 3 }}>
-                        Detalles del Registro
-                    </Typography>
-
-                    <Grid container spacing={2}>
-                        <Grid size={12}><TextField label="Trip Number" value={formData.trip_number} fullWidth size="small" disabled variant="filled" /></Grid>
-                        <Grid size={12}><TextField label="Driver" value={formData.nombre} fullWidth size="small" disabled variant="filled" /></Grid>
-                        
-                        <Grid
-                            size={{
-                                xs: 12,
-                                sm: 6
-                            }}>
-                            <TextField
-                                label="State"
-                                value={formData.estado}
-                                onChange={(e) => handleInputChange('estado', e.target.value)}
-                                fullWidth size="small"
-                                placeholder="e.g. TX, NM"
-                            />
-                        </Grid>
-                         <Grid
-                             size={{
-                                 xs: 12,
-                                 sm: 6
-                             }}>
-                            <TextField
-                                label="Fleet One ($)"
-                                value={formData.fleetone}
-                                onChange={(e) => handleInputChange('fleetone', e.target.value)}
-                                fullWidth size="small"
-                                type="number"
-                                placeholder="0.00"
-                            />
-                        </Grid>
-                        
-                        <Grid
-                            size={{
-                                xs: 12,
-                                sm: 6
-                            }}><TextField label="Odometer" type="number" value={formData.odometro} onChange={(e) => handleInputChange('odometro', e.target.value)} fullWidth size="small" InputProps={{ endAdornment: <InputAdornment position="end">mi</InputAdornment> }} /></Grid>
-                        <Grid
-                            size={{
-                                xs: 12,
-                                sm: 6
-                            }}><TextField label="Gallons" type="number" value={formData.galones} onChange={(e) => handleInputChange('galones', e.target.value)} fullWidth size="small" InputProps={{ endAdornment: <InputAdornment position="end">gal</InputAdornment> }} /></Grid>
-                        <Grid size={12}><TextField label="Total Cost" type="number" value={formData.monto} onChange={(e) => handleInputChange('monto', e.target.value)} fullWidth size="small" InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }} /></Grid>
-                        <Grid size={12}><TextField label="Periodo" value={formData.periodo} onChange={(e) => handleInputChange('periodo', e.target.value)} fullWidth size="small" placeholder="Ej. Q1, Q2..." /></Grid>
-                    </Grid>
-                </Paper>
+      <Grid container spacing={3}>
+        <Grid size={{ xs: 12, md: 6 }}>
+          <TarjetaEditor titulo="Detalles de la carga">
+            <Grid container spacing={2}>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  {...campo}
+                  label="State"
+                  value={formData.estado}
+                  onChange={(e) => handleInputChange('estado', e.target.value)}
+                  placeholder="e.g. TX, NM"
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  {...campo}
+                  label="Fleet One ($)"
+                  type="number"
+                  value={formData.fleetone}
+                  onChange={(e) => handleInputChange('fleetone', e.target.value)}
+                  placeholder="0.00"
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  {...campo}
+                  label="Odometer"
+                  type="number"
+                  value={formData.odometro}
+                  onChange={(e) => handleInputChange('odometro', e.target.value)}
+                  InputProps={{ ...campo.InputProps, endAdornment: <InputAdornment position="end">mi</InputAdornment> }}
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  {...campo}
+                  label="Gallons"
+                  type="number"
+                  value={formData.galones}
+                  onChange={(e) => handleInputChange('galones', e.target.value)}
+                  InputProps={{ ...campo.InputProps, endAdornment: <InputAdornment position="end">gal</InputAdornment> }}
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  {...campo}
+                  label="Total Cost"
+                  type="number"
+                  value={formData.monto}
+                  onChange={(e) => handleInputChange('monto', e.target.value)}
+                  InputProps={{ ...campo.InputProps, startAdornment: <InputAdornment position="start">$</InputAdornment> }}
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  {...campo}
+                  label="Periodo"
+                  value={formData.periodo}
+                  onChange={(e) => handleInputChange('periodo', e.target.value)}
+                  placeholder="Ej. Q1, Q2..."
+                />
+              </Grid>
             </Grid>
-            <Grid
-                size={{
-                    xs: 12,
-                    md: 6
-                }}>
-                <Paper elevation={1} sx={{ p: 3, border: '1px solid #ccc', height: '100%' }}>
-                    <Typography variant="h6" fontWeight={600} gutterBottom sx={{ borderBottom: '1px solid #eee', pb: 1, mb: 3 }}>
-                        Tickets & Evidencia
-                    </Typography>
+          </TarjetaEditor>
+        </Grid>
 
-                    <PhotoProvider>
-                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-                            {tickets.length === 0 ? (
-                                <Typography color="text.secondary" sx={{ fontStyle: 'italic' }}>No hay documentos adjuntos.</Typography>
-                            ) : (
-                                tickets.map((item) => {
-                                    const isImage = ['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(item.ext);
-                                    if (isImage) {
-                                        return (
-                                            <PhotoView key={item.id} src={item.url}>
-                                                <Card sx={{ width: 120, cursor: 'zoom-in' }}>
-                                                    <CardMedia component="img" height="120" image={item.url} alt={`ticket ${item.id}`} sx={{ objectFit: 'cover' }} />
-                                                </Card>
-                                            </PhotoView>
-                                        );
-                                    } else {
-                                        return (
-                                            <Card key={item.id} sx={{ width: 120, height: 120, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#f5f5f5' }} variant="outlined">
-                                                <Button href={item.url} target="_blank" rel="noreferrer" sx={{ display: 'flex', flexDirection: 'column', textTransform: 'none', height: '100%', width: '100%' }}>
-                                                    <PictureAsPdfIcon sx={{ fontSize: 40, color: '#d32f2f', mb: 1 }} />
-                                                    <Typography variant="caption" align="center" sx={{ lineHeight: 1.2 }}>Ver Archivo</Typography>
-                                                </Button>
-                                            </Card>
-                                        );
-                                    }
-                                })
-                            )}
-                        </Box>
-                    </PhotoProvider>
-                </Paper>
-            </Grid>
-          </Grid>
-      </Box>
+        <Grid size={{ xs: 12, md: 6 }}>
+          <TicketsGaleria tickets={tickets} />
+        </Grid>
+      </Grid>
+    </EditorShell>
   );
 };
 

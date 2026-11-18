@@ -62,7 +62,6 @@ export default function ResumenTrip() {
       const res = await fetch(`${apiHost}/trips.php`, { method: 'POST', body: fd });
       const json = await res.json();
 
-      console.log(json)
 
       if (json.status === 'success' && json.data) {
         setSummary(json.data);

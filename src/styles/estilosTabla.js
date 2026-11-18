@@ -73,6 +73,18 @@ export const CHIP_DANGER_SX = {
   ...CHIP_SX, bgcolor: '#fef2f2', color: '#b91c1c', border: '1px solid #fecaca',
 };
 
+export const CHIP_WARN_SX = {
+  ...CHIP_SX, bgcolor: '#fffbeb', color: '#b45309', border: '1px solid #fde68a',
+};
+
+export const CHIP_INFO_SX = {
+  ...CHIP_SX, bgcolor: '#eff6ff', color: '#1d4ed8', border: '1px solid #bfdbfe',
+};
+
+export const CHIP_NEUTRO_SX = {
+  ...CHIP_SX, bgcolor: '#f8fafc', color: '#475569', border: '1px solid #e2e8f0',
+};
+
 export const ICON_BTN_SX = {
   border: '1px solid #e2e8f0', bgcolor: '#fff', color: '#475569',
   '&:hover': { bgcolor: '#f8fafc', borderColor: '#cbd5e1' },

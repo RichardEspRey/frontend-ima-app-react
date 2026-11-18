@@ -26,6 +26,7 @@ import truckIcon from "../../assets/images/icons/truck.png";
 
 import FuelGauge from "../../components/FuelGauge";
 import TankConfigModal from "../../components/TankConfigModal";
+import { sondear } from "../../utils/sondeo";
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -119,7 +120,7 @@ export default function Tracking() {
     }
 
     try {
-      const resGps = await fetch("http://imaexpressllc.com/API/Tracking.php");
+      const resGps = await fetch(`${apiHost}/Tracking.php`);
       const dataGps = await resGps.json();
 
       const fd = new FormData();
@@ -213,9 +214,7 @@ export default function Tracking() {
   };
 
   useEffect(() => {
-    fetchData();
-    const interval = setInterval(fetchData, 50000);
-    return () => clearInterval(interval);
+    return sondear(fetchData, { visibleMs: 50000, ocultoMs: 300000 });
   }, []);
 
   useEffect(() => {

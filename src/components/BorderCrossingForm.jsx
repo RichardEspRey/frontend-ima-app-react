@@ -413,11 +413,6 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
         });
 
 
-        console.log("--- FormData a enviar ---");
-        for (let [key, value] of dataToSend.entries()) {
-            console.log(`${key}:`, value);
-        }
-        console.log("--- Fin FormData ---");
         try {
             const apiUrl = `${apiHost}/new_trips.php`;
             const response = await fetch(apiUrl, {
@@ -425,7 +420,6 @@ const BorderCrossingForm = ({ tripNumber, onSuccess }) => {
                 body: dataToSend,
             });
             const result = await response.json();
-            console.log("Respuesta del servidor:", result);
             if (response.ok && result.status === "success") {
                 Swal.fire({
                     icon: 'success',
