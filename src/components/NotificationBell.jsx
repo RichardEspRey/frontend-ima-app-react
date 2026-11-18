@@ -219,8 +219,7 @@ const NotificationBell = () => {
     };
   };
 
-  const abrir = (n, destino) => {
-    ocultar(n);
+  const abrir = (destino) => {
     handleClose();
     if (destino.pestanaViajes !== undefined) {
       useViajesFiltrosStore.getState().set({ tabValue: destino.pestanaViajes, page: 0 });
@@ -390,13 +389,14 @@ const NotificationBell = () => {
                   return (
                     <ListItemButton
                       key={n.id}
-                      onClick={() => abrir(n, destino)}
+                      onClick={() => abrir(destino)}
                       sx={{
                         px: 2.5,
                         py: 1.25,
                         alignItems: "flex-start",
                         bgcolor: isUnread ? "#f0faf5" : "transparent",
                         "&:hover": { bgcolor: isUnread ? "#e6f6ee" : "#f8fafc" },
+                        "&:hover .quitar-notificacion": { opacity: 1 },
                       }}
                     >
                       <ListItemAvatar sx={{ minWidth: 44 }}>
@@ -428,9 +428,23 @@ const NotificationBell = () => {
                         <Typography variant="caption" color="#94a3b8" whiteSpace="nowrap">
                           {relativeTime(n.created_at)}
                         </Typography>
-                        {isUnread && (
-                          <Box sx={{ width: 8, height: 8, borderRadius: "50%", bgcolor: "#2563eb" }} />
-                        )}
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                          {isUnread && (
+                            <Box sx={{ width: 8, height: 8, borderRadius: "50%", bgcolor: "#2563eb" }} />
+                          )}
+                          <CloseButton
+                            className="quitar-notificacion"
+                            size="small"
+                            title="Quitar de la campana"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              ocultar(n);
+                            }}
+                            sx={{ p: 0.25, opacity: 0, transition: "opacity .15s", color: "#94a3b8", "&:focus-visible": { opacity: 1 } }}
+                          >
+                            <CloseIcon sx={{ fontSize: 16 }} />
+                          </CloseButton>
+                        </Box>
                       </Box>
                     </ListItemButton>
                   );
