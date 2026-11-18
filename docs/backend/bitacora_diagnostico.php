@@ -8,7 +8,8 @@
 //   - cuánto ha crecido la bitácora y qué se cambia más.
 //
 // Se sube a /API, se consulta una vez con la clave y SE BORRA. Generar una clave nueva
-// cada vez (por ejemplo ). Sin la clave responde 404
+// cada vez (por ejemplo `python3 -c "import secrets; print(secrets.token_hex(16))"`).
+// Sin la clave responde 404
 // como si no existiera.
 
 header("Content-Type: application/json; charset=utf-8");

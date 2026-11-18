@@ -385,15 +385,15 @@ permiso `bitacora_ver`, 24 meses, hora en UTC mostrada en Monterrey. Ver `10-BIT
 
 ### B5 en adelante · Triggers de antes y después
 
-> **Diagnóstico del 2026-11-17** (, ya borrado del servidor):
-> el usuario de la app () tiene  sobre la base, así que
+> **Diagnóstico del 2026-11-17** (`bitacora_diagnostico.php`, borrado del servidor después):
+> el usuario de la app (`fg5n48ine0xu@…`) tiene `ALL PRIVILEGES` sobre la base, así que
 > **puede crear triggers**, y creados con su conexión quedan con un DEFINER permanente, no
 > el temporal de phpMyAdmin. Existen las 18 tablas candidatas; su estructura quedó en
-> . Solo hay un trigger previo,
->  (root).  está vacía. La bitácora tenía 6 filas
+> `docs/sql/bitacora-esquema-2026-11-17.json`. Solo hay un trigger previo,
+> `after_diesel_insert` (root). `pagos_semanales` está vacía. La bitácora tenía 6 filas
 > con 52 bytes de datos en promedio: muy poco para proyectar.
 >
-> Ojo: el archivo se subió como  (con acento, lo puso el sistema
+> Ojo: el archivo se subió como `bitácora_diagnostico.php` (con acento, lo puso el sistema
 > de Emiliano). Al pedir que suba algo, avisar que revise el nombre exacto.
 
 Etapas 3 y 5 de `10-BITACORA.md`. **No crearlos desde phpMyAdmin de cPanel** (error 1449,
