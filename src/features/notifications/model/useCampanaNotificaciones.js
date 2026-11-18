@@ -31,10 +31,10 @@ export const FILTRO_CAMPANA = {
 export const llaveVistas = (idUsuario) => `notificaciones-vistas-${idUsuario}`
 
 /**
- * Dónde guarda el navegador las notificaciones que la persona ya abrió.
+ * Dónde guarda el navegador las notificaciones que la persona quitó con la ✕.
  *
- * Una notificación abierta se quita de la campana; va por persona por la misma
- * razón que {@link llaveVistas}.
+ * Abrir una notificación solo la da por leída; quitarla la saca de la campana.
+ * Va por persona por la misma razón que {@link llaveVistas}.
  *
  * @param {(string|number)} [idUsuario] Identificador de la persona.
  * @returns {string} La llave de `localStorage`.
@@ -49,10 +49,10 @@ export const llaveOcultas = (idUsuario) => `notificaciones-ocultas-${idUsuario}`
 export const MAX_GUARDADAS = 500
 
 /**
- * Quita de la lista las notificaciones que la persona ya abrió.
+ * Quita de la lista las notificaciones que la persona quitó con la ✕.
  *
  * @param {Array.<object>} notificaciones Las notificaciones.
- * @param {Set.<string>} ocultas Los identificadores abiertos.
+ * @param {Set.<string>} ocultas Los identificadores quitados.
  * @returns {Array.<object>} Las que siguen en la campana.
  *
  * @example
@@ -124,9 +124,9 @@ export const INTERVALO_SUSCRIPCION_MS = 300000
  * No sondea por su cuenta: lee la misma caché que el aviso emergente, que es
  * quien pregunta al servidor y quien refresca la lista cuando llega algo. Al
  * abrir la campana se vuelve a pedir, para que lo que se ve esté al día.
- * Lo único propio de la campana es qué se ha leído y qué se abrió, que viven
- * en el navegador porque el backend no lo guarda. Lo que se abre se quita de la
- * campana para que no se acumule.
+ * Lo único propio de la campana es qué se ha leído y qué se quitó, que viven
+ * en el navegador porque el backend no lo guarda. Lo que se abre pasa a leídas;
+ * la ✕ de cada renglón la quita para que no se acumule.
  *
  * A los BL firmados se suman las inspecciones que llegan a Reparaciones, solo
  * para quien está en la lista de Inspecciones de Notificaciones manager, y los

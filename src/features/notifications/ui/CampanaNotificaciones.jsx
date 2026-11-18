@@ -95,9 +95,10 @@ function presentarAviso(notificacion, viaje) {
  * @param {string} props.viaje La nomenclatura del viaje, o el mensaje si no es de un viaje.
  * @param {boolean} props.leida Si la persona ya la vio.
  * @param {Function} props.onAbrir Qué hacer al tocarla; recibe el destino del aviso.
+ * @param {Function} props.onQuitar Qué hacer al tocar la ✕: quitarla de la campana.
  * @returns {object} El renglón renderizado.
  */
-function Renglon({ notificacion, viaje, leida, onAbrir }) {
+function Renglon({ notificacion, viaje, leida, onAbrir, onQuitar }) {
   const { aspecto, titulo, subtitulo, detalle, destino } = presentarAviso(notificacion, viaje)
   const Icono = aspecto.icono
 
@@ -110,6 +111,7 @@ function Renglon({ notificacion, viaje, leida, onAbrir }) {
         alignItems: "flex-start",
         bgcolor: leida ? "transparent" : COLOR.INFO_FONDO,
         "&:hover": { bgcolor: COLOR.LIENZO },
+        "&:hover .quitar-notificacion": { opacity: 1 },
       }}
     >
       <ListItemAvatar sx={{ minWidth: 44 }}>
@@ -143,7 +145,21 @@ function Renglon({ notificacion, viaje, leida, onAbrir }) {
         <Typography variant="caption" color={COLOR.APAGADO} whiteSpace="nowrap">
           {tiempoRelativo(notificacion.created_at)}
         </Typography>
-        {!leida && <Box sx={{ width: 8, height: 8, borderRadius: "50%", bgcolor: COLOR.INFO }} />}
+        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+          {!leida && <Box sx={{ width: 8, height: 8, borderRadius: "50%", bgcolor: COLOR.INFO }} />}
+          <IconButton
+            className="quitar-notificacion"
+            size="small"
+            title="Quitar de la campana"
+            onClick={(evento) => {
+              evento.stopPropagation()
+              onQuitar()
+            }}
+            sx={{ p: 0.25, opacity: 0, transition: "opacity .15s", color: COLOR.APAGADO, "&:focus-visible": { opacity: 1 } }}
+          >
+            <CloseIcon sx={{ fontSize: 16 }} />
+          </IconButton>
+        </Box>
       </Box>
     </ListItemButton>
   )
@@ -255,8 +271,8 @@ export function CampanaNotificaciones() {
                     notificacion={notificacion}
                     viaje={viajeDe(notificacion)}
                     leida={estaLeida(notificacion)}
+                    onQuitar={() => ocultar(notificacion)}
                     onAbrir={(destino) => {
-                      ocultar(notificacion)
                       if (!destino) {
                         cerrar()
                         return
