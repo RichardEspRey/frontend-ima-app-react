@@ -21,7 +21,8 @@ header("Content-Type: application/json; charset=utf-8");
 
 define('CLAVE', 'PONER_UNA_CLAVE_NUEVA_ANTES_DE_SUBIR');
 
-if (!hash_equals(CLAVE, (string)($_GET['clave'] ?? ''))) {
+// La copia del repositorio no trae clave; subida así no debe abrir para nadie.
+if (CLAVE === 'PONER_UNA_CLAVE_NUEVA_ANTES_DE_SUBIR' || !hash_equals(CLAVE, (string)($_GET['clave'] ?? ''))) {
     http_response_code(404);
     exit();
 }

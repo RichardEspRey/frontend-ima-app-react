@@ -1,7 +1,7 @@
 <?php
 // Bitácora · diagnóstico de un solo uso para preparar los triggers (paso B5)
 //
-// SOLO LEE. Responde con:
+// SOLO LEE. Responde con (todas las tablas salvo WordPress y la bitácora):
 //   - si el usuario de la app puede crear triggers (SHOW GRANTS con su conexión, sin
 //     contraseñas: cualquier hash se borra antes de responder),
 //   - la estructura actual de las tablas candidatas a llevar «antes y después»,
@@ -16,21 +16,14 @@ header("Content-Type: application/json; charset=utf-8");
 
 define('CLAVE', 'PONER_UNA_CLAVE_NUEVA_ANTES_DE_SUBIR');
 
-if (!hash_equals(CLAVE, (string)($_GET['clave'] ?? ''))) {
+// La copia del repositorio no trae clave; subida así no debe abrir para nadie.
+if (CLAVE === 'PONER_UNA_CLAVE_NUEVA_ANTES_DE_SUBIR' || !hash_equals(CLAVE, (string)($_GET['clave'] ?? ''))) {
     http_response_code(404);
     exit();
 }
 
 include_once 'conexion.php';
 
-$candidatas = [
-    'trips', 'trip_stages', 'stage_stops', 'trip_stage_invoices',
-    'gastos', 'detalles_gasto', 'gastos_viaje', 'diesel', 'diesel_tickets',
-    'pagos_semanales', 'pagos_detalle', 'trip_payments', 'pago_trayectos_mx',
-    'Users_credentials', 'user_feature_flags', 'notif_suscriptores',
-    'ordenes_servicio', 'orden_servicio_detalles',
-    'programacion_trips', 'trucks', 'caja', 'drivers', 'companies', 'warehouses',
-];
 
 $salida = ['status' => 'success'];
 
@@ -49,10 +42,22 @@ try {
     $texto = strtoupper(implode(' ', $permisos));
     $salida['puede_crear_triggers'] = strpos($texto, 'ALL PRIVILEGES') !== false || strpos($texto, 'TRIGGER') !== false;
 
+    // Todas las tablas de la base salvo WordPress y la propia bitácora, para elegir
+    // qué tablas llevan «antes y después» sin depender de una copia vieja.
+    $candidatas = $db->query("
+        SELECT table_name
+          FROM information_schema.TABLES
+         WHERE table_schema = DATABASE()
+           AND table_type = 'BASE TABLE'
+           AND table_name NOT LIKE 'wp\\_%'
+           AND table_name NOT IN ('bitacora', 'bitacora_cambios')
+      ORDER BY table_name
+    ")->fetchAll(PDO::FETCH_COLUMN);
+
     $marcadores = implode(',', array_fill(0, count($candidatas), '?'));
 
     $stmt = $db->prepare("
-        SELECT table_name, table_rows,
+        SELECT table_name, table_rows, create_time, update_time,
                ROUND((data_length + index_length) / 1024, 1) AS kb
           FROM information_schema.TABLES
          WHERE table_schema = DATABASE() AND table_name IN ($marcadores)
@@ -60,7 +65,14 @@ try {
     $stmt->execute($candidatas);
     $tablas = [];
     foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $fila) {
-        $tablas[$fila['table_name']] = ['filas' => (int)$fila['table_rows'], 'kb' => (float)$fila['kb'], 'columnas' => [], 'llave' => []];
+        $tablas[$fila['table_name']] = [
+            'filas' => (int)$fila['table_rows'],
+            'kb' => (float)$fila['kb'],
+            'creada' => $fila['create_time'],
+            'ultimo_cambio' => $fila['update_time'],
+            'columnas' => [],
+            'llave' => [],
+        ];
     }
 
     $stmt = $db->prepare("
