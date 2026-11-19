@@ -1,143 +1,141 @@
 import React, { useState, useEffect } from 'react';
-import { 
-    Container, Paper, Typography, Table, TableHead, TableRow, TableCell, 
-    TableBody, Stack, Button, Chip, Box, Grid, TableContainer
+import {
+    Paper, Typography, Table, TableHead, TableRow, TableCell,
+    TableBody, Stack, Button, Chip, Box, TableContainer, CircularProgress,
 } from '@mui/material';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
-import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
-import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
+import { ResumenRegistro } from '../../components/EditorRegistro';
+import {
+    PAGE_SHELL_SX, PAGE_OVERLINE_SX, PAGE_TITLE_SX, HEADER_ROW_SX, HEADER_CELL_SX, TABLE_CONTAINER_SX,
+    CELL_STRONG_SX, CELL_MUTED_SX, GHOST_BTN_SX, SECTION_LABEL_SX,
+    CHIP_NEUTRO_SX, CHIP_OK_SX, CHIP_INFO_SX, CHIP_WARN_SX,
+} from '../../styles/estilosTabla';
 
 const apiHost = import.meta.env.VITE_API_HOST;
+
+const NUMERO_SX = { fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' };
+
+const pesos = (v) => `$${Number(v || 0).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const dolares = (v) => `$${Number(v || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 export default function DetallePago() {
     const { period_id } = useParams();
     const { state: weekData } = useLocation();
     const navigate = useNavigate();
     const [detalles, setDetalles] = useState([]);
+    const [cargando, setCargando] = useState(true);
 
     useEffect(() => {
         if (!weekData) return;
         const fetchDetails = async () => {
-            const fd = new FormData(); 
-            fd.append('op', 'get_details');
-            fd.append('period_id', period_id);
-            fd.append('fecha_corte', weekData.fecha_corte);
-            fd.append('estado', weekData.estado);
+            try {
+                const fd = new FormData();
+                fd.append('op', 'get_details');
+                fd.append('period_id', period_id);
+                fd.append('fecha_corte', weekData.fecha_corte);
+                fd.append('estado', weekData.estado);
 
-            const res = await fetch(`${apiHost}/pagos_admin.php`, { method: 'POST', body: fd });
-            const json = await res.json();
-            if (json.status === 'success') setDetalles(json.data);
+                const res = await fetch(`${apiHost}/pagos_admin.php`, { method: 'POST', body: fd });
+                const json = await res.json();
+                if (json.status === 'success') setDetalles(json.data);
+            } finally {
+                setCargando(false);
+            }
         };
         fetchDetails();
     }, [period_id, weekData]);
 
-    if (!weekData) return (
-        <Container sx={{ mt: 5 }}><Typography color="error">Error: Falta contexto de la semana. Vuelve a la pantalla anterior.</Typography></Container>
+    const volver = (
+        <Button variant="outlined" startIcon={<ArrowBackIcon />} onClick={() => navigate(-1)} sx={GHOST_BTN_SX}>
+            Volver a Nómina
+        </Button>
     );
 
-    return (
-        <Container maxWidth="xl" sx={{ py: 4, pb: 10 }}>
-            {/* HEADER */}
-            <Paper elevation={2} sx={{ p: 2, mb: 4, position: 'sticky', top: 10, zIndex: 100, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderRadius: 2 }}>
-                <Box>
-                    <Typography variant="h5" fontWeight={800} color="primary.main" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <ReceiptLongIcon /> Desglose: Semana {weekData.semana} ({weekData.anio})
+    if (!weekData) {
+        return (
+            <Box sx={PAGE_SHELL_SX}>
+                <Paper elevation={0} sx={{ p: 4, border: '1px dashed #e2e8f0', borderRadius: 2, textAlign: 'center' }}>
+                    <Typography variant="body2" color="#b91c1c" fontWeight={600} sx={{ mb: 2 }}>
+                        Falta la información de la semana. Vuelve a la pantalla anterior y ábrela otra vez.
                     </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, fontWeight: 500 }}>
-                        Corte al: {weekData.fecha_corte}  |  Estado: 
-                        <Chip 
-                            label={weekData.estado} 
-                            size="small" 
-                            color={weekData.estado === 'Autorizado' ? 'default' : 'warning'} 
-                            sx={{ ml: 1, fontWeight: 'bold', height: 20 }} 
-                        />
+                    {volver}
+                </Paper>
+            </Box>
+        );
+    }
+
+    const autorizado = weekData.estado === 'Autorizado';
+
+    return (
+        <Box sx={PAGE_SHELL_SX}>
+            <Stack direction="row" justifyContent="space-between" alignItems="flex-end" mb={4} flexWrap="wrap" gap={2}>
+                <Box>
+                    <Typography variant="overline" sx={PAGE_OVERLINE_SX}>Finanzas · Nómina</Typography>
+                    <Stack direction="row" alignItems="center" spacing={1.5} sx={PAGE_TITLE_SX}>
+                        <Typography variant="h4" fontWeight={800} color="#0f172a" letterSpacing="-0.02em">
+                            Semana {weekData.semana} · {weekData.anio}
+                        </Typography>
+                        <Chip size="small" label={weekData.estado} sx={autorizado ? CHIP_NEUTRO_SX : CHIP_WARN_SX} />
+                    </Stack>
+                    <Typography variant="body2" color="#64748b" sx={{ mt: 0.5, ...NUMERO_SX }}>
+                        Desglose por empleado · corte al {weekData.fecha_corte}
                     </Typography>
                 </Box>
-                <Button 
-                    variant="outlined" 
-                    startIcon={<ArrowBackIcon />} 
-                    onClick={() => navigate(-1)}
-                    sx={{ color: 'text.secondary', borderColor: 'divider', fontWeight: 600, textTransform: 'none', bgcolor: 'white' }}
-                >
-                    Volver a Pagos
-                </Button>
-            </Paper>
+                {volver}
+            </Stack>
 
-            {/* KPI CARDS (RESUMEN FINANCIERO) */}
-            <Grid container spacing={3} sx={{ mb: 4 }}>
-                <Grid item xs={12} md={4}>
-                    <Paper elevation={0} sx={{ p: 3, borderLeft: '5px solid #2e7d32', bgcolor: '#f1f8e9', borderRadius: 2 }}>
-                        <Typography variant="subtitle2" color="text.secondary" fontWeight={700} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <MonetizationOnIcon color="success" fontSize="small" /> NÓMINA TOTAL (MXN)
-                        </Typography>
-                        <Typography variant="h4" fontWeight={800} color="success.main" sx={{ mt: 1 }}>
-                            ${Number(weekData.total_mx).toLocaleString('es-MX', {minimumFractionDigits: 2})}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                            Pagado a {weekData.emps_mx} empleado(s)
-                        </Typography>
-                    </Paper>
-                </Grid>
-                <Grid item xs={12} md={4}>
-                    <Paper elevation={0} sx={{ p: 3, borderLeft: '5px solid #0288d1', bgcolor: '#e1f5fe', borderRadius: 2 }}>
-                        <Typography variant="subtitle2" color="text.secondary" fontWeight={700} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <MonetizationOnIcon color="primary" fontSize="small" /> NÓMINA TOTAL (USD)
-                        </Typography>
-                        <Typography variant="h4" fontWeight={800} color="primary.main" sx={{ mt: 1 }}>
-                            ${Number(weekData.total_us).toLocaleString('en-US', {minimumFractionDigits: 2})}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                            Pagado a {weekData.emps_us} empleado(s)
-                        </Typography>
-                    </Paper>
-                </Grid>
-                <Grid item xs={12} md={4}>
-                    <Paper elevation={0} sx={{ p: 3, borderLeft: '5px solid #9e9e9e', bgcolor: '#f5f5f5', borderRadius: 2, height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                        <Typography variant="subtitle2" color="text.secondary" fontWeight={700} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <PeopleAltIcon color="action" fontSize="small" /> PLANTILLA TOTAL SEMANA
-                        </Typography>
-                        <Typography variant="h4" fontWeight={800} color="text.primary" sx={{ mt: 1 }}>
-                            {Number(weekData.emps_mx) + Number(weekData.emps_us)} Empleados
-                        </Typography>
-                    </Paper>
-                </Grid>
-            </Grid>
+            <ResumenRegistro
+                datos={[
+                    { etiqueta: 'Nómina MXN', valor: pesos(weekData.total_mx), destacado: true },
+                    { etiqueta: 'Personal MX', valor: `${weekData.emps_mx} empleado(s)` },
+                    { etiqueta: 'Nómina USD', valor: dolares(weekData.total_us), destacado: true },
+                    { etiqueta: 'Personal US', valor: `${weekData.emps_us} empleado(s)` },
+                    { etiqueta: 'Plantilla total', valor: `${Number(weekData.emps_mx) + Number(weekData.emps_us)} empleados` },
+                ]}
+            />
 
-            {/* TABLA DE DETALLE */}
-            <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>Desglose por Empleado</Typography>
-            <TableContainer component={Paper} elevation={2} sx={{ borderRadius: 2 }}>
-                <Table>
+            <Typography variant="overline" sx={{ ...SECTION_LABEL_SX, display: 'block', mb: 1 }}>
+                Desglose por empleado
+            </Typography>
+            <TableContainer component={Paper} elevation={0} sx={TABLE_CONTAINER_SX}>
+                <Table size="small" sx={{ minWidth: 700 }}>
                     <TableHead>
-                        <TableRow sx={{ bgcolor: '#fafafa' }}>
-                            <TableCell sx={{ fontWeight: 700 }}>Nombre del Empleado</TableCell>
-                            <TableCell sx={{ fontWeight: 700 }}>Puesto</TableCell>
-                            <TableCell sx={{ fontWeight: 700 }}>Frecuencia</TableCell>
-                            <TableCell sx={{ fontWeight: 700 }}>Divisa / Nómina</TableCell>
-                            <TableCell align="right" sx={{ fontWeight: 700 }}>Monto a Pagar</TableCell>
+                        <TableRow sx={HEADER_ROW_SX}>
+                            <TableCell sx={HEADER_CELL_SX}>Empleado</TableCell>
+                            <TableCell sx={HEADER_CELL_SX}>Puesto</TableCell>
+                            <TableCell sx={HEADER_CELL_SX}>Frecuencia</TableCell>
+                            <TableCell sx={HEADER_CELL_SX}>Divisa</TableCell>
+                            <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'right' }}>Monto a pagar</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {detalles.map((d, i) => (
-                            <TableRow key={i} hover>
-                                <TableCell sx={{ fontWeight: 600 }}>{d.nombre}</TableCell>
-                                <TableCell color="text.secondary">{d.puesto}</TableCell>
-                                <TableCell><Chip label={d.frecuencia_pago} size="small" variant="outlined" sx={{ fontWeight: 500 }} /></TableCell>
-                                <TableCell>
-                                    <Chip label={d.tipo_nomina === 'MX' ? 'MXN' : 'USD'} size="small" color={d.tipo_nomina === 'MX' ? 'success' : 'primary'} sx={{ fontWeight: 'bold' }} />
-                                </TableCell>
-                                <TableCell align="right" sx={{ fontWeight: 800, fontSize: '1.05rem', color: d.tipo_nomina === 'MX' ? 'success.main' : 'primary.main' }}>
-                                    ${Number(d.sueldo).toLocaleString('en-US', {minimumFractionDigits: 2})}
+                        {detalles.map((d, i) => {
+                            const mx = d.tipo_nomina === 'MX';
+                            return (
+                                <TableRow key={i} hover>
+                                    <TableCell sx={CELL_STRONG_SX}>{d.nombre}</TableCell>
+                                    <TableCell sx={CELL_MUTED_SX}>{d.puesto || '—'}</TableCell>
+                                    <TableCell><Chip size="small" label={d.frecuencia_pago} sx={CHIP_NEUTRO_SX} /></TableCell>
+                                    <TableCell><Chip size="small" label={mx ? 'MXN' : 'USD'} sx={mx ? CHIP_OK_SX : CHIP_INFO_SX} /></TableCell>
+                                    <TableCell align="right" sx={{ ...NUMERO_SX, fontWeight: 800, color: '#0f172a' }}>
+                                        {mx ? pesos(d.sueldo) : dolares(d.sueldo)}
+                                    </TableCell>
+                                </TableRow>
+                            );
+                        })}
+                        {detalles.length === 0 && (
+                            <TableRow>
+                                <TableCell colSpan={5} align="center" sx={{ py: 6 }}>
+                                    {cargando
+                                        ? <CircularProgress size={24} />
+                                        : <Typography variant="body2" color="#94a3b8">No hubo empleados activos antes de la fecha de corte.</Typography>}
                                 </TableCell>
                             </TableRow>
-                        ))}
-                        {detalles.length === 0 && (
-                            <TableRow><TableCell colSpan={5} align="center" sx={{ py: 4 }}><Typography fontStyle="italic" color="text.secondary">No hubo empleados registrados activos antes de la fecha de corte.</Typography></TableCell></TableRow>
                         )}
                     </TableBody>
                 </Table>
             </TableContainer>
-        </Container>
+        </Box>
     );
 }
