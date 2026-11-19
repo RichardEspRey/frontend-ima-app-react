@@ -3,14 +3,16 @@ import {
     Container, Button, IconButton, Dialog, DialogTitle, DialogContent, TextField,
     MenuItem, DialogActions, Chip, Grid
 } from '@mui/material';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import AddIcon from '@mui/icons-material/Add';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import { useNavigate } from 'react-router-dom';
 import { DataTable, PageHeader, notify } from '../../shared/ui';
-import { CHIP_SX, DARK_BTN_SX, GHOST_BTN_SX, CELL_STRONG_SX, ICON_BTN_SX } from '../../shared/ui/estilos';
+import {
+    CHIP_SX, DARK_BTN_SX, GHOST_BTN_SX, CELL_STRONG_SX, ICON_BTN_SX, SECTION_TITLE_SX,
+    DIALOG_PAPER_SX, DIALOG_TITLE_SX, DIALOG_CONTENT_SX, DIALOG_ACTIONS_SX,
+} from '../../shared/ui/estilos';
 import {
     usePersonal,
     useGuardarEmpleado,
@@ -18,6 +20,13 @@ import {
     validarFormularioEmpleado,
 } from '../../entities/personal';
 import { COLOR } from '../../shared/ui/tokens';
+
+const CHIP_NEUTRO_SX = { ...CHIP_SX, bgcolor: COLOR.LIENZO, color: COLOR.TEXTO_SUAVE, border: `1px solid ${COLOR.BORDE}` };
+
+const BORRAR_BTN_SX = {
+    ...ICON_BTN_SX, borderRadius: 2, color: COLOR.PELIGRO, borderColor: '#fecaca',
+    '&:hover': { bgcolor: '#fef2f2', borderColor: '#fca5a5' },
+};
 
 const FORMULARIO_VACIO = { id: null, nombre: '', puesto: '', sueldo: '', frecuencia_pago: 'Semanal', tipo_nomina: 'MX' };
 
@@ -72,11 +81,11 @@ export default function PersonalAdmin() {
         {
             id: 'sueldo', label: 'Sueldo', ordenable: true, align: 'right',
             render: (e) => `$${e.sueldo.toLocaleString('en-US', { minimumFractionDigits: 2 })}`,
-            sx: { fontWeight: 800 },
+            sx: { fontWeight: 700, color: COLOR.TINTA, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' },
         },
         {
             id: 'frecuencia_pago', label: 'Frecuencia', ordenable: true,
-            render: (e) => <Chip label={e.frecuencia_pago} size="small" variant="outlined" sx={CHIP_SX} />,
+            render: (e) => <Chip label={e.frecuencia_pago} size="small" sx={CHIP_NEUTRO_SX} />,
         },
         {
             id: 'tipo_nomina', label: 'Divisa / Nómina', ordenable: true, align: 'center',
@@ -89,14 +98,14 @@ export default function PersonalAdmin() {
             ),
         },
         {
-            id: 'acciones', label: '', align: 'right',
+            id: 'acciones', label: 'Acciones', align: 'center',
             render: (e) => (
                 <>
-                    <IconButton onClick={() => openModal(e)} size="small" sx={{ ...ICON_BTN_SX, mr: 1 }} title="Editar">
-                        <EditIcon />
+                    <IconButton onClick={() => openModal(e)} size="small" sx={{ ...ICON_BTN_SX, borderRadius: 2, mr: 1 }} title="Editar">
+                        <EditOutlinedIcon sx={{ fontSize: 18 }} />
                     </IconButton>
-                    <IconButton onClick={() => handleDelete(e.id)} size="small" sx={{ ...ICON_BTN_SX, color: COLOR.PELIGRO }} title="Eliminar">
-                        <DeleteIcon />
+                    <IconButton onClick={() => handleDelete(e.id)} size="small" sx={BORRAR_BTN_SX} title="Eliminar">
+                        <DeleteOutlineIcon sx={{ fontSize: 18 }} />
                     </IconButton>
                 </>
             ),
@@ -106,7 +115,7 @@ export default function PersonalAdmin() {
     return (
         <Container maxWidth="xl" sx={{ py: 4, pb: 10 }}>
             <PageHeader
-                seccion="Nómina"
+                seccion="Finanzas · Nómina"
                 titulo="Catálogo de Personal"
                 descripcion="Gestiona los empleados, sus sueldos y la divisa de su nómina."
                 acciones={
@@ -116,7 +125,7 @@ export default function PersonalAdmin() {
                             onClick={() => navigate(-1)}
                             sx={GHOST_BTN_SX}
                         >
-                            Volver a Pagos
+                            Volver a Nómina
                         </Button>
                         <Button
                             variant="contained" startIcon={<AddIcon />}
@@ -137,11 +146,11 @@ export default function PersonalAdmin() {
                 vacio="No hay personal registrado activo."
             />
 
-            <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
-                <DialogTitle sx={{ fontWeight: 800, color: 'primary.main', borderBottom: `1px solid ${COLOR.BORDE}`, pb: 2 }}>
+            <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth PaperProps={{ sx: DIALOG_PAPER_SX }}>
+                <DialogTitle sx={{ ...DIALOG_TITLE_SX, ...SECTION_TITLE_SX }}>
                     {form.id ? 'Editar Empleado' : 'Agregar Nuevo Empleado'}
                 </DialogTitle>
-                <DialogContent sx={{ pt: 4 }}>
+                <DialogContent sx={DIALOG_CONTENT_SX}>
                     <Grid container spacing={2} sx={{ mt: 0.5 }}>
                         <Grid size={{ xs: 12 }}>
                             <TextField label="Nombre completo" value={form.nombre} onChange={e => setForm({...form, nombre: e.target.value})} fullWidth />
@@ -167,9 +176,9 @@ export default function PersonalAdmin() {
                         </Grid>
                     </Grid>
                 </DialogContent>
-                <DialogActions sx={{ p: 3, borderTop: `1px solid ${COLOR.BORDE}` }}>
-                    <Button onClick={() => setOpen(false)} sx={{ textTransform: 'none', fontWeight: 600 }}>Cancelar</Button>
-                    <Button variant="contained" onClick={handleSubmit} disabled={guardar.isPending} sx={{ textTransform: 'none', fontWeight: 600, px: 4 }}>
+                <DialogActions sx={DIALOG_ACTIONS_SX}>
+                    <Button variant="outlined" onClick={() => setOpen(false)} sx={GHOST_BTN_SX}>Cancelar</Button>
+                    <Button variant="contained" onClick={handleSubmit} disabled={guardar.isPending} sx={DARK_BTN_SX}>
                         {guardar.isPending ? 'Guardando…' : 'Guardar Empleado'}
                     </Button>
                 </DialogActions>

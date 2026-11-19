@@ -1,20 +1,38 @@
 import { Button, Chip, Container, Typography } from "@mui/material"
 import { useNavigate } from "react-router-dom"
-import LockIcon from "@mui/icons-material/Lock"
+import LockOutlinedIcon from "@mui/icons-material/LockOutlined"
 import LockOpenIcon from "@mui/icons-material/LockOpen"
 import ManageAccountsIcon from "@mui/icons-material/ManageAccounts"
-import PeopleAltIcon from "@mui/icons-material/PeopleAlt"
-import VisibilityIcon from "@mui/icons-material/Visibility"
+import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined"
 
 import { DataTable, PageHeader, notify } from "../../shared/ui"
-import { CHIP_SX, DARK_BTN_SX, CELL_STRONG_SX } from "../../shared/ui/estilos"
+import { CHIP_SX, DARK_BTN_SX, CELL_STRONG_SX, GHOST_BTN_SX } from "../../shared/ui/estilos"
 import {
   estaPendiente,
   etiquetaPeriodo,
   usePeriodos,
   useAutorizarPeriodo,
 } from "../../entities/payroll"
-import { COLOR } from "../../shared/ui/tokens"
+import { COLOR, TINTE } from "../../shared/ui/tokens"
+
+const CHIP_NEUTRO_SX = { ...CHIP_SX, bgcolor: COLOR.LIENZO, color: COLOR.TEXTO_SUAVE, border: `1px solid ${COLOR.BORDE}` }
+
+const BOTON_FILA_SX = { ...GHOST_BTN_SX, px: 1.5, py: 0.4, fontSize: "0.78rem" }
+
+const AUTORIZAR_BTN_SX = {
+  textTransform: "none",
+  fontWeight: 700,
+  borderRadius: 2,
+  px: 1.5,
+  py: 0.4,
+  fontSize: "0.78rem",
+  boxShadow: "none",
+  bgcolor: TINTE.AMBAR.acento,
+  color: COLOR.BLANCO,
+  "&:hover": { bgcolor: TINTE.AMBAR.texto, boxShadow: "none" },
+}
+
+const MONTO_SX = { fontWeight: 700, color: COLOR.TINTA, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }
 
 const dinero = (monto, locale) =>
   `$${Number(monto).toLocaleString(locale, { minimumFractionDigits: 2 })}`
@@ -56,8 +74,8 @@ export default function NominaPage() {
           <Typography sx={CELL_STRONG_SX} fontWeight={700}>
             {etiquetaPeriodo(p)}
           </Typography>
-          <Typography variant="caption" color="text.secondary" fontWeight={600}>
-            Corte: {p.fecha_corte || "sin fecha"}
+          <Typography variant="caption" color={COLOR.TEXTO_SUAVE} sx={{ fontVariantNumeric: "tabular-nums" }}>
+            Corte {p.fecha_corte || "sin fecha"}
           </Typography>
         </>
       ),
@@ -69,8 +87,7 @@ export default function NominaPage() {
       align: "center",
       render: (p) => (
         <Chip
-          icon={<PeopleAltIcon />}
-          label={p.emps_mx}
+          label={`${p.emps_mx} personas`}
           size="small"
           sx={{ ...CHIP_SX, bgcolor: COLOR.EXITO_FONDO, color: COLOR.EXITO, border: `1px solid ${COLOR.EXITO_BORDE}` }}
         />
@@ -82,8 +99,9 @@ export default function NominaPage() {
       ordenable: true,
       align: "right",
       render: (p) => (
-        <Typography color="success.main" fontWeight={800}>
-          {dinero(p.total_mx, "es-MX")} MXN
+        <Typography variant="body2" sx={MONTO_SX}>
+          {dinero(p.total_mx, "es-MX")}{" "}
+          <Typography component="span" variant="caption" color={COLOR.APAGADO}>MXN</Typography>
         </Typography>
       ),
     },
@@ -94,8 +112,7 @@ export default function NominaPage() {
       align: "center",
       render: (p) => (
         <Chip
-          icon={<PeopleAltIcon />}
-          label={p.emps_us}
+          label={`${p.emps_us} personas`}
           size="small"
           sx={{ ...CHIP_SX, bgcolor: COLOR.INFO_FONDO, color: COLOR.INFO, border: `1px solid ${COLOR.INFO_BORDE}` }}
         />
@@ -107,8 +124,9 @@ export default function NominaPage() {
       ordenable: true,
       align: "right",
       render: (p) => (
-        <Typography color="primary.main" fontWeight={800}>
-          {dinero(p.total_us, "en-US")} USD
+        <Typography variant="body2" sx={MONTO_SX}>
+          {dinero(p.total_us, "en-US")}{" "}
+          <Typography component="span" variant="caption" color={COLOR.APAGADO}>USD</Typography>
         </Typography>
       ),
     },
@@ -121,17 +139,16 @@ export default function NominaPage() {
         estaPendiente(p) ? (
           <Button
             variant="contained"
-            color="warning"
             size="small"
-            startIcon={<LockOpenIcon />}
+            startIcon={<LockOpenIcon sx={{ fontSize: 16 }} />}
             disabled={autorizar.isPending}
             onClick={() => alAutorizar(p)}
-            sx={{ textTransform: "none", fontWeight: 700, boxShadow: 0 }}
+            sx={AUTORIZAR_BTN_SX}
           >
             Autorizar pago
           </Button>
         ) : (
-          <Chip label="Cerrado" icon={<LockIcon />} size="small" sx={CHIP_SX} />
+          <Chip label="Cerrado" icon={<LockOutlinedIcon sx={{ fontSize: 14 }} />} size="small" sx={CHIP_NEUTRO_SX} />
         ),
     },
     {
@@ -141,11 +158,10 @@ export default function NominaPage() {
       render: (p) => (
         <Button
           variant="outlined"
-          color="info"
           size="small"
-          startIcon={<VisibilityIcon />}
+          startIcon={<VisibilityOutlinedIcon sx={{ fontSize: 16 }} />}
           onClick={() => navigate(`/detalle-pago/${p.period_id}`)}
-          sx={{ textTransform: "none", fontWeight: 600 }}
+          sx={BOTON_FILA_SX}
         >
           Resumen
         </Button>
@@ -156,7 +172,7 @@ export default function NominaPage() {
   return (
     <Container maxWidth="xl" sx={{ py: 4, pb: 10 }}>
       <PageHeader
-        seccion="Finanzas"
+        seccion="Finanzas · Nómina"
         titulo="Nómina Administrativa"
         descripcion="Control de nómina semanal y autorización de pagos."
         acciones={
@@ -166,7 +182,7 @@ export default function NominaPage() {
             onClick={() => navigate("/personal")}
             sx={DARK_BTN_SX}
           >
-            Administrar personal
+            Administrar Personal
           </Button>
         }
       />

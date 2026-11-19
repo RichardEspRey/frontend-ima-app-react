@@ -5,7 +5,7 @@ import MonetizationOnIcon from "@mui/icons-material/MonetizationOn"
 import PeopleAltIcon from "@mui/icons-material/PeopleAlt"
 
 import { DataTable, PageHeader, StatCard } from "../../shared/ui"
-import { CHIP_SX, CELL_STRONG_SX, GHOST_BTN_SX } from "../../shared/ui/estilos"
+import { CHIP_SX, CELL_STRONG_SX, GHOST_BTN_SX, SECTION_LABEL_SX } from "../../shared/ui/estilos"
 import {
   ESTADO_PERIODO,
   etiquetaPeriodo,
@@ -13,7 +13,9 @@ import {
   usePeriodos,
   useDetallePeriodo,
 } from "../../entities/payroll"
-import { COLOR } from "../../shared/ui/tokens"
+import { COLOR, TINTE } from "../../shared/ui/tokens"
+
+const CHIP_NEUTRO_SX = { ...CHIP_SX, bgcolor: COLOR.LIENZO, color: COLOR.TEXTO_SUAVE, border: `1px solid ${COLOR.BORDE}` }
 
 const dinero = (monto, locale) =>
   `$${Number(monto).toLocaleString(locale, { minimumFractionDigits: 2 })}`
@@ -68,7 +70,7 @@ export default function DetallePagoPage() {
       id: "frecuencia_pago",
       label: "Frecuencia",
       ordenable: true,
-      render: (d) => <Chip label={d.frecuencia_pago} size="small" variant="outlined" sx={CHIP_SX} />,
+      render: (d) => <Chip label={d.frecuencia_pago} size="small" sx={CHIP_NEUTRO_SX} />,
     },
     {
       id: "tipo_nomina",
@@ -89,11 +91,12 @@ export default function DetallePagoPage() {
       align: "right",
       render: (d) => (
         <Typography
+          variant="body2"
           fontWeight={800}
-          fontSize="1.05rem"
-          color={d.tipo_nomina === "MX" ? "success.main" : "primary.main"}
+          color={COLOR.TINTA}
+          sx={{ fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}
         >
-          {dinero(d.sueldo, "en-US")}
+          {dinero(d.sueldo, d.tipo_nomina === "MX" ? "es-MX" : "en-US")}
         </Typography>
       ),
     },
@@ -110,14 +113,17 @@ export default function DetallePagoPage() {
             <Chip
               label={periodo.estado}
               size="small"
-              color={periodo.estado === ESTADO_PERIODO.AUTORIZADO ? "default" : "warning"}
-              sx={{ ...CHIP_SX, ml: 1 }}
+              sx={
+                periodo.estado === ESTADO_PERIODO.AUTORIZADO
+                  ? { ...CHIP_NEUTRO_SX, ml: 1 }
+                  : { ...CHIP_SX, ml: 1, bgcolor: TINTE.AMBAR.fondo, color: TINTE.AMBAR.texto, border: `1px solid ${TINTE.AMBAR.borde}` }
+              }
             />
           </>
         }
         acciones={
           <Button variant="outlined" startIcon={<ArrowBackIcon />} onClick={() => navigate("/nomina")} sx={GHOST_BTN_SX}>
-            Volver a pagos
+            Volver a Nómina
           </Button>
         }
       />
@@ -151,7 +157,7 @@ export default function DetallePagoPage() {
         </Grid>
       </Grid>
 
-      <Typography variant="h6" fontWeight={700} color={COLOR.TINTA} sx={{ mb: 2 }}>
+      <Typography variant="overline" sx={{ ...SECTION_LABEL_SX, display: "block", mb: 1 }}>
         Desglose por empleado
       </Typography>
 
