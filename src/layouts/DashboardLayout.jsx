@@ -1,29 +1,43 @@
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { Box } from '@mui/material';
 import { toast } from 'react-toastify';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 
 import { useAuthStore } from '../store/useAuthStore';
 import notiSound from '../assets/sounds/update.mp3';
 import { sondear, EVENTO_NOTIFICACIONES_NUEVAS } from '../utils/sondeo';
 
-const PERMISOS_MS = 5 * 60 * 1000;
+const PERMISOS_MS = 60 * 1000;
+const PERMISOS_AL_CAMBIAR_PANTALLA_MS = 10 * 1000;
 const NOTIFICACIONES_MS = 30 * 1000;
 const NOTIFICACIONES_OCULTA_MS = 60 * 1000;
 
 const DashboardLayout = () => {
   const { user, fetchPermissions } = useAuthStore();
+  const { pathname } = useLocation();
+
+  const ultimaConsultaPermisos = useRef(0);
+  const refrescarPermisos = useCallback(() => {
+    if (!user?.id) return undefined;
+    ultimaConsultaPermisos.current = Date.now();
+    return fetchPermissions(user.id);
+  }, [user?.id, fetchPermissions]);
 
   useEffect(() => {
     if (!user?.id) return;
 
-    return sondear(() => fetchPermissions(user.id), {
+    return sondear(refrescarPermisos, {
       visibleMs: PERMISOS_MS,
       ocultoMs: null,
     });
-  }, [user?.id, fetchPermissions]);
+  }, [user?.id, refrescarPermisos]);
+
+  useEffect(() => {
+    if (Date.now() - ultimaConsultaPermisos.current < PERMISOS_AL_CAMBIAR_PANTALLA_MS) return;
+    refrescarPermisos();
+  }, [pathname, refrescarPermisos]);
 
   useEffect(() => {
     if (!user?.id) return;
