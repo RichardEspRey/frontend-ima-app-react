@@ -289,3 +289,52 @@ export function ordenTieneReparacion(orden, buscado) {
   if (!texto) return true
   return (orden?.servicios ?? []).some((servicio) => normalizarTexto(servicio?.tipo_reparacion).includes(texto))
 }
+
+/**
+ * Los valores de «Mantenimiento realizado» (`origen_servicio`): si el servicio se
+ * hizo en el taller propio o fuera.
+ *
+ * @type {Array.<string>}
+ */
+export const ORIGENES_SERVICIO = ["Interno", "Externo"]
+
+/**
+ * Le pone a cada servicio de las órdenes su `origen_servicio`.
+ *
+ * `getAllOrdersWithDetails` no lo trae; llega aparte de `mtto.php ·
+ * getOrigenesServicio` y se cruza por `id_servicio`. Si la orden ya lo trae, se
+ * respeta. El que no tiene origen se queda en `null`.
+ *
+ * @param {Array.<object>} [ordenes] Las órdenes con sus `servicios`.
+ * @param {Map.<string, string>} origenes El origen de cada `id_servicio`.
+ * @returns {Array.<object>} Las mismas órdenes, con el origen en cada servicio.
+ *
+ * @example
+ * conOrigenes([{ servicios: [{ id_servicio: "10" }] }], new Map([["10", "Externo"]]))
+ * // [{ servicios: [{ id_servicio: "10", origen_servicio: "Externo" }] }]
+ */
+export function conOrigenes(ordenes, origenes) {
+  return (ordenes ?? []).map((orden) => ({
+    ...orden,
+    servicios: (orden?.servicios ?? []).map((servicio) => ({
+      ...servicio,
+      origen_servicio: servicio.origen_servicio ?? origenes.get(String(servicio.id_servicio)) ?? null,
+    })),
+  }))
+}
+
+/**
+ * Si alguno de los servicios de la orden tiene ese mantenimiento realizado.
+ *
+ * @param {object} orden La orden con sus `servicios`.
+ * @param {string} origen El elegido en el filtro; vacío deja pasar todo.
+ * @returns {boolean} Si la orden se queda en la lista.
+ *
+ * @example
+ * ordenTieneOrigen({ servicios: [{ origen_servicio: "Externo" }] }, "Externo") // true
+ */
+export function ordenTieneOrigen(orden, origen) {
+  const buscado = normalizarTexto(origen)
+  if (!buscado) return true
+  return (orden?.servicios ?? []).some((servicio) => normalizarTexto(servicio?.origen_servicio) === buscado)
+}

@@ -14,12 +14,16 @@ export {
   todoCompletado,
   reparacionesDeOrdenes,
   ordenTieneReparacion,
+  ORIGENES_SERVICIO,
+  conOrigenes,
+  ordenTieneOrigen,
 } from "./model/orden"
 
 export {
   LLAVE_ORDENES,
   obtenerOrdenes,
   obtenerOrden,
+  obtenerOrigenesServicio,
   actualizarOrden,
   eliminarOrden,
   obtenerCamionesDeOrden,

@@ -12,6 +12,7 @@
 // ligarGasto        · amarra un gasto ya creado con el concepto de la orden (reparación)
 // getOrden          · una orden completa: unidad, servicios, de dónde salió cada uno y sus conceptos
 // eliminarOrden     · borra una orden y regresa sus reparaciones a pendientes
+// getOrigenesServicio · el origen (Interno/Externo) de cada servicio, para la lista de órdenes
 // getSuscriptoresInspeccion · quiénes reciben el aviso de inspección nueva
 // getDisponiblesInspeccion  · quiénes todavía no lo reciben
 // suscribirInspeccion       · da de alta a alguien en el aviso
@@ -820,6 +821,18 @@ try {
             unset($servicio);
 
             echo json_encode(['status' => 'success', 'orden' => $orden, 'servicios' => $servicios]);
+            break;
+
+        case 'getOrigenesServicio':
+            // La lista de órdenes sale de service_order.php getAllOrdersWithDetails, que no
+            // trae origen_servicio. En vez de tocar ese archivo (lo usa la pantalla vieja), la
+            // pantalla pide aparte este mapa y lo cruza por id_servicio. Solo lee.
+            $stmt = $db->query("
+                SELECT id_servicio, origen_servicio
+                  FROM servicios_orden
+                 WHERE origen_servicio IS NOT NULL AND TRIM(origen_servicio) <> ''
+            ");
+            echo json_encode(['status' => 'success', 'origenes' => $stmt->fetchAll(PDO::FETCH_ASSOC)]);
             break;
 
         case 'eliminarOrden':

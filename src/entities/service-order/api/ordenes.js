@@ -58,6 +58,24 @@ export async function obtenerOrden({ ordenId, signal }) {
 }
 
 /**
+ * Trae el mantenimiento realizado (`origen_servicio`) de cada servicio.
+ *
+ * Es aparte porque `getAllOrdersWithDetails` no lo trae y ese archivo lo sigue
+ * usando la pantalla vieja; la lista de órdenes lo cruza con `conOrigenes`.
+ *
+ * @endpoint POST mtto.php · op=getOrigenesServicio
+ * @param {object} [opciones] Ajustes de la petición.
+ * @param {AbortSignal} [opciones.signal] Señal de cancelación.
+ * @returns {Promise.<Map.<string, string>>} El origen de cada `id_servicio`.
+ * @throws {ApiError} Si la API falla (por ejemplo, si aún no se sube el mtto.php nuevo).
+ */
+export async function obtenerOrigenesServicio(opciones = {}) {
+  const cuerpo = await post(ENDPOINTS.mantenimiento, "getOrigenesServicio", {}, { signal: opciones.signal })
+  const filas = Array.isArray(cuerpo?.origenes) ? cuerpo.origenes : []
+  return new Map(filas.map((fila) => [String(fila.id_servicio), fila.origen_servicio]))
+}
+
+/**
  * Guarda una orden editada: sus datos generales y la lista completa de servicios.
  *
  * Los servicios nuevos van sin `id_servicio`.

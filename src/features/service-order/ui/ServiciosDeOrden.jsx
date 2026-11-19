@@ -145,7 +145,7 @@ export function ServiciosDeOrden({ servicios, onCambiar, onQuitar }) {
               <Grid size={{ xs: 12, md: 4 }}>
                 <TextField
                   select
-                  label="Origen Mantenimiento"
+                  label="Mantenimiento realizado"
                   fullWidth
                   size="small"
                   value={servicio.origen_servicio || ""}

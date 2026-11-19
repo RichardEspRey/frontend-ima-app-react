@@ -18,7 +18,8 @@ import {
 } from '../../../shared/ui/estilos';
 import { COLOR } from '../../../shared/ui/tokens';
 import {
-    etiquetaUnidad, nombreUnidad, ordenTieneReparacion, reparacionesDeOrdenes, useEliminarOrden,
+    ORIGENES_SERVICIO, conOrigenes, etiquetaUnidad, nombreUnidad, obtenerOrigenesServicio, ordenTieneOrigen,
+    ordenTieneReparacion, reparacionesDeOrdenes, useEliminarOrden,
 } from '../../../entities/service-order';
 import { useSesion } from '../../../shared/auth';
 import { FilasEsqueleto, Paginacion, CampoFecha, notify } from '../../../shared/ui';
@@ -49,6 +50,7 @@ const TablaOrdenes = () => {
     const [filterTruck, setFilterTruck] = useState('');
     const [filterMaintenance, setFilterMaintenance] = useState('All');
     const [filterRepair, setFilterRepair] = useState('');
+    const [filterOrigen, setFilterOrigen] = useState('');
     const [startDate, setStartDate] = useState(null);
     const [endDate, setEndDate] = useState(null);
 
@@ -62,13 +64,16 @@ const TablaOrdenes = () => {
         const formData = new FormData();
         formData.append('op', 'getAllOrdersWithDetails');
         try {
-            const response = await fetch(`${apiHost}/service_order.php`, {
-                method: 'POST',
-                body: formData
-            });
+            const [response, origenes] = await Promise.all([
+                fetch(`${apiHost}/service_order.php`, { method: 'POST', body: formData }),
+                obtenerOrigenesServicio().catch((error) => {
+                    console.error('Error al cargar el mantenimiento realizado:', error);
+                    return new Map();
+                }),
+            ]);
             const result = await response.json();
             if (result.status === 'success' && Array.isArray(result.data)) {
-                setOrders(result.data);
+                setOrders(conOrigenes(result.data, origenes));
             } else {
                 setOrders([]);
             }
@@ -132,6 +137,8 @@ const TablaOrdenes = () => {
 
             if (!ordenTieneReparacion(o, filterRepair)) return false;
 
+            if (!ordenTieneOrigen(o, filterOrigen)) return false;
+
             if (startDate || endDate) {
                 const orderDate = dayjs(o.fecha_orden); 
                 if (!orderDate.isValid()) return false;
@@ -142,7 +149,7 @@ const TablaOrdenes = () => {
 
             return true;
         });
-    }, [orders, filterId, filterTruck, filterMaintenance, filterRepair, startDate, endDate]);
+    }, [orders, filterId, filterTruck, filterMaintenance, filterRepair, filterOrigen, startDate, endDate]);
 
     const handleEditOrder = (orderId) => {
         if (!orderId) return;
@@ -154,6 +161,7 @@ const TablaOrdenes = () => {
         setFilterTruck('');
         setFilterMaintenance('All');
         setFilterRepair('');
+        setFilterOrigen('');
         setStartDate(null);
         setEndDate(null);
         setPage(0);
@@ -203,6 +211,22 @@ const TablaOrdenes = () => {
                                 <MenuItem value="All">Todos</MenuItem>
                                 <MenuItem value="Preventivo">Preventivo</MenuItem>
                                 <MenuItem value="Correctivo">Correctivo</MenuItem>
+                            </Select>
+                        </FormControl>
+                    </Grid>
+
+                    <Grid size={{ xs: 12, sm: 4, md: 2 }}>
+                        <FormControl fullWidth size="small">
+                            <InputLabel>Mantenimiento realizado</InputLabel>
+                            <Select
+                                value={filterOrigen}
+                                label="Mantenimiento realizado"
+                                onChange={(e) => { setFilterOrigen(e.target.value); setPage(0); }}
+                            >
+                                <MenuItem value="">Todos</MenuItem>
+                                {ORIGENES_SERVICIO.map((origen) => (
+                                    <MenuItem key={origen} value={origen}>{origen}</MenuItem>
+                                ))}
                             </Select>
                         </FormControl>
                     </Grid>
