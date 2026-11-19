@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { Box, Paper, Typography, Button, CircularProgress, Stack } from "@mui/material";
-import BuildCircleIcon from '@mui/icons-material/BuildCircle';
+import { Box, Button, CircularProgress } from "@mui/material";
 import HistoryIcon from '@mui/icons-material/History';
 import { useNavigate } from "react-router-dom"; 
 
@@ -9,8 +8,7 @@ import {
     ResetModal, ManualUpdateModal, LimitModal, 
     CorrectOdometerModal, HistoryModal, PhotoModal 
 } from "../../components/Afinaciones/AfinacionesModals";
-import { COLOR } from "../../shared/ui/tokens";
-import { notify } from "../../shared/ui";
+import { GHOST_BTN_SX, PAGE_SHELL_SX, PageHeader, notify } from "../../shared/ui";
 
 const apiHost = import.meta.env.VITE_API_HOST;
 
@@ -92,29 +90,28 @@ export default function AfinacionesPage() {
       handleApiRequest('correct_odometer', { diesel_id: modalConfig.truck.id_diesel, nuevo_odometro: correctMiles }, 'Odómetro corregido.');
   };
 
-  if (loading && trucksStatus.length === 0) return <Box p={5} display="flex" justifyContent="center"><CircularProgress /></Box>;
+  if (loading && trucksStatus.length === 0) {
+    return (
+      <Box sx={{ ...PAGE_SHELL_SX, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <CircularProgress size={28} />
+      </Box>
+    );
+  }
 
   return (
-    <Box sx={{ p: 3, maxWidth: 1400, margin: '0 auto' }}>
-      
-      <Stack direction="row" alignItems="center" justifyContent="space-between" mb={4}>
-        <Stack direction="row" alignItems="center" spacing={2}>
-            <BuildCircleIcon fontSize="large" color="primary" />
-            <Box>
-                <Typography variant="h4" fontWeight={800}>Control de Afinaciones</Typography>
-                <Typography variant="body2" color="text.secondary">Monitoreo de cambio de aceite y mantenimiento preventivo</Typography>
-            </Box>
-        </Stack>
-        <Button variant="outlined" startIcon={<HistoryIcon />} onClick={() => navigate('/registros-afinaciones')}>Ver Historial</Button>
-      </Stack>
+    <Box sx={PAGE_SHELL_SX}>
+      <PageHeader
+        seccion="Mantenimiento · Afinaciones"
+        titulo="Control de Afinaciones"
+        descripcion="Estatus actual de la flota: cambio de aceite y mantenimiento preventivo."
+        acciones={
+          <Button variant="outlined" startIcon={<HistoryIcon />} onClick={() => navigate('/registros-afinaciones')} sx={GHOST_BTN_SX}>
+            Ver Historial
+          </Button>
+        }
+      />
 
-      <Paper elevation={3} sx={{ borderRadius: 3, overflow: 'hidden', mb: 5 }}>
-        <Box sx={{ p: 2, bgcolor: COLOR.INFO_FONDO, borderBottom: `1px solid ${COLOR.INFO_BORDE}` }}>
-            <Typography variant="h6" fontWeight={700} color="primary.main">Estatus Actual de Flota</Typography>
-        </Box>
-        
-        <AfinacionesTable trucksStatus={trucksStatus} onOpenModal={openModal} />
-      </Paper>
+      <AfinacionesTable trucksStatus={trucksStatus} onOpenModal={openModal} />
 
       <ResetModal open={modalConfig.type === 'reset'} onClose={closeModal} onConfirm={onConfirmReset} saving={saving} truck={modalConfig.truck} />
 

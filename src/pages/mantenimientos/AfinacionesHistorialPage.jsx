@@ -2,10 +2,9 @@ import { useEffect, useState, useMemo, useCallback } from "react";
 import {
   Box, Paper, Typography, Table, TableBody, TableCell,
   TableContainer, TableHead, TableRow, Button, CircularProgress, 
-  Stack, TextField, Chip, IconButton, Grid
+  Stack, TextField, Chip, IconButton, Grid, Tooltip
 } from "@mui/material";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import FilterListIcon from '@mui/icons-material/FilterList';
 import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
 import OpacityIcon from '@mui/icons-material/Opacity';
 import { useNavigate } from "react-router-dom";
@@ -13,8 +12,11 @@ import { useNavigate } from "react-router-dom";
 import dayjs from 'dayjs';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
-import { COLOR } from '../../shared/ui/tokens';
-import { Paginacion, CampoFecha, notify } from '../../shared/ui';
+import {
+  Paginacion, CampoFecha, notify, PageHeader, PAGE_SHELL_SX, CARD_SX, SECTION_LABEL_SX, HEADER_ROW_SX,
+  HEADER_CELL_SX, TABLE_CONTAINER_SX, CELL_STRONG_SX, CELL_MUTED_SX, GHOST_BTN_SX, ICON_BTN_SX,
+  CHIP_SX, CHIP_DANGER_SX,
+} from '../../shared/ui';
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
@@ -22,6 +24,10 @@ dayjs.extend(isSameOrBefore);
 const apiHost = import.meta.env.VITE_API_HOST;
 
 const numberFmt = (n) => new Intl.NumberFormat('en-US').format(Number(n).toFixed(0));
+
+const NUMERO_SX = { fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' };
+
+const CHIP_NEUTRO_SX = { ...CHIP_SX, bgcolor: '#f8fafc', color: '#475569', border: '1px solid #e2e8f0' };
 
 /**
  * Historial de afinaciones ya registradas.
@@ -89,21 +95,21 @@ export default function AfinacionesHistorialPage() {
   };
 
   return (
-    <Box sx={{ p: 3, maxWidth: 1400, margin: '0 auto' }}>
-      
-      <Stack direction="row" alignItems="center" spacing={2} mb={3}>
-        <Button startIcon={<ArrowBackIcon />} onClick={() => navigate(-1)} color="inherit">
+    <Box sx={PAGE_SHELL_SX}>
+      <PageHeader
+        seccion="Mantenimiento · Afinaciones"
+        titulo="Historial de Afinaciones"
+        descripcion="Cada reinicio de contador con las millas al corte y el aceite restante."
+        acciones={
+          <Button variant="outlined" startIcon={<ArrowBackIcon />} onClick={() => navigate(-1)} sx={GHOST_BTN_SX}>
             Volver
-        </Button>
-        <Typography variant="h4" fontWeight={800}>Historial de Afinaciones</Typography>
-      </Stack>
+          </Button>
+        }
+      />
 
-      <Paper variant="outlined" sx={{ p: 2, mb: 3, bgcolor: COLOR.LIENZO }}>
-        <Typography variant="subtitle2" fontWeight={600} color="text.secondary" mb={2} display="flex" alignItems="center" gap={1}>
-            <FilterListIcon fontSize="small" /> Filtros de Búsqueda
-        </Typography>
-        
-        <Grid container spacing={2} alignItems="center">
+      <Paper elevation={0} sx={{ ...CARD_SX, mb: 3 }}>
+        <Typography variant="overline" sx={SECTION_LABEL_SX}>Filtros de Búsqueda</Typography>
+        <Grid container spacing={2} alignItems="center" sx={{ mt: 0.5 }}>
             <Grid size={{ xs: 12, sm: 3 }}>
                 <TextField 
                     label="Buscar Camión" 
@@ -129,54 +135,53 @@ export default function AfinacionesHistorialPage() {
                 </Stack>
             </Grid>
             <Grid size={{ xs: 12, sm: 3 }} display="flex" justifyContent="flex-end">
-                <Button 
-                    variant="outlined" 
-                    color="error" 
-                    startIcon={<DeleteSweepIcon />} 
-                    onClick={handleClearFilters}
-                    size="small"
-                >
-                    Limpiar Filtros
-                </Button>
+                <Tooltip title="Limpiar filtros">
+                    <IconButton onClick={handleClearFilters} sx={{ ...ICON_BTN_SX, borderRadius: 2 }}>
+                        <DeleteSweepIcon fontSize="small" />
+                    </IconButton>
+                </Tooltip>
             </Grid>
         </Grid>
       </Paper>
 
-      <Paper elevation={2} sx={{ borderRadius: 2, overflow: 'hidden' }}>
-        <TableContainer>
-            <Table stickyHeader size="small">
+      <Box>
+        <TableContainer component={Paper} elevation={0} sx={{ ...TABLE_CONTAINER_SX, borderBottomLeftRadius: 0, borderBottomRightRadius: 0 }}>
+            <Table size="small">
                 <TableHead>
-                    <TableRow>
-                        <TableCell sx={{ fontWeight: 700, bgcolor: '#eee' }}>Fecha Registro</TableCell>
-                        <TableCell sx={{ fontWeight: 700, bgcolor: '#eee' }}>Camión</TableCell>
-                        <TableCell align="right" sx={{ fontWeight: 700, bgcolor: '#eee' }}>Millas al Corte</TableCell>
-                        <TableCell align="right" sx={{ fontWeight: 700, bgcolor: '#eee' }}>Aceite Restante</TableCell>
+                    <TableRow sx={HEADER_ROW_SX}>
+                        <TableCell sx={HEADER_CELL_SX}>Fecha de registro</TableCell>
+                        <TableCell sx={HEADER_CELL_SX}>Camión</TableCell>
+                        <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'right' }}>Millas al corte</TableCell>
+                        <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'right' }}>Aceite restante</TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
                     {loading ? (
-                        <TableRow><TableCell colSpan={4} align="center" sx={{ py: 5 }}><CircularProgress /></TableCell></TableRow>
+                        <TableRow><TableCell colSpan={4} align="center" sx={{ py: 6 }}><CircularProgress size={24} /></TableCell></TableRow>
                     ) : filteredData.length === 0 ? (
-                        <TableRow><TableCell colSpan={4} align="center" sx={{ py: 3, color: 'text.secondary' }}>No se encontraron registros con estos filtros</TableCell></TableRow>
+                        <TableRow>
+                            <TableCell colSpan={4} align="center" sx={{ py: 6 }}>
+                                <Typography variant="body2" color="text.secondary">No se encontraron registros con estos filtros.</Typography>
+                            </TableCell>
+                        </TableRow>
                     ) : (
                         filteredData
                             .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                             .map((reg) => (
                                 <TableRow key={reg.id_afinacion} hover>
-                                    <TableCell>
+                                    <TableCell sx={{ ...CELL_MUTED_SX, ...NUMERO_SX }}>
                                         {dayjs(reg.fecha_registro).format('DD/MM/YYYY hh:mm A')}
                                     </TableCell>
-                                    <TableCell sx={{ fontWeight: 600, fontSize: '1.1em' }}>{reg.unidad}</TableCell>
-                                    <TableCell align="right" sx={{ fontFamily: 'monospace', fontWeight: 500 }}>
+                                    <TableCell sx={CELL_STRONG_SX}>{reg.unidad}</TableCell>
+                                    <TableCell align="right" sx={{ ...CELL_STRONG_SX, ...NUMERO_SX }}>
                                         {numberFmt(reg.millas_acumuladas)} mi
                                     </TableCell>
                                     <TableCell align="right">
-                                        <Chip 
-                                            icon={<OpacityIcon style={{ fontSize: 16 }} />} 
-                                            label={`${reg.porcentaje_aceite}%`} 
-                                            size="small" 
-                                            color={Number(reg.porcentaje_aceite) < 20 ? "error" : "default"}
-                                            variant="outlined"
+                                        <Chip
+                                            icon={<OpacityIcon style={{ fontSize: 14 }} />}
+                                            label={`${reg.porcentaje_aceite}%`}
+                                            size="small"
+                                            sx={Number(reg.porcentaje_aceite) < 20 ? CHIP_DANGER_SX : CHIP_NEUTRO_SX}
                                         />
                                     </TableCell>
                                 </TableRow>
@@ -185,7 +190,6 @@ export default function AfinacionesHistorialPage() {
                 </TableBody>
             </Table>
         </TableContainer>
-
         <Paginacion
             pagina={page}
             porPagina={rowsPerPage}
@@ -193,7 +197,7 @@ export default function AfinacionesHistorialPage() {
             onPagina={setPage}
             onPorPagina={(cuantas) => { setRowsPerPage(cuantas); setPage(0); }}
         />
-      </Paper>
+      </Box>
 
     </Box>
   );

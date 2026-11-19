@@ -8,7 +8,7 @@ import {
 } from "../../../entities/autonomy"
 import { soloFecha, decimales } from "../../../shared/lib/formato"
 import { COLOR, DataTable } from "../../../shared/ui"
-import { COLOR_NIVEL, colorTexto } from "./coloresRendimiento"
+import { CHIP_NIVEL, colorTexto } from "./coloresRendimiento"
 
 const SIN_DATO = <Typography variant="caption" color={COLOR.TENUE}>—</Typography>
 
@@ -24,7 +24,7 @@ function CeldaRegistro({ registro }) {
 
   return (
     <Box>
-      <Typography fontWeight={700} fontSize={15} color={colorTexto(nivelRendimiento(registro.mpg))}>
+      <Typography variant="body2" fontWeight={700} color={colorTexto(nivelRendimiento(registro.mpg))} sx={{ fontVariantNumeric: "tabular-nums" }}>
         {decimales(registro.mpg)}
       </Typography>
       <Typography variant="caption" display="block" color={COLOR.APAGADO} sx={{ lineHeight: 1.2 }}>
@@ -55,7 +55,7 @@ export function TablaAutonomia({ camiones, cargando, error }) {
       valor: (camion) => Number(camion.unidad) || camion.unidad,
       render: (camion) => (
         <Box>
-          <Typography fontWeight={700}>{camion.unidad}</Typography>
+          <Typography variant="body2" fontWeight={600} color={COLOR.TINTA}>{camion.unidad}</Typography>
           <Typography variant="caption" color={COLOR.APAGADO} sx={{ fontFamily: "monospace" }}>
             {camion.placa}
           </Typography>
@@ -78,9 +78,9 @@ export function TablaAutonomia({ camiones, cargando, error }) {
         const promedio = promedioMpg(camion)
         return (
           <Chip
+            size="small"
             label={`${decimales(promedio)} MPG`}
-            color={COLOR_NIVEL[nivelRendimiento(promedio)]}
-            sx={{ fontWeight: 700, minWidth: 96 }}
+            sx={{ ...CHIP_NIVEL[nivelRendimiento(promedio)], minWidth: 84, fontVariantNumeric: "tabular-nums" }}
           />
         )
       },

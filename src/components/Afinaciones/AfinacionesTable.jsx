@@ -1,28 +1,58 @@
 import React from 'react';
 import {
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  Box, Typography, Tooltip, IconButton, LinearProgress, Chip, Button, Stack, Badge
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
+  Box, Typography, Tooltip, IconButton, LinearProgress, Chip, Button, Stack, Badge,
 } from "@mui/material";
 
 import RefreshIcon from '@mui/icons-material/Refresh';
-import SettingsIcon from '@mui/icons-material/Settings'; 
-import EditIcon from '@mui/icons-material/Edit'; 
-import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
+import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import PhotoCameraOutlinedIcon from '@mui/icons-material/PhotoCameraOutlined';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
-import { COLOR } from '../../shared/ui/tokens';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
+import {
+  HEADER_ROW_SX, HEADER_CELL_SX, TABLE_CONTAINER_SX, CELL_STRONG_SX,
+  GHOST_BTN_SX, DARK_BTN_SX, ICON_BTN_SX, CHIP_DANGER_SX,
+} from '../../shared/ui/estilos';
 
 const numberFmt = (n) => new Intl.NumberFormat('en-US').format(Number(n).toFixed(0));
 
-const getProgressColor = (value) => {
-    if (value >= 100) return 'error';
-    if (value >= 80) return 'warning';
-    return 'success';
+const NUMERO_SX = { fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' };
+
+const BOTON_FILA_SX = { ...GHOST_BTN_SX, px: 1.5, py: 0.4, fontSize: '0.78rem' };
+
+const REINICIAR_SX = { ...DARK_BTN_SX, px: 1.5, py: 0.4, fontSize: '0.78rem' };
+
+const REINICIAR_CRITICO_SX = {
+  ...REINICIAR_SX, bgcolor: '#b91c1c', '&:hover': { bgcolor: '#991b1b', boxShadow: '0 6px 16px rgba(185,28,28,0.25)' },
 };
 
+const ICONO_SX = { ...ICON_BTN_SX, borderRadius: 2 };
+
+/**
+ * Los colores de la barra y del borde según qué tan cerca está del límite.
+ *
+ * @param {number} value El porcentaje recorrido, de 0 a 100.
+ * @returns {{barra: string, acento: string}} Los colores.
+ */
+const progreso = (value) => {
+    if (value >= 100) return { barra: '#ef4444', acento: '#ef4444' };
+    if (value >= 80) return { barra: '#f59e0b', acento: '#f59e0b' };
+    return { barra: '#22c55e', acento: '#cbd5e1' };
+};
+
+/**
+ * La tabla de estatus de afinación de la flota: millas contra límite, la última
+ * captura del operador y las acciones de cada camión.
+ *
+ * @param {object} props Propiedades del componente.
+ * @param {Array.<object>} props.trucksStatus Los camiones con su estatus.
+ * @param {Function} props.onOpenModal Abre un diálogo: recibe el tipo y el camión.
+ * @returns {object} La tabla renderizada.
+ */
 export const AfinacionesTable = ({ trucksStatus, onOpenModal }) => {
     return (
-        <TableContainer>
+        <TableContainer component={Paper} elevation={0} sx={TABLE_CONTAINER_SX}>
             <style>
                 {`
                 @keyframes pulse-ring {
@@ -32,15 +62,15 @@ export const AfinacionesTable = ({ trucksStatus, onOpenModal }) => {
                 }
                 `}
             </style>
-            <Table>
-                <TableHead sx={{ bgcolor: COLOR.LIENZO }}>
-                    <TableRow>
-                        <TableCell sx={{ fontWeight: 700 }}>Camión</TableCell>
-                        <TableCell sx={{ fontWeight: 700, width: '35%' }}>Estado (Millas vs Límite)</TableCell>
-                        <TableCell align="center" sx={{ fontWeight: 700 }}>Auditoría (App)</TableCell>
-                        <TableCell align="center" sx={{ fontWeight: 700 }}>Historial (15)</TableCell>
-                        <TableCell align="center" sx={{ fontWeight: 700 }}>Reiniciar</TableCell>
-                        <TableCell align="center" sx={{ fontWeight: 700 }}>Ajustes</TableCell>
+            <Table size="small" sx={{ minWidth: 1000 }}>
+                <TableHead>
+                    <TableRow sx={HEADER_ROW_SX}>
+                        <TableCell sx={HEADER_CELL_SX}>Camión</TableCell>
+                        <TableCell sx={{ ...HEADER_CELL_SX, width: '35%' }}>Millas vs límite</TableCell>
+                        <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'center' }}>Captura del operador</TableCell>
+                        <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'center' }}>Historial</TableCell>
+                        <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'center' }}>Reiniciar</TableCell>
+                        <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'center' }}>Ajuste</TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
@@ -49,66 +79,69 @@ export const AfinacionesTable = ({ trucksStatus, onOpenModal }) => {
                         const limite = Number(truck.limite_afinacion) || 15000;
                         const progress = Math.min((millas / limite) * 100, 100);
                         const isCritical = millas >= limite;
-
-                        const alarmaActiva = truck.requiere_actualizacion == 1; 
+                        const alarmaActiva = truck.requiere_actualizacion == 1;
+                        const color = progreso(progress);
 
                         return (
-                            <TableRow key={truck.truck_id} hover sx={{ bgcolor: alarmaActiva ? 'rgba(239, 68, 68, 0.04)' : 'inherit' }}>
-                                <TableCell>
+                            <TableRow key={truck.truck_id} hover sx={{ bgcolor: alarmaActiva ? '#fef2f2' : 'inherit' }}>
+                                <TableCell sx={{ borderLeft: `3px solid ${color.acento}`, pl: 2 }}>
                                     <Stack direction="row" alignItems="center" spacing={1}>
-                                        <Typography fontWeight={700} variant="h6">{truck.unidad}</Typography>
+                                        <Typography variant="body1" sx={{ ...CELL_STRONG_SX, fontWeight: 700 }}>{truck.unidad}</Typography>
                                         {alarmaActiva && (
                                             <Tooltip title="Actualización manual pendiente">
-                                                <NotificationsActiveIcon color="error" sx={{ fontSize: 20, animation: 'pulse-ring 2s infinite' }} />
+                                                <NotificationsActiveIcon sx={{ fontSize: 18, color: '#ef4444', animation: 'pulse-ring 2s infinite' }} />
                                             </Tooltip>
                                         )}
                                     </Stack>
                                 </TableCell>
-                                
+
                                 <TableCell>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
-                                        <Typography variant="body1" fontWeight={600}>
-                                            {numberFmt(millas)} / {numberFmt(limite)} mi
+                                    <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 0.75 }}>
+                                        <Typography variant="body2" fontWeight={600} color="#0f172a" sx={NUMERO_SX}>
+                                            {numberFmt(millas)} <Typography component="span" variant="body2" color="#94a3b8">/ {numberFmt(limite)} mi</Typography>
                                         </Typography>
-                                        <Tooltip title="Cambiar límite de afinación">
-                                            <IconButton size="small" onClick={() => onOpenModal('limit', truck)} sx={{ ml: 1, p: 0.5 }}>
-                                                <EditIcon fontSize="small" color="action" />
-                                            </IconButton>
-                                        </Tooltip>
-                                    </Box>
-                                    
-                                    <Box sx={{ width: '100%', display: 'flex', alignItems: 'center' }}>
-                                        <Box sx={{ width: '100%', mr: 1 }}>
-                                            <LinearProgress variant="determinate" value={progress} color={getProgressColor(progress)} sx={{ height: 10, borderRadius: 5 }} />
-                                        </Box>
-                                        <Typography variant="caption" color="text.secondary" sx={{ minWidth: 35 }}>
+                                        <Stack direction="row" alignItems="center" spacing={1}>
+                                            {isCritical && <Chip size="small" label="Requiere mantenimiento" sx={CHIP_DANGER_SX} />}
+                                            <Tooltip title="Cambiar límite de afinación">
+                                                <IconButton size="small" onClick={() => onOpenModal('limit', truck)} sx={{ p: 0.5, color: '#94a3b8' }}>
+                                                    <EditOutlinedIcon sx={{ fontSize: 16 }} />
+                                                </IconButton>
+                                            </Tooltip>
+                                        </Stack>
+                                    </Stack>
+                                    <Stack direction="row" alignItems="center" spacing={1}>
+                                        <LinearProgress
+                                            variant="determinate"
+                                            value={progress}
+                                            sx={{ flex: 1, height: 8, borderRadius: 4, bgcolor: '#f1f5f9', '& .MuiLinearProgress-bar': { bgcolor: color.barra, borderRadius: 4 } }}
+                                        />
+                                        <Typography variant="caption" color="#64748b" sx={{ minWidth: 34, textAlign: 'right', ...NUMERO_SX }}>
                                             {progress.toFixed(0)}%
                                         </Typography>
-                                    </Box>
-                                    {isCritical && <Chip label="¡Requiere Mantenimiento!" color="error" size="small" sx={{ fontWeight: 'bold', mt: 0.5 }} />}
+                                    </Stack>
                                 </TableCell>
 
                                 <TableCell align="center">
-                                    <Box sx={{ p: 1, border: alarmaActiva ? `2px dashed ${COLOR.PELIGRO}` : '1px dashed #ccc', borderRadius: 2, display: 'inline-block', bgcolor: alarmaActiva ? COLOR.PELIGRO_FONDO : 'transparent' }}>
-                                        <Typography variant="caption" color={alarmaActiva ? 'error.main' : 'text.secondary'} fontWeight={alarmaActiva ? 700 : 400}>
-                                            {alarmaActiva ? '¡Nueva Captura!' : 'Captura chofer:'}
+                                    <Box sx={{ px: 1.5, py: 1, border: `1px ${alarmaActiva ? 'solid #fecaca' : 'dashed #e2e8f0'}`, borderRadius: 2, display: 'inline-block', bgcolor: alarmaActiva ? '#fff' : 'transparent', minWidth: 140 }}>
+                                        <Typography variant="caption" sx={{ display: 'block', color: alarmaActiva ? '#b91c1c' : '#94a3b8', fontWeight: 700 }}>
+                                            {alarmaActiva ? 'Nueva captura' : 'Última captura'}
                                         </Typography>
-                                        <Typography variant="body1" fontWeight={700}>
-                                            {truck.ultimo_odometro_registrado ? `${numberFmt(truck.ultimo_odometro_registrado)} mi` : 'N/A'}
+                                        <Typography variant="body2" fontWeight={700} color="#0f172a" sx={NUMERO_SX}>
+                                            {truck.ultimo_odometro_registrado ? `${numberFmt(truck.ultimo_odometro_registrado)} mi` : '—'}
                                         </Typography>
-                                        <Stack direction="row" spacing={1} mt={0.5} justifyContent="center">
-                                            <Tooltip title="Ver Foto del Tablero">
+                                        <Stack direction="row" spacing={1} mt={0.75} justifyContent="center">
+                                            <Tooltip title="Ver foto del tablero">
                                                 <span>
-                                                    <IconButton size="small" color="info" onClick={() => onOpenModal('photo', truck.ticket_url)} disabled={!truck.ticket_url}>
+                                                    <IconButton size="small" onClick={() => onOpenModal('photo', truck.ticket_url)} disabled={!truck.ticket_url} sx={ICONO_SX}>
                                                         <Badge color="error" variant="dot" invisible={!alarmaActiva}>
-                                                            <PhotoCameraIcon fontSize="small" />
+                                                            <PhotoCameraOutlinedIcon sx={{ fontSize: 16 }} />
                                                         </Badge>
                                                     </IconButton>
                                                 </span>
                                             </Tooltip>
-                                            <Tooltip title="Corregir Error de Dedo">
-                                                <IconButton size="small" color="warning" onClick={() => onOpenModal('correct', truck)}>
-                                                    <EditIcon fontSize="small" />
+                                            <Tooltip title="Corregir error de dedo">
+                                                <IconButton size="small" onClick={() => onOpenModal('correct', truck)} sx={ICONO_SX}>
+                                                    <EditOutlinedIcon sx={{ fontSize: 16 }} />
                                                 </IconButton>
                                             </Tooltip>
                                         </Stack>
@@ -116,22 +149,22 @@ export const AfinacionesTable = ({ trucksStatus, onOpenModal }) => {
                                 </TableCell>
 
                                 <TableCell align="center">
-                                    <Button variant="outlined" size="small" startIcon={<FormatListBulletedIcon />} onClick={() => onOpenModal('history', truck)} sx={{ textTransform: 'none', borderRadius: 2 }}>
+                                    <Button variant="outlined" size="small" startIcon={<FormatListBulletedIcon sx={{ fontSize: 16 }} />} onClick={() => onOpenModal('history', truck)} sx={BOTON_FILA_SX}>
                                         Ver 15
                                     </Button>
                                 </TableCell>
-                                
+
                                 <TableCell align="center">
-                                    <Button variant="contained" color={isCritical ? "error" : "primary"} startIcon={<RefreshIcon />} onClick={() => onOpenModal('reset', truck)} sx={{ textTransform: 'none', borderRadius: 2 }} size="small">
+                                    <Button variant="contained" size="small" startIcon={<RefreshIcon sx={{ fontSize: 16 }} />} onClick={() => onOpenModal('reset', truck)} sx={isCritical ? REINICIAR_CRITICO_SX : REINICIAR_SX}>
                                         Reiniciar
                                     </Button>
                                 </TableCell>
-                                
+
                                 <TableCell align="center">
-                                    <Tooltip title="Ajuste Manual de Millas">
-                                        <IconButton onClick={() => onOpenModal('manual', truck)} color="default">
+                                    <Tooltip title="Ajuste manual de millas">
+                                        <IconButton size="small" onClick={() => onOpenModal('manual', truck)} sx={{ ...ICONO_SX, ...(alarmaActiva ? { color: '#b91c1c', borderColor: '#fecaca' } : {}) }}>
                                             <Badge color="error" variant="dot" invisible={!alarmaActiva}>
-                                                <SettingsIcon color={alarmaActiva ? 'error' : 'inherit'} />
+                                                <SettingsOutlinedIcon sx={{ fontSize: 18 }} />
                                             </Badge>
                                         </IconButton>
                                     </Tooltip>
@@ -140,7 +173,11 @@ export const AfinacionesTable = ({ trucksStatus, onOpenModal }) => {
                         );
                     })}
                     {trucksStatus.length === 0 && (
-                        <TableRow><TableCell colSpan={6} align="center">No hay camiones activos</TableCell></TableRow>
+                        <TableRow>
+                            <TableCell colSpan={6} align="center" sx={{ py: 6 }}>
+                                <Typography variant="body2" color="#94a3b8">No hay camiones activos.</Typography>
+                            </TableCell>
+                        </TableRow>
                     )}
                 </TableBody>
             </Table>
