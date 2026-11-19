@@ -60,6 +60,17 @@ import { GHOST_BTN_SX } from "../../shared/ui/estilos"
  */
 const EDICION_ESPECIAL = new Set(["Blanca", "Angelica", "Israel", "Richard"])
 
+/**
+ * Quién ve la columna Admin de En ruta y Finalizados sin ser administrador.
+ *
+ * Solo la columna: reactivar, más editar si está en {@link EDICION_ESPECIAL} y
+ * el resumen si tiene el permiso de facturación. No da lo demás de ser Admin.
+ * Osvaldo, pedido por Emiliano el 2026-11-19.
+ *
+ * @type {Set.<string>}
+ */
+const COLUMNA_ADMIN = new Set(["Osvaldo"])
+
 const BOTON_OSCURO_SX = {
   bgcolor: COLOR.TINTA,
   fontWeight: 700,
@@ -90,6 +101,7 @@ export default function AdminViajesPage() {
   const esAdmin =
     usuario?.tipo_usuario?.toLowerCase() === "admin" || usuario?.name === "Blanca"
   const puedeEdicionEspecial = EDICION_ESPECIAL.has(usuario?.name)
+  const veColumnaAdmin = esAdmin || COLUMNA_ADMIN.has(usuario?.name)
   const puedeFacturar = esAdmin || permisos?.viajes_invoice_fields === true
 
   const {
@@ -561,7 +573,7 @@ export default function AdminViajesPage() {
               despacho: pestana === 1,
               enRuta: pestana === 2,
               finalizados: pestana === 3,
-              esAdmin,
+              esAdmin: veColumnaAdmin,
               puedeEdicionEspecial,
               puedeFacturar,
             }}
