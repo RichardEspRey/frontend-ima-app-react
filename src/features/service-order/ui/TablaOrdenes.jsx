@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import {
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
-    Button, TextField, Box, Typography, Stack, Grid, FormControl, InputLabel, Select, MenuItem, IconButton
+    Button, TextField, Box, Typography, Stack, Grid, FormControl, InputLabel, Select, MenuItem, IconButton, Autocomplete
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import RefreshIcon from '@mui/icons-material/Refresh';
@@ -11,14 +11,15 @@ import dayjs from 'dayjs';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 
-import useFetchRepairTypes from '../../../hooks/service_order/useFetchRepairTypes.jsx';
 import { FilaOrden } from './FilaOrden';
 import {
     HEADER_ROW_SX, HEADER_CELL_SX, TABLE_CONTAINER_SX, CARD_SX,
     SECTION_LABEL_SX, PAGINATION_BOX_SX, GHOST_BTN_SX,
 } from '../../../shared/ui/estilos';
 import { COLOR } from '../../../shared/ui/tokens';
-import { etiquetaUnidad, nombreUnidad, useEliminarOrden } from '../../../entities/service-order';
+import {
+    etiquetaUnidad, nombreUnidad, ordenTieneReparacion, reparacionesDeOrdenes, useEliminarOrden,
+} from '../../../entities/service-order';
 import { useSesion } from '../../../shared/auth';
 import { FilasEsqueleto, Paginacion, CampoFecha, notify } from '../../../shared/ui';
 
@@ -47,14 +48,14 @@ const TablaOrdenes = () => {
     const [filterId, setFilterId] = useState('');
     const [filterTruck, setFilterTruck] = useState('');
     const [filterMaintenance, setFilterMaintenance] = useState('All');
-    const [filterRepair, setFilterRepair] = useState('All');
+    const [filterRepair, setFilterRepair] = useState('');
     const [startDate, setStartDate] = useState(null);
     const [endDate, setEndDate] = useState(null);
 
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
 
-    const { repairTypes, loadingRepairTypes, refetchRepairTypes } = useFetchRepairTypes();
+    const reparaciones = useMemo(() => reparacionesDeOrdenes(orders), [orders]);
 
     const fetchOrders = useCallback(async () => {
         setLoading(true);
@@ -129,13 +130,7 @@ const TablaOrdenes = () => {
                 if (!hasType) return false;
             }
 
-            if (filterRepair !== 'All') {
-                const servicios = o.servicios || [];
-                const hasRepair = servicios.some(s => 
-                    (s.tipo_reparacion || '').toLowerCase() === filterRepair.toLowerCase()
-                );
-                if (!hasRepair) return false;
-            }
+            if (!ordenTieneReparacion(o, filterRepair)) return false;
 
             if (startDate || endDate) {
                 const orderDate = dayjs(o.fecha_orden); 
@@ -158,7 +153,7 @@ const TablaOrdenes = () => {
         setFilterId('');
         setFilterTruck('');
         setFilterMaintenance('All');
-        setFilterRepair('All');
+        setFilterRepair('');
         setStartDate(null);
         setEndDate(null);
         setPage(0);
@@ -213,22 +208,17 @@ const TablaOrdenes = () => {
                     </Grid>
 
                     <Grid size={{ xs: 12, sm: 6, md: 2 }}>
-                        <FormControl fullWidth size="small">
-                            <InputLabel>Tipo Reparación</InputLabel>
-                            <Select
-                                value={filterRepair}
-                                label="Tipo Reparación"
-                                onChange={(e) => { setFilterRepair(e.target.value); setPage(0); }}
-                                disabled={loadingRepairTypes}
-                            >
-                                <MenuItem value="All">Todas</MenuItem>
-                                {repairTypes.map((type) => (
-                                    <MenuItem key={type.value} value={type.label}>
-                                        {type.label}
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
+                        <Autocomplete
+                            freeSolo
+                            size="small"
+                            options={reparaciones}
+                            inputValue={filterRepair}
+                            onInputChange={(_, valor) => { setFilterRepair(valor); setPage(0); }}
+                            noOptionsText="Ninguna reparación coincide"
+                            renderInput={(params) => (
+                                <TextField {...params} label="Tipo Reparación" placeholder="Escribe una palabra, ej: frenos" />
+                            )}
+                        />
                     </Grid>
 
                     <Grid size={{ xs: 12, sm: 6, md: 4 }}>
@@ -257,7 +247,7 @@ const TablaOrdenes = () => {
                         </IconButton>
                         <Button
                             variant="outlined"
-                            onClick={() => { fetchOrders(); refetchRepairTypes(); }}
+                            onClick={fetchOrders}
                             startIcon={<RefreshIcon />}
                             sx={{ ...GHOST_BTN_SX, py: 0.75 }}
                         >

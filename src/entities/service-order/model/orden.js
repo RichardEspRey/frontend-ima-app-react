@@ -1,5 +1,6 @@
 import { z } from "zod"
 import { fechaDia, idPhp, nullable, numeroPhp } from "../../../shared/api/zodPhp"
+import { normalizarTexto } from "../../../utils/texto"
 
 /**
  * Estados por los que pasa una orden de servicio y cada uno de sus servicios.
@@ -242,4 +243,49 @@ export function resumenServicios(orden) {
 export function todoCompletado(orden) {
   const { total, completados } = resumenServicios(orden)
   return total > 0 && total === completados
+}
+
+/**
+ * Las reparaciones que aparecen en los servicios de las órdenes, sin repetir.
+ *
+ * Son el texto que se ve en las tarjetas de cada orden («Reparación: …»), que
+ * es libre: por eso se toman de las órdenes y no del catálogo de tipos de
+ * reparación. Dos textos que solo cambian en mayúsculas, acentos o espacios
+ * cuentan como uno; se queda el primero que aparece.
+ *
+ * @param {Array.<object>} [ordenes] Las órdenes con sus `servicios`.
+ * @returns {Array.<string>} Las reparaciones en orden alfabético.
+ *
+ * @example
+ * reparacionesDeOrdenes([{ servicios: [{ tipo_reparacion: "Lavado" }, { tipo_reparacion: "lavado " }] }]) // ["Lavado"]
+ */
+export function reparacionesDeOrdenes(ordenes) {
+  const unicas = new Map()
+  for (const orden of ordenes ?? []) {
+    for (const servicio of orden?.servicios ?? []) {
+      const texto = String(servicio?.tipo_reparacion ?? "").trim()
+      const llave = normalizarTexto(texto)
+      if (llave && !unicas.has(llave)) unicas.set(llave, texto)
+    }
+  }
+  return [...unicas.values()].sort((a, b) => a.localeCompare(b, "es", { sensitivity: "base" }))
+}
+
+/**
+ * Si alguno de los servicios de la orden menciona lo buscado en su reparación.
+ *
+ * Busca en cualquier parte del texto y sin importar mayúsculas ni acentos, para
+ * que «frenos» encuentre «Ajuste de frenos generales». Sin texto, pasa todo.
+ *
+ * @param {object} orden La orden con sus `servicios`.
+ * @param {string} buscado Lo que se escribió en el filtro.
+ * @returns {boolean} Si la orden se queda en la lista.
+ *
+ * @example
+ * ordenTieneReparacion({ servicios: [{ tipo_reparacion: "Ajuste de frenos" }] }, "FRENOS") // true
+ */
+export function ordenTieneReparacion(orden, buscado) {
+  const texto = normalizarTexto(buscado)
+  if (!texto) return true
+  return (orden?.servicios ?? []).some((servicio) => normalizarTexto(servicio?.tipo_reparacion).includes(texto))
 }

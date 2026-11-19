@@ -12,6 +12,8 @@ export {
   estaAbierta,
   resumenServicios,
   todoCompletado,
+  reparacionesDeOrdenes,
+  ordenTieneReparacion,
 } from "./model/orden"
 
 export {
