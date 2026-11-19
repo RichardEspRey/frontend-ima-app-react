@@ -425,14 +425,60 @@ guardan como 0/1. El instalador acepta `&tanda=N`.
 `mtto_notif_suscriptores`, `caja_estatus`, `roadside_repairs`, `inspections` (sin
 `reportes_json`), `servicios_orden`, `afinaciones_historial`. 45 triggers en
 `docs/sql/020-…tanda-4.sql`; el esquema guardado trae ya las 97 tablas de producción.
-Pendiente para una quinta: documentos de Safety (`truck_documents`, `drivers_documents`,
-`cajas_documents`, `safety_docs`, `documents`, `gastos_documentos`), inventario y
-catálogos menores. Fuera a propósito: check lists del móvil (`cl_*`, `revision_caja`,
-`inspeccion_camion`), fotos/tickets, `Notifications_trips*`, `IFTA*`.
+
+**Quinta tanda — LISTA, FALTA INSTALAR (preparada 2026-11-18, commit `cbd2f73`):** 93
+triggers en 31 tablas; el instalador queda con 207. Documentos (`truck_documents`,
+`drivers_documents`, `cajas_documents`, `IMA_documents`, `safety_docs`, `documents`,
+`gastos_documentos`, `trip_document_relationship`, `roadside_repair_docs`,
+`inspection_docs`, los cuatro `status_documents_*`), inventario (`articulos_inventario`,
+`movimientos_inventario`, `activos`) y catálogos (`teams`, `user_teams`, `tipos_gasto`,
+`tipos_reparacion`, `categorias_mantenimiento`, `subcategorias_mantenimiento`,
+`inspection_descriptions`, `origenes`, `cat_origenes`, los cuatro `cat_*_requisitos`,
+`features`). SQL para revisar: `docs/sql/021-…tanda-5.sql`.
+
+Pasos para retomarla:
+1. Emiliano sube `../subir-bitacora-tanda-5-2026-11-18/bitacora_triggers.php` a `/API`
+   (la línea 22 empieza `define('CLAVE', '56fae0…`; la clave completa está en ese archivo,
+   **nunca en el repo**).
+2. Correr con curl `bitacora_triggers.php?clave=…&accion=crear&tanda=5` (solo crea la 5;
+   los 114 instalados no se tocan) y comprobar que el total sea **207** con
+   `accion=listar` o el diagnóstico.
+3. Emiliano borra el PHP; confirmar que da 404 de 13 bytes (archivo inexistente).
+4. Actualizar la lista de tablas con triggers en `CLAUDE.md` (de las dos carpetas) y marcar
+   aquí la tanda como INSTALADA.
+5. Pedirle una prueba: subir o cambiar el vencimiento de un documento de Safety y ver el
+   antes/después en la Bitácora.
+
+Con la quinta quedan cubiertas todas las tablas que la oficina edita. Fuera a propósito:
+check lists del móvil (`cl_*`, `revision_caja`, `inspeccion_camion`), fotos/tickets,
+`Notifications_trips*`, `IFTA*` (se calcula sola), las viejas `users`, `users_drivers`,
+`permissions` y el respaldo de agosto. Si se agrega una tabla nueva, se suma al `TANDAS`
+de `generar-triggers-bitacora.py` y se regenera.
 
 Etapas 3 y 5 de `10-BITACORA.md`. **No crearlos desde phpMyAdmin de cPanel** (error 1449,
 el mismo que tumbó `crud_diesel` el 2026-11-17). Se crean desde un PHP de un solo uso con
 el usuario de la app. Requiere el privilegio `TRIGGER` (sale de B0).
+
+---
+
+# Parte D · Rediseño visual de toda la app (después de la bitácora)
+
+Pedido por Emiliano el 2026-11-19: cuando termine la bitácora, darle a toda la aplicación
+un estilo nuevo **tomado de una referencia de Dribbble**, para que no se vea genérica ni
+«hecha por IA». Él elegirá la referencia; no empezar sin ella.
+
+Lo que ya hay y facilita el cambio:
+- Emiliano: `src/styles/estilosTabla.js` concentra encabezado, tabla, chips, botones y
+  diálogos. Ya lo usan Viajes, Safety, Gastos (diesel y viajes), Pago a Operadores,
+  Órdenes de servicio, Nómina (resumen, desglose, personal), Autonomías y Afinaciones
+  (con historial y diálogos), entre el 2026-11-17 y el 2026-11-19.
+- Refactor: `src/shared/ui/tokens.js` (COLOR, TINTE…) y `src/shared/ui/estilos.js`, más
+  `PageHeader`, `DataTable` y `StatCard`.
+
+Cómo encararlo: primero traducir la referencia a tokens (paleta, tipografía, radios,
+sombras, espaciado) y cambiarlos en esos dos archivos; luego revisar pantalla por pantalla
+las que todavía tienen estilos sueltos. Pantallas sin pasar al estilo actual: revisar
+`src/screens/` buscando `elevation={2|3}`, `Container maxWidth` y colores `primary.main`.
 
 ---
 
