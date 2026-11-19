@@ -137,6 +137,9 @@ export const OrderRow = ({ order, onEdit, onDelete }) => {
                                                                 <strong>Mantenimiento:</strong> {svc.tipo_mantenimiento || '—'}
                                                             </Typography>
                                                             <Typography variant="body2">
+                                                                <strong>Mantenimiento realizado:</strong> {svc.origen_servicio || '—'}
+                                                            </Typography>
+                                                            <Typography variant="body2">
                                                                 <strong>Reparación:</strong> {svc.tipo_reparacion || '—'}
                                                             </Typography>
                                                             {svc.fecha_termino && (

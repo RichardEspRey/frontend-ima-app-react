@@ -206,6 +206,12 @@ export const obtenerOrden = async (idOrden) => {
     return { orden: result.orden, servicios: Array.isArray(result.servicios) ? result.servicios : [] };
 };
 
+export const obtenerOrigenesServicio = async () => {
+    const result = await pedirMtto('getOrigenesServicio');
+    const filas = Array.isArray(result.origenes) ? result.origenes : [];
+    return new Map(filas.map(fila => [String(fila.id_servicio), fila.origen_servicio]));
+};
+
 export const eliminarOrden = ({ idOrden, usuarioId }) =>
     pedirMtto('eliminarOrden', { id_orden: idOrden, id_usuario: usuarioId });
 

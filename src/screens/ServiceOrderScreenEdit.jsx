@@ -343,7 +343,7 @@ export default function ServiceOrderScreenEdit() {
                                         </Grid>
                                         <Grid size={{ xs: 12, md: 4 }}>
                                             <TextField
-                                                select label="Origen Mantenimiento" fullWidth size="small"
+                                                select label="Mantenimiento realizado" fullWidth size="small"
                                                 value={s.origen_servicio || ''}
                                                 onChange={e => actualizarServicio(s.id_local, { origen_servicio: e.target.value })}
                                             >
@@ -414,7 +414,7 @@ export default function ServiceOrderScreenEdit() {
                             
                             <Grid size={{ xs: 12, md: 4 }}>
                                 <TextField 
-                                    select label="Origen Mantenimiento" fullWidth 
+                                    select label="Mantenimiento realizado" fullWidth 
                                     value={origenServicio} onChange={e => setOrigenServicio(e.target.value)}
                                 >
                                     <MenuItem value="Interno">Interno</MenuItem>

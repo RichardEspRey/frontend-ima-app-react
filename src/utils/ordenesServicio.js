@@ -17,3 +17,20 @@ export const ordenTieneReparacion = (orden, buscado) => {
   if (!texto) return true;
   return (orden?.servicios ?? []).some((servicio) => normalizarTexto(servicio?.tipo_reparacion).includes(texto));
 };
+
+export const ORIGENES_SERVICIO = ['Interno', 'Externo'];
+
+export const conOrigenes = (ordenes, origenes) =>
+  (ordenes ?? []).map((orden) => ({
+    ...orden,
+    servicios: (orden?.servicios ?? []).map((servicio) => ({
+      ...servicio,
+      origen_servicio: servicio.origen_servicio ?? origenes.get(String(servicio.id_servicio)) ?? null,
+    })),
+  }));
+
+export const ordenTieneOrigen = (orden, origen) => {
+  const buscado = normalizarTexto(origen);
+  if (!buscado) return true;
+  return (orden?.servicios ?? []).some((servicio) => normalizarTexto(servicio?.origen_servicio) === buscado);
+};
