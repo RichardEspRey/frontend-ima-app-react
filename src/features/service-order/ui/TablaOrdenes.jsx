@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import {
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
-    Button, TextField, Box, Typography, Stack, Grid, FormControl, InputLabel, Select, MenuItem, IconButton, Autocomplete
+    Button, TextField, Box, Typography, Stack, Grid, FormControl, InputLabel, Select, MenuItem, IconButton, Autocomplete, Tooltip
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import RefreshIcon from '@mui/icons-material/Refresh';
@@ -14,7 +14,7 @@ import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import { FilaOrden } from './FilaOrden';
 import {
     HEADER_ROW_SX, HEADER_CELL_SX, TABLE_CONTAINER_SX, CARD_SX,
-    SECTION_LABEL_SX, PAGINATION_BOX_SX, GHOST_BTN_SX,
+    SECTION_LABEL_SX, PAGINATION_BOX_SX, GHOST_BTN_SX, ICON_BTN_SX,
 } from '../../../shared/ui/estilos';
 import { COLOR } from '../../../shared/ui/tokens';
 import {
@@ -261,14 +261,11 @@ const TablaOrdenes = () => {
                     </Grid>
 
                     <Grid size={{ xs: 12 }} display="flex" justifyContent="flex-end" gap={1}>
-                        <IconButton 
-                            color="error" 
-                            onClick={clearFilters}
-                            title="Limpiar Filtros"
-                            sx={{ border: `1px solid ${COLOR.PELIGRO_BORDE}`, borderRadius: 1 }}
-                        >
-                            <DeleteSweepIcon />
-                        </IconButton>
+                        <Tooltip title="Limpiar filtros">
+                            <IconButton onClick={clearFilters} sx={{ ...ICON_BTN_SX, borderRadius: 2 }}>
+                                <DeleteSweepIcon fontSize="small" />
+                            </IconButton>
+                        </Tooltip>
                         <Button
                             variant="outlined"
                             onClick={fetchOrders}
@@ -283,13 +280,14 @@ const TablaOrdenes = () => {
             </Paper>
 
             <TableContainer component={Paper} elevation={0} sx={TABLE_CONTAINER_SX}>
-                <Table size="small">
+                <Table size="small" sx={{ minWidth: 1100 }}>
                     <TableHead>
                         <TableRow sx={HEADER_ROW_SX}>
                             <TableCell sx={HEADER_CELL_SX} />
                             <TableCell sx={HEADER_CELL_SX}>ID</TableCell>
                             <TableCell sx={HEADER_CELL_SX}>Fecha</TableCell>
                             <TableCell sx={HEADER_CELL_SX}>Unidad</TableCell>
+                            <TableCell sx={HEADER_CELL_SX}>Estatus</TableCell>
                             <TableCell sx={HEADER_CELL_SX}>Servicios</TableCell>
                             <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'right' }}>Mano de obra</TableCell>
                             <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'right' }}>Refacciones</TableCell>
@@ -304,7 +302,7 @@ const TablaOrdenes = () => {
                             <FilasEsqueleto columnas={10} filas={Math.min(rowsPerPage, 10)} />
                         ) : filteredOrders.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={10} align="center" sx={{ py: 6 }}>
+                                <TableCell colSpan={11} align="center" sx={{ py: 6 }}>
                                     <Typography variant="body2" color={COLOR.APAGADO} fontWeight={600}>
                                         No se encontraron órdenes.
                                     </Typography>
