@@ -117,11 +117,13 @@ const parseJsonSafe = async (response) => {
 };
 
 const SPECIAL_EDIT_USERS = new Set(['Blanca', 'Angelica', 'Israel', 'Richard']);
+const ADMIN_COLUMN_USERS = new Set(['Osvaldo']);
 
 const TripAdmin = () => {
     const { userPermissions, user } = useAuthStore();
     const isAdmin = user?.tipo_usuario?.toLowerCase() === 'admin' || user?.name === 'Blanca';
     const canSpecialEdit = SPECIAL_EDIT_USERS.has(user?.name);
+    const veColumnaAdmin = isAdmin || ADMIN_COLUMN_USERS.has(user?.name);
     const canManageInvoice = isAdmin || userPermissions?.viajes_invoice_fields === true;
     const navigate = useNavigate();
 
@@ -671,12 +673,12 @@ const TripAdmin = () => {
     const currentTableColSpan = useMemo(() => {
         let cols = 8;
         if (showDocsColumn) cols = 8;
-        else if (tabValue === 3) cols = isAdmin ? 10 : 9;
-        else cols = isAdmin ? 10 : 9;
+        else if (tabValue === 3) cols = veColumnaAdmin ? 10 : 9;
+        else cols = veColumnaAdmin ? 10 : 9;
 
         if (isEnRutaTab) cols += 1;
         return cols;
-    }, [showDocsColumn, tabValue, isAdmin, isEnRutaTab]);
+    }, [showDocsColumn, tabValue, veColumnaAdmin, isEnRutaTab]);
 
     if (allowedTabs.length === 0) {
         return (
@@ -1073,7 +1075,7 @@ const TripAdmin = () => {
                                     {isEnRutaTab && <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'center' }}>Copiar Info</TableCell>}
 
                                     <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'center' }}>Actions</TableCell>
-                                    {isAdmin && (tabValue === 3 || tabValue === 2) && <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'center' }}>Admin</TableCell>}
+                                    {veColumnaAdmin && (tabValue === 3 || tabValue === 2) && <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'center' }}>Admin</TableCell>}
                                 </TableRow>
                             </TableHead>
                             <TableBody>
@@ -1093,7 +1095,7 @@ const TripAdmin = () => {
                                             <TripRow
                                                 key={trip.trip_id}
                                                 trip={trip}
-                                                isAdmin={isAdmin}
+                                                isAdmin={veColumnaAdmin}
                                                 canSpecialEdit={canSpecialEdit}
                                                 canManageInvoice={canManageInvoice}
                                                 isCompletedTab={tabValue === 3}
