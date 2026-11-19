@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import {
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
     Button, TablePagination, TextField, Box, Typography, CircularProgress,
-    Stack, Grid, FormControl, InputLabel, Select, MenuItem, IconButton, Autocomplete
+    Stack, Grid, FormControl, InputLabel, Select, MenuItem, IconButton, Autocomplete, Tooltip
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
@@ -23,7 +23,7 @@ import { useAuthStore } from '../store/useAuthStore';
 import { eliminarOrden, obtenerOrigenesServicio } from '../services/mantenimiento';
 import {
     HEADER_ROW_SX, HEADER_CELL_SX, TABLE_CONTAINER_SX, CARD_SX,
-    SECTION_LABEL_SX, PAGINATION_BOX_SX, PAGINATION_SX, GHOST_BTN_SX,
+    SECTION_LABEL_SX, PAGINATION_BOX_SX, PAGINATION_SX, GHOST_BTN_SX, ICON_BTN_SX,
 } from '../styles/estilosTabla';
 
 dayjs.extend(isSameOrAfter);
@@ -176,7 +176,7 @@ const ServiceOrderAdmin = () => {
                 
                 <Grid container spacing={2} alignItems="center">
                     
-                    <Grid item xs={6} sm={4} md={1.5}>
+                    <Grid size={{ xs: 6, sm: 4, md: 1.5 }}>
                         <TextField
                             label="ID Orden"
                             placeholder="#"
@@ -188,7 +188,7 @@ const ServiceOrderAdmin = () => {
                         />
                     </Grid>
 
-                    <Grid item xs={6} sm={4} md={1.5}>
+                    <Grid size={{ xs: 6, sm: 4, md: 1.5 }}>
                         <TextField
                             label="Unidad (Exacto)"
                             placeholder="Ej: 101"
@@ -200,7 +200,7 @@ const ServiceOrderAdmin = () => {
                         />
                     </Grid>
 
-                    <Grid item xs={12} sm={4} md={2}>
+                    <Grid size={{ xs: 12, sm: 4, md: 2 }}>
                         <FormControl fullWidth size="small">
                             <InputLabel>Mantenimiento</InputLabel>
                             <Select
@@ -245,7 +245,7 @@ const ServiceOrderAdmin = () => {
                         />
                     </Grid>
 
-                    <Grid item xs={12} sm={6} md={3}>
+                    <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                         <Stack direction="row" spacing={1} alignItems="center">
                             <DatePicker
                                 selected={startDate}
@@ -275,15 +275,12 @@ const ServiceOrderAdmin = () => {
                         </Stack>
                     </Grid>
 
-                    <Grid item xs={12} md={2} display="flex" justifyContent="flex-end" gap={1}>
-                        <IconButton 
-                            color="error" 
-                            onClick={clearFilters}
-                            title="Limpiar Filtros"
-                            sx={{ border: '1px solid #ffcdd2', borderRadius: 1 }}
-                        >
-                            <DeleteSweepIcon />
-                        </IconButton>
+                    <Grid size={{ xs: 12, md: 'grow' }} display="flex" justifyContent="flex-end" gap={1}>
+                        <Tooltip title="Limpiar filtros">
+                            <IconButton onClick={clearFilters} sx={{ ...ICON_BTN_SX, borderRadius: 2 }}>
+                                <DeleteSweepIcon fontSize="small" />
+                            </IconButton>
+                        </Tooltip>
                         <Button
                             variant="outlined"
                             onClick={fetchOrders}
@@ -298,13 +295,14 @@ const ServiceOrderAdmin = () => {
             </Paper>
 
             <TableContainer component={Paper} elevation={0} sx={TABLE_CONTAINER_SX}>
-                <Table size="small">
+                <Table size="small" sx={{ minWidth: 1100 }}>
                     <TableHead>
                         <TableRow sx={HEADER_ROW_SX}>
                             <TableCell sx={HEADER_CELL_SX} />
                             <TableCell sx={HEADER_CELL_SX}>ID</TableCell>
                             <TableCell sx={HEADER_CELL_SX}>Fecha</TableCell>
                             <TableCell sx={HEADER_CELL_SX}>Unidad</TableCell>
+                            <TableCell sx={HEADER_CELL_SX}>Estatus</TableCell>
                             <TableCell sx={HEADER_CELL_SX}>Servicios</TableCell>
                             <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'right' }}>Mano de obra</TableCell>
                             <TableCell sx={{ ...HEADER_CELL_SX, textAlign: 'right' }}>Refacciones</TableCell>
@@ -317,13 +315,13 @@ const ServiceOrderAdmin = () => {
                     <TableBody>
                         {loading ? (
                             <TableRow>
-                                <TableCell colSpan={10} align="center" sx={{ py: 6 }}>
+                                <TableCell colSpan={11} align="center" sx={{ py: 6 }}>
                                     <CircularProgress size={24} />
                                 </TableCell>
                             </TableRow>
                         ) : filteredOrders.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={10} align="center" sx={{ py: 6 }}>
+                                <TableCell colSpan={11} align="center" sx={{ py: 6 }}>
                                     <Typography variant="body2" color="#64748b" fontWeight={600}>
                                         No se encontraron órdenes.
                                     </Typography>

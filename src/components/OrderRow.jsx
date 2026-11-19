@@ -1,100 +1,236 @@
 import React, { useState, useMemo } from 'react';
 import {
-    Table, TableBody, TableCell, TableHead, TableRow, Paper,
-    Button, Typography, CircularProgress,
-    IconButton, Collapse, Chip, Stack, Divider, Card, CardContent, CardHeader, Box
+    TableCell, TableRow, Paper, Button, Typography, IconButton, Collapse, Chip, Stack, Box, Tooltip,
 } from '@mui/material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
+import {
+    CELL_STRONG_SX, CELL_SX, CELL_MUTED_SX, GHOST_BTN_SX, ICON_BTN_SX, SECTION_LABEL_SX,
+    CHIP_OK_SX, CHIP_WARN_SX, CHIP_INFO_SX, CHIP_NEUTRO_SX, CHIP_SX,
+} from '../styles/estilosTabla';
 
 const money = (v) =>
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, currencyDisplay: 'symbol' })
     .format(Number(v || 0));
 
+const NUMERO_SX = { fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' };
+
+const ESTATUS = {
+    abierta: { chip: CHIP_WARN_SX, acento: '#f59e0b' },
+    pendiente: { chip: CHIP_INFO_SX, acento: '#3b82f6' },
+    completado: { chip: CHIP_OK_SX, acento: '#22c55e' },
+};
+
+const CHIP_EXTERNO_SX = { ...CHIP_SX, bgcolor: '#f5f3ff', color: '#6d28d9', border: '1px solid #ddd6fe' };
+
+const MANTENIMIENTO_CHIP = { correctivo: CHIP_WARN_SX, preventivo: CHIP_INFO_SX };
+
+const EDITAR_BTN_SX = { ...GHOST_BTN_SX, px: 1.5, py: 0.4, fontSize: '0.78rem' };
+
+const BORRAR_BTN_SX = {
+    ...ICON_BTN_SX,
+    borderRadius: 2,
+    color: '#b91c1c',
+    borderColor: '#fecaca',
+    '&:hover': { bgcolor: '#fef2f2', borderColor: '#fca5a5' },
+};
+
+const esManoDeObra = (detalle) => String(detalle?.tipo_detalle || '').toLowerCase() === 'mano de obra';
+
+const subtotalDetalle = (detalle) => {
+    const costo = parseFloat(detalle?.costo ?? 0) || 0;
+    const cantidad = parseFloat(detalle?.cantidad ?? 0) || 0;
+    return esManoDeObra(detalle) ? costo : costo * cantidad;
+};
+
+const totalesDe = (detalles) =>
+    (detalles ?? []).reduce((acc, d) => {
+        const sub = subtotalDetalle(d);
+        return esManoDeObra(d) ? { ...acc, mo: acc.mo + sub } : { ...acc, items: acc.items + sub };
+    }, { mo: 0, items: 0 });
+
+const estatusDe = (valor) => ESTATUS[String(valor || '').toLowerCase()];
+
+const Dato = ({ etiqueta, children }) => (
+    <Box sx={{ minWidth: 0 }}>
+        <Typography variant="caption" sx={{ ...SECTION_LABEL_SX, display: 'block', textTransform: 'uppercase' }}>
+            {etiqueta}
+        </Typography>
+        <Box sx={{ mt: 0.25 }}>{children}</Box>
+    </Box>
+);
+
+const TarjetaServicio = ({ servicio, indice }) => {
+    const detalles = servicio?.detalles ?? [];
+    const totales = totalesDe(detalles);
+    const estatus = estatusDe(servicio.estatus);
+    const origen = servicio.origen_servicio;
+
+    return (
+        <Paper
+            elevation={0}
+            sx={{ minWidth: 340, maxWidth: 400, flex: '0 0 auto', border: '1px solid #e2e8f0', borderRadius: 2, bgcolor: '#fff', display: 'flex', flexDirection: 'column' }}
+        >
+            <Box sx={{ p: 2, borderBottom: '1px solid #f1f5f9' }}>
+                <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
+                    <Typography variant="overline" sx={{ ...SECTION_LABEL_SX, lineHeight: 1.4 }}>
+                        Servicio {indice + 1}
+                    </Typography>
+                    {servicio.estatus && <Chip size="small" label={servicio.estatus} sx={estatus?.chip || CHIP_NEUTRO_SX} />}
+                </Stack>
+                <Typography variant="body2" fontWeight={700} color="#0f172a" sx={{ mb: 1.5 }}>
+                    {servicio.tipo_reparacion || 'Sin reparación indicada'}
+                </Typography>
+                <Stack direction="row" spacing={3} flexWrap="wrap" useFlexGap>
+                    <Dato etiqueta="Mantenimiento">
+                        {servicio.tipo_mantenimiento
+                            ? <Chip size="small" label={servicio.tipo_mantenimiento} sx={MANTENIMIENTO_CHIP[servicio.tipo_mantenimiento.toLowerCase()] || CHIP_NEUTRO_SX} />
+                            : <Typography variant="body2" color="#94a3b8">—</Typography>}
+                    </Dato>
+                    <Dato etiqueta="Mantenimiento realizado">
+                        {origen
+                            ? <Chip size="small" label={origen} sx={origen.toLowerCase() === 'externo' ? CHIP_EXTERNO_SX : CHIP_NEUTRO_SX} />
+                            : <Typography variant="body2" color="#94a3b8">—</Typography>}
+                    </Dato>
+                    {servicio.fecha_termino && (
+                        <Dato etiqueta="Fecha">
+                            <Typography variant="body2" sx={{ ...CELL_MUTED_SX, ...NUMERO_SX }}>{servicio.fecha_termino}</Typography>
+                        </Dato>
+                    )}
+                </Stack>
+            </Box>
+
+            <Box sx={{ px: 2, py: 1.5, flex: 1 }}>
+                {detalles.length === 0 ? (
+                    <Typography variant="body2" color="#94a3b8" sx={{ py: 1 }}>Sin conceptos registrados.</Typography>
+                ) : (
+                    <Stack divider={<Box sx={{ borderTop: '1px dashed #e2e8f0' }} />}>
+                        {detalles.map((det) => {
+                            const isMO = esManoDeObra(det);
+                            return (
+                                <Stack key={det.id_detalle} direction="row" justifyContent="space-between" alignItems="flex-start" spacing={1.5} sx={{ py: 1 }}>
+                                    <Box sx={{ minWidth: 0 }}>
+                                        <Typography variant="body2" sx={{ ...CELL_SX, fontWeight: 600 }} noWrap title={det.descripcion}>
+                                            {det.descripcion || '—'}
+                                        </Typography>
+                                        <Typography variant="caption" color="#94a3b8" sx={NUMERO_SX}>
+                                            {det.tipo_detalle || '—'}
+                                            {!isMO && ` · ${parseFloat(det.cantidad ?? 0) || 0} × ${money(det.costo)}`}
+                                        </Typography>
+                                    </Box>
+                                    <Typography variant="body2" fontWeight={700} color="#0f172a" sx={NUMERO_SX}>
+                                        {money(subtotalDetalle(det))}
+                                    </Typography>
+                                </Stack>
+                            );
+                        })}
+                    </Stack>
+                )}
+            </Box>
+
+            <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ px: 2, py: 1.25, bgcolor: '#fafbfc', borderTop: '1px solid #f1f5f9', borderBottomLeftRadius: 8, borderBottomRightRadius: 8 }}>
+                <Typography variant="caption" color="#64748b" sx={NUMERO_SX}>
+                    MO {money(totales.mo)} · Refacciones {money(totales.items)}
+                </Typography>
+                <Typography variant="body2" fontWeight={800} color="#0f172a" sx={NUMERO_SX}>
+                    {money(totales.mo + totales.items)}
+                </Typography>
+            </Stack>
+        </Paper>
+    );
+};
+
 export const OrderRow = ({ order, onEdit, onDelete }) => {
     const [open, setOpen] = useState(false);
-    const servicios = order?.servicios ?? [];
+    const servicios = useMemo(() => order?.servicios ?? [], [order]);
     const tipoCambio = Number(order?.tipo_cambio ?? 0) || 0;
-
- 
-    const serviciosResumen = useMemo(() => {
-        const n = servicios.length;
-        return n ? `${n} servicio${n > 1 ? 's' : ''}` : '—';
-    }, [servicios]);
+    const estatus = estatusDe(order?.estatus);
+    const completada = String(order?.estatus).toLowerCase() === 'completado';
 
     const totalsOrder = useMemo(() => {
-        let mo = 0;
-        let items = 0;
-        for (const s of servicios) {
-            for (const d of (s.detalles ?? [])) {
-                const isMO = String(d.tipo_detalle || '').toLowerCase() === 'mano de obra';
-                const costo = parseFloat(d.costo ?? 0) || 0;
-                const cant = parseFloat(d.cantidad ?? 0) || 0;
-                if (isMO) mo += costo; else items += (costo * cant);
-            }
-        }
+        const { mo, items } = servicios.reduce((acc, s) => {
+            const t = totalesDe(s.detalles);
+            return { mo: acc.mo + t.mo, items: acc.items + t.items };
+        }, { mo: 0, items: 0 });
         return { mo, items, total: mo + items };
     }, [servicios]);
-    
-    const totalMostrado = useMemo(() => {
-        return tipoCambio > 0 ? (totalsOrder.total * tipoCambio) : totalsOrder.total;
-    }, [totalsOrder.total, tipoCambio]);
+
+    const totalMostrado = tipoCambio > 0 ? totalsOrder.total * tipoCambio : totalsOrder.total;
+
+    const unidad = order.nombre_camion
+        ? `Camión ${order.nombre_camion}`
+        : order.nombre_caja
+            ? `Caja ${order.nombre_caja}`
+            : null;
 
     return (
         <>
-            <TableRow sx={{ '& > *': { borderBottom: 'unset' } }} hover>
-                <TableCell>
-                    <IconButton size="small" onClick={() => setOpen(!open)}>
-                        {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+            <TableRow hover sx={{ '& > *': { borderBottom: open ? 'none' : undefined } }}>
+                <TableCell sx={{ borderLeft: `3px solid ${estatus?.acento || '#cbd5e1'}`, pl: 1.5, width: 48 }}>
+                    <IconButton size="small" onClick={() => setOpen(!open)} aria-label="Ver servicios">
+                        {open ? <KeyboardArrowUpIcon fontSize="small" /> : <KeyboardArrowDownIcon fontSize="small" />}
                     </IconButton>
                 </TableCell>
-                <TableCell component="th" scope="row">#{order.id_orden}</TableCell>
-                <TableCell>{order.fecha_orden}</TableCell>
-                <TableCell>
-                    {order.nombre_camion
-                        ? order.nombre_camion
-                        : order.nombre_caja
-                            ? `Caja ${order.nombre_caja}`
-                            : 'N/A'}
+                <TableCell sx={{ ...CELL_STRONG_SX, ...NUMERO_SX }}>#{order.id_orden}</TableCell>
+                <TableCell sx={{ ...CELL_MUTED_SX, ...NUMERO_SX }}>{order.fecha_orden}</TableCell>
+                <TableCell sx={CELL_STRONG_SX}>
+                    {unidad || <Typography component="span" variant="body2" color="#94a3b8">Sin unidad</Typography>}
                 </TableCell>
-                <TableCell>{serviciosResumen}</TableCell>
-
-                <TableCell align="right" sx={{ fontWeight: 500 }}>{money(totalsOrder.mo)}</TableCell>
-                <TableCell align="right" sx={{ fontWeight: 500 }}>{money(totalsOrder.items)}</TableCell>
-
-                <TableCell align="right" sx={{ fontWeight: 500 }}>
+                <TableCell>
+                    {order.estatus
+                        ? <Chip size="small" label={order.estatus} sx={estatus?.chip || CHIP_NEUTRO_SX} />
+                        : '—'}
+                </TableCell>
+                <TableCell>
+                    <Chip
+                        size="small"
+                        label={servicios.length ? `${servicios.length} servicio${servicios.length > 1 ? 's' : ''}` : 'Sin servicios'}
+                        sx={CHIP_NEUTRO_SX}
+                    />
+                </TableCell>
+                <TableCell align="right" sx={{ ...CELL_SX, ...NUMERO_SX }}>{money(totalsOrder.mo)}</TableCell>
+                <TableCell align="right" sx={{ ...CELL_SX, ...NUMERO_SX }}>{money(totalsOrder.items)}</TableCell>
+                <TableCell align="right" sx={{ ...CELL_MUTED_SX, ...NUMERO_SX }}>
                     {tipoCambio > 0 ? tipoCambio.toFixed(2) : '—'}
                 </TableCell>
-
-                <TableCell align="right">
-                    <Typography fontWeight={700}>{money(totalMostrado)}</Typography>
+                <TableCell align="right" sx={{ fontWeight: 800, color: '#0f172a', ...NUMERO_SX }}>
+                    {money(totalMostrado)}
                 </TableCell>
-
-                <TableCell sx={{ whiteSpace: 'nowrap' }}>
-                    <Stack direction="row" spacing={1} justifyContent="center">
-                        <Button size="small" variant="contained" onClick={() => onEdit(order.id_orden)}>
-                            {String(order.estatus).toLowerCase() === 'completado' ? 'Ver' : 'Editar'}
+                <TableCell align="center" sx={{ whiteSpace: 'nowrap' }}>
+                    <Stack direction="row" spacing={1} justifyContent="center" alignItems="center">
+                        <Button
+                            size="small"
+                            variant="outlined"
+                            startIcon={completada ? <VisibilityOutlinedIcon sx={{ fontSize: 16 }} /> : <EditOutlinedIcon sx={{ fontSize: 16 }} />}
+                            onClick={() => onEdit(order.id_orden)}
+                            sx={EDITAR_BTN_SX}
+                        >
+                            {completada ? 'Ver' : 'Editar'}
                         </Button>
-                        <Button size="small" variant="outlined" color="error" startIcon={<DeleteOutlineIcon />} onClick={() => onDelete(order)}>
-                            Eliminar
-                        </Button>
+                        <Tooltip title="Eliminar orden">
+                            <IconButton size="small" onClick={() => onDelete(order)} sx={BORRAR_BTN_SX}>
+                                <DeleteOutlineIcon sx={{ fontSize: 18 }} />
+                            </IconButton>
+                        </Tooltip>
                     </Stack>
                 </TableCell>
             </TableRow>
 
             <TableRow>
-                <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={10}>
+                <TableCell sx={{ p: 0, borderBottom: open ? '1px solid #e2e8f0' : 'none' }} colSpan={11}>
                     <Collapse in={open} timeout="auto" unmountOnExit>
-                        <Box sx={{ m: 1, p: 2, border: '1px solid #eee', borderRadius: '8px' }}>
-                            <Typography variant="h6" fontWeight={700} sx={{ fontSize: '1rem', mb: 2 }}>
-                                Servicios de la Orden #{order.id_orden}
+                        <Box sx={{ bgcolor: '#f8fafc', px: 3, py: 2.5, borderTop: '1px solid #f1f5f9' }}>
+                            <Typography variant="overline" sx={{ ...SECTION_LABEL_SX, display: 'block', mb: 1.5 }}>
+                                Servicios de la orden #{order.id_orden}
                             </Typography>
 
                             {servicios.length === 0 ? (
-                                <Typography variant="body2" sx={{ fontStyle: 'italic' }}>
-                                    Esta orden no tiene servicios registrados.
-                                </Typography>
+                                <Box sx={{ py: 4, textAlign: 'center', border: '1px dashed #e2e8f0', borderRadius: 2, bgcolor: '#fff' }}>
+                                    <Typography variant="body2" color="#94a3b8">Esta orden no tiene servicios registrados.</Typography>
+                                </Box>
                             ) : (
                                 <Box
                                     sx={{
@@ -103,136 +239,18 @@ export const OrderRow = ({ order, onEdit, onDelete }) => {
                                         overflowX: 'auto',
                                         pb: 1,
                                         '&::-webkit-scrollbar': { height: 8 },
-                                        '&::-webkit-scrollbar-thumb': { backgroundColor: '#c7c7c7', borderRadius: 8 }
+                                        '&::-webkit-scrollbar-thumb': { backgroundColor: '#cbd5e1', borderRadius: 8 },
                                     }}
                                 >
-                                    {servicios.map((svc, idx) => {
-                                        const detalles = svc?.detalles ?? [];
-
-                                        const totales = detalles.reduce((acc, d) => {
-                                            const costo = parseFloat(d.costo ?? 0) || 0;
-                                            const cant = parseFloat(d.cantidad ?? 0) || 0;
-                                            const sub = (d.tipo_detalle?.toLowerCase() === 'mano de obra')
-                                                ? costo 
-                                                : costo * cant;
-                                            return {
-                                                mo: acc.mo + (d.tipo_detalle?.toLowerCase() === 'mano de obra' ? costo : 0),
-                                                items: acc.items + (d.tipo_detalle?.toLowerCase() !== 'mano de obra' ? sub : 0),
-                                            };
-                                        }, { mo: 0, items: 0 });
-                                        const totalServicio = totales.mo + totales.items;
-
-
-                                        return (
-                                            <Card key={svc.id_servicio} sx={{ minWidth: 360, maxWidth: 420, flex: '0 0 auto' }} elevation={2}>
-                                                <CardHeader
-                                                    title={
-                                                        <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
-                                                            Servicio {idx + 1}
-                                                        </Typography>
-                                                    }
-                                                    subheader={
-                                                        <Box>
-                                                            <Typography variant="body2">
-                                                                <strong>Mantenimiento:</strong> {svc.tipo_mantenimiento || '—'}
-                                                            </Typography>
-                                                            <Typography variant="body2">
-                                                                <strong>Mantenimiento realizado:</strong> {svc.origen_servicio || '—'}
-                                                            </Typography>
-                                                            <Typography variant="body2">
-                                                                <strong>Reparación:</strong> {svc.tipo_reparacion || '—'}
-                                                            </Typography>
-                                                            {svc.fecha_termino && (
-                                                                <Typography variant="caption" color="text.secondary">
-                                                                    Fecha: {svc.fecha_termino}
-                                                                </Typography>
-                                                            )}
-                                                        </Box>
-                                                    }
-                                                    sx={{ pb: 1 }}
-                                                />
-                                                <Divider />
-                                                <CardContent>
-                                                    <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 1 }}>
-                                                        Detalles
-                                                    </Typography>
-
-                                                    {detalles.length === 0 ? (
-                                                        <Typography variant="body2" color="text.secondary">
-                                                            Sin detalles.
-                                                        </Typography>
-                                                    ) : (
-                                                        <Stack spacing={1.25}>
-                                                            {detalles.map((det) => {
-                                                                const isMO = String(det.tipo_detalle || '').toLowerCase() === 'mano de obra';
-                                                                const costo = parseFloat(det.costo ?? 0) || 0;
-                                                                const cantidad = parseFloat(det.cantidad ?? 0) || 0;
-                                                                const subtotal = isMO ? costo : (costo * cantidad);
-
-                                                                return (
-                                                                    <Paper key={det.id_detalle} variant="outlined" sx={{ p: 1.25, borderRadius: 1.5 }}>
-                                                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', gap: 1 }}>
-                                                                            <Box sx={{ minWidth: 0 }}>
-                                                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-                                                                                    <Chip
-                                                                                        label={det.tipo_detalle || '—'}
-                                                                                        size="small"
-                                                                                        variant="outlined"
-                                                                                    />
-                                                                                    {det.id_articulo ? (
-                                                                                        <Chip
-                                                                                            label={`ID Art: ${det.id_articulo}`}
-                                                                                            size="small"
-                                                                                            color="default"
-                                                                                            variant="outlined"
-                                                                                        />
-                                                                                    ) : null}
-                                                                                </Box>
-                                                                                <Typography variant="body2" sx={{ mt: 0.5 }} noWrap title={det.descripcion}>
-                                                                                    {det.descripcion || '—'}
-                                                                                </Typography>
-                                                                                {!isMO && (
-                                                                                    <Typography variant="caption" color="text.secondary">
-                                                                                        Cant.: {cantidad} · Costo u.: {money(costo)}
-                                                                                    </Typography>
-                                                                                )}
-                                                                            </Box>
-                                                                            <Box sx={{ textAlign: 'right' }}>
-                                                                                <Typography variant="body2" sx={{ fontWeight: 700 }}>
-                                                                                    {money(subtotal)}
-                                                                                </Typography>
-
-                                                                            </Box>
-                                                                        </Box>
-                                                                    </Paper>
-                                                                );
-                                                            })}
-                                                        </Stack>
-                                                    )}
-
-                                                    <Divider sx={{ my: 1.5 }} />
-                                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                                        <Typography variant="body2" color="text.secondary">
-                                                            MO: <strong style={{ color: '#333' }}>{money(totales.mo)}</strong>
-                                                        </Typography>
-                                                        <Typography variant="body2" color="text.secondary">
-                                                            Items: <strong style={{ color: '#333' }}>{money(totales.items)}</strong>
-                                                        </Typography>
-                                                        <Typography variant="body1" sx={{ fontWeight: 700 }}>
-                                                            Total: {money(totalServicio)}
-                                                        </Typography>
-                                                    </Box>
-                                                </CardContent>
-                                            </Card>
-                                        );
-                                    })}
+                                    {servicios.map((svc, idx) => (
+                                        <TarjetaServicio key={svc.id_servicio} servicio={svc} indice={idx} />
+                                    ))}
                                 </Box>
                             )}
                         </Box>
                     </Collapse>
                 </TableCell>
             </TableRow>
-
         </>
     );
 };
